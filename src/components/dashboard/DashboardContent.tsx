@@ -16,8 +16,17 @@ interface Company {
   } | null
   valuationSnapshots: Array<{
     currentValue: string
+    potentialValue: string
     briScore: string
+    briFinancial: string
+    briTransferability: string
+    briOperational: string
+    briMarket: string
+    briLegalTax: string
+    briPersonal: string
     valueGap: string
+    finalMultiple: string
+    createdAt: string
   }>
 }
 
@@ -230,7 +239,7 @@ export function DashboardContent({ userName }: DashboardContentProps) {
         </Card>
       </div>
 
-      {/* Next Steps */}
+      {/* Next Steps - No Assessment */}
       {!latestSnapshot && (
         <Card>
           <CardHeader>
@@ -279,6 +288,86 @@ export function DashboardContent({ userName }: DashboardContentProps) {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* BRI Category Breakdown - Has Assessment */}
+      {latestSnapshot && (
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle>BRI Category Scores</CardTitle>
+              <CardDescription>
+                Your buyer readiness across 6 key dimensions
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {[
+                  { key: 'briFinancial', label: 'Financial Health', weight: '25%' },
+                  { key: 'briTransferability', label: 'Transferability', weight: '20%' },
+                  { key: 'briOperational', label: 'Operations', weight: '20%' },
+                  { key: 'briMarket', label: 'Market Position', weight: '15%' },
+                  { key: 'briLegalTax', label: 'Legal & Tax', weight: '10%' },
+                  { key: 'briPersonal', label: 'Personal Readiness', weight: '10%' },
+                ].map(({ key, label, weight }) => {
+                  const score = Math.round(parseFloat(latestSnapshot[key as keyof typeof latestSnapshot] as string) * 100)
+                  const getColor = (s: number) => s >= 75 ? 'bg-green-500' : s >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                  return (
+                    <div key={key}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium text-gray-700">{label}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-400">{weight}</span>
+                          <span className={`text-sm font-bold ${score >= 75 ? 'text-green-600' : score >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
+                            {score}%
+                          </span>
+                        </div>
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${getColor(score)}`}
+                          style={{ width: `${score}%` }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-purple-200 bg-purple-50">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-purple-700">Value Gap</p>
+                  <p className="text-3xl font-bold text-purple-900">
+                    {formatCurrency(latestSnapshot.valueGap)}
+                  </p>
+                  <p className="text-sm text-purple-600 mt-1">
+                    Potential value you could unlock by improving your BRI score
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-purple-700">Potential Value</p>
+                  <p className="text-2xl font-semibold text-purple-800">
+                    {formatCurrency(latestSnapshot.potentialValue)}
+                  </p>
+                  <p className="text-xs text-purple-600 mt-1">at {latestSnapshot.finalMultiple}x multiple</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-center gap-4">
+            <Link href="/dashboard/assessment">
+              <Button variant="outline">Retake Assessment</Button>
+            </Link>
+            <Link href="/dashboard/playbook">
+              <Button>View Playbook</Button>
+            </Link>
+          </div>
+        </>
       )}
     </div>
   )
