@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { generateTasksForCompany } from '@/lib/playbook/generate-tasks'
 
 // Category weights for BRI calculation
 const CATEGORY_WEIGHTS: Record<string, number> = {
@@ -245,6 +246,13 @@ export async function POST(
       },
     })
 
+    // Generate playbook tasks based on assessment responses
+    const taskResult = await generateTasksForCompany(
+      assessment.companyId,
+      assessment.responses,
+      snapshot
+    )
+
     // Mark assessment as completed
     const completedAssessment = await prisma.assessment.update({
       where: { id: assessmentId },
@@ -255,6 +263,7 @@ export async function POST(
       assessment: completedAssessment,
       snapshot,
       categoryScores,
+      tasksGenerated: taskResult.created,
       summary: {
         briScore: Math.round(briScore * 100),
         coreScore: Math.round(coreScore * 100),

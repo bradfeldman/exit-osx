@@ -30,6 +30,15 @@ interface Company {
   }>
 }
 
+interface TaskStats {
+  total: number
+  pending: number
+  inProgress: number
+  completed: number
+  totalValue: number
+  completedValue: number
+}
+
 interface DashboardContentProps {
   userName?: string
 }
@@ -46,6 +55,7 @@ function formatCurrency(value: string | number): string {
 
 export function DashboardContent({ userName }: DashboardContentProps) {
   const [companies, setCompanies] = useState<Company[]>([])
+  const [taskStats, setTaskStats] = useState<TaskStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -61,6 +71,16 @@ export function DashboardContent({ userName }: DashboardContentProps) {
 
         const data = await response.json()
         setCompanies(data.companies || [])
+
+        // Fetch task stats if we have a company
+        const company = data.companies?.[0]
+        if (company?.valuationSnapshots?.length > 0) {
+          const tasksResponse = await fetch(`/api/tasks?companyId=${company.id}`)
+          if (tasksResponse.ok) {
+            const tasksData = await tasksResponse.json()
+            setTaskStats(tasksData.stats || null)
+          }
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
       } finally {
@@ -358,6 +378,45 @@ export function DashboardContent({ userName }: DashboardContentProps) {
               </div>
             </CardContent>
           </Card>
+
+          {/* Playbook Summary */}
+          {taskStats && taskStats.total > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Action Playbook</CardTitle>
+                <CardDescription>
+                  Prioritized tasks to close your value gap
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-4">
+                  <div className="text-center p-3 rounded-lg bg-gray-50">
+                    <p className="text-2xl font-bold text-gray-900">{taskStats.total}</p>
+                    <p className="text-sm text-gray-600">Total Tasks</p>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-yellow-50">
+                    <p className="text-2xl font-bold text-yellow-700">{taskStats.pending}</p>
+                    <p className="text-sm text-yellow-600">To Do</p>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-blue-50">
+                    <p className="text-2xl font-bold text-blue-700">{taskStats.inProgress}</p>
+                    <p className="text-sm text-blue-600">In Progress</p>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-green-50">
+                    <p className="text-2xl font-bold text-green-700">{taskStats.completed}</p>
+                    <p className="text-sm text-green-600">Completed</p>
+                  </div>
+                </div>
+                {taskStats.completedValue > 0 && (
+                  <div className="mt-4 p-3 rounded-lg bg-green-50 border border-green-200">
+                    <p className="text-sm text-green-700">
+                      You&apos;ve captured <span className="font-bold">{formatCurrency(taskStats.completedValue)}</span> in value so far!
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           <div className="flex justify-center gap-4">
             <Link href="/dashboard/assessment">
