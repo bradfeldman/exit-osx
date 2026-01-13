@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { UserAvatar } from '@/components/ui/user-avatar'
+import { useCompany } from '@/contexts/CompanyContext'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +14,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import type { User } from '@supabase/supabase-js'
 
 interface HeaderProps {
@@ -23,11 +31,17 @@ export function Header({ user }: HeaderProps) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+  const { companies, selectedCompanyId, setSelectedCompanyId, isLoading } = useCompany()
 
   const handleSignOut = async () => {
     setLoading(true)
     await supabase.auth.signOut()
     router.push('/login')
+    router.refresh()
+  }
+
+  const handleCompanyChange = (companyId: string) => {
+    setSelectedCompanyId(companyId)
     router.refresh()
   }
 
@@ -46,6 +60,32 @@ export function Header({ user }: HeaderProps) {
       </div>
 
       <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
+        {/* Company Switcher */}
+        <div className="flex items-center">
+          {!isLoading && companies.length > 0 && (
+            <Select
+              value={selectedCompanyId || undefined}
+              onValueChange={handleCompanyChange}
+            >
+              <SelectTrigger className="w-[200px] border-none bg-transparent focus:ring-0 focus:ring-offset-0">
+                <div className="flex items-center gap-2">
+                  <svg className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
+                  </svg>
+                  <SelectValue placeholder="Select company" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {companies.map((company) => (
+                  <SelectItem key={company.id} value={company.id}>
+                    {company.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+
         <div className="flex flex-1" />
 
         {/* User menu */}

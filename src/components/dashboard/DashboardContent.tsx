@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { useCompany } from '@/contexts/CompanyContext'
 
 interface Company {
   id: string
@@ -54,32 +55,52 @@ function formatCurrency(value: string | number): string {
 }
 
 export function DashboardContent({ userName }: DashboardContentProps) {
-  const [companies, setCompanies] = useState<Company[]>([])
+  const { selectedCompanyId, isLoading: companyLoading } = useCompany()
+  const [company, setCompany] = useState<Company | null>(null)
   const [taskStats, setTaskStats] = useState<TaskStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadData() {
+      if (companyLoading) return
+
+      setLoading(true)
+      setError(null)
+
       try {
         // First sync the user
         await fetch('/api/user/sync', { method: 'POST' })
 
-        // Then fetch companies
-        const response = await fetch('/api/companies')
-        if (!response.ok) throw new Error('Failed to fetch companies')
+        if (!selectedCompanyId) {
+          // No company selected, check if any exist
+          const response = await fetch('/api/companies')
+          if (response.ok) {
+            const data = await response.json()
+            if (data.companies?.length === 0) {
+              setCompany(null)
+            }
+          }
+          setLoading(false)
+          return
+        }
+
+        // Fetch the selected company
+        const response = await fetch(`/api/companies/${selectedCompanyId}`)
+        if (!response.ok) throw new Error('Failed to fetch company')
 
         const data = await response.json()
-        setCompanies(data.companies || [])
+        setCompany(data.company || null)
 
-        // Fetch task stats if we have a company
-        const company = data.companies?.[0]
-        if (company?.valuationSnapshots?.length > 0) {
-          const tasksResponse = await fetch(`/api/tasks?companyId=${company.id}`)
+        // Fetch task stats if company has valuation
+        if (data.company?.valuationSnapshots?.length > 0) {
+          const tasksResponse = await fetch(`/api/tasks?companyId=${selectedCompanyId}`)
           if (tasksResponse.ok) {
             const tasksData = await tasksResponse.json()
             setTaskStats(tasksData.stats || null)
           }
+        } else {
+          setTaskStats(null)
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
@@ -89,7 +110,7 @@ export function DashboardContent({ userName }: DashboardContentProps) {
     }
 
     loadData()
-  }, [])
+  }, [selectedCompanyId, companyLoading])
 
   if (loading) {
     return (
@@ -110,8 +131,8 @@ export function DashboardContent({ userName }: DashboardContentProps) {
     )
   }
 
-  // No companies - show onboarding
-  if (companies.length === 0) {
+  // No company selected - show onboarding
+  if (!company) {
     return (
       <div className="space-y-6">
         <div>
@@ -185,8 +206,7 @@ export function DashboardContent({ userName }: DashboardContentProps) {
     )
   }
 
-  // Has companies - show dashboard
-  const company = companies[0]
+  // Has company - show dashboard
   const latestSnapshot = company.valuationSnapshots?.[0]
 
   return (
