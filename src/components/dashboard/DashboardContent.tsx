@@ -95,7 +95,7 @@ export function DashboardContent({ userName }: DashboardContentProps) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
           <p className="text-gray-600">Loading your dashboard...</p>
         </div>
       </div>
@@ -121,7 +121,7 @@ export function DashboardContent({ userName }: DashboardContentProps) {
           </p>
         </div>
 
-        <Card className="border-blue-200 bg-blue-50">
+        <Card className="border-primary/20 bg-primary/5">
           <CardHeader>
             <CardTitle>Set Up Your Company</CardTitle>
             <CardDescription>
@@ -144,8 +144,8 @@ export function DashboardContent({ userName }: DashboardContentProps) {
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
               <div className="p-4 rounded-lg bg-gray-50">
-                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-3">
-                  <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                  <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
@@ -283,13 +283,13 @@ export function DashboardContent({ userName }: DashboardContentProps) {
               </div>
 
               <Link href="/dashboard/assessment" className="block">
-                <div className="flex items-center gap-4 p-4 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white font-semibold">
+                <div className="flex items-center gap-4 p-4 rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white font-semibold">
                     2
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-medium text-blue-900">Complete the BRI Assessment</h3>
-                    <p className="text-sm text-blue-700">Answer questions about your business readiness</p>
+                    <h3 className="font-medium text-foreground">Complete the BRI Assessment</h3>
+                    <p className="text-sm text-primary">Answer questions about your business readiness</p>
                   </div>
                   <Button size="sm">Start</Button>
                 </div>
@@ -398,9 +398,9 @@ export function DashboardContent({ userName }: DashboardContentProps) {
                     <p className="text-2xl font-bold text-yellow-700">{taskStats.pending}</p>
                     <p className="text-sm text-yellow-600">To Do</p>
                   </div>
-                  <div className="text-center p-3 rounded-lg bg-blue-50">
-                    <p className="text-2xl font-bold text-blue-700">{taskStats.inProgress}</p>
-                    <p className="text-sm text-blue-600">In Progress</p>
+                  <div className="text-center p-3 rounded-lg bg-primary/5">
+                    <p className="text-2xl font-bold text-primary">{taskStats.inProgress}</p>
+                    <p className="text-sm text-primary">In Progress</p>
                   </div>
                   <div className="text-center p-3 rounded-lg bg-green-50">
                     <p className="text-2xl font-bold text-green-700">{taskStats.completed}</p>

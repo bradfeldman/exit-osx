@@ -37,7 +37,7 @@ export function QuestionCard({
             disabled={disabled}
             className={`w-full p-4 text-left rounded-lg border-2 transition-all ${
               isSelected
-                ? 'border-blue-500 bg-blue-50'
+                ? 'border-primary bg-primary/10'
                 : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
             } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           >
@@ -45,7 +45,7 @@ export function QuestionCard({
               <div
                 className={`flex-shrink-0 w-5 h-5 mt-0.5 rounded-full border-2 ${
                   isSelected
-                    ? 'border-blue-500 bg-blue-500'
+                    ? 'border-primary bg-primary'
                     : 'border-gray-300'
                 }`}
               >
@@ -65,7 +65,7 @@ export function QuestionCard({
                   </svg>
                 )}
               </div>
-              <span className={`text-sm ${isSelected ? 'text-blue-900 font-medium' : 'text-gray-700'}`}>
+              <span className={`text-sm ${isSelected ? 'text-primary font-medium' : 'text-gray-700'}`}>
                 {option.optionText}
               </span>
             </div>

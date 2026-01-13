@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { getGravatarUrl } from '@/lib/utils/gravatar'
 
 export async function POST() {
   const supabase = await createClient()
@@ -28,6 +29,31 @@ export async function POST() {
     })
 
     if (existingUser) {
+      // Update avatar URL if missing
+      if (!existingUser.avatarUrl) {
+        const updatedUser = await prisma.user.update({
+          where: { id: existingUser.id },
+          data: {
+            avatarUrl: user.user_metadata?.avatar_url || getGravatarUrl(user.email!, { size: 200 })
+          },
+          include: {
+            organizations: {
+              include: {
+                organization: {
+                  include: {
+                    companies: true
+                  }
+                }
+              }
+            }
+          }
+        })
+        return NextResponse.json({
+          user: updatedUser,
+          isNew: false
+        })
+      }
+
       return NextResponse.json({
         user: existingUser,
         isNew: false
@@ -35,12 +61,15 @@ export async function POST() {
     }
 
     // Create new user with a default organization
+    // Use OAuth avatar if available, otherwise generate Gravatar URL
+    const avatarUrl = user.user_metadata?.avatar_url || getGravatarUrl(user.email!, { size: 200 })
+
     const newUser = await prisma.user.create({
       data: {
         authId: user.id,
         email: user.email!,
         name: user.user_metadata?.name || user.user_metadata?.full_name,
-        avatarUrl: user.user_metadata?.avatar_url,
+        avatarUrl,
         organizations: {
           create: {
             role: 'ADMIN',

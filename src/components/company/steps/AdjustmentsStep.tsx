@@ -243,12 +243,12 @@ export function AdjustmentsStep({ formData, updateFormData }: AdjustmentsStepPro
       )}
 
       {/* Summary */}
-      <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <h3 className="text-sm font-medium text-blue-800 mb-3">Adjusted EBITDA Summary</h3>
+      <div className="p-4 bg-primary/10 rounded-lg border border-primary">
+        <h3 className="text-sm font-medium text-primary mb-3">Adjusted EBITDA Summary</h3>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-blue-700">Reported EBITDA</span>
-            <span className="font-medium text-blue-900">{formatCurrency(formData.annualEbitda)}</span>
+            <span className="text-primary">Reported EBITDA</span>
+            <span className="font-medium text-primary">{formatCurrency(formData.annualEbitda)}</span>
           </div>
           {totalAddBacks > 0 && (
             <div className="flex justify-between">
@@ -262,9 +262,9 @@ export function AdjustmentsStep({ formData, updateFormData }: AdjustmentsStepPro
               <span className="font-medium text-red-700">{formatCurrency(totalDeductions)}</span>
             </div>
           )}
-          <div className="border-t border-blue-200 pt-2 flex justify-between">
-            <span className="font-medium text-blue-800">Adjusted EBITDA</span>
-            <span className="font-bold text-blue-900">{formatCurrency(adjustedEbitda)}</span>
+          <div className="border-t border-primary pt-2 flex justify-between">
+            <span className="font-medium text-primary">Adjusted EBITDA</span>
+            <span className="font-bold text-primary">{formatCurrency(adjustedEbitda)}</span>
           </div>
         </div>
       </div>

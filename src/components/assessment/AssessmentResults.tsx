@@ -98,9 +98,9 @@ export function AssessmentResults({ results, onViewDashboard }: AssessmentResult
 
       {/* Main Scores */}
       <div className="grid gap-4 md:grid-cols-2">
-        <Card className="border-blue-200 bg-blue-50">
+        <Card className="border-primary bg-primary/10">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-blue-700">BRI Score</CardTitle>
+            <CardTitle className="text-sm font-medium text-primary">BRI Score</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-end gap-2">
@@ -109,7 +109,7 @@ export function AssessmentResults({ results, onViewDashboard }: AssessmentResult
               </span>
               <span className="text-2xl text-gray-500 mb-1">/ 100</span>
             </div>
-            <p className="text-sm text-blue-600 mt-2">Buyer Readiness Index</p>
+            <p className="text-sm text-primary mt-2">Buyer Readiness Index</p>
           </CardContent>
         </Card>
 
@@ -191,8 +191,8 @@ export function AssessmentResults({ results, onViewDashboard }: AssessmentResult
         <CardContent>
           <div className="space-y-4">
             <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-blue-600 font-medium">1</span>
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <span className="text-primary font-medium">1</span>
               </div>
               <div>
                 <h4 className="font-medium text-gray-900">Review Your Playbook</h4>
@@ -203,8 +203,8 @@ export function AssessmentResults({ results, onViewDashboard }: AssessmentResult
             </div>
 
             <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-blue-600 font-medium">2</span>
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <span className="text-primary font-medium">2</span>
               </div>
               <div>
                 <h4 className="font-medium text-gray-900">Track Your Progress</h4>
@@ -215,8 +215,8 @@ export function AssessmentResults({ results, onViewDashboard }: AssessmentResult
             </div>
 
             <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-blue-600 font-medium">3</span>
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <span className="text-primary font-medium">3</span>
               </div>
               <div>
                 <h4 className="font-medium text-gray-900">Run Scenarios</h4>

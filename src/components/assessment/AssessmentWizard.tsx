@@ -224,7 +224,7 @@ export function AssessmentWizard({ companyId, companyName }: AssessmentWizardPro
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
           <p className="text-gray-600">Loading assessment...</p>
         </div>
       </div>
@@ -252,7 +252,7 @@ export function AssessmentWizard({ companyId, companyName }: AssessmentWizardPro
             <span className="text-sm font-medium text-gray-700">
               Question {currentQuestionIndex + 1} of {orderedQuestions.length}
             </span>
-            <span className="text-sm font-medium text-blue-600">{progress}% Complete</span>
+            <span className="text-sm font-medium text-primary">{progress}% Complete</span>
           </div>
           <Progress value={progress} className="h-2" />
 
@@ -270,7 +270,7 @@ export function AssessmentWizard({ companyId, companyName }: AssessmentWizardPro
                     catAnswered === catQuestions.length
                       ? 'bg-green-100 text-green-700'
                       : isCurrentCat
-                      ? 'bg-blue-100 text-blue-700'
+                      ? 'bg-primary/10 text-primary'
                       : 'bg-gray-100 text-gray-600'
                   }`}
                 >
@@ -293,8 +293,8 @@ export function AssessmentWizard({ companyId, companyName }: AssessmentWizardPro
       {currentQuestion && (
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-2 text-sm text-blue-600 mb-2">
-              <span className="px-2 py-0.5 bg-blue-100 rounded">
+            <div className="flex items-center gap-2 text-sm text-primary mb-2">
+              <span className="px-2 py-0.5 bg-primary/10 rounded">
                 {CATEGORY_LABELS[currentQuestion.briCategory]}
               </span>
               <span className="text-gray-400">

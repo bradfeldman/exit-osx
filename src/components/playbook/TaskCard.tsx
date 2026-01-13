@@ -92,7 +92,7 @@ export function TaskCard({ task, onStatusChange }: TaskCardProps) {
 
   const statusBorder = {
     PENDING: 'border-l-gray-300',
-    IN_PROGRESS: 'border-l-blue-500',
+    IN_PROGRESS: 'border-l-primary',
     COMPLETED: 'border-l-green-500',
     DEFERRED: 'border-l-yellow-500',
     BLOCKED: 'border-l-red-500',
@@ -156,7 +156,7 @@ export function TaskCard({ task, onStatusChange }: TaskCardProps) {
             {/* Expandable Description */}
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="mt-3 text-sm text-blue-600 hover:text-blue-800"
+              className="mt-3 text-sm text-primary hover:text-primary/80"
             >
               {isExpanded ? 'Show less' : 'Show details'}
             </button>
