@@ -1,0 +1,425 @@
+// Exit OSx Database Schema
+// Prisma ORM with Supabase PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  TEAM_LEADER
+  MEMBER
+  VIEWER
+}
+
+enum RevenueSizeCategory {
+  UNDER_500K
+  FROM_500K_TO_1M
+  FROM_1M_TO_3M
+  FROM_3M_TO_10M
+  FROM_10M_TO_25M
+  OVER_25M
+}
+
+enum RevenueModelType {
+  PROJECT_BASED
+  TRANSACTIONAL
+  RECURRING_CONTRACTS
+  SUBSCRIPTION_SAAS
+}
+
+enum GrossMarginCategory {
+  LOW
+  MODERATE
+  GOOD
+  EXCELLENT
+}
+
+enum LaborIntensityLevel {
+  LOW
+  MODERATE
+  HIGH
+  VERY_HIGH
+}
+
+enum AssetIntensityLevel {
+  ASSET_LIGHT
+  MODERATE
+  ASSET_HEAVY
+}
+
+enum OwnerInvolvementLevel {
+  MINIMAL
+  LOW
+  MODERATE
+  HIGH
+  CRITICAL
+}
+
+enum ConfidenceLevel {
+  UNCERTAIN
+  SOMEWHAT_CONFIDENT
+  CONFIDENT
+  VERIFIED
+}
+
+enum BriCategory {
+  FINANCIAL
+  TRANSFERABILITY
+  OPERATIONAL
+  MARKET
+  LEGAL_TAX
+  PERSONAL
+}
+
+enum ActionItemType {
+  TYPE_I_EVIDENCE
+  TYPE_II_DOCUMENTATION
+  TYPE_III_OPERATIONAL
+  TYPE_IV_INSTITUTIONALIZE
+  TYPE_V_RISK_REDUCTION
+  TYPE_VI_ALIGNMENT
+  TYPE_VII_READINESS
+  TYPE_VIII_SIGNALING
+  TYPE_IX_OPTIONS
+  TYPE_X_DEFER
+}
+
+enum EffortLevel {
+  MINIMAL
+  LOW
+  MODERATE
+  HIGH
+  MAJOR
+}
+
+enum ComplexityLevel {
+  SIMPLE
+  MODERATE
+  COMPLEX
+  STRATEGIC
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  BLOCKED
+  COMPLETED
+  DEFERRED
+  CANCELLED
+}
+
+enum SprintPriority {
+  BIG_ROCK
+  SAND
+  WATER
+}
+
+enum SprintStatus {
+  PLANNING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum AssessmentType {
+  INITIAL
+  QUARTERLY_CHECK_IN
+  AD_HOC
+}
+
+// ============================================
+// CORE ENTITIES
+// ============================================
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users     OrganizationUser[]
+  companies Company[]
+
+  @@map("organizations")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  authId    String   @unique @map("auth_id") // Supabase Auth UUID
+  email     String   @unique
+  name      String?
+  avatarUrl String?  @map("avatar_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  organizations   OrganizationUser[]
+  taskAssignments TaskAssignment[]
+
+  @@map("users")
+}
+
+model OrganizationUser {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  userId         String   @map("user_id")
+  role           UserRole @default(MEMBER)
+  joinedAt       DateTime @default(now()) @map("joined_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@map("organization_users")
+}
+
+model Company {
+  id               String   @id @default(cuid())
+  organizationId   String   @map("organization_id")
+  name             String
+  icbIndustry      String   @map("icb_industry")
+  icbSuperSector   String   @map("icb_super_sector")
+  icbSector        String   @map("icb_sector")
+  icbSubSector     String   @map("icb_sub_sector")
+  annualRevenue    Decimal  @map("annual_revenue") @db.Decimal(15, 2)
+  annualEbitda     Decimal  @map("annual_ebitda") @db.Decimal(15, 2)
+  ownerCompensation Decimal @default(0) @map("owner_compensation") @db.Decimal(15, 2)
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  organization       Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  coreFactors        CoreFactors?
+  ebitdaAdjustments  EbitdaAdjustment[]
+  assessments        Assessment[]
+  valuationSnapshots ValuationSnapshot[]
+  tasks              Task[]
+  sprints            Sprint[]
+
+  @@map("companies")
+}
+
+model EbitdaAdjustment {
+  id          String   @id @default(cuid())
+  companyId   String   @map("company_id")
+  description String
+  amount      Decimal  @db.Decimal(15, 2)
+  type        String   // ADD_BACK or DEDUCTION
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("ebitda_adjustments")
+}
+
+model CoreFactors {
+  id                  String               @id @default(cuid())
+  companyId           String               @unique @map("company_id")
+  revenueSizeCategory RevenueSizeCategory  @map("revenue_size_category")
+  revenueModel        RevenueModelType     @map("revenue_model")
+  grossMarginProxy    GrossMarginCategory  @map("gross_margin_proxy")
+  laborIntensity      LaborIntensityLevel  @map("labor_intensity")
+  assetIntensity      AssetIntensityLevel  @map("asset_intensity")
+  ownerInvolvement    OwnerInvolvementLevel @map("owner_involvement")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("core_factors")
+}
+
+// ============================================
+// ASSESSMENT & QUESTIONS
+// ============================================
+
+model Question {
+  id              String      @id @default(cuid())
+  briCategory     BriCategory @map("bri_category")
+  questionText    String      @map("question_text")
+  helpText        String?     @map("help_text")
+  displayOrder    Int         @map("display_order")
+  maxImpactPoints Decimal     @map("max_impact_points") @db.Decimal(5, 2)
+  isActive        Boolean     @default(true) @map("is_active")
+
+  options   QuestionOption[]
+  responses AssessmentResponse[]
+
+  @@map("questions")
+}
+
+model QuestionOption {
+  id           String  @id @default(cuid())
+  questionId   String  @map("question_id")
+  optionText   String  @map("option_text")
+  scoreValue   Decimal @map("score_value") @db.Decimal(3, 2) // 0.00 to 1.00
+  displayOrder Int     @map("display_order")
+
+  question  Question             @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  responses AssessmentResponse[]
+
+  @@map("question_options")
+}
+
+model Assessment {
+  id             String         @id @default(cuid())
+  companyId      String         @map("company_id")
+  assessmentType AssessmentType @map("assessment_type")
+  completedAt    DateTime?      @map("completed_at")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  company   Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  responses AssessmentResponse[]
+
+  @@map("assessments")
+}
+
+model AssessmentResponse {
+  id               String          @id @default(cuid())
+  assessmentId     String          @map("assessment_id")
+  questionId       String          @map("question_id")
+  selectedOptionId String          @map("selected_option_id")
+  confidenceLevel  ConfidenceLevel @map("confidence_level")
+  notes            String?
+  evidenceUploaded Boolean         @default(false) @map("evidence_uploaded")
+  evidenceUrls     String[]        @map("evidence_urls")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  assessment     Assessment     @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  question       Question       @relation(fields: [questionId], references: [id])
+  selectedOption QuestionOption @relation(fields: [selectedOptionId], references: [id])
+
+  @@unique([assessmentId, questionId])
+  @@map("assessment_responses")
+}
+
+// ============================================
+// VALUATION
+// ============================================
+
+model ValuationSnapshot {
+  id                  String   @id @default(cuid())
+  companyId           String   @map("company_id")
+  adjustedEbitda      Decimal  @map("adjusted_ebitda") @db.Decimal(15, 2)
+  industryMultipleLow Decimal  @map("industry_multiple_low") @db.Decimal(4, 2)
+  industryMultipleHigh Decimal @map("industry_multiple_high") @db.Decimal(4, 2)
+  coreScore           Decimal  @map("core_score") @db.Decimal(5, 4) // 0.0000 to 1.0000
+  briScore            Decimal  @map("bri_score") @db.Decimal(5, 4)
+  briFinancial        Decimal  @map("bri_financial") @db.Decimal(5, 4)
+  briTransferability  Decimal  @map("bri_transferability") @db.Decimal(5, 4)
+  briOperational      Decimal  @map("bri_operational") @db.Decimal(5, 4)
+  briMarket           Decimal  @map("bri_market") @db.Decimal(5, 4)
+  briLegalTax         Decimal  @map("bri_legal_tax") @db.Decimal(5, 4)
+  briPersonal         Decimal  @map("bri_personal") @db.Decimal(5, 4)
+  baseMultiple        Decimal  @map("base_multiple") @db.Decimal(4, 2)
+  discountFraction    Decimal  @map("discount_fraction") @db.Decimal(5, 4)
+  finalMultiple       Decimal  @map("final_multiple") @db.Decimal(4, 2)
+  currentValue        Decimal  @map("current_value") @db.Decimal(15, 2)
+  potentialValue      Decimal  @map("potential_value") @db.Decimal(15, 2)
+  valueGap            Decimal  @map("value_gap") @db.Decimal(15, 2)
+  alphaConstant       Decimal  @map("alpha_constant") @db.Decimal(3, 2) @default(0.40)
+  snapshotReason      String?  @map("snapshot_reason")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, createdAt])
+  @@map("valuation_snapshots")
+}
+
+// ============================================
+// TASKS & SPRINTS
+// ============================================
+
+model Task {
+  id              String         @id @default(cuid())
+  companyId       String         @map("company_id")
+  title           String
+  description     String
+  actionType      ActionItemType @map("action_type")
+  briCategory     BriCategory    @map("bri_category")
+  linkedQuestionId String?       @map("linked_question_id")
+  rawImpact       Decimal        @map("raw_impact") @db.Decimal(15, 2)
+  normalizedValue Decimal        @map("normalized_value") @db.Decimal(15, 2)
+  effortLevel     EffortLevel    @map("effort_level")
+  complexity      ComplexityLevel
+  estimatedHours  Int?           @map("estimated_hours")
+  status          TaskStatus     @default(PENDING)
+  deferredUntil   DateTime?      @map("deferred_until")
+  deferralReason  String?        @map("deferral_reason")
+  completedAt     DateTime?      @map("completed_at")
+  sprintId        String?        @map("sprint_id")
+  sprintPriority  SprintPriority? @map("sprint_priority")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  company     Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  sprint      Sprint?          @relation(fields: [sprintId], references: [id])
+  assignments TaskAssignment[]
+
+  @@index([companyId, status])
+  @@index([sprintId])
+  @@map("tasks")
+}
+
+model TaskAssignment {
+  id         String   @id @default(cuid())
+  taskId     String   @map("task_id")
+  userId     String   @map("user_id")
+  assignedAt DateTime @default(now()) @map("assigned_at")
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, userId])
+  @@map("task_assignments")
+}
+
+model Sprint {
+  id                  String       @id @default(cuid())
+  companyId           String       @map("company_id")
+  name                String
+  startDate           DateTime     @map("start_date")
+  endDate             DateTime     @map("end_date")
+  targetValueIncrease Decimal      @map("target_value_increase") @db.Decimal(15, 2)
+  actualValueIncrease Decimal?     @map("actual_value_increase") @db.Decimal(15, 2)
+  status              SprintStatus @default(PLANNING)
+  createdAt           DateTime     @default(now()) @map("created_at")
+  updatedAt           DateTime     @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  tasks   Task[]
+
+  @@index([companyId, status])
+  @@map("sprints")
+}
+
+// ============================================
+// REFERENCE DATA
+// ============================================
+
+model IndustryMultiple {
+  id                  String   @id @default(cuid())
+  icbIndustry         String   @map("icb_industry")
+  icbSuperSector      String   @map("icb_super_sector")
+  icbSector           String   @map("icb_sector")
+  icbSubSector        String   @map("icb_sub_sector")
+  revenueMultipleLow  Decimal  @map("revenue_multiple_low") @db.Decimal(4, 2)
+  revenueMultipleHigh Decimal  @map("revenue_multiple_high") @db.Decimal(4, 2)
+  ebitdaMultipleLow   Decimal  @map("ebitda_multiple_low") @db.Decimal(4, 2)
+  ebitdaMultipleHigh  Decimal  @map("ebitda_multiple_high") @db.Decimal(4, 2)
+  effectiveDate       DateTime @map("effective_date")
+  source              String?
+
+  @@unique([icbSubSector, effectiveDate])
+  @@map("industry_multiples")
+}
