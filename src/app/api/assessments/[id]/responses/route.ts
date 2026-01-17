@@ -64,6 +64,7 @@ export async function POST(
     }
 
     // Upsert the response (update if exists, create if not)
+    // Initialize effectiveOptionId = selectedOptionId for Answer Upgrade System
     const response = await prisma.assessmentResponse.upsert({
       where: {
         assessmentId_questionId: {
@@ -73,6 +74,7 @@ export async function POST(
       },
       update: {
         selectedOptionId,
+        effectiveOptionId: selectedOptionId, // Reset to selected when user changes answer
         confidenceLevel,
         notes,
       },
@@ -80,6 +82,7 @@ export async function POST(
         assessmentId,
         questionId,
         selectedOptionId,
+        effectiveOptionId: selectedOptionId, // Initialize effective = selected
         confidenceLevel,
         notes,
       },

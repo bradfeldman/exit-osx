@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { Pool } from 'pg'
 import { briQuestions } from './seed-data/bri-questions'
+import { industryMultiples } from './seed-data/industry-multiples'
 
 // Load environment variables from .env.local
 config({ path: '.env.local' })
@@ -16,40 +17,73 @@ async function main() {
 
   console.log('Starting database seed...')
 
-  // Clear existing questions (cascade will remove options)
-  console.log('Clearing existing questions...')
-  await prisma.question.deleteMany()
+  // Check if questions already exist (don't delete if assessment responses exist)
+  const existingQuestions = await prisma.question.count()
+  const existingResponses = await prisma.assessmentResponse.count()
 
-  // Seed BRI questions
-  console.log('Seeding BRI questions...')
+  if (existingResponses > 0) {
+    console.log(`Skipping BRI questions - ${existingResponses} assessment responses exist`)
+    console.log(`Database has ${existingQuestions} existing questions`)
+  } else {
+    // Clear existing questions (cascade will remove options)
+    console.log('Clearing existing questions...')
+    await prisma.question.deleteMany()
 
-  for (const question of briQuestions) {
-    await prisma.question.create({
-      data: {
-        briCategory: question.briCategory,
-        questionText: question.questionText,
-        helpText: question.helpText,
-        displayOrder: question.displayOrder,
-        maxImpactPoints: question.maxImpactPoints,
-        isActive: true,
-        options: {
-          create: question.options.map(opt => ({
-            optionText: opt.optionText,
-            scoreValue: opt.scoreValue,
-            displayOrder: opt.displayOrder,
-          })),
+    // Seed BRI questions
+    console.log('Seeding BRI questions...')
+
+    for (const question of briQuestions) {
+      await prisma.question.create({
+        data: {
+          briCategory: question.briCategory,
+          questionText: question.questionText,
+          helpText: question.helpText,
+          displayOrder: question.displayOrder,
+          maxImpactPoints: question.maxImpactPoints,
+          isActive: true,
+          options: {
+            create: question.options.map(opt => ({
+              optionText: opt.optionText,
+              scoreValue: opt.scoreValue,
+              displayOrder: opt.displayOrder,
+            })),
+          },
         },
+      })
+    }
+
+    console.log(`Seeded ${briQuestions.length} BRI questions`)
+  }
+
+  // Clear and seed industry multiples (always safe to recreate)
+  console.log('Clearing existing industry multiples...')
+  await prisma.industryMultiple.deleteMany()
+
+  console.log('Seeding industry multiples...')
+  for (const multiple of industryMultiples) {
+    await prisma.industryMultiple.create({
+      data: {
+        icbIndustry: multiple.icbIndustry,
+        icbSuperSector: multiple.icbSuperSector,
+        icbSector: multiple.icbSector,
+        icbSubSector: multiple.icbSubSector,
+        revenueMultipleLow: multiple.revenueMultipleLow,
+        revenueMultipleHigh: multiple.revenueMultipleHigh,
+        ebitdaMultipleLow: multiple.ebitdaMultipleLow,
+        ebitdaMultipleHigh: multiple.ebitdaMultipleHigh,
+        effectiveDate: multiple.effectiveDate,
+        source: multiple.source,
       },
     })
   }
-
-  console.log(`Seeded ${briQuestions.length} BRI questions`)
+  console.log(`Seeded ${industryMultiples.length} industry multiples`)
 
   // Verify
   const questionCount = await prisma.question.count()
   const optionCount = await prisma.questionOption.count()
+  const multiplesCount = await prisma.industryMultiple.count()
 
-  console.log(`Database now has ${questionCount} questions and ${optionCount} options`)
+  console.log(`Database now has ${questionCount} questions, ${optionCount} options, and ${multiplesCount} industry multiples`)
 
   await prisma.$disconnect()
   await pool.end()

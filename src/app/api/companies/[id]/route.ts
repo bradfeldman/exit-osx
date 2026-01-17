@@ -1,32 +1,19 @@
-import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
   const { id } = await params
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const result = await checkPermission('COMPANY_VIEW', id)
+  if (isAuthError(result)) return result.error
 
   try {
     const company = await prisma.company.findUnique({
       where: { id },
       include: {
-        organization: {
-          include: {
-            users: {
-              where: {
-                user: { authId: user.id }
-              }
-            }
-          }
-        },
         coreFactors: true,
         ebitdaAdjustments: true,
         valuationSnapshots: {
@@ -36,13 +23,8 @@ export async function GET(
       }
     })
 
-    if (!company) {
+    if (!company || company.deletedAt) {
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
-    }
-
-    // Verify user has access to this company
-    if (company.organization.users.length === 0) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     return NextResponse.json({ company })
@@ -59,54 +41,37 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
   const { id } = await params
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const result = await checkPermission('COMPANY_UPDATE', id)
+  if (isAuthError(result)) return result.error
 
   try {
     const body = await request.json()
 
-    // Verify user has access
+    // Verify company exists
     const existingCompany = await prisma.company.findUnique({
-      where: { id },
-      include: {
-        organization: {
-          include: {
-            users: {
-              where: {
-                user: { authId: user.id }
-              }
-            }
-          }
-        }
-      }
+      where: { id }
     })
 
     if (!existingCompany) {
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
-    if (existingCompany.organization.users.length === 0) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
-    }
+    // Build update data - only include fields that are provided
+    const updateData: Record<string, unknown> = {}
+    if (body.name !== undefined) updateData.name = body.name
+    if (body.icbIndustry !== undefined) updateData.icbIndustry = body.icbIndustry
+    if (body.icbSuperSector !== undefined) updateData.icbSuperSector = body.icbSuperSector
+    if (body.icbSector !== undefined) updateData.icbSector = body.icbSector
+    if (body.icbSubSector !== undefined) updateData.icbSubSector = body.icbSubSector
+    if (body.annualRevenue !== undefined) updateData.annualRevenue = body.annualRevenue
+    if (body.annualEbitda !== undefined) updateData.annualEbitda = body.annualEbitda
+    if (body.ownerCompensation !== undefined) updateData.ownerCompensation = body.ownerCompensation
 
     // Update company
     const company = await prisma.company.update({
       where: { id },
-      data: {
-        name: body.name,
-        icbIndustry: body.icbIndustry,
-        icbSuperSector: body.icbSuperSector,
-        icbSector: body.icbSector,
-        icbSubSector: body.icbSubSector,
-        annualRevenue: body.annualRevenue,
-        annualEbitda: body.annualEbitda,
-        ownerCompensation: body.ownerCompensation
-      },
+      data: updateData,
       include: {
         coreFactors: true,
         ebitdaAdjustments: true
@@ -127,43 +92,46 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
   const { id } = await params
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const result = await checkPermission('COMPANY_DELETE', id)
+  if (isAuthError(result)) return result.error
 
   try {
-    // Verify user has access and is admin
+    // Parse optional reason from request body
+    let reason: string | null = null
+    try {
+      const body = await request.json()
+      reason = body.reason || null
+    } catch {
+      // No body or invalid JSON is fine - reason is optional
+    }
+
+    // Verify company exists and is not already deleted
     const existingCompany = await prisma.company.findUnique({
-      where: { id },
-      include: {
-        organization: {
-          include: {
-            users: {
-              where: {
-                user: { authId: user.id },
-                role: 'ADMIN'
-              }
-            }
-          }
-        }
-      }
+      where: { id }
     })
 
     if (!existingCompany) {
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
-    if (existingCompany.organization.users.length === 0) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    if (existingCompany.deletedAt) {
+      return NextResponse.json({ error: 'Company is already deleted' }, { status: 400 })
     }
 
-    await prisma.company.delete({ where: { id } })
+    // Soft delete - set deletedAt timestamp, company remains for 30 days
+    await prisma.company.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        deleteReason: reason,
+      }
+    })
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({
+      success: true,
+      message: 'Company has been scheduled for deletion. It will be permanently removed after 30 days.'
+    })
   } catch (error) {
     console.error('Error deleting company:', error)
     return NextResponse.json(

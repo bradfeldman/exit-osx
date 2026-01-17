@@ -2,9 +2,10 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { generateTasksForCompany } from '@/lib/playbook/generate-tasks'
+import { getIndustryMultiples, calculateBaseMultiple, estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
 
-// Category weights for BRI calculation
-const CATEGORY_WEIGHTS: Record<string, number> = {
+// Default category weights for BRI calculation (used if no custom weights set)
+const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
   FINANCIAL: 0.25,
   TRANSFERABILITY: 0.20,
   OPERATIONAL: 0.20,
@@ -13,8 +14,36 @@ const CATEGORY_WEIGHTS: Record<string, number> = {
   PERSONAL: 0.10,
 }
 
-// Alpha constant for discount calculation (default 0.40)
-const ALPHA = 0.40
+/**
+ * Fetch BRI weights for a company
+ * Priority: Company-specific > Global custom > Default
+ */
+async function getBriWeightsForCompany(companyBriWeights: unknown): Promise<Record<string, number>> {
+  // 1. If company has custom weights, use them
+  if (companyBriWeights && typeof companyBriWeights === 'object') {
+    return companyBriWeights as Record<string, number>
+  }
+
+  // 2. Check for global custom weights
+  try {
+    const setting = await prisma.systemSetting.findUnique({
+      where: { key: 'bri_category_weights' },
+    })
+    if (setting?.value) {
+      return setting.value as Record<string, number>
+    }
+  } catch (error) {
+    console.error('Error fetching global BRI weights:', error)
+  }
+
+  // 3. Fall back to defaults
+  return DEFAULT_CATEGORY_WEIGHTS
+}
+
+// Alpha constant for non-linear discount calculation
+// Controls buyer skepticism curve - higher = more skeptical
+// Recommended range: 1.3 - 1.6, default 1.4
+const ALPHA = 1.4
 
 interface CategoryScore {
   category: string
@@ -36,7 +65,7 @@ export async function POST(
   }
 
   try {
-    // Get assessment with all responses
+    // Get assessment with all responses and user ID
     const assessment = await prisma.assessment.findUnique({
       where: { id: assessmentId },
       include: {
@@ -46,6 +75,9 @@ export async function POST(
               include: {
                 users: {
                   where: { user: { authId: user.id } },
+                  include: {
+                    user: { select: { id: true } }
+                  }
                 },
               },
             },
@@ -69,6 +101,9 @@ export async function POST(
     if (assessment.company.organization.users.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
+
+    // Get the database user ID for tracking who completed the assessment
+    const dbUserId = assessment.company.organization.users[0].user.id
 
     if (assessment.completedAt) {
       return NextResponse.json(
@@ -116,10 +151,13 @@ export async function POST(
       })
     }
 
+    // Fetch BRI weights (company-specific > global > defaults)
+    const categoryWeights = await getBriWeightsForCompany(assessment.company.briWeights)
+
     // Calculate weighted BRI score
     let briScore = 0
     for (const cs of categoryScores) {
-      const weight = CATEGORY_WEIGHTS[cs.category] || 0
+      const weight = categoryWeights[cs.category] || 0
       briScore += cs.score * weight
     }
 
@@ -182,7 +220,19 @@ export async function POST(
       coreScore = scores.reduce((a, b) => a + b, 0) / scores.length
     }
 
+    // Get industry multiples (needed for both EBITDA estimation and valuation)
+    const multiples = await getIndustryMultiples(
+      assessment.company.icbSubSector,
+      assessment.company.icbSector,
+      assessment.company.icbSuperSector,
+      assessment.company.icbIndustry
+    )
+    const industryMultipleLow = multiples.ebitdaMultipleLow
+    const industryMultipleHigh = multiples.ebitdaMultipleHigh
+
     // Calculate adjusted EBITDA
+    // If actual EBITDA exists, use it with adjustments
+    // Otherwise, estimate EBITDA from revenue using industry multiples
     const baseEbitda = Number(assessment.company.annualEbitda)
     const ownerComp = Number(assessment.company.ownerCompensation)
     const addBacks = assessment.company.ebitdaAdjustments
@@ -196,18 +246,32 @@ export async function POST(
     const marketSalary = Math.min(ownerComp, 150000) // Cap market salary assumption
     const excessComp = Math.max(0, ownerComp - marketSalary)
 
-    const adjustedEbitda = baseEbitda + addBacks + excessComp - deductions
+    let adjustedEbitda: number
+    if (baseEbitda > 0) {
+      // Actual EBITDA provided - use adjusted calculation
+      adjustedEbitda = baseEbitda + addBacks + excessComp - deductions
+    } else {
+      // No EBITDA provided - estimate from revenue using industry multiples
+      const revenue = Number(assessment.company.annualRevenue)
+      const estimatedEbitda = estimateEbitdaFromRevenue(revenue, multiples)
+      // Still apply add-backs and owner comp adjustments to estimated base
+      adjustedEbitda = estimatedEbitda + addBacks + excessComp - deductions
+    }
 
-    // Get industry multiples (using defaults if not found)
-    const industryMultipleLow = 3.0
-    const industryMultipleHigh = 6.0
-    const baseMultiple = (industryMultipleLow + industryMultipleHigh) / 2
+    // Step 1: Core Score positions within industry range
+    // BaseMultiple = L + (CS / 100) × (H − L)
+    // coreScore is 0-1, so we use it directly
+    const baseMultiple = industryMultipleLow + coreScore * (industryMultipleHigh - industryMultipleLow)
 
-    // Calculate discount fraction: α × (1 - BRI)
-    const discountFraction = ALPHA * (1 - briScore)
+    // Step 2: Non-linear discount based on BRI
+    // DiscountFraction = (1 − BRI)^α where α = 1.4
+    // briScore is 0-1
+    const discountFraction = Math.pow(1 - briScore, ALPHA)
 
-    // Calculate final multiple: Base × (1 - discount)
-    const finalMultiple = baseMultiple * (1 - discountFraction)
+    // Step 3: Final multiple with floor guarantee
+    // FinalMultiple = L + (BaseMultiple − L) × (1 − DiscountFraction)
+    // This guarantees FinalMultiple ≥ L (industry floor)
+    const finalMultiple = industryMultipleLow + (baseMultiple - industryMultipleLow) * (1 - discountFraction)
 
     // Calculate valuations
     const currentValue = adjustedEbitda * finalMultiple
@@ -224,6 +288,7 @@ export async function POST(
     const snapshot = await prisma.valuationSnapshot.create({
       data: {
         companyId: assessment.companyId,
+        createdByUserId: dbUserId,
         adjustedEbitda,
         industryMultipleLow,
         industryMultipleHigh,

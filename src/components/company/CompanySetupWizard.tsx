@@ -1,14 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent } from '@/components/ui/card'
+import confetti from 'canvas-confetti'
 import { Button } from '@/components/ui/button'
 import { StepIndicator } from './StepIndicator'
 import { BasicInfoStep } from './steps/BasicInfoStep'
-import { FinancialsStep } from './steps/FinancialsStep'
-import { CoreFactorsStep } from './steps/CoreFactorsStep'
-import { AdjustmentsStep } from './steps/AdjustmentsStep'
+import { RevenueStep } from './steps/RevenueStep'
+import { BusinessProfileStep } from './steps/BusinessProfileStep'
+import { useCompany } from '@/contexts/CompanyContext'
+import { cn } from '@/lib/utils'
+
+interface Adjustment {
+  description: string
+  amount: number
+  type: 'ADD_BACK' | 'DEDUCTION'
+}
 
 export interface CompanyFormData {
   // Step 1: Basic Info
@@ -17,23 +24,19 @@ export interface CompanyFormData {
   icbSuperSector: string
   icbSector: string
   icbSubSector: string
-  // Step 2: Financials
+  // Step 2: Revenue/Financials
   annualRevenue: number
   annualEbitda: number
-  ownerCompensation: number
-  // Step 3: Core Factors
   revenueSizeCategory: string
+  ownerCompensation: number
+  // Step 3: Business Profile (Core Factors)
   revenueModel: string
   grossMarginProxy: string
   laborIntensity: string
   assetIntensity: string
   ownerInvolvement: string
-  // Step 4: Adjustments
-  adjustments: Array<{
-    description: string
-    amount: number
-    type: 'ADD_BACK' | 'DEDUCTION'
-  }>
+  // Step 4: Adjustments (optional)
+  adjustments: Adjustment[]
 }
 
 const initialFormData: CompanyFormData = {
@@ -44,29 +47,41 @@ const initialFormData: CompanyFormData = {
   icbSubSector: '',
   annualRevenue: 0,
   annualEbitda: 0,
-  ownerCompensation: 0,
   revenueSizeCategory: '',
+  ownerCompensation: 0,
   revenueModel: '',
   grossMarginProxy: '',
   laborIntensity: '',
   assetIntensity: '',
   ownerInvolvement: '',
-  adjustments: []
+  adjustments: [],
 }
 
 const steps = [
-  { id: 1, title: 'Company Info', description: 'Basic details' },
-  { id: 2, title: 'Financials', description: 'Revenue & EBITDA' },
+  { id: 1, title: 'Company Info', description: 'Name & industry' },
+  { id: 2, title: 'Revenue', description: 'Annual revenue' },
   { id: 3, title: 'Business Profile', description: 'Core factors' },
-  { id: 4, title: 'Adjustments', description: 'EBITDA add-backs' },
 ]
+
+// Calculate revenue size category from actual revenue
+function getRevenueSizeCategory(revenue: number): string {
+  if (revenue < 500000) return 'UNDER_500K'
+  if (revenue < 1000000) return 'FROM_500K_TO_1M'
+  if (revenue < 3000000) return 'FROM_1M_TO_3M'
+  if (revenue < 10000000) return 'FROM_3M_TO_10M'
+  if (revenue < 25000000) return 'FROM_10M_TO_25M'
+  return 'OVER_25M'
+}
 
 export function CompanySetupWizard() {
   const router = useRouter()
+  const { refreshCompanies, setSelectedCompanyId } = useCompany()
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<CompanyFormData>(initialFormData)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showCelebration, setShowCelebration] = useState(false)
+  const [newCompanyId, setNewCompanyId] = useState<string | null>(null)
 
   const updateFormData = (updates: Partial<CompanyFormData>) => {
     setFormData(prev => ({ ...prev, ...updates }))
@@ -80,6 +95,45 @@ export function CompanySetupWizard() {
     setCurrentStep(prev => Math.max(prev - 1, 1))
   }
 
+  // Fire confetti when celebration shows
+  useEffect(() => {
+    if (showCelebration) {
+      const duration = 3000
+      const end = Date.now() + duration
+
+      const frame = () => {
+        confetti({
+          particleCount: 3,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0, y: 0.8 },
+          colors: ['#B87333', '#3D3D3D', '#FFD700']
+        })
+        confetti({
+          particleCount: 3,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1, y: 0.8 },
+          colors: ['#B87333', '#3D3D3D', '#FFD700']
+        })
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame)
+        }
+      }
+
+      // Initial burst
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#B87333', '#3D3D3D', '#FFD700', '#FFFFFF']
+      })
+
+      frame()
+    }
+  }, [showCelebration])
+
   const handleSubmit = async () => {
     setIsSubmitting(true)
     setError(null)
@@ -91,7 +145,10 @@ export function CompanySetupWizard() {
         throw new Error('Failed to sync user')
       }
 
-      // Create the company
+      // Calculate revenue size category from actual revenue
+      const revenueSizeCategory = getRevenueSizeCategory(formData.annualRevenue)
+
+      // Create the company (with default 0 values for EBITDA and owner comp - they'll add later)
       const companyResponse = await fetch('/api/companies', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -102,8 +159,8 @@ export function CompanySetupWizard() {
           icbSector: formData.icbSector,
           icbSubSector: formData.icbSubSector,
           annualRevenue: formData.annualRevenue,
-          annualEbitda: formData.annualEbitda,
-          ownerCompensation: formData.ownerCompensation,
+          annualEbitda: 0,
+          ownerCompensation: 0,
         })
       })
 
@@ -119,7 +176,7 @@ export function CompanySetupWizard() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          revenueSizeCategory: formData.revenueSizeCategory,
+          revenueSizeCategory,
           revenueModel: formData.revenueModel,
           grossMarginProxy: formData.grossMarginProxy,
           laborIntensity: formData.laborIntensity,
@@ -132,23 +189,24 @@ export function CompanySetupWizard() {
         console.error('Failed to save core factors')
       }
 
-      // Save adjustments
-      for (const adjustment of formData.adjustments) {
-        await fetch(`/api/companies/${company.id}/adjustments`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(adjustment)
-        })
-      }
+      // Save the new company ID and show celebration
+      setNewCompanyId(company.id)
+      setShowCelebration(true)
 
-      // Redirect to dashboard
-      router.push('/dashboard')
-      router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleContinueToDashboard = async () => {
+    // Set the new company as selected BEFORE refreshing
+    // This way refreshCompanies will preserve this selection
+    if (newCompanyId) {
+      setSelectedCompanyId(newCompanyId)
+    }
+    await refreshCompanies()
+    router.push('/dashboard')
   }
 
   const renderStep = () => {
@@ -156,11 +214,9 @@ export function CompanySetupWizard() {
       case 1:
         return <BasicInfoStep formData={formData} updateFormData={updateFormData} />
       case 2:
-        return <FinancialsStep formData={formData} updateFormData={updateFormData} />
+        return <RevenueStep formData={formData} updateFormData={updateFormData} />
       case 3:
-        return <CoreFactorsStep formData={formData} updateFormData={updateFormData} />
-      case 4:
-        return <AdjustmentsStep formData={formData} updateFormData={updateFormData} />
+        return <BusinessProfileStep formData={formData} updateFormData={updateFormData} />
       default:
         return null
     }
@@ -173,45 +229,124 @@ export function CompanySetupWizard() {
       case 2:
         return formData.annualRevenue > 0
       case 3:
-        return formData.revenueSizeCategory && formData.revenueModel && formData.grossMarginProxy && formData.laborIntensity && formData.assetIntensity && formData.ownerInvolvement
-      case 4:
-        return true // Adjustments are optional
+        return formData.revenueModel && formData.grossMarginProxy && formData.laborIntensity && formData.assetIntensity && formData.ownerInvolvement
       default:
         return false
     }
   }
 
+  // Celebration screen
+  if (showCelebration) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[500px] text-center px-4">
+        {/* Success animation */}
+        <div className="relative mb-8">
+          <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
+          <div className="relative w-24 h-24 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center shadow-2xl">
+            <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Content */}
+        <h1 className="text-3xl font-bold text-foreground mb-2">
+          You&apos;re All Set!
+        </h1>
+        <p className="text-lg text-muted-foreground mb-1 max-w-md">
+          Your company profile for <span className="font-semibold text-foreground">{formData.name}</span>
+          <br />has been created.
+        </p>
+        <p className="text-sm text-muted-foreground max-w-lg mb-8">
+          Head to your dashboard to see your preliminary valuation.
+        </p>
+
+        {/* CTA */}
+        <Button
+          size="lg"
+          onClick={handleContinueToDashboard}
+          className="text-base px-8 py-6 shadow-lg hover:shadow-xl transition-all"
+        >
+          <span>Go to Dashboard</span>
+          <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+          </svg>
+        </Button>
+      </div>
+    )
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="max-w-2xl mx-auto">
+      {/* Progress */}
       <StepIndicator steps={steps} currentStep={currentStep} />
 
-      <Card>
-        <CardContent className="pt-6">
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
-              {error}
-            </div>
-          )}
-          {renderStep()}
-        </CardContent>
-      </Card>
+      {/* Form Container */}
+      <div className="bg-card rounded-2xl border border-border shadow-sm p-6 sm:p-8">
+        {error && (
+          <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl text-sm flex items-start gap-3">
+            <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+            </svg>
+            <span>{error}</span>
+          </div>
+        )}
 
-      <div className="flex justify-between">
+        <div className="min-h-[400px]">
+          {renderStep()}
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <div className="flex items-center justify-between mt-6">
         <Button
-          variant="outline"
+          variant="ghost"
           onClick={handleBack}
           disabled={currentStep === 1}
+          className={cn(
+            'gap-2',
+            currentStep === 1 && 'invisible'
+          )}
         >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+          </svg>
           Back
         </Button>
 
         {currentStep < steps.length ? (
-          <Button onClick={handleNext} disabled={!canProceed()}>
+          <Button
+            onClick={handleNext}
+            disabled={!canProceed()}
+            className="gap-2 px-6"
+          >
             Continue
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+            </svg>
           </Button>
         ) : (
-          <Button onClick={handleSubmit} disabled={isSubmitting || !canProceed()}>
-            {isSubmitting ? 'Creating...' : 'Complete Setup'}
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting || !canProceed()}
+            className="gap-2 px-6"
+          >
+            {isSubmitting ? (
+              <>
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Creating...
+              </>
+            ) : (
+              <>
+                Complete Setup
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                </svg>
+              </>
+            )}
           </Button>
         )}
       </div>

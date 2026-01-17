@@ -1,0 +1,397 @@
+// Snapshot Recalculation Utility
+// Recalculates valuation snapshot for a company using latest data
+
+import { prisma } from '@/lib/prisma'
+import { getIndustryMultiples, estimateEbitdaFromRevenue } from './industry-multiples'
+
+// Default category weights for BRI calculation
+const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
+  FINANCIAL: 0.25,
+  TRANSFERABILITY: 0.20,
+  OPERATIONAL: 0.20,
+  MARKET: 0.15,
+  LEGAL_TAX: 0.10,
+  PERSONAL: 0.10,
+}
+
+// Alpha constant for non-linear discount calculation
+const ALPHA = 1.4
+
+/**
+ * Fetch BRI weights for a company
+ * Priority: Company-specific > Global custom > Default
+ */
+async function getBriWeightsForCompany(companyBriWeights: unknown): Promise<Record<string, number>> {
+  // 1. If company has custom weights, use them
+  if (companyBriWeights && typeof companyBriWeights === 'object') {
+    return companyBriWeights as Record<string, number>
+  }
+
+  // 2. Check for global custom weights
+  try {
+    const setting = await prisma.systemSetting.findUnique({
+      where: { key: 'bri_category_weights' },
+    })
+    if (setting?.value) {
+      return setting.value as Record<string, number>
+    }
+  } catch (error) {
+    console.error('Error fetching global BRI weights:', error)
+  }
+
+  // 3. Fall back to defaults
+  return DEFAULT_CATEGORY_WEIGHTS
+}
+
+export interface RecalculateResult {
+  success: boolean
+  snapshotId?: string
+  error?: string
+  companyId: string
+  companyName: string
+}
+
+/**
+ * Recalculate and create a new snapshot for a company
+ * Uses the company's latest completed assessment for BRI scores
+ * and latest industry multiples for valuation
+ */
+export async function recalculateSnapshotForCompany(
+  companyId: string,
+  snapshotReason: string,
+  createdByUserId?: string
+): Promise<RecalculateResult> {
+  try {
+    // Get company with all required data
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      include: {
+        coreFactors: true,
+        ebitdaAdjustments: true,
+      },
+    })
+
+    if (!company) {
+      return {
+        success: false,
+        error: 'Company not found',
+        companyId,
+        companyName: 'Unknown',
+      }
+    }
+
+    // Get the latest completed assessment for this company
+    // Include both selectedOption and effectiveOption for Answer Upgrade System
+    const latestAssessment = await prisma.assessment.findFirst({
+      where: {
+        companyId,
+        completedAt: { not: null },
+      },
+      orderBy: { completedAt: 'desc' },
+      include: {
+        responses: {
+          include: {
+            question: true,
+            selectedOption: true,
+            effectiveOption: true, // For Answer Upgrade System
+          },
+        },
+      },
+    })
+
+    if (!latestAssessment) {
+      return {
+        success: false,
+        error: 'No completed assessment found',
+        companyId,
+        companyName: company.name,
+      }
+    }
+
+    // Calculate category scores from assessment responses
+    // Use effectiveOption if available (from completed tasks), otherwise use selectedOption
+    const scoresByCategory: Record<string, { total: number; earned: number }> = {}
+
+    for (const response of latestAssessment.responses) {
+      const category = response.question.briCategory
+      const maxPoints = Number(response.question.maxImpactPoints)
+      // Answer Upgrade System: use effective answer if tasks have upgraded it
+      const optionToUse = response.effectiveOption || response.selectedOption
+      const scoreValue = Number(optionToUse.scoreValue)
+      const earnedPoints = maxPoints * scoreValue
+
+      if (!scoresByCategory[category]) {
+        scoresByCategory[category] = { total: 0, earned: 0 }
+      }
+      scoresByCategory[category].total += maxPoints
+      scoresByCategory[category].earned += earnedPoints
+    }
+
+    const categoryScores: Array<{ category: string; score: number }> = []
+    for (const [category, scores] of Object.entries(scoresByCategory)) {
+      categoryScores.push({
+        category,
+        score: scores.total > 0 ? scores.earned / scores.total : 0,
+      })
+    }
+
+    // Fetch BRI weights (company-specific or global) and calculate weighted BRI score
+    const categoryWeights = await getBriWeightsForCompany(company.briWeights)
+    let briScore = 0
+    for (const cs of categoryScores) {
+      const weight = categoryWeights[cs.category] || 0
+      briScore += cs.score * weight
+    }
+
+    // Calculate Core Score from company factors
+    const coreFactors = company.coreFactors
+    let coreScore = 0.5 // Default if no core factors
+
+    if (coreFactors) {
+      const factorScores: Record<string, Record<string, number>> = {
+        revenueSizeCategory: {
+          UNDER_500K: 0.2,
+          FROM_500K_TO_1M: 0.4,
+          FROM_1M_TO_3M: 0.6,
+          FROM_3M_TO_10M: 0.8,
+          FROM_10M_TO_25M: 0.9,
+          OVER_25M: 1.0,
+        },
+        revenueModel: {
+          PROJECT_BASED: 0.25,
+          TRANSACTIONAL: 0.5,
+          RECURRING_CONTRACTS: 0.75,
+          SUBSCRIPTION_SAAS: 1.0,
+        },
+        grossMarginProxy: {
+          LOW: 0.25,
+          MODERATE: 0.5,
+          GOOD: 0.75,
+          EXCELLENT: 1.0,
+        },
+        laborIntensity: {
+          VERY_HIGH: 0.25,
+          HIGH: 0.5,
+          MODERATE: 0.75,
+          LOW: 1.0,
+        },
+        assetIntensity: {
+          ASSET_HEAVY: 0.33,
+          MODERATE: 0.67,
+          ASSET_LIGHT: 1.0,
+        },
+        ownerInvolvement: {
+          CRITICAL: 0.0,
+          HIGH: 0.25,
+          MODERATE: 0.5,
+          LOW: 0.75,
+          MINIMAL: 1.0,
+        },
+      }
+
+      const scores = [
+        factorScores.revenueSizeCategory[coreFactors.revenueSizeCategory] || 0.5,
+        factorScores.revenueModel[coreFactors.revenueModel] || 0.5,
+        factorScores.grossMarginProxy[coreFactors.grossMarginProxy] || 0.5,
+        factorScores.laborIntensity[coreFactors.laborIntensity] || 0.5,
+        factorScores.assetIntensity[coreFactors.assetIntensity] || 0.5,
+        factorScores.ownerInvolvement[coreFactors.ownerInvolvement] || 0.5,
+      ]
+
+      coreScore = scores.reduce((a, b) => a + b, 0) / scores.length
+    }
+
+    // Get latest industry multiples (needed for both EBITDA estimation and valuation)
+    const multiples = await getIndustryMultiples(
+      company.icbSubSector,
+      company.icbSector,
+      company.icbSuperSector,
+      company.icbIndustry
+    )
+
+    // Calculate adjusted EBITDA
+    // If actual EBITDA exists, use it with adjustments
+    // Otherwise, estimate EBITDA from revenue using industry multiples
+    const baseEbitda = Number(company.annualEbitda)
+    const ownerComp = Number(company.ownerCompensation)
+    const addBacks = company.ebitdaAdjustments
+      .filter(a => a.type === 'ADD_BACK')
+      .reduce((sum, a) => sum + Number(a.amount), 0)
+    const deductions = company.ebitdaAdjustments
+      .filter(a => a.type === 'DEDUCTION')
+      .reduce((sum, a) => sum + Number(a.amount), 0)
+
+    const marketSalary = Math.min(ownerComp, 150000)
+    const excessComp = Math.max(0, ownerComp - marketSalary)
+
+    let adjustedEbitda: number
+    if (baseEbitda > 0) {
+      // Actual EBITDA provided - use adjusted calculation
+      adjustedEbitda = baseEbitda + addBacks + excessComp - deductions
+    } else {
+      // No EBITDA provided - estimate from revenue using industry multiples
+      const revenue = Number(company.annualRevenue)
+      const estimatedEbitda = estimateEbitdaFromRevenue(revenue, multiples)
+      // Still apply add-backs and owner comp adjustments to estimated base
+      adjustedEbitda = estimatedEbitda + addBacks + excessComp - deductions
+    }
+    const industryMultipleLow = multiples.ebitdaMultipleLow
+    const industryMultipleHigh = multiples.ebitdaMultipleHigh
+
+    // Step 1: Core Score positions within industry range
+    const baseMultiple = industryMultipleLow + coreScore * (industryMultipleHigh - industryMultipleLow)
+
+    // Step 2: Non-linear discount based on BRI
+    const discountFraction = Math.pow(1 - briScore, ALPHA)
+
+    // Step 3: Final multiple with floor guarantee
+    const finalMultiple = industryMultipleLow + (baseMultiple - industryMultipleLow) * (1 - discountFraction)
+
+    // Calculate valuations
+    const currentValue = adjustedEbitda * finalMultiple
+    const potentialValue = adjustedEbitda * baseMultiple
+    const valueGap = potentialValue - currentValue
+
+    // Helper to get category score
+    const getCategoryScore = (cat: string) => {
+      const cs = categoryScores.find(c => c.category === cat)
+      return cs ? cs.score : 0
+    }
+
+    // Create new snapshot
+    const snapshot = await prisma.valuationSnapshot.create({
+      data: {
+        companyId,
+        createdByUserId,
+        adjustedEbitda,
+        industryMultipleLow,
+        industryMultipleHigh,
+        coreScore,
+        briScore,
+        briFinancial: getCategoryScore('FINANCIAL'),
+        briTransferability: getCategoryScore('TRANSFERABILITY'),
+        briOperational: getCategoryScore('OPERATIONAL'),
+        briMarket: getCategoryScore('MARKET'),
+        briLegalTax: getCategoryScore('LEGAL_TAX'),
+        briPersonal: getCategoryScore('PERSONAL'),
+        baseMultiple,
+        discountFraction,
+        finalMultiple,
+        currentValue,
+        potentialValue,
+        valueGap,
+        alphaConstant: ALPHA,
+        snapshotReason,
+      },
+    })
+
+    return {
+      success: true,
+      snapshotId: snapshot.id,
+      companyId,
+      companyName: company.name,
+    }
+  } catch (error) {
+    console.error(`Error recalculating snapshot for company ${companyId}:`, error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      companyId,
+      companyName: 'Unknown',
+    }
+  }
+}
+
+/**
+ * Find all companies that would be affected by an industry multiple update
+ * Returns companies matching at any level of the ICB hierarchy
+ */
+export async function findAffectedCompanies(
+  icbSubSector?: string,
+  icbSector?: string,
+  icbSuperSector?: string,
+  icbIndustry?: string
+): Promise<Array<{ id: string; name: string; icbSubSector: string }>> {
+  // Build OR conditions for any matching level
+  const orConditions: Array<Record<string, string>> = []
+
+  if (icbSubSector) {
+    orConditions.push({ icbSubSector })
+  }
+  if (icbSector) {
+    orConditions.push({ icbSector })
+  }
+  if (icbSuperSector) {
+    orConditions.push({ icbSuperSector })
+  }
+  if (icbIndustry) {
+    orConditions.push({ icbIndustry })
+  }
+
+  if (orConditions.length === 0) {
+    return []
+  }
+
+  const companies = await prisma.company.findMany({
+    where: {
+      OR: orConditions,
+    },
+    select: {
+      id: true,
+      name: true,
+      icbSubSector: true,
+    },
+  })
+
+  return companies
+}
+
+/**
+ * Recalculate snapshots for all companies affected by a multiple update
+ */
+export async function recalculateSnapshotsForMultipleUpdate(
+  icbSubSector?: string,
+  icbSector?: string,
+  icbSuperSector?: string,
+  icbIndustry?: string,
+  updateType: 'EBITDA' | 'Revenue' | 'Both' = 'Both',
+  createdByUserId?: string
+): Promise<{
+  totalCompanies: number
+  successful: number
+  failed: number
+  results: RecalculateResult[]
+}> {
+  const snapshotReason = `Industry ${updateType} multiples updated`
+
+  // Find all affected companies
+  const companies = await findAffectedCompanies(
+    icbSubSector,
+    icbSector,
+    icbSuperSector,
+    icbIndustry
+  )
+
+  const results: RecalculateResult[] = []
+  let successful = 0
+  let failed = 0
+
+  // Recalculate snapshot for each company
+  for (const company of companies) {
+    const result = await recalculateSnapshotForCompany(company.id, snapshotReason, createdByUserId)
+    results.push(result)
+
+    if (result.success) {
+      successful++
+    } else {
+      failed++
+    }
+  }
+
+  return {
+    totalCompanies: companies.length,
+    successful,
+    failed,
+    results,
+  }
+}

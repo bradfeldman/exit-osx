@@ -12,12 +12,6 @@ export default async function CompanySetupPage() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Set Up Your Company</h1>
-        <p className="text-gray-600 mt-1">
-          Tell us about your business so we can calculate your valuation and buyer readiness score.
-        </p>
-      </div>
       <CompanySetupWizard />
     </div>
   )

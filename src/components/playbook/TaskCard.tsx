@@ -3,6 +3,29 @@
 import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { TaskCompletionDialog } from './TaskCompletionDialog'
+import { FileText } from 'lucide-react'
+
+interface ProofDocument {
+  id: string
+  fileName: string | null
+  fileUrl: string | null
+  status: string
+}
+
+interface TaskUser {
+  id: string
+  name: string | null
+  email: string
+  avatarUrl: string | null
+}
+
+interface TaskInvite {
+  id: string
+  email: string
+  isPrimary: boolean
+  createdAt: string
+}
 
 interface Task {
   id: string
@@ -16,11 +39,20 @@ interface Task {
   complexity: string
   estimatedHours: number | null
   status: string
+  issueTier?: string | null
+  dueDate?: string | null
+  completionNotes?: string | null
+  primaryAssignee?: TaskUser | null
+  assignments?: Array<{ user: TaskUser }> | null
+  invites?: TaskInvite[] | null
+  proofDocuments?: ProofDocument[] | null
 }
 
 interface TaskCardProps {
   task: Task
   onStatusChange: (taskId: string, status: string) => void
+  onAssign?: (taskId: string) => void
+  showAssignment?: boolean
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -41,20 +73,53 @@ const CATEGORY_COLORS: Record<string, string> = {
   PERSONAL: 'bg-orange-100 text-orange-700',
 }
 
-const EFFORT_LABELS: Record<string, string> = {
-  MINIMAL: 'Quick Win',
-  LOW: 'Low Effort',
-  MODERATE: 'Moderate',
-  HIGH: 'Significant',
-  MAJOR: 'Major Project',
+function getEffortLevel(effort: string): string {
+  switch (effort) {
+    case 'MINIMAL':
+    case 'LOW':
+      return 'Low Effort'
+    case 'MODERATE':
+      return 'Mid Effort'
+    case 'HIGH':
+    case 'MAJOR':
+      return 'High Effort'
+    default:
+      return 'Mid Effort'
+  }
 }
 
-const EFFORT_COLORS: Record<string, string> = {
-  MINIMAL: 'bg-green-100 text-green-700',
-  LOW: 'bg-green-50 text-green-600',
-  MODERATE: 'bg-yellow-100 text-yellow-700',
-  HIGH: 'bg-orange-100 text-orange-700',
-  MAJOR: 'bg-red-100 text-red-700',
+function getImpactLevel(issueTier: string | null | undefined): string {
+  switch (issueTier) {
+    case 'CRITICAL':
+      return 'Critical'
+    case 'SIGNIFICANT':
+      return 'Significant'
+    case 'OPTIMIZATION':
+    default:
+      return 'Optimization'
+  }
+}
+
+function getImpactEffortColor(effort: string, issueTier: string | null | undefined): string {
+  const isLowEffort = effort === 'MINIMAL' || effort === 'LOW'
+  const isHighEffort = effort === 'HIGH' || effort === 'MAJOR'
+
+  // Critical issues always get red tones
+  if (issueTier === 'CRITICAL') {
+    if (isLowEffort) return 'bg-red-100 text-red-700' // Quick win on critical issue
+    return 'bg-red-50 text-red-600'
+  }
+
+  // Significant issues get orange/yellow tones
+  if (issueTier === 'SIGNIFICANT') {
+    if (isLowEffort) return 'bg-orange-100 text-orange-700' // Quick win on significant issue
+    return 'bg-yellow-100 text-yellow-700'
+  }
+
+  // Optimization issues get blue/green tones
+  if (isLowEffort) return 'bg-green-100 text-green-700'
+  if (isHighEffort) return 'bg-gray-100 text-gray-600'
+  return 'bg-blue-100 text-blue-700'
 }
 
 const ACTION_TYPE_LABELS: Record<string, string> = {
@@ -70,23 +135,51 @@ const ACTION_TYPE_LABELS: Record<string, string> = {
   TYPE_X_DEFER: 'Defer',
 }
 
-function formatCurrency(value: string | number): string {
-  const num = typeof value === 'string' ? parseFloat(value) : value
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(num)
+function getInitials(name: string | null, email: string): string {
+  if (name) {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+  }
+  return email[0].toUpperCase()
 }
 
-export function TaskCard({ task, onStatusChange }: TaskCardProps) {
+function formatDueDate(dateStr: string): { text: string; className: string } {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diffDays = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+
+  const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+
+  if (diffDays < 0) {
+    return { text: `Overdue (${formatted})`, className: 'text-red-600' }
+  } else if (diffDays === 0) {
+    return { text: 'Due today', className: 'text-orange-600' }
+  } else if (diffDays <= 3) {
+    return { text: `Due ${formatted}`, className: 'text-yellow-600' }
+  }
+  return { text: `Due ${formatted}`, className: 'text-gray-500' }
+}
+
+export function TaskCard({ task, onStatusChange, onAssign, showAssignment = true }: TaskCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [showCompletionDialog, setShowCompletionDialog] = useState(false)
 
   const handleStatusChange = async (newStatus: string) => {
+    // Show completion dialog when completing a task
+    if (newStatus === 'COMPLETED' && task.status !== 'COMPLETED') {
+      setShowCompletionDialog(true)
+      return
+    }
     setIsUpdating(true)
     await onStatusChange(task.id, newStatus)
+    setIsUpdating(false)
+  }
+
+  const handleComplete = async (taskId: string, completionNotes?: string) => {
+    setIsUpdating(true)
+    // Pass completion notes via the onStatusChange handler
+    // The parent component should handle this
+    await onStatusChange(taskId, 'COMPLETED')
     setIsUpdating(false)
   }
 
@@ -133,24 +226,63 @@ export function TaskCard({ task, onStatusChange }: TaskCardProps) {
                   <span className={`px-2 py-0.5 text-xs font-medium rounded ${CATEGORY_COLORS[task.briCategory] || 'bg-gray-100 text-gray-700'}`}>
                     {CATEGORY_LABELS[task.briCategory] || task.briCategory}
                   </span>
-                  <span className={`px-2 py-0.5 text-xs font-medium rounded ${EFFORT_COLORS[task.effortLevel] || 'bg-gray-100 text-gray-700'}`}>
-                    {EFFORT_LABELS[task.effortLevel] || task.effortLevel}
+                  <span className={`px-2 py-0.5 text-xs font-medium rounded ${getImpactEffortColor(task.effortLevel, task.issueTier)}`}>
+                    {getImpactLevel(task.issueTier)} / {getEffortLevel(task.effortLevel)}
                   </span>
-                  {task.estimatedHours && (
-                    <span className="px-2 py-0.5 text-xs font-medium rounded bg-gray-100 text-gray-600">
-                      ~{task.estimatedHours}h
-                    </span>
-                  )}
                 </div>
               </div>
 
-              {/* Value */}
-              <div className="text-right flex-shrink-0">
-                <p className="text-lg font-bold text-green-600">
-                  +{formatCurrency(task.rawImpact)}
-                </p>
-                <p className="text-xs text-gray-500">potential value</p>
-              </div>
+              {/* Assignment & Due Date - Right side */}
+              {showAssignment && (
+                <div className="flex flex-col items-end gap-2 text-sm">
+                  {/* Due Date */}
+                  {task.dueDate && (
+                    <div className={`flex items-center gap-1 ${formatDueDate(task.dueDate).className}`}>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-xs">{formatDueDate(task.dueDate).text}</span>
+                    </div>
+                  )}
+
+                  {/* Primary Assignee */}
+                  {task.primaryAssignee ? (
+                    <div className="flex items-center gap-2" title={task.primaryAssignee.email}>
+                      {task.primaryAssignee.avatarUrl ? (
+                        <img
+                          src={task.primaryAssignee.avatarUrl}
+                          alt={task.primaryAssignee.name || task.primaryAssignee.email}
+                          className="w-6 h-6 rounded-full"
+                        />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center font-medium">
+                          {getInitials(task.primaryAssignee.name, task.primaryAssignee.email)}
+                        </div>
+                      )}
+                      <span className="text-xs text-gray-600 max-w-24 truncate">
+                        {task.primaryAssignee.name || task.primaryAssignee.email.split('@')[0]}
+                      </span>
+                    </div>
+                  ) : task.invites && task.invites.length > 0 ? (
+                    <div className="flex items-center gap-1 text-xs text-yellow-600" title="Pending invite">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>Invite pending</span>
+                    </div>
+                  ) : onAssign ? (
+                    <button
+                      onClick={() => onAssign(task.id)}
+                      className="flex items-center gap-1 text-xs text-gray-400 hover:text-primary transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                      </svg>
+                      <span>Assign</span>
+                    </button>
+                  ) : null}
+                </div>
+              )}
             </div>
 
             {/* Expandable Description */}
@@ -169,6 +301,32 @@ export function TaskCard({ task, onStatusChange }: TaskCardProps) {
                   <span>Type: {ACTION_TYPE_LABELS[task.actionType] || task.actionType}</span>
                   <span>Complexity: {task.complexity}</span>
                 </div>
+
+                {/* Proof Documents for Completed Tasks */}
+                {task.status === 'COMPLETED' && task.proofDocuments && task.proofDocuments.length > 0 && (
+                  <div className="mt-4 p-3 bg-green-50 rounded border border-green-200">
+                    <p className="text-xs font-medium text-green-700 mb-2">Proof of Completion</p>
+                    <div className="space-y-1">
+                      {task.proofDocuments.map(doc => (
+                        <a
+                          key={doc.id}
+                          href={doc.fileUrl || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-sm text-green-700 hover:text-green-900"
+                        >
+                          <FileText className="h-4 w-4" />
+                          <span className="underline">{doc.fileName || 'View document'}</span>
+                        </a>
+                      ))}
+                    </div>
+                    {task.completionNotes && (
+                      <p className="mt-2 text-xs text-gray-600 italic">
+                        Notes: {task.completionNotes}
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {/* Status Actions */}
                 {task.status !== 'COMPLETED' && (
@@ -217,6 +375,18 @@ export function TaskCard({ task, onStatusChange }: TaskCardProps) {
           </div>
         </div>
       </CardContent>
+
+      {/* Completion Dialog */}
+      <TaskCompletionDialog
+        open={showCompletionDialog}
+        onOpenChange={setShowCompletionDialog}
+        task={{
+          id: task.id,
+          title: task.title,
+          actionType: task.actionType,
+        }}
+        onComplete={handleComplete}
+      />
     </Card>
   )
 }

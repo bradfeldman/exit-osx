@@ -5,59 +5,85 @@ import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useCompany } from '@/contexts/CompanyContext'
+import { HeroMetrics } from './HeroMetrics'
+import { ValueDrivers } from './ValueDrivers'
+import { RiskBreakdown } from './RiskBreakdown'
 
-interface Company {
-  id: string
-  name: string
-  annualRevenue: string
-  annualEbitda: string
-  coreFactors: {
-    revenueSizeCategory: string
-    revenueModel: string
+interface DashboardData {
+  company: {
+    id: string
+    name: string
+    annualRevenue: number
+    annualEbitda: number
+    adjustedEbitda: number
+  }
+  tier1: {
+    currentValue: number
+    potentialValue: number
+    valueGap: number
+    briScore: number | null
+    coreScore: number | null
+    finalMultiple: number
+    multipleRange: {
+      low: number
+      high: number
+    }
+    industryName: string
+    isEstimated?: boolean
   } | null
-  valuationSnapshots: Array<{
-    currentValue: string
-    potentialValue: string
-    briScore: string
-    briFinancial: string
-    briTransferability: string
-    briOperational: string
-    briMarket: string
-    briLegalTax: string
-    briPersonal: string
-    valueGap: string
-    finalMultiple: string
-    createdAt: string
-  }>
-}
-
-interface TaskStats {
-  total: number
-  pending: number
-  inProgress: number
-  completed: number
-  totalValue: number
-  completedValue: number
+  tier2: {
+    adjustedEbitda: number
+    isEbitdaEstimated: boolean
+    multipleRange: {
+      low: number
+      high: number
+      current: number | null
+    }
+  }
+  tier3: {
+    categories: Array<{
+      key: string
+      label: string
+      score: number
+    }>
+    topConstraints: Array<{
+      category: string
+      score: number
+    }>
+  } | null
+  tier4: {
+    taskStats: {
+      total: number
+      pending: number
+      inProgress: number
+      completed: number
+      recoverableValue: number
+      atRisk: number
+    }
+    sprintProgress: {
+      id: string
+      name: string
+      totalTasks: number
+      completedTasks: number
+      recoverableValue: number
+    } | null
+  }
+  tier5: {
+    valueTrend: Array<{ value: number; date: string }>
+    briTrend: { direction: 'up' | 'down'; change: number } | null
+    exitWindow: string | null
+  }
+  hasAssessment: boolean
 }
 
 interface DashboardContentProps {
   userName?: string
 }
 
-function formatCurrency(value: string | number): string {
-  const num = typeof value === 'string' ? parseFloat(value) : value
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(num)
-}
-
 export function DashboardContent({ userName }: DashboardContentProps) {
-  const { selectedCompanyId, isLoading: companyLoading } = useCompany()
-  const [company, setCompany] = useState<Company | null>(null)
-  const [taskStats, setTaskStats] = useState<TaskStats | null>(null)
+  const { selectedCompanyId, companies, setSelectedCompanyId, isLoading: companyLoading } = useCompany()
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
+  const [noCompany, setNoCompany] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -73,35 +99,25 @@ export function DashboardContent({ userName }: DashboardContentProps) {
         await fetch('/api/user/sync', { method: 'POST' })
 
         if (!selectedCompanyId) {
-          // No company selected, check if any exist
-          const response = await fetch('/api/companies')
-          if (response.ok) {
-            const data = await response.json()
-            if (data.companies?.length === 0) {
-              setCompany(null)
-            }
+          // No company selected - check if companies exist in context
+          if (companies.length === 0) {
+            setNoCompany(true)
+            setLoading(false)
+            return
           }
-          setLoading(false)
+          // Auto-select the first company
+          setSelectedCompanyId(companies[0].id)
+          // The useEffect will re-run with the new selectedCompanyId
           return
         }
 
-        // Fetch the selected company
-        const response = await fetch(`/api/companies/${selectedCompanyId}`)
-        if (!response.ok) throw new Error('Failed to fetch company')
+        // Fetch consolidated dashboard data
+        const response = await fetch(`/api/companies/${selectedCompanyId}/dashboard`)
+        if (!response.ok) throw new Error('Failed to fetch dashboard data')
 
         const data = await response.json()
-        setCompany(data.company || null)
-
-        // Fetch task stats if company has valuation
-        if (data.company?.valuationSnapshots?.length > 0) {
-          const tasksResponse = await fetch(`/api/tasks?companyId=${selectedCompanyId}`)
-          if (tasksResponse.ok) {
-            const tasksData = await tasksResponse.json()
-            setTaskStats(tasksData.stats || null)
-          }
-        } else {
-          setTaskStats(null)
-        }
+        setDashboardData(data)
+        setNoCompany(false)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
       } finally {
@@ -110,7 +126,7 @@ export function DashboardContent({ userName }: DashboardContentProps) {
     }
 
     loadData()
-  }, [selectedCompanyId, companyLoading])
+  }, [selectedCompanyId, companies, companyLoading, setSelectedCompanyId])
 
   if (loading) {
     return (
@@ -132,7 +148,7 @@ export function DashboardContent({ userName }: DashboardContentProps) {
   }
 
   // No company selected - show onboarding
-  if (!company) {
+  if (noCompany || !dashboardData) {
     return (
       <div className="space-y-6">
         <div>
@@ -206,248 +222,56 @@ export function DashboardContent({ userName }: DashboardContentProps) {
     )
   }
 
-  // Has company - show dashboard
-  const latestSnapshot = company.valuationSnapshots?.[0]
+  const { company, tier1, tier2, tier3, tier4, tier5, hasAssessment } = dashboardData
 
+  // Default empty categories for when no assessment exists
+  const emptyCategories = [
+    { key: 'FINANCIAL', label: 'Financial', score: 0 },
+    { key: 'TRANSFERABILITY', label: 'Transferability', score: 0 },
+    { key: 'OPERATIONAL', label: 'Operations', score: 0 },
+    { key: 'MARKET', label: 'Market', score: 0 },
+    { key: 'LEGAL_TAX', label: 'Legal/Tax', score: 0 },
+    { key: 'PERSONAL', label: 'Personal', score: 0 },
+  ]
+
+  // Show the full dashboard (with assessment prompt if needed)
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Value Snapshot</h1>
-          <p className="text-gray-600">{company.name}</p>
-        </div>
-        <Link href={`/dashboard/company/${company.id}/edit`}>
-          <Button variant="outline" size="sm">Edit Company</Button>
-        </Link>
-      </div>
+    <div className="max-w-5xl mx-auto">
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Current Value</CardDescription>
-            <CardTitle className="text-3xl">
-              {latestSnapshot ? formatCurrency(latestSnapshot.currentValue) : '--'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-muted-foreground">
-              {latestSnapshot ? 'Based on adjusted EBITDA' : 'Complete BRI assessment'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>BRI Score</CardDescription>
-            <CardTitle className="text-3xl">
-              {latestSnapshot ? `${(parseFloat(latestSnapshot.briScore) * 100).toFixed(0)}%` : '--'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-muted-foreground">
-              Buyer Readiness Index
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Value Gap</CardDescription>
-            <CardTitle className="text-3xl">
-              {latestSnapshot ? formatCurrency(latestSnapshot.valueGap) : '--'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-muted-foreground">
-              Potential improvement
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Annual EBITDA</CardDescription>
-            <CardTitle className="text-3xl">
-              {formatCurrency(company.annualEbitda)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-muted-foreground">
-              Reported earnings
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Next Steps - No Assessment */}
-      {!latestSnapshot && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Next Steps</CardTitle>
-            <CardDescription>
-              Complete these steps to get your full valuation
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center gap-4 p-4 rounded-lg border border-green-200 bg-green-50">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-600 text-white font-semibold">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-medium text-green-900">Company Setup Complete</h3>
-                  <p className="text-sm text-green-700">Your company details have been saved</p>
-                </div>
-              </div>
-
-              <Link href="/dashboard/assessment" className="block">
-                <div className="flex items-center gap-4 p-4 rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white font-semibold">
-                    2
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-medium text-foreground">Complete the BRI Assessment</h3>
-                    <p className="text-sm text-primary">Answer questions about your business readiness</p>
-                  </div>
-                  <Button size="sm">Start</Button>
-                </div>
-              </Link>
-
-              <div className="flex items-center gap-4 p-4 rounded-lg border border-gray-200 bg-gray-50">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-gray-600 font-semibold">
-                  3
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-medium text-gray-600">Review Your Playbook</h3>
-                  <p className="text-sm text-gray-500">See prioritized actions to increase your value</p>
-                </div>
-                <span className="text-sm text-gray-400">Locked</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* BRI Category Breakdown - Has Assessment */}
-      {latestSnapshot && (
-        <>
-          <Card>
-            <CardHeader>
-              <CardTitle>BRI Category Scores</CardTitle>
-              <CardDescription>
-                Your buyer readiness across 6 key dimensions
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  { key: 'briFinancial', label: 'Financial Health', weight: '25%' },
-                  { key: 'briTransferability', label: 'Transferability', weight: '20%' },
-                  { key: 'briOperational', label: 'Operations', weight: '20%' },
-                  { key: 'briMarket', label: 'Market Position', weight: '15%' },
-                  { key: 'briLegalTax', label: 'Legal & Tax', weight: '10%' },
-                  { key: 'briPersonal', label: 'Personal Readiness', weight: '10%' },
-                ].map(({ key, label, weight }) => {
-                  const score = Math.round(parseFloat(latestSnapshot[key as keyof typeof latestSnapshot] as string) * 100)
-                  const getColor = (s: number) => s >= 75 ? 'bg-green-500' : s >= 50 ? 'bg-yellow-500' : 'bg-red-500'
-                  return (
-                    <div key={key}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium text-gray-700">{label}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-400">{weight}</span>
-                          <span className={`text-sm font-bold ${score >= 75 ? 'text-green-600' : score >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
-                            {score}%
-                          </span>
-                        </div>
-                      </div>
-                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${getColor(score)}`}
-                          style={{ width: `${score}%` }}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-purple-200 bg-purple-50">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-purple-700">Value Gap</p>
-                  <p className="text-3xl font-bold text-purple-900">
-                    {formatCurrency(latestSnapshot.valueGap)}
-                  </p>
-                  <p className="text-sm text-purple-600 mt-1">
-                    Potential value you could unlock by improving your BRI score
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-purple-700">Potential Value</p>
-                  <p className="text-2xl font-semibold text-purple-800">
-                    {formatCurrency(latestSnapshot.potentialValue)}
-                  </p>
-                  <p className="text-xs text-purple-600 mt-1">at {latestSnapshot.finalMultiple}x multiple</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Playbook Summary */}
-          {taskStats && taskStats.total > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Action Playbook</CardTitle>
-                <CardDescription>
-                  Prioritized tasks to close your value gap
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-4">
-                  <div className="text-center p-3 rounded-lg bg-gray-50">
-                    <p className="text-2xl font-bold text-gray-900">{taskStats.total}</p>
-                    <p className="text-sm text-gray-600">Total Tasks</p>
-                  </div>
-                  <div className="text-center p-3 rounded-lg bg-yellow-50">
-                    <p className="text-2xl font-bold text-yellow-700">{taskStats.pending}</p>
-                    <p className="text-sm text-yellow-600">To Do</p>
-                  </div>
-                  <div className="text-center p-3 rounded-lg bg-primary/5">
-                    <p className="text-2xl font-bold text-primary">{taskStats.inProgress}</p>
-                    <p className="text-sm text-primary">In Progress</p>
-                  </div>
-                  <div className="text-center p-3 rounded-lg bg-green-50">
-                    <p className="text-2xl font-bold text-green-700">{taskStats.completed}</p>
-                    <p className="text-sm text-green-600">Completed</p>
-                  </div>
-                </div>
-                {taskStats.completedValue > 0 && (
-                  <div className="mt-4 p-3 rounded-lg bg-green-50 border border-green-200">
-                    <p className="text-sm text-green-700">
-                      You&apos;ve captured <span className="font-bold">{formatCurrency(taskStats.completedValue)}</span> in value so far!
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+      {/* Main Dashboard Card */}
+      <Card className="overflow-hidden">
+        <CardContent className="pt-4 md:pt-6 px-8 md:px-12 pb-8 md:pb-12">
+          {/* Tier 1: Hero Metrics */}
+          {tier1 && (
+            <HeroMetrics
+              currentValue={tier1.currentValue}
+              potentialValue={tier1.potentialValue}
+              valueGap={tier1.valueGap}
+              briScore={tier1.briScore}
+              multiple={tier1.finalMultiple}
+              multipleRange={tier1.multipleRange}
+              industryName={tier1.industryName}
+              coreScore={tier1.coreScore}
+              isEstimated={tier1.isEstimated}
+            />
           )}
 
-          <div className="flex justify-center gap-4">
-            <Link href="/dashboard/assessment">
-              <Button variant="outline">Retake Assessment</Button>
-            </Link>
-            <Link href="/dashboard/playbook">
-              <Button>View Playbook</Button>
-            </Link>
-          </div>
-        </>
-      )}
+          {/* Tier 2: Value Drivers */}
+          <ValueDrivers
+            adjustedEbitda={tier2.adjustedEbitda}
+            isEbitdaEstimated={tier2.isEbitdaEstimated}
+            multipleRange={tier2.multipleRange}
+            industryName={tier1?.industryName || 'General Industry'}
+          />
+
+          {/* Tier 3: Risk Breakdown */}
+          <RiskBreakdown
+            categories={tier3?.categories || emptyCategories}
+            topConstraints={tier3?.topConstraints || []}
+            hasAssessment={hasAssessment}
+          />
+        </CardContent>
+      </Card>
     </div>
   )
 }

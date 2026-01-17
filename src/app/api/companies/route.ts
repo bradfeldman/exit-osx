@@ -1,49 +1,33 @@
-import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 
 export async function GET() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const result = await checkPermission('COMPANY_VIEW')
+  if (isAuthError(result)) return result.error
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const { auth } = result
 
   try {
-    // Get the user's organization
-    const dbUser = await prisma.user.findUnique({
-      where: { authId: user.id },
-      include: {
-        organizations: {
-          include: {
-            organization: {
-              include: {
-                companies: {
-                  include: {
-                    coreFactors: true,
-                    ebitdaAdjustments: true,
-                    valuationSnapshots: {
-                      orderBy: { createdAt: 'desc' },
-                      take: 1
-                    }
-                  }
-                }
-              }
-            }
+    // Get active (non-deleted) companies from the user's organization
+    const companies = await prisma.company.findMany({
+      where: {
+        deletedAt: null, // Exclude soft-deleted companies
+        organization: {
+          users: {
+            some: { userId: auth.user.id }
           }
+        }
+      },
+      include: {
+        coreFactors: true,
+        ebitdaAdjustments: true,
+        valuationSnapshots: {
+          orderBy: { createdAt: 'desc' },
+          take: 1
         }
       }
     })
-
-    if (!dbUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
-    // Get companies from all user's organizations
-    const companies = dbUser.organizations.flatMap(
-      org => org.organization.companies
-    )
 
     return NextResponse.json({ companies })
   } catch (error) {
@@ -56,12 +40,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const result = await checkPermission('COMPANY_CREATE')
+  if (isAuthError(result)) return result.error
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const { auth } = result
 
   try {
     const body = await request.json()
@@ -84,30 +66,10 @@ export async function POST(request: Request) {
       )
     }
 
-    // Get the user's primary organization
-    const dbUser = await prisma.user.findUnique({
-      where: { authId: user.id },
-      include: {
-        organizations: {
-          where: { role: 'ADMIN' },
-          take: 1
-        }
-      }
-    })
-
-    if (!dbUser || dbUser.organizations.length === 0) {
-      return NextResponse.json(
-        { error: 'No organization found' },
-        { status: 404 }
-      )
-    }
-
-    const organizationId = dbUser.organizations[0].organizationId
-
-    // Create the company
+    // Create the company in the user's organization
     const company = await prisma.company.create({
       data: {
-        organizationId,
+        organizationId: auth.organizationUser.organizationId,
         name,
         icbIndustry,
         icbSuperSector,

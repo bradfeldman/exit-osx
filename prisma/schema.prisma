@@ -21,6 +21,18 @@ enum UserRole {
   VIEWER
 }
 
+// Functional categories for task assignment defaults
+enum FunctionalCategory {
+  OWNER           // Business owner - for owner preparedness tasks
+  FINANCE         // CFO, accountant, finance team
+  OPERATIONS      // COO, operations manager
+  HR              // HR director, people operations
+  LEGAL           // Legal counsel, compliance
+  SALES_MARKETING // Sales director, marketing lead
+  IT              // IT director, tech lead
+  EXTERNAL        // External advisor, consultant
+}
+
 enum RevenueSizeCategory {
   UNDER_500K
   FROM_500K_TO_1M
@@ -137,6 +149,97 @@ enum AssessmentType {
   AD_HOC
 }
 
+enum IssueTier {
+  CRITICAL      // Deal killers - 60% of value gap
+  SIGNIFICANT   // Major value impact - 30% of value gap
+  OPTIMIZATION  // Nice to have - 10% of value gap
+}
+
+enum PeriodType {
+  ANNUAL
+  QUARTERLY
+  MONTHLY
+}
+
+enum Quarter {
+  Q1
+  Q2
+  Q3
+  Q4
+}
+
+// ============================================
+// PROJECT ASSESSMENT ENUMS
+// ============================================
+
+enum QuestionImpact {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum BuyerSensitivity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum StrategyType {
+  FULL_FIX
+  PARTIAL_MITIGATION
+  RISK_ACCEPTANCE
+}
+
+enum OwnerRole {
+  FOUNDER
+  CFO_FINANCE
+  OPS_LEADER
+  SALES_MKTG
+  HR_PEOPLE
+  LEGAL_COMPLIANCE
+  IT_SECURITY
+  ADVISOR
+}
+
+enum Timebox {
+  IMMEDIATE_0_30
+  NEAR_30_90
+  LONG_90_365
+}
+
+enum ProjectAssessmentStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+enum DataRoomCategory {
+  FINANCIAL
+  LEGAL
+  OPERATIONS
+  CUSTOMERS
+  EMPLOYEES
+  IP
+  CUSTOM
+  TASK_PROOF  // Documents uploaded as proof of task completion
+}
+
+enum UpdateFrequency {
+  MONTHLY
+  QUARTERLY
+  ANNUALLY
+  AS_NEEDED
+  ONE_TIME
+}
+
+enum DocumentStatus {
+  CURRENT
+  NEEDS_UPDATE
+  OVERDUE
+}
+
 // ============================================
 // CORE ENTITIES
 // ============================================
@@ -149,6 +252,7 @@ model Organization {
 
   users     OrganizationUser[]
   companies Company[]
+  invites   OrganizationInvite[]
 
   @@map("organizations")
 }
@@ -162,24 +266,48 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  organizations   OrganizationUser[]
-  taskAssignments TaskAssignment[]
+  organizations      OrganizationUser[]
+  taskAssignments    TaskAssignment[]
+  primaryTasks       Task[]              @relation("TaskPrimaryAssignee")
+  taskInvitesSent    TaskInvite[]        @relation("TaskInvitesSent")
+  sentInvites        OrganizationInvite[]
+  createdSnapshots   ValuationSnapshot[]
 
   @@map("users")
 }
 
 model OrganizationUser {
-  id             String   @id @default(cuid())
-  organizationId String   @map("organization_id")
-  userId         String   @map("user_id")
-  role           UserRole @default(MEMBER)
-  joinedAt       DateTime @default(now()) @map("joined_at")
+  id                   String               @id @default(cuid())
+  organizationId       String               @map("organization_id")
+  userId               String               @map("user_id")
+  role                 UserRole             @default(MEMBER)
+  functionalCategories FunctionalCategory[] @map("functional_categories") // Functional areas for task defaults
+  joinedAt             DateTime             @default(now()) @map("joined_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, userId])
   @@map("organization_users")
+}
+
+model OrganizationInvite {
+  id                   String               @id @default(cuid())
+  organizationId       String               @map("organization_id")
+  email                String
+  role                 UserRole             @default(MEMBER)
+  functionalCategories FunctionalCategory[] @map("functional_categories") // Pre-assigned functional areas
+  invitedBy            String               @map("invited_by")
+  token                String               @unique @default(cuid())
+  expiresAt            DateTime             @map("expires_at")
+  acceptedAt           DateTime?            @map("accepted_at")
+  createdAt            DateTime             @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  inviter      User         @relation(fields: [invitedBy], references: [id])
+
+  @@unique([organizationId, email])
+  @@map("organization_invites")
 }
 
 model Company {
@@ -193,8 +321,11 @@ model Company {
   annualRevenue    Decimal  @map("annual_revenue") @db.Decimal(15, 2)
   annualEbitda     Decimal  @map("annual_ebitda") @db.Decimal(15, 2)
   ownerCompensation Decimal @default(0) @map("owner_compensation") @db.Decimal(15, 2)
+  briWeights       Json?    @map("bri_weights") // Company-specific BRI category weights (null = use global defaults)
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at") // Soft delete - null if active, timestamp if deleted
+  deleteReason     String?   @map("delete_reason") // Optional reason for deletion
 
   organization       Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   coreFactors        CoreFactors?
@@ -203,6 +334,11 @@ model Company {
   valuationSnapshots ValuationSnapshot[]
   tasks              Task[]
   sprints            Sprint[]
+  financialPeriods   FinancialPeriod[]
+  dataRoomDocuments  DataRoomDocument[]
+  // Project Assessment relations
+  projectAssessments    ProjectAssessment[]
+  questionPriorities    CompanyQuestionPriority[]
 
   @@map("companies")
 }
@@ -210,13 +346,17 @@ model Company {
 model EbitdaAdjustment {
   id          String   @id @default(cuid())
   companyId   String   @map("company_id")
+  periodId    String?  @map("period_id")
   description String
   amount      Decimal  @db.Decimal(15, 2)
   type        String   // ADD_BACK or DEDUCTION
+  frequency   String   @default("ANNUAL") // MONTHLY or ANNUAL - determines how amount is annualized
   createdAt   DateTime @default(now()) @map("created_at")
 
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  period  FinancialPeriod? @relation(fields: [periodId], references: [id], onDelete: SetNull)
 
+  @@index([companyId, periodId])
   @@map("ebitda_adjustments")
 }
 
@@ -243,8 +383,10 @@ model CoreFactors {
 model Question {
   id              String      @id @default(cuid())
   briCategory     BriCategory @map("bri_category")
+  issueTier       IssueTier   @default(OPTIMIZATION) @map("issue_tier") // CRITICAL, SIGNIFICANT, or OPTIMIZATION
   questionText    String      @map("question_text")
   helpText        String?     @map("help_text")
+  buyerLogic      String?     @map("buyer_logic") @db.VarChar(200)
   displayOrder    Int         @map("display_order")
   maxImpactPoints Decimal     @map("max_impact_points") @db.Decimal(5, 2)
   isActive        Boolean     @default(true) @map("is_active")
@@ -252,6 +394,7 @@ model Question {
   options   QuestionOption[]
   responses AssessmentResponse[]
 
+  @@index([issueTier])
   @@map("questions")
 }
 
@@ -262,8 +405,11 @@ model QuestionOption {
   scoreValue   Decimal @map("score_value") @db.Decimal(3, 2) // 0.00 to 1.00
   displayOrder Int     @map("display_order")
 
-  question  Question             @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  responses AssessmentResponse[]
+  question           Question             @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  responses          AssessmentResponse[] @relation("SelectedOption")
+  effectiveResponses AssessmentResponse[] @relation("EffectiveOption")
+  tasksUpgradingFrom Task[]               @relation("TaskUpgradeFrom")
+  tasksUpgradingTo   Task[]               @relation("TaskUpgradeTo")
 
   @@map("question_options")
 }
@@ -283,20 +429,22 @@ model Assessment {
 }
 
 model AssessmentResponse {
-  id               String          @id @default(cuid())
-  assessmentId     String          @map("assessment_id")
-  questionId       String          @map("question_id")
-  selectedOptionId String          @map("selected_option_id")
-  confidenceLevel  ConfidenceLevel @map("confidence_level")
-  notes            String?
-  evidenceUploaded Boolean         @default(false) @map("evidence_uploaded")
-  evidenceUrls     String[]        @map("evidence_urls")
-  createdAt        DateTime        @default(now()) @map("created_at")
-  updatedAt        DateTime        @updatedAt @map("updated_at")
+  id                String          @id @default(cuid())
+  assessmentId      String          @map("assessment_id")
+  questionId        String          @map("question_id")
+  selectedOptionId  String          @map("selected_option_id")
+  effectiveOptionId String?         @map("effective_option_id") // Starts as selectedOptionId, upgraded by tasks
+  confidenceLevel   ConfidenceLevel @map("confidence_level")
+  notes             String?
+  evidenceUploaded  Boolean         @default(false) @map("evidence_uploaded")
+  evidenceUrls      String[]        @map("evidence_urls")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
 
-  assessment     Assessment     @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  question       Question       @relation(fields: [questionId], references: [id])
-  selectedOption QuestionOption @relation(fields: [selectedOptionId], references: [id])
+  assessment      Assessment     @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  question        Question       @relation(fields: [questionId], references: [id])
+  selectedOption  QuestionOption @relation("SelectedOption", fields: [selectedOptionId], references: [id])
+  effectiveOption QuestionOption? @relation("EffectiveOption", fields: [effectiveOptionId], references: [id])
 
   @@unique([assessmentId, questionId])
   @@map("assessment_responses")
@@ -309,6 +457,7 @@ model AssessmentResponse {
 model ValuationSnapshot {
   id                  String   @id @default(cuid())
   companyId           String   @map("company_id")
+  createdByUserId     String?  @map("created_by_user_id")
   adjustedEbitda      Decimal  @map("adjusted_ebitda") @db.Decimal(15, 2)
   industryMultipleLow Decimal  @map("industry_multiple_low") @db.Decimal(4, 2)
   industryMultipleHigh Decimal @map("industry_multiple_high") @db.Decimal(4, 2)
@@ -330,7 +479,8 @@ model ValuationSnapshot {
   snapshotReason      String?  @map("snapshot_reason")
   createdAt           DateTime @default(now()) @map("created_at")
 
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdBy User?   @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
 
   @@index([companyId, createdAt])
   @@map("valuation_snapshots")
@@ -341,33 +491,48 @@ model ValuationSnapshot {
 // ============================================
 
 model Task {
-  id              String         @id @default(cuid())
-  companyId       String         @map("company_id")
-  title           String
-  description     String
-  actionType      ActionItemType @map("action_type")
-  briCategory     BriCategory    @map("bri_category")
-  linkedQuestionId String?       @map("linked_question_id")
-  rawImpact       Decimal        @map("raw_impact") @db.Decimal(15, 2)
-  normalizedValue Decimal        @map("normalized_value") @db.Decimal(15, 2)
-  effortLevel     EffortLevel    @map("effort_level")
-  complexity      ComplexityLevel
-  estimatedHours  Int?           @map("estimated_hours")
-  status          TaskStatus     @default(PENDING)
-  deferredUntil   DateTime?      @map("deferred_until")
-  deferralReason  String?        @map("deferral_reason")
-  completedAt     DateTime?      @map("completed_at")
-  sprintId        String?        @map("sprint_id")
-  sprintPriority  SprintPriority? @map("sprint_priority")
-  createdAt       DateTime       @default(now()) @map("created_at")
-  updatedAt       DateTime       @updatedAt @map("updated_at")
+  id                   String         @id @default(cuid())
+  companyId            String         @map("company_id")
+  title                String
+  description          String
+  actionType           ActionItemType @map("action_type")
+  briCategory          BriCategory    @map("bri_category")
+  linkedQuestionId     String?        @map("linked_question_id")
+  rawImpact            Decimal        @map("raw_impact") @db.Decimal(15, 2)
+  normalizedValue      Decimal        @map("normalized_value") @db.Decimal(15, 2)
+  effortLevel          EffortLevel    @map("effort_level")
+  complexity           ComplexityLevel
+  estimatedHours       Int?           @map("estimated_hours")
+  // Issue tier tracking (for value allocation)
+  issueTier            IssueTier?     @map("issue_tier") // Effective tier based on question + answer
+  status               TaskStatus     @default(PENDING)
+  deferredUntil        DateTime?      @map("deferred_until")
+  deferralReason       String?        @map("deferral_reason")
+  completedAt          DateTime?      @map("completed_at")
+  completionNotes      String?        @map("completion_notes")  // Notes about how task was completed
+  sprintId             String?        @map("sprint_id")
+  sprintPriority       SprintPriority? @map("sprint_priority")
+  // Assignment and due date
+  dueDate              DateTime?      @map("due_date")
+  primaryAssigneeId    String?        @map("primary_assignee_id")
+  // Answer Upgrade System fields
+  upgradesFromOptionId String?        @map("upgrades_from_option_id")
+  upgradesToOptionId   String?        @map("upgrades_to_option_id")
+  createdAt            DateTime       @default(now()) @map("created_at")
+  updatedAt            DateTime       @updatedAt @map("updated_at")
 
-  company     Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  sprint      Sprint?          @relation(fields: [sprintId], references: [id])
-  assignments TaskAssignment[]
+  company            Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  sprint             Sprint?          @relation(fields: [sprintId], references: [id])
+  assignments        TaskAssignment[]
+  invites            TaskInvite[]
+  primaryAssignee    User?            @relation("TaskPrimaryAssignee", fields: [primaryAssigneeId], references: [id], onDelete: SetNull)
+  upgradesFromOption QuestionOption?  @relation("TaskUpgradeFrom", fields: [upgradesFromOptionId], references: [id])
+  upgradesToOption   QuestionOption?  @relation("TaskUpgradeTo", fields: [upgradesToOptionId], references: [id])
+  proofDocuments     DataRoomDocument[] @relation("TaskProofDocuments")  // Proof of completion documents
 
   @@index([companyId, status])
   @@index([sprintId])
+  @@index([primaryAssigneeId])
   @@map("tasks")
 }
 
@@ -382,6 +547,27 @@ model TaskAssignment {
 
   @@unique([taskId, userId])
   @@map("task_assignments")
+}
+
+model TaskInvite {
+  id            String    @id @default(cuid())
+  taskId        String    @map("task_id")
+  email         String
+  invitedById   String    @map("invited_by_id")
+  token         String    @unique @default(cuid())
+  isPrimary     Boolean   @default(true) @map("is_primary") // Will become primary assignee when accepted
+  expiresAt     DateTime  @map("expires_at")
+  acceptedAt    DateTime? @map("accepted_at")
+  declinedAt    DateTime? @map("declined_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  task      Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  invitedBy User @relation("TaskInvitesSent", fields: [invitedById], references: [id])
+
+  @@unique([taskId, email])
+  @@index([token])
+  @@index([email])
+  @@map("task_invites")
 }
 
 model Sprint {
@@ -422,4 +608,425 @@ model IndustryMultiple {
 
   @@unique([icbSubSector, effectiveDate])
   @@map("industry_multiples")
+}
+
+// ============================================
+// DATA ROOM
+// ============================================
+
+model DataRoomDocument {
+  id                String           @id @default(cuid())
+  companyId         String           @map("company_id")
+
+  // Document identity
+  category          DataRoomCategory
+  documentName      String           @map("document_name")    // Standardized name
+  description       String?
+
+  // Task proof linking (for documents uploaded as proof of task completion)
+  linkedTaskId      String?          @map("linked_task_id")
+
+  // File details
+  fileUrl           String?          @map("file_url")         // Supabase Storage URL
+  fileName          String?          @map("file_name")        // Original file name
+  fileSize          Int?             @map("file_size")        // Bytes
+  mimeType          String?          @map("mime_type")
+
+  // Update tracking
+  updateFrequency   UpdateFrequency  @default(AS_NEEDED) @map("update_frequency")
+  lastUpdatedAt     DateTime?        @map("last_updated_at")  // When document was last uploaded/updated
+  nextUpdateDue     DateTime?        @map("next_update_due")  // Calculated based on frequency
+  status            DocumentStatus   @default(CURRENT)
+
+  // Document type flags
+  isRequired        Boolean          @default(false) @map("is_required")    // Part of standard checklist
+  isCustom          Boolean          @default(false) @map("is_custom")      // User-added document
+  displayOrder      Int              @default(0) @map("display_order")
+
+  // Metadata
+  uploadedByUserId  String?          @map("uploaded_by_user_id")
+  notes             String?
+
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  company           Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  linkedTask        Task?            @relation("TaskProofDocuments", fields: [linkedTaskId], references: [id], onDelete: SetNull)
+
+  @@index([companyId, category])
+  @@index([companyId, status])
+  @@index([linkedTaskId])
+  @@map("data_room_documents")
+}
+
+// ============================================
+// SYSTEM SETTINGS
+// ============================================
+
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
+
+// ============================================
+// FINANCIALS
+// ============================================
+
+model FinancialPeriod {
+  id         String     @id @default(cuid())
+  companyId  String     @map("company_id")
+  periodType PeriodType @map("period_type")
+  fiscalYear Int        @map("fiscal_year")
+  quarter    Quarter?
+  month      Int?
+  startDate  DateTime   @map("start_date")
+  endDate    DateTime   @map("end_date")
+  label      String?
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+
+  company         Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  incomeStatement IncomeStatement?
+  balanceSheet    BalanceSheet?
+  adjustments     EbitdaAdjustment[]
+
+  @@unique([companyId, fiscalYear, periodType, quarter, month])
+  @@index([companyId, fiscalYear])
+  @@map("financial_periods")
+}
+
+model IncomeStatement {
+  id                String   @id @default(cuid())
+  periodId          String   @unique @map("period_id")
+
+  // Core P&L inputs
+  grossRevenue      Decimal  @map("gross_revenue") @db.Decimal(15, 2)
+  cogs              Decimal  @db.Decimal(15, 2)
+  operatingExpenses Decimal  @map("operating_expenses") @db.Decimal(15, 2)
+
+  // Calculated fields (denormalized for performance)
+  grossProfit       Decimal  @map("gross_profit") @db.Decimal(15, 2)
+  grossMarginPct    Decimal  @map("gross_margin_pct") @db.Decimal(5, 4)
+  ebitda            Decimal  @db.Decimal(15, 2)
+  ebitdaMarginPct   Decimal  @map("ebitda_margin_pct") @db.Decimal(5, 4)
+
+  // Optional below-the-line items
+  depreciation      Decimal? @db.Decimal(15, 2)
+  amortization      Decimal? @db.Decimal(15, 2)
+  interestExpense   Decimal? @map("interest_expense") @db.Decimal(15, 2)
+  taxExpense        Decimal? @map("tax_expense") @db.Decimal(15, 2)
+
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  period FinancialPeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+
+  @@map("income_statements")
+}
+
+model BalanceSheet {
+  id       String @id @default(cuid())
+  periodId String @unique @map("period_id")
+
+  // Current Assets
+  cash               Decimal @db.Decimal(15, 2)
+  accountsReceivable Decimal @map("accounts_receivable") @db.Decimal(15, 2)
+  inventory          Decimal @db.Decimal(15, 2)
+  prepaidExpenses    Decimal @map("prepaid_expenses") @db.Decimal(15, 2)
+  otherCurrentAssets Decimal @map("other_current_assets") @db.Decimal(15, 2)
+
+  // Long-term Assets
+  ppeGross                Decimal @map("ppe_gross") @db.Decimal(15, 2)
+  accumulatedDepreciation Decimal @map("accumulated_depreciation") @db.Decimal(15, 2)
+  intangibleAssets        Decimal @map("intangible_assets") @db.Decimal(15, 2)
+  otherLongTermAssets     Decimal @map("other_long_term_assets") @db.Decimal(15, 2)
+
+  // Current Liabilities
+  accountsPayable         Decimal @map("accounts_payable") @db.Decimal(15, 2)
+  accruedExpenses         Decimal @map("accrued_expenses") @db.Decimal(15, 2)
+  currentPortionLtd       Decimal @map("current_portion_ltd") @db.Decimal(15, 2)
+  otherCurrentLiabilities Decimal @map("other_current_liabilities") @db.Decimal(15, 2)
+
+  // Long-term Liabilities
+  longTermDebt             Decimal @map("long_term_debt") @db.Decimal(15, 2)
+  deferredTaxLiabilities   Decimal @map("deferred_tax_liabilities") @db.Decimal(15, 2)
+  otherLongTermLiabilities Decimal @map("other_long_term_liabilities") @db.Decimal(15, 2)
+
+  // Equity
+  retainedEarnings Decimal @map("retained_earnings") @db.Decimal(15, 2)
+  ownersEquity     Decimal @map("owners_equity") @db.Decimal(15, 2)
+
+  // Calculated totals (denormalized)
+  totalCurrentAssets       Decimal @map("total_current_assets") @db.Decimal(15, 2)
+  totalLongTermAssets      Decimal @map("total_long_term_assets") @db.Decimal(15, 2)
+  totalAssets              Decimal @map("total_assets") @db.Decimal(15, 2)
+  totalCurrentLiabilities  Decimal @map("total_current_liabilities") @db.Decimal(15, 2)
+  totalLongTermLiabilities Decimal @map("total_long_term_liabilities") @db.Decimal(15, 2)
+  totalLiabilities         Decimal @map("total_liabilities") @db.Decimal(15, 2)
+  totalEquity              Decimal @map("total_equity") @db.Decimal(15, 2)
+  workingCapital           Decimal @map("working_capital") @db.Decimal(15, 2)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  period FinancialPeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+
+  @@map("balance_sheets")
+}
+
+// ============================================
+// PROJECT ASSESSMENTS
+// ============================================
+
+// The 596 detailed questions from JSON modules (separate from Initial BRI questions)
+model ProjectQuestion {
+  id                String   @id @default(cuid())
+  moduleId          String   @unique @map("module_id")  // e.g., "MOD-FN-RS-001"
+  questionId        String   @unique @map("question_id") // e.g., "Q-FN-RS-001"
+
+  // Question content
+  questionText      String   @map("question_text")
+  briCategory       BriCategory @map("bri_category")
+  subCategory       String   @map("sub_category")       // e.g., "Revenue Stability"
+
+  // Impact scoring (for prioritization)
+  questionImpact    QuestionImpact @map("question_impact") // CRITICAL, HIGH, MEDIUM, LOW
+  buyerSensitivity  BuyerSensitivity @map("buyer_sensitivity")
+
+  // Help content
+  definitionNote    String?  @map("definition_note")
+  helpText          String?  @map("help_text")
+  riskDefinition    String?  @map("risk_definition")
+  primaryValueLever String?  @map("primary_value_lever")
+
+  // Metadata
+  relatedQuestionIds String[] @map("related_question_ids")
+  relatedModules     String[] @map("related_modules")
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  options           ProjectQuestionOption[]
+  strategies        ProjectStrategy[]
+  responses         ProjectAssessmentResponse[]
+  companyPriorities CompanyQuestionPriority[]
+  assessmentLinks   ProjectAssessmentQuestion[]
+
+  @@index([briCategory, questionImpact])
+  @@map("project_questions")
+}
+
+// Options for Project Questions with score values
+model ProjectQuestionOption {
+  id              String   @id @default(cuid())
+  questionId      String   @map("question_id")
+  optionId        String   @map("option_id")  // A, B, C, D
+  optionText      String   @map("option_text")
+  scoreValue      Decimal  @map("score_value") @db.Decimal(3, 2) // 0.00, 0.35, 0.70, 1.00
+  buyerInterpretation String? @map("buyer_interpretation")
+  displayOrder    Int      @map("display_order")
+
+  question        ProjectQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedResponses ProjectAssessmentResponse[] @relation("SelectedProjectOption")
+  effectiveResponses ProjectAssessmentResponse[] @relation("EffectiveProjectOption")
+  tasksUpgradingFrom ProjectTaskTemplate[] @relation("ProjectTaskUpgradeFrom")
+  tasksUpgradingTo   ProjectTaskTemplate[] @relation("ProjectTaskUpgradeTo")
+
+  @@unique([questionId, optionId])
+  @@map("project_question_options")
+}
+
+// Strategies for improving scores (from JSON modules)
+model ProjectStrategy {
+  id                  String   @id @default(cuid())
+  questionId          String   @map("question_id")
+  strategyId          String   @map("strategy_id")  // STRAT-A, STRAT-B, STRAT-C
+  strategyName        String   @map("strategy_name")
+  strategyDescription String?  @map("strategy_description")
+  strategyType        StrategyType @map("strategy_type") // FULL_FIX, PARTIAL_MITIGATION, RISK_ACCEPTANCE
+
+  upgradeFromScore    Decimal  @map("upgrade_from_score") @db.Decimal(3, 2)
+  maxScoreAchievable  Decimal  @map("max_score_achievable") @db.Decimal(3, 2)
+  estimatedEffort     String   @map("estimated_effort")
+  estimatedTimeline   String?  @map("estimated_timeline")
+  applicableWhen      String?  @map("applicable_when")
+
+  question            ProjectQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  taskTemplates       ProjectTaskTemplate[]
+
+  @@unique([questionId, strategyId])
+  @@map("project_strategies")
+}
+
+// Task templates within strategies
+model ProjectTaskTemplate {
+  id                   String   @id @default(cuid())
+  strategyId           String   @map("strategy_id")
+  taskId               String   @map("task_id")  // TASK-A-001, etc.
+  sequence             Int
+
+  // Task content
+  title                String
+  primaryVerb          String   @map("primary_verb")
+  verbTier             Int      @map("verb_tier")
+  object               String
+  outcome              String?
+
+  // Assignment
+  ownerRole            OwnerRole @map("owner_role")
+  timebox              Timebox
+
+  // Effort
+  effortLevel          EffortLevel @map("effort_level")
+  complexity           ComplexityLevel
+  estimatedHours       Int?     @map("estimated_hours")
+
+  // Deliverables
+  deliverables         String[]
+  evidence             String[]
+  riskCategory         BriCategory @map("risk_category")
+
+  // Dependencies
+  dependencies         String[]
+  blockedBy            String[] @map("blocked_by")
+
+  // Answer Upgrade System
+  upgradesFromScore    Decimal? @map("upgrades_from_score") @db.Decimal(3, 2)
+  upgradesToScore      Decimal? @map("upgrades_to_score") @db.Decimal(3, 2)
+  upgradesFromOptionId String?  @map("upgrades_from_option_id")
+  upgradesToOptionId   String?  @map("upgrades_to_option_id")
+
+  // Deferral fields (for COMMIT tasks)
+  deferReasonCode      String?  @map("defer_reason_code")
+  companionVerbs       String[] @map("companion_verbs")
+  reEvaluationDate     String?  @map("re_evaluation_date")
+  valueImpactState     String?  @map("value_impact_state")
+  mitigationSummary    String?  @map("mitigation_summary")
+
+  strategy             ProjectStrategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+  upgradesFromOption   ProjectQuestionOption? @relation("ProjectTaskUpgradeFrom", fields: [upgradesFromOptionId], references: [id])
+  upgradesToOption     ProjectQuestionOption? @relation("ProjectTaskUpgradeTo", fields: [upgradesToOptionId], references: [id])
+
+  @@unique([strategyId, taskId])
+  @@map("project_task_templates")
+}
+
+// An instance of a Project Assessment (8-15 questions)
+model ProjectAssessment {
+  id              String   @id @default(cuid())
+  companyId       String   @map("company_id")
+  assessmentNumber Int     @map("assessment_number")  // 1, 2, 3, etc.
+
+  // Focus area (primary category for this assessment)
+  primaryCategory BriCategory? @map("primary_category")
+  title           String?      // Optional title like "Financial Deep Dive"
+
+  // Status
+  status          ProjectAssessmentStatus @default(IN_PROGRESS)
+  startedAt       DateTime @default(now()) @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+
+  // Score tracking
+  briScoreBefore  Decimal? @map("bri_score_before") @db.Decimal(5, 4)
+  briScoreAfter   Decimal? @map("bri_score_after") @db.Decimal(5, 4)
+  scoreImpact     Decimal? @map("score_impact") @db.Decimal(5, 4) // Can be positive or negative
+
+  // Action plan generated
+  actionPlanGenerated Boolean @default(false) @map("action_plan_generated")
+
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  responses       ProjectAssessmentResponse[]
+  questions       ProjectAssessmentQuestion[]  // The selected questions for this assessment
+
+  @@unique([companyId, assessmentNumber])
+  @@index([companyId, status])
+  @@map("project_assessments")
+}
+
+// Links questions to a specific Project Assessment instance
+model ProjectAssessmentQuestion {
+  id                String   @id @default(cuid())
+  assessmentId      String   @map("assessment_id")
+  questionId        String   @map("question_id")
+  displayOrder      Int      @map("display_order")
+
+  // Why this question was selected
+  selectionReason   String?  @map("selection_reason")  // "High impact", "Category gap", etc.
+  priorityScore     Decimal  @map("priority_score") @db.Decimal(5, 2)
+
+  // Skipped questions go back to pool for future assessments
+  skipped           Boolean  @default(false)
+  skippedAt         DateTime? @map("skipped_at")
+
+  assessment        ProjectAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  question          ProjectQuestion @relation(fields: [questionId], references: [id])
+
+  @@unique([assessmentId, questionId])
+  @@map("project_assessment_questions")
+}
+
+// User's answer to a Project Assessment question
+model ProjectAssessmentResponse {
+  id                  String   @id @default(cuid())
+  assessmentId        String   @map("assessment_id")
+  questionId          String   @map("question_id")
+  selectedOptionId    String   @map("selected_option_id")
+  effectiveOptionId   String?  @map("effective_option_id")  // Updated by task completion
+
+  // Score impact tracking
+  estimatedScore      Decimal? @map("estimated_score") @db.Decimal(3, 2)  // What system expected
+  actualScore         Decimal  @map("actual_score") @db.Decimal(3, 2)     // What user selected
+  scoreImpact         Decimal? @map("score_impact") @db.Decimal(4, 3)     // Difference (can be negative)
+
+  // Confidence and notes
+  confidenceLevel     ConfidenceLevel @map("confidence_level")
+  notes               String?
+  evidenceUrls        String[] @map("evidence_urls")
+
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  assessment          ProjectAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  question            ProjectQuestion @relation(fields: [questionId], references: [id])
+  selectedOption      ProjectQuestionOption @relation("SelectedProjectOption", fields: [selectedOptionId], references: [id])
+  effectiveOption     ProjectQuestionOption? @relation("EffectiveProjectOption", fields: [effectiveOptionId], references: [id])
+
+  @@unique([assessmentId, questionId])
+  @@map("project_assessment_responses")
+}
+
+// Tracks priority scores for questions per company (for the prioritization engine)
+model CompanyQuestionPriority {
+  id              String   @id @default(cuid())
+  companyId       String   @map("company_id")
+  questionId      String   @map("question_id")
+
+  // Priority factors
+  impactScore     Decimal  @map("impact_score") @db.Decimal(5, 2)     // Base impact from question
+  relevanceScore  Decimal  @map("relevance_score") @db.Decimal(5, 2)  // Relevance to company's weak areas
+  urgencyScore    Decimal  @map("urgency_score") @db.Decimal(5, 2)    // Time-sensitivity
+
+  // Combined priority
+  priorityScore   Decimal  @map("priority_score") @db.Decimal(5, 2)   // Weighted combination
+
+  // Status
+  hasBeenAsked    Boolean  @default(false) @map("has_been_asked")
+  askedAt         DateTime? @map("asked_at")
+
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  company         Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  question        ProjectQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, questionId])
+  @@index([companyId, priorityScore])
+  @@map("company_question_priorities")
 }

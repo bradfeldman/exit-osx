@@ -152,9 +152,9 @@ export function CoreFactorsStep({ formData, updateFormData }: CoreFactorsStepPro
         />
       </div>
 
-      <div className="mt-6 p-4 bg-primary/10 rounded-lg border border-primary">
-        <h3 className="text-sm font-medium text-primary mb-2">Why These Matter</h3>
-        <p className="text-sm text-primary">
+      <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <h3 className="text-sm font-medium text-blue-800 mb-2">Why These Matter</h3>
+        <p className="text-sm text-blue-700">
           Buyers pay premiums for businesses with recurring revenue, high margins,
           low owner dependence, and scalable operations. These factors directly
           impact your valuation multiple.

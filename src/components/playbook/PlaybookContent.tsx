@@ -1,10 +1,31 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
 import { TaskCard } from './TaskCard'
+import { TaskAssignDialog } from './TaskAssignDialog'
+
+interface TaskUser {
+  id: string
+  name: string | null
+  email: string
+  avatarUrl: string | null
+}
+
+interface TaskInvite {
+  id: string
+  email: string
+  isPrimary: boolean
+  createdAt: string
+}
+
+interface ProofDocument {
+  id: string
+  fileName: string | null
+  fileUrl: string | null
+  status: string
+}
 
 interface Task {
   id: string
@@ -18,6 +39,13 @@ interface Task {
   complexity: string
   estimatedHours: number | null
   status: string
+  issueTier?: string | null
+  dueDate?: string | null
+  completionNotes?: string | null
+  primaryAssignee?: TaskUser | null
+  assignments?: Array<{ user: TaskUser }> | null
+  invites?: TaskInvite[] | null
+  proofDocuments?: ProofDocument[] | null
 }
 
 interface Stats {
@@ -32,7 +60,6 @@ interface Stats {
 interface PlaybookContentProps {
   companyId: string
   companyName: string
-  valueGap: number
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -51,22 +78,15 @@ const STATUS_FILTERS = [
   { value: 'COMPLETED', label: 'Completed' },
 ]
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value)
-}
-
-export function PlaybookContent({ companyId, companyName, valueGap }: PlaybookContentProps) {
+export function PlaybookContent({ companyId, companyName }: PlaybookContentProps) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false)
+  const [selectedTaskForAssign, setSelectedTaskForAssign] = useState<Task | null>(null)
 
   const loadTasks = async () => {
     try {
@@ -108,6 +128,14 @@ export function PlaybookContent({ companyId, companyName, valueGap }: PlaybookCo
     }
   }
 
+  const handleAssign = (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId)
+    if (task) {
+      setSelectedTaskForAssign(task)
+      setAssignDialogOpen(true)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -127,67 +155,12 @@ export function PlaybookContent({ companyId, companyName, valueGap }: PlaybookCo
     )
   }
 
-  const progressPercent = stats && stats.total > 0
-    ? Math.round((stats.completed / stats.total) * 100)
-    : 0
-
-  const valueProgress = stats && stats.totalValue > 0
-    ? Math.round((stats.completedValue / stats.totalValue) * 100)
-    : 0
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Action Playbook</h1>
         <p className="text-gray-600">{companyName}</p>
-      </div>
-
-      {/* Progress Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Tasks Completed</CardDescription>
-            <CardTitle className="text-3xl">
-              {stats?.completed || 0} / {stats?.total || 0}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Progress value={progressPercent} className="h-2" />
-            <p className="text-xs text-muted-foreground mt-2">
-              {progressPercent}% complete
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Value Captured</CardDescription>
-            <CardTitle className="text-3xl">
-              {formatCurrency(stats?.completedValue || 0)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Progress value={valueProgress} className="h-2" />
-            <p className="text-xs text-muted-foreground mt-2">
-              of {formatCurrency(stats?.totalValue || 0)} potential
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-purple-200 bg-purple-50">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-purple-700">Remaining Value Gap</CardDescription>
-            <CardTitle className="text-3xl text-purple-900">
-              {formatCurrency(valueGap - (stats?.completedValue || 0))}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-purple-600">
-              Complete tasks to close this gap
-            </p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Filters */}
@@ -257,9 +230,24 @@ export function PlaybookContent({ companyId, companyName, valueGap }: PlaybookCo
               key={task.id}
               task={task}
               onStatusChange={handleStatusChange}
+              onAssign={handleAssign}
             />
           ))}
         </div>
+      )}
+
+      {/* Assignment Dialog */}
+      {selectedTaskForAssign && (
+        <TaskAssignDialog
+          open={assignDialogOpen}
+          onOpenChange={setAssignDialogOpen}
+          taskId={selectedTaskForAssign.id}
+          taskTitle={selectedTaskForAssign.title}
+          companyId={companyId}
+          currentAssigneeId={selectedTaskForAssign.primaryAssignee?.id}
+          currentDueDate={selectedTaskForAssign.dueDate}
+          onSave={loadTasks}
+        />
       )}
     </div>
   )

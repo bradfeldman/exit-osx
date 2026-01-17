@@ -1,43 +1,42 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
+'use client'
+
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { AssessmentWizard } from '@/components/assessment/AssessmentWizard'
+import { useCompany } from '@/contexts/CompanyContext'
 
-export default async function AssessmentPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+export default function AssessmentPage() {
+  const router = useRouter()
+  const { selectedCompanyId, selectedCompany, isLoading } = useCompany()
 
-  if (!user) {
-    redirect('/login')
+  useEffect(() => {
+    // Redirect to setup if no company selected
+    if (!isLoading && !selectedCompanyId) {
+      router.push('/dashboard/company/setup')
+    }
+  }, [isLoading, selectedCompanyId, router])
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="relative w-12 h-12 mx-auto mb-4">
+            <div className="absolute inset-0 rounded-full border-4 border-muted" />
+            <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+          </div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
-  // Get user's company
-  const dbUser = await prisma.user.findUnique({
-    where: { authId: user.id },
-    include: {
-      organizations: {
-        include: {
-          organization: {
-            include: {
-              companies: {
-                take: 1,
-              },
-            },
-          },
-        },
-      },
-    },
-  })
-
-  const company = dbUser?.organizations[0]?.organization?.companies[0]
-
-  if (!company) {
-    redirect('/dashboard/company/setup')
+  if (!selectedCompanyId || !selectedCompany) {
+    return null
   }
 
   return (
     <div className="max-w-3xl mx-auto">
-      <AssessmentWizard companyId={company.id} companyName={company.name} />
+      <AssessmentWizard companyId={selectedCompanyId} companyName={selectedCompany.name} />
     </div>
   )
 }

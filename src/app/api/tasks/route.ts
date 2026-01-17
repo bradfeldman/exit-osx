@@ -2,6 +2,35 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
+// Issue tier priority: CRITICAL > SIGNIFICANT > OPTIMIZATION
+const TIER_PRIORITY: Record<string, number> = {
+  CRITICAL: 3,
+  SIGNIFICANT: 2,
+  OPTIMIZATION: 1,
+}
+
+// Calculate priority score: higher = better
+// First by tier (CRITICAL > SIGNIFICANT > OPTIMIZATION), then by effort (low effort first)
+function calculatePriorityScore(issueTier: string | null, effortLevel: string): number {
+  // Tier score (1-3): CRITICAL is highest priority
+  const tierScore = TIER_PRIORITY[issueTier || 'OPTIMIZATION'] || 1
+
+  // Effort penalty (1-5): lower is better
+  const effortPenalty: Record<string, number> = {
+    MINIMAL: 1,
+    LOW: 2,
+    MODERATE: 3,
+    HIGH: 4,
+    MAJOR: 5,
+  }
+  const penalty = effortPenalty[effortLevel] || 3
+
+  // Priority = tier * 10 - effort (range: 5 to 29)
+  // CRITICAL / Minimal Effort = 29 (best)
+  // OPTIMIZATION / Major Effort = 5 (worst)
+  return tierScore * 10 - penalty
+}
+
 export async function GET(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -47,13 +76,17 @@ export async function GET(request: Request) {
       where.briCategory = category
     }
 
-    const tasks = await prisma.task.findMany({
+    const tasksUnsorted = await prisma.task.findMany({
       where,
-      orderBy: [
-        { normalizedValue: 'desc' },
-        { createdAt: 'asc' },
-      ],
       include: {
+        primaryAssignee: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatarUrl: true,
+          },
+        },
         assignments: {
           include: {
             user: {
@@ -61,11 +94,37 @@ export async function GET(request: Request) {
                 id: true,
                 name: true,
                 email: true,
+                avatarUrl: true,
               },
             },
           },
         },
+        invites: {
+          where: {
+            acceptedAt: null,
+            declinedAt: null,
+            expiresAt: { gt: new Date() },
+          },
+          select: {
+            id: true,
+            email: true,
+            isPrimary: true,
+            createdAt: true,
+          },
+        },
       },
+    })
+
+    // Sort by priority: CRITICAL tier first, then by low effort
+    const tasks = tasksUnsorted.sort((a, b) => {
+      const priorityA = calculatePriorityScore(a.issueTier, a.effortLevel)
+      const priorityB = calculatePriorityScore(b.issueTier, b.effortLevel)
+      if (priorityB !== priorityA) return priorityB - priorityA
+      // Secondary sort by raw impact (higher value first within same priority)
+      const impactDiff = Number(b.rawImpact) - Number(a.rawImpact)
+      if (impactDiff !== 0) return impactDiff
+      // Tertiary sort by creation date
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     })
 
     // Calculate summary stats

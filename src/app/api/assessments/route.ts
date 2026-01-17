@@ -93,18 +93,37 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    // Check for existing incomplete assessment
-    const existingAssessment = await prisma.assessment.findFirst({
+    // First check for a completed assessment - if exists, return it to trigger redirect
+    const completedAssessment = await prisma.assessment.findFirst({
+      where: {
+        companyId,
+        completedAt: { not: null },
+      },
+      orderBy: { completedAt: 'desc' },
+    })
+
+    if (completedAssessment) {
+      return NextResponse.json({
+        assessment: completedAssessment,
+        isExisting: true,
+        isCompleted: true,
+      })
+    }
+
+    // Check for existing incomplete assessment to continue
+    const incompleteAssessment = await prisma.assessment.findFirst({
       where: {
         companyId,
         completedAt: null,
       },
+      orderBy: { createdAt: 'desc' },
     })
 
-    if (existingAssessment) {
+    if (incompleteAssessment) {
       return NextResponse.json({
-        assessment: existingAssessment,
+        assessment: incompleteAssessment,
         isExisting: true,
+        isCompleted: false,
       })
     }
 

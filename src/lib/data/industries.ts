@@ -393,3 +393,63 @@ export function getIndustryLabel(hierarchy: IndustryHierarchy, level: keyof Indu
   const allOptions = Object.values(hierarchy[level]).flat()
   return allOptions.find(o => o.value === value)?.label || value
 }
+
+// Flattened industry option with full hierarchy
+export interface FlattenedIndustryOption {
+  // Values for each level
+  icbIndustry: string
+  icbSuperSector: string
+  icbSector: string
+  icbSubSector: string
+  // Labels for each level
+  industryLabel: string
+  superSectorLabel: string
+  sectorLabel: string
+  subSectorLabel: string
+  // Full path for display
+  fullPath: string
+  // Search-friendly string
+  searchString: string
+}
+
+// Generate all flattened industry options with full paths
+export function getFlattenedIndustryOptions(): FlattenedIndustryOption[] {
+  const options: FlattenedIndustryOption[] = []
+
+  for (const industry of industryData.industries) {
+    const superSectors = industryData.superSectors[industry.value] || []
+
+    for (const superSector of superSectors) {
+      const sectors = industryData.sectors[superSector.value] || []
+
+      for (const sector of sectors) {
+        const subSectors = industryData.subSectors[sector.value] || []
+
+        for (const subSector of subSectors) {
+          const fullPath = `${industry.label} > ${superSector.label} > ${sector.label} > ${subSector.label}`
+          const searchString = `${industry.label} ${superSector.label} ${sector.label} ${subSector.label}`.toLowerCase()
+
+          options.push({
+            icbIndustry: industry.value,
+            icbSuperSector: superSector.value,
+            icbSector: sector.value,
+            icbSubSector: subSector.value,
+            industryLabel: industry.label,
+            superSectorLabel: superSector.label,
+            sectorLabel: sector.label,
+            subSectorLabel: subSector.label,
+            fullPath,
+            searchString,
+          })
+        }
+      }
+    }
+  }
+
+  return options
+}
+
+// Get a specific flattened option by sub-sector value
+export function getFlattenedOptionBySubSector(subSectorValue: string): FlattenedIndustryOption | undefined {
+  return getFlattenedIndustryOptions().find(opt => opt.icbSubSector === subSectorValue)
+}
