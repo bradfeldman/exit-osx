@@ -23,7 +23,7 @@ interface TaskInvite {
 interface ProofDocument {
   id: string
   fileName: string | null
-  fileUrl: string | null
+  filePath: string | null
   status: string
 }
 
@@ -109,14 +109,18 @@ export function PlaybookContent({ companyId, companyName }: PlaybookContentProps
 
   useEffect(() => {
     loadTasks()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId, statusFilter, categoryFilter])
 
-  const handleStatusChange = async (taskId: string, newStatus: string) => {
+  const handleStatusChange = async (taskId: string, newStatus: string, extra?: { blockedReason?: string }) => {
     try {
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({
+          status: newStatus,
+          ...(extra?.blockedReason && { blockedReason: extra.blockedReason }),
+        }),
       })
 
       if (!response.ok) throw new Error('Failed to update task')
@@ -231,6 +235,7 @@ export function PlaybookContent({ companyId, companyName }: PlaybookContentProps
               task={task}
               onStatusChange={handleStatusChange}
               onAssign={handleAssign}
+              onTaskUpdate={loadTasks}
             />
           ))}
         </div>

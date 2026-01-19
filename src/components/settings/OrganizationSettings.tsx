@@ -38,7 +38,7 @@ import {
 } from '@/components/ui/popover'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { UserRole, FunctionalCategory } from '@prisma/client'
-import { ChevronDown, Crown, Briefcase, Calculator, Settings, Users, Scale, Megaphone, Monitor, UserCheck } from 'lucide-react'
+import { ChevronDown, Crown, Calculator, Settings, Users, Scale, Megaphone, Monitor, UserCheck } from 'lucide-react'
 
 interface Member {
   id: string

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useCompany } from '@/contexts/CompanyContext'
 import { PeriodSelector, FinancialPeriod } from '@/components/financials'
+import { QuickBooksCard } from '@/components/integrations'
 import {
   ArrowRight,
   ChevronDown,
@@ -17,7 +18,6 @@ import {
   DollarSign,
   Minus,
   Equal,
-  ArrowDown,
   Receipt,
   Calculator,
   Sparkles
@@ -44,11 +44,11 @@ interface IncomeStatement {
 export default function PnLPage() {
   const { selectedCompanyId } = useCompany()
   const [selectedPeriod, setSelectedPeriod] = useState<FinancialPeriod | null>(null)
-  const [incomeStatement, setIncomeStatement] = useState<IncomeStatement | null>(null)
+  const [_incomeStatement, setIncomeStatement] = useState<IncomeStatement | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [showBelowTheLine, setShowBelowTheLine] = useState(false)
-  const [hasPeriods, setHasPeriods] = useState<boolean | null>(null)
+  const [_hasPeriods, setHasPeriods] = useState<boolean | null>(null)
 
   // Form state
   const [grossRevenue, setGrossRevenue] = useState<number>(0)
@@ -196,6 +196,12 @@ export default function PnLPage() {
           <p className="text-gray-600">Track your revenue, expenses, and profitability</p>
         </div>
       </div>
+
+      {/* QuickBooks Integration */}
+      <QuickBooksCard
+        companyId={selectedCompanyId}
+        onSyncComplete={fetchIncomeStatement}
+      />
 
       {/* Period selector and save */}
       <div className="flex items-center justify-between">

@@ -17,6 +17,7 @@ const assessmentLinks = [
   { name: 'Initial Assessment', href: '/dashboard/assessment' },
   { name: 'Company Assessment', href: '/dashboard/assessment/company' },
   { name: 'Risk Assessment', href: '/dashboard/assessment/risk' },
+  { name: 'Personal Readiness', href: '/dashboard/assessment/personal-readiness' },
 ]
 
 export function Sidebar() {
@@ -133,117 +134,35 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex flex-1 flex-col">
-          <ul role="list" className="flex flex-1 flex-col gap-y-1">
-            {/* Value Snapshot */}
-            <li>
-              <Link
-                href="/dashboard"
-                className={cn(
-                  'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                  pathname === '/dashboard'
-                    ? 'bg-sidebar-accent text-sidebar-primary'
-                    : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                )}
-              >
-                <DollarIcon
+          {/* INTELLIGENCE Section */}
+          <div className="mb-4">
+            <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
+              Intelligence
+            </p>
+            <ul role="list" className="mt-1 space-y-1">
+              {/* Scorecard */}
+              <li>
+                <Link
+                  href="/dashboard"
                   className={cn(
-                    'h-5 w-5 shrink-0',
-                    pathname === '/dashboard' ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
+                    'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
+                    pathname === '/dashboard'
+                      ? 'bg-sidebar-accent text-sidebar-primary'
+                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                   )}
-                />
-                Value Snapshot
-              </Link>
-            </li>
-
-            {/* Assessment Section */}
-            <li>
-              <div className="pt-2">
-                <button
-                  onClick={() => setAssessmentsExpanded(!assessmentsExpanded)}
-                  className="flex items-center justify-between w-full gap-x-3 p-2 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent rounded-md transition-colors"
                 >
-                  <div className="flex items-center gap-x-3">
-                    <ClipboardIcon className="h-5 w-5 shrink-0 text-sidebar-foreground/60" />
-                    Assessment
-                  </div>
-                  <ChevronIcon
+                  <DollarIcon
                     className={cn(
-                      'h-4 w-4 transition-transform text-sidebar-foreground/60',
-                      assessmentsExpanded ? 'rotate-180' : ''
+                      'h-5 w-5 shrink-0',
+                      pathname === '/dashboard' ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
                     )}
                   />
-                </button>
-                <ul className={cn(
-                  'ml-7 space-y-1 overflow-hidden transition-all duration-200',
-                  assessmentsExpanded ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'
-                )}>
-                  {assessmentLinks.map((link) => {
-                    const isActive = pathname === link.href
-                    return (
-                      <li key={link.href}>
-                        <Link
-                          href={link.href}
-                          className={cn(
-                            'block rounded-md px-2 py-1.5 text-sm transition-colors',
-                            isActive
-                              ? 'bg-sidebar-accent text-sidebar-primary font-medium'
-                              : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                          )}
-                        >
-                          {link.name}
-                        </Link>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-            </li>
+                  Scorecard
+                </Link>
+              </li>
 
-            {/* Playbook */}
-            <li>
-              <Link
-                href="/dashboard/playbook"
-                className={cn(
-                  'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                  pathname.startsWith('/dashboard/playbook')
-                    ? 'bg-sidebar-accent text-sidebar-primary'
-                    : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                )}
-              >
-                <ListIcon
-                  className={cn(
-                    'h-5 w-5 shrink-0',
-                    pathname.startsWith('/dashboard/playbook') ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                  )}
-                />
-                Playbook
-              </Link>
-            </li>
-
-            {/* Data Room */}
-            <li>
-              <Link
-                href="/dashboard/data-room"
-                className={cn(
-                  'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                  pathname.startsWith('/dashboard/data-room')
-                    ? 'bg-sidebar-accent text-sidebar-primary'
-                    : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                )}
-              >
-                <FolderIcon
-                  className={cn(
-                    'h-5 w-5 shrink-0',
-                    pathname.startsWith('/dashboard/data-room') ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                  )}
-                />
-                Data Room
-              </Link>
-            </li>
-
-            {/* Financials Section */}
-            <li>
-              <div className="pt-2">
+              {/* Financials Section */}
+              <li>
                 <button
                   onClick={() => setFinancialsExpanded(!financialsExpanded)}
                   className="flex items-center justify-between w-full gap-x-3 p-2 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent rounded-md transition-colors"
@@ -316,240 +235,330 @@ export function Sidebar() {
                     </Link>
                   </li>
                 </ul>
-              </div>
-            </li>
-          </ul>
+              </li>
 
-          {/* Developer section */}
-          <div className="pt-6">
-            <button
-              onClick={() => setDeveloperExpanded(!developerExpanded)}
-              className="flex items-center justify-between w-full px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider hover:text-sidebar-foreground/70 transition-colors"
-            >
-              <span>Developer</span>
-              <ChevronIcon
-                className={cn(
-                  'h-4 w-4 transition-transform',
-                  developerExpanded ? 'rotate-180' : ''
-                )}
-              />
-            </button>
-            <ul role="list" className={cn(
-              'space-y-1 overflow-hidden transition-all duration-200',
-              developerExpanded ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'
-            )}>
+              {/* Retirement Calculator */}
               <li>
                 <Link
-                  href="/dashboard/developer/multiple-adjustment"
+                  href="/dashboard/retirement-calculator"
                   className={cn(
                     'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                    pathname.startsWith('/dashboard/developer/multiple-adjustment')
+                    pathname.startsWith('/dashboard/retirement-calculator')
                       ? 'bg-sidebar-accent text-sidebar-primary'
                       : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                   )}
                 >
-                  <CodeIcon className={cn(
-                    'h-5 w-5 shrink-0',
-                    pathname.startsWith('/dashboard/developer/multiple-adjustment')
-                      ? 'text-sidebar-primary'
-                      : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                  )} />
-                  Multiple Adjustment
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/dashboard/company/bri-weights"
-                  className={cn(
-                    'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                    pathname === '/dashboard/company/bri-weights'
-                      ? 'bg-sidebar-accent text-sidebar-primary'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                  )}
-                >
-                  <ScaleIcon className={cn(
-                    'h-5 w-5 shrink-0',
-                    pathname === '/dashboard/company/bri-weights'
-                      ? 'text-sidebar-primary'
-                      : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                  )} />
-                  BRI Weights
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/dashboard/developer/snapshot"
-                  className={cn(
-                    'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                    pathname.startsWith('/dashboard/developer/snapshot')
-                      ? 'bg-sidebar-accent text-sidebar-primary'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                  )}
-                >
-                  <CameraIcon className={cn(
-                    'h-5 w-5 shrink-0',
-                    pathname.startsWith('/dashboard/developer/snapshot')
-                      ? 'text-sidebar-primary'
-                      : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                  )} />
-                  Snapshot
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/dashboard/developer/industry-multiples"
-                  className={cn(
-                    'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                    pathname.startsWith('/dashboard/developer/industry-multiples')
-                      ? 'bg-sidebar-accent text-sidebar-primary'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                  )}
-                >
-                  <ChartIcon className={cn(
-                    'h-5 w-5 shrink-0',
-                    pathname.startsWith('/dashboard/developer/industry-multiples')
-                      ? 'text-sidebar-primary'
-                      : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                  )} />
-                  Industry Multiples
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/dashboard/developer/task-viewer"
-                  className={cn(
-                    'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                    pathname.startsWith('/dashboard/developer/task-viewer')
-                      ? 'bg-sidebar-accent text-sidebar-primary'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                  )}
-                >
-                  <ListIcon className={cn(
-                    'h-5 w-5 shrink-0',
-                    pathname.startsWith('/dashboard/developer/task-viewer')
-                      ? 'text-sidebar-primary'
-                      : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                  )} />
-                  Task Viewer
+                  <CalculatorIcon
+                    className={cn(
+                      'h-5 w-5 shrink-0',
+                      pathname.startsWith('/dashboard/retirement-calculator') ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
+                    )}
+                  />
+                  Retirement Calculator
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Global section */}
-          <div className="pt-6">
-            <button
-              onClick={() => setGlobalExpanded(!globalExpanded)}
-              className="flex items-center justify-between w-full px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider hover:text-sidebar-foreground/70 transition-colors"
-            >
-              <span>Global</span>
-              <ChevronIcon
-                className={cn(
-                  'h-4 w-4 transition-transform',
-                  globalExpanded ? 'rotate-180' : ''
-                )}
-              />
-            </button>
-            <ul role="list" className={cn(
-              'space-y-1 overflow-hidden transition-all duration-200',
-              globalExpanded ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'
-            )}>
+          {/* ASSESSMENTS Section */}
+          <div className="mb-4 pt-4 border-t border-sidebar-border/50">
+            <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
+              Assessments
+            </p>
+            <ul role="list" className="mt-1 space-y-1">
+              <li>
+                <button
+                  onClick={() => setAssessmentsExpanded(!assessmentsExpanded)}
+                  className="flex items-center justify-between w-full gap-x-3 p-2 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent rounded-md transition-colors"
+                >
+                  <div className="flex items-center gap-x-3">
+                    <ClipboardIcon className="h-5 w-5 shrink-0 text-sidebar-foreground/60" />
+                    Assessment
+                  </div>
+                  <ChevronIcon
+                    className={cn(
+                      'h-4 w-4 transition-transform text-sidebar-foreground/60',
+                      assessmentsExpanded ? 'rotate-180' : ''
+                    )}
+                  />
+                </button>
+                <ul className={cn(
+                  'ml-7 space-y-1 overflow-hidden transition-all duration-200',
+                  assessmentsExpanded ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'
+                )}>
+                  {assessmentLinks.map((link) => {
+                    const isActive = pathname === link.href
+                    return (
+                      <li key={link.href}>
+                        <Link
+                          href={link.href}
+                          className={cn(
+                            'block rounded-md px-2 py-1.5 text-sm transition-colors',
+                            isActive
+                              ? 'bg-sidebar-accent text-sidebar-primary font-medium'
+                              : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                          )}
+                        >
+                          {link.name}
+                        </Link>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </li>
+            </ul>
+          </div>
+
+          {/* VALUE BUILD Section */}
+          <div className="mb-4 pt-4 border-t border-sidebar-border/50">
+            <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
+              Value Build
+            </p>
+            <ul role="list" className="mt-1 space-y-1">
+              {/* Action Plan */}
               <li>
                 <Link
-                  href="/dashboard/developer/bri-weighting"
+                  href="/dashboard/playbook"
                   className={cn(
                     'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                    pathname.startsWith('/dashboard/developer/bri-weighting')
+                    pathname.startsWith('/dashboard/playbook')
                       ? 'bg-sidebar-accent text-sidebar-primary'
                       : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                   )}
                 >
-                  <ScaleIcon className={cn(
-                    'h-5 w-5 shrink-0',
-                    pathname.startsWith('/dashboard/developer/bri-weighting')
-                      ? 'text-sidebar-primary'
-                      : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                  )} />
-                  BRI Weighting
+                  <ListIcon
+                    className={cn(
+                      'h-5 w-5 shrink-0',
+                      pathname.startsWith('/dashboard/playbook') ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
+                    )}
+                  />
+                  Action Plan
                 </Link>
               </li>
+
+              {/* Data Room */}
               <li>
                 <Link
-                  href="/dashboard/global/add-question"
+                  href="/dashboard/data-room"
                   className={cn(
                     'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                    pathname.startsWith('/dashboard/global/add-question')
+                    pathname.startsWith('/dashboard/data-room')
                       ? 'bg-sidebar-accent text-sidebar-primary'
                       : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                   )}
                 >
-                  <QuestionIcon className={cn(
-                    'h-5 w-5 shrink-0',
-                    pathname.startsWith('/dashboard/global/add-question')
-                      ? 'text-sidebar-primary'
-                      : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                  )} />
-                  Add Question
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/dashboard/global/add-task"
-                  className={cn(
-                    'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                    pathname.startsWith('/dashboard/global/add-task')
-                      ? 'bg-sidebar-accent text-sidebar-primary'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                  )}
-                >
-                  <TaskIcon className={cn(
-                    'h-5 w-5 shrink-0',
-                    pathname.startsWith('/dashboard/global/add-task')
-                      ? 'text-sidebar-primary'
-                      : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                  )} />
-                  Add Task
+                  <FolderIcon
+                    className={cn(
+                      'h-5 w-5 shrink-0',
+                      pathname.startsWith('/dashboard/data-room') ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
+                    )}
+                  />
+                  Data Room
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Bottom section */}
-          <div className="mt-auto pt-4 border-t border-sidebar-border space-y-1">
-            <Link
-              href="/dashboard/settings/organization"
-              className={cn(
-                'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                pathname.startsWith('/dashboard/settings/organization')
-                  ? 'bg-sidebar-accent text-sidebar-primary'
-                  : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-              )}
-            >
-              <UsersIcon className={cn(
-                'h-5 w-5 shrink-0',
-                pathname.startsWith('/dashboard/settings/organization')
-                  ? 'text-sidebar-primary'
-                  : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-              )} />
-              Team Settings
-            </Link>
-            <Link
-              href="/dashboard/settings/company"
-              className={cn(
-                'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                pathname === '/dashboard/settings/company'
-                  ? 'bg-sidebar-accent text-sidebar-primary'
-                  : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-              )}
-            >
-              <SettingsIcon className={cn(
-                'h-5 w-5 shrink-0',
-                pathname === '/dashboard/settings/company'
-                  ? 'text-sidebar-primary'
-                  : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-              )} />
-              Company Settings
-            </Link>
+          {/* ADMIN Section */}
+          <div className="flex-1 pt-4 border-t border-sidebar-border/50">
+            <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
+              Admin
+            </p>
+            <ul role="list" className="mt-1 space-y-1">
+              {/* Team Settings */}
+              <li>
+                <Link
+                  href="/dashboard/settings/organization"
+                  className={cn(
+                    'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
+                    pathname.startsWith('/dashboard/settings/organization')
+                      ? 'bg-sidebar-accent text-sidebar-primary'
+                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                  )}
+                >
+                  <UsersIcon className={cn(
+                    'h-5 w-5 shrink-0',
+                    pathname.startsWith('/dashboard/settings/organization')
+                      ? 'text-sidebar-primary'
+                      : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
+                  )} />
+                  Team Settings
+                </Link>
+              </li>
+
+              {/* Company Settings */}
+              <li>
+                <Link
+                  href="/dashboard/settings/company"
+                  className={cn(
+                    'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
+                    pathname === '/dashboard/settings/company'
+                      ? 'bg-sidebar-accent text-sidebar-primary'
+                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                  )}
+                >
+                  <SettingsIcon className={cn(
+                    'h-5 w-5 shrink-0',
+                    pathname === '/dashboard/settings/company'
+                      ? 'text-sidebar-primary'
+                      : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
+                  )} />
+                  Company Settings
+                </Link>
+              </li>
+
+              {/* Developer section */}
+              <li>
+                <button
+                  onClick={() => setDeveloperExpanded(!developerExpanded)}
+                  className="flex items-center justify-between w-full gap-x-3 p-2 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent rounded-md transition-colors"
+                >
+                  <div className="flex items-center gap-x-3">
+                    <CodeIcon className="h-5 w-5 shrink-0 text-sidebar-foreground/60" />
+                    Developer
+                  </div>
+                  <ChevronIcon
+                    className={cn(
+                      'h-4 w-4 transition-transform text-sidebar-foreground/60',
+                      developerExpanded ? 'rotate-180' : ''
+                    )}
+                  />
+                </button>
+                <ul className={cn(
+                  'ml-7 space-y-1 overflow-hidden transition-all duration-200',
+                  developerExpanded ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'
+                )}>
+                  <li>
+                    <Link
+                      href="/dashboard/developer/multiple-adjustment"
+                      className={cn(
+                        'block rounded-md px-2 py-1.5 text-sm transition-colors',
+                        pathname.startsWith('/dashboard/developer/multiple-adjustment')
+                          ? 'bg-sidebar-accent text-sidebar-primary font-medium'
+                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                      )}
+                    >
+                      Multiple Adjustment
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/dashboard/company/bri-weights"
+                      className={cn(
+                        'block rounded-md px-2 py-1.5 text-sm transition-colors',
+                        pathname === '/dashboard/company/bri-weights'
+                          ? 'bg-sidebar-accent text-sidebar-primary font-medium'
+                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                      )}
+                    >
+                      BRI Weights
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/dashboard/developer/snapshot"
+                      className={cn(
+                        'block rounded-md px-2 py-1.5 text-sm transition-colors',
+                        pathname.startsWith('/dashboard/developer/snapshot')
+                          ? 'bg-sidebar-accent text-sidebar-primary font-medium'
+                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                      )}
+                    >
+                      Snapshot
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/dashboard/developer/industry-multiples"
+                      className={cn(
+                        'block rounded-md px-2 py-1.5 text-sm transition-colors',
+                        pathname.startsWith('/dashboard/developer/industry-multiples')
+                          ? 'bg-sidebar-accent text-sidebar-primary font-medium'
+                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                      )}
+                    >
+                      Industry Multiples
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/dashboard/developer/task-viewer"
+                      className={cn(
+                        'block rounded-md px-2 py-1.5 text-sm transition-colors',
+                        pathname.startsWith('/dashboard/developer/task-viewer')
+                          ? 'bg-sidebar-accent text-sidebar-primary font-medium'
+                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                      )}
+                    >
+                      Task Viewer
+                    </Link>
+                  </li>
+                </ul>
+              </li>
+
+              {/* Global section */}
+              <li>
+                <button
+                  onClick={() => setGlobalExpanded(!globalExpanded)}
+                  className="flex items-center justify-between w-full gap-x-3 p-2 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent rounded-md transition-colors"
+                >
+                  <div className="flex items-center gap-x-3">
+                    <GearIcon className="h-5 w-5 shrink-0 text-sidebar-foreground/60" />
+                    Global
+                  </div>
+                  <ChevronIcon
+                    className={cn(
+                      'h-4 w-4 transition-transform text-sidebar-foreground/60',
+                      globalExpanded ? 'rotate-180' : ''
+                    )}
+                  />
+                </button>
+                <ul className={cn(
+                  'ml-7 space-y-1 overflow-hidden transition-all duration-200',
+                  globalExpanded ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'
+                )}>
+                  <li>
+                    <Link
+                      href="/dashboard/developer/bri-weighting"
+                      className={cn(
+                        'block rounded-md px-2 py-1.5 text-sm transition-colors',
+                        pathname.startsWith('/dashboard/developer/bri-weighting')
+                          ? 'bg-sidebar-accent text-sidebar-primary font-medium'
+                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                      )}
+                    >
+                      BRI Weighting
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/dashboard/global/add-question"
+                      className={cn(
+                        'block rounded-md px-2 py-1.5 text-sm transition-colors',
+                        pathname.startsWith('/dashboard/global/add-question')
+                          ? 'bg-sidebar-accent text-sidebar-primary font-medium'
+                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                      )}
+                    >
+                      Add Question
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/dashboard/global/add-task"
+                      className={cn(
+                        'block rounded-md px-2 py-1.5 text-sm transition-colors',
+                        pathname.startsWith('/dashboard/global/add-task')
+                          ? 'bg-sidebar-accent text-sidebar-primary font-medium'
+                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                      )}
+                    >
+                      Add Task
+                    </Link>
+                  </li>
+                </ul>
+              </li>
+            </ul>
           </div>
         </nav>
       </div>
@@ -607,7 +616,7 @@ function CodeIcon({ className }: { className?: string }) {
   )
 }
 
-function ScaleIcon({ className }: { className?: string }) {
+function _ScaleIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0 0 12 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 0 1-2.031.352 5.988 5.988 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971Zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 0 1-2.031.352 5.989 5.989 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971Z" />
@@ -615,7 +624,7 @@ function ScaleIcon({ className }: { className?: string }) {
   )
 }
 
-function CameraIcon({ className }: { className?: string }) {
+function _CameraIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
@@ -624,7 +633,7 @@ function CameraIcon({ className }: { className?: string }) {
   )
 }
 
-function ChartIcon({ className }: { className?: string }) {
+function _ChartIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
@@ -664,7 +673,7 @@ function ChevronIcon({ className }: { className?: string }) {
   )
 }
 
-function QuestionIcon({ className }: { className?: string }) {
+function _QuestionIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
@@ -672,7 +681,7 @@ function QuestionIcon({ className }: { className?: string }) {
   )
 }
 
-function TaskIcon({ className }: { className?: string }) {
+function _TaskIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -684,6 +693,14 @@ function FolderIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
+    </svg>
+  )
+}
+
+function CalculatorIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V13.5Zm0 2.25h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V18Zm2.498-6.75h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V13.5Zm0 2.25h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V18Zm2.504-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5Zm0 2.25h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V18Zm2.498-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5ZM8.25 6h7.5v2.25h-7.5V6ZM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 0 0 2.25 2.25h10.5a2.25 2.25 0 0 0 2.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0 0 12 2.25Z" />
     </svg>
   )
 }

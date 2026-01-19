@@ -250,7 +250,7 @@ export async function POST(request: NextRequest) {
   })
 }
 
-function formatCategoryName(category: BriCategory): string {
+function _formatCategoryName(category: BriCategory): string {
   const names: Record<BriCategory, string> = {
     FINANCIAL: 'Financial',
     TRANSFERABILITY: 'Transferability',

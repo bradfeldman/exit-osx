@@ -154,7 +154,7 @@ export default function TaskInvitePage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
           </div>
-          <CardTitle className="text-xl">You've Been Invited to a Task</CardTitle>
+          <CardTitle className="text-xl">You&apos;ve Been Invited to a Task</CardTitle>
           <p className="text-muted-foreground mt-2">
             <strong>{invite.invitedBy.name || invite.invitedBy.email}</strong> has invited you to work on a task for <strong>{invite.company.name}</strong>
           </p>
@@ -173,7 +173,7 @@ export default function TaskInvitePage() {
           <div className="space-y-3">
             {!isLoggedIn && (
               <p className="text-sm text-center text-muted-foreground mb-4">
-                You'll need to log in or create an account to accept this invite.
+                You&apos;ll need to log in or create an account to accept this invite.
               </p>
             )}
 

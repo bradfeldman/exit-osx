@@ -96,7 +96,7 @@ export async function GET(
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
-    // Get existing documents with linked task info
+    // Get existing documents with linked task and uploader info
     let documents = await prisma.dataRoomDocument.findMany({
       where: { companyId },
       include: {
@@ -114,6 +114,23 @@ export async function GET(
         { documentName: 'asc' }
       ]
     })
+
+    // Get uploader info for documents that have uploadedByUserId
+    const uploaderIds = [...new Set(documents.filter(d => d.uploadedByUserId).map(d => d.uploadedByUserId))] as string[]
+    const uploaders = uploaderIds.length > 0
+      ? await prisma.user.findMany({
+          where: { id: { in: uploaderIds } },
+          select: { id: true, name: true, email: true }
+        })
+      : []
+    const uploaderMap = new Map(uploaders.map(u => [u.id, u]))
+
+    // Add uploader info to documents
+    const documentsWithUploaders = documents.map(doc => ({
+      ...doc,
+      uploadedBy: doc.uploadedByUserId ? uploaderMap.get(doc.uploadedByUserId) || null : null
+    }))
+    documents = documentsWithUploaders as typeof documents
 
     // If no documents exist, initialize with standard documents
     if (documents.length === 0) {

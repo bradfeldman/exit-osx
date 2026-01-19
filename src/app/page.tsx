@@ -35,6 +35,9 @@ export default async function Home() {
             />
           </div>
           <div className="flex items-center gap-4">
+            <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+              Pricing
+            </Link>
             <Link href="/login">
               <Button variant="ghost">Sign In</Button>
             </Link>

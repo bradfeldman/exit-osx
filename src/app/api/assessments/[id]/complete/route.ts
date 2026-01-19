@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { generateTasksForCompany } from '@/lib/playbook/generate-tasks'
-import { getIndustryMultiples, calculateBaseMultiple, estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
+import { getIndustryMultiples, estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
 
 // Default category weights for BRI calculation (used if no custom weights set)
 const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {

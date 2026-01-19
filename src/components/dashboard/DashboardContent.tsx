@@ -86,6 +86,7 @@ export function DashboardContent({ userName }: DashboardContentProps) {
   const [noCompany, setNoCompany] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [previewMultiple, setPreviewMultiple] = useState<number | null>(null)
 
   useEffect(() => {
     async function loadData() {
@@ -222,7 +223,7 @@ export function DashboardContent({ userName }: DashboardContentProps) {
     )
   }
 
-  const { company, tier1, tier2, tier3, tier4, tier5, hasAssessment } = dashboardData
+  const { tier1, tier2, tier3, hasAssessment } = dashboardData
 
   // Default empty categories for when no assessment exists
   const emptyCategories = [
@@ -234,6 +235,24 @@ export function DashboardContent({ userName }: DashboardContentProps) {
     { key: 'PERSONAL', label: 'Personal', score: 0 },
   ]
 
+  // Calculate preview values when dragging the multiple slider
+  const isPreviewMode = previewMultiple !== null
+
+  // baseMultiple is the max achievable multiple based on Core Score (used for potential value)
+  const baseMultiple = tier1 && tier2.adjustedEbitda > 0
+    ? tier1.potentialValue / tier2.adjustedEbitda
+    : tier2.multipleRange.high
+
+  const previewCurrentValue = isPreviewMode && tier1
+    ? tier2.adjustedEbitda * previewMultiple
+    : tier1?.currentValue ?? 0
+  const previewValueGap = isPreviewMode && tier1
+    ? tier1.potentialValue - previewCurrentValue
+    : tier1?.valueGap ?? 0
+
+  // Check if preview exceeds the achievable potential (based on Core Score)
+  const isAbovePotential = isPreviewMode && previewMultiple > baseMultiple
+
   // Show the full dashboard (with assessment prompt if needed)
   return (
     <div className="max-w-5xl mx-auto">
@@ -244,15 +263,15 @@ export function DashboardContent({ userName }: DashboardContentProps) {
           {/* Tier 1: Hero Metrics */}
           {tier1 && (
             <HeroMetrics
-              currentValue={tier1.currentValue}
+              currentValue={isPreviewMode ? previewCurrentValue : tier1.currentValue}
               potentialValue={tier1.potentialValue}
-              valueGap={tier1.valueGap}
+              valueGap={isPreviewMode ? previewValueGap : tier1.valueGap}
               briScore={tier1.briScore}
-              multiple={tier1.finalMultiple}
-              multipleRange={tier1.multipleRange}
-              industryName={tier1.industryName}
               coreScore={tier1.coreScore}
+              personalReadinessScore={tier3?.categories.find(c => c.key === 'PERSONAL')?.score ?? 0}
               isEstimated={tier1.isEstimated}
+              isPreviewMode={isPreviewMode}
+              isAbovePotential={isAbovePotential}
             />
           )}
 
@@ -262,6 +281,8 @@ export function DashboardContent({ userName }: DashboardContentProps) {
             isEbitdaEstimated={tier2.isEbitdaEstimated}
             multipleRange={tier2.multipleRange}
             industryName={tier1?.industryName || 'General Industry'}
+            onMultipleDragChange={setPreviewMultiple}
+            onMultipleDragEnd={() => setPreviewMultiple(null)}
           />
 
           {/* Tier 3: Risk Breakdown */}

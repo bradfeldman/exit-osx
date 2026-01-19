@@ -272,6 +272,9 @@ model User {
   taskInvitesSent    TaskInvite[]        @relation("TaskInvitesSent")
   sentInvites        OrganizationInvite[]
   createdSnapshots   ValuationSnapshot[]
+  consents           UserConsent[]
+  deletionRequests   DataDeletionRequest[]
+  dataExports        DataExportRequest[]
 
   @@map("users")
 }
@@ -336,6 +339,7 @@ model Company {
   sprints            Sprint[]
   financialPeriods   FinancialPeriod[]
   dataRoomDocuments  DataRoomDocument[]
+  integrations       Integration[]
   // Project Assessment relations
   projectAssessments    ProjectAssessment[]
   questionPriorities    CompanyQuestionPriority[]
@@ -495,6 +499,7 @@ model Task {
   companyId            String         @map("company_id")
   title                String
   description          String
+  richDescription      Json?          @map("rich_description")  // Structured rich task description
   actionType           ActionItemType @map("action_type")
   briCategory          BriCategory    @map("bri_category")
   linkedQuestionId     String?        @map("linked_question_id")
@@ -508,6 +513,8 @@ model Task {
   status               TaskStatus     @default(PENDING)
   deferredUntil        DateTime?      @map("deferred_until")
   deferralReason       String?        @map("deferral_reason")
+  blockedAt            DateTime?      @map("blocked_at")
+  blockedReason        String?        @map("blocked_reason")  // Why the task is blocked
   completedAt          DateTime?      @map("completed_at")
   completionNotes      String?        @map("completion_notes")  // Notes about how task was completed
   sprintId             String?        @map("sprint_id")
@@ -627,7 +634,8 @@ model DataRoomDocument {
   linkedTaskId      String?          @map("linked_task_id")
 
   // File details
-  fileUrl           String?          @map("file_url")         // Supabase Storage URL
+  fileUrl           String?          @map("file_url")         // Supabase Storage URL (legacy, for public files)
+  filePath          String?          @map("file_path")        // Storage path for private files (signed URLs generated on demand)
   fileName          String?          @map("file_name")        // Original file name
   fileSize          Int?             @map("file_size")        // Bytes
   mimeType          String?          @map("mime_type")
@@ -670,6 +678,73 @@ model SystemSetting {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("system_settings")
+}
+
+// ============================================
+// INTEGRATIONS
+// ============================================
+
+enum IntegrationProvider {
+  QUICKBOOKS_ONLINE
+}
+
+enum SyncStatus {
+  IDLE
+  SYNCING
+  SUCCESS
+  FAILED
+}
+
+model Integration {
+  id              String              @id @default(cuid())
+  companyId       String              @map("company_id")
+  provider        IntegrationProvider
+
+  // OAuth tokens (encrypted in application layer)
+  accessToken     String              @map("access_token")
+  refreshToken    String              @map("refresh_token")
+  tokenExpiresAt  DateTime            @map("token_expires_at")
+
+  // Provider-specific identifiers
+  realmId         String?             @map("realm_id")  // QuickBooks company ID
+  providerCompanyName String?         @map("provider_company_name")
+
+  // Sync settings
+  autoSyncEnabled Boolean             @default(true) @map("auto_sync_enabled")
+  lastSyncAt      DateTime?           @map("last_sync_at")
+  lastSyncStatus  SyncStatus          @default(IDLE) @map("last_sync_status")
+  lastSyncError   String?             @map("last_sync_error")
+
+  // Metadata
+  connectedAt     DateTime            @default(now()) @map("connected_at")
+  disconnectedAt  DateTime?           @map("disconnected_at")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  company         Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  syncLogs        IntegrationSyncLog[]
+
+  @@unique([companyId, provider])
+  @@index([companyId])
+  @@map("integrations")
+}
+
+model IntegrationSyncLog {
+  id              String      @id @default(cuid())
+  integrationId   String      @map("integration_id")
+  syncType        String      @map("sync_type")  // "manual" | "auto" | "initial"
+  status          SyncStatus
+  startedAt       DateTime    @default(now()) @map("started_at")
+  completedAt     DateTime?   @map("completed_at")
+  periodsCreated  Int         @default(0) @map("periods_created")
+  periodsUpdated  Int         @default(0) @map("periods_updated")
+  errorMessage    String?     @map("error_message")
+  errorDetails    Json?       @map("error_details")
+
+  integration     Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@index([integrationId, startedAt])
+  @@map("integration_sync_logs")
 }
 
 // ============================================
@@ -1029,4 +1104,112 @@ model CompanyQuestionPriority {
   @@unique([companyId, questionId])
   @@index([companyId, priorityScore])
   @@map("company_question_priorities")
+}
+
+// ============================================
+// GDPR COMPLIANCE
+// ============================================
+
+enum ConsentType {
+  TERMS_OF_SERVICE
+  PRIVACY_POLICY
+  MARKETING_EMAILS
+  ANALYTICS_COOKIES
+  FUNCTIONAL_COOKIES
+  MARKETING_COOKIES
+}
+
+enum ConsentAction {
+  GRANTED
+  WITHDRAWN
+  UPDATED
+}
+
+enum DeletionRequestStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+enum ExportRequestStatus {
+  PENDING
+  PROCESSING
+  READY
+  DOWNLOADED
+  EXPIRED
+  FAILED
+}
+
+// Tracks user consent history for GDPR compliance
+model UserConsent {
+  id          String        @id @default(cuid())
+  userId      String        @map("user_id")
+  consentType ConsentType   @map("consent_type")
+  action      ConsentAction
+  version     String?       // Version of document consented to
+  ipAddress   String?       @map("ip_address")
+  userAgent   String?       @map("user_agent")
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, consentType])
+  @@index([userId, createdAt])
+  @@map("user_consents")
+}
+
+// Tracks data deletion requests (right to be forgotten)
+model DataDeletionRequest {
+  id              String                @id @default(cuid())
+  userId          String                @map("user_id")
+  status          DeletionRequestStatus @default(PENDING)
+  reason          String?               // Optional reason for deletion
+  requestedAt     DateTime              @default(now()) @map("requested_at")
+  scheduledFor    DateTime              @map("scheduled_for") // 30-day grace period
+  processedAt     DateTime?             @map("processed_at")
+  cancelledAt     DateTime?             @map("cancelled_at")
+  confirmationToken String              @unique @map("confirmation_token")
+  confirmedAt     DateTime?             @map("confirmed_at")
+
+  // Audit trail
+  dataDeleted     Json?                 @map("data_deleted") // Summary of what was deleted
+  deletedBy       String?               @map("deleted_by")   // System or admin ID
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([status, scheduledFor])
+  @@map("data_deletion_requests")
+}
+
+// Tracks data export requests (right to data portability)
+model DataExportRequest {
+  id              String              @id @default(cuid())
+  userId          String              @map("user_id")
+  status          ExportRequestStatus @default(PENDING)
+  requestedAt     DateTime            @default(now()) @map("requested_at")
+  processedAt     DateTime?           @map("processed_at")
+  downloadedAt    DateTime?           @map("downloaded_at")
+  expiresAt       DateTime?           @map("expires_at") // Export file expiry
+
+  // Export file details
+  filePath        String?             @map("file_path")   // Storage path
+  fileSize        Int?                @map("file_size")   // Bytes
+  downloadToken   String?             @unique @map("download_token")
+  downloadCount   Int                 @default(0) @map("download_count")
+
+  // What data was included
+  includeProfile  Boolean             @default(true) @map("include_profile")
+  includeCompanies Boolean            @default(true) @map("include_companies")
+  includeAssessments Boolean          @default(true) @map("include_assessments")
+  includeDocuments Boolean            @default(false) @map("include_documents")
+
+  errorMessage    String?             @map("error_message")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([downloadToken])
+  @@map("data_export_requests")
 }

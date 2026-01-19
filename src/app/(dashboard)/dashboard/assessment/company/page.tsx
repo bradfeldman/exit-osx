@@ -133,6 +133,7 @@ export default function CompanyAssessmentPage() {
     if (selectedCompanyId) {
       loadCoreFactors()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCompanyId])
 
   async function loadCoreFactors() {
@@ -160,8 +161,7 @@ export default function CompanyAssessmentPage() {
           setOriginalFactors(emptyFactors)
         }
       }
-    } catch (err) {
-      console.error('Failed to load core factors:', err)
+    } catch (_err) {
       setError('Failed to load company data')
     } finally {
       setLoading(false)
@@ -226,7 +226,7 @@ export default function CompanyAssessmentPage() {
         const data = await response.json()
         setError(data.error || 'Failed to save core factors')
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to save core factors')
     } finally {
       setSaving(false)

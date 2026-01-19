@@ -358,7 +358,7 @@ export async function selectQuestionsForAssessment(
   }
 
   // Fill remaining slots with highest priority unasked questions from other categories
-  const remaining = targetCount - selectedQuestions.length
+  const _remaining = targetCount - selectedQuestions.length
   const selectedIds = new Set(selectedQuestions.map(q => q.questionId))
 
   for (const priority of applicablePriorities) {

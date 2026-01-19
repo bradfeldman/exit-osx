@@ -52,6 +52,7 @@ export default function RiskAssessmentPage() {
     if (selectedCompanyId) {
       loadAssessmentData()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCompanyId])
 
   async function loadAssessmentData() {
@@ -73,8 +74,7 @@ export default function RiskAssessmentPage() {
         const data = await response.json()
         setError(data.error || 'Failed to load assessment data')
       }
-    } catch (err) {
-      console.error('Failed to load assessment data:', err)
+    } catch (_err) {
       setError('Failed to load assessment data')
     } finally {
       setLoading(false)
@@ -152,7 +152,7 @@ export default function RiskAssessmentPage() {
         const data = await response.json()
         setError(data.error || 'Failed to save responses')
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to save responses')
     } finally {
       setSaving(false)

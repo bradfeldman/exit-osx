@@ -60,8 +60,8 @@ export default function BriWeightingPage() {
         setWeights(data.weights)
         setIsDefault(data.isDefault)
       }
-    } catch (err) {
-      console.error('Failed to load weights:', err)
+    } catch (_err) {
+      // Failed to load weights
     } finally {
       setLoading(false)
     }
@@ -119,7 +119,7 @@ export default function BriWeightingPage() {
         const data = await response.json()
         setError(data.error || 'Failed to save weights')
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to save weights')
     } finally {
       setSaving(false)
@@ -145,7 +145,7 @@ export default function BriWeightingPage() {
       } else {
         setError('Failed to restore defaults')
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to restore defaults')
     } finally {
       setSaving(false)
@@ -182,7 +182,7 @@ export default function BriWeightingPage() {
         </CardHeader>
         <CardContent>
           <div className="p-4 bg-gray-50 rounded-lg border font-mono text-sm">
-            <p className="text-gray-600 mb-2">// Weighted BRI Calculation</p>
+            <p className="text-gray-600 mb-2">{'// Weighted BRI Calculation'}</p>
             <p>BRI = (Financial × <span className="text-blue-600">{(weights.FINANCIAL * 100).toFixed(0)}%</span>)</p>
             <p className="ml-6">+ (Transferability × <span className="text-blue-600">{(weights.TRANSFERABILITY * 100).toFixed(0)}%</span>)</p>
             <p className="ml-6">+ (Operational × <span className="text-blue-600">{(weights.OPERATIONAL * 100).toFixed(0)}%</span>)</p>

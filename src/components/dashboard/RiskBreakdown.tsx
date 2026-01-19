@@ -33,7 +33,7 @@ function getScoreTextColor(score: number): string {
   return 'text-red-600'
 }
 
-export function RiskBreakdown({ categories, topConstraints, hasAssessment = true }: RiskBreakdownProps) {
+export function RiskBreakdown({ categories, topConstraints: _topConstraints, hasAssessment = true }: RiskBreakdownProps) {
   return (
     <div className="py-8 border-t border-gray-100">
       <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-6">

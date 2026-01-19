@@ -249,11 +249,11 @@ export default function MultipleAdjustmentPage() {
 
               {/* Calculation Breakdown */}
               <div className="mt-4 p-4 bg-gray-100 rounded-lg font-mono text-sm">
-                <p className="text-gray-600 mb-2">// Step-by-step calculation:</p>
+                <p className="text-gray-600 mb-2">{'// Step-by-step calculation:'}</p>
                 <p>BaseMultiple = {snapshot.industryMultipleLow.toFixed(1)} + ({Math.round(snapshot.coreScore * 100)} / 100) × ({snapshot.industryMultipleHigh.toFixed(1)} - {snapshot.industryMultipleLow.toFixed(1)}) = <span className="text-blue-600 font-semibold">{snapshot.baseMultiple.toFixed(2)}x</span></p>
                 <p className="mt-1">DiscountFraction = (1 - {Math.round(snapshot.briScore * 100)} / 100)^{snapshot.alphaConstant} = <span className="text-orange-600 font-semibold">{(snapshot.discountFraction * 100).toFixed(1)}%</span></p>
                 <p className="mt-1">FinalMultiple = {snapshot.industryMultipleLow.toFixed(1)} + ({snapshot.baseMultiple.toFixed(2)} - {snapshot.industryMultipleLow.toFixed(1)}) × (1 - {snapshot.discountFraction.toFixed(3)}) = <span className="text-green-600 font-semibold">{snapshot.finalMultiple.toFixed(2)}x</span></p>
-                <p className="mt-3 text-gray-600">// Final valuation:</p>
+                <p className="mt-3 text-gray-600">{'// Final valuation:'}</p>
                 <p>CurrentValue = ${(snapshot.adjustedEbitda / 1000).toFixed(0)}K × {snapshot.finalMultiple.toFixed(2)}x = <span className="font-semibold">${(snapshot.currentValue / 1000000).toFixed(2)}M</span></p>
               </div>
             </div>

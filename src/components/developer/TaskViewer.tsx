@@ -119,6 +119,7 @@ export function TaskViewer({ onBack }: TaskViewerProps) {
     if (selectedCompanyId) {
       loadTasks()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCompanyId, statusFilter, categoryFilter])
 
   async function loadTasks() {

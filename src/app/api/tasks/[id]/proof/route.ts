@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 
-// GET - Get proof documents for a task
+// GET - Get proof documents for a task with signed download URLs
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -41,7 +41,26 @@ export async function GET(
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ proofDocuments: task.proofDocuments })
+    // Generate signed download URLs for each document with a filePath
+    // Use service client for storage operations (bypasses RLS)
+    const serviceClient = createServiceClient()
+    const documentsWithUrls = await Promise.all(
+      task.proofDocuments.map(async (doc) => {
+        if (doc.filePath && doc.status === 'CURRENT') {
+          const { data: signedUrlData } = await serviceClient.storage
+            .from('data-room')
+            .createSignedUrl(doc.filePath, 3600) // 1 hour expiry
+
+          return {
+            ...doc,
+            signedUrl: signedUrlData?.signedUrl || null
+          }
+        }
+        return { ...doc, signedUrl: null }
+      })
+    )
+
+    return NextResponse.json({ proofDocuments: documentsWithUrls })
   } catch (error) {
     console.error('Error fetching proof documents:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -118,8 +137,9 @@ export async function POST(
     const sanitizedName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_')
     const filePath = `${task.companyId}/task-proofs/${taskId}_${timestamp}_${sanitizedName}`
 
-    // Create signed upload URL
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    // Create signed upload URL using service client (bypasses RLS)
+    const serviceClient = createServiceClient()
+    const { data: uploadData, error: uploadError } = await serviceClient.storage
       .from('data-room')
       .createSignedUploadUrl(filePath)
 
@@ -130,17 +150,18 @@ export async function POST(
       return NextResponse.json({ error: 'Failed to create upload URL' }, { status: 500 })
     }
 
-    // Get the public URL
-    const { data: urlData } = supabase.storage
-      .from('data-room')
-      .getPublicUrl(filePath)
+    // Store the file path - we'll generate signed URLs on demand for viewing
+    // Update the document with the file path
+    await prisma.dataRoomDocument.update({
+      where: { id: proofDoc.id },
+      data: { filePath }
+    })
 
     return NextResponse.json({
-      proofDocument: proofDoc,
+      proofDocument: { ...proofDoc, filePath },
       uploadUrl: uploadData.signedUrl,
       token: uploadData.token,
       filePath,
-      publicUrl: urlData.publicUrl,
     })
   } catch (error) {
     console.error('Error creating proof document:', error)
@@ -148,7 +169,7 @@ export async function POST(
   }
 }
 
-// PATCH - Confirm upload is complete and update document
+// PATCH - Confirm upload is complete and update document status
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -163,10 +184,10 @@ export async function PATCH(
 
     const { id: taskId } = await params
     const body = await request.json()
-    const { documentId, publicUrl, completeTask, completionNotes } = body
+    const { documentId, completeTask, completionNotes } = body
 
-    if (!documentId || !publicUrl) {
-      return NextResponse.json({ error: 'Document ID and public URL are required' }, { status: 400 })
+    if (!documentId) {
+      return NextResponse.json({ error: 'Document ID is required' }, { status: 400 })
     }
 
     // Verify task and document access
@@ -188,14 +209,14 @@ export async function PATCH(
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }
 
-    // Update the document with the file URL and mark as current
+    // Mark the document as current (upload confirmed)
+    // Note: We don't store public URLs anymore - signed URLs are generated on demand
     const updatedDoc = await prisma.dataRoomDocument.update({
       where: {
         id: documentId,
         linkedTaskId: taskId, // Ensure document belongs to this task
       },
       data: {
-        fileUrl: publicUrl,
         status: 'CURRENT',
         lastUpdatedAt: new Date(),
       }
@@ -228,6 +249,83 @@ export async function PATCH(
     })
   } catch (error) {
     console.error('Error confirming proof upload:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+// DELETE - Delete a proof document
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id: taskId } = await params
+    const { searchParams } = new URL(request.url)
+    const documentId = searchParams.get('documentId')
+
+    if (!documentId) {
+      return NextResponse.json({ error: 'Document ID is required' }, { status: 400 })
+    }
+
+    // Verify task access
+    const task = await prisma.task.findFirst({
+      where: {
+        id: taskId,
+        company: {
+          deletedAt: null,
+          organization: {
+            users: {
+              some: { user: { authId: user.id } }
+            }
+          }
+        }
+      }
+    })
+
+    if (!task) {
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 })
+    }
+
+    // Find the document
+    const document = await prisma.dataRoomDocument.findFirst({
+      where: {
+        id: documentId,
+        linkedTaskId: taskId,
+      }
+    })
+
+    if (!document) {
+      return NextResponse.json({ error: 'Document not found' }, { status: 404 })
+    }
+
+    // Delete from storage if file exists
+    if (document.filePath) {
+      const serviceClient = createServiceClient()
+      const { error: storageError } = await serviceClient.storage
+        .from('data-room')
+        .remove([document.filePath])
+
+      if (storageError) {
+        console.error('Error deleting file from storage:', storageError)
+        // Continue with database deletion even if storage deletion fails
+      }
+    }
+
+    // Delete the database record
+    await prisma.dataRoomDocument.delete({
+      where: { id: documentId }
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Error deleting proof document:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

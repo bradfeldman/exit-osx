@@ -140,7 +140,7 @@ export function AddTaskFlow({ onBack }: AddTaskFlowProps) {
         const error = await response.json()
         alert(`Error: ${error.message}`)
       }
-    } catch (error) {
+    } catch (_error) {
       alert('Failed to save task')
     } finally {
       setIsSaving(false)

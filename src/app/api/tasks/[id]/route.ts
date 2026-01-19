@@ -112,7 +112,7 @@ export async function PATCH(
 
   try {
     const body = await request.json()
-    const { status, deferredUntil, deferralReason, dueDate, primaryAssigneeId, assigneeIds, completionNotes } = body
+    const { status, deferredUntil, deferralReason, blockedReason, dueDate, primaryAssigneeId, assigneeIds, completionNotes } = body
 
     // Verify user has access
     const existingTask = await prisma.task.findUnique({
@@ -147,12 +147,22 @@ export async function PATCH(
       updateData.status = status
       if (status === 'COMPLETED') {
         updateData.completedAt = new Date()
+        // Clear blocked state when completed
+        updateData.blockedAt = null
+        updateData.blockedReason = null
         if (completionNotes) {
           updateData.completionNotes = completionNotes
         }
       } else if (status === 'DEFERRED') {
         updateData.deferredUntil = deferredUntil ? new Date(deferredUntil) : null
         updateData.deferralReason = deferralReason
+      } else if (status === 'BLOCKED') {
+        updateData.blockedAt = new Date()
+        updateData.blockedReason = blockedReason || 'No reason provided'
+      } else if (status === 'IN_PROGRESS' || status === 'PENDING') {
+        // Clear blocked state when resuming work
+        updateData.blockedAt = null
+        updateData.blockedReason = null
       }
     }
 

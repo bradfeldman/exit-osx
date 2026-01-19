@@ -11,6 +11,8 @@ interface ValueDriversProps {
     current: number | null
   }
   industryName: string
+  onMultipleDragChange?: (multiple: number) => void
+  onMultipleDragEnd?: () => void
 }
 
 function formatCurrency(value: number): string {
@@ -23,7 +25,7 @@ function formatCurrency(value: number): string {
   return `$${value.toFixed(0)}`
 }
 
-export function ValueDrivers({ adjustedEbitda, isEbitdaEstimated, multipleRange, industryName }: ValueDriversProps) {
+export function ValueDrivers({ adjustedEbitda, isEbitdaEstimated, multipleRange, industryName, onMultipleDragChange, onMultipleDragEnd }: ValueDriversProps) {
   const ebitdaLabel = isEbitdaEstimated ? 'Estimated EBITDA' : 'Adjusted EBITDA'
   const ebitdaDescription = isEbitdaEstimated
     ? 'Estimated from your revenue'
@@ -57,6 +59,8 @@ export function ValueDrivers({ adjustedEbitda, isEbitdaEstimated, multipleRange,
             low={multipleRange.low}
             high={multipleRange.high}
             current={multipleRange.current}
+            onDragChange={onMultipleDragChange}
+            onDragEnd={onMultipleDragEnd}
           />
         </div>
       </div>

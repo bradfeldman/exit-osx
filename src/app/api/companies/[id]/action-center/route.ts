@@ -248,11 +248,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }))
 
   // Determine recommended next assessment
-  let recommendedAssessment = null
+  let _recommendedAssessment = null
 
   if (inProgressAssessment) {
     // Continue existing assessment
-    recommendedAssessment = {
+    _recommendedAssessment = {
       type: 'continue',
       assessmentId: inProgressAssessment.id,
       category: inProgressAssessment.primaryCategory,
@@ -270,7 +270,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     )
 
     if (needsAssessment) {
-      recommendedAssessment = {
+      _recommendedAssessment = {
         type: 'new',
         category: needsAssessment.category,
         label: needsAssessment.label,

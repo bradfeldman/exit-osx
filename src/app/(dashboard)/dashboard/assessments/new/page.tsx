@@ -45,6 +45,7 @@ export default function NewAssessmentPage() {
     if (selectedCompanyId) {
       createAssessment()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCompanyId])
 
   // Redirect when both assessment is ready and animation has progressed enough

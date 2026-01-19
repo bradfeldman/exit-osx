@@ -83,7 +83,7 @@ export default function AssessmentPage() {
   const router = useRouter()
   const params = useParams()
   const assessmentId = params.id as string
-  const { selectedCompanyId } = useCompany()
+  const { selectedCompanyId: _selectedCompanyId } = useCompany()
 
   const [assessment, setAssessment] = useState<Assessment | null>(null)
   const [loading, setLoading] = useState(true)
@@ -102,6 +102,7 @@ export default function AssessmentPage() {
     // Mark initialization complete after a brief delay to prevent error flash
     const timer = setTimeout(() => setInitializing(false), 500)
     return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assessmentId])
 
   async function loadAssessment() {

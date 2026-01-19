@@ -112,7 +112,7 @@ export function AddQuestionFlow({ onBack }: AddQuestionFlowProps) {
         const error = await response.json()
         alert(`Error: ${error.message}`)
       }
-    } catch (error) {
+    } catch (_error) {
       alert('Failed to save question')
     } finally {
       setIsSaving(false)
@@ -373,7 +373,7 @@ export function AddQuestionFlow({ onBack }: AddQuestionFlowProps) {
               </p>
             </div>
 
-            {questionData.answers.filter(a => a.riskLevel !== 'LOW').map((answer, index) => (
+            {questionData.answers.filter(a => a.riskLevel !== 'LOW').map((answer, _index) => (
               <div key={answer.id} className="p-4 border rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <span className={`text-sm font-medium ${
@@ -449,7 +449,7 @@ export function AddQuestionFlow({ onBack }: AddQuestionFlowProps) {
             <div>
               <h4 className="text-sm font-medium mb-2">Answer Options</h4>
               <div className="border rounded-lg divide-y">
-                {questionData.answers.map((answer, index) => (
+                {questionData.answers.map((answer, _index) => (
                   <div key={answer.id} className="p-3 flex items-center justify-between">
                     <div>
                       <span className={`text-xs font-medium ${

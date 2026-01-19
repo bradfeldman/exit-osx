@@ -46,7 +46,7 @@ export async function POST(
     }
 
     // Generate a unique file path
-    const fileExtension = fileName.split('.').pop() || ''
+    const _fileExtension = fileName.split('.').pop() || ''
     const timestamp = Date.now()
     const sanitizedName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_')
     const filePath = `${companyId}/${docId}_${timestamp}_${sanitizedName}`

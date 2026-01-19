@@ -3,20 +3,9 @@ import { Prisma } from '@prisma/client'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snapshot'
+import { DEFAULT_BRI_WEIGHTS, type BriWeights } from '@/lib/bri-weights'
 
 const BRI_WEIGHTS_KEY = 'bri_category_weights'
-
-// Default weights that must sum to 1.0 (100%)
-export const DEFAULT_BRI_WEIGHTS = {
-  FINANCIAL: 0.25,
-  TRANSFERABILITY: 0.20,
-  OPERATIONAL: 0.20,
-  MARKET: 0.15,
-  LEGAL_TAX: 0.10,
-  PERSONAL: 0.10,
-}
-
-export type BriWeights = typeof DEFAULT_BRI_WEIGHTS
 
 export async function GET() {
   const supabase = await createClient()

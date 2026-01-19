@@ -64,6 +64,7 @@ export function TaskAssignDialog({
     if (open && companyId) {
       fetchTeamMembers()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, companyId])
 
   useEffect(() => {
@@ -85,8 +86,8 @@ export function TaskAssignDialog({
         const data = await res.json()
         setTeamMembers(data.members || [])
       }
-    } catch (err) {
-      console.error('Error fetching team members:', err)
+    } catch (_err) {
+      // Error fetching team members
     } finally {
       setIsLoading(false)
     }
@@ -113,7 +114,7 @@ export function TaskAssignDialog({
 
       onSave()
       onOpenChange(false)
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to save changes')
     } finally {
       setIsSaving(false)
@@ -158,7 +159,7 @@ export function TaskAssignDialog({
         onSave()
         onOpenChange(false)
       }, 1500)
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to send invite')
     } finally {
       setIsInviting(false)

@@ -166,7 +166,7 @@ export default function AddBacksPage() {
   const [incomeStatement, setIncomeStatement] = useState<IncomeStatementData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [hasPeriods, setHasPeriods] = useState<boolean | null>(null)
+  const [_hasPeriods, setHasPeriods] = useState<boolean | null>(null)
 
   // Combobox state
   const [open, setOpen] = useState(false)

@@ -275,7 +275,7 @@ export function AssessmentWizard({ companyId, companyName }: AssessmentWizardPro
 
   // Celebration screen after completing assessment
   if (showCelebration && celebrationData) {
-    const formatCurrency = (value: number) =>
+    const _formatCurrency = (value: number) =>
       new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value)
 
     return (

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { PlusCircle, Calendar, ChevronDown } from 'lucide-react'
+import { PlusCircle, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Select,

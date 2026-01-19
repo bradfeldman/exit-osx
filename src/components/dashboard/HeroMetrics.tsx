@@ -1,23 +1,21 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 
 interface HeroMetricsProps {
   currentValue: number
   potentialValue: number
   valueGap: number
   briScore: number | null
-  multiple: number
-  multipleRange: {
-    low: number
-    high: number
-  }
-  industryName: string
   coreScore: number | null
+  personalReadinessScore: number
   isEstimated?: boolean
+  isPreviewMode?: boolean
+  isAbovePotential?: boolean
 }
 
-type HoverState = null | 'valueGap' | 'bri' | 'coreIndex' | 'multiple'
+type HoverState = null | 'valueGap' | 'bri' | 'coreIndex' | 'personalReadiness'
 
 const descriptions: Record<Exclude<HoverState, null>, { title: string; description: string }> = {
   valueGap: {
@@ -32,9 +30,9 @@ const descriptions: Record<Exclude<HoverState, null>, { title: string; descripti
     title: "Core Index",
     description: "Reflects structural business factors: revenue size, revenue model, gross margin, labor intensity, asset intensity, and owner involvement.",
   },
-  multiple: {
-    title: "EBITDA Multiple",
-    description: "The EBITDA multiple applied to your adjusted earnings. Determined by your industry range, Core Index positioning, and BRI-based discount.",
+  personalReadiness: {
+    title: "Personal Readiness",
+    description: "Measures your personal preparedness to exit: clarity on timeline, separation of personal and business assets, and key employee awareness of transition plans.",
   },
 }
 
@@ -66,11 +64,11 @@ export function HeroMetrics({
   potentialValue,
   valueGap,
   briScore,
-  multiple,
-  multipleRange,
-  industryName,
   coreScore,
-  isEstimated = false
+  personalReadinessScore,
+  isEstimated = false,
+  isPreviewMode = false,
+  isAbovePotential = false
 }: HeroMetricsProps) {
   const [hoveredCard, setHoveredCard] = useState<HoverState>(null)
 
@@ -79,7 +77,10 @@ export function HeroMetrics({
       {/* Two-column layout: Market Value on left, 4 metrics on right */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Left: Primary KPI - Estimated Market Value (or description on hover) */}
-        <div className="flex items-center justify-center p-8 md:p-12 rounded-xl bg-[#3D3D3D] shadow-lg transition-all duration-300">
+        <div className={`flex items-center justify-center p-8 md:p-12 rounded-xl shadow-lg transition-all duration-300 ${
+          isAbovePotential ? 'bg-amber-600 ring-4 ring-amber-500/30' :
+          isPreviewMode ? 'bg-[#B87333] ring-4 ring-[#B87333]/30' : 'bg-[#3D3D3D]'
+        }`}>
           {hoveredCard ? (
             <div className="text-center">
               <p className="text-sm font-medium text-[#B87333] uppercase tracking-wide mb-3">
@@ -91,16 +92,32 @@ export function HeroMetrics({
             </div>
           ) : (
             <div className="text-center">
-              <p className="text-sm font-medium text-gray-300 uppercase tracking-wide mb-1">
-                Estimated Market Value Today
+              <p className={`text-sm font-medium uppercase tracking-wide mb-1 ${
+                isPreviewMode ? 'text-white' : 'text-gray-300'
+              }`}>
+                {isAbovePotential ? 'Above Your Potential' : isPreviewMode ? 'Preview: Market Value' : 'Estimated Market Value Today'}
               </p>
-              <p className="text-xs text-gray-400 mb-3">
-                {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-              </p>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight">
+              {!isPreviewMode && (
+                <p className="text-xs text-gray-400 mb-3">
+                  {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                </p>
+              )}
+              {isPreviewMode && !isAbovePotential && (
+                <p className="text-xs text-white/70 mb-3">
+                  Based on selected multiple
+                </p>
+              )}
+              {isAbovePotential && (
+                <p className="text-xs text-white/90 mb-3">
+                  Requires higher Core Index to achieve
+                </p>
+              )}
+              <h1 className={`text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight transition-all ${
+                isPreviewMode ? 'text-white scale-105' : 'text-white'
+              }`}>
                 {formatCurrency(currentValue)}
               </h1>
-              {isEstimated && (
+              {isEstimated && !isPreviewMode && (
                 <p className="text-xs text-[#B87333] mt-3">
                   Based on estimated EBITDA
                   <br />
@@ -117,18 +134,20 @@ export function HeroMetrics({
           <div
             className={`text-center p-4 md:p-6 rounded-xl bg-white border shadow-sm flex flex-col justify-center cursor-pointer transition-all duration-200 ${
               hoveredCard === 'valueGap' ? 'border-[#B87333] shadow-md' : 'border-gray-100'
-            }`}
+            } ${isAbovePotential ? 'ring-2 ring-amber-500/50' : isPreviewMode ? 'ring-2 ring-[#B87333]/50' : ''}`}
             onMouseEnter={() => setHoveredCard('valueGap')}
             onMouseLeave={() => setHoveredCard(null)}
           >
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
-              Value Gap
+              {isAbovePotential ? 'Exceeds Potential' : isPreviewMode ? 'Preview: Value Gap' : 'Value Gap'}
             </p>
-            <p className="text-2xl md:text-3xl font-semibold text-[#3D3D3D]">
-              {formatCurrency(valueGap)}
+            <p className={`text-2xl md:text-3xl font-semibold transition-all ${
+              isAbovePotential ? 'text-amber-600' : isPreviewMode ? 'text-[#B87333]' : 'text-[#3D3D3D]'
+            }`}>
+              {valueGap < 0 ? `+${formatCurrency(Math.abs(valueGap))}` : formatCurrency(valueGap)}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Max EV: {formatCurrency(potentialValue)}
+              {isAbovePotential ? 'Above max for Core Index' : `Max EV: ${formatCurrency(potentialValue)}`}
             </p>
           </div>
 
@@ -136,7 +155,7 @@ export function HeroMetrics({
           <div
             className={`text-center p-4 md:p-6 rounded-xl bg-white border shadow-sm flex flex-col justify-center cursor-pointer transition-all duration-200 ${
               hoveredCard === 'bri' ? 'border-[#B87333] shadow-md' : 'border-gray-100'
-            }`}
+            } ${isPreviewMode ? 'opacity-60' : ''}`}
             onMouseEnter={() => setHoveredCard('bri')}
             onMouseLeave={() => setHoveredCard(null)}
           >
@@ -149,7 +168,7 @@ export function HeroMetrics({
                   {briScore}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Scale: 0 - 100
+                  {isPreviewMode ? 'Assessment-based' : 'Scale: 0 - 100'}
                 </p>
               </>
             ) : (
@@ -165,55 +184,59 @@ export function HeroMetrics({
           </div>
 
           {/* Core Index */}
-          <div
-            className={`text-center p-4 md:p-6 rounded-xl bg-white border shadow-sm flex flex-col justify-center cursor-pointer transition-all duration-200 ${
-              hoveredCard === 'coreIndex' ? 'border-[#B87333] shadow-md' : 'border-gray-100'
-            }`}
-            onMouseEnter={() => setHoveredCard('coreIndex')}
-            onMouseLeave={() => setHoveredCard(null)}
-          >
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
-              Core Index
-            </p>
-            {coreScore !== null ? (
-              <>
-                <p className={`text-2xl md:text-3xl font-semibold ${getCoreIndexColor(coreScore)}`}>
-                  {coreScore}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Scale: 0 - 100
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="text-2xl md:text-3xl font-semibold text-gray-400">
-                  --
-                </p>
-                <p className="text-xs text-[#B87333] mt-1">
-                  Complete assessment
-                </p>
-              </>
-            )}
-          </div>
+          <Link href="/dashboard/assessment/company">
+            <div
+              className={`text-center p-4 md:p-6 rounded-xl bg-white border shadow-sm flex flex-col justify-center cursor-pointer transition-all duration-200 hover:shadow-md ${
+                hoveredCard === 'coreIndex' ? 'border-[#B87333] shadow-md' : 'border-gray-100'
+              } ${isPreviewMode ? 'opacity-60' : ''}`}
+              onMouseEnter={() => setHoveredCard('coreIndex')}
+              onMouseLeave={() => setHoveredCard(null)}
+            >
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                Core Index
+              </p>
+              {coreScore !== null ? (
+                <>
+                  <p className={`text-2xl md:text-3xl font-semibold ${getCoreIndexColor(coreScore)}`}>
+                    {coreScore}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Scale: 0 - 100
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-2xl md:text-3xl font-semibold text-gray-400">
+                    --
+                  </p>
+                  <p className="text-xs text-[#B87333] mt-1">
+                    Complete assessment
+                  </p>
+                </>
+              )}
+            </div>
+          </Link>
 
-          {/* EBITDA Multiple */}
-          <div
-            className={`text-center p-4 md:p-6 rounded-xl bg-white border shadow-sm flex flex-col justify-center cursor-pointer transition-all duration-200 ${
-              hoveredCard === 'multiple' ? 'border-[#B87333] shadow-md' : 'border-gray-100'
-            }`}
-            onMouseEnter={() => setHoveredCard('multiple')}
-            onMouseLeave={() => setHoveredCard(null)}
-          >
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
-              EBITDA Multiple
-            </p>
-            <p className="text-2xl md:text-3xl font-semibold text-[#3D3D3D]">
-              {multiple.toFixed(1)}x
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Range: {multipleRange.low.toFixed(1)}x - {multipleRange.high.toFixed(1)}x
-            </p>
-          </div>
+          {/* Personal Readiness */}
+          <Link href="/dashboard/assessment/personal-readiness">
+            <div
+              className={`text-center p-4 md:p-6 rounded-xl bg-white border shadow-sm flex flex-col justify-center cursor-pointer transition-all duration-200 hover:shadow-md ${
+                hoveredCard === 'personalReadiness' ? 'border-[#B87333] shadow-md' : 'border-gray-100'
+              } ${isPreviewMode ? 'opacity-60' : ''}`}
+              onMouseEnter={() => setHoveredCard('personalReadiness')}
+              onMouseLeave={() => setHoveredCard(null)}
+            >
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                Personal Readiness
+              </p>
+              <p className={`text-2xl md:text-3xl font-semibold ${getBriColor(personalReadinessScore)}`}>
+                {personalReadinessScore}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Scale: 0 - 100
+              </p>
+            </div>
+          </Link>
         </div>
       </div>
     </div>

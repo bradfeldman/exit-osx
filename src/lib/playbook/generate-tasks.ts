@@ -4,7 +4,9 @@
 // Uses Issue Tier System: value allocation based on M&A buyer risk (60/30/10)
 
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { getTemplatesForQuestion } from './task-templates'
+import { type RichTaskDescription } from './rich-task-description'
 
 // Use flexible types to handle Prisma Decimal
 type NumberLike = string | number | { toString(): string }
@@ -43,6 +45,7 @@ interface ValuationSnapshot {
 interface TaskToCreate {
   title: string
   description: string
+  richDescription?: RichTaskDescription
   actionType: string
   briCategory: string
   linkedQuestionId: string
@@ -178,6 +181,7 @@ export async function generateTasksForCompany(
         tasksToCreate.push({
           title: taskDef.title,
           description: taskDef.description,
+          richDescription: taskDef.richDescription,
           actionType: taskDef.actionType,
           briCategory: template.briCategory,
           linkedQuestionId: questionId,
@@ -210,6 +214,7 @@ export async function generateTasksForCompany(
           companyId,
           title: task.title,
           description: task.description,
+          ...(task.richDescription && { richDescription: task.richDescription as unknown as Prisma.InputJsonValue }),
           actionType: task.actionType as never,
           briCategory: task.briCategory as never,
           linkedQuestionId: task.linkedQuestionId,

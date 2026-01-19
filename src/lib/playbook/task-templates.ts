@@ -1,6 +1,8 @@
 // Task templates for generating playbook items based on BRI assessment responses
 // Each template is tied to a question and generates tasks when the response score is below threshold
 
+import { type RichTaskDescription, SAMPLE_CUSTOMER_CONCENTRATION_DESCRIPTION } from './rich-task-description'
+
 export type ActionItemType =
   | 'TYPE_I_EVIDENCE'
   | 'TYPE_II_DOCUMENTATION'
@@ -24,6 +26,7 @@ export interface TaskTemplate {
   tasks: Array<{
     title: string
     description: string
+    richDescription?: RichTaskDescription // Structured detailed description for the task
     actionType: ActionItemType
     effortLevel: EffortLevel
     complexity: ComplexityLevel
@@ -207,6 +210,7 @@ export const taskTemplates: TaskTemplate[] = [
       {
         title: 'Document customer concentration risk mitigation',
         description: 'Create a risk assessment and mitigation plan for customer concentration to present to buyers.',
+        richDescription: SAMPLE_CUSTOMER_CONCENTRATION_DESCRIPTION,
         actionType: 'TYPE_II_DOCUMENTATION',
         effortLevel: 'LOW',
         complexity: 'SIMPLE',

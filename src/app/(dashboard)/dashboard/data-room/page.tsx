@@ -28,6 +28,7 @@ interface DataRoomDocument {
   documentName: string
   description: string | null
   fileUrl: string | null
+  filePath: string | null
   fileName: string | null
   fileSize: number | null
   mimeType: string | null
@@ -38,11 +39,17 @@ interface DataRoomDocument {
   isRequired: boolean
   isCustom: boolean
   notes: string | null
+  createdAt: string
   linkedTaskId: string | null
   linkedTask?: {
     id: string
     title: string
     status: string
+  } | null
+  uploadedBy?: {
+    id: string
+    name: string | null
+    email: string
   } | null
 }
 
@@ -53,7 +60,7 @@ const CATEGORY_INFO: Record<string, { label: string; icon: React.ReactNode; colo
   CUSTOMERS: { label: 'Customers & Sales', icon: <UsersIcon className="h-5 w-5" />, color: 'bg-green-100 text-green-700' },
   EMPLOYEES: { label: 'Human Resources', icon: <TeamIcon className="h-5 w-5" />, color: 'bg-orange-100 text-orange-700' },
   IP: { label: 'Intellectual Property', icon: <LightbulbIcon className="h-5 w-5" />, color: 'bg-pink-100 text-pink-700' },
-  TASK_PROOF: { label: 'Task Completion Proofs', icon: <CheckIcon className="h-5 w-5" />, color: 'bg-emerald-100 text-emerald-700' },
+  TASK_PROOF: { label: 'Internal Documents', icon: <CheckIcon className="h-5 w-5" />, color: 'bg-emerald-100 text-emerald-700' },
   CUSTOM: { label: 'Custom Documents', icon: <FolderIcon className="h-5 w-5" />, color: 'bg-gray-100 text-gray-700' },
 }
 
@@ -415,9 +422,15 @@ export default function DataRoomPage() {
                       <div className="text-left">
                         <CardTitle className="text-base">{info.label}</CardTitle>
                         <p className="text-sm text-muted-foreground">
-                          {uploadedCount}/{categoryDocs.length} documents uploaded
-                          {overdueCount > 0 && (
-                            <span className="text-red-600 ml-2">({overdueCount} overdue)</span>
+                          {category === 'TASK_PROOF' ? (
+                            `${categoryDocs.length} document${categoryDocs.length === 1 ? '' : 's'} from tasks`
+                          ) : (
+                            <>
+                              {uploadedCount}/{categoryDocs.length} documents uploaded
+                              {overdueCount > 0 && (
+                                <span className="text-red-600 ml-2">({overdueCount} overdue)</span>
+                              )}
+                            </>
                           )}
                         </p>
                       </div>
@@ -445,33 +458,83 @@ export default function DataRoomPage() {
                           {doc.description && (
                             <p className="text-sm text-muted-foreground truncate">{doc.description}</p>
                           )}
-                          <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                            <span>Update: {FREQUENCY_LABELS[doc.updateFrequency]}</span>
-                            {doc.fileUrl && (
-                              <>
-                                <span>|</span>
-                                <span>Last updated: {formatDate(doc.lastUpdatedAt)}</span>
-                                {doc.nextUpdateDue && doc.updateFrequency !== 'ONE_TIME' && doc.updateFrequency !== 'AS_NEEDED' && (
-                                  <>
-                                    <span>|</span>
-                                    <span className={doc.status === 'OVERDUE' ? 'text-red-600' : doc.status === 'NEEDS_UPDATE' ? 'text-yellow-600' : ''}>
-                                      {getRelativeTime(doc.nextUpdateDue)}
-                                    </span>
-                                  </>
-                                )}
-                              </>
-                            )}
-                          </div>
+                          {/* Show different info for task proof docs vs regular docs */}
+                          {doc.category === 'TASK_PROOF' ? (
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs text-muted-foreground">
+                              {doc.linkedTask && (
+                                <span className="flex items-center gap-1">
+                                  <span className="text-emerald-600">Task:</span>
+                                  <span className="truncate max-w-[200px]">{doc.linkedTask.title}</span>
+                                </span>
+                              )}
+                              {doc.uploadedBy && (
+                                <span>
+                                  Uploaded by: {doc.uploadedBy.name || doc.uploadedBy.email}
+                                </span>
+                              )}
+                              {doc.createdAt && (
+                                <span>
+                                  {formatDate(doc.createdAt)}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                              <span>Update: {FREQUENCY_LABELS[doc.updateFrequency]}</span>
+                              {(doc.fileUrl || doc.filePath) && (
+                                <>
+                                  <span>|</span>
+                                  <span>Last updated: {formatDate(doc.lastUpdatedAt)}</span>
+                                  {doc.nextUpdateDue && doc.updateFrequency !== 'ONE_TIME' && doc.updateFrequency !== 'AS_NEEDED' && (
+                                    <>
+                                      <span>|</span>
+                                      <span className={doc.status === 'OVERDUE' ? 'text-red-600' : doc.status === 'NEEDS_UPDATE' ? 'text-yellow-600' : ''}>
+                                        {getRelativeTime(doc.nextUpdateDue)}
+                                      </span>
+                                    </>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-2 ml-4">
-                          {doc.fileUrl && (
-                            <span className={`text-xs px-2 py-1 rounded ${STATUS_STYLES[doc.status].bg} ${STATUS_STYLES[doc.status].text}`}>
-                              {STATUS_STYLES[doc.status].label}
+                          {(doc.fileUrl || doc.filePath) && (
+                            <span className={`text-xs px-2 py-1 rounded ${STATUS_STYLES[doc.status]?.bg || 'bg-gray-100'} ${STATUS_STYLES[doc.status]?.text || 'text-gray-700'}`}>
+                              {STATUS_STYLES[doc.status]?.label || 'Uploaded'}
                             </span>
                           )}
 
-                          {doc.fileUrl ? (
+                          {/* For task proofs, use signed URL fetch */}
+                          {doc.category === 'TASK_PROOF' && (doc.filePath || doc.status === 'CURRENT') && doc.linkedTaskId ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={async (e) => {
+                                e.stopPropagation()
+                                try {
+                                  const response = await fetch(`/api/tasks/${doc.linkedTaskId}/proof`)
+                                  if (response.ok) {
+                                    const data = await response.json()
+                                    const docWithUrl = data.proofDocuments?.find((d: { id: string; signedUrl?: string }) => d.id === doc.id)
+                                    if (docWithUrl?.signedUrl) {
+                                      window.open(docWithUrl.signedUrl, '_blank')
+                                    } else {
+                                      alert('Unable to get download URL. The file may not exist.')
+                                    }
+                                  } else {
+                                    alert('Failed to fetch document.')
+                                  }
+                                } catch (err) {
+                                  console.error('Error fetching document URL:', err)
+                                  alert('Error fetching document.')
+                                }
+                              }}
+                            >
+                              View / Download
+                            </Button>
+                          ) : doc.fileUrl ? (
                             <>
                               <a
                                 href={doc.fileUrl}
@@ -497,7 +560,7 @@ export default function DataRoomPage() {
                                 {uploadingDocId === doc.id ? 'Uploading...' : 'Replace'}
                               </Button>
                             </>
-                          ) : (
+                          ) : doc.category !== 'TASK_PROOF' ? (
                             <Button
                               size="sm"
                               onClick={(e) => {
@@ -511,20 +574,22 @@ export default function DataRoomPage() {
                             >
                               {uploadingDocId === doc.id ? 'Uploading...' : 'Upload'}
                             </Button>
+                          ) : null}
+
+                          {doc.category !== 'TASK_PROOF' && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setShowEditDialog(doc)
+                              }}
+                              className="p-2 hover:bg-gray-200 rounded-md transition-colors"
+                              title="Edit"
+                            >
+                              <EditIcon className="h-4 w-4 text-gray-600" />
+                            </button>
                           )}
 
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setShowEditDialog(doc)
-                            }}
-                            className="p-2 hover:bg-gray-200 rounded-md transition-colors"
-                            title="Edit"
-                          >
-                            <EditIcon className="h-4 w-4 text-gray-600" />
-                          </button>
-
-                          {(doc.isCustom || doc.fileUrl) && (
+                          {(doc.isCustom || doc.fileUrl) && doc.category !== 'TASK_PROOF' && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation()
@@ -532,6 +597,33 @@ export default function DataRoomPage() {
                               }}
                               className="p-2 hover:bg-red-100 rounded-md transition-colors"
                               title={doc.isCustom ? 'Delete' : 'Remove file'}
+                            >
+                              <TrashIcon className="h-4 w-4 text-red-600" />
+                            </button>
+                          )}
+
+                          {/* Delete button for task proof documents */}
+                          {doc.category === 'TASK_PROOF' && doc.linkedTaskId && (
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation()
+                                if (!confirm('Are you sure you want to delete this document? This cannot be undone.')) return
+                                try {
+                                  const response = await fetch(`/api/tasks/${doc.linkedTaskId}/proof?documentId=${doc.id}`, {
+                                    method: 'DELETE',
+                                  })
+                                  if (response.ok) {
+                                    await fetchDocuments()
+                                  } else {
+                                    alert('Failed to delete document')
+                                  }
+                                } catch (err) {
+                                  console.error('Error deleting document:', err)
+                                  alert('Error deleting document')
+                                }
+                              }}
+                              className="p-2 hover:bg-red-100 rounded-md transition-colors"
+                              title="Delete document"
                             >
                               <TrashIcon className="h-4 w-4 text-red-600" />
                             </button>

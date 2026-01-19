@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useCompany } from '@/contexts/CompanyContext'
 import { PeriodSelector, FinancialPeriod } from '@/components/financials'
+import { QuickBooksCard } from '@/components/integrations'
 import {
   Save,
   Scale,
@@ -58,7 +59,7 @@ interface BalanceSheet {
 export default function BalanceSheetPage() {
   const { selectedCompanyId } = useCompany()
   const [selectedPeriod, setSelectedPeriod] = useState<FinancialPeriod | null>(null)
-  const [balanceSheet, setBalanceSheet] = useState<BalanceSheet | null>(null)
+  const [_balanceSheet, setBalanceSheet] = useState<BalanceSheet | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [showLongTermAssets, setShowLongTermAssets] = useState(false)
@@ -315,6 +316,12 @@ export default function BalanceSheetPage() {
           <p className="text-gray-600">Track your assets, liabilities, and equity</p>
         </div>
       </div>
+
+      {/* QuickBooks Integration */}
+      <QuickBooksCard
+        companyId={selectedCompanyId}
+        onSyncComplete={fetchBalanceSheet}
+      />
 
       {/* Period selector and save */}
       <div className="flex items-center justify-between">
@@ -691,8 +698,8 @@ export default function BalanceSheetPage() {
                     <Users className="h-4 w-4" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Shareholders' Equity</h3>
-                    <p className="text-sm text-gray-500">Owner's stake in the business</p>
+                    <h3 className="font-semibold text-gray-900">Shareholders&apos; Equity</h3>
+                    <p className="text-sm text-gray-500">Owner&apos;s stake in the business</p>
                   </div>
                 </div>
 
@@ -707,7 +714,7 @@ export default function BalanceSheetPage() {
                   />
                   <CurrencyInput
                     id="ownersEquity"
-                    label="Owner's Equity / Capital"
+                    label="Owner&apos;s Equity / Capital"
                     value={ownersEquity}
                     onChange={setOwnersEquity}
                     description="Initial investment and contributions"

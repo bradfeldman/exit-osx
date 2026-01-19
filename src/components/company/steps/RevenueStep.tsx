@@ -73,7 +73,7 @@ export function RevenueStep({ formData, updateFormData }: RevenueStepProps) {
       <div className="space-y-3">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Quick Select Range</p>
         <div className="grid grid-cols-3 gap-2">
-          {revenueTiers.map((tier, idx) => {
+          {revenueTiers.map((tier, _idx) => {
             const isSelected = formData.annualRevenue >= tier.min && formData.annualRevenue < tier.max
             return (
               <button

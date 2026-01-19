@@ -112,6 +112,16 @@ export async function GET(request: Request) {
             createdAt: true,
           },
         },
+        proofDocuments: {
+          where: { status: 'CURRENT' },
+          select: {
+            id: true,
+            fileName: true,
+            filePath: true,
+            status: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
       },
     })
 

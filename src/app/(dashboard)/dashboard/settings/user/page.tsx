@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { UserAvatar } from '@/components/ui/user-avatar'
+import { GDPRSettings } from '@/components/settings/GDPRSettings'
 
 export default function UserSettingsPage() {
   const [user, setUser] = useState<{ email: string; name: string | null } | null>(null)
@@ -133,6 +134,9 @@ export default function UserSettingsPage() {
           </Button>
         </CardContent>
       </Card>
+
+      {/* GDPR Settings */}
+      <GDPRSettings />
     </div>
   )
 }
