@@ -184,9 +184,9 @@ export function HeroMetrics({
           </div>
 
           {/* Core Index */}
-          <Link href="/dashboard/assessment/company">
+          <Link href="/dashboard/assessment/company" className="h-full">
             <div
-              className={`text-center p-4 md:p-6 rounded-xl bg-white border shadow-sm flex flex-col justify-center cursor-pointer transition-all duration-200 hover:shadow-md ${
+              className={`h-full text-center p-4 md:p-6 rounded-xl bg-white border shadow-sm flex flex-col justify-center cursor-pointer transition-all duration-200 hover:shadow-md ${
                 hoveredCard === 'coreIndex' ? 'border-[#B87333] shadow-md' : 'border-gray-100'
               } ${isPreviewMode ? 'opacity-60' : ''}`}
               onMouseEnter={() => setHoveredCard('coreIndex')}
@@ -218,9 +218,9 @@ export function HeroMetrics({
           </Link>
 
           {/* Personal Readiness */}
-          <Link href="/dashboard/assessment/personal-readiness">
+          <Link href="/dashboard/assessment/personal-readiness" className="h-full">
             <div
-              className={`text-center p-4 md:p-6 rounded-xl bg-white border shadow-sm flex flex-col justify-center cursor-pointer transition-all duration-200 hover:shadow-md ${
+              className={`h-full text-center p-4 md:p-6 rounded-xl bg-white border shadow-sm flex flex-col justify-center cursor-pointer transition-all duration-200 hover:shadow-md ${
                 hoveredCard === 'personalReadiness' ? 'border-[#B87333] shadow-md' : 'border-gray-100'
               } ${isPreviewMode ? 'opacity-60' : ''}`}
               onMouseEnter={() => setHoveredCard('personalReadiness')}
