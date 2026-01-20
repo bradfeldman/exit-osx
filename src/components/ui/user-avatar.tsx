@@ -211,29 +211,37 @@ function md5(string: string): string {
 
 export function UserAvatar({ email, name, size = 'md', className }: UserAvatarProps) {
   const [imageError, setImageError] = useState(false)
+  const [imageLoaded, setImageLoaded] = useState(false)
   const initials = getInitials(name, email)
   const gravatarUrl = getGravatarUrl(email, sizePx[size] * 2) // 2x for retina
 
-  if (imageError) {
-    return (
-      <div
-        className={cn(
-          'rounded-full bg-[#3D3D3D] text-white flex items-center justify-center font-medium',
-          sizeClasses[size],
-          className
-        )}
-      >
-        {initials}
-      </div>
-    )
-  }
-
+  // Always show initials fallback, with image overlaid when loaded successfully
   return (
-    <img
-      src={gravatarUrl}
-      alt={name || email}
-      className={cn('rounded-full object-cover', sizeClasses[size], className)}
-      onError={() => setImageError(true)}
-    />
+    <div
+      className={cn(
+        'relative rounded-full bg-[#3D3D3D] text-white flex items-center justify-center font-medium overflow-hidden',
+        sizeClasses[size],
+        className
+      )}
+    >
+      {/* Initials fallback - always rendered */}
+      <span className={imageLoaded && !imageError ? 'invisible' : 'visible'}>
+        {initials}
+      </span>
+
+      {/* Gravatar image - overlaid when loaded */}
+      {!imageError && (
+        <img
+          src={gravatarUrl}
+          alt=""
+          className={cn(
+            'absolute inset-0 rounded-full object-cover w-full h-full',
+            imageLoaded ? 'opacity-100' : 'opacity-0'
+          )}
+          onLoad={() => setImageLoaded(true)}
+          onError={() => setImageError(true)}
+        />
+      )}
+    </div>
   )
 }

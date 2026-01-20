@@ -258,13 +258,14 @@ model Organization {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  authId    String   @unique @map("auth_id") // Supabase Auth UUID
-  email     String   @unique
-  name      String?
-  avatarUrl String?  @map("avatar_url")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(cuid())
+  authId       String   @unique @map("auth_id") // Supabase Auth UUID
+  email        String   @unique
+  name         String?
+  avatarUrl    String?  @map("avatar_url")
+  isSuperAdmin Boolean  @default(false) @map("is_super_admin") // System-wide super admin (can see Developer/Global sections)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   organizations      OrganizationUser[]
   taskAssignments    TaskAssignment[]
