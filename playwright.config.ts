@@ -8,6 +8,7 @@ import { defineConfig, devices } from '@playwright/test'
  */
 
 const baseURL = process.env.TEST_BASE_URL || 'https://staging.exitosx.com'
+const vercelBypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET
 
 export default defineConfig({
   testDir: './e2e',
@@ -46,6 +47,10 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
+    // Vercel deployment protection bypass
+    extraHTTPHeaders: vercelBypassSecret ? {
+      'x-vercel-protection-bypass': vercelBypassSecret,
+    } : undefined,
   },
 
   projects: [

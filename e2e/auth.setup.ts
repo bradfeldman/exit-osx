@@ -25,12 +25,21 @@ setup('authenticate', async ({ page }) => {
   // Wait for page to fully load
   await page.waitForLoadState('networkidle')
 
-  // Wait for login form to be ready using specific IDs
-  await expect(page.locator('#email')).toBeVisible({ timeout: 10000 })
+  // Dismiss cookie consent banner if present
+  const cookieBanner = page.locator('button:has-text("Accept All"), button:has-text("Necessary Only")')
+  if (await cookieBanner.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+    await cookieBanner.first().click()
+    await page.waitForTimeout(500)
+  }
 
-  // Fill in credentials using specific IDs
-  await page.fill('#email', testEmail)
-  await page.fill('#password', testPassword)
+  // Wait for login form to be ready - try multiple selectors
+  const emailInput = page.locator('#email, input[type="email"], input[name="email"]').first()
+  await expect(emailInput).toBeVisible({ timeout: 10000 })
+
+  // Fill in credentials
+  await emailInput.fill(testEmail)
+  const passwordInput = page.locator('#password, input[type="password"], input[name="password"]').first()
+  await passwordInput.fill(testPassword)
 
   // Click sign in button
   await page.click('button[type="submit"]')
