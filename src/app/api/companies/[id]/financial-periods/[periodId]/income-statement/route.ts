@@ -1,6 +1,18 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { RevenueSizeCategory } from '@prisma/client'
+import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snapshot'
+
+// Helper to determine revenue size category from actual revenue
+function getRevenueSizeCategory(revenue: number): RevenueSizeCategory {
+  if (revenue < 500000) return RevenueSizeCategory.UNDER_500K
+  if (revenue < 1000000) return RevenueSizeCategory.FROM_500K_TO_1M
+  if (revenue < 3000000) return RevenueSizeCategory.FROM_1M_TO_3M
+  if (revenue < 10000000) return RevenueSizeCategory.FROM_3M_TO_10M
+  if (revenue < 25000000) return RevenueSizeCategory.FROM_10M_TO_25M
+  return RevenueSizeCategory.OVER_25M
+}
 
 export async function GET(
   request: Request,
@@ -180,6 +192,36 @@ export async function PUT(
         taxExpense: taxExpense ?? null,
       }
     })
+
+    // Sync revenue and EBITDA to Company table
+    await prisma.company.update({
+      where: { id: companyId },
+      data: {
+        annualRevenue: grossRevenue,
+        annualEbitda: ebitda,
+      }
+    })
+
+    // Update CoreFactors revenue size category based on actual revenue
+    const newRevenueSizeCategory = getRevenueSizeCategory(grossRevenue)
+    const coreFactors = await prisma.coreFactors.findUnique({
+      where: { companyId }
+    })
+
+    if (coreFactors && coreFactors.revenueSizeCategory !== newRevenueSizeCategory) {
+      await prisma.coreFactors.update({
+        where: { companyId },
+        data: { revenueSizeCategory: newRevenueSizeCategory }
+      })
+    }
+
+    // Trigger valuation snapshot recalculation
+    try {
+      await recalculateSnapshotForCompany(companyId, 'P&L data updated')
+    } catch (recalcError) {
+      // Log but don't fail the request if recalculation fails
+      console.error('Failed to recalculate valuation snapshot:', recalcError)
+    }
 
     return NextResponse.json({
       incomeStatement: {

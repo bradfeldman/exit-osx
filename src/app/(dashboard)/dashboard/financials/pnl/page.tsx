@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -42,6 +42,7 @@ interface IncomeStatement {
 }
 
 export default function PnLPage() {
+  const router = useRouter()
   const { selectedCompanyId } = useCompany()
   const [selectedPeriod, setSelectedPeriod] = useState<FinancialPeriod | null>(null)
   const [_incomeStatement, setIncomeStatement] = useState<IncomeStatement | null>(null)
@@ -138,6 +139,41 @@ export default function PnLPage() {
       if (response.ok) {
         const data = await response.json()
         setIncomeStatement(data.incomeStatement)
+      }
+    } catch (error) {
+      console.error('Failed to save income statement:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleContinueToAddBacks = async () => {
+    if (!selectedCompanyId || !selectedPeriod) return
+
+    // Save first, then navigate
+    setIsSaving(true)
+    try {
+      const response = await fetch(
+        `/api/companies/${selectedCompanyId}/financial-periods/${selectedPeriod.id}/income-statement`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            grossRevenue,
+            cogs,
+            operatingExpenses,
+            depreciation,
+            amortization,
+            interestExpense,
+            taxExpense,
+          }),
+        }
+      )
+
+      if (response.ok) {
+        router.push('/dashboard/financials/add-backs')
+      } else {
+        console.error('Failed to save before navigating')
       }
     } catch (error) {
       console.error('Failed to save income statement:', error)
@@ -407,12 +443,15 @@ export default function PnLPage() {
               {/* Continue Button */}
               {selectedPeriod && (
                 <div className="ml-11 pt-2">
-                  <Link href="/dashboard/financials/add-backs">
-                    <Button variant="default" className="gap-2">
-                      Continue to Add-Backs
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
+                  <Button
+                    variant="default"
+                    className="gap-2"
+                    onClick={handleContinueToAddBacks}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? 'Saving...' : 'Continue to Add-Backs'}
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
                 </div>
               )}
             </div>
