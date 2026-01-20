@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useUserRole } from '@/contexts/UserRoleContext'
+import packageJson from '../../../package.json'
 import {
   Select,
   SelectContent,
@@ -567,6 +568,13 @@ export function Sidebar() {
             </ul>
           </div>
         </nav>
+
+        {/* Version */}
+        <div className="mt-auto pt-4 pb-2">
+          <p className="text-xs text-sidebar-foreground/40 text-center">
+            Exit OSx v{packageJson.version}
+          </p>
+        </div>
       </div>
     </div>
   )
