@@ -16,7 +16,12 @@ This file tracks features and improvements planned for future development.
 
 ## Features
 
-*(Add future feature requests here)*
+- [ ] **Redtail CRM Integration**
+  - Integrate with Redtail CRM API for financial advisors
+  - Sync client/contact data between Redtail and ExitOSx
+  - API docs: https://corporate.redtailtechnology.com/api/
+  - Requires: Developer API access from Redtail
+  - Priority: TBD
 
 ---
 
