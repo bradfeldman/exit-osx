@@ -143,7 +143,7 @@ export async function getBalanceSheetReport(
 ): Promise<QuickBooksReport> {
   return makeQuickBooksRequest<QuickBooksReport>(
     integrationId,
-    `/reports/BalanceSheet?date_macro=Custom&start_date=${asOfDate}&end_date=${asOfDate}&minorversion=65`
+    `/reports/BalanceSheet?start_date=${asOfDate}&end_date=${asOfDate}&minorversion=65`
   )
 }
 
