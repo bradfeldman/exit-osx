@@ -220,10 +220,15 @@ function StatementsEditContent({ periodId, initialTab }: { periodId: string; ini
             grossRevenue: is.grossRevenue,
             cogs: is.cogs,
             operatingExpenses: is.operatingExpenses,
+            grossProfit: is.grossProfit,
+            grossMarginPct: is.grossMarginPct,
+            ebitda: is.ebitda,
+            ebitdaMarginPct: is.ebitdaMarginPct,
             depreciation: is.depreciation,
             amortization: is.amortization,
             interestExpense: is.interestExpense,
             taxExpense: is.taxExpense,
+            netIncome: is.netIncome,
           })
         }
       }
