@@ -289,6 +289,24 @@ export async function generateNextLevelTasks(
   companyId: string,
   questionId: string
 ): Promise<{ created: number }> {
+  // Check if there's only one user in the company's organization - auto-assign tasks to them
+  let defaultAssigneeId: string | null = null
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { organizationId: true },
+  })
+
+  if (company) {
+    const orgUsers = await prisma.organizationUser.findMany({
+      where: { organizationId: company.organizationId },
+      select: { userId: true },
+    })
+
+    if (orgUsers.length === 1) {
+      defaultAssigneeId = orgUsers[0].userId
+    }
+  }
+
   // Get the latest assessment response for this question (with effective option)
   const response = await prisma.assessmentResponse.findFirst({
     where: {
@@ -519,6 +537,24 @@ export async function generateTasksFromProjectAssessment(
   companyId: string,
   assessmentId: string
 ): Promise<{ created: number; skipped: number }> {
+  // Check if there's only one user in the company's organization - auto-assign tasks to them
+  let defaultAssigneeId: string | null = null
+  const companyForAssignee = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { organizationId: true },
+  })
+
+  if (companyForAssignee) {
+    const orgUsers = await prisma.organizationUser.findMany({
+      where: { organizationId: companyForAssignee.organizationId },
+      select: { userId: true },
+    })
+
+    if (orgUsers.length === 1) {
+      defaultAssigneeId = orgUsers[0].userId
+    }
+  }
+
   // Get the assessment with responses
   const assessment = await prisma.projectAssessment.findUnique({
     where: { id: assessmentId },
@@ -622,7 +658,7 @@ export async function generateTasksFromProjectAssessment(
           companyId,
           title: `Improve: ${question.subCategory}`,
           description: `Address the ${question.briCategory.toLowerCase()} issue identified in assessment: ${question.questionText}\n\nCurrent situation: ${response.selectedOption.optionText}\nTarget: ${targetOption.optionText}`,
-          actionType: 'TYPE_II_IMPLEMENT',
+          actionType: 'TYPE_III_OPERATIONAL',
           briCategory: question.briCategory as never,
           linkedQuestionId: question.id,
           rawImpact: estimatedValueImpact,
