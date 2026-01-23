@@ -177,10 +177,15 @@ export function parseProfitAndLossReport(report: QuickBooksReport): {
   function findRowValue(rows: QuickBooksReportRow[], groupName: string): number {
     for (const row of rows) {
       const header = row.Header?.ColData?.[0]?.value || ''
-      const summary = row.Summary?.ColData?.[1]?.value
+      const summaryLabel = row.Summary?.ColData?.[0]?.value || ''
+      const summaryValue = row.Summary?.ColData?.[1]?.value
 
-      if (header.toLowerCase().includes(groupName.toLowerCase()) && summary) {
-        return parseValue(summary)
+      // Check both header and summary label for the group name
+      const matchesHeader = header.toLowerCase().includes(groupName.toLowerCase())
+      const matchesSummary = summaryLabel.toLowerCase().includes(groupName.toLowerCase())
+
+      if ((matchesHeader || matchesSummary) && summaryValue) {
+        return parseValue(summaryValue)
       }
 
       // Check nested rows
