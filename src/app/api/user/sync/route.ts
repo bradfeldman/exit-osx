@@ -12,8 +12,8 @@ export async function POST() {
   }
 
   try {
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
+    // Check if user already exists by authId
+    let existingUser = await prisma.user.findUnique({
       where: { authId: user.id },
       include: {
         organizations: {
@@ -27,6 +27,47 @@ export async function POST() {
         }
       }
     })
+
+    // If not found by authId, check by email (user may have signed up with different auth method)
+    if (!existingUser && user.email) {
+      existingUser = await prisma.user.findUnique({
+        where: { email: user.email },
+        include: {
+          organizations: {
+            include: {
+              organization: {
+                include: {
+                  companies: true
+                }
+              }
+            }
+          }
+        }
+      })
+
+      // If found by email, update the authId to link this auth method
+      if (existingUser) {
+        existingUser = await prisma.user.update({
+          where: { id: existingUser.id },
+          data: { authId: user.id },
+          include: {
+            organizations: {
+              include: {
+                organization: {
+                  include: {
+                    companies: true
+                  }
+                }
+              }
+            }
+          }
+        })
+        return NextResponse.json({
+          user: existingUser,
+          isNew: false
+        })
+      }
+    }
 
     if (existingUser) {
       // Update avatar URL if missing
