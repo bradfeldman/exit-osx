@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useUserRole } from '@/contexts/UserRoleContext'
+import { useAssessmentStatus } from '@/hooks/useAssessmentStatus'
 import packageJson from '../../../package.json'
 import {
   Select,
@@ -16,10 +17,18 @@ import {
 } from '@/components/ui/select'
 
 const assessmentLinks = [
-  { name: 'Initial Assessment', href: '/dashboard/assessment' },
-  { name: 'Company Assessment', href: '/dashboard/assessment/company' },
-  { name: 'Risk Assessment', href: '/dashboard/assessment/risk' },
-  { name: 'Personal Readiness', href: '/dashboard/assessment/personal-readiness' },
+  { name: 'Baseline Assessment', href: '/dashboard/assessment/company', icon: BriefcaseIcon },
+  { name: 'Risk Assessment', href: '/dashboard/assessment/risk', icon: ShieldIcon },
+]
+
+const financialsLinks = [
+  { name: 'Business Financials', href: '/dashboard/financials', icon: FinancialsIcon },
+  { name: 'Personal Financial Statement', href: '/dashboard/financials/personal', icon: WalletIcon },
+  { name: 'Retirement Calculator', href: '/dashboard/financials/retirement', icon: CalculatorIcon },
+]
+
+const loanCenterLinks = [
+  { name: 'Business Loans', href: '/dashboard/loans/business', icon: BankIcon },
 ]
 
 export function Sidebar() {
@@ -27,8 +36,7 @@ export function Sidebar() {
   const router = useRouter()
   const { companies, selectedCompanyId, setSelectedCompanyId, isLoading } = useCompany()
   const { isSuperAdmin } = useUserRole()
-  const [assessmentsExpanded, setAssessmentsExpanded] = useState(false)
-  const [financialsExpanded, setFinancialsExpanded] = useState(false)
+  const { hasInitialAssessment, hasPendingAssessment, pendingAssessmentType } = useAssessmentStatus()
   const [developerExpanded, setDeveloperExpanded] = useState(false)
   const [globalExpanded, setGlobalExpanded] = useState(false)
 
@@ -48,6 +56,9 @@ export function Sidebar() {
   }
 
   const selectedCompany = companies.find(c => c.id === selectedCompanyId)
+
+  // Check if we're on the company setup page (adding a new company)
+  const isOnSetupPage = pathname === '/dashboard/company/setup'
 
   return (
     <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
@@ -104,15 +115,26 @@ export function Sidebar() {
           )}
           {!isLoading && companies.length > 0 && (
             <Select
-              value={selectedCompanyId || undefined}
+              value={isOnSetupPage ? '___add_new___' : (selectedCompanyId || undefined)}
               onValueChange={handleCompanyChange}
             >
               <SelectTrigger className="w-full bg-sidebar-accent/50 border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent focus:ring-sidebar-primary focus:ring-offset-sidebar">
                 <div className="flex items-center gap-2 truncate">
-                  <BuildingIcon className="h-4 w-4 shrink-0 text-sidebar-foreground/60" />
-                  <SelectValue placeholder="Select company">
-                    {selectedCompany?.name || 'Select company'}
-                  </SelectValue>
+                  {isOnSetupPage ? (
+                    <>
+                      <svg className="h-4 w-4 shrink-0 text-primary" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                      </svg>
+                      <span className="text-primary">New Company</span>
+                    </>
+                  ) : (
+                    <>
+                      <BuildingIcon className="h-4 w-4 shrink-0 text-sidebar-foreground/60" />
+                      <SelectValue placeholder="Select company">
+                        {selectedCompany?.name || 'Select company'}
+                      </SelectValue>
+                    </>
+                  )}
                 </div>
               </SelectTrigger>
               <SelectContent>
@@ -164,102 +186,6 @@ export function Sidebar() {
                 </Link>
               </li>
 
-              {/* Financials Section */}
-              <li>
-                <button
-                  onClick={() => setFinancialsExpanded(!financialsExpanded)}
-                  className="flex items-center justify-between w-full gap-x-3 p-2 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent rounded-md transition-colors"
-                >
-                  <div className="flex items-center gap-x-3">
-                    <FinancialsIcon className="h-5 w-5 shrink-0 text-sidebar-foreground/60" />
-                    Financials
-                  </div>
-                  <ChevronIcon
-                    className={cn(
-                      'h-4 w-4 transition-transform text-sidebar-foreground/60',
-                      financialsExpanded ? 'rotate-180' : ''
-                    )}
-                  />
-                </button>
-                <ul className={cn(
-                  'ml-7 space-y-1 overflow-hidden transition-all duration-200',
-                  financialsExpanded ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'
-                )}>
-                  <li>
-                    <Link
-                      href="/dashboard/financials/pnl"
-                      className={cn(
-                        'block rounded-md px-2 py-1.5 text-sm transition-colors',
-                        pathname === '/dashboard/financials/pnl'
-                          ? 'bg-sidebar-accent text-sidebar-primary font-medium'
-                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                      )}
-                    >
-                      P&L
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/dashboard/financials/balance-sheet"
-                      className={cn(
-                        'block rounded-md px-2 py-1.5 text-sm transition-colors',
-                        pathname === '/dashboard/financials/balance-sheet'
-                          ? 'bg-sidebar-accent text-sidebar-primary font-medium'
-                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                      )}
-                    >
-                      Balance Sheet
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/dashboard/financials/add-backs"
-                      className={cn(
-                        'block rounded-md px-2 py-1.5 text-sm transition-colors',
-                        pathname === '/dashboard/financials/add-backs'
-                          ? 'bg-sidebar-accent text-sidebar-primary font-medium'
-                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                      )}
-                    >
-                      Add-Backs
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/dashboard/financials/dcf"
-                      className={cn(
-                        'block rounded-md px-2 py-1.5 text-sm transition-colors',
-                        pathname === '/dashboard/financials/dcf'
-                          ? 'bg-sidebar-accent text-sidebar-primary font-medium'
-                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                      )}
-                    >
-                      DCF Analysis
-                    </Link>
-                  </li>
-                </ul>
-              </li>
-
-              {/* Retirement Calculator */}
-              <li>
-                <Link
-                  href="/dashboard/retirement-calculator"
-                  className={cn(
-                    'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                    pathname.startsWith('/dashboard/retirement-calculator')
-                      ? 'bg-sidebar-accent text-sidebar-primary'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                  )}
-                >
-                  <CalculatorIcon
-                    className={cn(
-                      'h-5 w-5 shrink-0',
-                      pathname.startsWith('/dashboard/retirement-calculator') ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                    )}
-                  />
-                  Retirement Calculator
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -269,46 +195,119 @@ export function Sidebar() {
               Assessments
             </p>
             <ul role="list" className="mt-1 space-y-1">
-              <li>
-                <button
-                  onClick={() => setAssessmentsExpanded(!assessmentsExpanded)}
-                  className="flex items-center justify-between w-full gap-x-3 p-2 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent rounded-md transition-colors"
-                >
-                  <div className="flex items-center gap-x-3">
-                    <ClipboardIcon className="h-5 w-5 shrink-0 text-sidebar-foreground/60" />
-                    Assessment
-                  </div>
-                  <ChevronIcon
-                    className={cn(
-                      'h-4 w-4 transition-transform text-sidebar-foreground/60',
-                      assessmentsExpanded ? 'rotate-180' : ''
-                    )}
-                  />
-                </button>
-                <ul className={cn(
-                  'ml-7 space-y-1 overflow-hidden transition-all duration-200',
-                  assessmentsExpanded ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'
-                )}>
-                  {assessmentLinks.map((link) => {
-                    const isActive = pathname === link.href
-                    return (
-                      <li key={link.href}>
-                        <Link
-                          href={link.href}
-                          className={cn(
-                            'block rounded-md px-2 py-1.5 text-sm transition-colors',
-                            isActive
-                              ? 'bg-sidebar-accent text-sidebar-primary font-medium'
-                              : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                          )}
-                        >
-                          {link.name}
-                        </Link>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </li>
+              {assessmentLinks.map((link) => {
+                const isActive = pathname === link.href || pathname.startsWith(link.href + '/')
+                const IconComponent = link.icon
+                // Show badge on Risk link when:
+                // 1. Initial assessment is not complete (amber !)
+                // 2. There's an open assessment waiting (red dot)
+                // 3. A new assessment is available (red dot)
+                const needsInitialAssessment = link.name === 'Risk Assessment' && !hasInitialAssessment
+                const hasPendingRiskAssessment = link.name === 'Risk Assessment' && hasInitialAssessment && hasPendingAssessment
+                return (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className={cn(
+                        'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
+                        isActive
+                          ? 'bg-sidebar-accent text-sidebar-primary'
+                          : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                      )}
+                    >
+                      <IconComponent
+                        className={cn(
+                          'h-5 w-5 shrink-0',
+                          isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
+                        )}
+                      />
+                      <span className="flex-1">{link.name}</span>
+                      {needsInitialAssessment && (
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-medium text-white">
+                          !
+                        </span>
+                      )}
+                      {hasPendingRiskAssessment && (
+                        <span className="relative flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+
+          {/* FINANCIALS Section */}
+          <div className="mb-4 pt-4 border-t border-sidebar-border/50">
+            <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
+              Financials
+            </p>
+            <ul role="list" className="mt-1 space-y-1">
+              {financialsLinks.map((link) => {
+                // Special handling for Business Financials - only active for main page and statements subpages
+                const isActive = link.href === '/dashboard/financials'
+                  ? pathname === link.href || pathname.startsWith('/dashboard/financials/statements')
+                  : pathname === link.href || pathname.startsWith(link.href + '/')
+                const IconComponent = link.icon
+                return (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className={cn(
+                        'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
+                        isActive
+                          ? 'bg-sidebar-accent text-sidebar-primary'
+                          : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                      )}
+                    >
+                      <IconComponent
+                        className={cn(
+                          'h-5 w-5 shrink-0',
+                          isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
+                        )}
+                      />
+                      {link.name}
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+
+          {/* LOAN CENTER Section */}
+          <div className="mb-4 pt-4 border-t border-sidebar-border/50">
+            <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
+              Loan Center
+            </p>
+            <ul role="list" className="mt-1 space-y-1">
+              {loanCenterLinks.map((link) => {
+                const isActive = pathname === link.href || pathname.startsWith(link.href + '/')
+                const IconComponent = link.icon
+                return (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className={cn(
+                        'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
+                        isActive
+                          ? 'bg-sidebar-accent text-sidebar-primary'
+                          : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                      )}
+                    >
+                      <IconComponent
+                        className={cn(
+                          'h-5 w-5 shrink-0',
+                          isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
+                        )}
+                      />
+                      {link.name}
+                    </Link>
+                  </li>
+                )
+              })}
             </ul>
           </div>
 
@@ -715,6 +714,46 @@ function CalculatorIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V13.5Zm0 2.25h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V18Zm2.498-6.75h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V13.5Zm0 2.25h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V18Zm2.504-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5Zm0 2.25h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V18Zm2.498-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5ZM8.25 6h7.5v2.25h-7.5V6ZM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 0 0 2.25 2.25h10.5a2.25 2.25 0 0 0 2.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0 0 12 2.25Z" />
+    </svg>
+  )
+}
+
+function BriefcaseIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z" />
+    </svg>
+  )
+}
+
+function ShieldIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
+    </svg>
+  )
+}
+
+function UserIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+    </svg>
+  )
+}
+
+function WalletIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a2.25 2.25 0 0 0-2.25-2.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 0 3 12m18 0v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 9m18 0V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v3" />
+    </svg>
+  )
+}
+
+function BankIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" />
     </svg>
   )
 }

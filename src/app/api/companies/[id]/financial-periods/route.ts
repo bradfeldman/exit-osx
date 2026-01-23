@@ -153,6 +153,24 @@ export async function POST(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
+    // Check for duplicate fiscal year (for annual periods)
+    if (periodType === 'ANNUAL') {
+      const existingPeriod = await prisma.financialPeriod.findFirst({
+        where: {
+          companyId,
+          periodType: 'ANNUAL',
+          fiscalYear,
+        }
+      })
+
+      if (existingPeriod) {
+        return NextResponse.json(
+          { error: `Fiscal year ${fiscalYear} already exists for this company` },
+          { status: 409 }
+        )
+      }
+    }
+
     // Create the financial period
     const period = await prisma.financialPeriod.create({
       data: {

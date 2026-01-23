@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { checkAssessmentTriggers } from '@/lib/assessment/assessment-triggers'
 
 interface Alert {
   id: string
-  type: 'NO_ASSESSMENT' | 'STALE_ASSESSMENT' | 'QUARTERLY_REMINDER'
+  type: 'NO_ASSESSMENT' | 'STALE_ASSESSMENT' | 'QUARTERLY_REMINDER' | 'OPEN_ASSESSMENT' | 'ASSESSMENT_AVAILABLE'
   title: string
   message: string
   actionUrl: string
@@ -62,13 +63,53 @@ export async function GET() {
           type: 'NO_ASSESSMENT',
           title: 'Complete Your Assessment',
           message: `${company.name} needs an initial assessment to calculate your Buyer Readiness Index and valuation.`,
-          actionUrl: '/dashboard/assessment',
+          actionUrl: '/dashboard/assessment/risk',
           companyId: company.id,
           companyName: company.name,
           severity: 'urgent',
           createdAt: company.createdAt.toISOString(),
         })
         continue // Skip other alerts if no assessment exists
+      }
+
+      // Alert for 10-Minute Assessment (open OR available, never both)
+      // Check for open assessment first - this takes priority
+      const openAssessment = await prisma.projectAssessment.findFirst({
+        where: {
+          companyId: company.id,
+          status: 'IN_PROGRESS'
+        }
+      })
+
+      if (openAssessment) {
+        // There's an incomplete assessment - show that alert only
+        alerts.push({
+          id: `open-assessment-${company.id}`,
+          type: 'OPEN_ASSESSMENT',
+          title: 'Complete Your Risk Assessment',
+          message: `${company.name} has an incomplete 10-minute assessment waiting.`,
+          actionUrl: '/dashboard/assessment/risk',
+          companyId: company.id,
+          companyName: company.name,
+          severity: 'warning',
+          createdAt: new Date().toISOString(),
+        })
+      } else {
+        // No open assessment - check if conditions warrant offering a new one
+        const triggerResult = await checkAssessmentTriggers(company.id)
+        if (triggerResult.shouldCreate) {
+          alerts.push({
+            id: `assessment-available-${company.id}`,
+            type: 'ASSESSMENT_AVAILABLE',
+            title: 'New Assessment Available',
+            message: triggerResult.message || 'A new 10-minute assessment is ready for you.',
+            actionUrl: '/dashboard/assessment/risk',
+            companyId: company.id,
+            companyName: company.name,
+            severity: 'info',
+            createdAt: new Date().toISOString(),
+          })
+        }
       }
 
       // Alert 2: Stale assessment (older than 90 days)
@@ -80,7 +121,7 @@ export async function GET() {
           type: 'STALE_ASSESSMENT',
           title: 'Update Your Assessment',
           message: `${company.name}'s assessment is ${snapshotAge} days old. Update it to keep your valuation current.`,
-          actionUrl: '/dashboard/assessment',
+          actionUrl: '/dashboard/assessment/risk',
           companyId: company.id,
           companyName: company.name,
           severity: snapshotAge >= STALE_THRESHOLD_DAYS * 2 ? 'urgent' : 'warning',

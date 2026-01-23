@@ -9,7 +9,7 @@ interface HeroMetricsProps {
   valueGap: number
   briScore: number | null
   coreScore: number | null
-  personalReadinessScore: number
+  personalReadinessScore: number | null
   isEstimated?: boolean
   isPreviewMode?: boolean
   isAbovePotential?: boolean
@@ -229,12 +229,25 @@ export function HeroMetrics({
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
                 Personal Readiness
               </p>
-              <p className={`text-2xl md:text-3xl font-semibold ${getBriColor(personalReadinessScore)}`}>
-                {personalReadinessScore}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Scale: 0 - 100
-              </p>
+              {personalReadinessScore !== null ? (
+                <>
+                  <p className={`text-2xl md:text-3xl font-semibold ${getBriColor(personalReadinessScore)}`}>
+                    {personalReadinessScore}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Scale: 0 - 100
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-2xl md:text-3xl font-semibold text-gray-400">
+                    --
+                  </p>
+                  <p className="text-xs text-[#B87333] mt-1">
+                    Complete assessment
+                  </p>
+                </>
+              )}
             </div>
           </Link>
         </div>

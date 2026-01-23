@@ -61,6 +61,7 @@ interface TaskCardProps {
   onAssign?: (taskId: string) => void
   onTaskUpdate?: () => void  // Called when task data changes (e.g., after upload)
   showAssignment?: boolean
+  defaultExpanded?: boolean
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -320,8 +321,8 @@ function RichDescriptionView({ richDescription }: { richDescription: RichTaskDes
   )
 }
 
-export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAssignment = true }: TaskCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false)
+export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAssignment = true, defaultExpanded = false }: TaskCardProps) {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded)
   const [isUpdating, setIsUpdating] = useState(false)
   const [showCompletionDialog, setShowCompletionDialog] = useState(false)
   const [showBlockedDialog, setShowBlockedDialog] = useState(false)
@@ -685,6 +686,15 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
                         disabled={isUpdating}
                       >
                         Defer
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-gray-500 hover:text-gray-700"
+                        onClick={() => handleStatusChange('NOT_APPLICABLE')}
+                        disabled={isUpdating}
+                      >
+                        Not Applicable
                       </Button>
                     </div>
                   )}

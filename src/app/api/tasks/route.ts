@@ -43,6 +43,8 @@ export async function GET(request: Request) {
   const companyId = searchParams.get('companyId')
   const status = searchParams.get('status')
   const category = searchParams.get('category')
+  const includeQueue = searchParams.get('includeQueue') === 'true' // Default: only action plan tasks
+  const assignedToMe = searchParams.get('assignedToMe') === 'true' // Filter to tasks assigned to current user
 
   if (!companyId) {
     return NextResponse.json({ error: 'Company ID required' }, { status: 400 })
@@ -67,8 +69,30 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
+    // Get the current user's internal ID for assignee filtering
+    let currentUserId: string | null = null
+    if (assignedToMe) {
+      const dbUser = await prisma.user.findUnique({
+        where: { authId: user.id },
+        select: { id: true },
+      })
+      currentUserId = dbUser?.id || null
+    }
+
     // Build filter
     const where: Record<string, unknown> = { companyId }
+
+    // Filter to tasks assigned to current user
+    if (assignedToMe && currentUserId) {
+      where.primaryAssigneeId = currentUserId
+    }
+
+    // By default, only show tasks in the action plan (not the hidden queue)
+    // If completed/cancelled is filtered, include all regardless of action plan status
+    if (!includeQueue && status !== 'COMPLETED' && status !== 'CANCELLED') {
+      where.inActionPlan = true
+    }
+
     if (status) {
       where.status = status
     }
@@ -125,14 +149,22 @@ export async function GET(request: Request) {
       },
     })
 
-    // Sort by priority: CRITICAL tier first, then by low effort
+    // Sort by priority rank (lower = higher priority), then by raw impact
     const tasks = tasksUnsorted.sort((a, b) => {
+      // Primary: Use the new priority rank (1-25, lower = higher priority)
+      const rankA = a.priorityRank ?? 25
+      const rankB = b.priorityRank ?? 25
+      if (rankA !== rankB) return rankA - rankB
+
+      // Fallback to old priority calculation for tasks without priorityRank
       const priorityA = calculatePriorityScore(a.issueTier, a.effortLevel)
       const priorityB = calculatePriorityScore(b.issueTier, b.effortLevel)
       if (priorityB !== priorityA) return priorityB - priorityA
+
       // Secondary sort by raw impact (higher value first within same priority)
       const impactDiff = Number(b.rawImpact) - Number(a.rawImpact)
       if (impactDiff !== 0) return impactDiff
+
       // Tertiary sort by creation date
       return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     })
@@ -140,8 +172,12 @@ export async function GET(request: Request) {
     // Calculate summary stats
     const allTasks = await prisma.task.findMany({
       where: { companyId },
-      select: { status: true, rawImpact: true },
+      select: { status: true, rawImpact: true, inActionPlan: true },
     })
+
+    // Count tasks in action plan vs queue
+    const actionPlanTasks = allTasks.filter(t => t.inActionPlan && !['COMPLETED', 'CANCELLED', 'NOT_APPLICABLE'].includes(t.status))
+    const queuedTasks = allTasks.filter(t => !t.inActionPlan && !['COMPLETED', 'CANCELLED', 'DEFERRED', 'NOT_APPLICABLE'].includes(t.status))
 
     const stats = {
       total: allTasks.length,
@@ -152,6 +188,11 @@ export async function GET(request: Request) {
       completedValue: allTasks
         .filter(t => t.status === 'COMPLETED')
         .reduce((sum, t) => sum + Number(t.rawImpact), 0),
+      // Action plan stats
+      inActionPlan: actionPlanTasks.length,
+      inQueue: queuedTasks.length,
+      maxActionPlan: 15,
+      canRefresh: actionPlanTasks.length < 15 && queuedTasks.length > 0,
     }
 
     return NextResponse.json({ tasks, stats })

@@ -7,6 +7,7 @@ import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 import { getTemplatesForQuestion } from './task-templates'
 import { type RichTaskDescription } from './rich-task-description'
+import { calculateTaskPriorityFromAttributes, initializeActionPlan } from '@/lib/tasks/action-plan'
 
 // Use flexible types to handle Prisma Decimal
 type NumberLike = string | number | { toString(): string }
@@ -96,6 +97,24 @@ export async function generateTasksForCompany(
       status: 'PENDING',
     },
   })
+
+  // Check if there's only one user in the company's organization - auto-assign tasks to them
+  let defaultAssigneeId: string | null = null
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { organizationId: true },
+  })
+
+  if (company) {
+    const orgUsers = await prisma.organizationUser.findMany({
+      where: { organizationId: company.organizationId },
+      select: { userId: true },
+    })
+
+    if (orgUsers.length === 1) {
+      defaultAssigneeId = orgUsers[0].userId
+    }
+  }
 
   // Count questions by effective tier (for proper allocation within tiers)
   // A question's effective tier depends on both its max tier AND the answer score
@@ -209,6 +228,17 @@ export async function generateTasksForCompany(
     const normalizedValue = rawImpact / effortMultiplier
 
     try {
+      // Calculate priority based on the 25-level matrix
+      // Lower score = more room for improvement = higher impact
+      const scoreForPriority = tasksToCreate.indexOf(task) < tasksToCreate.length
+        ? (tasksToCreate.indexOf(task) / tasksToCreate.length) * 0.5 // Spread scores
+        : 0.5
+      const { impactLevel, difficultyLevel, priorityRank } = calculateTaskPriorityFromAttributes(
+        scoreForPriority,
+        task.effortLevel,
+        task.estimatedHours
+      )
+
       await prisma.task.create({
         data: {
           companyId,
@@ -226,6 +256,11 @@ export async function generateTasksForCompany(
           effortLevel: task.effortLevel as never,
           complexity: task.complexity as never,
           estimatedHours: task.estimatedHours,
+          impactLevel,
+          difficultyLevel,
+          priorityRank,
+          inActionPlan: false, // Tasks start in queue, not action plan
+          ...(defaultAssigneeId && { primaryAssigneeId: defaultAssigneeId }),
           status: 'PENDING',
         },
       })
@@ -236,8 +271,12 @@ export async function generateTasksForCompany(
     }
   }
 
+  // Initialize action plan with top 15 priority tasks
+  const actionPlanResult = await initializeActionPlan(companyId)
+
   console.log(`[TASK_ENGINE] Generated ${created} tasks for company ${companyId}`)
-  console.log(`[TASK_ENGINE] Using Issue Tier System (60/30/10) + Answer Upgrade System`)
+  console.log(`[TASK_ENGINE] Action plan: ${actionPlanResult.initialized} tasks, Queue: ${actionPlanResult.queued} tasks`)
+  console.log(`[TASK_ENGINE] Using Issue Tier System (60/30/10) + Answer Upgrade System + Priority Matrix`)
 
   return { created, skipped }
 }
@@ -306,7 +345,7 @@ export async function generateNextLevelTasks(
           companyId,
           title: taskDef.title,
           linkedQuestionId: questionId,
-          status: { notIn: ['COMPLETED', 'CANCELLED'] }
+          status: { notIn: ['COMPLETED', 'CANCELLED', 'NOT_APPLICABLE'] }
         }
       })
 
@@ -344,6 +383,13 @@ export async function generateNextLevelTasks(
       const normalizedValue = estimatedValueImpact / effortMultiplier
 
       try {
+        // Calculate priority for next-level task
+        const { impactLevel, difficultyLevel, priorityRank } = calculateTaskPriorityFromAttributes(
+          currentEffectiveScore,
+          taskDef.effortLevel,
+          taskDef.estimatedHours
+        )
+
         await prisma.task.create({
           data: {
             companyId,
@@ -360,11 +406,16 @@ export async function generateNextLevelTasks(
             effortLevel: taskDef.effortLevel as never,
             complexity: taskDef.complexity as never,
             estimatedHours: taskDef.estimatedHours,
+            impactLevel,
+            difficultyLevel,
+            priorityRank,
+            inActionPlan: false, // Goes to queue first
             status: 'PENDING',
+            ...(defaultAssigneeId && { primaryAssigneeId: defaultAssigneeId }),
           },
         })
         created++
-        console.log(`[TASK_ENGINE] Generated next-level task: ${taskDef.title} (${effectiveTier})`)
+        console.log(`[TASK_ENGINE] Generated next-level task: ${taskDef.title} (${effectiveTier}, priority ${priorityRank})`)
       } catch (error) {
         console.error('Error creating next-level task:', error)
       }
@@ -399,7 +450,7 @@ export async function renormalizeTaskValues(
   const activeTasks = await prisma.task.findMany({
     where: {
       companyId,
-      status: { notIn: ['COMPLETED', 'CANCELLED'] }
+      status: { notIn: ['COMPLETED', 'CANCELLED', 'NOT_APPLICABLE'] }
     },
     select: {
       id: true,
@@ -456,4 +507,146 @@ function getEffortMultiplier(effort: string): number {
     MAJOR: 8,
   }
   return multipliers[effort] || 2
+}
+
+/**
+ * Generate tasks from project assessment responses
+ * Called when a 10-minute assessment is completed
+ *
+ * @returns Number of tasks created and added to queue
+ */
+export async function generateTasksFromProjectAssessment(
+  companyId: string,
+  assessmentId: string
+): Promise<{ created: number; skipped: number }> {
+  // Get the assessment with responses
+  const assessment = await prisma.projectAssessment.findUnique({
+    where: { id: assessmentId },
+    include: {
+      responses: {
+        include: {
+          question: {
+            include: { options: true }
+          },
+          selectedOption: true,
+        }
+      }
+    }
+  })
+
+  if (!assessment) {
+    console.error('[TASK_ENGINE] Assessment not found:', assessmentId)
+    return { created: 0, skipped: 0 }
+  }
+
+  // Get the current value gap for estimating task value
+  const snapshot = await prisma.valuationSnapshot.findFirst({
+    where: { companyId },
+    orderBy: { createdAt: 'desc' },
+    select: { valueGap: true }
+  })
+  const valueGap = snapshot ? Number(snapshot.valueGap) : 0
+
+  let created = 0
+  let skipped = 0
+
+  for (const response of assessment.responses) {
+    const score = Number(response.actualScore)
+    const question = response.question
+
+    // Only create tasks for low-scoring responses (score < 0.5)
+    if (score >= 0.5) {
+      skipped++
+      continue
+    }
+
+    // Check if a task already exists for this question
+    const existingTask = await prisma.task.findFirst({
+      where: {
+        companyId,
+        linkedQuestionId: question.id,
+        status: { notIn: ['COMPLETED', 'CANCELLED', 'NOT_APPLICABLE'] }
+      }
+    })
+
+    if (existingTask) {
+      skipped++
+      continue
+    }
+
+    // Find the next better option (upgrade target)
+    const currentScore = Number(response.selectedOption.scoreValue)
+    const betterOptions = question.options.filter(
+      o => Number(o.scoreValue) > currentScore
+    ).sort((a, b) => Number(a.scoreValue) - Number(b.scoreValue))
+
+    if (betterOptions.length === 0) {
+      skipped++
+      continue
+    }
+
+    // Target the next step up, not necessarily the best option
+    const targetOption = betterOptions[0]
+
+    // Calculate task attributes
+    const scoreImprovement = Number(targetOption.scoreValue) - currentScore
+    const estimatedValueImpact = valueGap * scoreImprovement * 0.1 // 10% allocation per question
+
+    // Determine effort level based on score improvement needed
+    let effortLevel = 'MODERATE'
+    let estimatedHours = 8
+    if (scoreImprovement <= 0.25) {
+      effortLevel = 'LOW'
+      estimatedHours = 4
+    } else if (scoreImprovement <= 0.5) {
+      effortLevel = 'MODERATE'
+      estimatedHours = 8
+    } else {
+      effortLevel = 'HIGH'
+      estimatedHours = 16
+    }
+
+    // Calculate priority
+    const { impactLevel, difficultyLevel, priorityRank } = calculateTaskPriorityFromAttributes(
+      score,
+      effortLevel,
+      estimatedHours
+    )
+
+    const effortMultiplier = getEffortMultiplier(effortLevel)
+    const normalizedValue = estimatedValueImpact / effortMultiplier
+
+    try {
+      await prisma.task.create({
+        data: {
+          companyId,
+          title: `Improve: ${question.subCategory}`,
+          description: `Address the ${question.briCategory.toLowerCase()} issue identified in assessment: ${question.questionText}\n\nCurrent situation: ${response.selectedOption.optionText}\nTarget: ${targetOption.optionText}`,
+          actionType: 'TYPE_II_IMPLEMENT',
+          briCategory: question.briCategory as never,
+          linkedQuestionId: question.id,
+          rawImpact: estimatedValueImpact,
+          normalizedValue,
+          effortLevel: effortLevel as never,
+          complexity: 'MODERATE' as never,
+          estimatedHours,
+          impactLevel,
+          difficultyLevel,
+          priorityRank,
+          inActionPlan: false, // Goes to queue first
+          status: 'PENDING',
+          ...(defaultAssigneeId && { primaryAssigneeId: defaultAssigneeId }),
+        }
+      })
+      created++
+      console.log(`[TASK_ENGINE] Created task for question: ${question.subCategory} (priority ${priorityRank})`)
+    } catch (error) {
+      console.error('[TASK_ENGINE] Error creating task:', error)
+      skipped++
+    }
+  }
+
+  console.log(`[TASK_ENGINE] Project assessment generated ${created} tasks, skipped ${skipped}`)
+
+  return { created, skipped }
 }

@@ -30,6 +30,7 @@ interface Response {
 interface AssessmentWizardProps {
   companyId: string
   companyName: string
+  title?: string
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -50,7 +51,7 @@ const CATEGORY_ORDER = [
   'PERSONAL',
 ]
 
-export function AssessmentWizard({ companyId, companyName }: AssessmentWizardProps) {
+export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readiness Assessment' }: AssessmentWizardProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -312,7 +313,7 @@ export function AssessmentWizard({ companyId, companyName }: AssessmentWizardPro
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Buyer Readiness Assessment</h1>
+        <h1 className="text-2xl font-bold text-foreground">{title}</h1>
         <p className="text-muted-foreground">{companyName}</p>
       </div>
 

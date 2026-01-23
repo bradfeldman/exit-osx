@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { TaskCard } from './TaskCard'
 import { TaskAssignDialog } from './TaskAssignDialog'
+import { GenerateActionPlanDialog } from './GenerateActionPlanDialog'
 
 interface TaskUser {
   id: string
@@ -55,11 +56,16 @@ interface Stats {
   completed: number
   totalValue: number
   completedValue: number
+  inActionPlan: number
+  inQueue: number
+  maxActionPlan: number
+  canRefresh: boolean
 }
 
 interface PlaybookContentProps {
   companyId: string
   companyName: string
+  expandTaskId?: string
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -78,7 +84,7 @@ const STATUS_FILTERS = [
   { value: 'COMPLETED', label: 'Completed' },
 ]
 
-export function PlaybookContent({ companyId, companyName }: PlaybookContentProps) {
+export function PlaybookContent({ companyId, companyName, expandTaskId }: PlaybookContentProps) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -87,6 +93,7 @@ export function PlaybookContent({ companyId, companyName }: PlaybookContentProps
   const [categoryFilter, setCategoryFilter] = useState('')
   const [assignDialogOpen, setAssignDialogOpen] = useState(false)
   const [selectedTaskForAssign, setSelectedTaskForAssign] = useState<Task | null>(null)
+  const [generateDialogOpen, setGenerateDialogOpen] = useState(false)
 
   const loadTasks = async () => {
     try {
@@ -111,6 +118,20 @@ export function PlaybookContent({ companyId, companyName }: PlaybookContentProps
     loadTasks()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId, statusFilter, categoryFilter])
+
+  // Scroll to expanded task when coming from Scorecard
+  useEffect(() => {
+    if (expandTaskId && !loading && tasks.length > 0) {
+      // Small delay to ensure the DOM has rendered
+      const timer = setTimeout(() => {
+        const taskElement = document.getElementById(`task-${expandTaskId}`)
+        if (taskElement) {
+          taskElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [expandTaskId, loading, tasks])
 
   const handleStatusChange = async (taskId: string, newStatus: string, extra?: { blockedReason?: string }) => {
     try {
@@ -162,9 +183,26 @@ export function PlaybookContent({ companyId, companyName }: PlaybookContentProps
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Action Playbook</h1>
-        <p className="text-gray-600">{companyName}</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Action Plan</h1>
+          <p className="text-gray-600">{companyName}</p>
+          {stats && (
+            <p className="text-sm text-gray-500 mt-1">
+              {stats.inActionPlan} of {stats.maxActionPlan} tasks
+              {stats.inQueue > 0 && ` • ${stats.inQueue} in queue`}
+            </p>
+          )}
+        </div>
+        <Button
+          onClick={() => setGenerateDialogOpen(true)}
+          className="flex items-center gap-2"
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+          </svg>
+          Generate Action Plan
+        </Button>
       </div>
 
       {/* Filters */}
@@ -230,13 +268,15 @@ export function PlaybookContent({ companyId, companyName }: PlaybookContentProps
       ) : (
         <div className="space-y-4">
           {tasks.map(task => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onStatusChange={handleStatusChange}
-              onAssign={handleAssign}
-              onTaskUpdate={loadTasks}
-            />
+            <div key={task.id} id={`task-${task.id}`}>
+              <TaskCard
+                task={task}
+                onStatusChange={handleStatusChange}
+                onAssign={handleAssign}
+                onTaskUpdate={loadTasks}
+                defaultExpanded={task.id === expandTaskId}
+              />
+            </div>
           ))}
         </div>
       )}
@@ -254,6 +294,15 @@ export function PlaybookContent({ companyId, companyName }: PlaybookContentProps
           onSave={loadTasks}
         />
       )}
+
+      {/* Generate Action Plan Dialog */}
+      <GenerateActionPlanDialog
+        open={generateDialogOpen}
+        onOpenChange={setGenerateDialogOpen}
+        companyId={companyId}
+        currentTaskCount={tasks.filter(t => t.status !== 'COMPLETED' && t.status !== 'CANCELLED' && t.status !== 'NOT_APPLICABLE').length}
+        onSuccess={loadTasks}
+      />
     </div>
   )
 }

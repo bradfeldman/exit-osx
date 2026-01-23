@@ -183,7 +183,8 @@ export async function PUT(
     const totalLiabilities = totalCurrentLiabilities + totalLongTermLiabilities
 
     const totalEquity = retainedEarnings + ownersEquity
-    const workingCapital = totalCurrentAssets - totalCurrentLiabilities
+    // Operating Working Capital = AR + Inventory - AP
+    const workingCapital = accountsReceivable + inventory - accountsPayable
 
     // Upsert balance sheet
     const bs = await prisma.balanceSheet.upsert({

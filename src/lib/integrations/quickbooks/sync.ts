@@ -184,7 +184,8 @@ export async function syncQuickBooksData(
         const totalEquity = bsData.totalEquity ||
           (bsData.retainedEarnings + bsData.ownersEquity)
 
-        const workingCapital = totalCurrentAssets - totalCurrentLiabilities
+        // Operating Working Capital = AR + Inventory - AP
+        const workingCapital = bsData.accountsReceivable + bsData.inventory - bsData.accountsPayable
 
         // Upsert balance sheet
         if (period.balanceSheet) {

@@ -21,12 +21,7 @@ const revenueModelOptions = [
   { value: 'SUBSCRIPTION_SAAS', label: 'Subscription', icon: '🔄', description: 'Recurring billing' },
 ]
 
-const grossMarginOptions = [
-  { value: 'LOW', label: 'Low', sublabel: '<30%', description: 'High COGS' },
-  { value: 'MODERATE', label: 'Moderate', sublabel: '30-50%', description: 'Average' },
-  { value: 'GOOD', label: 'Good', sublabel: '50-70%', description: 'Healthy' },
-  { value: 'EXCELLENT', label: 'Excellent', sublabel: '>70%', description: 'Premium' },
-]
+// Note: grossMargin is now collected in Business Fundamentals assessment, not onboarding
 
 const laborIntensityOptions = [
   { value: 'LOW', label: 'Low', description: 'Automated/asset-driven' },
@@ -56,12 +51,6 @@ const categoryExamples = {
     { label: 'Transactional', examples: 'Retail stores, restaurants, e-commerce' },
     { label: 'Contracts', examples: 'IT services, janitorial, landscaping contracts' },
     { label: 'Subscription', examples: 'SaaS, gym memberships, streaming services' },
-  ],
-  grossMargin: [
-    { label: 'Low (<30%)', examples: 'Grocery stores, gas stations, distribution' },
-    { label: 'Moderate (30-50%)', examples: 'Retail, restaurants, manufacturing' },
-    { label: 'Good (50-70%)', examples: 'Professional services, specialty retail' },
-    { label: 'Excellent (>70%)', examples: 'Software, consulting, digital products' },
   ],
   laborIntensity: [
     { label: 'Low', examples: 'Vending machines, rental properties, software' },
@@ -199,7 +188,6 @@ function FactorSection({ title, description, value, onChange, options, columns =
 export function BusinessProfileStep({ formData, updateFormData }: BusinessProfileStepProps) {
   const completedCount = [
     formData.revenueModel,
-    formData.grossMarginProxy,
     formData.laborIntensity,
     formData.assetIntensity,
     formData.ownerInvolvement,
@@ -217,11 +205,11 @@ export function BusinessProfileStep({ formData, updateFormData }: BusinessProfil
           </p>
         </div>
         <div className="flex items-center gap-2 bg-muted rounded-full px-3 py-1.5">
-          <span className="text-sm font-medium text-foreground">{completedCount}/5</span>
+          <span className="text-sm font-medium text-foreground">{completedCount}/4</span>
           <div className="w-16 h-2 bg-muted-foreground/20 rounded-full overflow-hidden">
             <div
               className="h-full bg-primary transition-all duration-300 rounded-full"
-              style={{ width: `${(completedCount / 5) * 100}%` }}
+              style={{ width: `${(completedCount / 4) * 100}%` }}
             />
           </div>
         </div>
@@ -237,16 +225,6 @@ export function BusinessProfileStep({ formData, updateFormData }: BusinessProfil
           options={revenueModelOptions}
           columns={4}
           examples={categoryExamples.revenueModel}
-        />
-
-        <FactorSection
-          title="Gross Margin"
-          description="How profitable is each sale before overhead, salaries, and other operating expenses?"
-          value={formData.grossMarginProxy}
-          onChange={(value) => updateFormData({ grossMarginProxy: value })}
-          options={grossMarginOptions}
-          columns={4}
-          examples={categoryExamples.grossMargin}
         />
 
         <div className="grid md:grid-cols-2 gap-6">
@@ -286,7 +264,7 @@ export function BusinessProfileStep({ formData, updateFormData }: BusinessProfil
       </div>
 
       {/* Info card - only show when all completed */}
-      {completedCount === 5 && (
+      {completedCount === 4 && (
         <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl border border-primary/20">
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">

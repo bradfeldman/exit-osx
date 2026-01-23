@@ -12,13 +12,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 
 interface AddPeriodDialogProps {
   open: boolean
@@ -43,6 +36,11 @@ interface FinancialPeriod {
   createdAt: string
 }
 
+interface CompanySettings {
+  fiscalYearEndMonth: number
+  fiscalYearEndDay: number
+}
+
 export function AddPeriodDialog({
   open,
   onOpenChange,
@@ -53,18 +51,43 @@ export function AddPeriodDialog({
   // Default to last completed year (e.g., if today is 7/15/2026, default to 2025)
   const lastCompletedYear = currentYear - 1
   const [fiscalYear, setFiscalYear] = useState(lastCompletedYear)
-  const [fiscalYearEndMonth, setFiscalYearEndMonth] = useState(12) // December
-  const [fiscalYearEndDay, setFiscalYearEndDay] = useState(31) // 31st
+  const [companySettings, setCompanySettings] = useState<CompanySettings>({
+    fiscalYearEndMonth: 12,
+    fiscalYearEndDay: 31,
+  })
+  const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Get days in the selected month
-  const getDaysInMonth = (month: number, year: number) => {
-    return new Date(year, month, 0).getDate()
-  }
+  // Fetch company settings when dialog opens
+  useEffect(() => {
+    async function fetchCompanySettings() {
+      if (!open || !companyId) return
+
+      setIsLoading(true)
+      try {
+        const response = await fetch(`/api/companies/${companyId}`)
+        if (response.ok) {
+          const data = await response.json()
+          setCompanySettings({
+            fiscalYearEndMonth: data.company.fiscalYearEndMonth || 12,
+            fiscalYearEndDay: data.company.fiscalYearEndDay || 31,
+          })
+        }
+      } catch (err) {
+        console.error('Error fetching company settings:', err)
+        // Keep defaults on error
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchCompanySettings()
+  }, [open, companyId])
 
   // Calculate start and end dates based on fiscal year end
   const calculateDates = () => {
+    const { fiscalYearEndMonth, fiscalYearEndDay } = companySettings
     // End date is the fiscal year end date in the fiscal year
     const endDate = new Date(fiscalYear, fiscalYearEndMonth - 1, fiscalYearEndDay)
 
@@ -79,6 +102,7 @@ export function AddPeriodDialog({
 
   // Generate label based on fiscal year end
   const generateLabel = () => {
+    const { fiscalYearEndMonth, fiscalYearEndDay } = companySettings
     if (fiscalYearEndMonth === 12 && fiscalYearEndDay === 31) {
       return `FY${fiscalYear}` // Calendar year
     }
@@ -118,8 +142,6 @@ export function AddPeriodDialog({
 
       // Reset form
       setFiscalYear(lastCompletedYear)
-      setFiscalYearEndMonth(12)
-      setFiscalYearEndDay(31)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create period')
     } finally {
@@ -132,16 +154,6 @@ export function AddPeriodDialog({
     'July', 'August', 'September', 'October', 'November', 'December'
   ]
 
-  // Calculate max days for the selected month
-  const maxDays = getDaysInMonth(fiscalYearEndMonth, fiscalYear)
-
-  // Update day if it exceeds the max days in the selected month
-  useEffect(() => {
-    if (fiscalYearEndDay > maxDays) {
-      setFiscalYearEndDay(maxDays)
-    }
-  }, [fiscalYearEndMonth, fiscalYear, fiscalYearEndDay, maxDays])
-
   // Preview dates
   const dates = calculateDates()
   const startDatePreview = new Date(dates.startDate).toLocaleDateString('en-US', {
@@ -151,98 +163,73 @@ export function AddPeriodDialog({
     month: 'short', day: 'numeric', year: 'numeric'
   })
 
+  const { fiscalYearEndMonth, fiscalYearEndDay } = companySettings
+  const isCalendarYear = fiscalYearEndMonth === 12 && fiscalYearEndDay === 31
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Add Fiscal Year</DialogTitle>
           <DialogDescription>
-            Create an annual financial period. Specify your fiscal year-end date if it differs from December 31.
+            Create an annual financial period for your company.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="fiscalYear">Fiscal Year</Label>
-            <Input
-              id="fiscalYear"
-              type="number"
-              value={fiscalYear}
-              onChange={(e) => setFiscalYear(parseInt(e.target.value) || currentYear)}
-              min={2000}
-              max={2100}
-            />
-            <p className="text-xs text-muted-foreground">
-              The year in which the fiscal year ends
-            </p>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
           </div>
-
-          <div className="space-y-2">
-            <Label>Fiscal Year End Date</Label>
-            <div className="flex gap-2">
-              <Select
-                value={fiscalYearEndMonth.toString()}
-                onValueChange={(value) => setFiscalYearEndMonth(parseInt(value))}
-              >
-                <SelectTrigger className="flex-1">
-                  <SelectValue placeholder="Month" />
-                </SelectTrigger>
-                <SelectContent>
-                  {monthNames.map((name, index) => (
-                    <SelectItem key={index + 1} value={(index + 1).toString()}>
-                      {name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={fiscalYearEndDay.toString()}
-                onValueChange={(value) => setFiscalYearEndDay(parseInt(value))}
-              >
-                <SelectTrigger className="w-24">
-                  <SelectValue placeholder="Day" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: maxDays }, (_, i) => i + 1).map((day) => (
-                    <SelectItem key={day} value={day.toString()}>
-                      {day}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="fiscalYear">Fiscal Year</Label>
+              <Input
+                id="fiscalYear"
+                type="number"
+                value={fiscalYear}
+                onChange={(e) => setFiscalYear(parseInt(e.target.value) || currentYear)}
+                min={2000}
+                max={2100}
+              />
+              <p className="text-xs text-muted-foreground">
+                The year in which the fiscal year ends
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              When does your fiscal year end? (e.g., December 31 for calendar year, June 30 for July-June)
-            </p>
-          </div>
 
-          {/* Preview */}
-          <div className="rounded-md bg-muted p-3 space-y-1">
-            <p className="text-sm font-medium">{generateLabel()}</p>
-            <p className="text-xs text-muted-foreground">
-              {startDatePreview} - {endDatePreview}
-            </p>
-          </div>
+            {/* Preview */}
+            <div className="rounded-md bg-muted p-3 space-y-1">
+              <p className="text-sm font-medium">{generateLabel()}</p>
+              <p className="text-xs text-muted-foreground">
+                {startDatePreview} - {endDatePreview}
+              </p>
+              {!isCalendarYear && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Fiscal year ends on {monthNames[fiscalYearEndMonth - 1]} {fiscalYearEndDay}
+                  {' '}(set in Company Settings)
+                </p>
+              )}
+            </div>
 
-          {error && (
-            <p className="text-sm text-red-600">{error}</p>
-          )}
+            {error && (
+              <p className="text-sm text-red-600">{error}</p>
+            )}
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating...' : 'Create Period'}
-            </Button>
-          </DialogFooter>
-        </form>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Creating...' : 'Create Period'}
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   )

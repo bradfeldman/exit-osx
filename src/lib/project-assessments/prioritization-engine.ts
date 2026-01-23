@@ -249,6 +249,37 @@ function isSaasOnlyQuestion(moduleId: string, questionText: string): boolean {
 }
 
 /**
+ * Get subCategories that have been addressed by completed tasks
+ * This helps avoid asking questions about risks that have already been mitigated
+ */
+async function getResolvedSubCategories(companyId: string): Promise<Set<string>> {
+  // Get completed tasks with their linked questions
+  const completedTasks = await prisma.task.findMany({
+    where: {
+      companyId,
+      status: 'COMPLETED',
+      linkedQuestionId: { not: null },
+      upgradesToOptionId: { not: null }, // Only tasks that actually upgraded an answer
+    },
+    select: {
+      briCategory: true,
+      linkedQuestionId: true,
+    }
+  })
+
+  // Build a set of category keys that have been addressed
+  // Format: "CATEGORY" (we use category level since initial questions don't have subCategory)
+  const resolvedCategories = new Set<string>()
+
+  for (const task of completedTasks) {
+    // Add the category as partially resolved
+    resolvedCategories.add(task.briCategory)
+  }
+
+  return resolvedCategories
+}
+
+/**
  * Select questions for the next Project Assessment
  */
 export async function selectQuestionsForAssessment(
@@ -258,6 +289,9 @@ export async function selectQuestionsForAssessment(
 ): Promise<PrioritizedQuestion[]> {
   // Ensure priorities are calculated
   await calculateQuestionPriorities(companyId)
+
+  // Get categories that have been addressed by completed tasks
+  const resolvedCategories = await getResolvedSubCategories(companyId)
 
   // Check if company is SaaS/subscription based
   const isSaasCompany = await isRecurringRevenueCompany(companyId)
@@ -327,17 +361,44 @@ export async function selectQuestionsForAssessment(
     return true
   })
 
+  // Apply penalty to questions in categories that have completed tasks
+  // This deprioritizes questions about risks that may have been mitigated
+  const COMPLETED_TASK_PENALTY = 15 // Reduce priority score for categories with completed tasks
+  const adjustedPriorities = applicablePriorities.map(p => {
+    const hasCompletedTasks = resolvedCategories.has(p.question.briCategory)
+    const adjustedScore = hasCompletedTasks
+      ? Number(p.priorityScore) - COMPLETED_TASK_PENALTY
+      : Number(p.priorityScore)
+    return {
+      ...p,
+      adjustedPriorityScore: adjustedScore,
+      hasCompletedTasksInCategory: hasCompletedTasks,
+    }
+  })
+
+  // Sort by adjusted priority
+  adjustedPriorities.sort((a, b) => b.adjustedPriorityScore - a.adjustedPriorityScore)
+
   // Select questions with category balancing
   const selectedQuestions: PrioritizedQuestion[] = []
   const categoryCount: Record<string, number> = {}
 
   // First, ensure we get some questions from the focus/weakest category
-  const focusQuestions = applicablePriorities.filter(p => p.question.briCategory === targetCategory)
+  const focusQuestions = adjustedPriorities.filter(p => p.question.briCategory === targetCategory)
   const minFocusCount = Math.min(Math.ceil(targetCount * 0.5), focusQuestions.length)
 
   for (let i = 0; i < minFocusCount && i < focusQuestions.length; i++) {
     const priority = focusQuestions[i]
     const question = priority.question
+
+    let selectionReason = isFocusRequested
+      ? `Selected focus: ${targetCategory}`
+      : `Priority area: ${targetCategory} (needs improvement)`
+
+    // Note if some tasks in this category have been completed
+    if (priority.hasCompletedTasksInCategory) {
+      selectionReason += ' (some risks mitigated by completed tasks)'
+    }
 
     selectedQuestions.push({
       questionId: question.id,
@@ -348,10 +409,8 @@ export async function selectQuestionsForAssessment(
       impactScore: Number(priority.impactScore),
       relevanceScore: Number(priority.relevanceScore),
       balanceBonus: 0,
-      totalScore: Number(priority.priorityScore),
-      selectionReason: isFocusRequested
-        ? `Selected focus: ${targetCategory}`
-        : `Priority area: ${targetCategory} (needs improvement)`,
+      totalScore: priority.adjustedPriorityScore,
+      selectionReason,
     })
 
     categoryCount[question.briCategory] = (categoryCount[question.briCategory] || 0) + 1
@@ -361,7 +420,7 @@ export async function selectQuestionsForAssessment(
   const _remaining = targetCount - selectedQuestions.length
   const selectedIds = new Set(selectedQuestions.map(q => q.questionId))
 
-  for (const priority of applicablePriorities) {
+  for (const priority of adjustedPriorities) {
     if (selectedQuestions.length >= targetCount) break
     if (selectedIds.has(priority.question.id)) continue
 
@@ -376,7 +435,16 @@ export async function selectQuestionsForAssessment(
       balanceBonus = -5 // Penalty for over-represented category
     }
 
-    const adjustedScore = Number(priority.priorityScore) + balanceBonus
+    const adjustedScore = priority.adjustedPriorityScore + balanceBonus
+
+    let selectionReason = currentCategoryCount === 0
+      ? `High impact, new category coverage`
+      : `High impact question`
+
+    // Note if tasks in this category have been completed
+    if (priority.hasCompletedTasksInCategory) {
+      selectionReason += ' (some risks mitigated)'
+    }
 
     selectedQuestions.push({
       questionId: question.id,
@@ -388,9 +456,7 @@ export async function selectQuestionsForAssessment(
       relevanceScore: Number(priority.relevanceScore),
       balanceBonus,
       totalScore: adjustedScore,
-      selectionReason: currentCategoryCount === 0
-        ? `High impact, new category coverage`
-        : `High impact question`,
+      selectionReason,
     })
 
     categoryCount[question.briCategory] = currentCategoryCount + 1

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useCompany } from '@/contexts/CompanyContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -81,25 +82,6 @@ export default function PersonalReadinessPage() {
     return question.currentResponse?.selectedOptionId || ''
   }
 
-  function getScore(): number {
-    if (questions.length === 0) return 0
-
-    let totalPoints = 0
-    let earnedPoints = 0
-
-    for (const question of questions) {
-      const selectedOptionId = getCurrentSelection(question)
-      const selectedOption = question.options.find(o => o.id === selectedOptionId)
-
-      totalPoints += question.maxImpactPoints
-      if (selectedOption) {
-        earnedPoints += question.maxImpactPoints * selectedOption.scoreValue
-      }
-    }
-
-    return totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0
-  }
-
   function hasChanges(): boolean {
     return Object.keys(changedResponses).length > 0
   }
@@ -160,6 +142,8 @@ export default function PersonalReadinessPage() {
   }
 
   if (error && questions.length === 0) {
+    const needsInitialAssessment = error.toLowerCase().includes('no completed assessment')
+
     return (
       <div className="max-w-3xl mx-auto space-y-6">
         <div>
@@ -168,46 +152,48 @@ export default function PersonalReadinessPage() {
             Assess your personal exit readiness
           </p>
         </div>
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-          <p className="text-amber-800">{error}</p>
-        </div>
+        {needsInitialAssessment ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Complete Initial Assessment First</CardTitle>
+              <CardDescription>
+                Personal Readiness questions are part of your initial Business Readiness Assessment
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-gray-600">
+                To assess your personal readiness for exit, you&apos;ll need to complete the initial
+                Business Readiness Assessment. This comprehensive assessment covers all six categories
+                including Personal Readiness.
+              </p>
+              <p className="text-gray-600">
+                Once completed, you can return here to review and update your Personal Readiness
+                responses at any time.
+              </p>
+              <Link href="/dashboard/assessment/risk">
+                <Button className="bg-[#B87333] hover:bg-[#9A5F2A]">
+                  Start Initial Assessment
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-amber-800">{error}</p>
+          </div>
+        )}
       </div>
     )
   }
-
-  const score = getScore()
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Personal Readiness</h1>
         <p className="text-gray-600">
-          Assess your personal exit readiness for {selectedCompany?.name}
+          Assess your personal exit readiness for {selectedCompany?.name}. This assessment evaluates your personal readiness to exit the business.
         </p>
       </div>
-
-      {/* Score Overview */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Personal Readiness Score</CardTitle>
-          <CardDescription>
-            Your current personal readiness assessment score
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <div className={`text-4xl font-bold ${
-              score >= 70 ? 'text-green-600' : score >= 40 ? 'text-yellow-600' : 'text-red-600'
-            }`}>
-              {score}%
-            </div>
-            <div className="text-sm text-gray-600">
-              <p>This score reflects your personal readiness to exit the business.</p>
-              <p className="mt-1">Topics covered include exit timeline clarity, personal/business asset separation, and key employee awareness.</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Questions */}
       {questions.length > 0 && (

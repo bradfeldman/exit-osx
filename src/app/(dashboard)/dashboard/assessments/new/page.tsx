@@ -15,7 +15,7 @@ const PROGRESS_STEPS = [
 export default function NewAssessmentPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { selectedCompanyId } = useCompany()
+  const { selectedCompanyId, isLoading: isCompanyLoading } = useCompany()
   const [error, setError] = useState<string | null>(null)
   const [creating, setCreating] = useState(true)
   const [currentStep, setCurrentStep] = useState(0)
@@ -51,7 +51,7 @@ export default function NewAssessmentPage() {
   // Redirect when both assessment is ready and animation has progressed enough
   useEffect(() => {
     if (assessmentId && currentStep >= 2) {
-      router.replace(`/dashboard/assessments/${assessmentId}`)
+      router.replace('/dashboard/assessment/risk')
     }
   }, [assessmentId, currentStep, router])
 
@@ -79,9 +79,9 @@ export default function NewAssessmentPage() {
       const data = await response.json()
 
       if (data.assessment) {
-        // If returning existing assessment, redirect immediately (no progress animation needed)
+        // If returning existing assessment, redirect immediately to Risk page
         if (data.isExisting) {
-          router.replace(`/dashboard/assessments/${data.assessment.id}`)
+          router.replace('/dashboard/assessment/risk')
           return
         }
         setAssessmentId(data.assessment.id)
@@ -97,7 +97,9 @@ export default function NewAssessmentPage() {
     }
   }
 
-  if (!selectedCompanyId) {
+  // Show loading animation while company context is loading
+  // Only show "No company selected" after context has loaded
+  if (!selectedCompanyId && !isCompanyLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <p className="text-muted-foreground">No company selected</p>

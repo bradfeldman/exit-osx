@@ -268,7 +268,7 @@ export function DashboardContent({ userName }: DashboardContentProps) {
               valueGap={isPreviewMode ? previewValueGap : tier1.valueGap}
               briScore={tier1.briScore}
               coreScore={tier1.coreScore}
-              personalReadinessScore={tier3?.categories.find(c => c.key === 'PERSONAL')?.score ?? 0}
+              personalReadinessScore={tier3?.categories.find(c => c.key === 'PERSONAL')?.score ?? null}
               isEstimated={tier1.isEstimated}
               isPreviewMode={isPreviewMode}
               isAbovePotential={isAbovePotential}

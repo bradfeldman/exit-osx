@@ -108,6 +108,13 @@ export async function GET(
         },
         ebitdaAdjustments: true,
         coreFactors: true,
+        financialPeriods: {
+          orderBy: { fiscalYear: 'desc' },
+          include: {
+            incomeStatement: true,
+            adjustments: true,
+          },
+        },
       },
     })
 
@@ -257,30 +264,90 @@ export async function GET(
       }
     }
 
-    // Use snapshot's adjusted EBITDA if available (includes owner comp normalization)
-    // Otherwise calculate from company data, or estimate from revenue using industry multiples
-    const companyEbitda = Number(company.annualEbitda)
+    // Calculate Adjusted EBITDA with priority:
+    // 1. Financials (appropriate FY's income statement EBITDA + period adjustments)
+    // 2. Revenue to EBITDA conversion (using industry multiples)
+    // 3. Company Assessment (annualEbitda from company setup)
+
     const companyRevenue = Number(company.annualRevenue)
-    // Calculate adjustment total: add ADD_BACKs, subtract DEDUCTIONs
-    // Annualize monthly amounts (multiply by 12)
-    const adjustmentTotal = company.ebitdaAdjustments.reduce((sum, adj) => {
-      const baseAmount = Number(adj.amount)
-      const annualizedAmount = adj.frequency === 'MONTHLY' ? baseAmount * 12 : baseAmount
-      return adj.type === 'DEDUCTION' ? sum - annualizedAmount : sum + annualizedAmount
-    }, 0)
+    const companyEbitda = Number(company.annualEbitda)
 
     // Helper to round to nearest $100,000
     const roundToHundredThousand = (value: number) => Math.round(value / 100000) * 100000
 
-    // If no EBITDA provided, estimate using industry-specific implied margin
-    // Derived from relationship between revenue multiples and EBITDA multiples:
-    // EV = Revenue × RevMultiple = EBITDA × EbitdaMultiple
-    // Therefore: EBITDA = Revenue × (RevMultiple / EbitdaMultiple)
-    let estimatedEbitda: number
-    if (companyEbitda > 0) {
-      estimatedEbitda = companyEbitda
-    } else if (industryMultiple) {
-      // Calculate implied EBITDA at low and high ends, then average
+    // Determine target fiscal year based on current date
+    // - If before July (month < 7): use previous year's FY (just ended)
+    // - If July or later (month >= 7): use current year's FY if available, else previous
+    // Examples:
+    // - Jan 20, 2026 → FY 2025
+    // - Aug 13, 2026 → FY 2026 if available, else FY 2025
+    // - Mar 15, 2027 → FY 2026
+    const today = new Date()
+    const currentYear = today.getFullYear()
+    const currentMonth = today.getMonth() + 1 // 1-12
+
+    let targetFiscalYear: number
+    let fallbackFiscalYear: number
+
+    if (currentMonth < 7) {
+      // First half of year - use previous FY
+      targetFiscalYear = currentYear - 1
+      fallbackFiscalYear = currentYear - 2
+    } else {
+      // Second half of year - prefer current FY, fallback to previous
+      targetFiscalYear = currentYear
+      fallbackFiscalYear = currentYear - 1
+    }
+
+    // Find the best matching financial period
+    // Periods are already sorted by fiscalYear desc
+    let selectedFinancialPeriod = company.financialPeriods.find(
+      p => p.fiscalYear === targetFiscalYear && p.incomeStatement
+    )
+    if (!selectedFinancialPeriod) {
+      selectedFinancialPeriod = company.financialPeriods.find(
+        p => p.fiscalYear === fallbackFiscalYear && p.incomeStatement
+      )
+    }
+    // If still not found, use the most recent period with income statement
+    if (!selectedFinancialPeriod) {
+      selectedFinancialPeriod = company.financialPeriods.find(p => p.incomeStatement)
+    }
+
+    let adjustedEbitda: number = 0
+    let isEbitdaFromFinancials = false
+    let isEbitdaEstimated = false
+    let selectedFiscalYear: number | null = null
+
+    // Priority 1: Use Financials if available
+    if (selectedFinancialPeriod?.incomeStatement) {
+      const incomeStmtEbitda = Number(selectedFinancialPeriod.incomeStatement.ebitda) || 0
+
+      // Calculate period-specific adjustments (ADD_BACK - DEDUCTION)
+      const periodAdjustments = selectedFinancialPeriod.adjustments || []
+      const netAddBacks = periodAdjustments.reduce((sum, adj) => {
+        const amount = Number(adj.amount) || 0
+        return sum + (adj.type === 'ADD_BACK' ? amount : -amount)
+      }, 0)
+
+      adjustedEbitda = incomeStmtEbitda + netAddBacks
+      isEbitdaFromFinancials = true
+      selectedFiscalYear = selectedFinancialPeriod.fiscalYear
+
+      // Sync company.annualEbitda if P&L EBITDA differs
+      // This keeps the company assessment in sync with financials
+      if (Math.abs(companyEbitda - incomeStmtEbitda) > 0.01) {
+        await prisma.company.update({
+          where: { id: companyId },
+          data: { annualEbitda: incomeStmtEbitda },
+        })
+      }
+    }
+    // Priority 2: Revenue to EBITDA conversion using industry multiples
+    else if (companyRevenue > 0 && industryMultiple) {
+      // Calculate implied EBITDA using industry multiples
+      // EV = Revenue × RevMultiple = EBITDA × EbitdaMultiple
+      // Therefore: EBITDA = Revenue × (RevMultiple / EbitdaMultiple)
       const revMultipleLow = Number(industryMultiple.revenueMultipleLow)
       const revMultipleHigh = Number(industryMultiple.revenueMultipleHigh)
       const ebitdaMultipleLow = Number(industryMultiple.ebitdaMultipleLow)
@@ -288,17 +355,28 @@ export async function GET(
 
       const impliedEbitdaLow = companyRevenue * (revMultipleLow / ebitdaMultipleLow)
       const impliedEbitdaHigh = companyRevenue * (revMultipleHigh / ebitdaMultipleHigh)
-      // Round estimated EBITDA to nearest $100,000
-      estimatedEbitda = roundToHundredThousand((impliedEbitdaLow + impliedEbitdaHigh) / 2)
-    } else {
-      // Fallback to 10% if no industry data, rounded to nearest $100,000
-      estimatedEbitda = roundToHundredThousand(companyRevenue * 0.10)
-    }
 
-    // When estimated (no snapshot), round the final adjusted EBITDA to nearest $100,000
-    const adjustedEbitda = latestSnapshot
-      ? Number(latestSnapshot.adjustedEbitda)
-      : roundToHundredThousand(estimatedEbitda + adjustmentTotal)
+      // Use midpoint, rounded to nearest $100,000
+      adjustedEbitda = roundToHundredThousand((impliedEbitdaLow + impliedEbitdaHigh) / 2)
+      isEbitdaEstimated = true
+    }
+    // Priority 3: Company Assessment (annualEbitda + company-level adjustments)
+    else if (companyEbitda > 0) {
+      // Use company's stated EBITDA plus any company-level adjustments
+      const companyAdjustmentTotal = company.ebitdaAdjustments.reduce((sum, adj) => {
+        const baseAmount = Number(adj.amount)
+        const annualizedAmount = adj.frequency === 'MONTHLY' ? baseAmount * 12 : baseAmount
+        return adj.type === 'DEDUCTION' ? sum - annualizedAmount : sum + annualizedAmount
+      }, 0)
+
+      adjustedEbitda = companyEbitda + companyAdjustmentTotal
+    }
+    // Fallback: Use revenue with 10% margin estimate, or low multiple estimate
+    else if (companyRevenue > 0) {
+      // No industry multiples available, use 10% margin as rough estimate
+      adjustedEbitda = roundToHundredThousand(companyRevenue * 0.10)
+      isEbitdaEstimated = true
+    }
 
     // Pre-calculate estimated multiple for companies without snapshot
     // This is used in both tier1 and tier2
@@ -318,49 +396,64 @@ export async function GET(
         adjustedEbitda,
       },
       // Tier 1: Core KPIs
-      // When no snapshot, show estimated values based on industry multiples
-      tier1: latestSnapshot ? {
-        currentValue: Number(latestSnapshot.currentValue),
-        potentialValue: Number(latestSnapshot.potentialValue),
-        valueGap: Number(latestSnapshot.valueGap),
-        briScore: Math.round(Number(latestSnapshot.briScore) * 100),
-        // Core Score (0-100) where higher = better structural factors = lower risk
-        // Based on: revenue size, revenue model, gross margin,
-        // labor intensity, asset intensity, owner involvement
-        coreScore: Math.round(Number(latestSnapshot.coreScore) * 100),
-        finalMultiple: Number(latestSnapshot.finalMultiple),
-        multipleRange: {
-          low: Number(latestSnapshot.industryMultipleLow),
-          high: Number(latestSnapshot.industryMultipleHigh),
-        },
-        industryName: buildIndustryPath(company),
-        isEstimated: false,
-      } : (() => {
-        // Estimate tier1 values when no assessment exists
-        // Use pre-calculated values (multipleLow, multipleHigh, calculatedCoreScore, estimatedMultiple)
-        const currentValue = adjustedEbitda * estimatedMultiple
-        const potentialValue = adjustedEbitda * multipleHigh
+      // Always recalculate valuations using the fresh adjustedEbitda
+      // Use snapshot for BRI score, Core Score, and multiples - but recalculate dollar values
+      tier1: (() => {
+        if (latestSnapshot) {
+          const snapshotMultiple = Number(latestSnapshot.finalMultiple)
+          const snapshotMultipleHigh = Number(latestSnapshot.industryMultipleHigh)
 
-        return {
-          currentValue,
-          potentialValue,
-          valueGap: potentialValue - currentValue,
-          briScore: null, // No BRI score without assessment
-          coreScore: calculatedCoreScore !== null ? Math.round(calculatedCoreScore * 100) : null,
-          finalMultiple: estimatedMultiple,
-          multipleRange: {
-            low: multipleLow,
-            high: multipleHigh,
-          },
-          industryName: buildIndustryPath(company),
-          isEstimated: true,
+          // Recalculate valuations using fresh adjustedEbitda × snapshot multiples
+          const currentValue = adjustedEbitda * snapshotMultiple
+          const potentialValue = adjustedEbitda * snapshotMultipleHigh
+
+          return {
+            currentValue,
+            potentialValue,
+            valueGap: potentialValue - currentValue,
+            briScore: Math.round(Number(latestSnapshot.briScore) * 100),
+            coreScore: Math.round(Number(latestSnapshot.coreScore) * 100),
+            finalMultiple: snapshotMultiple,
+            multipleRange: {
+              low: Number(latestSnapshot.industryMultipleLow),
+              high: snapshotMultipleHigh,
+            },
+            industryName: buildIndustryPath(company),
+            isEstimated: false,
+          }
+        } else {
+          // No snapshot - estimate values based on industry multiples
+          const currentValue = adjustedEbitda * estimatedMultiple
+          const potentialValue = adjustedEbitda * multipleHigh
+
+          return {
+            currentValue,
+            potentialValue,
+            valueGap: potentialValue - currentValue,
+            briScore: null, // No BRI score without assessment
+            coreScore: calculatedCoreScore !== null ? Math.round(calculatedCoreScore * 100) : null,
+            finalMultiple: estimatedMultiple,
+            multipleRange: {
+              low: multipleLow,
+              high: multipleHigh,
+            },
+            industryName: buildIndustryPath(company),
+            isEstimated: true,
+          }
         }
       })(),
       // Tier 2: Value Drivers
-      // EBITDA is estimated from revenue when annualEbitda is 0
+      // Priority: 1. Financials, 2. Revenue conversion, 3. Company Assessment
       tier2: {
         adjustedEbitda,
-        isEbitdaEstimated: Number(company.annualEbitda) === 0,
+        isEbitdaEstimated,
+        isEbitdaFromFinancials,
+        ebitdaSource: isEbitdaFromFinancials
+          ? 'financials'
+          : isEbitdaEstimated
+            ? 'revenue_conversion'
+            : 'company_assessment',
+        fiscalYear: selectedFiscalYear, // Which FY the EBITDA is from (null if not from financials)
         multipleRange: latestSnapshot ? {
           low: Number(latestSnapshot.industryMultipleLow),
           high: Number(latestSnapshot.industryMultipleHigh),
@@ -374,12 +467,12 @@ export async function GET(
       // Tier 3: Risk Breakdown
       tier3: latestSnapshot ? {
         categories: [
-          { key: 'financial', label: 'Financial', score: Math.round(Number(latestSnapshot.briFinancial) * 100) },
-          { key: 'transferability', label: 'Transferability', score: Math.round(Number(latestSnapshot.briTransferability) * 100) },
-          { key: 'operational', label: 'Operational', score: Math.round(Number(latestSnapshot.briOperational) * 100) },
-          { key: 'market', label: 'Market', score: Math.round(Number(latestSnapshot.briMarket) * 100) },
-          { key: 'legalTax', label: 'Legal/Tax', score: Math.round(Number(latestSnapshot.briLegalTax) * 100) },
-          { key: 'personal', label: 'Personal', score: Math.round(Number(latestSnapshot.briPersonal) * 100) },
+          { key: 'FINANCIAL', label: 'Financial', score: Math.round(Number(latestSnapshot.briFinancial) * 100) },
+          { key: 'TRANSFERABILITY', label: 'Transferability', score: Math.round(Number(latestSnapshot.briTransferability) * 100) },
+          { key: 'OPERATIONAL', label: 'Operational', score: Math.round(Number(latestSnapshot.briOperational) * 100) },
+          { key: 'MARKET', label: 'Market', score: Math.round(Number(latestSnapshot.briMarket) * 100) },
+          { key: 'LEGAL_TAX', label: 'Legal/Tax', score: Math.round(Number(latestSnapshot.briLegalTax) * 100) },
+          { key: 'PERSONAL', label: 'Personal', score: Math.round(Number(latestSnapshot.briPersonal) * 100) },
         ],
         topConstraints: constraints.map(c => ({
           category: c.label,

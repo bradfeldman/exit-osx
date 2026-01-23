@@ -1,16 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { PlusCircle, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { AddPeriodDialog } from './AddPeriodDialog'
 
 export interface FinancialPeriod {
@@ -48,31 +40,31 @@ export function PeriodSelector({
   const [isLoading, setIsLoading] = useState(true)
   const [showAddDialog, setShowAddDialog] = useState(false)
 
+  // Store callback in ref to avoid dependency issues
+  const onPeriodsLoadedRef = useRef(onPeriodsLoaded)
+  onPeriodsLoadedRef.current = onPeriodsLoaded
+
   const fetchPeriods = useCallback(async () => {
     try {
       const response = await fetch(`/api/companies/${companyId}/financial-periods`)
       if (response.ok) {
         const data = await response.json()
         setPeriods(data.periods)
-        onPeriodsLoaded?.(data.periods.length > 0)
-
-        // Auto-select if exactly 1 period exists
-        if (data.periods.length === 1 && !selectedPeriodId) {
-          onPeriodChange(data.periods[0])
-        }
+        // Notify parent about whether periods exist (use ref to avoid dep issues)
+        onPeriodsLoadedRef.current?.(data.periods.length > 0)
       }
     } catch (error) {
       console.error('Failed to fetch periods:', error)
     } finally {
       setIsLoading(false)
     }
-  }, [companyId, onPeriodsLoaded, selectedPeriodId, onPeriodChange])
+  }, [companyId])
 
   useEffect(() => {
     fetchPeriods()
   }, [fetchPeriods])
 
-  const handlePeriodSelect = (value: string) => {
+  const _handlePeriodSelect = (value: string) => {
     if (value === 'add-new') {
       setShowAddDialog(true)
       return
@@ -87,7 +79,7 @@ export function PeriodSelector({
     onPeriodChange(newPeriod)
   }
 
-  const selectedPeriod = periods.find((p) => p.id === selectedPeriodId)
+  const _selectedPeriod = periods.find((p) => p.id === selectedPeriodId)
 
   const formatPeriodDisplay = (period: FinancialPeriod) => {
     const parts = [period.label]
@@ -160,43 +152,32 @@ export function PeriodSelector({
   }
 
   // When 2+ periods exist, show the dropdown selector
+  const handleNativeSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value
+    if (value === 'add-new') {
+      setShowAddDialog(true)
+      return
+    }
+    const period = periods.find((p) => p.id === value)
+    onPeriodChange(period || null)
+  }
+
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <Calendar className="h-4 w-4 text-muted-foreground" />
-      <Select
+      <select
         value={selectedPeriodId || ''}
-        onValueChange={handlePeriodSelect}
+        onChange={handleNativeSelect}
+        className="h-9 w-[240px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
       >
-        <SelectTrigger className="w-[240px]">
-          <SelectValue placeholder="Select a period">
-            {selectedPeriod ? formatPeriodDisplay(selectedPeriod) : 'Select a period'}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          {periods.map((period) => (
-            <SelectItem key={period.id} value={period.id}>
-              <div className="flex items-center justify-between gap-2">
-                <span>{period.label}</span>
-                <div className="flex gap-1 text-xs text-muted-foreground">
-                  {period.hasIncomeStatement && (
-                    <span className="rounded bg-green-100 px-1 text-green-700">P&L</span>
-                  )}
-                  {period.hasBalanceSheet && (
-                    <span className="rounded bg-blue-100 px-1 text-blue-700">BS</span>
-                  )}
-                </div>
-              </div>
-            </SelectItem>
-          ))}
-          <SelectSeparator />
-          <SelectItem value="add-new">
-            <div className="flex items-center gap-2 text-primary">
-              <PlusCircle className="h-4 w-4" />
-              <span>Add New Period</span>
-            </div>
-          </SelectItem>
-        </SelectContent>
-      </Select>
+        <option value="" disabled>Select a period</option>
+        {periods.map((period) => (
+          <option key={period.id} value={period.id}>
+            {formatPeriodDisplay(period)}
+          </option>
+        ))}
+        <option value="add-new">+ Add New Period</option>
+      </select>
 
       <AddPeriodDialog
         open={showAddDialog}

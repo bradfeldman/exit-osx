@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { generateNextLevelTasks, renormalizeTaskValues } from '@/lib/playbook/generate-tasks'
 import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snapshot'
+import { checkAssessmentTriggers } from '@/lib/assessment/assessment-triggers'
 
 export async function GET(
   request: Request,
@@ -163,6 +164,9 @@ export async function PATCH(
         // Clear blocked state when resuming work
         updateData.blockedAt = null
         updateData.blockedReason = null
+      } else if (status === 'NOT_APPLICABLE') {
+        // Remove from action plan when marked as not applicable
+        updateData.inActionPlan = false
       }
     }
 
@@ -326,10 +330,18 @@ export async function PATCH(
           console.log(`[TASK_ENGINE] Generated ${nextLevel.created} next-level task(s)`)
         }
       }
+
+      // 4. Check if assessment trigger threshold is reached
+      const triggerResult = await checkAssessmentTriggers(existingTask.companyId)
+      if (triggerResult.shouldCreate && triggerResult.reason === 'ACTION_PLAN_THRESHOLD') {
+        console.log(`[ASSESSMENT_TRIGGER] Threshold reached for company ${existingTask.companyId}: ${triggerResult.message}`)
+        // Note: Assessment is not auto-created here, user is notified via alerts
+        // and the badge appears on the Risk nav item
+      }
     }
 
-    // Renormalize display values for cancelled tasks
-    if (status === 'CANCELLED') {
+    // Renormalize display values for cancelled or not applicable tasks
+    if (status === 'CANCELLED' || status === 'NOT_APPLICABLE') {
       await renormalizeTaskValues(existingTask.companyId)
     }
 

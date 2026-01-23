@@ -121,6 +121,24 @@ enum ComplexityLevel {
   STRATEGIC
 }
 
+// Impact level for task prioritization (25-level matrix)
+enum ImpactLevel {
+  NONE
+  LOW
+  MEDIUM
+  HIGH
+  VERY_HIGH
+}
+
+// Difficulty level for task prioritization (25-level matrix)
+enum DifficultyLevel {
+  NONE
+  LOW
+  MEDIUM
+  HIGH
+  VERY_HIGH
+}
+
 enum TaskStatus {
   PENDING
   IN_PROGRESS
@@ -128,6 +146,7 @@ enum TaskStatus {
   COMPLETED
   DEFERRED
   CANCELLED
+  NOT_APPLICABLE
 }
 
 enum SprintPriority {
@@ -326,6 +345,8 @@ model Company {
   annualEbitda     Decimal  @map("annual_ebitda") @db.Decimal(15, 2)
   ownerCompensation Decimal @default(0) @map("owner_compensation") @db.Decimal(15, 2)
   briWeights       Json?    @map("bri_weights") // Company-specific BRI category weights (null = use global defaults)
+  fiscalYearEndMonth Int     @default(12) @map("fiscal_year_end_month") // 1-12, defaults to December
+  fiscalYearEndDay   Int     @default(31) @map("fiscal_year_end_day")   // 1-31, defaults to 31st
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
   deletedAt        DateTime? @map("deleted_at") // Soft delete - null if active, timestamp if deleted
@@ -344,6 +365,8 @@ model Company {
   // Project Assessment relations
   projectAssessments    ProjectAssessment[]
   questionPriorities    CompanyQuestionPriority[]
+  // DCF Analysis
+  dcfAssumptions        DCFAssumptions?
 
   @@map("companies")
 }
@@ -511,6 +534,11 @@ model Task {
   estimatedHours       Int?           @map("estimated_hours")
   // Issue tier tracking (for value allocation)
   issueTier            IssueTier?     @map("issue_tier") // Effective tier based on question + answer
+  // Priority matrix fields (25-level prioritization)
+  impactLevel          ImpactLevel    @default(MEDIUM) @map("impact_level")
+  difficultyLevel      DifficultyLevel @default(MEDIUM) @map("difficulty_level")
+  priorityRank         Int            @default(10) @map("priority_rank") // 1-25, lower = higher priority
+  inActionPlan         Boolean        @default(false) @map("in_action_plan") // Whether task is visible in action plan
   status               TaskStatus     @default(PENDING)
   deferredUntil        DateTime?      @map("deferred_until")
   deferralReason       String?        @map("deferral_reason")
@@ -765,10 +793,11 @@ model FinancialPeriod {
   createdAt  DateTime   @default(now()) @map("created_at")
   updatedAt  DateTime   @updatedAt @map("updated_at")
 
-  company         Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  incomeStatement IncomeStatement?
-  balanceSheet    BalanceSheet?
-  adjustments     EbitdaAdjustment[]
+  company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  incomeStatement   IncomeStatement?
+  balanceSheet      BalanceSheet?
+  cashFlowStatement CashFlowStatement?
+  adjustments       EbitdaAdjustment[]
 
   @@unique([companyId, fiscalYear, periodType, quarter, month])
   @@index([companyId, fiscalYear])
@@ -852,6 +881,91 @@ model BalanceSheet {
   period FinancialPeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
 
   @@map("balance_sheets")
+}
+
+model CashFlowStatement {
+  id              String  @id @default(cuid())
+  periodId        String  @unique @map("period_id")
+  priorPeriodId   String? @map("prior_period_id")  // Reference to prior year for calculation context
+
+  // Operating Activities (Indirect Method)
+  netIncome                      Decimal @map("net_income") @db.Decimal(15, 2)
+  depreciation                   Decimal @db.Decimal(15, 2)
+  amortization                   Decimal @db.Decimal(15, 2)
+  changeInAccountsReceivable     Decimal @map("change_in_accounts_receivable") @db.Decimal(15, 2)
+  changeInInventory              Decimal @map("change_in_inventory") @db.Decimal(15, 2)
+  changeInPrepaidExpenses        Decimal @map("change_in_prepaid_expenses") @db.Decimal(15, 2)
+  changeInOtherCurrentAssets     Decimal @map("change_in_other_current_assets") @db.Decimal(15, 2)
+  changeInAccountsPayable        Decimal @map("change_in_accounts_payable") @db.Decimal(15, 2)
+  changeInAccruedExpenses        Decimal @map("change_in_accrued_expenses") @db.Decimal(15, 2)
+  changeInOtherCurrentLiabilities Decimal @map("change_in_other_current_liabilities") @db.Decimal(15, 2)
+  changeInDeferredTaxLiabilities Decimal @map("change_in_deferred_tax_liabilities") @db.Decimal(15, 2)
+  otherOperatingAdjustments      Decimal @default(0) @map("other_operating_adjustments") @db.Decimal(15, 2)
+  cashFromOperations             Decimal @map("cash_from_operations") @db.Decimal(15, 2)
+
+  // Investing Activities
+  capitalExpenditures            Decimal @map("capital_expenditures") @db.Decimal(15, 2)  // Increase in PP&E (negative outflow)
+  changeInIntangibleAssets       Decimal @map("change_in_intangible_assets") @db.Decimal(15, 2)
+  changeInOtherLongTermAssets    Decimal @map("change_in_other_long_term_assets") @db.Decimal(15, 2)
+  otherInvestingActivities       Decimal @default(0) @map("other_investing_activities") @db.Decimal(15, 2)
+  cashFromInvesting              Decimal @map("cash_from_investing") @db.Decimal(15, 2)
+
+  // Financing Activities
+  changeInCurrentPortionLtd      Decimal @map("change_in_current_portion_ltd") @db.Decimal(15, 2)
+  changeInLongTermDebt           Decimal @map("change_in_long_term_debt") @db.Decimal(15, 2)
+  changeInOtherLongTermLiabilities Decimal @map("change_in_other_long_term_liabilities") @db.Decimal(15, 2)
+  changeInOwnersEquity           Decimal @map("change_in_owners_equity") @db.Decimal(15, 2)  // Contributions/distributions
+  otherFinancingActivities       Decimal @default(0) @map("other_financing_activities") @db.Decimal(15, 2)
+  cashFromFinancing              Decimal @map("cash_from_financing") @db.Decimal(15, 2)
+
+  // Summary
+  netChangeInCash                Decimal @map("net_change_in_cash") @db.Decimal(15, 2)
+  beginningCash                  Decimal @map("beginning_cash") @db.Decimal(15, 2)
+  endingCash                     Decimal @map("ending_cash") @db.Decimal(15, 2)
+
+  // Free Cash Flow (highlighted metric)
+  freeCashFlow                   Decimal @map("free_cash_flow") @db.Decimal(15, 2)  // CFO - CapEx
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  period FinancialPeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+
+  @@map("cash_flow_statements")
+}
+
+// DCF (Discounted Cash Flow) Analysis Assumptions
+model DCFAssumptions {
+  id                    String   @id @default(cuid())
+  companyId             String   @unique @map("company_id")
+
+  // WACC Inputs
+  riskFreeRate          Decimal  @map("risk_free_rate") @db.Decimal(5, 4)
+  marketRiskPremium     Decimal  @map("market_risk_premium") @db.Decimal(5, 4)
+  beta                  Decimal  @db.Decimal(4, 2)
+  sizeRiskPremium       Decimal  @map("size_risk_premium") @db.Decimal(5, 4)
+  costOfDebtOverride    Decimal? @map("cost_of_debt_override") @db.Decimal(5, 4)
+  taxRateOverride       Decimal? @map("tax_rate_override") @db.Decimal(5, 4)
+
+  // Growth Assumptions (JSON array of yearly rates)
+  growthAssumptions     Json     @map("growth_assumptions")
+
+  // Terminal Value
+  terminalMethod        String   @map("terminal_method") // "gordon" | "exit_multiple"
+  perpetualGrowthRate   Decimal  @map("perpetual_growth_rate") @db.Decimal(5, 4)
+  exitMultiple          Decimal? @map("exit_multiple") @db.Decimal(4, 2)
+
+  // Cached Results
+  calculatedWACC        Decimal? @map("calculated_wacc") @db.Decimal(5, 4)
+  enterpriseValue       Decimal? @map("enterprise_value") @db.Decimal(15, 2)
+  equityValue           Decimal? @map("equity_value") @db.Decimal(15, 2)
+
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  company               Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("dcf_assumptions")
 }
 
 // ============================================

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 
 // POST - Get a signed upload URL for a document
 export async function POST(
@@ -10,6 +10,9 @@ export async function POST(
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
+
+    // Use service client for storage operations (bypasses RLS)
+    const storageClient = createServiceClient()
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -51,14 +54,14 @@ export async function POST(
     const sanitizedName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_')
     const filePath = `${companyId}/${docId}_${timestamp}_${sanitizedName}`
 
-    // Delete old file if exists
+    // Delete old file if exists (using service client to bypass RLS)
     if (existingDoc.fileUrl) {
       const oldFilePath = existingDoc.fileUrl.split('/').slice(-2).join('/')
-      await supabase.storage.from('data-room').remove([oldFilePath])
+      await storageClient.storage.from('data-room').remove([oldFilePath])
     }
 
-    // Create signed upload URL
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    // Create signed upload URL (using service client to bypass RLS)
+    const { data: uploadData, error: uploadError } = await storageClient.storage
       .from('data-room')
       .createSignedUploadUrl(filePath)
 
@@ -68,7 +71,7 @@ export async function POST(
     }
 
     // Get the public URL for after upload
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = storageClient.storage
       .from('data-room')
       .getPublicUrl(filePath)
 

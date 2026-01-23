@@ -1,40 +1,20 @@
-# ExitOSx Feature Backlog
+# Exit OSx - Future Features & Improvements Backlog
 
-This file tracks features and improvements planned for future development.
+## Retirement Calculator
 
----
-
-## Infrastructure & DevOps
-
-- [ ] **External Database Backup System**
-  - Set up scheduled `pg_dump` exports to external storage (S3 or similar)
-  - Create on-demand backup script
-  - Consider enabling Supabase PITR (Point-in-Time Recovery) on Pro plan
-  - Priority: Medium
-
----
-
-## Features
-
-- [ ] **Redtail CRM Integration**
-  - Integrate with Redtail CRM API for financial advisors
-  - Sync client/contact data between Redtail and ExitOSx
-  - API docs: https://corporate.redtailtechnology.com/api/
-  - Requires: Developer API access from Redtail
-  - Priority: TBD
+### Tax API Integration
+- **Priority:** Medium
+- **Description:** Integrate with a tax API (e.g., API Ninjas Income Tax Calculator) for real-time, accurate tax bracket calculations based on actual income levels
+- **Current State:** Using static state tax rate data that needs annual updates
+- **Benefits:**
+  - Automatic rate updates
+  - More accurate progressive bracket calculations
+  - Support for filing status variations
+- **API Option:** https://api-ninjas.com/api/incometaxcalculator
+  - Free tier: 10,000 requests/month
+  - Supports federal + state tax calculation
+  - Takes country, state/region code, income, filing status, tax year
 
 ---
 
-## Improvements
-
-*(Add enhancement ideas here)*
-
----
-
-## Technical Debt
-
-*(Add refactoring and cleanup tasks here)*
-
----
-
-*Last updated: January 20, 2026*
+*Last updated: 2026-01-22*

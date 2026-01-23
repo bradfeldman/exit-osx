@@ -1,6 +1,7 @@
 'use client'
 
 import { IndustryCombobox } from '../IndustryCombobox'
+import { IndustryFinderDialog } from '../IndustryFinderDialog'
 import type { CompanyFormData } from '../CompanySetupWizard'
 
 interface BasicInfoStepProps {
@@ -88,9 +89,12 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
             </div>
           )}
         </div>
-        <p className="text-xs text-muted-foreground -mt-1">
-          Search by typing any part of the industry name
-        </p>
+        <div className="flex items-center justify-between -mt-1">
+          <p className="text-xs text-muted-foreground">
+            Search by typing any part of the industry name
+          </p>
+          <IndustryFinderDialog onSelect={handleIndustrySelect} />
+        </div>
         <IndustryCombobox
           triggerId="industry-combobox-trigger"
           value={

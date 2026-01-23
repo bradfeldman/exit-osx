@@ -149,7 +149,7 @@ export async function GET(
         .filter(t => t.status === 'COMPLETED')
         .reduce((sum, t) => sum + Number(t.rawImpact), 0),
       recoverableValue: allTasks
-        .filter(t => !['COMPLETED', 'CANCELLED'].includes(t.status))
+        .filter(t => !['COMPLETED', 'CANCELLED', 'NOT_APPLICABLE'].includes(t.status))
         .reduce((sum, t) => sum + Number(t.rawImpact), 0),
     }
 

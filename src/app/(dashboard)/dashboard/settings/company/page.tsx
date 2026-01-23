@@ -6,8 +6,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useCompany } from '@/contexts/CompanyContext'
 import { IndustryCombobox } from '@/components/company/IndustryCombobox'
+import { QuickBooksCard } from '@/components/integrations'
 
 interface CompanyData {
   id: string
@@ -19,6 +27,29 @@ interface CompanyData {
   icbSuperSector: string
   icbSector: string
   icbSubSector: string
+  fiscalYearEndMonth: number
+  fiscalYearEndDay: number
+}
+
+const MONTHS = [
+  { value: 1, label: 'January' },
+  { value: 2, label: 'February' },
+  { value: 3, label: 'March' },
+  { value: 4, label: 'April' },
+  { value: 5, label: 'May' },
+  { value: 6, label: 'June' },
+  { value: 7, label: 'July' },
+  { value: 8, label: 'August' },
+  { value: 9, label: 'September' },
+  { value: 10, label: 'October' },
+  { value: 11, label: 'November' },
+  { value: 12, label: 'December' },
+]
+
+function getDaysInMonth(month: number): number {
+  // Use a non-leap year for simplicity (Feb = 28)
+  const daysPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+  return daysPerMonth[month - 1] || 31
 }
 
 export default function CompanySettingsPage() {
@@ -36,6 +67,8 @@ export default function CompanySettingsPage() {
   const [icbSuperSector, setIcbSuperSector] = useState('')
   const [icbSector, setIcbSector] = useState('')
   const [icbSubSector, setIcbSubSector] = useState('')
+  const [fiscalYearEndMonth, setFiscalYearEndMonth] = useState(12)
+  const [fiscalYearEndDay, setFiscalYearEndDay] = useState(31)
 
   // Delete confirmation state
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
@@ -58,6 +91,8 @@ export default function CompanySettingsPage() {
           setIcbSuperSector(data.company.icbSuperSector || '')
           setIcbSector(data.company.icbSector || '')
           setIcbSubSector(data.company.icbSubSector || '')
+          setFiscalYearEndMonth(data.company.fiscalYearEndMonth || 12)
+          setFiscalYearEndDay(data.company.fiscalYearEndDay || 31)
         }
       } catch (error) {
         console.error('Error loading company:', error)
@@ -97,6 +132,8 @@ export default function CompanySettingsPage() {
           icbSuperSector,
           icbSector,
           icbSubSector,
+          fiscalYearEndMonth,
+          fiscalYearEndDay,
         }),
       })
 
@@ -242,6 +279,72 @@ export default function CompanySettingsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Fiscal Year End */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Fiscal Year End</CardTitle>
+          <CardDescription>
+            Set your company&apos;s fiscal year end date. This is used when adding financial periods.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="fiscal-month">Month</Label>
+              <Select
+                value={fiscalYearEndMonth.toString()}
+                onValueChange={(value) => {
+                  const month = parseInt(value)
+                  setFiscalYearEndMonth(month)
+                  // Adjust day if it exceeds the days in the new month
+                  const maxDays = getDaysInMonth(month)
+                  if (fiscalYearEndDay > maxDays) {
+                    setFiscalYearEndDay(maxDays)
+                  }
+                }}
+              >
+                <SelectTrigger id="fiscal-month">
+                  <SelectValue placeholder="Select month" />
+                </SelectTrigger>
+                <SelectContent>
+                  {MONTHS.map((month) => (
+                    <SelectItem key={month.value} value={month.value.toString()}>
+                      {month.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="fiscal-day">Day</Label>
+              <Select
+                value={fiscalYearEndDay.toString()}
+                onValueChange={(value) => setFiscalYearEndDay(parseInt(value))}
+              >
+                <SelectTrigger id="fiscal-day">
+                  <SelectValue placeholder="Select day" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: getDaysInMonth(fiscalYearEndMonth) }, (_, i) => i + 1).map((day) => (
+                    <SelectItem key={day} value={day.toString()}>
+                      {day}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {fiscalYearEndMonth === 12 && fiscalYearEndDay === 31
+              ? 'Calendar year (January 1 - December 31)'
+              : `Fiscal year ends on ${MONTHS.find(m => m.value === fiscalYearEndMonth)?.label} ${fiscalYearEndDay}`}
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* QuickBooks Integration */}
+      <QuickBooksCard companyId={selectedCompanyId} />
 
       {/* Message */}
       {message && (

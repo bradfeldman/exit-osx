@@ -101,27 +101,47 @@ export async function PUT(
 
     const dbUserId = company.organization.users[0].user.id
 
-    // Upsert core factors
-    const coreFactors = await prisma.coreFactors.upsert({
-      where: { companyId },
-      update: {
-        revenueSizeCategory,
-        revenueModel,
-        grossMarginProxy,
-        laborIntensity,
-        assetIntensity,
-        ownerInvolvement
-      },
-      create: {
-        companyId,
-        revenueSizeCategory,
-        revenueModel,
-        grossMarginProxy,
-        laborIntensity,
-        assetIntensity,
-        ownerInvolvement
-      }
+    // Build update object with only defined values
+    const updateData: Record<string, string> = {}
+    if (revenueSizeCategory) updateData.revenueSizeCategory = revenueSizeCategory
+    if (revenueModel) updateData.revenueModel = revenueModel
+    if (grossMarginProxy) updateData.grossMarginProxy = grossMarginProxy
+    if (laborIntensity) updateData.laborIntensity = laborIntensity
+    if (assetIntensity) updateData.assetIntensity = assetIntensity
+    if (ownerInvolvement) updateData.ownerInvolvement = ownerInvolvement
+
+    // Check if core factors already exist
+    const existingFactors = await prisma.coreFactors.findUnique({
+      where: { companyId }
     })
+
+    let coreFactors
+    if (existingFactors) {
+      // Update existing record with provided fields
+      coreFactors = await prisma.coreFactors.update({
+        where: { companyId },
+        data: updateData
+      })
+    } else {
+      // Create new record - requires core onboarding fields (grossMarginProxy is set later in Baseline Assessment)
+      if (!revenueSizeCategory || !revenueModel || !laborIntensity || !assetIntensity || !ownerInvolvement) {
+        return NextResponse.json(
+          { error: 'Core factor fields are required for initial setup' },
+          { status: 400 }
+        )
+      }
+      coreFactors = await prisma.coreFactors.create({
+        data: {
+          companyId,
+          revenueSizeCategory,
+          revenueModel,
+          grossMarginProxy: grossMarginProxy || 'MODERATE', // Default until set in Baseline Assessment
+          laborIntensity,
+          assetIntensity,
+          ownerInvolvement
+        }
+      })
+    }
 
     // Recalculate snapshot with updated core score
     const snapshotResult = await recalculateSnapshotForCompany(

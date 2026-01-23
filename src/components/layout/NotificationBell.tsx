@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
 import {
   DropdownMenu,
@@ -11,10 +11,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { CompanyAvatar } from '@/components/ui/company-avatar'
 
 interface Alert {
   id: string
-  type: 'NO_ASSESSMENT' | 'STALE_ASSESSMENT' | 'QUARTERLY_REMINDER'
+  type: 'NO_ASSESSMENT' | 'STALE_ASSESSMENT' | 'QUARTERLY_REMINDER' | 'OPEN_ASSESSMENT' | 'ASSESSMENT_AVAILABLE'
   title: string
   message: string
   actionUrl: string
@@ -26,6 +27,7 @@ interface Alert {
 
 export function NotificationBell() {
   const router = useRouter()
+  const pathname = usePathname()
   const { setSelectedCompanyId } = useCompany()
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [count, setCount] = useState(0)
@@ -51,7 +53,7 @@ export function NotificationBell() {
     // Refresh alerts every 5 minutes
     const interval = setInterval(fetchAlerts, 5 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [])
+  }, [pathname]) // Re-fetch when route changes
 
   const handleAlertClick = (alert: Alert) => {
     // Switch to the company and navigate to the action URL
@@ -143,6 +145,14 @@ export function NotificationBell() {
                 className="flex flex-col items-start gap-1 p-3 cursor-pointer focus:bg-accent"
                 onClick={() => handleAlertClick(alert)}
               >
+                {/* Company identifier row */}
+                <div className="flex items-center gap-2 w-full mb-1">
+                  <CompanyAvatar name={alert.companyName} size="xs" />
+                  <span className="text-xs font-medium text-muted-foreground truncate">
+                    {alert.companyName}
+                  </span>
+                </div>
+                {/* Alert content row */}
                 <div className="flex items-start gap-2 w-full">
                   <div className="shrink-0 mt-0.5">
                     {getSeverityIcon(alert.severity)}

@@ -4,11 +4,13 @@ import { useCompany } from '@/contexts/CompanyContext'
 import { PlaybookContent } from '@/components/playbook/PlaybookContent'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function PlaybookPage() {
   const { selectedCompanyId, selectedCompany, isLoading } = useCompany()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const expandTaskId = searchParams.get('expand')
 
   if (isLoading) {
     return (
@@ -37,6 +39,7 @@ export default function PlaybookPage() {
     <PlaybookContent
       companyId={selectedCompanyId}
       companyName={selectedCompany.name}
+      expandTaskId={expandTaskId || undefined}
     />
   )
 }

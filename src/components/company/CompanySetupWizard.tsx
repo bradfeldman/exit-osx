@@ -171,22 +171,29 @@ export function CompanySetupWizard() {
 
       const { company } = await companyResponse.json()
 
-      // Save core factors
+      // Save core factors (grossMarginProxy is set later in Baseline Assessment)
+      const coreFactorsPayload: Record<string, string> = {
+        revenueSizeCategory,
+        revenueModel: formData.revenueModel,
+        laborIntensity: formData.laborIntensity,
+        assetIntensity: formData.assetIntensity,
+        ownerInvolvement: formData.ownerInvolvement,
+      }
+      // Only include grossMarginProxy if it was set (for backwards compatibility)
+      if (formData.grossMarginProxy) {
+        coreFactorsPayload.grossMarginProxy = formData.grossMarginProxy
+      }
+
       const coreFactorsResponse = await fetch(`/api/companies/${company.id}/core-factors`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          revenueSizeCategory,
-          revenueModel: formData.revenueModel,
-          grossMarginProxy: formData.grossMarginProxy,
-          laborIntensity: formData.laborIntensity,
-          assetIntensity: formData.assetIntensity,
-          ownerInvolvement: formData.ownerInvolvement,
-        })
+        body: JSON.stringify(coreFactorsPayload)
       })
 
       if (!coreFactorsResponse.ok) {
-        console.error('Failed to save core factors')
+        const errorData = await coreFactorsResponse.json().catch(() => ({}))
+        console.error('Failed to save core factors:', errorData)
+        throw new Error(errorData.error || 'Failed to save business profile')
       }
 
       // Save the new company ID and show celebration
@@ -229,7 +236,7 @@ export function CompanySetupWizard() {
       case 2:
         return formData.annualRevenue > 0
       case 3:
-        return formData.revenueModel && formData.grossMarginProxy && formData.laborIntensity && formData.assetIntensity && formData.ownerInvolvement
+        return formData.revenueModel && formData.laborIntensity && formData.assetIntensity && formData.ownerInvolvement
       default:
         return false
     }

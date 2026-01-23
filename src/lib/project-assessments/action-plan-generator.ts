@@ -69,6 +69,24 @@ export async function generateActionPlanFromResponses(
   })
   const valueGap = latestSnapshot ? Number(latestSnapshot.valueGap) : 0
 
+  // Check if there's only one user in the company's organization - auto-assign tasks to them
+  let defaultAssigneeId: string | null = null
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { organizationId: true },
+  })
+
+  if (company) {
+    const orgUsers = await prisma.organizationUser.findMany({
+      where: { organizationId: company.organizationId },
+      select: { userId: true },
+    })
+
+    if (orgUsers.length === 1) {
+      defaultAssigneeId = orgUsers[0].userId
+    }
+  }
+
   const tasksToCreate: Array<{
     title: string
     description: string
@@ -207,7 +225,7 @@ export async function generateActionPlanFromResponses(
       where: {
         companyId,
         title: taskData.title,
-        status: { notIn: ['COMPLETED', 'CANCELLED'] }
+        status: { notIn: ['COMPLETED', 'CANCELLED', 'NOT_APPLICABLE'] }
       }
     })
 
@@ -232,6 +250,7 @@ export async function generateActionPlanFromResponses(
           complexity: taskData.complexity,
           estimatedHours: taskData.estimatedHours,
           status: 'PENDING',
+          ...(defaultAssigneeId && { primaryAssigneeId: defaultAssigneeId }),
         }
       })
 
