@@ -211,11 +211,22 @@ export function parseProfitAndLossReport(report: QuickBooksReport): {
   const rows = report.Rows?.Row || []
 
   // Find major sections
-  result.grossRevenue = findRowValue(rows, 'Total Income') || findRowValue(rows, 'Total Revenue')
-  result.cogs = findRowValue(rows, 'Cost of Goods Sold') || findRowValue(rows, 'Cost of Sales')
-  result.grossProfit = findRowValue(rows, 'Gross Profit')
-  result.operatingExpenses = findRowValue(rows, 'Total Expenses') || findRowValue(rows, 'Operating Expenses')
-  result.netIncome = findRowValue(rows, 'Net Income') || findRowValue(rows, 'Net Operating Income')
+  // QuickBooks uses various formats: "Total Income", "Total for Income", "Total Revenue"
+  result.grossRevenue = findRowValue(rows, 'Total Income') ||
+    findRowValue(rows, 'Total for Income') ||
+    findRowValue(rows, 'Total Revenue') ||
+    findRowValue(rows, 'Total for Revenue')
+  result.cogs = findRowValue(rows, 'Cost of Goods Sold') ||
+    findRowValue(rows, 'Total for Cost of Goods Sold') ||
+    findRowValue(rows, 'Cost of Sales') ||
+    findRowValue(rows, 'Total for Cost of Sales')
+  result.grossProfit = findRowValue(rows, 'Gross Profit') || findRowValue(rows, 'Total for Gross Profit')
+  result.operatingExpenses = findRowValue(rows, 'Total Expenses') ||
+    findRowValue(rows, 'Total for Expenses') ||
+    findRowValue(rows, 'Operating Expenses')
+  result.netIncome = findRowValue(rows, 'Net Income') ||
+    findRowValue(rows, 'Net Operating Income') ||
+    findRowValue(rows, 'Net Ordinary Income')
 
   // Look for specific accounts
   result.depreciation = findSpecificAccount(rows, 'Depreciation') + findSpecificAccount(rows, 'Amortization')
