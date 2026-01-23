@@ -379,7 +379,7 @@ export default function RetirementCalculatorPage() {
     let portfolioValue = valueAtRetirement
     let yearsMoneyLasts = 0
     let annualSpending = spendingAtRetirement
-    let annualIncome = annualOtherIncome
+    const annualIncome = annualOtherIncome
 
     while (portfolioValue > 0 && yearsMoneyLasts < yearsInRetirement + 50) {
       const withdrawal = Math.max(0, annualSpending - annualIncome)

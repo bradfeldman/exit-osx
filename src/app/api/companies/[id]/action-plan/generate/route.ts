@@ -76,7 +76,7 @@ export async function POST(
 
     // Determine default assignee
     // Use current user as default assignee
-    let defaultAssigneeId: string | null = dbUser.id
+    const defaultAssigneeId: string | null = dbUser.id
 
     // Generate the action plan
     const result = await generateActionPlan(
