@@ -2,6 +2,9 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { UserRole, FunctionalCategory } from '@prisma/client'
+import { Resend } from 'resend'
+
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 // GET - List pending invites
 export async function GET(
@@ -168,9 +171,38 @@ export async function POST(
       }
     })
 
-    // TODO: Send email notification with invite link
-    // For now, return the token so it can be shared manually
-    const inviteUrl = `/invite/${invite.token}`
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.exitosx.com'
+    const inviteUrl = `${baseUrl}/invite/${invite.token}`
+
+    // Send email notification with invite link
+    if (resend) {
+      try {
+        await resend.emails.send({
+          from: process.env.RESEND_FROM_EMAIL || 'Exit OSx <noreply@exitosx.com>',
+          to: invite.email,
+          subject: `You've been invited to join ${invite.organization.name} on Exit OSx`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #333;">You're Invited!</h2>
+              <p>${invite.inviter.name || invite.inviter.email} has invited you to join <strong>${invite.organization.name}</strong> on Exit OSx.</p>
+              <p>You've been assigned the role of <strong>${invite.role.replace('_', ' ').toLowerCase()}</strong>.</p>
+              <div style="margin: 30px 0;">
+                <a href="${inviteUrl}" style="background-color: #c9a66b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                  Accept Invitation
+                </a>
+              </div>
+              <p style="color: #666; font-size: 14px;">This invitation expires on ${new Date(invite.expiresAt).toLocaleDateString()}.</p>
+              <p style="color: #666; font-size: 14px;">If you didn't expect this invitation, you can safely ignore this email.</p>
+              <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
+              <p style="color: #999; font-size: 12px;">Exit OSx - Business Exit Planning Platform</p>
+            </div>
+          `,
+        })
+      } catch (emailError) {
+        console.error('Error sending invite email:', emailError)
+        // Don't fail the invite creation if email fails
+      }
+    }
 
     return NextResponse.json({
       invite: {
