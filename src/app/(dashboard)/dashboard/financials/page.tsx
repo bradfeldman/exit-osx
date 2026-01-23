@@ -304,7 +304,7 @@ function FinancialsOverviewContent() {
         netAdjustment: period.netAddBacks ?? 0,
         adjustedEbitda: period.adjustedEbitda ?? null,
         // Balance sheet
-        cash: bs?.cash ?? null,
+        cash: bs?.cashAndEquivalents ?? null,
         accountsReceivable: bs?.accountsReceivable ?? null,
         inventory: bs?.inventory ?? null,
         otherCurrentAssets: bs ? (bs.prepaidExpenses || 0) + (bs.otherCurrentAssets || 0) : null,
