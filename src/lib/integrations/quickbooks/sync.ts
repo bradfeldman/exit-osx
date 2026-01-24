@@ -56,9 +56,9 @@ export async function syncQuickBooksData(
       })
     }
 
-    // Determine periods to sync (last 5 years of annual data)
+    // Determine periods to sync (last 6 years of annual data for comprehensive history)
     const currentYear = new Date().getFullYear()
-    const yearsToSync = [currentYear - 4, currentYear - 3, currentYear - 2, currentYear - 1, currentYear]
+    const yearsToSync = [currentYear - 5, currentYear - 4, currentYear - 3, currentYear - 2, currentYear - 1, currentYear]
 
     let periodsCreated = 0
     let periodsUpdated = 0
