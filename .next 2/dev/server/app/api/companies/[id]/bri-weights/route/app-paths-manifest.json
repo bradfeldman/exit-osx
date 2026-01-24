@@ -1,0 +1,3 @@
+{
+  "/api/companies/[id]/bri-weights/route": "app/api/companies/[id]/bri-weights/route.js"
+}

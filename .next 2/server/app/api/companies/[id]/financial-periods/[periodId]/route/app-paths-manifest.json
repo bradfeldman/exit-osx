@@ -1,0 +1,3 @@
+{
+  "/api/companies/[id]/financial-periods/[periodId]/route": "app/api/companies/[id]/financial-periods/[periodId]/route.js"
+}

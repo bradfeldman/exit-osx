@@ -1,0 +1,3 @@
+{
+  "/api/companies/[id]/core-factors/route": "app/api/companies/[id]/core-factors/route.js"
+}

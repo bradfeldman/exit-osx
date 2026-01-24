@@ -1,0 +1,3 @@
+{
+  "/api/companies/[id]/valuation-history/route": "app/api/companies/[id]/valuation-history/route.js"
+}
