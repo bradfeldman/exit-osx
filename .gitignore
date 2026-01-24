@@ -19,7 +19,16 @@
 
 # next.js
 /.next/
+/.next */
 /out/
+
+# Duplicate files (macOS creates these)
+* 2
+* 2.*
+* 3
+* 3.*
+* 5
+* 5.*
 
 # production
 /build

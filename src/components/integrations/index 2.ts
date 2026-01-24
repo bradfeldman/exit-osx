@@ -1,1 +1,0 @@
-export { QuickBooksCard } from './QuickBooksCard'
