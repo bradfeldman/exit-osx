@@ -186,15 +186,12 @@ function formatValue(value: number | null | undefined, format: 'currency' | 'per
     if (absValue >= 1_000_000) {
       return `${value < 0 ? '-' : ''}$${(absValue / 1_000_000).toFixed(1)}M`
     }
-    if (absValue >= 1_000) {
-      return `${value < 0 ? '-' : ''}$${(absValue / 1_000).toFixed(0)}K`
+    // Always use K format for consistency - rounds to nearest thousand
+    const kValue = Math.round(absValue / 1_000)
+    if (kValue === 0) {
+      return '$0'
     }
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value)
+    return `${value < 0 ? '-' : ''}$${kValue}K`
   }
 
   if (format === 'percent') {
