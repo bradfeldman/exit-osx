@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useCompany } from '@/contexts/CompanyContext'
 import { AddPeriodDialog } from '@/components/financials/AddPeriodDialog'
-import { FinancialTable, DataType, PeriodData } from '@/components/financials/FinancialTable'
+import { FinancialTable, DataType, PeriodData, PendingChange } from '@/components/financials/FinancialTable'
 import { QuickBooksStatus } from '@/components/financials/QuickBooksStatus'
 import { FinancialSettingsModal } from '@/components/financials/FinancialSettingsModal'
-import { Plus, Settings } from 'lucide-react'
+import { Plus, Settings, Pencil, X, Save, Loader2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 
 interface FinancialPeriod {
@@ -123,6 +123,11 @@ function FinancialsOverviewContent() {
     hasQuickBooksIntegration: false,
     lastSyncedAt: null,
   })
+
+  // Bulk edit state
+  const [bulkEditMode, setBulkEditMode] = useState(false)
+  const [pendingChanges, setPendingChanges] = useState<Map<string, PendingChange>>(new Map())
+  const [isSaving, setIsSaving] = useState(false)
 
   // Update URL when tab changes
   const handleTabChange = (value: string) => {
@@ -272,6 +277,163 @@ function FinancialsOverviewContent() {
     router.push(`/dashboard/financials/statements/${periodId}?tab=${activeTab}`)
   }
 
+  // Bulk edit handlers
+  const handleEnterBulkEdit = () => {
+    setBulkEditMode(true)
+    setPendingChanges(new Map())
+  }
+
+  const handleCancelBulkEdit = () => {
+    setBulkEditMode(false)
+    setPendingChanges(new Map())
+  }
+
+  const handleCellChange = (periodId: string, field: string, value: number) => {
+    const tableData = getTableData()
+    const originalValue = tableData[periodId]?.[field as keyof PeriodData] as number | null ?? null
+
+    setPendingChanges((prev) => {
+      const next = new Map(prev)
+      const key = `${periodId}-${field}`
+
+      // If value equals original, remove the change
+      if (value === originalValue) {
+        next.delete(key)
+      } else {
+        next.set(key, {
+          periodId,
+          field,
+          originalValue,
+          newValue: value,
+        })
+      }
+      return next
+    })
+  }
+
+  const handleSaveAll = async () => {
+    if (pendingChanges.size === 0) {
+      setBulkEditMode(false)
+      return
+    }
+
+    setIsSaving(true)
+
+    try {
+      // Group changes by periodId and type (pnl vs balance-sheet)
+      const changesByPeriod = new Map<string, { pnl: Record<string, number>; balanceSheet: Record<string, number> }>()
+
+      const pnlFields = ['grossRevenue', 'cogs', 'operatingExpenses']
+      const balanceSheetFields = [
+        'cash', 'accountsReceivable', 'inventory', 'otherCurrentAssets',
+        'ppeNet', 'intangibleAssets', 'otherLongTermAssets',
+        'accountsPayable', 'accruedExpenses', 'currentPortionLtd', 'otherCurrentLiabilities',
+        'longTermDebt', 'otherLongTermLiabilities',
+        'retainedEarnings', 'ownersEquity'
+      ]
+
+      pendingChanges.forEach((change) => {
+        if (!changesByPeriod.has(change.periodId)) {
+          changesByPeriod.set(change.periodId, { pnl: {}, balanceSheet: {} })
+        }
+        const periodChanges = changesByPeriod.get(change.periodId)!
+
+        if (pnlFields.includes(change.field)) {
+          periodChanges.pnl[change.field] = change.newValue
+        } else if (balanceSheetFields.includes(change.field)) {
+          // Map field names to API field names
+          const fieldMapping: Record<string, string> = {
+            cash: 'cashAndEquivalents',
+            ppeNet: 'ppeGross', // Note: API uses ppeGross, we'll handle this specially
+          }
+          const apiField = fieldMapping[change.field] || change.field
+          periodChanges.balanceSheet[apiField] = change.newValue
+        }
+      })
+
+      // Execute API calls for each period
+      const savePromises: Promise<Response>[] = []
+
+      changesByPeriod.forEach((changes, periodId) => {
+        // Save P&L changes
+        if (Object.keys(changes.pnl).length > 0) {
+          // Get existing P&L data to merge
+          const period = periods.find(p => p.id === periodId)
+          const existingPnl = period?.incomeStatement
+
+          const pnlPayload = {
+            grossRevenue: changes.pnl.grossRevenue ?? existingPnl?.grossRevenue ?? 0,
+            cogs: changes.pnl.cogs ?? existingPnl?.cogs ?? 0,
+            operatingExpenses: changes.pnl.operatingExpenses ?? existingPnl?.operatingExpenses ?? 0,
+          }
+
+          savePromises.push(
+            fetch(`/api/companies/${selectedCompanyId}/financial-periods/${periodId}/income-statement`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(pnlPayload),
+            })
+          )
+        }
+
+        // Save Balance Sheet changes
+        if (Object.keys(changes.balanceSheet).length > 0) {
+          const period = periods.find(p => p.id === periodId)
+          const existingBs = period?.balanceSheet
+
+          const bsPayload = {
+            cashAndEquivalents: changes.balanceSheet.cashAndEquivalents ?? existingBs?.cashAndEquivalents ?? 0,
+            accountsReceivable: changes.balanceSheet.accountsReceivable ?? existingBs?.accountsReceivable ?? 0,
+            inventory: changes.balanceSheet.inventory ?? existingBs?.inventory ?? 0,
+            prepaidExpenses: existingBs?.prepaidExpenses ?? 0,
+            otherCurrentAssets: changes.balanceSheet.otherCurrentAssets ?? existingBs?.otherCurrentAssets ?? 0,
+            ppeGross: changes.balanceSheet.ppeGross ?? existingBs?.ppeGross ?? 0,
+            accumulatedDepreciation: existingBs?.accumulatedDepreciation ?? 0,
+            intangibleAssets: changes.balanceSheet.intangibleAssets ?? existingBs?.intangibleAssets ?? 0,
+            otherLongTermAssets: changes.balanceSheet.otherLongTermAssets ?? existingBs?.otherLongTermAssets ?? 0,
+            accountsPayable: changes.balanceSheet.accountsPayable ?? existingBs?.accountsPayable ?? 0,
+            accruedExpenses: changes.balanceSheet.accruedExpenses ?? existingBs?.accruedExpenses ?? 0,
+            currentPortionLtd: changes.balanceSheet.currentPortionLtd ?? existingBs?.currentPortionLtd ?? 0,
+            otherCurrentLiabilities: changes.balanceSheet.otherCurrentLiabilities ?? existingBs?.otherCurrentLiabilities ?? 0,
+            longTermDebt: changes.balanceSheet.longTermDebt ?? existingBs?.longTermDebt ?? 0,
+            deferredTaxLiabilities: existingBs?.deferredTaxLiabilities ?? 0,
+            otherLongTermLiabilities: changes.balanceSheet.otherLongTermLiabilities ?? existingBs?.otherLongTermLiabilities ?? 0,
+            retainedEarnings: changes.balanceSheet.retainedEarnings ?? existingBs?.retainedEarnings ?? 0,
+            ownersEquity: changes.balanceSheet.ownersEquity ?? existingBs?.ownersEquity ?? 0,
+          }
+
+          savePromises.push(
+            fetch(`/api/companies/${selectedCompanyId}/financial-periods/${periodId}/balance-sheet`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(bsPayload),
+            })
+          )
+        }
+      })
+
+      // Wait for all saves to complete
+      const results = await Promise.allSettled(savePromises)
+
+      // Check for failures
+      const failures = results.filter((r) => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok))
+      if (failures.length > 0) {
+        console.error('Some saves failed:', failures)
+      }
+
+      // Reload data
+      await loadPeriods()
+
+      // Exit bulk edit mode
+      setBulkEditMode(false)
+      setPendingChanges(new Map())
+    } catch (error) {
+      console.error('Error saving changes:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   // Transform periods data for the table
   const getTableData = (): Record<string, PeriodData> => {
     const result: Record<string, PeriodData> = {}
@@ -393,20 +555,47 @@ function FinancialsOverviewContent() {
         lastSyncedAt={integrationData.lastSyncedAt}
       />
 
-      {/* Tab Navigation with Add Year button */}
+      {/* Tab Navigation with Add Year and Bulk Edit buttons */}
       <div className="flex items-center justify-between">
         <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="pnl">P&L</TabsTrigger>
-            <TabsTrigger value="add-backs">Add-Backs</TabsTrigger>
-            <TabsTrigger value="balance-sheet">Balance Sheet</TabsTrigger>
-            <TabsTrigger value="cash-flow">Cash Flow</TabsTrigger>
+            <TabsTrigger value="pnl" disabled={bulkEditMode}>P&L</TabsTrigger>
+            <TabsTrigger value="add-backs" disabled={bulkEditMode}>Add-Backs</TabsTrigger>
+            <TabsTrigger value="balance-sheet" disabled={bulkEditMode}>Balance Sheet</TabsTrigger>
+            <TabsTrigger value="cash-flow" disabled={bulkEditMode}>Cash Flow</TabsTrigger>
           </TabsList>
         </Tabs>
-        <Button onClick={() => setShowAddDialog(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Year
-        </Button>
+        <div className="flex items-center gap-2">
+          {bulkEditMode ? (
+            <>
+              <Button variant="outline" onClick={handleCancelBulkEdit} disabled={isSaving}>
+                <X className="mr-2 h-4 w-4" />
+                Cancel
+              </Button>
+              <Button onClick={handleSaveAll} disabled={isSaving || pendingChanges.size === 0}>
+                {isSaving ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                Save All {pendingChanges.size > 0 && `(${pendingChanges.size})`}
+              </Button>
+            </>
+          ) : (
+            <>
+              {(activeTab === 'pnl' || activeTab === 'balance-sheet') && periods.length > 0 && (
+                <Button variant="outline" onClick={handleEnterBulkEdit}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Bulk Edit
+                </Button>
+              )}
+              <Button onClick={() => setShowAddDialog(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Year
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Financial Table */}
@@ -416,6 +605,9 @@ function FinancialsOverviewContent() {
         data={getTableData()}
         onYearClick={handleYearClick}
         loading={loading}
+        bulkEditMode={bulkEditMode}
+        pendingChanges={pendingChanges}
+        onCellChange={handleCellChange}
       />
 
       {/* Add Period Dialog */}

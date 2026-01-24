@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { EditableCell } from './EditableCell'
 
 // Types
 export type DataType = 'pnl' | 'add-backs' | 'balance-sheet' | 'cash-flow'
@@ -63,6 +64,13 @@ export interface PeriodData {
   freeCashFlow?: number | null
 }
 
+export interface PendingChange {
+  periodId: string
+  field: string
+  originalValue: number | null
+  newValue: number
+}
+
 interface RowConfig {
   label: string
   field: keyof PeriodData | ((data: PeriodData) => number | null)
@@ -70,23 +78,27 @@ interface RowConfig {
   isHeader?: boolean
   isTotal?: boolean
   indent?: number
+  isEditable?: boolean
 }
 
 interface FinancialTableProps {
   periods: FinancialPeriod[]
   dataType: DataType
   data: Record<string, PeriodData>
-  onYearClick: (periodId: string) => void
+  onYearClick?: (periodId: string) => void
   loading?: boolean
+  bulkEditMode?: boolean
+  pendingChanges?: Map<string, PendingChange>
+  onCellChange?: (periodId: string, field: string, value: number) => void
 }
 
 // Row configurations for each tab
 const pnlRows: RowConfig[] = [
-  { label: 'Gross Revenue', field: 'grossRevenue', format: 'currency' },
-  { label: 'Cost of Goods Sold', field: 'cogs', format: 'currency' },
+  { label: 'Gross Revenue', field: 'grossRevenue', format: 'currency', isEditable: true },
+  { label: 'Cost of Goods Sold', field: 'cogs', format: 'currency', isEditable: true },
   { label: 'Gross Profit', field: 'grossProfit', format: 'currency', isTotal: true },
   { label: 'Gross Margin %', field: 'grossMarginPct', format: 'percent' },
-  { label: 'Operating Expenses', field: 'operatingExpenses', format: 'currency' },
+  { label: 'Operating Expenses', field: 'operatingExpenses', format: 'currency', isEditable: true },
   { label: 'EBITDA', field: 'ebitda', format: 'currency', isTotal: true },
   { label: 'Add-Backs / Adjustments', field: 'netAdjustment', format: 'currency' },
   { label: 'Adjusted EBITDA', field: 'adjustedEbitda', format: 'currency', isTotal: true },
@@ -112,29 +124,29 @@ const addBacksRows: RowConfig[] = [
 
 const balanceSheetRows: RowConfig[] = [
   { label: 'Current Assets', field: 'cash', format: 'currency', isHeader: true },
-  { label: 'Cash & Equivalents', field: 'cash', format: 'currency', indent: 1 },
-  { label: 'Accounts Receivable', field: 'accountsReceivable', format: 'currency', indent: 1 },
-  { label: 'Inventory', field: 'inventory', format: 'currency', indent: 1 },
-  { label: 'Other Current Assets', field: 'otherCurrentAssets', format: 'currency', indent: 1 },
+  { label: 'Cash & Equivalents', field: 'cash', format: 'currency', indent: 1, isEditable: true },
+  { label: 'Accounts Receivable', field: 'accountsReceivable', format: 'currency', indent: 1, isEditable: true },
+  { label: 'Inventory', field: 'inventory', format: 'currency', indent: 1, isEditable: true },
+  { label: 'Other Current Assets', field: 'otherCurrentAssets', format: 'currency', indent: 1, isEditable: true },
   { label: 'Total Current Assets', field: 'totalCurrentAssets', format: 'currency', isTotal: true },
   { label: 'Long-Term Assets', field: 'ppeNet', format: 'currency', isHeader: true },
-  { label: 'PP&E (Net)', field: 'ppeNet', format: 'currency', indent: 1 },
-  { label: 'Intangible Assets', field: 'intangibleAssets', format: 'currency', indent: 1 },
-  { label: 'Other Long-Term', field: 'otherLongTermAssets', format: 'currency', indent: 1 },
+  { label: 'PP&E (Net)', field: 'ppeNet', format: 'currency', indent: 1, isEditable: true },
+  { label: 'Intangible Assets', field: 'intangibleAssets', format: 'currency', indent: 1, isEditable: true },
+  { label: 'Other Long-Term', field: 'otherLongTermAssets', format: 'currency', indent: 1, isEditable: true },
   { label: 'Total Assets', field: 'totalAssets', format: 'currency', isTotal: true },
   { label: 'Current Liabilities', field: 'accountsPayable', format: 'currency', isHeader: true },
-  { label: 'Accounts Payable', field: 'accountsPayable', format: 'currency', indent: 1 },
-  { label: 'Accrued Expenses', field: 'accruedExpenses', format: 'currency', indent: 1 },
-  { label: 'Current Portion LTD', field: 'currentPortionLtd', format: 'currency', indent: 1 },
-  { label: 'Other Current Liab', field: 'otherCurrentLiabilities', format: 'currency', indent: 1 },
+  { label: 'Accounts Payable', field: 'accountsPayable', format: 'currency', indent: 1, isEditable: true },
+  { label: 'Accrued Expenses', field: 'accruedExpenses', format: 'currency', indent: 1, isEditable: true },
+  { label: 'Current Portion LTD', field: 'currentPortionLtd', format: 'currency', indent: 1, isEditable: true },
+  { label: 'Other Current Liab', field: 'otherCurrentLiabilities', format: 'currency', indent: 1, isEditable: true },
   { label: 'Total Current Liab', field: 'totalCurrentLiabilities', format: 'currency', isTotal: true },
   { label: 'Long-Term Liabilities', field: 'longTermDebt', format: 'currency', isHeader: true },
-  { label: 'Long-Term Debt', field: 'longTermDebt', format: 'currency', indent: 1 },
-  { label: 'Other LT Liabilities', field: 'otherLongTermLiabilities', format: 'currency', indent: 1 },
+  { label: 'Long-Term Debt', field: 'longTermDebt', format: 'currency', indent: 1, isEditable: true },
+  { label: 'Other LT Liabilities', field: 'otherLongTermLiabilities', format: 'currency', indent: 1, isEditable: true },
   { label: 'Total Liabilities', field: 'totalLiabilities', format: 'currency', isTotal: true },
   { label: 'Equity', field: 'retainedEarnings', format: 'currency', isHeader: true },
-  { label: 'Retained Earnings', field: 'retainedEarnings', format: 'currency', indent: 1 },
-  { label: "Owner's Equity", field: 'ownersEquity', format: 'currency', indent: 1 },
+  { label: 'Retained Earnings', field: 'retainedEarnings', format: 'currency', indent: 1, isEditable: true },
+  { label: "Owner's Equity", field: 'ownersEquity', format: 'currency', indent: 1, isEditable: true },
   { label: 'Total Equity', field: 'totalEquity', format: 'currency', isTotal: true },
 ]
 
@@ -183,15 +195,139 @@ function formatValue(value: number | null | undefined, format: 'currency' | 'per
   return value.toLocaleString()
 }
 
-function getRowValue(data: PeriodData | undefined, field: RowConfig['field']): number | null {
-  if (!data) return null
-  if (typeof field === 'function') {
-    return field(data)
+// Get effective value considering pending changes
+function getEffectiveValue(
+  data: PeriodData | undefined,
+  periodId: string,
+  field: string,
+  pendingChanges?: Map<string, PendingChange>
+): number | null {
+  const changeKey = `${periodId}-${field}`
+  const pendingChange = pendingChanges?.get(changeKey)
+  if (pendingChange) {
+    return pendingChange.newValue
   }
-  return data[field] ?? null
+  if (!data) return null
+  return (data[field as keyof PeriodData] as number | null) ?? null
 }
 
-export function FinancialTable({ periods, dataType, data, onYearClick, loading }: FinancialTableProps) {
+// Recalculate derived P&L values based on editable fields
+function recalculatePnlDerived(
+  data: PeriodData | undefined,
+  periodId: string,
+  pendingChanges?: Map<string, PendingChange>
+): Partial<PeriodData> {
+  const grossRevenue = getEffectiveValue(data, periodId, 'grossRevenue', pendingChanges) ?? 0
+  const cogs = getEffectiveValue(data, periodId, 'cogs', pendingChanges) ?? 0
+  const operatingExpenses = getEffectiveValue(data, periodId, 'operatingExpenses', pendingChanges) ?? 0
+  const netAdjustment = data?.netAdjustment ?? 0
+
+  const grossProfit = grossRevenue - cogs
+  const grossMarginPct = grossRevenue > 0 ? grossProfit / grossRevenue : 0
+  const ebitda = grossProfit - operatingExpenses
+  const ebitdaMarginPct = grossRevenue > 0 ? ebitda / grossRevenue : 0
+  const adjustedEbitda = ebitda + netAdjustment
+
+  return { grossProfit, grossMarginPct, ebitda, ebitdaMarginPct, adjustedEbitda }
+}
+
+// Recalculate derived balance sheet values
+function recalculateBalanceSheetDerived(
+  data: PeriodData | undefined,
+  periodId: string,
+  pendingChanges?: Map<string, PendingChange>
+): Partial<PeriodData> {
+  const cash = getEffectiveValue(data, periodId, 'cash', pendingChanges) ?? 0
+  const accountsReceivable = getEffectiveValue(data, periodId, 'accountsReceivable', pendingChanges) ?? 0
+  const inventory = getEffectiveValue(data, periodId, 'inventory', pendingChanges) ?? 0
+  const otherCurrentAssets = getEffectiveValue(data, periodId, 'otherCurrentAssets', pendingChanges) ?? 0
+  const ppeNet = getEffectiveValue(data, periodId, 'ppeNet', pendingChanges) ?? 0
+  const intangibleAssets = getEffectiveValue(data, periodId, 'intangibleAssets', pendingChanges) ?? 0
+  const otherLongTermAssets = getEffectiveValue(data, periodId, 'otherLongTermAssets', pendingChanges) ?? 0
+  const accountsPayable = getEffectiveValue(data, periodId, 'accountsPayable', pendingChanges) ?? 0
+  const accruedExpenses = getEffectiveValue(data, periodId, 'accruedExpenses', pendingChanges) ?? 0
+  const currentPortionLtd = getEffectiveValue(data, periodId, 'currentPortionLtd', pendingChanges) ?? 0
+  const otherCurrentLiabilities = getEffectiveValue(data, periodId, 'otherCurrentLiabilities', pendingChanges) ?? 0
+  const longTermDebt = getEffectiveValue(data, periodId, 'longTermDebt', pendingChanges) ?? 0
+  const otherLongTermLiabilities = getEffectiveValue(data, periodId, 'otherLongTermLiabilities', pendingChanges) ?? 0
+  const retainedEarnings = getEffectiveValue(data, periodId, 'retainedEarnings', pendingChanges) ?? 0
+  const ownersEquity = getEffectiveValue(data, periodId, 'ownersEquity', pendingChanges) ?? 0
+
+  const totalCurrentAssets = cash + accountsReceivable + inventory + otherCurrentAssets
+  const totalLongTermAssets = ppeNet + intangibleAssets + otherLongTermAssets
+  const totalAssets = totalCurrentAssets + totalLongTermAssets
+  const totalCurrentLiabilities = accountsPayable + accruedExpenses + currentPortionLtd + otherCurrentLiabilities
+  const totalLongTermLiabilities = longTermDebt + otherLongTermLiabilities
+  const totalLiabilities = totalCurrentLiabilities + totalLongTermLiabilities
+  const totalEquity = retainedEarnings + ownersEquity
+
+  return { totalCurrentAssets, totalAssets, totalCurrentLiabilities, totalLiabilities, totalEquity }
+}
+
+function getRowValue(
+  data: PeriodData | undefined,
+  periodId: string,
+  field: RowConfig['field'],
+  dataType: DataType,
+  pendingChanges?: Map<string, PendingChange>
+): number | null {
+  if (!data && !pendingChanges?.size) return null
+
+  // For calculated fields, we need to recalculate based on pending changes
+  if (pendingChanges?.size && typeof field === 'string') {
+    if (dataType === 'pnl') {
+      const derived = recalculatePnlDerived(data, periodId, pendingChanges)
+      if (field in derived) {
+        return derived[field as keyof typeof derived] ?? null
+      }
+    }
+    if (dataType === 'balance-sheet') {
+      const derived = recalculateBalanceSheetDerived(data, periodId, pendingChanges)
+      if (field in derived) {
+        return derived[field as keyof typeof derived] ?? null
+      }
+    }
+  }
+
+  if (typeof field === 'function') {
+    // For function fields, we may need to apply pending changes first
+    if (pendingChanges?.size && data) {
+      const modifiedData = { ...data }
+      pendingChanges.forEach((change) => {
+        if (change.periodId === periodId) {
+          (modifiedData as Record<string, number>)[change.field] = change.newValue
+        }
+      })
+      // Recalculate derived values
+      const derived = dataType === 'pnl'
+        ? recalculatePnlDerived(modifiedData, periodId, pendingChanges)
+        : recalculateBalanceSheetDerived(modifiedData, periodId, pendingChanges)
+      Object.assign(modifiedData, derived)
+      return field(modifiedData)
+    }
+    return data ? field(data) : null
+  }
+
+  // Check for pending change
+  const changeKey = `${periodId}-${field}`
+  const pendingChange = pendingChanges?.get(changeKey)
+  if (pendingChange) {
+    return pendingChange.newValue
+  }
+
+  return data?.[field] ?? null
+}
+
+export function FinancialTable({
+  periods,
+  dataType,
+  data,
+  onYearClick,
+  loading,
+  bulkEditMode = false,
+  pendingChanges,
+  onCellChange,
+}: FinancialTableProps) {
   const rows = useMemo(() => {
     switch (dataType) {
       case 'pnl': return pnlRows
@@ -244,8 +380,11 @@ export function FinancialTable({ periods, dataType, data, onYearClick, loading }
                 {sortedPeriods.map((period) => (
                   <th
                     key={period.id}
-                    className="text-right py-3 px-4 font-semibold text-gray-900 min-w-[120px] cursor-pointer hover:bg-primary/10 transition-colors"
-                    onClick={() => onYearClick(period.id)}
+                    className={cn(
+                      "text-right py-3 px-4 font-semibold text-gray-900 min-w-[120px] transition-colors",
+                      !bulkEditMode && onYearClick && "cursor-pointer hover:bg-primary/10"
+                    )}
+                    onClick={() => !bulkEditMode && onYearClick?.(period.id)}
                   >
                     {period.label}
                   </th>
@@ -268,6 +407,9 @@ export function FinancialTable({ periods, dataType, data, onYearClick, loading }
                   )
                 }
 
+                const fieldName = typeof row.field === 'string' ? row.field : null
+                const canEdit = bulkEditMode && row.isEditable && fieldName && onCellChange
+
                 return (
                   <tr
                     key={rowIndex}
@@ -288,16 +430,40 @@ export function FinancialTable({ periods, dataType, data, onYearClick, loading }
                     </td>
                     {sortedPeriods.map((period) => {
                       const periodData = data[period.id]
-                      const value = getRowValue(periodData, row.field)
+                      const value = getRowValue(periodData, period.id, row.field, dataType, pendingChanges)
+                      const changeKey = fieldName ? `${period.id}-${fieldName}` : null
+                      const isDirty = changeKey ? pendingChanges?.has(changeKey) ?? false : false
+
+                      if (canEdit && fieldName) {
+                        return (
+                          <td
+                            key={period.id}
+                            className={cn(
+                              'py-1 px-2 text-right font-mono',
+                              row.isTotal ? 'font-semibold text-gray-900' : 'text-gray-600'
+                            )}
+                          >
+                            <EditableCell
+                              value={value}
+                              periodId={period.id}
+                              field={fieldName}
+                              format={row.format === 'number' ? 'currency' : row.format}
+                              isDirty={isDirty}
+                              onChange={onCellChange}
+                            />
+                          </td>
+                        )
+                      }
 
                       return (
                         <td
                           key={period.id}
                           className={cn(
-                            'py-2 px-4 text-right font-mono cursor-pointer hover:bg-primary/5 transition-colors',
-                            row.isTotal ? 'font-semibold text-gray-900' : 'text-gray-600'
+                            'py-2 px-4 text-right font-mono transition-colors',
+                            row.isTotal ? 'font-semibold text-gray-900' : 'text-gray-600',
+                            !bulkEditMode && onYearClick && 'cursor-pointer hover:bg-primary/5'
                           )}
-                          onClick={() => onYearClick(period.id)}
+                          onClick={() => !bulkEditMode && onYearClick?.(period.id)}
                         >
                           {formatValue(value, row.format)}
                         </td>
