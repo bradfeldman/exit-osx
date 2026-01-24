@@ -132,10 +132,15 @@ export function FinancialSummaryPanel({
   const calculations = useMemo(() => {
     const grossRevenue = currentData.grossRevenue || 0
     const cogs = currentData.cogs || 0
-    const operatingExpenses = currentData.operatingExpenses || 0
+    const operatingExpenses = currentData.operatingExpenses || 0  // This is Total Expenses in the UI
+    const depreciation = currentData.depreciation || 0
+    const amortization = currentData.amortization || 0
+    const interestExpense = currentData.interestExpense || 0
+    const taxExpense = currentData.taxExpense || 0
 
     const grossProfit = grossRevenue - cogs
-    const ebitda = grossProfit - operatingExpenses
+    // EBITDA = Gross Profit - Total Expenses + D + A + I + T
+    const ebitda = grossProfit - operatingExpenses + depreciation + amortization + interestExpense + taxExpense
     const totalAddBacks = currentData.totalAddBacks || 0
     const adjustedEbitda = ebitda + totalAddBacks
 

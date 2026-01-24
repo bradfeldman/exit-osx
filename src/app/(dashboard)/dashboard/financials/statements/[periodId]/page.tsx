@@ -219,16 +219,16 @@ function StatementsEditContent({ periodId, initialTab }: { periodId: string; ini
           setPlData({
             grossRevenue: is.grossRevenue,
             cogs: is.cogs,
-            operatingExpenses: is.operatingExpenses,
+            totalExpenses: is.operatingExpenses,  // API uses operatingExpenses, UI uses totalExpenses
             grossProfit: is.grossProfit,
             grossMarginPct: is.grossMarginPct,
             ebitda: is.ebitda,
             ebitdaMarginPct: is.ebitdaMarginPct,
-            depreciation: is.depreciation,
-            amortization: is.amortization,
-            interestExpense: is.interestExpense,
-            taxExpense: is.taxExpense,
-            netIncome: is.netIncome,
+            depreciation: is.depreciation ?? 0,
+            amortization: is.amortization ?? 0,
+            interestExpense: is.interestExpense ?? 0,
+            taxExpense: is.taxExpense ?? 0,
+            netIncome: is.netIncome ?? 0,
           })
         }
       }
@@ -428,7 +428,7 @@ function StatementsEditContent({ periodId, initialTab }: { periodId: string; ini
             currentData={{
               grossRevenue: plData?.grossRevenue,
               cogs: plData?.cogs,
-              operatingExpenses: plData?.operatingExpenses,
+              operatingExpenses: plData?.totalExpenses,  // PLData uses totalExpenses, prop uses operatingExpenses
               depreciation: plData?.depreciation,
               amortization: plData?.amortization,
               interestExpense: plData?.interestExpense,

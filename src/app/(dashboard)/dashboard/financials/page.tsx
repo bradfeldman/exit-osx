@@ -323,7 +323,7 @@ function FinancialsOverviewContent() {
       // Group changes by periodId and type (pnl vs balance-sheet)
       const changesByPeriod = new Map<string, { pnl: Record<string, number>; balanceSheet: Record<string, number> }>()
 
-      const pnlFields = ['grossRevenue', 'cogs', 'operatingExpenses']
+      const pnlFields = ['grossRevenue', 'cogs', 'operatingExpenses', 'depreciation', 'amortization', 'interestExpense', 'taxExpense']
       const balanceSheetFields = [
         'cash', 'accountsReceivable', 'inventory', 'otherCurrentAssets',
         'ppeNet', 'intangibleAssets', 'otherLongTermAssets',
@@ -365,6 +365,10 @@ function FinancialsOverviewContent() {
             grossRevenue: changes.pnl.grossRevenue ?? existingPnl?.grossRevenue ?? 0,
             cogs: changes.pnl.cogs ?? existingPnl?.cogs ?? 0,
             operatingExpenses: changes.pnl.operatingExpenses ?? existingPnl?.operatingExpenses ?? 0,
+            depreciation: changes.pnl.depreciation ?? existingPnl?.depreciation ?? 0,
+            amortization: changes.pnl.amortization ?? existingPnl?.amortization ?? 0,
+            interestExpense: changes.pnl.interestExpense ?? existingPnl?.interestExpense ?? 0,
+            taxExpense: changes.pnl.taxExpense ?? existingPnl?.taxExpense ?? 0,
           }
 
           savePromises.push(
@@ -458,6 +462,10 @@ function FinancialsOverviewContent() {
         grossProfit: is?.grossProfit ?? null,
         grossMarginPct: is?.grossMarginPct ?? null,
         operatingExpenses: is?.operatingExpenses ?? null,
+        depreciation: is?.depreciation ?? null,
+        amortization: is?.amortization ?? null,
+        interestExpense: is?.interestExpense ?? null,
+        taxExpense: is?.taxExpense ?? null,
         ebitda: is?.ebitda ?? null,
         ebitdaMarginPct: is?.ebitdaMarginPct ?? null,
         // Add-backs

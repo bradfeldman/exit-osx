@@ -158,7 +158,8 @@ export async function PUT(
     // Calculate derived fields
     const grossProfit = grossRevenue - cogs
     const grossMarginPct = grossRevenue > 0 ? grossProfit / grossRevenue : 0
-    const ebitda = grossProfit - operatingExpenses
+    // EBITDA = Gross Profit - Total Expenses + D + A + I + T
+    const ebitda = grossProfit - operatingExpenses + (depreciation ?? 0) + (amortization ?? 0) + (interestExpense ?? 0) + (taxExpense ?? 0)
     const ebitdaMarginPct = grossRevenue > 0 ? ebitda / grossRevenue : 0
 
     // Upsert income statement

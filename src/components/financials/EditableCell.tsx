@@ -66,9 +66,15 @@ export function EditableCell({
     }
   }, [isEditing])
 
+  // Format number with commas for display in input
+  const formatInputValue = (val: number | null): string => {
+    if (val === null || val === undefined) return ''
+    return new Intl.NumberFormat('en-US').format(val)
+  }
+
   const handleClick = () => {
     if (disabled) return
-    setInputValue(value?.toString() ?? '')
+    setInputValue(formatInputValue(value))
     setIsEditing(true)
   }
 
@@ -101,6 +107,19 @@ export function EditableCell({
     )
   }
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value
+    // Allow typing: only keep digits, minus, decimal, and commas
+    const cleaned = rawValue.replace(/[^0-9.,-]/g, '')
+    // Parse to number and reformat with commas
+    const numericValue = parseInputValue(cleaned)
+    if (cleaned === '' || cleaned === '-') {
+      setInputValue(cleaned)
+    } else {
+      setInputValue(formatInputValue(numericValue))
+    }
+  }
+
   if (isEditing) {
     return (
       <input
@@ -108,7 +127,7 @@ export function EditableCell({
         type="text"
         inputMode="numeric"
         value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
+        onChange={handleInputChange}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         className={cn(

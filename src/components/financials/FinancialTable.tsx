@@ -21,6 +21,10 @@ export interface PeriodData {
   grossProfit?: number | null
   grossMarginPct?: number | null
   operatingExpenses?: number | null
+  depreciation?: number | null
+  amortization?: number | null
+  interestExpense?: number | null
+  taxExpense?: number | null
   ebitda?: number | null
   ebitdaMarginPct?: number | null
   // Add-backs fields
@@ -98,8 +102,13 @@ const pnlRows: RowConfig[] = [
   { label: 'Cost of Goods Sold', field: 'cogs', format: 'currency', isEditable: true },
   { label: 'Gross Profit', field: 'grossProfit', format: 'currency', isTotal: true },
   { label: 'Gross Margin %', field: 'grossMarginPct', format: 'percent' },
-  { label: 'Operating Expenses', field: 'operatingExpenses', format: 'currency', isEditable: true },
+  { label: 'Total Expenses', field: 'operatingExpenses', format: 'currency', isEditable: true },
+  { label: 'Depreciation', field: 'depreciation', format: 'currency', isEditable: true, indent: 1 },
+  { label: 'Amortization', field: 'amortization', format: 'currency', isEditable: true, indent: 1 },
+  { label: 'Interest Expense', field: 'interestExpense', format: 'currency', isEditable: true, indent: 1 },
+  { label: 'Tax Expense', field: 'taxExpense', format: 'currency', isEditable: true, indent: 1 },
   { label: 'EBITDA', field: 'ebitda', format: 'currency', isTotal: true },
+  { label: 'EBITDA Margin %', field: 'ebitdaMarginPct', format: 'percent' },
   { label: 'Add-Backs / Adjustments', field: 'netAdjustment', format: 'currency' },
   { label: 'Adjusted EBITDA', field: 'adjustedEbitda', format: 'currency', isTotal: true },
   {
@@ -220,11 +229,16 @@ function recalculatePnlDerived(
   const grossRevenue = getEffectiveValue(data, periodId, 'grossRevenue', pendingChanges) ?? 0
   const cogs = getEffectiveValue(data, periodId, 'cogs', pendingChanges) ?? 0
   const operatingExpenses = getEffectiveValue(data, periodId, 'operatingExpenses', pendingChanges) ?? 0
+  const depreciation = getEffectiveValue(data, periodId, 'depreciation', pendingChanges) ?? 0
+  const amortization = getEffectiveValue(data, periodId, 'amortization', pendingChanges) ?? 0
+  const interestExpense = getEffectiveValue(data, periodId, 'interestExpense', pendingChanges) ?? 0
+  const taxExpense = getEffectiveValue(data, periodId, 'taxExpense', pendingChanges) ?? 0
   const netAdjustment = data?.netAdjustment ?? 0
 
   const grossProfit = grossRevenue - cogs
   const grossMarginPct = grossRevenue > 0 ? grossProfit / grossRevenue : 0
-  const ebitda = grossProfit - operatingExpenses
+  // EBITDA = Gross Profit - Total Expenses + D + A + I + T
+  const ebitda = grossProfit - operatingExpenses + depreciation + amortization + interestExpense + taxExpense
   const ebitdaMarginPct = grossRevenue > 0 ? ebitda / grossRevenue : 0
   const adjustedEbitda = ebitda + netAdjustment
 

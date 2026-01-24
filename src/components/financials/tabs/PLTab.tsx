@@ -25,15 +25,15 @@ interface PLTabProps {
 export interface PLData {
   grossRevenue: number
   cogs: number
-  operatingExpenses: number
+  totalExpenses: number  // Renamed from operatingExpenses - includes all expenses below gross profit
   grossProfit: number
   grossMarginPct: number
   ebitda: number
   ebitdaMarginPct: number
-  depreciation: number | null
-  amortization: number | null
-  interestExpense: number | null
-  taxExpense: number | null
+  depreciation: number
+  amortization: number
+  interestExpense: number
+  taxExpense: number
   netIncome: number
 }
 
@@ -42,7 +42,7 @@ interface IncomeStatement {
   periodId: string
   grossRevenue: number
   cogs: number
-  operatingExpenses: number
+  operatingExpenses: number  // API still uses this name, we display as "Total Expenses"
   grossProfit: number
   grossMarginPct: number
   ebitda: number
@@ -68,27 +68,29 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
   // Form state
   const [grossRevenue, setGrossRevenue] = useState<number>(0)
   const [cogs, setCogs] = useState<number>(0)
-  const [operatingExpenses, setOperatingExpenses] = useState<number>(0)
-  const [depreciation, setDepreciation] = useState<number | null>(null)
-  const [amortization, setAmortization] = useState<number | null>(null)
-  const [interestExpense, setInterestExpense] = useState<number | null>(null)
-  const [taxExpense, setTaxExpense] = useState<number | null>(null)
+  const [totalExpenses, setTotalExpenses] = useState<number>(0)  // All expenses below gross profit (includes D, A, I, T)
+  const [depreciation, setDepreciation] = useState<number>(0)
+  const [amortization, setAmortization] = useState<number>(0)
+  const [interestExpense, setInterestExpense] = useState<number>(0)
+  const [taxExpense, setTaxExpense] = useState<number>(0)
 
   // Calculated values
   const grossProfit = grossRevenue - cogs
   const grossMarginPct = grossRevenue > 0 ? (grossProfit / grossRevenue) * 100 : 0
-  const ebitda = grossProfit - operatingExpenses
+  // EBITDA = Gross Profit - Total Expenses + D + A + I + T
+  // (Total Expenses includes everything, so we add back ITDA to get EBITDA)
+  const ebitda = grossProfit - totalExpenses + depreciation + amortization + interestExpense + taxExpense
   const ebitdaMarginPct = grossRevenue > 0 ? (ebitda / grossRevenue) * 100 : 0
-  const ebit = ebitda - (depreciation || 0) - (amortization || 0)
-  const ebt = ebit - (interestExpense || 0)
-  const netIncome = ebt - (taxExpense || 0)
+  const ebit = ebitda - depreciation - amortization
+  const ebt = ebit - interestExpense
+  const netIncome = ebt - taxExpense
 
   // Notify parent of data changes (using ref to avoid infinite loop)
   useEffect(() => {
     onDataChangeRef.current?.({
       grossRevenue,
       cogs,
-      operatingExpenses,
+      totalExpenses,
       grossProfit,
       grossMarginPct,
       ebitda,
@@ -99,7 +101,7 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
       taxExpense,
       netIncome,
     })
-  }, [grossRevenue, cogs, operatingExpenses, depreciation, amortization, interestExpense, taxExpense, grossProfit, grossMarginPct, ebitda, ebitdaMarginPct, netIncome])
+  }, [grossRevenue, cogs, totalExpenses, depreciation, amortization, interestExpense, taxExpense, grossProfit, grossMarginPct, ebitda, ebitdaMarginPct, netIncome])
 
   const fetchIncomeStatement = useCallback(async () => {
     if (!companyId || !periodId) return
@@ -115,13 +117,13 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
         if (data.incomeStatement) {
           const stmt = data.incomeStatement
           setIncomeStatement(stmt)
-          setGrossRevenue(stmt.grossRevenue)
-          setCogs(stmt.cogs)
-          setOperatingExpenses(stmt.operatingExpenses)
-          setDepreciation(stmt.depreciation)
-          setAmortization(stmt.amortization)
-          setInterestExpense(stmt.interestExpense)
-          setTaxExpense(stmt.taxExpense)
+          setGrossRevenue(stmt.grossRevenue || 0)
+          setCogs(stmt.cogs || 0)
+          setTotalExpenses(stmt.operatingExpenses || 0)  // API uses operatingExpenses, we display as Total Expenses
+          setDepreciation(stmt.depreciation || 0)
+          setAmortization(stmt.amortization || 0)
+          setInterestExpense(stmt.interestExpense || 0)
+          setTaxExpense(stmt.taxExpense || 0)
         } else {
           clearForm()
         }
@@ -139,11 +141,11 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
     setIncomeStatement(null)
     setGrossRevenue(0)
     setCogs(0)
-    setOperatingExpenses(0)
-    setDepreciation(null)
-    setAmortization(null)
-    setInterestExpense(null)
-    setTaxExpense(null)
+    setTotalExpenses(0)
+    setDepreciation(0)
+    setAmortization(0)
+    setInterestExpense(0)
+    setTaxExpense(0)
   }
 
   useEffect(() => {
@@ -155,7 +157,7 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
     if (isInitialized) {
       onDirtyRef.current?.()
     }
-  }, [isInitialized, grossRevenue, cogs, operatingExpenses, depreciation, amortization, interestExpense, taxExpense])
+  }, [isInitialized, grossRevenue, cogs, totalExpenses, depreciation, amortization, interestExpense, taxExpense])
 
   // Auto-save with debounce
   useEffect(() => {
@@ -171,7 +173,7 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
             body: JSON.stringify({
               grossRevenue,
               cogs,
-              operatingExpenses,
+              operatingExpenses: totalExpenses,  // API still uses operatingExpenses field name
               depreciation,
               amortization,
               interestExpense,
@@ -185,7 +187,7 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
     }, 1000)
 
     return () => clearTimeout(timer)
-  }, [companyId, periodId, grossRevenue, cogs, operatingExpenses, depreciation, amortization, interestExpense, taxExpense, isLoading])
+  }, [companyId, periodId, grossRevenue, cogs, totalExpenses, depreciation, amortization, interestExpense, taxExpense, isLoading])
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -272,43 +274,122 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
           </div>
         </div>
 
-        <div className="ml-11 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="cogs" className="text-sm font-medium text-gray-700">
-              Cost of Goods Sold
-            </Label>
-            <div className="relative mt-1.5">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
-              <Input
-                id="cogs"
-                type="text"
-                inputMode="numeric"
-                value={formatInputValue(cogs)}
-                onChange={(e) => setCogs(parseInputValue(e.target.value))}
-                className="pl-8 h-11 font-medium bg-gray-50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-                placeholder="0"
-              />
+        <div className="ml-11 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="cogs" className="text-sm font-medium text-gray-700">
+                Cost of Goods Sold
+              </Label>
+              <div className="relative mt-1.5">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
+                <Input
+                  id="cogs"
+                  type="text"
+                  inputMode="numeric"
+                  value={formatInputValue(cogs)}
+                  onChange={(e) => setCogs(parseInputValue(e.target.value))}
+                  className="pl-8 h-11 font-medium bg-gray-50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                  placeholder="0"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1.5">Direct costs to produce your product/service</p>
             </div>
-            <p className="text-xs text-gray-500 mt-1.5">Direct costs to produce your product/service</p>
+
+            <div>
+              <Label htmlFor="totalExpenses" className="text-sm font-medium text-gray-700">
+                Total Expenses
+              </Label>
+              <div className="relative mt-1.5">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
+                <Input
+                  id="totalExpenses"
+                  type="text"
+                  inputMode="numeric"
+                  value={formatInputValue(totalExpenses)}
+                  onChange={(e) => setTotalExpenses(parseInputValue(e.target.value))}
+                  className="pl-8 h-11 font-medium bg-gray-50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                  placeholder="0"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1.5">All expenses below gross profit (from QuickBooks)</p>
+            </div>
           </div>
 
-          <div>
-            <Label htmlFor="operatingExpenses" className="text-sm font-medium text-gray-700">
-              Operating Expenses
-            </Label>
-            <div className="relative mt-1.5">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
-              <Input
-                id="operatingExpenses"
-                type="text"
-                inputMode="numeric"
-                value={formatInputValue(operatingExpenses)}
-                onChange={(e) => setOperatingExpenses(parseInputValue(e.target.value))}
-                className="pl-8 h-11 font-medium bg-gray-50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-                placeholder="0"
-              />
+          {/* D, A, I, T breakdown - used to calculate EBITDA from Total Expenses */}
+          <div className="bg-orange-50/50 rounded-lg p-4 border border-orange-100">
+            <p className="text-sm font-medium text-orange-800 mb-3">
+              Breakdown of Total Expenses (added back to calculate EBITDA)
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div>
+                <Label htmlFor="depreciation" className="text-xs font-medium text-gray-600">
+                  Depreciation
+                </Label>
+                <div className="relative mt-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <Input
+                    id="depreciation"
+                    type="text"
+                    inputMode="numeric"
+                    value={formatInputValue(depreciation)}
+                    onChange={(e) => setDepreciation(parseInputValue(e.target.value))}
+                    className="pl-7 h-9 text-sm font-medium bg-white border-gray-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="amortization" className="text-xs font-medium text-gray-600">
+                  Amortization
+                </Label>
+                <div className="relative mt-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <Input
+                    id="amortization"
+                    type="text"
+                    inputMode="numeric"
+                    value={formatInputValue(amortization)}
+                    onChange={(e) => setAmortization(parseInputValue(e.target.value))}
+                    className="pl-7 h-9 text-sm font-medium bg-white border-gray-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="interestExpense" className="text-xs font-medium text-gray-600">
+                  Interest
+                </Label>
+                <div className="relative mt-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <Input
+                    id="interestExpense"
+                    type="text"
+                    inputMode="numeric"
+                    value={formatInputValue(interestExpense)}
+                    onChange={(e) => setInterestExpense(parseInputValue(e.target.value))}
+                    className="pl-7 h-9 text-sm font-medium bg-white border-gray-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="taxExpense" className="text-xs font-medium text-gray-600">
+                  Taxes
+                </Label>
+                <div className="relative mt-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <Input
+                    id="taxExpense"
+                    type="text"
+                    inputMode="numeric"
+                    value={formatInputValue(taxExpense)}
+                    onChange={(e) => setTaxExpense(parseInputValue(e.target.value))}
+                    className="pl-7 h-9 text-sm font-medium bg-white border-gray-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-gray-500 mt-1.5">SG&A, rent, utilities, salaries, etc.</p>
           </div>
         </div>
       </div>
@@ -375,7 +456,7 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
         </div>
       </div>
 
-      {/* Below-the-line Section */}
+      {/* Below-the-line Results Section */}
       <div className="border-t">
         <Button
           variant="ghost"
@@ -387,8 +468,8 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
               <TrendingUp className="h-4 w-4" />
             </div>
             <div className="text-left">
-              <h3 className="font-medium text-gray-700">Below-the-Line Items</h3>
-              <p className="text-sm text-gray-500 font-normal">Optional: D&A, interest, and taxes</p>
+              <h3 className="font-medium text-gray-700">Below-the-Line Results</h3>
+              <p className="text-sm text-gray-500 font-normal">EBIT, EBT, and Net Income</p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-gray-400">
@@ -402,93 +483,7 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
         </Button>
 
         {showBelowTheLine && (
-          <div className="pb-6 space-y-6 bg-gray-50/50 rounded-b-lg px-4 -mx-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-11">
-              <div>
-                <Label htmlFor="depreciation" className="text-sm font-medium text-gray-700">
-                  Depreciation
-                </Label>
-                <div className="relative mt-1.5">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
-                  <Input
-                    id="depreciation"
-                    type="text"
-                    inputMode="numeric"
-                    value={depreciation ? formatInputValue(depreciation) : ''}
-                    onChange={(e) => {
-                      const val = e.target.value
-                      setDepreciation(val ? parseInputValue(val) : null)
-                    }}
-                    className="pl-8 h-11 font-medium bg-white border-gray-200 focus:ring-2 focus:ring-gray-500/20 focus:border-gray-400 transition-all"
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="amortization" className="text-sm font-medium text-gray-700">
-                  Amortization
-                </Label>
-                <div className="relative mt-1.5">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
-                  <Input
-                    id="amortization"
-                    type="text"
-                    inputMode="numeric"
-                    value={amortization ? formatInputValue(amortization) : ''}
-                    onChange={(e) => {
-                      const val = e.target.value
-                      setAmortization(val ? parseInputValue(val) : null)
-                    }}
-                    className="pl-8 h-11 font-medium bg-white border-gray-200 focus:ring-2 focus:ring-gray-500/20 focus:border-gray-400 transition-all"
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="interestExpense" className="text-sm font-medium text-gray-700">
-                  Interest Expense
-                </Label>
-                <div className="relative mt-1.5">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
-                  <Input
-                    id="interestExpense"
-                    type="text"
-                    inputMode="numeric"
-                    value={interestExpense ? formatInputValue(interestExpense) : ''}
-                    onChange={(e) => {
-                      const val = e.target.value
-                      setInterestExpense(val ? parseInputValue(val) : null)
-                    }}
-                    className="pl-8 h-11 font-medium bg-white border-gray-200 focus:ring-2 focus:ring-gray-500/20 focus:border-gray-400 transition-all"
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="taxExpense" className="text-sm font-medium text-gray-700">
-                  Tax Expense
-                </Label>
-                <div className="relative mt-1.5">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
-                  <Input
-                    id="taxExpense"
-                    type="text"
-                    inputMode="numeric"
-                    value={taxExpense ? formatInputValue(taxExpense) : ''}
-                    onChange={(e) => {
-                      const val = e.target.value
-                      setTaxExpense(val ? parseInputValue(val) : null)
-                    }}
-                    className="pl-8 h-11 font-medium bg-white border-gray-200 focus:ring-2 focus:ring-gray-500/20 focus:border-gray-400 transition-all"
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-            </div>
-
+          <div className="pb-6 bg-gray-50/50 rounded-b-lg px-4 -mx-4">
             {/* Below-the-line Results */}
             <div className="ml-11 bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
               <div className="flex justify-between items-center px-4 py-3">
