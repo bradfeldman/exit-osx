@@ -18,6 +18,8 @@ import {
   ArrowLeft,
   Save,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { use } from 'react'
 
@@ -61,6 +63,7 @@ function StatementsEditContent({ periodId, initialTab }: { periodId: string; ini
 
   const [period, setPeriod] = useState<FinancialPeriod | null>(null)
   const [priorPeriod, setPriorPeriod] = useState<FinancialPeriod | null>(null)
+  const [allPeriods, setAllPeriods] = useState<FinancialPeriod[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState(initialTab)
   const [hasChanges, setHasChanges] = useState(false)
@@ -89,6 +92,10 @@ function StatementsEditContent({ periodId, initialTab }: { periodId: string; ini
       if (response.ok) {
         const data = await response.json()
         const periods: FinancialPeriod[] = data.periods || []
+
+        // Sort periods by fiscal year for navigation
+        const sortedPeriods = [...periods].sort((a, b) => a.fiscalYear - b.fiscalYear)
+        setAllPeriods(sortedPeriods)
 
         const currentPeriod = periods.find(p => p.id === periodId)
         if (currentPeriod) {
@@ -330,10 +337,42 @@ function StatementsEditContent({ periodId, initialTab }: { periodId: string; ini
         Back to Financials
       </Link>
 
-      {/* Header */}
+      {/* Header with Year Navigation */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{period.label}</h1>
+          <div className="flex items-center gap-2">
+            {(() => {
+              const currentIndex = allPeriods.findIndex(p => p.id === periodId)
+              const prevPeriod = currentIndex > 0 ? allPeriods[currentIndex - 1] : null
+              return prevPeriod ? (
+                <button
+                  onClick={() => router.push(`/dashboard/financials/statements/${prevPeriod.id}?tab=${activeTab}`)}
+                  className="p-1.5 rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-900"
+                  title={`Previous: ${prevPeriod.label}`}
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+              ) : (
+                <div className="w-9" />
+              )
+            })()}
+            <h1 className="text-2xl font-bold text-gray-900">{period.label}</h1>
+            {(() => {
+              const currentIndex = allPeriods.findIndex(p => p.id === periodId)
+              const nextPeriod = currentIndex >= 0 && currentIndex < allPeriods.length - 1 ? allPeriods[currentIndex + 1] : null
+              return nextPeriod ? (
+                <button
+                  onClick={() => router.push(`/dashboard/financials/statements/${nextPeriod.id}?tab=${activeTab}`)}
+                  className="p-1.5 rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-900"
+                  title={`Next: ${nextPeriod.label}`}
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+              ) : (
+                <div className="w-9" />
+              )
+            })()}
+          </div>
           <p className="text-gray-600">Edit financial statements for this fiscal year</p>
         </div>
         <div className="flex items-center gap-4">
