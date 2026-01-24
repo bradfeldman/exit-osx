@@ -140,8 +140,8 @@ function FinancialsOverviewContent() {
       if (response.ok) {
         const data = await response.json()
         setIntegrationData({
-          hasQuickBooksIntegration: data.hasIntegration || false,
-          lastSyncedAt: data.lastSyncedAt || null,
+          hasQuickBooksIntegration: data.connected || false,
+          lastSyncedAt: data.integration?.lastSyncAt || null,
         })
       }
     } catch (error) {
