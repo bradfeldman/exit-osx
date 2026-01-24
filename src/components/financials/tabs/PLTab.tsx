@@ -34,7 +34,7 @@ export interface PLData {
   amortization: number
   interestExpense: number
   taxExpense: number
-  netIncome: number
+  netOperatingIncome: number
 }
 
 interface IncomeStatement {
@@ -83,7 +83,7 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
   const ebitdaMarginPct = grossRevenue > 0 ? (ebitda / grossRevenue) * 100 : 0
   const ebit = ebitda - depreciation - amortization
   const ebt = ebit - interestExpense
-  const netIncome = ebt - taxExpense
+  const netOperatingIncome = ebt - taxExpense
 
   // Notify parent of data changes (using ref to avoid infinite loop)
   useEffect(() => {
@@ -99,9 +99,9 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
       amortization,
       interestExpense,
       taxExpense,
-      netIncome,
+      netOperatingIncome,
     })
-  }, [grossRevenue, cogs, totalExpenses, depreciation, amortization, interestExpense, taxExpense, grossProfit, grossMarginPct, ebitda, ebitdaMarginPct, netIncome])
+  }, [grossRevenue, cogs, totalExpenses, depreciation, amortization, interestExpense, taxExpense, grossProfit, grossMarginPct, ebitda, ebitdaMarginPct, netOperatingIncome])
 
   const fetchIncomeStatement = useCallback(async () => {
     if (!companyId || !periodId) return
@@ -469,7 +469,7 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
             </div>
             <div className="text-left">
               <h3 className="font-medium text-gray-700">Below-the-Line Results</h3>
-              <p className="text-sm text-gray-500 font-normal">EBIT, EBT, and Net Income</p>
+              <p className="text-sm text-gray-500 font-normal">EBIT, EBT, and Net Operating Income</p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-gray-400">
@@ -495,9 +495,9 @@ export function PLTab({ companyId, periodId, onDataChange, onDirty }: PLTabProps
                 <span className="font-semibold text-gray-900">{formatCurrency(ebt)}</span>
               </div>
               <div className="flex justify-between items-center px-4 py-3 bg-gray-50">
-                <span className="text-sm font-semibold text-gray-900">Net Income</span>
-                <span className={`font-bold text-lg ${netIncome >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                  {formatCurrency(netIncome)}
+                <span className="text-sm font-semibold text-gray-900">Net Operating Income</span>
+                <span className={`font-bold text-lg ${netOperatingIncome >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                  {formatCurrency(netOperatingIncome)}
                 </span>
               </div>
             </div>

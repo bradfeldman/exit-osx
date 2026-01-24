@@ -228,7 +228,7 @@ function StatementsEditContent({ periodId, initialTab }: { periodId: string; ini
             amortization: is.amortization ?? 0,
             interestExpense: is.interestExpense ?? 0,
             taxExpense: is.taxExpense ?? 0,
-            netIncome: is.netIncome ?? 0,
+            netOperatingIncome: 0,  // Calculated on frontend, not stored in API
           })
         }
       }
