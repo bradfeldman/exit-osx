@@ -138,7 +138,7 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
         setNewAmount(0)
         onDirtyRef.current?.()
 
-        // Also add to all other periods (with same amount as starting point)
+        // Also add to all other periods (description only, amount = 0 since each year differs)
         const otherPeriodIds = allPeriodIds.filter(id => id !== periodId)
         for (const otherPeriodId of otherPeriodIds) {
           try {
@@ -147,7 +147,7 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 description: newDescription,
-                amount: newAmount,
+                amount: 0,  // Each year will have different amounts
                 type: newType,
                 frequency: newFrequency,
                 periodId: otherPeriodId,
@@ -198,33 +198,48 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
       item => quickAddSelections[item.id]?.selected && quickAddSelections[item.id]?.amount > 0
     )
 
-    // Get all period IDs to add to
-    const allPeriodsToAdd = [periodId, ...allPeriodIds.filter(id => id !== periodId)]
-
+    // Add to current period with the entered amount
     for (const item of selectedItems) {
       const selection = quickAddSelections[item.id]
 
-      for (const targetPeriodId of allPeriodsToAdd) {
+      try {
+        const response = await fetch(`/api/companies/${companyId}/adjustments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            description: item.description,
+            amount: selection.amount,
+            type: item.defaultType,
+            frequency: 'ANNUAL',
+            periodId,
+          }),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setAdjustments((prev) => [data.adjustment, ...prev])
+        }
+      } catch (error) {
+        console.error('Failed to add adjustment:', error)
+      }
+
+      // Add to other periods with amount = 0 (description only, each year differs)
+      const otherPeriodIds = allPeriodIds.filter(id => id !== periodId)
+      for (const otherPeriodId of otherPeriodIds) {
         try {
-          const response = await fetch(`/api/companies/${companyId}/adjustments`, {
+          await fetch(`/api/companies/${companyId}/adjustments`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               description: item.description,
-              amount: selection.amount,
+              amount: 0,
               type: item.defaultType,
               frequency: 'ANNUAL',
-              periodId: targetPeriodId,
+              periodId: otherPeriodId,
             }),
           })
-
-          // Only update local state for current period
-          if (response.ok && targetPeriodId === periodId) {
-            const data = await response.json()
-            setAdjustments((prev) => [data.adjustment, ...prev])
-          }
         } catch (error) {
-          console.error('Failed to add adjustment:', error)
+          console.error('Failed to add adjustment to other period:', error)
         }
       }
     }
@@ -339,7 +354,7 @@ export function AddBacksTab({ companyId, periodId, onDirty }: AddBacksTabProps) 
           </div>
           {allPeriodIds.length > 1 && (
             <span className="text-xs text-gray-500">
-              Auto-copied to all {allPeriodIds.length} fiscal years
+              Description copied to all years (amounts entered separately)
             </span>
           )}
         </div>
