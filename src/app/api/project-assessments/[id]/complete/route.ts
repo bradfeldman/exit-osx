@@ -387,16 +387,18 @@ export async function POST(
     // Step 7: Generate tasks for low-scoring responses
     // ========================================
 
-    const keyFindings: string[] = []
+    const keyFindingsSet = new Set<string>()
 
     for (const response of assessment.responses) {
       const score = Number(response.actualScore)
 
       if (score < 0.5) {
         const categoryName = formatCategoryName(response.question.briCategory)
-        keyFindings.push(`${categoryName}: ${response.question.subCategory} needs attention`)
+        keyFindingsSet.add(`${categoryName}: ${response.question.subCategory} needs attention`)
       }
     }
+
+    const keyFindings = Array.from(keyFindingsSet)
 
     // Generate tasks from assessment responses and add to queue
     const taskResult = await generateTasksFromProjectAssessment(company.id, assessmentId)
