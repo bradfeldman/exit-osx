@@ -26,6 +26,7 @@ interface InviteDetails {
   inviterName: string
   roleTemplate?: { name: string; icon: string | null }
   isExternalAdvisor: boolean
+  hasExistingAccount: boolean
 }
 
 type InviteStatus = 'loading' | 'valid' | 'invalid' | 'expired' | 'accepted'
@@ -293,6 +294,14 @@ export default function InviteAcceptPage() {
 
       // Not logged in
       if (userState === 'not_logged_in') {
+        const handleAcceptInvitation = () => {
+          if (invite.hasExistingAccount) {
+            handleLogin()
+          } else {
+            handleSignup()
+          }
+        }
+
         return (
           <div className="w-full max-w-md space-y-6">
             <div className="text-center">
@@ -321,16 +330,25 @@ export default function InviteAcceptPage() {
 
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground text-center">
-                    Sign in or create an account to accept this invitation
+                    {invite.hasExistingAccount
+                      ? 'Sign in to accept this invitation'
+                      : 'Create an account to accept this invitation'}
                   </p>
 
-                  <Button onClick={handleLogin} className="w-full h-12">
-                    Sign In
+                  <Button onClick={handleAcceptInvitation} className="w-full h-12">
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Accept Invitation
                   </Button>
 
-                  <Button onClick={handleSignup} variant="outline" className="w-full h-12">
-                    Create Account
-                  </Button>
+                  {invite.hasExistingAccount ? (
+                    <p className="text-xs text-muted-foreground text-center">
+                      Don&apos;t have an account? <button onClick={handleSignup} className="text-primary hover:underline">Create one</button>
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground text-center">
+                      Already have an account? <button onClick={handleLogin} className="text-primary hover:underline">Sign in</button>
+                    </p>
+                  )}
                 </div>
 
                 <p className="text-xs text-muted-foreground text-center pt-2">

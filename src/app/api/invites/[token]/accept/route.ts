@@ -217,6 +217,12 @@ export async function GET(
       )
     }
 
+    // Check if invited email already has an account
+    const existingUser = await prisma.user.findUnique({
+      where: { email: invite.email.toLowerCase() },
+      select: { id: true }
+    })
+
     return NextResponse.json({
       invite: {
         // SECURITY: Only reveal minimal info needed for the acceptance flow
@@ -227,6 +233,8 @@ export async function GET(
         inviterName: invite.inviter.name || 'A team member',
         roleTemplate: invite.roleTemplate ? { name: invite.roleTemplate.name, icon: invite.roleTemplate.icon } : null,
         isExternalAdvisor: invite.isExternalAdvisor,
+        // Let the UI know if user needs to create account or just sign in
+        hasExistingAccount: !!existingUser,
       }
     })
   } catch (error) {

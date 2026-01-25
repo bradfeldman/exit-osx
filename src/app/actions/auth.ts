@@ -156,6 +156,12 @@ export async function secureLogin(
     // Successful login - clear any lockout state
     await clearLockout(email)
 
+    // Record the session for session management
+    const { recordSession } = await import('./sessions')
+    await recordSession().catch(() => {
+      // Non-blocking - don't fail login if session recording fails
+    })
+
     securityLogger.authAttempt(true, {
       email,
       ipAddress,
