@@ -1,7 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useCountUpCurrency, useCountUpScore } from '@/hooks/useCountUp'
+
+// Hook to detect if we're on the client
+const emptySubscribe = () => () => {}
+function useIsClient() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  )
+}
 
 interface HeroMetricsProps {
   currentValue: number
@@ -53,10 +65,116 @@ function getBriColor(score: number): string {
 }
 
 function getCoreIndexColor(score: number): string {
-  // Higher score = better (green), lower score = worse (red)
   if (score >= 70) return 'text-green-600'
   if (score >= 40) return 'text-yellow-600'
   return 'text-red-600'
+}
+
+// Animated value display component
+function AnimatedValue({
+  value,
+  delay = 0,
+  className = '',
+}: {
+  value: number
+  delay?: number
+  className?: string
+}) {
+  const { value: displayValue, isAnimating } = useCountUpCurrency(value, {
+    delay,
+    duration: 1800,
+  })
+
+  return (
+    <motion.span
+      className={className}
+      animate={!isAnimating ? { scale: [1, 1.02, 1] } : {}}
+      transition={{ duration: 0.3 }}
+    >
+      {displayValue}
+    </motion.span>
+  )
+}
+
+// Animated score display component
+function AnimatedScore({
+  value,
+  delay = 0,
+  className = '',
+}: {
+  value: number
+  delay?: number
+  className?: string
+}) {
+  const { value: displayValue, isAnimating } = useCountUpScore(value, {
+    delay,
+    duration: 1500,
+  })
+
+  return (
+    <motion.span
+      className={className}
+      animate={!isAnimating ? { scale: [1, 1.02, 1] } : {}}
+      transition={{ duration: 0.3 }}
+    >
+      {displayValue}
+    </motion.span>
+  )
+}
+
+// Metric card with animation
+function MetricCard({
+  children,
+  index,
+  isHovered,
+  onHover,
+  onLeave,
+  href,
+  className = '',
+  isPreviewMode = false,
+}: {
+  children: React.ReactNode
+  index: number
+  isHovered: boolean
+  onHover: () => void
+  onLeave: () => void
+  href?: string
+  className?: string
+  isPreviewMode?: boolean
+}) {
+  const content = (
+    <motion.div
+      className={`text-center p-4 md:p-6 rounded-xl bg-white border shadow-sm flex flex-col justify-center cursor-pointer ${
+        isHovered ? 'border-[#B87333] shadow-md' : 'border-gray-100'
+      } ${isPreviewMode ? 'opacity-60' : ''} ${className}`}
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{
+        delay: 0.1 + index * 0.08,
+        duration: 0.5,
+        ease: [0.4, 0, 0.2, 1],
+      }}
+      whileHover={{
+        y: -4,
+        boxShadow: '0 12px 24px -8px rgba(61, 61, 61, 0.15)',
+        borderColor: 'rgba(184, 115, 51, 0.3)',
+      }}
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
+    >
+      {children}
+    </motion.div>
+  )
+
+  if (href) {
+    return (
+      <Link href={href} className="h-full">
+        {content}
+      </Link>
+    )
+  }
+
+  return content
 }
 
 export function HeroMetrics({
@@ -71,72 +189,127 @@ export function HeroMetrics({
   isAbovePotential = false
 }: HeroMetricsProps) {
   const [hoveredCard, setHoveredCard] = useState<HoverState>(null)
+  const isClient = useIsClient()
 
   return (
     <div className="pt-1 pb-8 md:pb-12">
       {/* Two-column layout: Market Value on left, 4 metrics on right */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Left: Primary KPI - Estimated Market Value (or description on hover) */}
-        <div className={`flex items-center justify-center p-8 md:p-12 rounded-xl shadow-lg transition-all duration-300 ${
-          isAbovePotential ? 'bg-amber-600 ring-4 ring-amber-500/30' :
-          isPreviewMode ? 'bg-[#B87333] ring-4 ring-[#B87333]/30' : 'bg-[#3D3D3D]'
-        }`}>
-          {hoveredCard ? (
-            <div className="text-center">
-              <p className="text-sm font-medium text-[#B87333] uppercase tracking-wide mb-3">
-                {descriptions[hoveredCard].title}
-              </p>
-              <p className="text-lg md:text-xl text-gray-300 leading-relaxed">
-                {descriptions[hoveredCard].description}
-              </p>
-            </div>
-          ) : (
-            <div className="text-center">
-              <p className={`text-sm font-medium uppercase tracking-wide mb-1 ${
-                isPreviewMode ? 'text-white' : 'text-gray-300'
-              }`}>
-                {isAbovePotential ? 'Above Your Potential' : isPreviewMode ? 'Preview: Market Value' : 'Estimated Market Value Today'}
-              </p>
-              {!isPreviewMode && (
-                <p className="text-xs text-gray-400 mb-3">
-                  {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+        <motion.div
+          className={`relative flex items-center justify-center p-8 md:p-12 rounded-xl shadow-lg overflow-hidden ${
+            isAbovePotential ? 'bg-amber-600 ring-4 ring-amber-500/30' :
+            isPreviewMode ? 'bg-[#B87333] ring-4 ring-[#B87333]/30' : 'bg-[#3D3D3D]'
+          }`}
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{
+            duration: 0.6,
+            ease: [0.4, 0, 0.2, 1],
+          }}
+        >
+          {/* Subtle glow effect */}
+          <motion.div
+            className="absolute inset-0 pointer-events-none"
+            animate={{
+              boxShadow: isPreviewMode
+                ? 'inset 0 0 60px rgba(255, 255, 255, 0.1)'
+                : 'inset 0 0 60px rgba(184, 115, 51, 0.1)',
+            }}
+            transition={{ duration: 0.3 }}
+          />
+
+          <AnimatePresence mode="wait">
+            {hoveredCard ? (
+              <motion.div
+                key="description"
+                className="text-center relative z-10"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <p className="text-sm font-medium text-[#B87333] uppercase tracking-wide mb-3">
+                  {descriptions[hoveredCard].title}
                 </p>
-              )}
-              {isPreviewMode && !isAbovePotential && (
-                <p className="text-xs text-white/70 mb-3">
-                  Based on selected multiple
+                <p className="text-lg md:text-xl text-gray-300 leading-relaxed">
+                  {descriptions[hoveredCard].description}
                 </p>
-              )}
-              {isAbovePotential && (
-                <p className="text-xs text-white/90 mb-3">
-                  Requires higher Core Index to achieve
+              </motion.div>
+            ) : (
+              <motion.div
+                key="value"
+                className="text-center relative z-10"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <p className={`text-sm font-medium uppercase tracking-wide mb-1 ${
+                  isPreviewMode ? 'text-white' : 'text-gray-300'
+                }`}>
+                  {isAbovePotential ? 'Above Your Potential' : isPreviewMode ? 'Preview: Market Value' : 'Estimated Market Value Today'}
                 </p>
-              )}
-              <h1 className={`text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight transition-all ${
-                isPreviewMode ? 'text-white scale-105' : 'text-white'
-              }`}>
-                {formatCurrency(currentValue)}
-              </h1>
-              {isEstimated && !isPreviewMode && (
-                <p className="text-xs text-[#B87333] mt-3">
-                  Based on estimated EBITDA
-                  <br />
-                  Complete assessment to see risk-adjusted value
-                </p>
-              )}
-            </div>
-          )}
-        </div>
+                {!isPreviewMode && (
+                  <p className="text-xs text-gray-400 mb-3">
+                    {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  </p>
+                )}
+                {isPreviewMode && !isAbovePotential && (
+                  <p className="text-xs text-white/70 mb-3">
+                    Based on selected multiple
+                  </p>
+                )}
+                {isAbovePotential && (
+                  <p className="text-xs text-white/90 mb-3">
+                    Requires higher Core Index to achieve
+                  </p>
+                )}
+                <motion.h1
+                  className={`text-hero font-bold tracking-tight text-white ${
+                    isPreviewMode ? 'scale-105' : ''
+                  }`}
+                  key={currentValue}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 100,
+                    damping: 12,
+                  }}
+                >
+                  {isClient ? (
+                    <AnimatedValue value={currentValue} delay={200} />
+                  ) : (
+                    formatCurrency(currentValue)
+                  )}
+                </motion.h1>
+                {isEstimated && !isPreviewMode && (
+                  <motion.p
+                    className="text-xs text-[#B87333] mt-3"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.5 }}
+                  >
+                    Based on estimated EBITDA
+                    <br />
+                    Complete assessment to see risk-adjusted value
+                  </motion.p>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
         {/* Right: 2x2 grid of secondary KPIs */}
         <div className="grid grid-cols-2 gap-4">
           {/* Value Gap */}
-          <div
-            className={`text-center p-4 md:p-6 rounded-xl bg-white border shadow-sm flex flex-col justify-center cursor-pointer transition-all duration-200 ${
-              hoveredCard === 'valueGap' ? 'border-[#B87333] shadow-md' : 'border-gray-100'
-            } ${isAbovePotential ? 'ring-2 ring-amber-500/50' : isPreviewMode ? 'ring-2 ring-[#B87333]/50' : ''}`}
-            onMouseEnter={() => setHoveredCard('valueGap')}
-            onMouseLeave={() => setHoveredCard(null)}
+          <MetricCard
+            index={0}
+            isHovered={hoveredCard === 'valueGap'}
+            onHover={() => setHoveredCard('valueGap')}
+            onLeave={() => setHoveredCard(null)}
+            className={isAbovePotential ? 'ring-2 ring-amber-500/50' : isPreviewMode ? 'ring-2 ring-[#B87333]/50' : ''}
           >
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
               {isAbovePotential ? 'Exceeds Potential' : isPreviewMode ? 'Preview: Value Gap' : 'Value Gap'}
@@ -144,20 +317,29 @@ export function HeroMetrics({
             <p className={`text-2xl md:text-3xl font-semibold transition-all ${
               isAbovePotential ? 'text-amber-600' : isPreviewMode ? 'text-[#B87333]' : 'text-[#3D3D3D]'
             }`}>
-              {valueGap < 0 ? `+${formatCurrency(Math.abs(valueGap))}` : formatCurrency(valueGap)}
+              {isClient && valueGap !== 0 ? (
+                <AnimatedValue
+                  value={Math.abs(valueGap)}
+                  delay={300}
+                  className={valueGap < 0 ? '' : ''}
+                />
+              ) : (
+                valueGap < 0 ? `+${formatCurrency(Math.abs(valueGap))}` : formatCurrency(valueGap)
+              )}
+              {valueGap < 0 && isClient && '+'}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               {isAbovePotential ? 'Above max for Core Index' : `Max EV: ${formatCurrency(potentialValue)}`}
             </p>
-          </div>
+          </MetricCard>
 
           {/* BRI */}
-          <div
-            className={`text-center p-4 md:p-6 rounded-xl bg-white border shadow-sm flex flex-col justify-center cursor-pointer transition-all duration-200 ${
-              hoveredCard === 'bri' ? 'border-[#B87333] shadow-md' : 'border-gray-100'
-            } ${isPreviewMode ? 'opacity-60' : ''}`}
-            onMouseEnter={() => setHoveredCard('bri')}
-            onMouseLeave={() => setHoveredCard(null)}
+          <MetricCard
+            index={1}
+            isHovered={hoveredCard === 'bri'}
+            onHover={() => setHoveredCard('bri')}
+            onLeave={() => setHoveredCard(null)}
+            isPreviewMode={isPreviewMode}
           >
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
               Buyer Readiness Index
@@ -165,7 +347,11 @@ export function HeroMetrics({
             {briScore !== null ? (
               <>
                 <p className={`text-2xl md:text-3xl font-semibold ${getBriColor(briScore)}`}>
-                  {briScore}
+                  {isClient ? (
+                    <AnimatedScore value={briScore} delay={400} />
+                  ) : (
+                    briScore
+                  )}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   {isPreviewMode ? 'Assessment-based' : 'Scale: 0 - 100'}
@@ -181,75 +367,83 @@ export function HeroMetrics({
                 </p>
               </>
             )}
-          </div>
+          </MetricCard>
 
           {/* Core Index */}
-          <Link href="/dashboard/assessment/company" className="h-full">
-            <div
-              className={`h-full text-center p-4 md:p-6 rounded-xl bg-white border shadow-sm flex flex-col justify-center cursor-pointer transition-all duration-200 hover:shadow-md ${
-                hoveredCard === 'coreIndex' ? 'border-[#B87333] shadow-md' : 'border-gray-100'
-              } ${isPreviewMode ? 'opacity-60' : ''}`}
-              onMouseEnter={() => setHoveredCard('coreIndex')}
-              onMouseLeave={() => setHoveredCard(null)}
-            >
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
-                Core Index
-              </p>
-              {coreScore !== null ? (
-                <>
-                  <p className={`text-2xl md:text-3xl font-semibold ${getCoreIndexColor(coreScore)}`}>
-                    {coreScore}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Scale: 0 - 100
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-2xl md:text-3xl font-semibold text-gray-400">
-                    --
-                  </p>
-                  <p className="text-xs text-[#B87333] mt-1">
-                    Complete assessment
-                  </p>
-                </>
-              )}
-            </div>
-          </Link>
+          <MetricCard
+            index={2}
+            isHovered={hoveredCard === 'coreIndex'}
+            onHover={() => setHoveredCard('coreIndex')}
+            onLeave={() => setHoveredCard(null)}
+            href="/dashboard/assessment/company"
+            isPreviewMode={isPreviewMode}
+            className="h-full"
+          >
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+              Core Index
+            </p>
+            {coreScore !== null ? (
+              <>
+                <p className={`text-2xl md:text-3xl font-semibold ${getCoreIndexColor(coreScore)}`}>
+                  {isClient ? (
+                    <AnimatedScore value={coreScore} delay={500} />
+                  ) : (
+                    coreScore
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Scale: 0 - 100
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-2xl md:text-3xl font-semibold text-gray-400">
+                  --
+                </p>
+                <p className="text-xs text-[#B87333] mt-1">
+                  Complete assessment
+                </p>
+              </>
+            )}
+          </MetricCard>
 
           {/* Personal Readiness */}
-          <Link href="/dashboard/assessment/personal-readiness" className="h-full">
-            <div
-              className={`h-full text-center p-4 md:p-6 rounded-xl bg-white border shadow-sm flex flex-col justify-center cursor-pointer transition-all duration-200 hover:shadow-md ${
-                hoveredCard === 'personalReadiness' ? 'border-[#B87333] shadow-md' : 'border-gray-100'
-              } ${isPreviewMode ? 'opacity-60' : ''}`}
-              onMouseEnter={() => setHoveredCard('personalReadiness')}
-              onMouseLeave={() => setHoveredCard(null)}
-            >
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
-                Personal Readiness
-              </p>
-              {personalReadinessScore !== null ? (
-                <>
-                  <p className={`text-2xl md:text-3xl font-semibold ${getBriColor(personalReadinessScore)}`}>
-                    {personalReadinessScore}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Scale: 0 - 100
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-2xl md:text-3xl font-semibold text-gray-400">
-                    --
-                  </p>
-                  <p className="text-xs text-[#B87333] mt-1">
-                    Complete assessment
-                  </p>
-                </>
-              )}
-            </div>
-          </Link>
+          <MetricCard
+            index={3}
+            isHovered={hoveredCard === 'personalReadiness'}
+            onHover={() => setHoveredCard('personalReadiness')}
+            onLeave={() => setHoveredCard(null)}
+            href="/dashboard/assessment/personal-readiness"
+            isPreviewMode={isPreviewMode}
+            className="h-full"
+          >
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+              Personal Readiness
+            </p>
+            {personalReadinessScore !== null ? (
+              <>
+                <p className={`text-2xl md:text-3xl font-semibold ${getBriColor(personalReadinessScore)}`}>
+                  {isClient ? (
+                    <AnimatedScore value={personalReadinessScore} delay={600} />
+                  ) : (
+                    personalReadinessScore
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Scale: 0 - 100
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-2xl md:text-3xl font-semibold text-gray-400">
+                  --
+                </p>
+                <p className="text-xs text-[#B87333] mt-1">
+                  Complete assessment
+                </p>
+              </>
+            )}
+          </MetricCard>
         </div>
       </div>
     </div>

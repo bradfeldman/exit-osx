@@ -1,6 +1,9 @@
+'use client'
+
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
+import { motion, type HTMLMotionProps } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 
@@ -9,7 +12,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
@@ -28,32 +31,84 @@ const buttonVariants = cva(
         "icon-sm": "size-8",
         "icon-lg": "size-10",
       },
+      animated: {
+        true: "",
+        false: "",
+      },
     },
     defaultVariants: {
       variant: "default",
       size: "default",
+      animated: true,
     },
   }
 )
+
+type ButtonBaseProps = React.ComponentProps<"button"> &
+  VariantProps<typeof buttonVariants> & {
+    asChild?: boolean
+  }
+
+// Motion-enabled button component
+const MotionButton = motion.button
 
 function Button({
   className,
   variant = "default",
   size = "default",
+  animated = true,
   asChild = false,
   ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
-  const Comp = asChild ? Slot : "button"
+}: ButtonBaseProps) {
+  // For asChild, we can't use motion directly
+  if (asChild) {
+    return (
+      <Slot
+        data-slot="button"
+        data-variant={variant}
+        data-size={size}
+        className={cn(buttonVariants({ variant, size, animated, className }))}
+        {...props}
+      />
+    )
+  }
 
+  // Animated button with Framer Motion
+  if (animated && variant !== 'ghost' && variant !== 'link') {
+    return (
+      <MotionButton
+        data-slot="button"
+        data-variant={variant}
+        data-size={size}
+        className={cn(buttonVariants({ variant, size, animated, className }))}
+        whileHover={{
+          scale: 1.02,
+          y: -2,
+          boxShadow: variant === 'default'
+            ? '0 4px 12px rgba(184, 115, 51, 0.25)'
+            : '0 4px 12px rgba(61, 61, 61, 0.15)',
+        }}
+        whileTap={{
+          scale: 0.98,
+          y: 0,
+        }}
+        transition={{
+          type: 'spring',
+          stiffness: 300,
+          damping: 20,
+        }}
+        {...(props as HTMLMotionProps<"button">)}
+      />
+    )
+  }
+
+  // Non-animated fallback
   return (
-    <Comp
+    <button
       data-slot="button"
       data-variant={variant}
       data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(buttonVariants({ variant, size, animated, className }))}
       {...props}
     />
   )
