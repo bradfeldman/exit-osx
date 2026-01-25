@@ -58,12 +58,16 @@ const ADMIN_ROUTE_PATTERNS = [
   '/api/admin',
 ]
 
-// SECURITY: Auth-related routes that need strict rate limiting
-const AUTH_RATE_LIMITED_ROUTES = [
+// SECURITY: Auth API routes that need strict rate limiting (POST only)
+const AUTH_API_RATE_LIMITED_ROUTES = [
   '/api/auth',
+  '/api/user/sync',
+]
+
+// SECURITY: Auth page routes - only rate limit POST (actual login/signup attempts)
+const AUTH_PAGE_ROUTES = [
   '/login',
   '/signup',
-  '/api/user/sync',
 ]
 
 // SECURITY: Sensitive routes with stricter rate limits
@@ -84,11 +88,14 @@ export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || ''
 
   // SECURITY: Apply rate limiting before any other processing
-  const isAuthRoute = AUTH_RATE_LIMITED_ROUTES.some(route => pathname.startsWith(route))
+  const isAuthApiRoute = AUTH_API_RATE_LIMITED_ROUTES.some(route => pathname.startsWith(route))
+  const isAuthPageRoute = AUTH_PAGE_ROUTES.some(route => pathname.startsWith(route))
   const isSensitiveRoute = SENSITIVE_RATE_LIMITED_ROUTES.some(route => pathname.startsWith(route))
   const isApiRoute = pathname.startsWith('/api/')
+  const isPostRequest = request.method === 'POST'
 
-  if (isAuthRoute) {
+  // Only rate limit auth API routes and POST requests to auth pages (actual login attempts)
+  if (isAuthApiRoute || (isAuthPageRoute && isPostRequest)) {
     const rateLimitResult = await applyRateLimit(request, RATE_LIMIT_CONFIGS.AUTH)
     if (!rateLimitResult.success) {
       return createRateLimitResponse(rateLimitResult)
