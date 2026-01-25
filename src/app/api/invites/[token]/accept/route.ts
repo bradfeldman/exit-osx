@@ -175,8 +175,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
-  // SECURITY: Apply strict rate limiting to prevent invite token enumeration
-  const rateLimitResult = await applyRateLimit(request, RATE_LIMIT_CONFIGS.TOKEN)
+  // SECURITY: Apply rate limiting to prevent invite token enumeration
+  // Using SENSITIVE config (10/min) instead of TOKEN (3/min) to allow reasonable page refreshes
+  const rateLimitResult = await applyRateLimit(request, RATE_LIMIT_CONFIGS.SENSITIVE)
   if (!rateLimitResult.success) {
     return createRateLimitResponse(rateLimitResult)
   }

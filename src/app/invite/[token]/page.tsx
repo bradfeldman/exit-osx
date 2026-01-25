@@ -56,11 +56,9 @@ export default function InviteAcceptPage() {
 
         if (!response.ok) {
           const data = await response.json()
-          // Check if it's expired or invalid
-          if (response.status === 404) {
-            // Could be expired, accepted, or invalid - API returns same error for security
-            setInviteStatus('invalid')
-          }
+          // Could be expired, accepted, or invalid - API returns same error for security
+          setInviteStatus('invalid')
+          setUserState('not_logged_in') // Set user state so we exit loading
           setError(data.error || 'Invalid invitation')
           return
         }
@@ -84,6 +82,7 @@ export default function InviteAcceptPage() {
         }
       } catch {
         setInviteStatus('invalid')
+        setUserState('not_logged_in') // Set user state so we exit loading
         setError('Failed to load invitation')
       }
     }
