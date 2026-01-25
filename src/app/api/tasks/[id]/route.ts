@@ -1,35 +1,40 @@
-import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { generateNextLevelTasks, renormalizeTaskValues } from '@/lib/playbook/generate-tasks'
 import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snapshot'
 import { checkAssessmentTriggers } from '@/lib/assessment/assessment-triggers'
+import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
   const { id } = await params
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   try {
+    // First fetch the task to get its companyId for permission check
+    const taskForAuth = await prisma.task.findUnique({
+      where: { id },
+      select: { companyId: true },
+    })
+
+    if (!taskForAuth) {
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 })
+    }
+
+    // Check permission with company context
+    const result = await checkPermission('TASK_VIEW', taskForAuth.companyId)
+    if (isAuthError(result)) return result.error
+
+    // Now fetch full task data
     const task = await prisma.task.findUnique({
       where: { id },
       include: {
         company: {
-          include: {
-            organization: {
-              include: {
-                users: {
-                  where: { user: { authId: user.id } },
-                },
-              },
-            },
+          select: {
+            id: true,
+            name: true,
+            organizationId: true,
           },
         },
         assignments: {
@@ -81,14 +86,6 @@ export async function GET(
       },
     })
 
-    if (!task) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 })
-    }
-
-    if (task.company.organization.users.length === 0) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
-    }
-
     return NextResponse.json({ task })
   } catch (error) {
     console.error('Error fetching task:', error)
@@ -103,31 +100,20 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
   const { id } = await params
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
 
   try {
     const body = await request.json()
     const { status, deferredUntil, deferralReason, blockedReason, dueDate, primaryAssigneeId, assigneeIds, completionNotes } = body
 
-    // Verify user has access
+    // Fetch task to get companyId for permission check
     const existingTask = await prisma.task.findUnique({
       where: { id },
       include: {
         company: {
-          include: {
-            organization: {
-              include: {
-                users: {
-                  where: { user: { authId: user.id } },
-                },
-              },
-            },
+          select: {
+            id: true,
+            organizationId: true,
           },
         },
       },
@@ -137,8 +123,14 @@ export async function PATCH(
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }
 
-    if (existingTask.company.organization.users.length === 0) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    // Check TASK_UPDATE permission - requires at least MEMBER role
+    const result = await checkPermission('TASK_UPDATE', existingTask.companyId)
+    if (isAuthError(result)) return result.error
+
+    // If assigning tasks, check TASK_ASSIGN permission (requires TEAM_LEADER+)
+    if (primaryAssigneeId !== undefined || assigneeIds !== undefined) {
+      const assignResult = await checkPermission('TASK_ASSIGN', existingTask.companyId)
+      if (isAuthError(assignResult)) return assignResult.error
     }
 
     // Build update data
@@ -359,30 +351,15 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
   const { id } = await params
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   try {
-    // Verify user has access
+    // Fetch task to get companyId for permission check
     const existingTask = await prisma.task.findUnique({
       where: { id },
-      include: {
-        company: {
-          include: {
-            organization: {
-              include: {
-                users: {
-                  where: { user: { authId: user.id }, role: 'ADMIN' },
-                },
-              },
-            },
-          },
-        },
+      select: {
+        id: true,
+        companyId: true,
       },
     })
 
@@ -390,9 +367,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }
 
-    if (existingTask.company.organization.users.length === 0) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
-    }
+    // DELETE requires ADMIN or higher (ORG_MANAGE_MEMBERS permission)
+    const result = await checkPermission('ORG_MANAGE_MEMBERS', existingTask.companyId)
+    if (isAuthError(result)) return result.error
 
     const companyId = existingTask.companyId
 

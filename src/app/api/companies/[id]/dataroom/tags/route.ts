@@ -1,0 +1,193 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { prisma } from '@/lib/prisma'
+
+/**
+ * GET /api/companies/[id]/dataroom/tags
+ * Get all tags for the company
+ */
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id: companyId } = await params
+  const result = await checkPermission('COMPANY_VIEW', companyId)
+  if (isAuthError(result)) return result.error
+
+  try {
+    const tags = await prisma.dataRoomTag.findMany({
+      where: { companyId },
+      include: {
+        documents: {
+          select: { id: true },
+        },
+      },
+      orderBy: { name: 'asc' },
+    })
+
+    return NextResponse.json({
+      tags: tags.map((t) => ({
+        id: t.id,
+        name: t.name,
+        color: t.color,
+        documentCount: t.documents.length,
+      })),
+    })
+  } catch (error) {
+    console.error('Error fetching tags:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+/**
+ * POST /api/companies/[id]/dataroom/tags
+ * Create a new tag
+ */
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id: companyId } = await params
+  const result = await checkPermission('COMPANY_UPDATE', companyId)
+  if (isAuthError(result)) return result.error
+
+  try {
+    const body = await request.json()
+    const { name, color = '#6B7280' } = body
+
+    if (!name || name.trim().length === 0) {
+      return NextResponse.json({ error: 'Tag name is required' }, { status: 400 })
+    }
+
+    // Check for duplicate (companyId + name is unique)
+    const existing = await prisma.dataRoomTag.findUnique({
+      where: {
+        companyId_name: {
+          companyId,
+          name: name.trim(),
+        },
+      },
+    })
+
+    if (existing) {
+      return NextResponse.json({ error: 'Tag already exists' }, { status: 400 })
+    }
+
+    const tag = await prisma.dataRoomTag.create({
+      data: {
+        companyId,
+        name: name.trim(),
+        color,
+      },
+    })
+
+    return NextResponse.json({ tag }, { status: 201 })
+  } catch (error) {
+    console.error('Error creating tag:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+/**
+ * PUT /api/companies/[id]/dataroom/tags
+ * Add or remove tag from document
+ */
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id: companyId } = await params
+  const result = await checkPermission('COMPANY_UPDATE', companyId)
+  if (isAuthError(result)) return result.error
+
+  try {
+    const body = await request.json()
+    const { documentId, tagId, action } = body // action: 'add' | 'remove'
+
+    if (!documentId || !tagId || !action) {
+      return NextResponse.json({ error: 'Document ID, tag ID, and action are required' }, { status: 400 })
+    }
+
+    // Verify document belongs to company
+    const document = await prisma.dataRoomDocument.findUnique({
+      where: { id: documentId },
+    })
+
+    if (!document || document.companyId !== companyId) {
+      return NextResponse.json({ error: 'Document not found' }, { status: 404 })
+    }
+
+    // Verify tag belongs to company
+    const tag = await prisma.dataRoomTag.findUnique({ where: { id: tagId } })
+    if (!tag || tag.companyId !== companyId) {
+      return NextResponse.json({ error: 'Tag not found' }, { status: 404 })
+    }
+
+    if (action === 'add') {
+      await prisma.dataRoomDocumentTag.upsert({
+        where: {
+          documentId_tagId: { documentId, tagId },
+        },
+        create: { documentId, tagId },
+        update: {},
+      })
+    } else if (action === 'remove') {
+      await prisma.dataRoomDocumentTag.deleteMany({
+        where: { documentId, tagId },
+      })
+    } else {
+      return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+    }
+
+    // Return updated document tags
+    const updatedTags = await prisma.dataRoomDocumentTag.findMany({
+      where: { documentId },
+      include: { tag: true },
+    })
+
+    return NextResponse.json({
+      tags: updatedTags.map((t) => t.tag),
+    })
+  } catch (error) {
+    console.error('Error updating document tags:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+/**
+ * DELETE /api/companies/[id]/dataroom/tags
+ * Delete a tag
+ */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id: companyId } = await params
+  const result = await checkPermission('COMPANY_UPDATE', companyId)
+  if (isAuthError(result)) return result.error
+
+  try {
+    const { searchParams } = new URL(request.url)
+    const tagId = searchParams.get('tagId')
+
+    if (!tagId) {
+      return NextResponse.json({ error: 'Tag ID is required' }, { status: 400 })
+    }
+
+    const tag = await prisma.dataRoomTag.findUnique({ where: { id: tagId } })
+    if (!tag || tag.companyId !== companyId) {
+      return NextResponse.json({ error: 'Tag not found' }, { status: 404 })
+    }
+
+    // Delete tag (cascade deletes document associations)
+    await prisma.$transaction([
+      prisma.dataRoomDocumentTag.deleteMany({ where: { tagId } }),
+      prisma.dataRoomTag.delete({ where: { id: tagId } }),
+    ])
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Error deleting tag:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}

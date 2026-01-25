@@ -6,6 +6,7 @@ import {
   getAuthorizationUrl,
   syncQuickBooksData,
 } from '@/lib/integrations/quickbooks'
+import { createSignedOAuthState } from '@/lib/security/oauth-state'
 
 // GET - Get QuickBooks integration status for a company
 export async function GET(request: NextRequest) {
@@ -109,8 +110,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'QuickBooks not configured' }, { status: 400 })
       }
 
-      // Create state with company ID for callback
-      const state = Buffer.from(JSON.stringify({ companyId })).toString('base64')
+      // SECURITY: Create HMAC-signed state to prevent tampering
+      // This prevents attackers from modifying companyId to link QuickBooks to unauthorized companies
+      const state = createSignedOAuthState({ companyId })
       const authUrl = getAuthorizationUrl(state)
 
       return NextResponse.json({ authUrl })

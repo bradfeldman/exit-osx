@@ -23,6 +23,7 @@ const assessmentLinks = [
 
 const financialsLinks = [
   { name: 'Business Financials', href: '/dashboard/financials', icon: FinancialsIcon },
+  { name: 'DCF Valuation', href: '/dashboard/valuation', icon: ChartBarIcon },
   { name: 'Personal Financial Statement', href: '/dashboard/financials/personal', icon: WalletIcon },
   { name: 'Retirement Calculator', href: '/dashboard/financials/retirement', icon: CalculatorIcon },
 ]
@@ -36,7 +37,7 @@ export function Sidebar() {
   const router = useRouter()
   const { companies, selectedCompanyId, setSelectedCompanyId, isLoading } = useCompany()
   const { isSuperAdmin } = useUserRole()
-  const { hasInitialAssessment, hasPendingAssessment, pendingAssessmentType } = useAssessmentStatus()
+  const { hasInitialAssessment, hasPendingAssessment } = useAssessmentStatus()
   const [developerExpanded, setDeveloperExpanded] = useState(false)
   const [globalExpanded, setGlobalExpanded] = useState(false)
 
@@ -159,10 +160,10 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex flex-1 flex-col">
-          {/* INTELLIGENCE Section */}
+          {/* SCORECARD Section */}
           <div className="mb-4">
             <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
-              Intelligence
+              Scorecard
             </p>
             <ul role="list" className="mt-1 space-y-1">
               {/* Scorecard */}
@@ -182,7 +183,7 @@ export function Sidebar() {
                       pathname === '/dashboard' ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
                     )}
                   />
-                  Scorecard
+                  Exit OSx Scorecard
                 </Link>
               </li>
 
@@ -237,6 +238,27 @@ export function Sidebar() {
                   </li>
                 )
               })}
+
+              {/* Action Plan */}
+              <li>
+                <Link
+                  href="/dashboard/playbook"
+                  className={cn(
+                    'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
+                    pathname.startsWith('/dashboard/playbook')
+                      ? 'bg-sidebar-accent text-sidebar-primary'
+                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                  )}
+                >
+                  <ListIcon
+                    className={cn(
+                      'h-5 w-5 shrink-0',
+                      pathname.startsWith('/dashboard/playbook') ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
+                    )}
+                  />
+                  Action Plan
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -280,7 +302,7 @@ export function Sidebar() {
           {/* LOAN CENTER Section */}
           <div className="mb-4 pt-4 border-t border-sidebar-border/50">
             <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
-              Loan Center
+              Capital
             </p>
             <ul role="list" className="mt-1 space-y-1">
               {loanCenterLinks.map((link) => {
@@ -311,33 +333,12 @@ export function Sidebar() {
             </ul>
           </div>
 
-          {/* VALUE BUILD Section */}
+          {/* DEAL ROOM Section */}
           <div className="mb-4 pt-4 border-t border-sidebar-border/50">
             <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
-              Value Build
+              Deal Room
             </p>
             <ul role="list" className="mt-1 space-y-1">
-              {/* Action Plan */}
-              <li>
-                <Link
-                  href="/dashboard/playbook"
-                  className={cn(
-                    'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                    pathname.startsWith('/dashboard/playbook')
-                      ? 'bg-sidebar-accent text-sidebar-primary'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                  )}
-                >
-                  <ListIcon
-                    className={cn(
-                      'h-5 w-5 shrink-0',
-                      pathname.startsWith('/dashboard/playbook') ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                    )}
-                  />
-                  Action Plan
-                </Link>
-              </li>
-
               {/* Data Room */}
               <li>
                 <Link
@@ -356,6 +357,27 @@ export function Sidebar() {
                     )}
                   />
                   Data Room
+                </Link>
+              </li>
+
+              {/* Deal Tracker */}
+              <li>
+                <Link
+                  href="/dashboard/deal-tracker"
+                  className={cn(
+                    'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
+                    pathname.startsWith('/dashboard/deal-tracker')
+                      ? 'bg-sidebar-accent text-sidebar-primary'
+                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                  )}
+                >
+                  <TargetIcon
+                    className={cn(
+                      'h-5 w-5 shrink-0',
+                      pathname.startsWith('/dashboard/deal-tracker') ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
+                    )}
+                  />
+                  Deal Tracker
                 </Link>
               </li>
             </ul>
@@ -384,7 +406,7 @@ export function Sidebar() {
                       ? 'text-sidebar-primary'
                       : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
                   )} />
-                  Team Settings
+                  Exit Team
                 </Link>
               </li>
 
@@ -405,7 +427,7 @@ export function Sidebar() {
                       ? 'text-sidebar-primary'
                       : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
                   )} />
-                  Company Settings
+                  Settings
                 </Link>
               </li>
 
@@ -588,7 +610,7 @@ function DollarIcon({ className }: { className?: string }) {
   )
 }
 
-function ClipboardIcon({ className }: { className?: string }) {
+function _ClipboardIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z" />
@@ -734,7 +756,7 @@ function ShieldIcon({ className }: { className?: string }) {
   )
 }
 
-function UserIcon({ className }: { className?: string }) {
+function _UserIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
@@ -754,6 +776,23 @@ function BankIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" />
+    </svg>
+  )
+}
+
+function ChartBarIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+    </svg>
+  )
+}
+
+function TargetIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
     </svg>
   )
 }

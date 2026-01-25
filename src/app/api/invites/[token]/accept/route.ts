@@ -1,6 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import {
+  applyRateLimit,
+  RATE_LIMIT_CONFIGS,
+  createRateLimitResponse,
+} from '@/lib/security'
 
 // POST - Accept an invite
 export async function POST(
@@ -23,7 +28,8 @@ export async function POST(
     const invite = await prisma.organizationInvite.findUnique({
       where: { token },
       include: {
-        organization: { select: { id: true, name: true } }
+        organization: { select: { id: true, name: true } },
+        roleTemplate: { select: { id: true, slug: true, name: true } }
       }
     })
 
@@ -101,20 +107,53 @@ export async function POST(
     }
 
     // Add user to organization and mark invite as accepted
-    await prisma.$transaction([
-      prisma.organizationUser.create({
-        data: {
-          organizationId: invite.organizationId,
-          userId: dbUser.id,
-          role: invite.role,
-          functionalCategories: invite.functionalCategories,
-        }
-      }),
-      prisma.organizationInvite.update({
-        where: { id: invite.id },
-        data: { acceptedAt: new Date() }
+    // First create the organization user
+    const orgUser = await prisma.organizationUser.create({
+      data: {
+        organizationId: invite.organizationId,
+        userId: dbUser.id,
+        role: invite.role,
+        functionalCategories: invite.functionalCategories,
+        roleTemplateId: invite.roleTemplateId,
+        isExternalAdvisor: invite.isExternalAdvisor,
+      }
+    })
+
+    // Apply custom permissions if any were configured in the invite
+    if (invite.customPermissions && Array.isArray(invite.customPermissions)) {
+      const customPerms = invite.customPermissions as Array<{ permission: string; granted: boolean }>
+      if (customPerms.length > 0) {
+        await prisma.memberPermission.createMany({
+          data: customPerms.map((p) => ({
+            organizationUserId: orgUser.id,
+            permission: p.permission,
+            granted: p.granted,
+          })),
+        })
+      }
+    }
+
+    // Mark invite as accepted
+    await prisma.organizationInvite.update({
+      where: { id: invite.id },
+      data: { acceptedAt: new Date() }
+    })
+
+    // Create advisor profile if this is an external advisor
+    if (invite.isExternalAdvisor) {
+      // Check if advisor profile already exists
+      const existingProfile = await prisma.advisorProfile.findUnique({
+        where: { userId: dbUser.id }
       })
-    ])
+      if (!existingProfile) {
+        await prisma.advisorProfile.create({
+          data: {
+            userId: dbUser.id,
+            specialty: invite.roleTemplate?.name || null,
+          }
+        })
+      }
+    }
 
     return NextResponse.json({
       success: true,
@@ -131,10 +170,17 @@ export async function POST(
 }
 
 // GET - Get invite details (for display before accepting)
+// SECURITY: Rate limited to prevent token enumeration
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
+  // SECURITY: Apply strict rate limiting to prevent invite token enumeration
+  const rateLimitResult = await applyRateLimit(request, RATE_LIMIT_CONFIGS.TOKEN)
+  if (!rateLimitResult.success) {
+    return createRateLimitResponse(rateLimitResult)
+  }
+
   const { token } = await params
 
   try {
@@ -142,33 +188,45 @@ export async function GET(
       where: { token },
       include: {
         organization: { select: { name: true } },
-        inviter: { select: { name: true, email: true } }
+        inviter: { select: { name: true, email: true } },
+        roleTemplate: { select: { name: true, icon: true } }
       }
     })
 
+    // SECURITY: Return generic error to prevent token enumeration
+    // Don't reveal whether token exists, is expired, or was already used
     if (!invite) {
       return NextResponse.json(
-        { error: 'Invite not found' },
+        { error: 'Invalid or expired invitation' },
+        { status: 404 }
+      )
+    }
+
+    // SECURITY: Check expiration and acceptance before revealing details
+    if (new Date() > invite.expiresAt || invite.acceptedAt) {
+      return NextResponse.json(
+        { error: 'Invalid or expired invitation' },
         { status: 404 }
       )
     }
 
     return NextResponse.json({
       invite: {
-        email: invite.email,
+        // SECURITY: Only reveal minimal info needed for the acceptance flow
+        // Don't expose full email to prevent info leakage
+        emailHint: invite.email.replace(/(.{2})(.*)(@.*)/, '$1***$3'),
         role: invite.role,
         organizationName: invite.organization.name,
-        inviterName: invite.inviter.name || invite.inviter.email,
-        expiresAt: invite.expiresAt,
-        isExpired: new Date() > invite.expiresAt,
-        isAccepted: !!invite.acceptedAt,
+        inviterName: invite.inviter.name || 'A team member',
+        roleTemplate: invite.roleTemplate ? { name: invite.roleTemplate.name, icon: invite.roleTemplate.icon } : null,
+        isExternalAdvisor: invite.isExternalAdvisor,
       }
     })
   } catch (error) {
     console.error('Error fetching invite:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch invite' },
-      { status: 500 }
+      { error: 'Invalid or expired invitation' },
+      { status: 404 }
     )
   }
 }

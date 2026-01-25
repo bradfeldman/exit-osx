@@ -314,7 +314,7 @@ export async function POST(
           },
         })
         successfulCount++
-      } catch (error) {
+      } catch (_error) {
         createErrors.push({
           row: validProspects.indexOf(prospect) + 2,
           field: 'database',

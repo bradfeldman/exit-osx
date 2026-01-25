@@ -11,12 +11,26 @@ interface EditableCellProps {
   isDirty: boolean
   disabled?: boolean
   onChange: (periodId: string, field: string, value: number) => void
+  // FIN-001 FIX: Option to show full precision values
+  showFullPrecision?: boolean
 }
 
-function formatDisplayValue(value: number | null, format: 'currency' | 'percent'): string {
+// FIN-001 FIX: Support both abbreviated and full precision display
+function formatDisplayValue(value: number | null, format: 'currency' | 'percent', fullPrecision: boolean = false): string {
   if (value === null || value === undefined) return '-'
 
   if (format === 'currency') {
+    // FIN-001 FIX: Full precision mode shows exact values with thousand separators
+    if (fullPrecision) {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(value)
+    }
+
+    // Abbreviated display for summary views
     const absValue = Math.abs(value)
     if (absValue >= 1_000_000) {
       return `${value < 0 ? '-' : ''}$${(absValue / 1_000_000).toFixed(1)}M`
@@ -51,6 +65,8 @@ export function EditableCell({
   isDirty,
   disabled = false,
   onChange,
+  // FIN-001 FIX: Default to full precision for better data entry experience
+  showFullPrecision = true,
 }: EditableCellProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [inputValue, setInputValue] = useState('')
@@ -99,7 +115,7 @@ export function EditableCell({
   if (disabled) {
     return (
       <span className="text-gray-400">
-        {formatDisplayValue(value, format)}
+        {formatDisplayValue(value, format, showFullPrecision)}
       </span>
     )
   }
@@ -137,16 +153,32 @@ export function EditableCell({
     )
   }
 
+  // A11Y-001 FIX: Add keyboard accessibility for activating edit mode
+  const handleActivateKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      handleClick()
+    }
+  }
+
   return (
     <span
       onClick={handleClick}
+      onKeyDown={handleActivateKeyDown}
+      // A11Y-001 FIX: Add proper accessibility attributes
+      role="button"
+      tabIndex={0}
+      aria-label={`Edit ${field}: ${formatDisplayValue(value, format, true)}`}
       className={cn(
         'block px-2 py-1 rounded cursor-pointer transition-colors',
         'hover:bg-primary/10',
+        'focus:outline-none focus:ring-2 focus:ring-primary/50',
         isDirty && 'bg-amber-100 border border-amber-300'
       )}
+      // FIN-001 FIX: Show full value on hover for abbreviated display
+      title={showFullPrecision ? undefined : formatDisplayValue(value, format, true)}
     >
-      {formatDisplayValue(value, format)}
+      {formatDisplayValue(value, format, showFullPrecision)}
     </span>
   )
 }

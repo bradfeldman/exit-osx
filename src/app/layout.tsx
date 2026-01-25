@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { CookieConsent } from "@/components/gdpr/CookieConsent";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -16,18 +17,20 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Exit OSx - Business Exit Readiness Platform",
+    default: "Exit OSx - Build a Business Buyers Want to Own",
     template: "%s | Exit OSx",
   },
   description:
-    "Maximize your business value and exit readiness. Get your Buyer Readiness Index, enterprise valuation, and actionable playbook to close your value gap.",
+    "Get your real-time business valuation, Buyer Readiness Score, and personalized playbook to maximize your exit outcome. Start free today.",
   keywords: [
-    "business exit",
+    "business exit planning",
     "M&A readiness",
-    "business valuation",
-    "buyer readiness",
-    "exit planning",
-    "business sale",
+    "business valuation calculator",
+    "buyer readiness score",
+    "exit planning software",
+    "sell my business",
+    "business sale preparation",
+    "company valuation",
   ],
   authors: [{ name: "Exit OSx" }],
   icons: {
@@ -43,9 +46,9 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     siteName: "Exit OSx",
-    title: "Exit OSx - Business Exit Readiness Platform",
+    title: "Exit OSx - Build a Business Buyers Want to Own",
     description:
-      "Maximize your business value and exit readiness with data-driven insights.",
+      "Real-time valuation, Buyer Readiness Score, and actionable playbook to maximize your exit.",
   },
 };
 
@@ -59,6 +62,7 @@ export default function RootLayout({
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         {children}
         <CookieConsent />
+        <Toaster />
       </body>
     </html>
   );

@@ -24,6 +24,14 @@ export async function GET() {
                 name: true,
                 avatarUrl: true,
               }
+            },
+            roleTemplate: {
+              select: {
+                id: true,
+                slug: true,
+                name: true,
+                icon: true,
+              }
             }
           }
         },
@@ -45,6 +53,15 @@ export async function GET() {
             functionalCategories: true,
             createdAt: true,
             expiresAt: true,
+            isExternalAdvisor: true,
+            roleTemplate: {
+              select: {
+                id: true,
+                slug: true,
+                name: true,
+                icon: true,
+              }
+            }
           }
         }
       }

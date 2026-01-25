@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { GDPRSettings } from '@/components/settings/GDPRSettings'
+import { TwoFactorSettings } from '@/components/security/two-factor-settings'
+import { SessionManager } from '@/components/security/session-manager'
 
 export default function UserSettingsPage() {
   const [user, setUser] = useState<{ email: string; name: string | null } | null>(null)
@@ -134,6 +136,26 @@ export default function UserSettingsPage() {
           </Button>
         </CardContent>
       </Card>
+
+      {/* Security Settings */}
+      <div className="pt-6 border-t">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Security</h2>
+        <div className="space-y-6">
+          <TwoFactorSettings />
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Active Sessions</CardTitle>
+              <CardDescription>
+                Manage devices where you&apos;re signed in
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SessionManager />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {/* GDPR Settings */}
       <GDPRSettings />

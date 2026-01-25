@@ -69,7 +69,7 @@ export async function POST(
     }
 
     // Get the company's organization to check user count
-    const company = await prisma.company.findUnique({
+    const _company = await prisma.company.findUnique({
       where: { id: companyId },
       select: { organizationId: true },
     })

@@ -1,4 +1,4 @@
-export type PlanTier = 'starter' | 'professional' | 'enterprise'
+export type PlanTier = 'foundation' | 'growth' | 'exit-ready'
 
 export interface PlanFeature {
   name: string
@@ -19,12 +19,12 @@ export interface PricingPlan {
 
 export const PRICING_PLANS: PricingPlan[] = [
   {
-    id: 'starter',
-    name: 'Starter',
-    description: 'Get started with basic exit planning insights',
+    id: 'foundation',
+    name: 'Foundation',
+    description: 'Start your exit journey with essential insights',
     monthlyPrice: 0,
     annualPrice: 0,
-    cta: 'Start Free',
+    cta: 'Get Started Free',
     features: [
       { name: 'Initial Assessment', included: true },
       { name: 'Basic Valuation Estimate', included: true },
@@ -33,20 +33,25 @@ export const PRICING_PLANS: PricingPlan[] = [
       { name: 'Risk Assessment', included: false },
       { name: 'Personal Readiness Assessment', included: false },
       { name: 'Value Improvement Playbook', included: false },
+      { name: 'Personal Financial Statements', included: false },
+      { name: 'Retirement Calculator', included: false },
+      { name: 'Business Loans', included: false },
       { name: 'Data Room', included: false },
       { name: 'Financial Analysis Tools', included: false },
+      { name: 'QuickBooks Integration', included: false },
       { name: 'DCF Analysis', included: false },
+      { name: 'Deal Tracker', included: false },
       { name: 'Team Members', included: false },
       { name: 'Multiple Companies', included: false },
     ],
   },
   {
-    id: 'professional',
-    name: 'Professional',
-    description: 'Complete exit planning toolkit for business owners',
-    monthlyPrice: 149,
-    annualPrice: 119, // ~20% discount
-    cta: 'Start 14-Day Trial',
+    id: 'growth',
+    name: 'Growth',
+    description: 'Comprehensive tools to actively increase your business value',
+    monthlyPrice: 179,
+    annualPrice: 149,
+    cta: 'Start 14-Day Free Trial',
     highlighted: true,
     features: [
       { name: 'Initial Assessment', included: true },
@@ -56,20 +61,25 @@ export const PRICING_PLANS: PricingPlan[] = [
       { name: 'Risk Assessment', included: true },
       { name: 'Personal Readiness Assessment', included: true },
       { name: 'Value Improvement Playbook', included: true },
+      { name: 'Personal Financial Statements', included: true },
+      { name: 'Retirement Calculator', included: true },
+      { name: 'Business Loans', included: true, limit: 'Partner network access' },
       { name: 'Data Room', included: false },
       { name: 'Financial Analysis Tools', included: true, limit: 'P&L, Balance Sheet' },
+      { name: 'QuickBooks Integration', included: true },
       { name: 'DCF Analysis', included: false },
+      { name: 'Deal Tracker', included: false },
       { name: 'Team Members', included: true, limit: 'Up to 3' },
       { name: 'Multiple Companies', included: false },
     ],
   },
   {
-    id: 'enterprise',
-    name: 'Enterprise',
-    description: 'Advanced tools for M&A-ready businesses',
-    monthlyPrice: 399,
-    annualPrice: 319, // ~20% discount
-    cta: 'Start 14-Day Trial',
+    id: 'exit-ready',
+    name: 'Exit-Ready',
+    description: 'Full suite for M&A-ready businesses preparing to exit',
+    monthlyPrice: 449,
+    annualPrice: 379,
+    cta: 'Start 14-Day Free Trial',
     features: [
       { name: 'Initial Assessment', included: true },
       { name: 'Basic Valuation Estimate', included: true },
@@ -78,9 +88,14 @@ export const PRICING_PLANS: PricingPlan[] = [
       { name: 'Risk Assessment', included: true },
       { name: 'Personal Readiness Assessment', included: true },
       { name: 'Value Improvement Playbook', included: true },
+      { name: 'Personal Financial Statements', included: true },
+      { name: 'Retirement Calculator', included: true },
+      { name: 'Business Loans', included: true, limit: 'Priority access + support' },
       { name: 'Data Room', included: true },
       { name: 'Financial Analysis Tools', included: true, limit: 'Full suite + Add-backs' },
+      { name: 'QuickBooks Integration', included: true },
       { name: 'DCF Analysis', included: true },
+      { name: 'Deal Tracker', included: true },
       { name: 'Team Members', included: true, limit: 'Unlimited' },
       { name: 'Multiple Companies', included: true },
     ],

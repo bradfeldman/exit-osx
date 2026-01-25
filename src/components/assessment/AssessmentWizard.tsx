@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import confetti from 'canvas-confetti'
 import { Button } from '@/components/ui/button'
 import { QuestionCard } from './QuestionCard'
+// TERM-001 FIX: Use shared constants for consistent terminology
+import { BRI_CATEGORY_LABELS, BRI_CATEGORY_ORDER } from '@/lib/constants/bri-categories'
 
 interface Question {
   id: string
@@ -33,23 +35,9 @@ interface AssessmentWizardProps {
   title?: string
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  FINANCIAL: 'Financial Health',
-  TRANSFERABILITY: 'Transferability',
-  OPERATIONAL: 'Operations',
-  MARKET: 'Market Position',
-  LEGAL_TAX: 'Legal & Tax',
-  PERSONAL: 'Personal Readiness',
-}
-
-const CATEGORY_ORDER = [
-  'FINANCIAL',
-  'TRANSFERABILITY',
-  'OPERATIONAL',
-  'MARKET',
-  'LEGAL_TAX',
-  'PERSONAL',
-]
+// TERM-001 FIX: Using shared constants from @/lib/constants/bri-categories
+const CATEGORY_LABELS: Record<string, string> = BRI_CATEGORY_LABELS
+const CATEGORY_ORDER: string[] = [...BRI_CATEGORY_ORDER]
 
 export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readiness Assessment' }: AssessmentWizardProps) {
   const router = useRouter()
@@ -63,6 +51,10 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [showCelebration, setShowCelebration] = useState(false)
   const [celebrationData, setCelebrationData] = useState<{ briScore: number; currentValue: number } | null>(null)
+  // UX-001 FIX: Add pending selection state for confirmation before auto-advance
+  const [pendingSelection, setPendingSelection] = useState<{ optionId: string; optionText: string } | null>(null)
+  // NAV-001 FIX: Track skipped questions warning state
+  const [showSkippedWarning, setShowSkippedWarning] = useState(false)
 
   // Group questions by category
   const questionsByCategory = questions.reduce((acc, q) => {
@@ -152,8 +144,15 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId])
 
-  const handleAnswer = async (optionId: string) => {
-    if (!assessmentId || !currentQuestion) return
+  // UX-001 FIX: Two-step answer flow - select first, then confirm
+  const handleAnswerSelect = (optionId: string) => {
+    if (!currentQuestion) return
+    const option = currentQuestion.options.find(o => o.id === optionId)
+    setPendingSelection({ optionId, optionText: option?.optionText || '' })
+  }
+
+  const handleAnswerConfirm = async (confidenceLevel: string = 'CONFIDENT') => {
+    if (!assessmentId || !currentQuestion || !pendingSelection) return
 
     setSaving(true)
     try {
@@ -162,8 +161,8 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           questionId: currentQuestion.id,
-          selectedOptionId: optionId,
-          confidenceLevel: 'CONFIDENT',
+          selectedOptionId: pendingSelection.optionId,
+          confidenceLevel,
         }),
       })
 
@@ -173,17 +172,18 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
       const newResponses = new Map(responses)
       newResponses.set(currentQuestion.id, {
         questionId: currentQuestion.id,
-        selectedOptionId: optionId,
-        confidenceLevel: 'CONFIDENT',
+        selectedOptionId: pendingSelection.optionId,
+        confidenceLevel,
       })
       setResponses(newResponses)
+      setPendingSelection(null)
 
-      // Auto-advance to next question after short delay
+      // Auto-advance to next question after confirmation
       setTimeout(() => {
         if (currentQuestionIndex < orderedQuestions.length - 1) {
           setCurrentQuestionIndex(currentQuestionIndex + 1)
         }
-      }, 300)
+      }, 400)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save')
     } finally {
@@ -191,8 +191,32 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
     }
   }
 
-  const handleComplete = async () => {
+  const handleAnswerCancel = () => {
+    setPendingSelection(null)
+  }
+
+  // Legacy handler for backward compatibility
+  const handleAnswer = async (optionId: string) => {
+    handleAnswerSelect(optionId)
+  }
+
+  // NAV-001 FIX: Check for skipped questions before completing
+  const getSkippedQuestions = () => {
+    return orderedQuestions.filter(q => !responses.has(q.id))
+  }
+
+  const handleCompleteWithWarningCheck = () => {
+    const skipped = getSkippedQuestions()
+    if (skipped.length > 0) {
+      setShowSkippedWarning(true)
+    } else {
+      handleCompleteConfirmed()
+    }
+  }
+
+  const handleCompleteConfirmed = async () => {
     if (!assessmentId) return
+    setShowSkippedWarning(false)
 
     setSaving(true)
     setError(null)
@@ -276,7 +300,8 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
 
   // Celebration screen after completing assessment
   if (showCelebration && celebrationData) {
-    const _formatCurrency = (value: number) =>
+    // UI-001 FIX: Use formatCurrency to display celebration data
+    const formatCurrency = (value: number) =>
       new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value)
 
     return (
@@ -294,9 +319,27 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
         <h1 className="text-3xl font-bold text-foreground mb-2">
           Assessment Complete!
         </h1>
-        <p className="text-muted-foreground mb-8 max-w-md">
+        <p className="text-muted-foreground mb-4 max-w-md">
           Your Buyer Readiness Index has been calculated
         </p>
+
+        {/* UI-001 FIX: Display celebration metrics */}
+        {(celebrationData.briScore > 0 || celebrationData.currentValue > 0) && (
+          <div className="flex gap-6 mb-8">
+            {celebrationData.briScore > 0 && (
+              <div className="text-center">
+                <p className="text-3xl font-bold text-primary">{Math.round(celebrationData.briScore * 100)}%</p>
+                <p className="text-xs text-muted-foreground">BRI Score</p>
+              </div>
+            )}
+            {celebrationData.currentValue > 0 && (
+              <div className="text-center">
+                <p className="text-3xl font-bold text-green-600">{formatCurrency(celebrationData.currentValue)}</p>
+                <p className="text-xs text-muted-foreground">Estimated Value</p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Redirect notice */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -443,10 +486,60 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
           <div className="px-6 pb-6">
             <QuestionCard
               question={currentQuestion}
-              selectedOptionId={responses.get(currentQuestion.id)?.selectedOptionId}
+              selectedOptionId={pendingSelection?.optionId || responses.get(currentQuestion.id)?.selectedOptionId}
               onAnswer={handleAnswer}
-              disabled={saving}
+              disabled={saving || !!pendingSelection}
             />
+
+            {/* UX-001 & UX-002 FIX: Confirmation panel with confidence selection */}
+            {pendingSelection && (
+              <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-xl animate-in fade-in slide-in-from-bottom-2 duration-200">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">Selected: {pendingSelection.optionText}</p>
+                    <p className="text-xs text-muted-foreground mt-1">How confident are you in this answer?</p>
+
+                    {/* UX-002 FIX: Confidence level selection */}
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      <button
+                        onClick={() => handleAnswerConfirm('UNCERTAIN')}
+                        disabled={saving}
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors disabled:opacity-50"
+                      >
+                        Uncertain
+                      </button>
+                      <button
+                        onClick={() => handleAnswerConfirm('SOMEWHAT_CONFIDENT')}
+                        disabled={saving}
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors disabled:opacity-50"
+                      >
+                        Somewhat Confident
+                      </button>
+                      <button
+                        onClick={() => handleAnswerConfirm('CONFIDENT')}
+                        disabled={saving}
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-green-300 bg-green-50 text-green-700 hover:bg-green-100 transition-colors disabled:opacity-50"
+                      >
+                        Confident
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={handleAnswerCancel}
+                      disabled={saving}
+                      className="mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Change answer
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -466,7 +559,7 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
         </Button>
 
         {allAnswered ? (
-          <Button onClick={handleComplete} disabled={saving} className="gap-2 px-6">
+          <Button onClick={handleCompleteWithWarningCheck} disabled={saving} className="gap-2 px-6">
             {saving ? (
               <>
                 <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -497,6 +590,58 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
           </Button>
         )}
       </div>
+
+      {/* NAV-001 FIX: Skipped questions warning dialog */}
+      {showSkippedWarning && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-card rounded-2xl border border-border shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-foreground">Incomplete Assessment</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  You have {getSkippedQuestions().length} unanswered question{getSkippedQuestions().length !== 1 ? 's' : ''}. Unanswered questions will affect the accuracy of your Buyer Readiness Index.
+                </p>
+                <div className="mt-4 max-h-32 overflow-y-auto">
+                  <p className="text-xs font-medium text-muted-foreground mb-2">Skipped questions:</p>
+                  <ul className="space-y-1">
+                    {getSkippedQuestions().slice(0, 5).map((q, i) => (
+                      <li key={q.id} className="text-xs text-foreground truncate">
+                        {i + 1}. {q.questionText}
+                      </li>
+                    ))}
+                    {getSkippedQuestions().length > 5 && (
+                      <li className="text-xs text-muted-foreground">
+                        ...and {getSkippedQuestions().length - 5} more
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => setShowSkippedWarning(false)}
+                className="flex-1"
+              >
+                Go Back
+              </Button>
+              <Button
+                onClick={handleCompleteConfirmed}
+                disabled={saving}
+                className="flex-1"
+              >
+                {saving ? 'Completing...' : 'Complete Anyway'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

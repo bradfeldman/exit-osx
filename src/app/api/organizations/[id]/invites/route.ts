@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { UserRole, FunctionalCategory } from '@prisma/client'
+import { GRANULAR_PERMISSIONS } from '@/lib/auth/permissions'
 import { Resend } from 'resend'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
@@ -44,6 +45,14 @@ export async function GET(
             name: true,
             email: true,
           }
+        },
+        roleTemplate: {
+          select: {
+            id: true,
+            slug: true,
+            name: true,
+            icon: true,
+          }
         }
       },
       orderBy: { createdAt: 'desc' }
@@ -71,7 +80,14 @@ export async function POST(
   const { auth } = result
 
   try {
-    const { email, role = 'MEMBER', functionalCategories = [] } = await request.json()
+    const {
+      email,
+      role = 'MEMBER',
+      functionalCategories = [],
+      roleTemplateId,
+      customPermissions,
+      isExternalAdvisor = false,
+    } = await request.json()
 
     if (!email) {
       return NextResponse.json(
@@ -116,6 +132,44 @@ export async function POST(
         { error: `Invalid categories: ${invalidCategories.join(', ')}` },
         { status: 400 }
       )
+    }
+
+    // Validate role template if provided
+    if (roleTemplateId) {
+      const template = await prisma.roleTemplate.findUnique({
+        where: { id: roleTemplateId },
+      })
+      if (!template) {
+        return NextResponse.json(
+          { error: 'Role template not found' },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Validate custom permissions if provided
+    if (customPermissions) {
+      if (!Array.isArray(customPermissions)) {
+        return NextResponse.json(
+          { error: 'customPermissions must be an array' },
+          { status: 400 }
+        )
+      }
+      const validPermissions = Object.keys(GRANULAR_PERMISSIONS)
+      for (const perm of customPermissions) {
+        if (!perm.permission || typeof perm.granted !== 'boolean') {
+          return NextResponse.json(
+            { error: 'Each custom permission must have permission and granted fields' },
+            { status: 400 }
+          )
+        }
+        if (!validPermissions.includes(perm.permission)) {
+          return NextResponse.json(
+            { error: `Invalid permission: ${perm.permission}` },
+            { status: 400 }
+          )
+        }
+      }
     }
 
     // Check if user is already a member
@@ -164,10 +218,14 @@ export async function POST(
         functionalCategories: functionalCategories as FunctionalCategory[],
         invitedBy: auth.user.id,
         expiresAt,
+        roleTemplateId: roleTemplateId || null,
+        customPermissions: customPermissions || null,
+        isExternalAdvisor,
       },
       include: {
         organization: { select: { name: true } },
-        inviter: { select: { name: true, email: true } }
+        inviter: { select: { name: true, email: true } },
+        roleTemplate: { select: { id: true, slug: true, name: true } }
       }
     })
 
@@ -212,6 +270,9 @@ export async function POST(
         functionalCategories: invite.functionalCategories,
         expiresAt: invite.expiresAt,
         inviteUrl,
+        roleTemplate: invite.roleTemplate,
+        customPermissions: invite.customPermissions,
+        isExternalAdvisor: invite.isExternalAdvisor,
       }
     }, { status: 201 })
   } catch (error) {

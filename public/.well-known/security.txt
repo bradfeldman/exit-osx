@@ -1,0 +1,24 @@
+# Security Policy for ExitOSx
+# https://securitytxt.org/
+
+# Contact for security vulnerabilities
+Contact: mailto:security@exitosx.com
+Contact: https://exitosx.com/security
+
+# PGP key for encrypted communications (optional - add when available)
+# Encryption: https://exitosx.com/.well-known/pgp-key.txt
+
+# Policy
+Policy: https://exitosx.com/security-policy
+
+# Acknowledgments
+Acknowledgments: https://exitosx.com/security/thanks
+
+# Preferred languages
+Preferred-Languages: en
+
+# Canonical URL
+Canonical: https://exitosx.com/.well-known/security.txt
+
+# Expiry date (update annually)
+Expires: 2027-01-24T00:00:00.000Z

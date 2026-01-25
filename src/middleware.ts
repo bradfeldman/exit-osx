@@ -1,7 +1,58 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import {
+  applyRateLimit,
+  RATE_LIMIT_CONFIGS,
+  createRateLimitResponse,
+} from '@/lib/security/rate-limit'
+
+// SECURITY: Admin route patterns that require super admin access
+const ADMIN_ROUTE_PATTERNS = [
+  '/admin',
+  '/api/admin',
+]
+
+// SECURITY: Auth-related routes that need strict rate limiting
+const AUTH_RATE_LIMITED_ROUTES = [
+  '/api/auth',
+  '/login',
+  '/signup',
+  '/api/user/sync',
+]
+
+// SECURITY: Sensitive routes with stricter rate limits
+const SENSITIVE_RATE_LIMITED_ROUTES = [
+  '/api/user/gdpr',
+  '/api/invites',
+  '/api/admin/users',
+]
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+  const hostname = request.headers.get('host') || ''
+
+  // SECURITY: Apply rate limiting before any other processing
+  const isAuthRoute = AUTH_RATE_LIMITED_ROUTES.some(route => pathname.startsWith(route))
+  const isSensitiveRoute = SENSITIVE_RATE_LIMITED_ROUTES.some(route => pathname.startsWith(route))
+  const isApiRoute = pathname.startsWith('/api/')
+
+  if (isAuthRoute) {
+    const rateLimitResult = await applyRateLimit(request, RATE_LIMIT_CONFIGS.AUTH)
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult)
+    }
+  } else if (isSensitiveRoute) {
+    const rateLimitResult = await applyRateLimit(request, RATE_LIMIT_CONFIGS.SENSITIVE)
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult)
+    }
+  } else if (isApiRoute) {
+    const rateLimitResult = await applyRateLimit(request, RATE_LIMIT_CONFIGS.API)
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult)
+    }
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -34,11 +85,22 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const { pathname } = request.nextUrl
+  // Check if accessing admin subdomain (admin.exitosx.com)
+  const isAdminSubdomain = hostname.startsWith('admin.')
 
   // Public routes that don't require auth
-  const publicRoutes = ['/login', '/signup', '/auth/callback', '/auth/confirm']
+  const publicRoutes = ['/login', '/signup', '/auth/callback', '/auth/confirm', '/pricing', '/terms', '/privacy']
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
+
+  // SECURITY: Check if this is an admin route
+  const isAdminRoute = ADMIN_ROUTE_PATTERNS.some(pattern => pathname.startsWith(pattern))
+
+  // Handle admin subdomain - rewrite to /admin routes
+  if (isAdminSubdomain && !pathname.startsWith('/admin') && !isPublicRoute) {
+    const url = request.nextUrl.clone()
+    url.pathname = `/admin${pathname === '/' ? '' : pathname}`
+    return NextResponse.rewrite(url)
+  }
 
   // If user is not logged in and trying to access protected route
   if (!user && !isPublicRoute && pathname !== '/') {
@@ -47,17 +109,50 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // SECURITY: Enhanced admin route protection at middleware level
+  // This provides defense-in-depth alongside layout-level checks
+  if (isAdminRoute && user) {
+    // For API routes, we check admin status via a lightweight query
+    // The actual isSuperAdmin check happens in the API route itself,
+    // but we add an additional layer by checking for admin cookie/header
+    const adminSessionCookie = request.cookies.get('admin_verified')
+
+    // If no admin session cookie, redirect to verify admin status
+    // This forces the admin layout to run its full verification
+    if (!adminSessionCookie && pathname.startsWith('/api/admin')) {
+      // For API routes, return 403 immediately if no admin verification
+      // The actual super admin check still happens in the route handler
+      // This just adds an extra layer of protection
+      return NextResponse.json(
+        {
+          error: 'Forbidden',
+          message: 'Admin access required. Please access via admin portal.',
+        },
+        { status: 403 }
+      )
+    }
+  }
+
+  // Block non-authenticated users from admin routes entirely
+  if (isAdminRoute && !user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    url.searchParams.set('redirect', pathname)
+    return NextResponse.redirect(url)
+  }
+
   // If user is logged in and trying to access auth pages, redirect to dashboard
   if (user && (pathname === '/login' || pathname === '/signup')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    // If on admin subdomain, redirect to admin dashboard
+    url.pathname = isAdminSubdomain ? '/admin' : '/dashboard'
     return NextResponse.redirect(url)
   }
 
   // If user is logged in and on home page, redirect to dashboard
   if (user && pathname === '/') {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = isAdminSubdomain ? '/admin' : '/dashboard'
     return NextResponse.redirect(url)
   }
 

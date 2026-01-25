@@ -135,6 +135,21 @@ export async function generateTasksForCompany(
 
   console.log('[TASK_ENGINE] Questions by effective tier:', tierQuestionCounts)
 
+  // PERFORMANCE: Batch fetch all question options upfront to avoid N+1 queries
+  const questionIds = responses.map(r => r.questionId)
+  const allOptions = await prisma.questionOption.findMany({
+    where: { questionId: { in: questionIds } },
+    orderBy: { scoreValue: 'asc' }
+  })
+
+  // Create lookup map for options by questionId
+  const optionsByQuestionId = new Map<string, typeof allOptions>()
+  for (const option of allOptions) {
+    const existing = optionsByQuestionId.get(option.questionId) || []
+    existing.push(option)
+    optionsByQuestionId.set(option.questionId, existing)
+  }
+
   // Collect all tasks with upgrade mappings
   const tasksToCreate: TaskToCreate[] = []
   let skipped = 0
@@ -147,11 +162,8 @@ export async function generateTasksForCompany(
     // Calculate effective tier for this question based on answer
     const effectiveTier = getEffectiveTier(questionTier, currentScore)
 
-    // Get all options for this question (ordered by score)
-    const options = await prisma.questionOption.findMany({
-      where: { questionId },
-      orderBy: { scoreValue: 'asc' }
-    })
+    // Get all options for this question from pre-fetched map
+    const options = optionsByQuestionId.get(questionId) || []
 
     // Get matching templates
     const templates = getTemplatesForQuestion(response.question.questionText)

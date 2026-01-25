@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BuyerList } from './BuyerList'
 import { BuyerPipeline } from './BuyerPipeline'
 import { PipelineMetrics } from './PipelineMetrics'

@@ -1,8 +1,15 @@
 // Temporary debug endpoint to check questions in database
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { requireDevEndpoint, logDevEndpointAccess } from '@/lib/security'
 
 export async function GET() {
+  // SECURITY: Block debug endpoints in production
+  const devCheck = requireDevEndpoint()
+  if (devCheck) return devCheck
+
+  logDevEndpointAccess('GET /api/debug/questions')
+
   try {
     const projectQuestionsCount = await prisma.projectQuestion.count()
 

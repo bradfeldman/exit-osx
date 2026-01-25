@@ -12,29 +12,29 @@ describe('Pricing Plans', () => {
       expect(PRICING_PLANS).toHaveLength(3)
     })
 
-    it('should have starter, professional, and enterprise tiers', () => {
+    it('should have foundation, growth, and exit-ready tiers', () => {
       const tierIds = PRICING_PLANS.map(p => p.id)
-      expect(tierIds).toContain('starter')
-      expect(tierIds).toContain('professional')
-      expect(tierIds).toContain('enterprise')
+      expect(tierIds).toContain('foundation')
+      expect(tierIds).toContain('growth')
+      expect(tierIds).toContain('exit-ready')
     })
 
-    it('starter plan should be free', () => {
-      const starter = PRICING_PLANS.find(p => p.id === 'starter')
-      expect(starter?.monthlyPrice).toBe(0)
-      expect(starter?.annualPrice).toBe(0)
+    it('foundation plan should be free', () => {
+      const foundation = PRICING_PLANS.find(p => p.id === 'foundation')
+      expect(foundation?.monthlyPrice).toBe(0)
+      expect(foundation?.annualPrice).toBe(0)
     })
 
-    it('professional plan should have correct pricing', () => {
-      const professional = PRICING_PLANS.find(p => p.id === 'professional')
-      expect(professional?.monthlyPrice).toBe(149)
-      expect(professional?.annualPrice).toBe(119)
+    it('growth plan should have correct pricing', () => {
+      const growth = PRICING_PLANS.find(p => p.id === 'growth')
+      expect(growth?.monthlyPrice).toBe(179)
+      expect(growth?.annualPrice).toBe(149)
     })
 
-    it('enterprise plan should have correct pricing', () => {
-      const enterprise = PRICING_PLANS.find(p => p.id === 'enterprise')
-      expect(enterprise?.monthlyPrice).toBe(399)
-      expect(enterprise?.annualPrice).toBe(319)
+    it('exit-ready plan should have correct pricing', () => {
+      const exitReady = PRICING_PLANS.find(p => p.id === 'exit-ready')
+      expect(exitReady?.monthlyPrice).toBe(449)
+      expect(exitReady?.annualPrice).toBe(379)
     })
 
     it('annual pricing should be less than monthly for paid plans', () => {
@@ -45,9 +45,9 @@ describe('Pricing Plans', () => {
       })
     })
 
-    it('professional plan should be highlighted', () => {
-      const professional = PRICING_PLANS.find(p => p.id === 'professional')
-      expect(professional?.highlighted).toBe(true)
+    it('growth plan should be highlighted', () => {
+      const growth = PRICING_PLANS.find(p => p.id === 'growth')
+      expect(growth?.highlighted).toBe(true)
     })
 
     it('each plan should have features array', () => {
@@ -61,38 +61,39 @@ describe('Pricing Plans', () => {
   describe('hasFeatureAccess', () => {
     it('should return true for included features', () => {
       // All plans include Initial Assessment
-      expect(hasFeatureAccess('starter', 'Initial Assessment')).toBe(true)
-      expect(hasFeatureAccess('professional', 'Initial Assessment')).toBe(true)
-      expect(hasFeatureAccess('enterprise', 'Initial Assessment')).toBe(true)
+      expect(hasFeatureAccess('foundation', 'Initial Assessment')).toBe(true)
+      expect(hasFeatureAccess('growth', 'Initial Assessment')).toBe(true)
+      expect(hasFeatureAccess('exit-ready', 'Initial Assessment')).toBe(true)
     })
 
     it('should return false for excluded features', () => {
-      // Starter does not include Company Assessment
-      expect(hasFeatureAccess('starter', 'Company Assessment')).toBe(false)
+      // Foundation does not include Company Assessment
+      expect(hasFeatureAccess('foundation', 'Company Assessment')).toBe(false)
     })
 
-    it('should return true for professional features', () => {
-      expect(hasFeatureAccess('professional', 'Company Assessment')).toBe(true)
-      expect(hasFeatureAccess('professional', 'Risk Assessment')).toBe(true)
-      expect(hasFeatureAccess('professional', 'Value Improvement Playbook')).toBe(true)
+    it('should return true for growth features', () => {
+      expect(hasFeatureAccess('growth', 'Company Assessment')).toBe(true)
+      expect(hasFeatureAccess('growth', 'Risk Assessment')).toBe(true)
+      expect(hasFeatureAccess('growth', 'Value Improvement Playbook')).toBe(true)
+      expect(hasFeatureAccess('growth', 'QuickBooks Integration')).toBe(true)
     })
 
-    it('should return true for enterprise-only features', () => {
-      expect(hasFeatureAccess('enterprise', 'Data Room')).toBe(true)
-      expect(hasFeatureAccess('enterprise', 'DCF Analysis')).toBe(true)
-      expect(hasFeatureAccess('enterprise', 'Multiple Companies')).toBe(true)
+    it('should return true for exit-ready-only features', () => {
+      expect(hasFeatureAccess('exit-ready', 'Data Room')).toBe(true)
+      expect(hasFeatureAccess('exit-ready', 'DCF Analysis')).toBe(true)
+      expect(hasFeatureAccess('exit-ready', 'Multiple Companies')).toBe(true)
     })
 
-    it('should return false for enterprise-only features on lower tiers', () => {
-      expect(hasFeatureAccess('starter', 'Data Room')).toBe(false)
-      expect(hasFeatureAccess('professional', 'Data Room')).toBe(false)
-      expect(hasFeatureAccess('starter', 'DCF Analysis')).toBe(false)
-      expect(hasFeatureAccess('professional', 'DCF Analysis')).toBe(false)
+    it('should return false for exit-ready-only features on lower tiers', () => {
+      expect(hasFeatureAccess('foundation', 'Data Room')).toBe(false)
+      expect(hasFeatureAccess('growth', 'Data Room')).toBe(false)
+      expect(hasFeatureAccess('foundation', 'DCF Analysis')).toBe(false)
+      expect(hasFeatureAccess('growth', 'DCF Analysis')).toBe(false)
     })
 
     it('should return false for non-existent features', () => {
-      expect(hasFeatureAccess('starter', 'Non Existent Feature')).toBe(false)
-      expect(hasFeatureAccess('professional', 'Non Existent Feature')).toBe(false)
+      expect(hasFeatureAccess('foundation', 'Non Existent Feature')).toBe(false)
+      expect(hasFeatureAccess('growth', 'Non Existent Feature')).toBe(false)
     })
 
     it('should return false for invalid tier', () => {
@@ -102,17 +103,17 @@ describe('Pricing Plans', () => {
 
   describe('getPlan', () => {
     it('should return correct plan for valid tier', () => {
-      const starter = getPlan('starter')
-      expect(starter?.id).toBe('starter')
-      expect(starter?.name).toBe('Starter')
+      const foundation = getPlan('foundation')
+      expect(foundation?.id).toBe('foundation')
+      expect(foundation?.name).toBe('Foundation')
 
-      const professional = getPlan('professional')
-      expect(professional?.id).toBe('professional')
-      expect(professional?.name).toBe('Professional')
+      const growth = getPlan('growth')
+      expect(growth?.id).toBe('growth')
+      expect(growth?.name).toBe('Growth')
 
-      const enterprise = getPlan('enterprise')
-      expect(enterprise?.id).toBe('enterprise')
-      expect(enterprise?.name).toBe('Enterprise')
+      const exitReady = getPlan('exit-ready')
+      expect(exitReady?.id).toBe('exit-ready')
+      expect(exitReady?.name).toBe('Exit-Ready')
     })
 
     it('should return undefined for invalid tier', () => {

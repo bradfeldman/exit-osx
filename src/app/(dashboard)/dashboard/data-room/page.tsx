@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useCompany } from '@/contexts/CompanyContext'
+import { toast } from '@/components/ui/toaster'
 import {
   Dialog,
   DialogContent,
@@ -21,6 +22,39 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { CATEGORY_INFO, STAGE_INFO, DataRoomStageType } from '@/lib/dataroom/constants'
+import { AccessManager } from '@/components/dataroom/AccessManager'
+import { ActivityFeed } from '@/components/dataroom/ActivityFeed'
+import { DocumentPreview } from '@/components/dataroom/DocumentPreview'
+import { VersionHistory } from '@/components/dataroom/VersionHistory'
+import { SearchFilters, FilterState } from '@/components/dataroom/SearchFilters'
+import { NotificationBell } from '@/components/dataroom/NotificationBell'
+import { AnalyticsPanel } from '@/components/dataroom/AnalyticsPanel'
+import { DocumentAnalytics } from '@/components/dataroom/DocumentAnalytics'
+
+// Stage order for comparison (lower index = earlier stage)
+const STAGE_ORDER: DataRoomStageType[] = ['PREPARATION', 'TEASER', 'POST_NDA', 'DUE_DILIGENCE', 'CLOSED']
+
+function canAccessStage(userMaxStage: DataRoomStageType | null, folderMinStage: DataRoomStageType): boolean {
+  // If no user stage restriction (internal user), they can see everything
+  if (!userMaxStage) return true
+
+  const userStageIndex = STAGE_ORDER.indexOf(userMaxStage)
+  const folderStageIndex = STAGE_ORDER.indexOf(folderMinStage)
+
+  // User can access if their max stage is >= folder's min stage
+  return userStageIndex >= folderStageIndex
+}
+
+interface DataRoomFolder {
+  id: string
+  name: string
+  category: string
+  sortOrder: number
+  minStage: string
+  documentCount: number
+  children: DataRoomFolder[]
+}
 
 interface DataRoomDocument {
   id: string
@@ -38,30 +72,28 @@ interface DataRoomDocument {
   status: string
   isRequired: boolean
   isCustom: boolean
+  isConfidential: boolean
   notes: string | null
-  createdAt: string
+  version: number
+  folderId: string | null
+  folder?: { id: string; name: string; category: string } | null
   linkedTaskId: string | null
-  linkedTask?: {
-    id: string
-    title: string
-    status: string
-  } | null
-  uploadedBy?: {
-    id: string
-    name: string | null
-    email: string
-  } | null
+  linkedTask?: { id: string; title: string; status: string } | null
+  uploadedBy?: { id: string; name: string | null; email: string } | null
+  tags?: Array<{ tag: { id: string; name: string; color: string } }>
 }
 
-const CATEGORY_INFO: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  FINANCIAL: { label: 'Financial Documents', icon: <DollarIcon className="h-5 w-5" />, color: 'bg-blue-100 text-blue-700' },
-  LEGAL: { label: 'Legal & Corporate', icon: <ScaleIcon className="h-5 w-5" />, color: 'bg-purple-100 text-purple-700' },
-  OPERATIONS: { label: 'Operations', icon: <GearIcon className="h-5 w-5" />, color: 'bg-yellow-100 text-yellow-700' },
-  CUSTOMERS: { label: 'Customers & Sales', icon: <UsersIcon className="h-5 w-5" />, color: 'bg-green-100 text-green-700' },
-  EMPLOYEES: { label: 'Human Resources', icon: <TeamIcon className="h-5 w-5" />, color: 'bg-orange-100 text-orange-700' },
-  IP: { label: 'Intellectual Property', icon: <LightbulbIcon className="h-5 w-5" />, color: 'bg-pink-100 text-pink-700' },
-  TASK_PROOF: { label: 'Internal Documents', icon: <CheckIcon className="h-5 w-5" />, color: 'bg-emerald-100 text-emerald-700' },
-  CUSTOM: { label: 'Custom Documents', icon: <FolderIcon className="h-5 w-5" />, color: 'bg-gray-100 text-gray-700' },
+interface DataRoom {
+  id: string
+  name: string
+  stage: string
+  folders: DataRoomFolder[]
+}
+
+interface ReadinessScore {
+  score: number
+  byCategory: Record<string, { uploaded: number; expected: number; percentage: number }>
+  missingCritical: string[]
 }
 
 const FREQUENCY_LABELS: Record<string, string> = {
@@ -106,21 +138,40 @@ function getRelativeTime(dateStr: string | null): string {
 
 export default function DataRoomPage() {
   const { selectedCompanyId, selectedCompany } = useCompany()
+  const [dataRoom, setDataRoom] = useState<DataRoom | null>(null)
+  const [readiness, setReadiness] = useState<ReadinessScore | null>(null)
   const [documents, setDocuments] = useState<DataRoomDocument[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
+  const [selectedFolder, setSelectedFolder] = useState<DataRoomFolder | null>(null)
   const [uploadingDocId, setUploadingDocId] = useState<string | null>(null)
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState<DataRoomDocument | null>(null)
+  const [showAccessManager, setShowAccessManager] = useState(false)
+  const [showActivityFeed, setShowActivityFeed] = useState(false)
+  const [userMaxStage, _setUserMaxStage] = useState<DataRoomStageType | null>(null) // null = internal user (full access)
+  const [previewDocument, setPreviewDocument] = useState<DataRoomDocument | null>(null)
+  const [versionHistoryDocument, setVersionHistoryDocument] = useState<DataRoomDocument | null>(null)
+  const [_filters, setFilters] = useState<FilterState | null>(null)
+  const [searchResults, setSearchResults] = useState<DataRoomDocument[] | null>(null)
+  const [isSearching, setIsSearching] = useState(false)
+  const [showAnalytics, setShowAnalytics] = useState(false)
+  const [analyticsDocument, setAnalyticsDocument] = useState<DataRoomDocument | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [newDocument, setNewDocument] = useState({
-    category: 'CUSTOM',
+    folderId: '',
     documentName: '',
     description: '',
     updateFrequency: 'AS_NEEDED',
   })
 
-  const fetchDocuments = useCallback(async () => {
+  // Drag and drop state
+  const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null)
+  const [dragOverDocList, setDragOverDocList] = useState(false)
+  const [draggingDocId, setDraggingDocId] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+
+  const fetchDataRoom = useCallback(async () => {
     if (!selectedCompanyId) {
       setIsLoading(false)
       return
@@ -128,85 +179,152 @@ export default function DataRoomPage() {
 
     setIsLoading(true)
     try {
-      const res = await fetch(`/api/companies/${selectedCompanyId}/data-room`)
+      const res = await fetch(`/api/companies/${selectedCompanyId}/dataroom`)
+      if (res.ok) {
+        const data = await res.json()
+        setDataRoom(data.dataRoom)
+        setReadiness(data.readiness)
+        // Expand first accessible folder by default
+        if (data.dataRoom?.folders?.length > 0) {
+          const accessibleFolders = data.dataRoom.folders.filter(
+            (f: DataRoomFolder) => canAccessStage(userMaxStage, f.minStage as DataRoomStageType)
+          )
+          if (accessibleFolders.length > 0) {
+            setExpandedFolders(new Set([accessibleFolders[0].id]))
+            setSelectedFolder(accessibleFolders[0])
+          }
+        }
+      } else {
+        console.error('Error fetching data room:', res.status)
+      }
+    } catch (error) {
+      console.error('Error fetching data room:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCompanyId])
+
+  const fetchFolderDocuments = useCallback(async (folderId: string) => {
+    if (!selectedCompanyId) return
+
+    try {
+      const res = await fetch(`/api/companies/${selectedCompanyId}/dataroom/documents?folderId=${folderId}`)
       if (res.ok) {
         const data = await res.json()
         setDocuments(data.documents || [])
-      } else {
-        console.error('Error fetching documents:', res.status)
-        setDocuments([])
       }
     } catch (error) {
       console.error('Error fetching documents:', error)
-      setDocuments([])
+    }
+  }, [selectedCompanyId])
+
+  const handleFiltersChange = useCallback(async (newFilters: FilterState) => {
+    setFilters(newFilters)
+
+    // Check if any filter is active
+    const hasActiveFilters =
+      newFilters.search ||
+      newFilters.status ||
+      newFilters.category ||
+      newFilters.hasFile ||
+      newFilters.tags.length > 0 ||
+      newFilters.updatedAfter ||
+      newFilters.updatedBefore
+
+    if (!hasActiveFilters) {
+      // Clear search results and show folder view
+      setSearchResults(null)
+      setIsSearching(false)
+      return
+    }
+
+    if (!selectedCompanyId) return
+
+    setIsSearching(true)
+
+    try {
+      const params = new URLSearchParams()
+
+      if (newFilters.search) params.set('search', newFilters.search)
+      if (newFilters.status && newFilters.status !== 'all') params.set('status', newFilters.status)
+      if (newFilters.category && newFilters.category !== 'all') params.set('category', newFilters.category)
+      if (newFilters.hasFile && newFilters.hasFile !== 'all') params.set('hasFile', newFilters.hasFile)
+      if (newFilters.tags.length > 0) params.set('tags', newFilters.tags.join(','))
+      if (newFilters.updatedAfter) params.set('updatedAfter', newFilters.updatedAfter)
+      if (newFilters.updatedBefore) params.set('updatedBefore', newFilters.updatedBefore)
+
+      const res = await fetch(`/api/companies/${selectedCompanyId}/dataroom/documents?${params}`)
+      if (res.ok) {
+        const data = await res.json()
+        setSearchResults(data.documents || [])
+      }
+    } catch (error) {
+      console.error('Error searching documents:', error)
     } finally {
-      setIsLoading(false)
+      setIsSearching(false)
     }
   }, [selectedCompanyId])
 
   useEffect(() => {
-    fetchDocuments()
-  }, [fetchDocuments])
+    fetchDataRoom()
+  }, [fetchDataRoom])
 
-  const handleFileSelect = async (docId: string, file: File) => {
+  useEffect(() => {
+    if (selectedFolder) {
+      fetchFolderDocuments(selectedFolder.id)
+    }
+  }, [selectedFolder, fetchFolderDocuments])
+
+  const toggleFolder = (folderId: string) => {
+    setExpandedFolders((prev) => {
+      const next = new Set(prev)
+      if (next.has(folderId)) {
+        next.delete(folderId)
+      } else {
+        next.add(folderId)
+      }
+      return next
+    })
+  }
+
+  const handleFileUpload = async (docId: string, file: File) => {
     if (!selectedCompanyId) return
 
     setUploadingDocId(docId)
 
     try {
-      // 1. Get signed upload URL
-      const uploadRes = await fetch(`/api/companies/${selectedCompanyId}/data-room/${docId}/upload`, {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const res = await fetch(`/api/companies/${selectedCompanyId}/dataroom/documents/${docId}/upload`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileName: file.name,
-          mimeType: file.type,
-        }),
+        body: formData,
       })
 
-      if (!uploadRes.ok) throw new Error('Failed to get upload URL')
-
-      const { uploadUrl, publicUrl } = await uploadRes.json()
-
-      // 2. Upload file to Supabase Storage
-      const uploadToStorage = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type },
-        body: file,
-      })
-
-      if (!uploadToStorage.ok) throw new Error('Failed to upload file')
-
-      // 3. Update document record with file info
-      const updateRes = await fetch(`/api/companies/${selectedCompanyId}/data-room/${docId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          isFileUpload: true,
-          fileUrl: publicUrl,
-          fileName: file.name,
-          fileSize: file.size,
-          mimeType: file.type,
-        }),
-      })
-
-      if (!updateRes.ok) throw new Error('Failed to update document')
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.error || 'Upload failed')
+      }
 
       // Refresh documents
-      await fetchDocuments()
+      if (selectedFolder) {
+        await fetchFolderDocuments(selectedFolder.id)
+      }
+      await fetchDataRoom()
     } catch (error) {
       console.error('Error uploading file:', error)
-      alert('Failed to upload file. Please try again.')
+      toast.error('Failed to upload file. Please try again.')
     } finally {
       setUploadingDocId(null)
     }
   }
 
   const handleAddDocument = async () => {
-    if (!selectedCompanyId || !newDocument.documentName) return
+    if (!selectedCompanyId || !newDocument.documentName || !newDocument.folderId) return
 
     try {
-      const res = await fetch(`/api/companies/${selectedCompanyId}/data-room`, {
+      const res = await fetch(`/api/companies/${selectedCompanyId}/dataroom/documents`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newDocument),
@@ -214,13 +332,11 @@ export default function DataRoomPage() {
 
       if (res.ok) {
         setShowAddDialog(false)
-        setNewDocument({
-          category: 'CUSTOM',
-          documentName: '',
-          description: '',
-          updateFrequency: 'AS_NEEDED',
-        })
-        await fetchDocuments()
+        setNewDocument({ folderId: '', documentName: '', description: '', updateFrequency: 'AS_NEEDED' })
+        if (selectedFolder) {
+          await fetchFolderDocuments(selectedFolder.id)
+        }
+        await fetchDataRoom()
       }
     } catch (error) {
       console.error('Error adding document:', error)
@@ -231,20 +347,23 @@ export default function DataRoomPage() {
     if (!selectedCompanyId || !showEditDialog) return
 
     try {
-      const res = await fetch(`/api/companies/${selectedCompanyId}/data-room/${showEditDialog.id}`, {
-        method: 'PATCH',
+      const res = await fetch(`/api/companies/${selectedCompanyId}/dataroom/documents/${showEditDialog.id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           documentName: showEditDialog.documentName,
           description: showEditDialog.description,
           updateFrequency: showEditDialog.updateFrequency,
           notes: showEditDialog.notes,
+          isConfidential: showEditDialog.isConfidential,
         }),
       })
 
       if (res.ok) {
         setShowEditDialog(null)
-        await fetchDocuments()
+        if (selectedFolder) {
+          await fetchFolderDocuments(selectedFolder.id)
+        }
       }
     } catch (error) {
       console.error('Error updating document:', error)
@@ -261,13 +380,219 @@ export default function DataRoomPage() {
     if (!confirm(confirmMsg)) return
 
     try {
-      await fetch(`/api/companies/${selectedCompanyId}/data-room/${docId}`, {
-        method: 'DELETE',
-      })
-      await fetchDocuments()
+      if (isCustom) {
+        await fetch(`/api/companies/${selectedCompanyId}/dataroom/documents/${docId}`, {
+          method: 'DELETE',
+        })
+      } else {
+        await fetch(`/api/companies/${selectedCompanyId}/dataroom/documents/${docId}/upload`, {
+          method: 'DELETE',
+        })
+      }
+      if (selectedFolder) {
+        await fetchFolderDocuments(selectedFolder.id)
+      }
+      await fetchDataRoom()
     } catch (error) {
-      console.error('Error deleting document:', error)
+      console.error('Error deleting:', error)
     }
+  }
+
+  const handleDownload = async (docId: string, fileName?: string | null) => {
+    if (!selectedCompanyId) return
+
+    try {
+      const res = await fetch(`/api/companies/${selectedCompanyId}/dataroom/documents/${docId}/download`)
+
+      if (!res.ok) {
+        console.error('Error getting download')
+        toast.error('Failed to download file')
+        return
+      }
+
+      const contentType = res.headers.get('Content-Type')
+
+      // If response is a PDF blob (watermarked), download it directly
+      if (contentType === 'application/pdf') {
+        const blob = await res.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = fileName || 'document.pdf'
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+      } else {
+        // For other files, use the signed URL
+        const data = await res.json()
+        window.open(data.url, '_blank')
+      }
+    } catch (error) {
+      console.error('Error downloading:', error)
+      alert('Failed to download file')
+    }
+  }
+
+  // Drag and drop handlers
+  const handleFileDrop = async (files: FileList, folderId: string) => {
+    if (!selectedCompanyId || files.length === 0) return
+
+    setIsUploading(true)
+    try {
+      for (const file of Array.from(files)) {
+        // Create document placeholder
+        const createRes = await fetch(`/api/companies/${selectedCompanyId}/dataroom/documents`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            folderId,
+            documentName: file.name.replace(/\.[^/.]+$/, ''), // Remove extension for display name
+            description: '',
+            updateFrequency: 'AS_NEEDED',
+          }),
+        })
+
+        if (!createRes.ok) {
+          console.error('Failed to create document')
+          continue
+        }
+
+        const { document: newDoc } = await createRes.json()
+
+        // Upload file to the document
+        const formData = new FormData()
+        formData.append('file', file)
+
+        await fetch(`/api/companies/${selectedCompanyId}/dataroom/documents/${newDoc.id}/upload`, {
+          method: 'POST',
+          body: formData,
+        })
+      }
+
+      // Refresh data
+      if (selectedFolder) {
+        await fetchFolderDocuments(selectedFolder.id)
+      }
+      await fetchDataRoom()
+    } catch (error) {
+      console.error('Error uploading files:', error)
+      toast.error('Failed to upload some files')
+    } finally {
+      setIsUploading(false)
+      setDragOverFolderId(null)
+      setDragOverDocList(false)
+    }
+  }
+
+  const handleMoveDocument = async (docId: string, targetFolderId: string) => {
+    if (!selectedCompanyId) return
+
+    try {
+      const res = await fetch(`/api/companies/${selectedCompanyId}/dataroom/documents/${docId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ folderId: targetFolderId }),
+      })
+
+      if (res.ok) {
+        // Refresh data
+        if (selectedFolder) {
+          await fetchFolderDocuments(selectedFolder.id)
+        }
+        await fetchDataRoom()
+      }
+    } catch (error) {
+      console.error('Error moving document:', error)
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  const handleFolderDragEnter = (e: React.DragEvent, folderId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragOverFolderId(folderId)
+  }
+
+  const handleFolderDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    // Only clear if we're leaving the folder element entirely
+    const relatedTarget = e.relatedTarget as HTMLElement
+    if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+      setDragOverFolderId(null)
+    }
+  }
+
+  const handleFolderDrop = async (e: React.DragEvent, folderId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragOverFolderId(null)
+
+    // Check if it's a document being moved
+    const docId = e.dataTransfer.getData('application/x-document-id')
+    if (docId) {
+      await handleMoveDocument(docId, folderId)
+      return
+    }
+
+    // Otherwise it's files from the computer
+    if (e.dataTransfer.files.length > 0) {
+      await handleFileDrop(e.dataTransfer.files, folderId)
+    }
+  }
+
+  const handleDocListDragEnter = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.dataTransfer.types.includes('Files')) {
+      setDragOverDocList(true)
+    }
+  }
+
+  const handleDocListDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const relatedTarget = e.relatedTarget as HTMLElement
+    if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+      setDragOverDocList(false)
+    }
+  }
+
+  const handleDocListDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragOverDocList(false)
+
+    if (!selectedFolder) return
+
+    // Only handle file drops, not document moves
+    if (e.dataTransfer.files.length > 0 && !e.dataTransfer.getData('application/x-document-id')) {
+      await handleFileDrop(e.dataTransfer.files, selectedFolder.id)
+    }
+  }
+
+  const handleDocumentDragStart = (e: React.DragEvent, docId: string) => {
+    e.dataTransfer.setData('application/x-document-id', docId)
+    e.dataTransfer.effectAllowed = 'move'
+    setDraggingDocId(docId)
+  }
+
+  const handleDocumentDragEnd = () => {
+    setDraggingDocId(null)
+    setDragOverFolderId(null)
+  }
+
+  const canPreview = (doc: DataRoomDocument) => {
+    if (!doc.filePath) return false
+    const isPdf = doc.mimeType === 'application/pdf' || doc.fileName?.toLowerCase().endsWith('.pdf')
+    const isImage = doc.mimeType?.startsWith('image/') ||
+                    /\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i.test(doc.fileName || '')
+    return isPdf || isImage
   }
 
   if (!selectedCompany) {
@@ -286,20 +611,7 @@ export default function DataRoomPage() {
     )
   }
 
-  // Group documents by category
-  const groupedDocs = documents.reduce((acc, doc) => {
-    const cat = doc.category
-    if (!acc[cat]) acc[cat] = []
-    acc[cat].push(doc)
-    return acc
-  }, {} as Record<string, DataRoomDocument[]>)
-
-  // Calculate stats
-  const totalDocs = documents.length
-  const uploadedDocs = documents.filter(d => d.fileUrl).length
-  const overdueDocs = documents.filter(d => d.status === 'OVERDUE').length
-  const needsUpdateDocs = documents.filter(d => d.status === 'NEEDS_UPDATE').length
-  const completionPercent = totalDocs > 0 ? Math.round((uploadedDocs / totalDocs) * 100) : 0
+  const stageInfo = dataRoom?.stage ? STAGE_INFO[dataRoom.stage as keyof typeof STAGE_INFO] : null
 
   return (
     <div className="p-6 space-y-6">
@@ -312,7 +624,7 @@ export default function DataRoomPage() {
           const file = e.target.files?.[0]
           const docId = fileInputRef.current?.dataset.docId
           if (file && docId) {
-            handleFileSelect(docId, file)
+            handleFileUpload(docId, file)
           }
           e.target.value = ''
         }}
@@ -326,338 +638,498 @@ export default function DataRoomPage() {
             Organize documents for buyer due diligence
           </p>
         </div>
-        <Button onClick={() => setShowAddDialog(true)}>
-          <PlusIcon className="h-4 w-4 mr-2" />
-          Add Document
-        </Button>
+        <div className="flex items-center gap-3">
+          {stageInfo && (
+            <span className={`px-3 py-1 rounded-full text-sm font-medium bg-${stageInfo.color}-100 text-${stageInfo.color}-700`}>
+              {stageInfo.label}
+            </span>
+          )}
+          {selectedCompanyId && (
+            <NotificationBell
+              companyId={selectedCompanyId}
+              onNotificationClick={(notification) => {
+                // If notification is about a document, could navigate to it
+                console.log('Notification clicked:', notification)
+              }}
+            />
+          )}
+          <Button variant="outline" onClick={() => setShowAnalytics(!showAnalytics)}>
+            <ChartIcon className="h-4 w-4 mr-2" />
+            Analytics
+          </Button>
+          <Button variant="outline" onClick={() => setShowActivityFeed(true)}>
+            <ActivityIcon className="h-4 w-4 mr-2" />
+            Activity
+          </Button>
+          <Button variant="outline" onClick={() => setShowAccessManager(true)}>
+            <UsersIcon className="h-4 w-4 mr-2" />
+            Manage Access
+          </Button>
+          <Button onClick={() => {
+            setNewDocument({ ...newDocument, folderId: selectedFolder?.id || '' })
+            setShowAddDialog(true)
+          }}>
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Add Document
+          </Button>
+        </div>
       </div>
 
-      {/* Progress Overview */}
-      <div className="grid gap-4 md:grid-cols-4">
+      {/* Readiness Score */}
+      {readiness && (
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Readiness Score</p>
+                  <p className="text-2xl font-semibold">{readiness.score}%</p>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <CheckCircleIcon className="h-6 w-6 text-primary" />
+                </div>
+              </div>
+              <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-primary h-2 rounded-full transition-all"
+                  style={{ width: `${readiness.score}%` }}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground">Folders</p>
+              <p className="text-2xl font-semibold">{dataRoom?.folders?.length || 0}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground">Documents</p>
+              <p className="text-2xl font-semibold">
+                {dataRoom?.folders?.reduce((sum, f) => sum + f.documentCount + f.children.reduce((cs, c) => cs + c.documentCount, 0), 0) || 0}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground">Missing Critical</p>
+              <p className="text-2xl font-semibold text-red-600">{readiness.missingCritical.length}</p>
+              {readiness.missingCritical.length > 0 && (
+                <p className="text-xs text-muted-foreground mt-1 truncate">
+                  {readiness.missingCritical.join(', ')}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Search and Filters */}
+      {selectedCompanyId && (
+        <SearchFilters
+          companyId={selectedCompanyId}
+          onFiltersChange={handleFiltersChange}
+        />
+      )}
+
+      {/* Analytics Panel */}
+      {showAnalytics && selectedCompanyId && (
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Completion</p>
-                <p className="text-2xl font-semibold">{completionPercent}%</p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <CheckCircleIcon className="h-6 w-6 text-primary" />
-              </div>
-            </div>
-            <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-primary h-2 rounded-full transition-all"
-                style={{ width: `${completionPercent}%` }}
-              />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Engagement Analytics</CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => setShowAnalytics(false)}>
+              <CloseIcon className="h-4 w-4" />
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <AnalyticsPanel
+              companyId={selectedCompanyId}
+              onDocumentClick={(docId) => {
+                // Find the document and show its analytics
+                const doc = documents.find((d) => d.id === docId) || searchResults?.find((d) => d.id === docId)
+                if (doc) {
+                  setAnalyticsDocument(doc)
+                }
+              }}
+            />
           </CardContent>
         </Card>
+      )}
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Uploaded</p>
-                <p className="text-2xl font-semibold">{uploadedDocs} / {totalDocs}</p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
-                <DocumentIcon className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Main Content - Folder Tree + Documents */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Folder Tree */}
+        <Card className="lg:col-span-1">
+          <CardHeader>
+            <CardTitle className="text-base">Folders</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y">
+              {dataRoom?.folders
+                ?.filter((folder) => canAccessStage(userMaxStage, folder.minStage as DataRoomStageType))
+                .map((folder) => {
+                const categoryInfo = CATEGORY_INFO[folder.category as keyof typeof CATEGORY_INFO]
+                const isExpanded = expandedFolders.has(folder.id)
+                const isSelected = selectedFolder?.id === folder.id
+                const isDragOver = dragOverFolderId === folder.id
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Needs Update</p>
-                <p className="text-2xl font-semibold">{needsUpdateDocs}</p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center">
-                <ClockIcon className="h-6 w-6 text-yellow-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                // Filter children based on stage access
+                const accessibleChildren = folder.children.filter((child) =>
+                  canAccessStage(userMaxStage, child.minStage as DataRoomStageType)
+                )
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Overdue</p>
-                <p className="text-2xl font-semibold text-red-600">{overdueDocs}</p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
-                <AlertIcon className="h-6 w-6 text-red-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Document Categories */}
-      <div className="space-y-4">
-        {Object.entries(CATEGORY_INFO).map(([category, info]) => {
-          const categoryDocs = groupedDocs[category] || []
-          if (categoryDocs.length === 0) return null
-
-          const isExpanded = expandedCategory === category
-          const uploadedCount = categoryDocs.filter(d => d.fileUrl).length
-          const overdueCount = categoryDocs.filter(d => d.status === 'OVERDUE').length
-
-          return (
-            <Card key={category} className="overflow-hidden">
-              <button
-                onClick={() => setExpandedCategory(isExpanded ? null : category)}
-                className="w-full"
-              >
-                <CardHeader className="pb-3 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${info.color}`}>
-                        {info.icon}
+                return (
+                  <div key={folder.id}>
+                    <button
+                      onClick={() => {
+                        setSelectedFolder(folder)
+                        if (accessibleChildren.length > 0) {
+                          toggleFolder(folder.id)
+                        }
+                      }}
+                      onDragOver={handleDragOver}
+                      onDragEnter={(e) => handleFolderDragEnter(e, folder.id)}
+                      onDragLeave={handleFolderDragLeave}
+                      onDrop={(e) => handleFolderDrop(e, folder.id)}
+                      className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors ${
+                        isSelected ? 'bg-primary/5 border-l-2 border-primary' : ''
+                      } ${isDragOver ? 'bg-primary/20 ring-2 ring-primary ring-inset' : ''}`}
+                    >
+                      <div className={`p-1.5 rounded ${categoryInfo?.color || 'bg-gray-100 text-gray-700'}`}>
+                        <FolderIcon className="h-4 w-4" />
                       </div>
-                      <div className="text-left">
-                        <CardTitle className="text-base">{info.label}</CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                          {category === 'TASK_PROOF' ? (
-                            `${categoryDocs.length} document${categoryDocs.length === 1 ? '' : 's'} from tasks`
-                          ) : (
-                            <>
-                              {uploadedCount}/{categoryDocs.length} documents uploaded
-                              {overdueCount > 0 && (
-                                <span className="text-red-600 ml-2">({overdueCount} overdue)</span>
-                              )}
-                            </>
-                          )}
+                      <div className="flex-1 text-left min-w-0">
+                        <p className="text-sm font-medium truncate">{folder.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {folder.documentCount} docs
+                          {accessibleChildren.length > 0 && ` | ${accessibleChildren.length} subfolders`}
                         </p>
                       </div>
-                    </div>
-                    <ChevronIcon className={`h-5 w-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                  </div>
-                </CardHeader>
-              </button>
+                      {isDragOver && (
+                        <span className="text-xs text-primary font-medium">Drop here</span>
+                      )}
+                      {accessibleChildren.length > 0 && !isDragOver && (
+                        <ChevronIcon className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                      )}
+                    </button>
 
-              {isExpanded && (
-                <CardContent className="pt-0">
-                  <div className="border-t pt-4 space-y-3">
-                    {categoryDocs.map((doc) => (
-                      <div
-                        key={doc.id}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium text-gray-900 truncate">{doc.documentName}</p>
-                            {doc.isCustom && (
-                              <span className="text-xs px-1.5 py-0.5 bg-gray-200 text-gray-600 rounded">Custom</span>
-                            )}
+                    {isExpanded && accessibleChildren.map((child) => {
+                      const isChildSelected = selectedFolder?.id === child.id
+                      const isChildDragOver = dragOverFolderId === child.id
+                      return (
+                        <button
+                          key={child.id}
+                          onClick={() => setSelectedFolder(child)}
+                          onDragOver={handleDragOver}
+                          onDragEnter={(e) => handleFolderDragEnter(e, child.id)}
+                          onDragLeave={handleFolderDragLeave}
+                          onDrop={(e) => handleFolderDrop(e, child.id)}
+                          className={`w-full flex items-center gap-3 p-3 pl-10 hover:bg-gray-50 transition-colors ${
+                            isChildSelected ? 'bg-primary/5 border-l-2 border-primary' : ''
+                          } ${isChildDragOver ? 'bg-primary/20 ring-2 ring-primary ring-inset' : ''}`}
+                        >
+                          <FolderIcon className="h-4 w-4 text-gray-400" />
+                          <div className="flex-1 text-left min-w-0">
+                            <p className="text-sm truncate">{child.name}</p>
+                            <p className="text-xs text-muted-foreground">{child.documentCount} docs</p>
                           </div>
-                          {doc.description && (
-                            <p className="text-sm text-muted-foreground truncate">{doc.description}</p>
+                          {isChildDragOver && (
+                            <span className="text-xs text-primary font-medium">Drop here</span>
                           )}
-                          {/* Show different info for task proof docs vs regular docs */}
-                          {doc.category === 'TASK_PROOF' ? (
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs text-muted-foreground">
-                              {doc.linkedTask && (
-                                <span className="flex items-center gap-1">
-                                  <span className="text-emerald-600">Task:</span>
-                                  <span className="truncate max-w-[200px]">{doc.linkedTask.title}</span>
-                                </span>
-                              )}
-                              {doc.uploadedBy && (
-                                <span>
-                                  Uploaded by: {doc.uploadedBy.name || doc.uploadedBy.email}
-                                </span>
-                              )}
-                              {doc.createdAt && (
-                                <span>
-                                  {formatDate(doc.createdAt)}
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                              <span>Update: {FREQUENCY_LABELS[doc.updateFrequency]}</span>
-                              {(doc.fileUrl || doc.filePath) && (
-                                <>
-                                  <span>|</span>
-                                  <span>Last updated: {formatDate(doc.lastUpdatedAt)}</span>
-                                  {doc.nextUpdateDue && doc.updateFrequency !== 'ONE_TIME' && doc.updateFrequency !== 'AS_NEEDED' && (
-                                    <>
-                                      <span>|</span>
-                                      <span className={doc.status === 'OVERDUE' ? 'text-red-600' : doc.status === 'NEEDS_UPDATE' ? 'text-yellow-600' : ''}>
-                                        {getRelativeTime(doc.nextUpdateDue)}
-                                      </span>
-                                    </>
-                                  )}
-                                </>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex items-center gap-2 ml-4">
-                          {(doc.fileUrl || doc.filePath) && (
-                            <span className={`text-xs px-2 py-1 rounded ${STATUS_STYLES[doc.status]?.bg || 'bg-gray-100'} ${STATUS_STYLES[doc.status]?.text || 'text-gray-700'}`}>
-                              {STATUS_STYLES[doc.status]?.label || 'Uploaded'}
-                            </span>
-                          )}
-
-                          {/* For task proofs, use signed URL fetch */}
-                          {doc.category === 'TASK_PROOF' && (doc.filePath || doc.status === 'CURRENT') && doc.linkedTaskId ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={async (e) => {
-                                e.stopPropagation()
-                                try {
-                                  const response = await fetch(`/api/tasks/${doc.linkedTaskId}/proof`)
-                                  if (response.ok) {
-                                    const data = await response.json()
-                                    const docWithUrl = data.proofDocuments?.find((d: { id: string; signedUrl?: string }) => d.id === doc.id)
-                                    if (docWithUrl?.signedUrl) {
-                                      window.open(docWithUrl.signedUrl, '_blank')
-                                    } else {
-                                      alert('Unable to get download URL. The file may not exist.')
-                                    }
-                                  } else {
-                                    alert('Failed to fetch document.')
-                                  }
-                                } catch (err) {
-                                  console.error('Error fetching document URL:', err)
-                                  alert('Error fetching document.')
-                                }
-                              }}
-                            >
-                              View / Download
-                            </Button>
-                          ) : doc.fileUrl ? (
-                            <>
-                              <a
-                                href={doc.fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-2 hover:bg-gray-200 rounded-md transition-colors"
-                                title="View document"
-                              >
-                                <ExternalLinkIcon className="h-4 w-4 text-gray-600" />
-                              </a>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  if (fileInputRef.current) {
-                                    fileInputRef.current.dataset.docId = doc.id
-                                    fileInputRef.current.click()
-                                  }
-                                }}
-                                disabled={uploadingDocId === doc.id}
-                              >
-                                {uploadingDocId === doc.id ? 'Uploading...' : 'Replace'}
-                              </Button>
-                            </>
-                          ) : doc.category !== 'TASK_PROOF' ? (
-                            <Button
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                if (fileInputRef.current) {
-                                  fileInputRef.current.dataset.docId = doc.id
-                                  fileInputRef.current.click()
-                                }
-                              }}
-                              disabled={uploadingDocId === doc.id}
-                            >
-                              {uploadingDocId === doc.id ? 'Uploading...' : 'Upload'}
-                            </Button>
-                          ) : null}
-
-                          {doc.category !== 'TASK_PROOF' && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setShowEditDialog(doc)
-                              }}
-                              className="p-2 hover:bg-gray-200 rounded-md transition-colors"
-                              title="Edit"
-                            >
-                              <EditIcon className="h-4 w-4 text-gray-600" />
-                            </button>
-                          )}
-
-                          {(doc.isCustom || doc.fileUrl) && doc.category !== 'TASK_PROOF' && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleDeleteDocument(doc.id, doc.isCustom)
-                              }}
-                              className="p-2 hover:bg-red-100 rounded-md transition-colors"
-                              title={doc.isCustom ? 'Delete' : 'Remove file'}
-                            >
-                              <TrashIcon className="h-4 w-4 text-red-600" />
-                            </button>
-                          )}
-
-                          {/* Delete button for task proof documents */}
-                          {doc.category === 'TASK_PROOF' && doc.linkedTaskId && (
-                            <button
-                              onClick={async (e) => {
-                                e.stopPropagation()
-                                if (!confirm('Are you sure you want to delete this document? This cannot be undone.')) return
-                                try {
-                                  const response = await fetch(`/api/tasks/${doc.linkedTaskId}/proof?documentId=${doc.id}`, {
-                                    method: 'DELETE',
-                                  })
-                                  if (response.ok) {
-                                    await fetchDocuments()
-                                  } else {
-                                    alert('Failed to delete document')
-                                  }
-                                } catch (err) {
-                                  console.error('Error deleting document:', err)
-                                  alert('Error deleting document')
-                                }
-                              }}
-                              className="p-2 hover:bg-red-100 rounded-md transition-colors"
-                              title="Delete document"
-                            >
-                              <TrashIcon className="h-4 w-4 text-red-600" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                        </button>
+                      )
+                    })}
                   </div>
-                </CardContent>
-              )}
-            </Card>
-          )
-        })}
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Document List */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">
+                {searchResults !== null
+                  ? 'Search Results'
+                  : selectedFolder
+                  ? selectedFolder.name
+                  : 'Documents'}
+              </CardTitle>
+              <span className="text-sm text-muted-foreground">
+                {isSearching ? (
+                  <span className="flex items-center gap-2">
+                    <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full" />
+                    Searching...
+                  </span>
+                ) : searchResults !== null ? (
+                  `${searchResults.length} result${searchResults.length !== 1 ? 's' : ''}`
+                ) : selectedFolder ? (
+                  `${documents.length} document${documents.length !== 1 ? 's' : ''}`
+                ) : null}
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent
+            onDragOver={handleDragOver}
+            onDragEnter={handleDocListDragEnter}
+            onDragLeave={handleDocListDragLeave}
+            onDrop={handleDocListDrop}
+            className={`min-h-[200px] transition-colors ${dragOverDocList ? 'bg-primary/10 ring-2 ring-primary ring-dashed rounded-lg' : ''}`}
+          >
+            {/* Upload indicator */}
+            {isUploading && (
+              <div className="mb-4 p-3 bg-blue-50 rounded-lg flex items-center gap-2">
+                <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full" />
+                <span className="text-sm text-blue-700">Uploading files...</span>
+              </div>
+            )}
+
+            {/* Drop zone overlay */}
+            {dragOverDocList && (
+              <div className="absolute inset-0 flex items-center justify-center bg-primary/10 rounded-lg pointer-events-none z-10">
+                <div className="text-center">
+                  <UploadIcon className="h-12 w-12 mx-auto text-primary mb-2" />
+                  <p className="text-primary font-medium">Drop files to upload</p>
+                </div>
+              </div>
+            )}
+
+            {/* Determine which documents to display */}
+            {(() => {
+              const displayDocs = searchResults !== null ? searchResults : documents
+              const showEmptyFolder = searchResults === null && !selectedFolder
+              const showNoResults = searchResults !== null && searchResults.length === 0
+              const showEmptyFolderDocs = searchResults === null && selectedFolder && documents.length === 0
+
+              if (showEmptyFolder) {
+                return <p className="text-muted-foreground text-center py-8">Select a folder to view documents</p>
+              }
+
+              if (showNoResults) {
+                return (
+                  <div className="text-center py-8">
+                    <SearchIcon className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+                    <p className="text-muted-foreground">No documents match your search</p>
+                    <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters or search terms</p>
+                  </div>
+                )
+              }
+
+              if (showEmptyFolderDocs) {
+                return (
+                  <div className="text-center py-8">
+                    <UploadIcon className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+                    <p className="text-muted-foreground">No documents in this folder</p>
+                    <p className="text-sm text-muted-foreground mt-1">Drag and drop files here or click to add</p>
+                    <Button
+                      variant="outline"
+                      className="mt-4"
+                      onClick={() => {
+                        setNewDocument({ ...newDocument, folderId: selectedFolder.id })
+                        setShowAddDialog(true)
+                      }}
+                    >
+                      <PlusIcon className="h-4 w-4 mr-2" />
+                      Add Document
+                    </Button>
+                  </div>
+                )
+              }
+
+              // Show documents
+              return (
+                <div className="space-y-3 relative">
+                  {displayDocs.map((doc) => (
+                  <div
+                    key={doc.id}
+                    draggable
+                    onDragStart={(e) => handleDocumentDragStart(e, doc.id)}
+                    onDragEnd={handleDocumentDragEnd}
+                    className={`flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-grab active:cursor-grabbing transition-opacity ${
+                      draggingDocId === doc.id ? 'opacity-50' : ''
+                    }`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-gray-900 truncate">{doc.documentName}</p>
+                        {doc.isCustom && (
+                          <span className="text-xs px-1.5 py-0.5 bg-gray-200 text-gray-600 rounded">Custom</span>
+                        )}
+                        {doc.isConfidential && (
+                          <span className="text-xs px-1.5 py-0.5 bg-red-100 text-red-600 rounded">Confidential</span>
+                        )}
+                        {doc.version > 1 && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setVersionHistoryDocument(doc)
+                            }}
+                            className="text-xs px-1.5 py-0.5 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition-colors flex items-center gap-1"
+                            title="View version history"
+                          >
+                            <HistoryIcon className="h-3 w-3" />
+                            v{doc.version}
+                          </button>
+                        )}
+                      </div>
+                      {doc.description && (
+                        <p className="text-sm text-muted-foreground truncate">{doc.description}</p>
+                      )}
+                      <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                        <span>Update: {FREQUENCY_LABELS[doc.updateFrequency]}</span>
+                        {(doc.fileUrl || doc.filePath) && (
+                          <>
+                            <span>|</span>
+                            <span>Last updated: {formatDate(doc.lastUpdatedAt)}</span>
+                            {doc.nextUpdateDue && doc.updateFrequency !== 'ONE_TIME' && doc.updateFrequency !== 'AS_NEEDED' && (
+                              <>
+                                <span>|</span>
+                                <span className={doc.status === 'OVERDUE' ? 'text-red-600' : doc.status === 'NEEDS_UPDATE' ? 'text-yellow-600' : ''}>
+                                  {getRelativeTime(doc.nextUpdateDue)}
+                                </span>
+                              </>
+                            )}
+                          </>
+                        )}
+                      </div>
+                      {doc.tags && doc.tags.length > 0 && (
+                        <div className="flex gap-1 mt-2">
+                          {doc.tags.map((t) => (
+                            <span
+                              key={t.tag.id}
+                              className="text-xs px-2 py-0.5 rounded-full"
+                              style={{ backgroundColor: t.tag.color + '20', color: t.tag.color }}
+                            >
+                              {t.tag.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 ml-4">
+                      {(doc.fileUrl || doc.filePath) && (
+                        <span className={`text-xs px-2 py-1 rounded ${STATUS_STYLES[doc.status]?.bg || 'bg-gray-100'} ${STATUS_STYLES[doc.status]?.text || 'text-gray-700'}`}>
+                          {STATUS_STYLES[doc.status]?.label || 'Uploaded'}
+                        </span>
+                      )}
+
+                      {doc.filePath ? (
+                        <>
+                          {canPreview(doc) && (
+                            <button
+                              onClick={() => setPreviewDocument(doc)}
+                              className="p-2 hover:bg-gray-200 rounded-md transition-colors"
+                              title="Preview document"
+                            >
+                              <EyeIcon className="h-4 w-4 text-gray-600" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDownload(doc.id, doc.fileName)}
+                            className="p-2 hover:bg-gray-200 rounded-md transition-colors"
+                            title="Download document"
+                          >
+                            <DownloadIcon className="h-4 w-4 text-gray-600" />
+                          </button>
+                          <button
+                            onClick={() => setAnalyticsDocument(doc)}
+                            className="p-2 hover:bg-gray-200 rounded-md transition-colors"
+                            title="View analytics"
+                          >
+                            <ChartIcon className="h-4 w-4 text-gray-600" />
+                          </button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              if (fileInputRef.current) {
+                                fileInputRef.current.dataset.docId = doc.id
+                                fileInputRef.current.click()
+                              }
+                            }}
+                            disabled={uploadingDocId === doc.id}
+                          >
+                            {uploadingDocId === doc.id ? 'Uploading...' : 'Replace'}
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            if (fileInputRef.current) {
+                              fileInputRef.current.dataset.docId = doc.id
+                              fileInputRef.current.click()
+                            }
+                          }}
+                          disabled={uploadingDocId === doc.id}
+                        >
+                          {uploadingDocId === doc.id ? 'Uploading...' : 'Upload'}
+                        </Button>
+                      )}
+
+                      <button
+                        onClick={() => setShowEditDialog(doc)}
+                        className="p-2 hover:bg-gray-200 rounded-md transition-colors"
+                        title="Edit"
+                      >
+                        <EditIcon className="h-4 w-4 text-gray-600" />
+                      </button>
+
+                      {(doc.isCustom || doc.filePath) && (
+                        <button
+                          onClick={() => handleDeleteDocument(doc.id, doc.isCustom)}
+                          className="p-2 hover:bg-red-100 rounded-md transition-colors"
+                          title={doc.isCustom ? 'Delete' : 'Remove file'}
+                        >
+                          <TrashIcon className="h-4 w-4 text-red-600" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  ))}
+                </div>
+              )
+            })()}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Add Document Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Custom Document</DialogTitle>
+            <DialogTitle>Add Document</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Category</Label>
+              <Label>Folder</Label>
               <Select
-                value={newDocument.category}
-                onValueChange={(v) => setNewDocument({ ...newDocument, category: v })}
+                value={newDocument.folderId}
+                onValueChange={(v) => setNewDocument({ ...newDocument, folderId: v })}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select folder" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(CATEGORY_INFO).map(([key, info]) => (
-                    <SelectItem key={key} value={key}>{info.label}</SelectItem>
+                  {dataRoom?.folders
+                    ?.filter((folder) => canAccessStage(userMaxStage, folder.minStage as DataRoomStageType))
+                    .flatMap((folder) => [
+                    { id: folder.id, name: folder.name },
+                    ...folder.children
+                      .filter((child) => canAccessStage(userMaxStage, child.minStage as DataRoomStageType))
+                      .map((child) => ({
+                      id: child.id,
+                      name: `  ${child.name}`,
+                    })),
+                  ]).map((f) => (
+                    <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -698,7 +1170,7 @@ export default function DataRoomPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>Cancel</Button>
-            <Button onClick={handleAddDocument} disabled={!newDocument.documentName}>Add Document</Button>
+            <Button onClick={handleAddDocument} disabled={!newDocument.documentName || !newDocument.folderId}>Add Document</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -751,10 +1223,21 @@ export default function DataRoomPage() {
                   rows={2}
                 />
               </div>
-              {showEditDialog.fileUrl && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="isConfidential"
+                  checked={showEditDialog.isConfidential}
+                  onChange={(e) => setShowEditDialog({ ...showEditDialog, isConfidential: e.target.checked })}
+                  className="rounded"
+                />
+                <Label htmlFor="isConfidential">Mark as confidential</Label>
+              </div>
+              {showEditDialog.filePath && (
                 <div className="text-sm text-muted-foreground">
                   <p>Current file: {showEditDialog.fileName}</p>
                   <p>Size: {showEditDialog.fileSize ? formatFileSize(showEditDialog.fileSize) : 'Unknown'}</p>
+                  <p>Version: {showEditDialog.version}</p>
                   <p>Last updated: {formatDate(showEditDialog.lastUpdatedAt)}</p>
                 </div>
               )}
@@ -766,60 +1249,66 @@ export default function DataRoomPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Access Manager */}
+      {selectedCompanyId && (
+        <AccessManager
+          companyId={selectedCompanyId}
+          isOpen={showAccessManager}
+          onClose={() => setShowAccessManager(false)}
+        />
+      )}
+
+      {/* Activity Feed */}
+      {selectedCompanyId && (
+        <ActivityFeed
+          companyId={selectedCompanyId}
+          isOpen={showActivityFeed}
+          onClose={() => setShowActivityFeed(false)}
+        />
+      )}
+
+      {/* Document Preview */}
+      {selectedCompanyId && (
+        <DocumentPreview
+          companyId={selectedCompanyId}
+          document={previewDocument}
+          isOpen={!!previewDocument}
+          onClose={() => setPreviewDocument(null)}
+          onDownload={handleDownload}
+        />
+      )}
+
+      {/* Version History */}
+      {selectedCompanyId && (
+        <VersionHistory
+          companyId={selectedCompanyId}
+          document={versionHistoryDocument}
+          isOpen={!!versionHistoryDocument}
+          onClose={() => setVersionHistoryDocument(null)}
+          onVersionRestored={async () => {
+            if (selectedFolder) {
+              await fetchFolderDocuments(selectedFolder.id)
+            }
+            await fetchDataRoom()
+          }}
+        />
+      )}
+
+      {/* Document Analytics */}
+      {selectedCompanyId && analyticsDocument && (
+        <DocumentAnalytics
+          companyId={selectedCompanyId}
+          documentId={analyticsDocument.id}
+          documentName={analyticsDocument.documentName}
+          onClose={() => setAnalyticsDocument(null)}
+        />
+      )}
     </div>
   )
 }
 
 // Icons
-function DollarIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-    </svg>
-  )
-}
-
-function ScaleIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0 0 12 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 0 1-2.031.352 5.988 5.988 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971Zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 0 1-2.031.352 5.989 5.989 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971Z" />
-    </svg>
-  )
-}
-
-function GearIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-    </svg>
-  )
-}
-
-function UsersIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-    </svg>
-  )
-}
-
-function TeamIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
-    </svg>
-  )
-}
-
-function LightbulbIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
-    </svg>
-  )
-}
-
 function FolderIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -844,30 +1333,6 @@ function CheckCircleIcon({ className }: { className?: string }) {
   )
 }
 
-function DocumentIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-    </svg>
-  )
-}
-
-function ClockIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-    </svg>
-  )
-}
-
-function AlertIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-    </svg>
-  )
-}
-
 function ChevronIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -876,7 +1341,7 @@ function ChevronIcon({ className }: { className?: string }) {
   )
 }
 
-function ExternalLinkIcon({ className }: { className?: string }) {
+function _ExternalLinkIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
@@ -900,10 +1365,75 @@ function TrashIcon({ className }: { className?: string }) {
   )
 }
 
-function CheckIcon({ className }: { className?: string }) {
+function UsersIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+    </svg>
+  )
+}
+
+function UploadIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+    </svg>
+  )
+}
+
+function ActivityIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+    </svg>
+  )
+}
+
+function EyeIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+    </svg>
+  )
+}
+
+function DownloadIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+    </svg>
+  )
+}
+
+function HistoryIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+    </svg>
+  )
+}
+
+function SearchIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+    </svg>
+  )
+}
+
+function ChartIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+    </svg>
+  )
+}
+
+function CloseIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
     </svg>
   )
 }

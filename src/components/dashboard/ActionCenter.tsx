@@ -261,7 +261,7 @@ interface PlaybookCardProps {
   onToggle: () => void
 }
 
-function PlaybookCard({ playbook, isExpanded, onToggle }: PlaybookCardProps) {
+function _PlaybookCard({ playbook, isExpanded, onToggle }: PlaybookCardProps) {
   return (
     <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
       {/* Playbook Header - Always visible */}
@@ -452,7 +452,7 @@ export function ActionCenter({ hasAssessment = true }: ActionCenterProps) {
   const [loading, setLoading] = useState(true)
   const [myTasksLoading, setMyTasksLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [expandedPlaybook, setExpandedPlaybook] = useState<string | null>(null)
+  const [_expandedPlaybook, setExpandedPlaybook] = useState<string | null>(null)
 
   // Fetch action center data (for assessment section)
   useEffect(() => {

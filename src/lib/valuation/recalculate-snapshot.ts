@@ -17,6 +17,60 @@ const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
 // Alpha constant for non-linear discount calculation
 const ALPHA = 1.4
 
+// Market salary benchmarks by revenue size category
+// Based on industry compensation studies for owner/CEO roles
+const MARKET_SALARY_BY_REVENUE: Record<string, number> = {
+  UNDER_500K: 80000,
+  FROM_500K_TO_1M: 120000,
+  FROM_1M_TO_3M: 150000,
+  FROM_3M_TO_10M: 200000,
+  FROM_10M_TO_25M: 300000,
+  OVER_25M: 400000,
+}
+
+/**
+ * Get market salary based on company revenue size
+ * Falls back to $150K if revenue size category is unknown
+ */
+function getMarketSalary(revenueSizeCategory: string | null | undefined): number {
+  if (!revenueSizeCategory) return 150000
+  return MARKET_SALARY_BY_REVENUE[revenueSizeCategory] || 150000
+}
+
+// VAL-003 FIX: EBITDA improvement potential by BRI category
+// These represent the typical margin improvement achievable when addressing issues in each category
+const EBITDA_IMPROVEMENT_BY_CATEGORY: Record<string, number> = {
+  FINANCIAL: 0.05,        // 5% - Better pricing, collections, cost control
+  TRANSFERABILITY: 0.02,  // 2% - Reduced key-person risk doesn't directly improve EBITDA
+  OPERATIONAL: 0.08,      // 8% - Process improvements, efficiency gains
+  MARKET: 0.04,           // 4% - Better market position can improve margins
+  LEGAL_TAX: 0.03,        // 3% - Tax optimization, risk reduction
+  PERSONAL: 0.01,         // 1% - Owner readiness has minimal direct EBITDA impact
+}
+
+/**
+ * Calculate potential EBITDA improvement based on BRI category gaps
+ * Returns the estimated EBITDA multiplier (e.g., 1.15 for 15% improvement potential)
+ */
+function calculateEbitdaImprovementMultiplier(
+  categoryScores: Array<{ category: string; score: number }>,
+  categoryWeights: Record<string, number>
+): number {
+  let totalImprovementPotential = 0
+
+  for (const cs of categoryScores) {
+    const gap = 1 - cs.score // How far from perfect score
+    const categoryWeight = categoryWeights[cs.category] || 0
+    const maxImprovement = EBITDA_IMPROVEMENT_BY_CATEGORY[cs.category] || 0
+
+    // Improvement potential is proportional to the gap and weighted by category importance
+    totalImprovementPotential += gap * maxImprovement * (categoryWeight / 0.25) // Normalize by average weight
+  }
+
+  // Cap total improvement at 25% to be conservative
+  return 1 + Math.min(totalImprovementPotential, 0.25)
+}
+
 /**
  * Fetch BRI weights for a company
  * Priority: Company-specific > Global custom > Default
@@ -221,7 +275,10 @@ export async function recalculateSnapshotForCompany(
       .filter(a => a.type === 'DEDUCTION')
       .reduce((sum, a) => sum + Number(a.amount), 0)
 
-    const marketSalary = Math.min(ownerComp, 150000)
+    // VAL-001 FIX: Use revenue-size-appropriate market salary instead of hardcoded $150K
+    const revenueSizeCategory = coreFactors?.revenueSizeCategory
+    const marketSalaryBenchmark = getMarketSalary(revenueSizeCategory)
+    const marketSalary = Math.min(ownerComp, marketSalaryBenchmark)
     const excessComp = Math.max(0, ownerComp - marketSalary)
 
     let adjustedEbitda: number
@@ -247,9 +304,15 @@ export async function recalculateSnapshotForCompany(
     // Step 3: Final multiple with floor guarantee
     const finalMultiple = industryMultipleLow + (baseMultiple - industryMultipleLow) * (1 - discountFraction)
 
+    // VAL-003 FIX: Calculate potential EBITDA improvement from addressing BRI gaps
+    const ebitdaImprovementMultiplier = calculateEbitdaImprovementMultiplier(categoryScores, categoryWeights)
+    const potentialEbitda = adjustedEbitda * ebitdaImprovementMultiplier
+
     // Calculate valuations
+    // Current value uses current EBITDA with BRI-discounted multiple
     const currentValue = adjustedEbitda * finalMultiple
-    const potentialValue = adjustedEbitda * baseMultiple
+    // Potential value uses improved EBITDA with full base multiple (no BRI discount)
+    const potentialValue = potentialEbitda * baseMultiple
     const valueGap = potentialValue - currentValue
 
     // Helper to get category score

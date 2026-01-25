@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { requireDevEndpoint, logDevEndpointAccess } from '@/lib/security'
 
 // Canonical task template storage
 // In a full implementation, this would be a separate database table
@@ -67,6 +68,10 @@ function validateTaskTitle(title: string): { valid: boolean; error?: string } {
 
 // POST - Create a new canonical task
 export async function POST(request: NextRequest) {
+  // SECURITY: Block developer endpoints in production
+  const devCheck = requireDevEndpoint()
+  if (devCheck) return devCheck
+
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -74,6 +79,8 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
+
+    logDevEndpointAccess('POST /api/developer/tasks', user.id)
 
     const body = await request.json()
     const {
@@ -175,6 +182,10 @@ export async function POST(request: NextRequest) {
 
 // GET - List canonical task templates
 export async function GET(request: NextRequest) {
+  // SECURITY: Block developer endpoints in production
+  const devCheck = requireDevEndpoint()
+  if (devCheck) return devCheck
+
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -182,6 +193,8 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
+
+    logDevEndpointAccess('GET /api/developer/tasks', user.id)
 
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')

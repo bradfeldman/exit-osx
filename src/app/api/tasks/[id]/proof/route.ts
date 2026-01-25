@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { SIGNED_URL_EXPIRY_SECONDS } from '@/lib/security'
 
 // GET - Get proof documents for a task with signed download URLs
 export async function GET(
@@ -43,13 +44,14 @@ export async function GET(
 
     // Generate signed download URLs for each document with a filePath
     // Use service client for storage operations (bypasses RLS)
+    // SECURITY: Reduced expiry from 1 hour to 5 minutes
     const serviceClient = createServiceClient()
     const documentsWithUrls = await Promise.all(
       task.proofDocuments.map(async (doc) => {
         if (doc.filePath && doc.status === 'CURRENT') {
           const { data: signedUrlData } = await serviceClient.storage
             .from('data-room')
-            .createSignedUrl(doc.filePath, 3600) // 1 hour expiry
+            .createSignedUrl(doc.filePath, SIGNED_URL_EXPIRY_SECONDS)
 
           return {
             ...doc,

@@ -69,7 +69,7 @@ function formatCurrency(value: number): string {
   }).format(value)
 }
 
-function formatCurrencyFull(value: number): string {
+function _formatCurrencyFull(value: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -89,7 +89,7 @@ function parseInputValue(value: string): number {
 }
 
 export default function BusinessLoansPage() {
-  const { selectedCompanyId, selectedCompany } = useCompany()
+  const { selectedCompanyId, selectedCompany: _selectedCompany } = useCompany()
   const [dashboardData, setDashboardData] = useState<CompanyDashboard | null>(null)
   const [personalNetWorth, setPersonalNetWorth] = useState<number>(0)
   const [businessValue, setBusinessValue] = useState<number>(0)

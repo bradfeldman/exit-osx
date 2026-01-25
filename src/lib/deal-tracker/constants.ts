@@ -316,7 +316,7 @@ export const VALID_STAGE_TRANSITIONS: Record<DealStage, DealStage[]> = {
 // Get the group for a given stage
 export function getStageGroup(stage: DealStage): string {
   for (const [groupKey, group] of Object.entries(STAGE_GROUPS)) {
-    if (group.stages.includes(stage)) {
+    if ((group.stages as readonly DealStage[]).includes(stage)) {
       return groupKey
     }
   }

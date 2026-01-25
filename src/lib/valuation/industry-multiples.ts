@@ -123,6 +123,110 @@ export function calculateBaseMultiple(low: number, high: number): number {
   return (low + high) / 2
 }
 
+// VAL-004 FIX: Add revenue-based valuation support
+export type ValuationMethod = 'ebitda' | 'revenue' | 'hybrid'
+
+export interface RevenueValuationResult {
+  currentValue: number
+  potentialValue: number
+  valueGap: number
+  revenueMultipleLow: number
+  revenueMultipleHigh: number
+  baseMultiple: number
+  finalMultiple: number
+}
+
+/**
+ * Calculate valuation using revenue multiples
+ * Particularly useful for high-growth, pre-profit companies (SaaS, tech startups)
+ *
+ * @param revenue Annual recurring revenue (ARR) or annual revenue
+ * @param multiples Industry multiple data
+ * @param coreScore Core business score (0-1)
+ * @param briScore Buyer readiness index (0-1)
+ * @param alpha Non-linear discount constant
+ */
+export function calculateRevenueBasedValuation(
+  revenue: number,
+  multiples: MultipleResult,
+  coreScore: number,
+  briScore: number,
+  alpha: number = 1.4
+): RevenueValuationResult {
+  const { revenueMultipleLow, revenueMultipleHigh } = multiples
+
+  // Core Score positions within industry range
+  const baseMultiple = revenueMultipleLow + coreScore * (revenueMultipleHigh - revenueMultipleLow)
+
+  // Non-linear discount based on BRI (same formula as EBITDA method)
+  const discountFraction = Math.pow(1 - briScore, alpha)
+
+  // Final multiple with floor guarantee
+  const finalMultiple = revenueMultipleLow + (baseMultiple - revenueMultipleLow) * (1 - discountFraction)
+
+  // Calculate valuations
+  const currentValue = revenue * finalMultiple
+  const potentialValue = revenue * baseMultiple
+  const valueGap = potentialValue - currentValue
+
+  return {
+    currentValue,
+    potentialValue,
+    valueGap,
+    revenueMultipleLow,
+    revenueMultipleHigh,
+    baseMultiple,
+    finalMultiple,
+  }
+}
+
+/**
+ * Determine recommended valuation method based on company characteristics
+ *
+ * Revenue-based valuation is recommended for:
+ * - High-growth companies (>30% YoY revenue growth)
+ * - Pre-profit or low-margin businesses
+ * - SaaS/subscription companies
+ * - Companies with negative EBITDA
+ *
+ * EBITDA-based valuation is recommended for:
+ * - Mature, profitable companies
+ * - Service businesses with stable margins
+ * - Manufacturing and traditional industries
+ */
+export function recommendValuationMethod(
+  revenue: number,
+  ebitda: number,
+  revenueGrowthRate?: number,
+  isRecurringRevenue?: boolean
+): ValuationMethod {
+  // Use revenue multiple if EBITDA is negative or zero
+  if (ebitda <= 0) {
+    return 'revenue'
+  }
+
+  // Calculate EBITDA margin
+  const ebitdaMargin = revenue > 0 ? ebitda / revenue : 0
+
+  // High-growth companies (>30% growth) often valued on revenue
+  if (revenueGrowthRate && revenueGrowthRate > 0.30) {
+    return 'revenue'
+  }
+
+  // SaaS/subscription businesses often valued on ARR multiples
+  if (isRecurringRevenue && ebitdaMargin < 0.15) {
+    return 'revenue'
+  }
+
+  // Low-margin businesses might benefit from hybrid approach
+  if (ebitdaMargin < 0.10) {
+    return 'hybrid'
+  }
+
+  // Default to EBITDA for profitable, mature businesses
+  return 'ebitda'
+}
+
 /**
  * Estimate EBITDA from revenue using industry multiples
  *

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { toast } from '@/components/ui/toaster'
+import { toast as _toast } from '@/components/ui/toaster'
 import {
   Dialog,
   DialogContent,

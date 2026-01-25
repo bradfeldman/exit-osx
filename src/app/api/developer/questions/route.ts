@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
+import { requireDevEndpoint, logDevEndpointAccess } from '@/lib/security'
 
 // POST - Create a new question with options
 export async function POST(request: NextRequest) {
+  // SECURITY: Block developer endpoints in production
+  const devCheck = requireDevEndpoint()
+  if (devCheck) return devCheck
+
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -11,6 +16,8 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
+
+    logDevEndpointAccess('POST /api/developer/questions', user.id)
 
     const body = await request.json()
     const {
@@ -99,6 +106,10 @@ export async function POST(request: NextRequest) {
 
 // GET - List all questions (for reference when mapping tasks)
 export async function GET(request: NextRequest) {
+  // SECURITY: Block developer endpoints in production
+  const devCheck = requireDevEndpoint()
+  if (devCheck) return devCheck
+
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -106,6 +117,8 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
+
+    logDevEndpointAccess('GET /api/developer/questions', user.id)
 
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')

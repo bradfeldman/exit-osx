@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { exchangeCodeForTokens, syncQuickBooksData, getCompanyInfo } from '@/lib/integrations/quickbooks'
+import { verifySignedOAuthState } from '@/lib/security/oauth-state'
 
 // GET - OAuth callback handler
 export async function GET(request: NextRequest) {
@@ -35,12 +36,18 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Decode state to get company ID
-    let companyId: string
-    try {
-      const stateData = JSON.parse(Buffer.from(state, 'base64').toString())
-      companyId = stateData.companyId
-    } catch {
+    // SECURITY: Verify HMAC-signed state to prevent tampering attacks
+    // This ensures the companyId hasn't been modified by an attacker
+    const stateResult = verifySignedOAuthState(state)
+    if (!stateResult.valid) {
+      console.error('QuickBooks OAuth state validation failed:', stateResult.error)
+      return NextResponse.redirect(
+        new URL('/dashboard/financials/pnl?qb_error=Invalid or expired authorization', request.url)
+      )
+    }
+
+    const companyId = stateResult.data.companyId
+    if (!companyId) {
       return NextResponse.redirect(
         new URL('/dashboard/financials/pnl?qb_error=Invalid state parameter', request.url)
       )

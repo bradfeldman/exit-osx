@@ -9,6 +9,8 @@ import { TaskCompletionDialog } from './TaskCompletionDialog'
 import { TaskUploadDialog } from './TaskUploadDialog'
 import { FileText, ChevronDown, ChevronRight, Target, AlertTriangle, CheckCircle2, ListChecks, FileOutput, TrendingUp, Upload } from 'lucide-react'
 import { type RichTaskDescription, hasRichDescription } from '@/lib/playbook/rich-task-description'
+// TERM-001 FIX: Use shared constants for consistent terminology
+import { getBRICategoryLabel, getBRICategoryColor } from '@/lib/constants/bri-categories'
 
 interface ProofDocument {
   id: string
@@ -57,30 +59,15 @@ interface Task {
 
 interface TaskCardProps {
   task: Task
-  onStatusChange: (taskId: string, status: string, extra?: { blockedReason?: string }) => void
+  // TASK-001 FIX: Extended extra parameter to include completionNotes
+  onStatusChange: (taskId: string, status: string, extra?: { blockedReason?: string; completionNotes?: string }) => void
   onAssign?: (taskId: string) => void
   onTaskUpdate?: () => void  // Called when task data changes (e.g., after upload)
   showAssignment?: boolean
   defaultExpanded?: boolean
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  FINANCIAL: 'Financial',
-  TRANSFERABILITY: 'Transfer',
-  OPERATIONAL: 'Operations',
-  MARKET: 'Market',
-  LEGAL_TAX: 'Legal/Tax',
-  PERSONAL: 'Personal',
-}
-
-const CATEGORY_COLORS: Record<string, string> = {
-  FINANCIAL: 'bg-blue-100 text-blue-700',
-  TRANSFERABILITY: 'bg-green-100 text-green-700',
-  OPERATIONAL: 'bg-yellow-100 text-yellow-700',
-  MARKET: 'bg-purple-100 text-purple-700',
-  LEGAL_TAX: 'bg-red-100 text-red-700',
-  PERSONAL: 'bg-orange-100 text-orange-700',
-}
+// TERM-001 FIX: Removed local category definitions - now using shared constants from @/lib/constants/bri-categories
 
 function getEffortLevel(effort: string): string {
   switch (effort) {
@@ -142,6 +129,14 @@ const ACTION_TYPE_LABELS: Record<string, string> = {
   TYPE_VIII_SIGNALING: 'Signal to Market',
   TYPE_IX_OPTIONS: 'Create Options',
   TYPE_X_DEFER: 'Defer',
+}
+
+// UI-002 FIX: Add complexity labels for user-friendly display
+const COMPLEXITY_LABELS: Record<string, string> = {
+  SIMPLE: 'Simple',
+  MODERATE: 'Moderate',
+  COMPLEX: 'Complex',
+  STRATEGIC: 'Strategic',
 }
 
 function getInitials(name: string | null, email: string): string {
@@ -354,11 +349,11 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
     setIsUpdating(false)
   }
 
-  const handleComplete = async (taskId: string, _completionNotes?: string) => {
+  // TASK-001 FIX: Actually pass completionNotes through to the handler
+  const handleComplete = async (taskId: string, completionNotes?: string) => {
     setIsUpdating(true)
     // Pass completion notes via the onStatusChange handler
-    // The parent component should handle this
-    await onStatusChange(taskId, 'COMPLETED')
+    await onStatusChange(taskId, 'COMPLETED', completionNotes ? { completionNotes } : undefined)
     setIsUpdating(false)
   }
 
@@ -402,8 +397,8 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2 mt-2">
-                  <span className={`px-2 py-0.5 text-xs font-medium rounded ${CATEGORY_COLORS[task.briCategory] || 'bg-gray-100 text-gray-700'}`}>
-                    {CATEGORY_LABELS[task.briCategory] || task.briCategory}
+                  <span className={`px-2 py-0.5 text-xs font-medium rounded ${getBRICategoryColor(task.briCategory)}`}>
+                    {getBRICategoryLabel(task.briCategory, true)}
                   </span>
                   <span className={`px-2 py-0.5 text-xs font-medium rounded ${getImpactEffortColor(task.effortLevel, task.issueTier)}`}>
                     {getImpactLevel(task.issueTier)} / {getEffortLevel(task.effortLevel)}
@@ -546,7 +541,7 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
                 <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-4 text-xs text-gray-500">
                     <span>Type: {ACTION_TYPE_LABELS[task.actionType] || task.actionType}</span>
-                    <span>Complexity: {task.complexity}</span>
+                    <span>Complexity: {COMPLEXITY_LABELS[task.complexity] || task.complexity}</span>
                   </div>
 
                   {/* Blocked Reason Display */}

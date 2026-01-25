@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useCompany } from '@/contexts/CompanyContext'
+import { usePermissions } from '@/hooks/usePermissions'
+import { Lock, AlertTriangle } from 'lucide-react'
 
 interface ValuationSnapshot {
   id: string
@@ -79,38 +81,78 @@ function parseInputValue(value: string): number {
 
 export default function PersonalFinancialStatementPage() {
   const { selectedCompanyId } = useCompany()
-  const [companies, setCompanies] = useState<Company[]>([])
+  const { hasPermission, isLoading: permissionsLoading } = usePermissions({ companyId: selectedCompanyId || undefined })
+  const [_companies, setCompanies] = useState<Company[]>([])
   const [businessAssets, setBusinessAssets] = useState<BusinessAsset[]>([])
   const [personalAssets, setPersonalAssets] = useState<PersonalAsset[]>([])
   const [personalLiabilities, setPersonalLiabilities] = useState<PersonalLiability[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [lastSaved, setLastSaved] = useState<Date | null>(null)
+
+  // Check permissions
+  const canViewPersonal = hasPermission('personal.retirement:view') || hasPermission('personal.net_worth:view')
+  const canEditPersonal = hasPermission('personal.retirement:edit') || hasPermission('personal.net_worth:edit')
 
   // Load companies and saved data on mount
   useEffect(() => {
-    loadCompanies()
-    loadSavedData()
-  }, [])
-
-  // Save personal assets and liabilities to localStorage whenever they change
-  useEffect(() => {
-    if (!loading) {
-      localStorage.setItem('pfs_personalAssets', JSON.stringify(personalAssets))
-      localStorage.setItem('pfs_personalLiabilities', JSON.stringify(personalLiabilities))
+    if (!permissionsLoading && canViewPersonal) {
+      loadCompanies()
+      if (selectedCompanyId) {
+        loadPersonalFinancials(selectedCompanyId)
+      }
     }
-  }, [personalAssets, personalLiabilities, loading])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [permissionsLoading, canViewPersonal, selectedCompanyId])
 
-  // Save business ownership percentages
-  useEffect(() => {
-    if (!loading && businessAssets.length > 0) {
-      const ownershipData = businessAssets.reduce((acc, asset) => {
-        acc[asset.companyId] = asset.ownershipPercent
-        return acc
-      }, {} as Record<string, number>)
-      localStorage.setItem('pfs_businessOwnership', JSON.stringify(ownershipData))
+  // Save to database when data changes
+  async function savePersonalFinancials() {
+    if (!selectedCompanyId || !canEditPersonal) return
+
+    setSaving(true)
+    try {
+      await fetch(`/api/companies/${selectedCompanyId}/personal-financials`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          personalAssets,
+          personalLiabilities,
+          netWorth: totalAssets - totalLiabilities,
+          totalRetirement: personalAssets
+            .filter(a => a.category === 'Retirement Accounts')
+            .reduce((sum, a) => sum + a.value, 0),
+        }),
+      })
+      setLastSaved(new Date())
+    } catch (error) {
+      console.error('Failed to save personal financials:', error)
+    } finally {
+      setSaving(false)
     }
-  }, [businessAssets, loading])
+  }
 
-  function loadSavedData() {
+  async function loadPersonalFinancials(companyId: string) {
+    try {
+      const response = await fetch(`/api/companies/${companyId}/personal-financials`)
+      if (response.ok) {
+        const data = await response.json()
+        if (data.personalFinancials) {
+          if (data.personalFinancials.personalAssets) {
+            setPersonalAssets(data.personalFinancials.personalAssets)
+          }
+          if (data.personalFinancials.personalLiabilities) {
+            setPersonalLiabilities(data.personalFinancials.personalLiabilities)
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load personal financials:', error)
+      // Fall back to localStorage
+      loadSavedDataFromLocalStorage()
+    }
+  }
+
+  function loadSavedDataFromLocalStorage() {
     try {
       const savedAssets = localStorage.getItem('pfs_personalAssets')
       const savedLiabilities = localStorage.getItem('pfs_personalLiabilities')
@@ -247,6 +289,39 @@ export default function PersonalFinancialStatementPage() {
   const totalLiabilities = personalLiabilities.reduce((sum, liability) => sum + liability.amount, 0)
   const netWorth = totalAssets - totalLiabilities
 
+  // Show loading spinner only while permissions are loading
+  // Once permissions are loaded, we can show the appropriate view
+  if (permissionsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    )
+  }
+
+  // Permission denied view - check this before data loading
+  if (!canViewPersonal) {
+    return (
+      <div className="space-y-6 max-w-4xl">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Personal Financial Statement</h1>
+          <p className="text-gray-600">Track your personal assets, liabilities, and net worth</p>
+        </div>
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Lock className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Access Restricted</h3>
+            <p className="text-muted-foreground text-center max-w-md">
+              You don&apos;t have permission to view personal financial information.
+              Contact your organization administrator if you need access.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Show loading spinner while data is loading (after permission check passes)
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -258,10 +333,36 @@ export default function PersonalFinancialStatementPage() {
   return (
     <div className="space-y-6 max-w-4xl">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Personal Financial Statement</h1>
-        <p className="text-gray-600">Track your personal assets, liabilities, and net worth</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Personal Financial Statement</h1>
+          <p className="text-gray-600">Track your personal assets, liabilities, and net worth</p>
+        </div>
+        {canEditPersonal && (
+          <div className="flex items-center gap-2">
+            {lastSaved && (
+              <span className="text-xs text-muted-foreground">
+                Last saved: {lastSaved.toLocaleTimeString()}
+              </span>
+            )}
+            <Button onClick={savePersonalFinancials} disabled={saving}>
+              {saving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
+        )}
       </div>
+
+      {/* Read-only warning for view-only users */}
+      {!canEditPersonal && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="flex items-center gap-2 py-3">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <span className="text-sm text-amber-800">
+              You have view-only access to this page. Contact your administrator to request edit permissions.
+            </span>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Net Worth Summary */}
       <Card>
@@ -353,9 +454,11 @@ export default function PersonalFinancialStatementPage() {
             <CardTitle>Personal Assets</CardTitle>
             <CardDescription>Real estate, vehicles, investments, and other personal assets</CardDescription>
           </div>
-          <Button onClick={addPersonalAsset} variant="outline" size="sm">
-            + Add Asset
-          </Button>
+          {canEditPersonal && (
+            <Button onClick={addPersonalAsset} variant="outline" size="sm">
+              + Add Asset
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {personalAssets.length === 0 ? (
@@ -438,9 +541,11 @@ export default function PersonalFinancialStatementPage() {
             <CardTitle>Personal Liabilities</CardTitle>
             <CardDescription>Mortgages, loans, credit cards, and other debts</CardDescription>
           </div>
-          <Button onClick={addPersonalLiability} variant="outline" size="sm">
-            + Add Liability
-          </Button>
+          {canEditPersonal && (
+            <Button onClick={addPersonalLiability} variant="outline" size="sm">
+              + Add Liability
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {personalLiabilities.length === 0 ? (
@@ -549,7 +654,9 @@ export default function PersonalFinancialStatementPage() {
       {/* Note */}
       <p className="text-xs text-gray-500 text-center">
         This worksheet is for planning purposes only. Business values are based on current market valuations from each company&apos;s Scorecard.
-        Personal assets and liabilities are stored locally in your browser and are not saved to the server.
+        {canEditPersonal
+          ? ' Click "Save Changes" to save your data securely to the cloud.'
+          : ' You have view-only access to this information.'}
       </p>
     </div>
   )

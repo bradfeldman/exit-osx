@@ -4,6 +4,7 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import { Pool } from 'pg'
 import { briQuestions } from './seed-data/bri-questions'
 import { industryMultiples } from './seed-data/industry-multiples'
+import { roleTemplates } from './seed-data/role-templates'
 
 // Load environment variables from .env.local
 config({ path: '.env.local' })
@@ -78,12 +79,37 @@ async function main() {
   }
   console.log(`Seeded ${industryMultiples.length} industry multiples`)
 
+  // Seed role templates (upsert to preserve existing data)
+  console.log('Seeding role templates...')
+  for (const template of roleTemplates) {
+    await prisma.roleTemplate.upsert({
+      where: { slug: template.slug },
+      update: {
+        name: template.name,
+        description: template.description,
+        icon: template.icon,
+        defaultPermissions: template.defaultPermissions,
+        isBuiltIn: template.isBuiltIn,
+      },
+      create: {
+        slug: template.slug,
+        name: template.name,
+        description: template.description,
+        icon: template.icon,
+        defaultPermissions: template.defaultPermissions,
+        isBuiltIn: template.isBuiltIn,
+      },
+    })
+  }
+  console.log(`Seeded ${roleTemplates.length} role templates`)
+
   // Verify
   const questionCount = await prisma.question.count()
   const optionCount = await prisma.questionOption.count()
   const multiplesCount = await prisma.industryMultiple.count()
+  const templateCount = await prisma.roleTemplate.count()
 
-  console.log(`Database now has ${questionCount} questions, ${optionCount} options, and ${multiplesCount} industry multiples`)
+  console.log(`Database now has ${questionCount} questions, ${optionCount} options, ${multiplesCount} industry multiples, and ${templateCount} role templates`)
 
   await prisma.$disconnect()
   await pool.end()
