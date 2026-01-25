@@ -184,6 +184,9 @@ export async function GET(
 
   const { token } = await params
 
+  // DEBUG: Log token lookup for troubleshooting
+  console.log('[Invite API] Looking up token:', token?.substring(0, 10) + '...')
+
   try {
     const invite = await prisma.organizationInvite.findUnique({
       where: { token },
@@ -193,6 +196,9 @@ export async function GET(
         roleTemplate: { select: { name: true, icon: true } }
       }
     })
+
+    // DEBUG: Log result
+    console.log('[Invite API] Invite found:', !!invite, invite ? `(org: ${invite.organization.name})` : '')
 
     // SECURITY: Return generic error to prevent token enumeration
     // Don't reveal whether token exists, is expired, or was already used

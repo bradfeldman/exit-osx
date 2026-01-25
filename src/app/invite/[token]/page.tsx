@@ -161,28 +161,17 @@ export default function InviteAcceptPage() {
           <div>
             <h2 className="text-2xl font-bold text-foreground">Invitation Not Found</h2>
             <p className="mt-2 text-muted-foreground">
-              This invitation link is invalid, has expired, or has already been used.
+              This invitation may have expired or already been used.
             </p>
           </div>
           <Card>
-            <CardContent className="pt-6 space-y-4">
-              <div className="text-sm text-muted-foreground space-y-3">
-                <p className="font-medium text-foreground">What you can do:</p>
-                <ul className="text-left space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-0.5">1.</span>
-                    <span>Check your email for the original invitation and use the link there</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-0.5">2.</span>
-                    <span>Ask the person who invited you to send a new invitation</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-0.5">3.</span>
-                    <span>If you&apos;ve already joined, <Link href="/login" className="text-primary hover:underline">sign in here</Link></span>
-                  </li>
-                </ul>
-              </div>
+            <CardContent className="pt-6 space-y-3">
+              <p className="text-sm text-muted-foreground">
+                If you just received this link, please ask the sender to create a new invitation.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Already have an account? <Link href="/login" className="text-primary hover:underline">Sign in</Link>
+              </p>
             </CardContent>
           </Card>
         </div>
