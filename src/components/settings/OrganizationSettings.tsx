@@ -63,6 +63,8 @@ import {
   Lock,
   Shield,
   ExternalLink,
+  Copy,
+  Check,
 } from 'lucide-react'
 
 // Types
@@ -214,6 +216,7 @@ export function OrganizationSettings() {
   const [inviting, setInviting] = useState(false)
   const [inviteError, setInviteError] = useState<string | null>(null)
   const [inviteUrl, setInviteUrl] = useState<string | null>(null)
+  const [inviteCopied, setInviteCopied] = useState(false)
   const [updatingCategories, setUpdatingCategories] = useState<string | null>(null)
 
   // Role templates
@@ -265,6 +268,7 @@ export function OrganizationSettings() {
     setCustomPermissions({})
     setInviteError(null)
     setInviteUrl(null)
+    setInviteCopied(false)
   }
 
   async function handleInvite() {
@@ -302,7 +306,7 @@ export function OrganizationSettings() {
         return
       }
 
-      setInviteUrl(window.location.origin + data.invite.inviteUrl)
+      setInviteUrl(data.invite.inviteUrl)
       loadOrganization()
     } catch {
       setInviteError('Failed to send invite')
@@ -464,13 +468,39 @@ export function OrganizationSettings() {
                 </DialogHeader>
 
                 {inviteUrl ? (
-                  <div className="py-4">
-                    <div className="p-4 bg-muted rounded-lg">
-                      <p className="text-sm text-muted-foreground mb-2">
+                  <div className="py-4 space-y-4">
+                    <div className="p-4 bg-muted rounded-lg space-y-3">
+                      <p className="text-sm text-muted-foreground">
                         Share this invite link:
                       </p>
-                      <code className="text-xs break-all">{inviteUrl}</code>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          readOnly
+                          value={inviteUrl}
+                          className="font-mono text-sm"
+                          onClick={(e) => e.currentTarget.select()}
+                        />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={async () => {
+                            await navigator.clipboard.writeText(inviteUrl)
+                            setInviteCopied(true)
+                            setTimeout(() => setInviteCopied(false), 2000)
+                          }}
+                          className="shrink-0"
+                        >
+                          {inviteCopied ? (
+                            <Check className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
+                    <p className="text-sm text-muted-foreground text-center">
+                      An email has also been sent to {inviteEmail}
+                    </p>
                   </div>
                 ) : (
                   <>
