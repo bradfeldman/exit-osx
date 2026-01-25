@@ -192,11 +192,13 @@ interface SignupResult {
 
 /**
  * Server action for secure signup with password breach checking
+ * @param redirectTo - Optional URL to redirect to after email confirmation
  */
 export async function secureSignup(
   name: string,
   email: string,
-  password: string
+  password: string,
+  redirectTo?: string
 ): Promise<SignupResult> {
   const { validatePassword, getPasswordWarning } = await import('@/lib/security')
 
@@ -209,6 +211,13 @@ export async function secureSignup(
     }
   }
 
+  // Build the email confirmation redirect URL
+  // The auth/callback route will read the 'next' parameter and redirect there
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.exitosx.com'
+  const emailRedirectTo = redirectTo
+    ? `${baseUrl}/auth/callback?next=${encodeURIComponent(redirectTo)}`
+    : `${baseUrl}/auth/callback`
+
   const supabase = await createClient()
   const { error } = await supabase.auth.signUp({
     email,
@@ -217,6 +226,7 @@ export async function secureSignup(
       data: {
         name,
       },
+      emailRedirectTo,
     },
   })
 

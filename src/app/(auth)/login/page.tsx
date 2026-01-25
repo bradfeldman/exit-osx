@@ -1,17 +1,37 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useCallback, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Captcha, resetCaptcha } from '@/components/ui/captcha'
-import { Eye, EyeOff, Shield as ShieldIcon } from 'lucide-react'
+import { Eye, EyeOff, Shield as ShieldIcon, Loader2 } from 'lucide-react'
 import { secureLogin } from '@/app/actions/auth'
+import { getRedirectUrl, buildUrlWithRedirect, isInviteRedirect } from '@/lib/utils/redirect'
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginPageLoading />}>
+      <LoginPageContent />
+    </Suspense>
+  )
+}
+
+function LoginPageLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  )
+}
+
+function LoginPageContent() {
+  const searchParams = useSearchParams()
+  const redirectUrl = getRedirectUrl(searchParams)
+  const isFromInvite = isInviteRedirect(redirectUrl)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -73,7 +93,7 @@ export default function LoginPage() {
         return
       }
 
-      router.push('/dashboard')
+      router.push(redirectUrl)
       router.refresh()
     } catch {
       setError('An unexpected error occurred')
@@ -185,9 +205,13 @@ export default function LoginPage() {
           </div>
 
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-foreground">Welcome back</h2>
+            <h2 className="text-3xl font-bold text-foreground">
+              {isFromInvite ? 'Sign in to accept your invite' : 'Welcome back'}
+            </h2>
             <p className="mt-2 text-muted-foreground">
-              Sign in to continue to your dashboard
+              {isFromInvite
+                ? 'Log in to your account to join the team'
+                : 'Sign in to continue to your dashboard'}
             </p>
           </div>
 
@@ -312,7 +336,7 @@ export default function LoginPage() {
           <div className="text-center space-y-4">
             <p className="text-sm text-muted-foreground">
               Don&apos;t have an account?{' '}
-              <Link href="/signup" className="font-medium text-primary hover:underline">
+              <Link href={buildUrlWithRedirect('/signup', redirectUrl)} className="font-medium text-primary hover:underline">
                 Create one for free
               </Link>
             </p>

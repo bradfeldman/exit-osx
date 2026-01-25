@@ -1,15 +1,36 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Eye, EyeOff, AlertTriangle } from 'lucide-react'
+import { Eye, EyeOff, AlertTriangle, Loader2 } from 'lucide-react'
 import { secureSignup } from '@/app/actions/auth'
+import { getRedirectUrl, buildUrlWithRedirect, isInviteRedirect } from '@/lib/utils/redirect'
 
 export default function SignupPage() {
+  return (
+    <Suspense fallback={<SignupPageLoading />}>
+      <SignupPageContent />
+    </Suspense>
+  )
+}
+
+function SignupPageLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  )
+}
+
+function SignupPageContent() {
+  const searchParams = useSearchParams()
+  const redirectUrl = getRedirectUrl(searchParams)
+  const isFromInvite = isInviteRedirect(redirectUrl)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -35,7 +56,7 @@ export default function SignupPage() {
     }
 
     try {
-      const result = await secureSignup(name, email, password)
+      const result = await secureSignup(name, email, password, redirectUrl)
 
       if (!result.success) {
         setError(result.error || 'Unable to create account')
@@ -132,6 +153,12 @@ export default function SignupPage() {
               Click the link in the email to verify your account and complete signup.
               Don&apos;t see it? Check your spam folder.
             </p>
+
+            {isFromInvite && (
+              <div className="p-4 text-sm text-primary bg-primary/5 border border-primary/20 rounded-lg">
+                <p className="font-medium">After verifying your email, you&apos;ll be redirected to accept your team invite.</p>
+              </div>
+            )}
 
             {warning && (
               <div className="p-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
@@ -237,9 +264,13 @@ export default function SignupPage() {
           </div>
 
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-foreground">Create your account</h2>
+            <h2 className="text-3xl font-bold text-foreground">
+              {isFromInvite ? 'Create an account to join' : 'Create your account'}
+            </h2>
             <p className="mt-2 text-muted-foreground">
-              Get started with Exit OSx in minutes
+              {isFromInvite
+                ? 'Sign up to accept your team invitation'
+                : 'Get started with Exit OSx in minutes'}
             </p>
           </div>
 
@@ -341,7 +372,7 @@ export default function SignupPage() {
           <div className="text-center space-y-4">
             <p className="text-sm text-muted-foreground">
               Already have an account?{' '}
-              <Link href="/login" className="font-medium text-primary hover:underline">
+              <Link href={buildUrlWithRedirect('/login', redirectUrl)} className="font-medium text-primary hover:underline">
                 Sign in
               </Link>
             </p>

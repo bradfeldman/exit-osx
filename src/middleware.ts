@@ -141,7 +141,7 @@ export async function middleware(request: NextRequest) {
   const isAdminSubdomain = hostname.startsWith('admin.')
 
   // Public routes that don't require auth
-  const publicRoutes = ['/login', '/signup', '/auth/callback', '/auth/confirm', '/pricing', '/terms', '/privacy']
+  const publicRoutes = ['/login', '/signup', '/auth/callback', '/auth/confirm', '/pricing', '/terms', '/privacy', '/invite']
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
 
   // SECURITY: Check if this is an admin route
@@ -189,7 +189,7 @@ export async function middleware(request: NextRequest) {
   if (isAdminRoute && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    url.searchParams.set('redirect', pathname)
+    url.searchParams.set('next', pathname)
     return NextResponse.redirect(url)
   }
 
