@@ -6,6 +6,52 @@ import {
   createRateLimitResponse,
 } from '@/lib/security/rate-limit'
 
+// SECURITY: Basic auth protection for staging environment
+function checkStagingAuth(request: NextRequest): NextResponse | null {
+  const hostname = request.headers.get('host') || ''
+
+  // Only apply to staging.exitosx.com
+  if (!hostname.includes('staging.exitosx.com')) {
+    return null
+  }
+
+  const authHeader = request.headers.get('authorization')
+
+  if (!authHeader || !authHeader.startsWith('Basic ')) {
+    return new NextResponse('Authentication required', {
+      status: 401,
+      headers: {
+        'WWW-Authenticate': 'Basic realm="Staging Environment"',
+      },
+    })
+  }
+
+  // Decode and verify credentials
+  const base64Credentials = authHeader.split(' ')[1]
+  const credentials = atob(base64Credentials)
+  const [username, password] = credentials.split(':')
+
+  const validUsername = process.env.STAGING_AUTH_USERNAME || 'staging'
+  const validPassword = process.env.STAGING_AUTH_PASSWORD
+
+  if (!validPassword) {
+    // If no password configured, allow access (fail open for development)
+    console.warn('STAGING_AUTH_PASSWORD not configured')
+    return null
+  }
+
+  if (username !== validUsername || password !== validPassword) {
+    return new NextResponse('Invalid credentials', {
+      status: 401,
+      headers: {
+        'WWW-Authenticate': 'Basic realm="Staging Environment"',
+      },
+    })
+  }
+
+  return null // Auth successful, continue
+}
+
 // SECURITY: Admin route patterns that require super admin access
 const ADMIN_ROUTE_PATTERNS = [
   '/admin',
@@ -28,6 +74,12 @@ const SENSITIVE_RATE_LIMITED_ROUTES = [
 ]
 
 export async function middleware(request: NextRequest) {
+  // SECURITY: Check staging authentication first
+  const stagingAuthResponse = checkStagingAuth(request)
+  if (stagingAuthResponse) {
+    return stagingAuthResponse
+  }
+
   const { pathname } = request.nextUrl
   const hostname = request.headers.get('host') || ''
 
