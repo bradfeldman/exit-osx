@@ -401,7 +401,7 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.6, type: "spring" }}
                 >
-                  {Math.round(celebrationData.briScore * 100)}%
+                  {Math.round(celebrationData.briScore)}
                 </motion.p>
                 <p className="text-sm text-muted-foreground mt-1">BRI Score</p>
               </div>
