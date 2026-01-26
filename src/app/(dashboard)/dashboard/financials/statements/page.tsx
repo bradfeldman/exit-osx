@@ -8,16 +8,22 @@ function StatementsRedirect() {
   const searchParams = useSearchParams()
   const periodId = searchParams.get('periodId')
   const tab = searchParams.get('tab') || 'pnl'
+  const qbConnected = searchParams.get('qb_connected')
+  const qbError = searchParams.get('qb_error')
 
   useEffect(() => {
     if (periodId) {
       // Redirect to the new dynamic route with period
       router.replace(`/dashboard/financials/statements/${periodId}?tab=${tab}`)
     } else {
-      // Redirect to the main financials overview
-      router.replace('/dashboard/financials')
+      // Redirect to the main financials overview, preserving OAuth callback params
+      const params = new URLSearchParams()
+      if (qbConnected) params.set('qb_connected', qbConnected)
+      if (qbError) params.set('qb_error', qbError)
+      const queryString = params.toString()
+      router.replace(`/dashboard/financials${queryString ? `?${queryString}` : ''}`)
     }
-  }, [periodId, tab, router])
+  }, [periodId, tab, qbConnected, qbError, router])
 
   return (
     <div className="flex items-center justify-center min-h-[400px]">

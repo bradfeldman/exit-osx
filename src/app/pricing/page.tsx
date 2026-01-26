@@ -229,7 +229,7 @@ export default function PricingPage() {
                       )}
                     </div>
 
-                    <Link href="/signup" className="mb-8">
+                    <Link href={`/signup?plan=${plan.id}`} className="mb-8">
                       <Button
                         className={cn(
                           'w-full h-12 text-base btn-hover',

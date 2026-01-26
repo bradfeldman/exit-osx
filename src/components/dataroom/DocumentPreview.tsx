@@ -49,6 +49,7 @@ export function DocumentPreview({
     setError(null)
 
     try {
+      // First get the signed URL from our API
       const res = await fetch(
         `/api/companies/${companyId}/dataroom/documents/${document.id}/preview`
       )
@@ -58,7 +59,29 @@ export function DocumentPreview({
       }
 
       const data = await res.json()
-      setPreviewUrl(data.url)
+
+      // For PDFs and images, fetch the file and create a blob URL to avoid CORS issues
+      const isPdfFile = document.mimeType === 'application/pdf' ||
+                        document.fileName?.toLowerCase().endsWith('.pdf')
+      const isImageFile = document.mimeType?.startsWith('image/') ||
+                          /\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i.test(document.fileName || '')
+
+      if (isPdfFile || isImageFile) {
+        // Fetch the actual file content
+        console.log('[Preview] Fetching file from:', data.url)
+        const fileRes = await fetch(data.url)
+        console.log('[Preview] File fetch status:', fileRes.status)
+        if (!fileRes.ok) {
+          throw new Error('Failed to fetch file')
+        }
+        const blob = await fileRes.blob()
+        console.log('[Preview] Blob size:', blob.size, 'type:', blob.type)
+        const blobUrl = URL.createObjectURL(blob)
+        console.log('[Preview] Created blob URL:', blobUrl)
+        setPreviewUrl(blobUrl)
+      } else {
+        setPreviewUrl(data.url)
+      }
     } catch (err) {
       console.error('Error fetching preview:', err)
       setError('Failed to load preview')
@@ -73,7 +96,13 @@ export function DocumentPreview({
       setImageZoom(1)
       setImagePosition({ x: 0, y: 0 })
     } else {
-      setPreviewUrl(null)
+      setPreviewUrl((prev) => {
+        // Revoke blob URL to prevent memory leaks
+        if (prev?.startsWith('blob:')) {
+          URL.revokeObjectURL(prev)
+        }
+        return null
+      })
       setError(null)
     }
   }, [isOpen, document, fetchPreviewUrl])
@@ -191,11 +220,28 @@ export function DocumentPreview({
           ) : previewUrl ? (
             <>
               {isPdf && (
-                <iframe
-                  src={`${previewUrl}#toolbar=1&navpanes=0`}
-                  className="w-full h-full border-0"
-                  title={document.documentName}
-                />
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <FileIcon className="h-16 w-16 text-primary/30 mx-auto mb-4" />
+                    <p className="text-foreground font-medium mb-2">
+                      {document.documentName}
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      PDF files open in a new browser tab for best viewing experience
+                    </p>
+                    <Button
+                      size="lg"
+                      onClick={() => {
+                        if (previewUrl) {
+                          window.open(previewUrl, '_blank')
+                        }
+                      }}
+                    >
+                      <ExternalLinkIcon className="h-4 w-4 mr-2" />
+                      Open PDF
+                    </Button>
+                  </div>
+                </div>
               )}
 
               {isImage && (
@@ -306,6 +352,14 @@ function FileIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+    </svg>
+  )
+}
+
+function ExternalLinkIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
     </svg>
   )
 }

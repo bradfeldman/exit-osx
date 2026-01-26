@@ -199,12 +199,14 @@ interface SignupResult {
 /**
  * Server action for secure signup with password breach checking
  * @param redirectTo - Optional URL to redirect to after email confirmation
+ * @param selectedPlan - Optional plan tier selected during signup (for trial setup)
  */
 export async function secureSignup(
   name: string,
   email: string,
   password: string,
-  redirectTo?: string
+  redirectTo?: string,
+  selectedPlan?: string
 ): Promise<SignupResult> {
   const { validatePassword, getPasswordWarning } = await import('@/lib/security')
 
@@ -231,6 +233,7 @@ export async function secureSignup(
     options: {
       data: {
         name,
+        selected_plan: selectedPlan || 'foundation', // Store selected plan in user metadata
       },
       emailRedirectTo,
     },

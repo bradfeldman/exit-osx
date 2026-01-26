@@ -168,15 +168,24 @@ export function ResultsPanel({ projections, isOnTrack }: ResultsPanelProps) {
           <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
             <p className="text-sm font-medium text-green-900 mb-2">Options with Your Surplus:</p>
             <ul className="text-xs text-green-700 space-y-1">
-              <li>
-                Retire{' '}
-                <span className="font-medium">
-                  {Math.floor(
-                    projections.surplusOrShortfall / projections.annualWithdrawalNeeded
-                  )}
-                </span>{' '}
-                years earlier
-              </li>
+              {(() => {
+                // Calculate years earlier, capped at years to retirement
+                const yearsEarlier = projections.annualWithdrawalNeeded > 0
+                  ? Math.floor(projections.surplusOrShortfall / projections.annualWithdrawalNeeded)
+                  : projections.yearsToRetirement
+                const cappedYears = Math.min(yearsEarlier, projections.yearsToRetirement)
+
+                if (cappedYears >= projections.yearsToRetirement) {
+                  return <li><span className="font-medium">You could retire now</span> based on your current assets</li>
+                } else if (cappedYears > 0) {
+                  return (
+                    <li>
+                      Retire <span className="font-medium">{cappedYears}</span> years earlier
+                    </li>
+                  )
+                }
+                return null
+              })()}
               <li>
                 Increase spending by{' '}
                 <span className="font-medium">

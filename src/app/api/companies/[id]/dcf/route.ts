@@ -46,6 +46,7 @@ export async function GET(
         equityValue: dcfAssumptions.equityValue
           ? Number(dcfAssumptions.equityValue)
           : null,
+        useDCFValue: dcfAssumptions.useDCFValue,
       },
     })
   } catch (error) {
@@ -82,6 +83,7 @@ export async function PUT(
       calculatedWACC,
       enterpriseValue,
       equityValue,
+      useDCFValue,
     } = body
 
     const dcfAssumptions = await prisma.dCFAssumptions.upsert({
@@ -101,6 +103,7 @@ export async function PUT(
         calculatedWACC: calculatedWACC ?? null,
         enterpriseValue: enterpriseValue ?? null,
         equityValue: equityValue ?? null,
+        useDCFValue: useDCFValue ?? false,
       },
       update: {
         riskFreeRate,
@@ -116,6 +119,7 @@ export async function PUT(
         calculatedWACC: calculatedWACC ?? null,
         enterpriseValue: enterpriseValue ?? null,
         equityValue: equityValue ?? null,
+        useDCFValue: useDCFValue ?? false,
       },
     })
 
@@ -146,6 +150,7 @@ export async function PUT(
         equityValue: dcfAssumptions.equityValue
           ? Number(dcfAssumptions.equityValue)
           : null,
+        useDCFValue: dcfAssumptions.useDCFValue,
       },
     })
   } catch (error) {

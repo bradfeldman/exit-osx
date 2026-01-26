@@ -1,5 +1,6 @@
 'use client'
 
+import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import {
   Tooltip,
@@ -80,32 +81,52 @@ interface OptionCardProps {
   description?: string
   icon?: string
   compact?: boolean
+  index?: number
 }
 
-function OptionCard({ selected, onClick, label, sublabel, description, icon, compact }: OptionCardProps) {
+function OptionCard({ selected, onClick, label, sublabel, description, icon, compact, index = 0 }: OptionCardProps) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: index * 0.05 }}
+      whileHover={{ scale: 1.03, y: -2 }}
+      whileTap={{ scale: 0.98 }}
       className={cn(
         'relative flex flex-col items-center justify-center rounded-xl border-2 transition-all duration-200',
-        compact ? 'p-3 min-h-[70px]' : 'p-4 min-h-[90px]',
+        compact ? 'p-3 min-h-[75px]' : 'p-4 min-h-[100px]',
         selected
-          ? 'border-primary bg-primary/5 shadow-md ring-2 ring-primary/20'
-          : 'border-border bg-card hover:border-primary/40 hover:bg-muted/50'
+          ? 'border-primary bg-gradient-to-br from-primary/15 to-primary/5 shadow-lg shadow-primary/20'
+          : 'border-border bg-card hover:border-primary/50 hover:bg-primary/5 hover:shadow-md'
       )}
     >
       {selected && (
-        <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 400, damping: 15 }}
+          className="absolute -top-2 -right-2 w-5 h-5 bg-gradient-to-br from-primary to-amber-600 rounded-full flex items-center justify-center shadow-lg shadow-primary/40"
+        >
           <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
           </svg>
-        </div>
+        </motion.div>
       )}
-      {icon && <span className="text-xl mb-1">{icon}</span>}
+      {icon && (
+        <motion.span
+          animate={{ scale: selected ? 1.15 : 1 }}
+          transition={{ type: "spring", stiffness: 300 }}
+          className={cn("mb-1.5", compact ? "text-xl" : "text-2xl")}
+        >
+          {icon}
+        </motion.span>
+      )}
       <span className={cn(
-        'font-medium text-foreground',
-        compact ? 'text-sm' : 'text-sm'
+        'font-semibold',
+        compact ? 'text-sm' : 'text-sm',
+        selected ? 'text-primary' : 'text-foreground'
       )}>{label}</span>
       {sublabel && (
         <span className="text-xs text-muted-foreground font-medium">{sublabel}</span>
@@ -116,7 +137,7 @@ function OptionCard({ selected, onClick, label, sublabel, description, icon, com
           compact ? 'text-[10px]' : 'text-xs'
         )}>{description}</span>
       )}
-    </button>
+    </motion.button>
   )
 }
 
@@ -129,18 +150,26 @@ interface FactorSectionProps {
   columns?: number
   compact?: boolean
   examples?: Array<{ label: string; examples: string }>
+  delay?: number
 }
 
-function FactorSection({ title, description, value, onChange, options, columns = 4, compact = false, examples }: FactorSectionProps) {
+function FactorSection({ title, description, value, onChange, options, columns = 4, compact = false, examples, delay = 0 }: FactorSectionProps) {
+  const isSelected = value !== ''
+
   return (
-    <div className="space-y-3">
-      <div>
-        <div className="flex items-center gap-1.5">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay }}
+      className="space-y-3"
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-foreground">{title}</h3>
           {examples && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <button type="button" className="text-muted-foreground hover:text-foreground transition-colors">
+                <button type="button" className="text-muted-foreground hover:text-primary transition-colors">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
                   </svg>
@@ -160,15 +189,27 @@ function FactorSection({ title, description, value, onChange, options, columns =
             </Tooltip>
           )}
         </div>
-        {description && (
-          <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+        {isSelected && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 400, damping: 15 }}
+            className="w-5 h-5 bg-gradient-to-br from-primary to-amber-600 rounded-full flex items-center justify-center shadow-md shadow-primary/30"
+          >
+            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+            </svg>
+          </motion.div>
         )}
       </div>
+      {description && (
+        <p className="text-xs text-muted-foreground -mt-1">{description}</p>
+      )}
       <div
-        className="grid gap-2"
+        className="grid gap-2.5"
         style={{ gridTemplateColumns: `repeat(${Math.min(columns, options.length)}, minmax(0, 1fr))` }}
       >
-        {options.map((option) => (
+        {options.map((option, idx) => (
           <OptionCard
             key={option.value}
             selected={value === option.value}
@@ -178,10 +219,11 @@ function FactorSection({ title, description, value, onChange, options, columns =
             description={option.description}
             icon={option.icon}
             compact={compact}
+            index={idx}
           />
         ))}
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -197,26 +239,40 @@ export function BusinessProfileStep({ formData, updateFormData }: BusinessProfil
     <TooltipProvider delayDuration={300}>
     <div className="space-y-8">
       {/* Header with progress */}
-      <div className="flex items-center justify-between">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex items-start justify-between gap-4"
+      >
         <div>
-          <h2 className="text-lg font-semibold text-foreground">Business Profile</h2>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h2 className="text-2xl sm:text-3xl font-bold font-display bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+            Business Profile
+          </h2>
+          <p className="text-sm text-muted-foreground mt-2">
             Select the option that best describes your business
           </p>
         </div>
-        <div className="flex items-center gap-2 bg-muted rounded-full px-3 py-1.5">
-          <span className="text-sm font-medium text-foreground">{completedCount}/4</span>
-          <div className="w-16 h-2 bg-muted-foreground/20 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary transition-all duration-300 rounded-full"
-              style={{ width: `${(completedCount / 4) * 100}%` }}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="flex items-center gap-3 bg-gradient-to-r from-muted to-muted/50 rounded-full px-4 py-2 border border-border/50"
+        >
+          <span className="text-sm font-bold text-foreground">{completedCount}/4</span>
+          <div className="w-20 h-2.5 bg-muted-foreground/20 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-gradient-to-r from-primary to-amber-500 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${(completedCount / 4) * 100}%` }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
             />
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Factor Sections */}
-      <div className="space-y-6">
+      <div className="space-y-7">
         <FactorSection
           title="Revenue Model"
           description="How does your business generate income from customers?"
@@ -225,6 +281,7 @@ export function BusinessProfileStep({ formData, updateFormData }: BusinessProfil
           options={revenueModelOptions}
           columns={4}
           examples={categoryExamples.revenueModel}
+          delay={0.1}
         />
 
         <div className="grid md:grid-cols-2 gap-6">
@@ -237,6 +294,7 @@ export function BusinessProfileStep({ formData, updateFormData }: BusinessProfil
             columns={2}
             compact
             examples={categoryExamples.laborIntensity}
+            delay={0.2}
           />
 
           <FactorSection
@@ -248,6 +306,7 @@ export function BusinessProfileStep({ formData, updateFormData }: BusinessProfil
             columns={3}
             compact
             examples={categoryExamples.assetIntensity}
+            delay={0.25}
           />
         </div>
 
@@ -260,26 +319,40 @@ export function BusinessProfileStep({ formData, updateFormData }: BusinessProfil
           columns={5}
           compact
           examples={categoryExamples.ownerInvolvement}
+          delay={0.3}
         />
       </div>
 
       {/* Info card - only show when all completed */}
       {completedCount === 4 && (
-        <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl border border-primary/20">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: "spring", stiffness: 200, damping: 20 }}
+          className="relative overflow-hidden p-5 bg-gradient-to-br from-primary/15 via-primary/10 to-amber-500/5 rounded-2xl border border-primary/30 shadow-lg shadow-primary/10"
+        >
+          {/* Decorative glow */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+
+          <div className="relative flex items-start gap-4">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              className="w-12 h-12 bg-gradient-to-br from-primary to-amber-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/30"
+            >
+              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
               </svg>
-            </div>
+            </motion.div>
             <div>
-              <h3 className="text-sm font-semibold text-foreground">All factors selected</h3>
-              <p className="text-sm text-muted-foreground mt-0.5">
+              <h3 className="text-base font-bold text-foreground">All factors selected</h3>
+              <p className="text-sm text-muted-foreground mt-1">
                 These factors will calculate your Core Score, which affects your valuation multiple.
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
     </TooltipProvider>

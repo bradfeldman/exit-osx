@@ -32,11 +32,14 @@ type CalculatorMode = 'easy' | 'pro'
 export default function RetirementCalculatorPage() {
   const [mode, setMode] = useState<CalculatorMode>('easy')
   const [assets, setAssets] = useState<RetirementAsset[]>([])
+  const [manualAssets, setManualAssets] = useState<RetirementAsset[]>([]) // Manually added for modeling
+  const [excludedAssetIds, setExcludedAssetIds] = useState<string[]>([]) // PFS assets excluded from calc
+  const [assetOverrides, setAssetOverrides] = useState<Record<string, Partial<RetirementAsset>>>({}) // Overrides for PFS assets
   const [assumptions, setAssumptions] = useState<RetirementAssumptions>(DEFAULT_ASSUMPTIONS)
   const [showAdvancedTax, setShowAdvancedTax] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Load saved assumptions and mode on mount
+  // Load saved assumptions, mode, and manual adjustments on mount
   useEffect(() => {
     const savedAssumptions = localStorage.getItem('retirement_assumptions')
     if (savedAssumptions) {
@@ -51,13 +54,46 @@ export default function RetirementCalculatorPage() {
     if (savedMode === 'easy' || savedMode === 'pro') {
       setMode(savedMode)
     }
+    // Load manual modeling adjustments
+    const savedManualAssets = localStorage.getItem('retirement_manual_assets')
+    if (savedManualAssets) {
+      try {
+        setManualAssets(JSON.parse(savedManualAssets))
+      } catch {
+        // Ignore parse errors
+      }
+    }
+    const savedExcluded = localStorage.getItem('retirement_excluded_assets')
+    if (savedExcluded) {
+      try {
+        setExcludedAssetIds(JSON.parse(savedExcluded))
+      } catch {
+        // Ignore parse errors
+      }
+    }
+    const savedOverrides = localStorage.getItem('retirement_asset_overrides')
+    if (savedOverrides) {
+      try {
+        setAssetOverrides(JSON.parse(savedOverrides))
+      } catch {
+        // Ignore parse errors
+      }
+    }
   }, [])
 
-  // Save data when it changes
+  // Save assumptions when they change
   useEffect(() => {
-    localStorage.setItem('retirement_assets', JSON.stringify(assets))
     localStorage.setItem('retirement_assumptions', JSON.stringify(assumptions))
-  }, [assets, assumptions])
+  }, [assumptions])
+
+  // Save manual modeling adjustments when they change (but not during initial load)
+  useEffect(() => {
+    // Don't save during initial load - would overwrite saved data with empty state
+    if (isLoading) return
+    localStorage.setItem('retirement_manual_assets', JSON.stringify(manualAssets))
+    localStorage.setItem('retirement_excluded_assets', JSON.stringify(excludedAssetIds))
+    localStorage.setItem('retirement_asset_overrides', JSON.stringify(assetOverrides))
+  }, [manualAssets, excludedAssetIds, assetOverrides, isLoading])
 
   // Save mode preference
   useEffect(() => {
@@ -69,21 +105,17 @@ export default function RetirementCalculatorPage() {
       // Load business assets from API
       const response = await fetch('/api/companies')
       let businessAssets: RetirementAsset[] = []
+      let companies: { id: string; name: string; valuationSnapshots?: { currentValue: string | number }[] }[] = []
 
       if (response.ok) {
         const data = await response.json()
+        companies = data.companies || []
         const savedOwnership = localStorage.getItem('pfs_businessOwnership')
         const ownership = savedOwnership ? JSON.parse(savedOwnership) : {}
 
         businessAssets = await Promise.all(
-          (
-            data.companies || []
-          ).map(
-            async (company: {
-              id: string
-              name: string
-              valuationSnapshots?: { currentValue: string | number }[]
-            }) => {
+          companies.map(
+            async (company) => {
               let marketValue = 0
 
               try {
@@ -112,50 +144,57 @@ export default function RetirementCalculatorPage() {
         )
       }
 
-      // Load personal assets from localStorage
-      const savedPersonalAssets = localStorage.getItem('pfs_personalAssets')
+      // Load personal assets and liabilities from database API (organization-level storage)
       let personalAssets: RetirementAsset[] = []
+      let totalLiabilities = 0
 
-      if (savedPersonalAssets) {
-        const pfsAssets = JSON.parse(savedPersonalAssets)
-        personalAssets = pfsAssets.map(
-          (asset: { id: string; category: string; description: string; value: number }) => {
-            let taxTreatment: TaxTreatment = 'already_taxed'
-            if (asset.category === 'Retirement Accounts') {
-              taxTreatment = 'tax_deferred'
-            } else if (asset.category === 'Investment Accounts') {
-              taxTreatment = 'capital_gains'
-            } else if (asset.category === 'Real Estate') {
-              taxTreatment = 'capital_gains'
-            }
+      // Get first company ID to use for API call (personal financials are org-level)
+      const firstCompanyId = companies[0]?.id
+      if (firstCompanyId) {
+        try {
+          const pfsResponse = await fetch(`/api/companies/${firstCompanyId}/personal-financials`)
+          if (pfsResponse.ok) {
+            const pfsData = await pfsResponse.json()
+            if (pfsData.personalFinancials) {
+              const pfsAssets = pfsData.personalFinancials.personalAssets || []
+              personalAssets = pfsAssets.map(
+                (asset: { id: string; category: string; description: string; value: number }) => {
+                  let taxTreatment: TaxTreatment = 'already_taxed'
+                  if (asset.category === 'Retirement Accounts') {
+                    taxTreatment = 'tax_deferred'
+                  } else if (asset.category === 'Investment Accounts') {
+                    taxTreatment = 'capital_gains'
+                  } else if (asset.category === 'Real Estate') {
+                    taxTreatment = 'capital_gains'
+                  }
 
-            return {
-              id: asset.id,
-              name: asset.description || asset.category,
-              category: asset.category,
-              currentValue: asset.value,
-              taxTreatment,
-              costBasis: asset.category === 'Real Estate' ? asset.value * 0.5 : 0,
+                  return {
+                    id: asset.id,
+                    name: asset.description || asset.category,
+                    category: asset.category,
+                    currentValue: asset.value,
+                    taxTreatment,
+                    costBasis: asset.category === 'Real Estate' ? asset.value * 0.5 : 0,
+                  }
+                }
+              )
+
+              const pfsLiabilities = pfsData.personalFinancials.personalLiabilities || []
+              totalLiabilities = pfsLiabilities.reduce(
+                (sum: number, l: { amount: number }) => sum + l.amount,
+                0
+              )
             }
           }
-        )
+        } catch (error) {
+          console.error('Failed to load personal financials from API:', error)
+        }
       }
 
-      // Load liabilities
-      const savedLiabilities = localStorage.getItem('pfs_personalLiabilities')
-      let totalLiabilities = 0
-      if (savedLiabilities) {
-        const liabilities = JSON.parse(savedLiabilities)
-        totalLiabilities = liabilities.reduce(
-          (sum: number, l: { amount: number }) => sum + l.amount,
-          0
-        )
-      }
-
-      const allAssets = [...businessAssets, ...personalAssets]
+      const pfsAssets = [...businessAssets, ...personalAssets]
 
       if (totalLiabilities > 0) {
-        allAssets.push({
+        pfsAssets.push({
           id: 'liabilities-offset',
           name: 'Less: Outstanding Liabilities',
           category: 'Liabilities',
@@ -164,7 +203,31 @@ export default function RetirementCalculatorPage() {
         })
       }
 
+      // Load saved manual adjustments from localStorage
+      let savedManual: RetirementAsset[] = []
+      let savedExcluded: string[] = []
+      let savedOverrides: Record<string, Partial<RetirementAsset>> = {}
+      try {
+        const manualStr = localStorage.getItem('retirement_manual_assets')
+        const excludedStr = localStorage.getItem('retirement_excluded_assets')
+        const overridesStr = localStorage.getItem('retirement_asset_overrides')
+        if (manualStr) savedManual = JSON.parse(manualStr)
+        if (excludedStr) savedExcluded = JSON.parse(excludedStr)
+        if (overridesStr) savedOverrides = JSON.parse(overridesStr)
+      } catch {
+        // Ignore parse errors
+      }
+
+      // Filter out excluded PFS assets, apply overrides, then add manual assets
+      const filteredPfsAssets = pfsAssets
+        .filter(a => !savedExcluded.includes(a.id))
+        .map(a => savedOverrides[a.id] ? { ...a, ...savedOverrides[a.id] } : a)
+      const allAssets = [...filteredPfsAssets, ...savedManual]
+
       setAssets(allAssets)
+      setManualAssets(savedManual)
+      setExcludedAssetIds(savedExcluded)
+      setAssetOverrides(savedOverrides)
     } catch (error) {
       console.error('Failed to import PFS data:', error)
     } finally {
@@ -182,23 +245,55 @@ export default function RetirementCalculatorPage() {
     value: string | number | TaxTreatment
   ) {
     setAssets((prev) => prev.map((asset) => (asset.id === id ? { ...asset, [field]: value } : asset)))
+    // If it's a manual asset, also update manualAssets state
+    if (id.startsWith('manual-')) {
+      setManualAssets((prev) => prev.map((asset) => (asset.id === id ? { ...asset, [field]: value } : asset)))
+    } else {
+      // It's a PFS asset - save the override
+      setAssetOverrides((prev) => ({
+        ...prev,
+        [id]: { ...(prev[id] || {}), [field]: value }
+      }))
+    }
   }
 
   function addManualAsset() {
-    setAssets((prev) => [
-      ...prev,
-      {
-        id: `manual-${Date.now()}`,
-        name: '',
-        category: 'Other',
-        currentValue: 0,
-        taxTreatment: 'already_taxed',
-      },
-    ])
+    const newAsset: RetirementAsset = {
+      id: `manual-${Date.now()}`,
+      name: '',
+      category: 'Modeling Adjustment',
+      currentValue: 0,
+      taxTreatment: 'already_taxed',
+    }
+    setAssets((prev) => [...prev, newAsset])
+    setManualAssets((prev) => [...prev, newAsset])
   }
 
   function removeAsset(id: string) {
     setAssets((prev) => prev.filter((a) => a.id !== id))
+    if (id.startsWith('manual-')) {
+      // Remove from manual assets
+      setManualAssets((prev) => prev.filter((a) => a.id !== id))
+    } else {
+      // It's a PFS asset - add to excluded list
+      setExcludedAssetIds((prev) => [...prev, id])
+    }
+  }
+
+  function restoreExcludedAsset(id: string) {
+    setExcludedAssetIds((prev) => prev.filter((i) => i !== id))
+    // Re-import to restore the asset
+    importFromPFS()
+  }
+
+  function clearAllAdjustments() {
+    setManualAssets([])
+    setExcludedAssetIds([])
+    setAssetOverrides({})
+    localStorage.removeItem('retirement_manual_assets')
+    localStorage.removeItem('retirement_excluded_assets')
+    localStorage.removeItem('retirement_asset_overrides')
+    importFromPFS()
   }
 
   function updateAssumption<K extends keyof RetirementAssumptions>(
@@ -495,20 +590,38 @@ export default function RetirementCalculatorPage() {
             <CardDescription>
               {mode === 'easy'
                 ? 'Your assets imported from your Personal Financial Statement'
-                : 'Review your assets and set the appropriate tax treatment for each'}
+                : 'Assets from your PFS plus any modeling adjustments'}
             </CardDescription>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={importFromPFS} variant="outline" size="sm">
-              Refresh from PFS
-            </Button>
-            {mode === 'pro' && (
+          {mode === 'pro' && (
+            <div className="flex items-center gap-2">
+              {(manualAssets.length > 0 || excludedAssetIds.length > 0 || Object.keys(assetOverrides).length > 0) && (
+                <Button onClick={clearAllAdjustments} variant="ghost" size="sm" className="text-gray-500">
+                  Reset to PFS Values
+                </Button>
+              )}
               <Button onClick={addManualAsset} variant="outline" size="sm">
-                + Add Asset
+                + Add for Modeling
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </CardHeader>
+        {mode === 'pro' && (manualAssets.length > 0 || excludedAssetIds.length > 0 || Object.keys(assetOverrides).length > 0) && (
+          <div className="px-6 pb-3">
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+              <p className="text-blue-800">
+                <span className="font-medium">Modeling Mode:</span> You have customizations for scenario planning
+                {manualAssets.length > 0 && ` (${manualAssets.length} added)`}
+                {excludedAssetIds.length > 0 && ` (${excludedAssetIds.length} excluded)`}
+                {Object.keys(assetOverrides).length > 0 && ` (${Object.keys(assetOverrides).length} modified)`}.
+                These changes are saved locally for this calculator only.{' '}
+                <Link href="/dashboard/financials/personal" className="text-primary hover:underline font-medium">
+                  Edit your actual PFS →
+                </Link>
+              </p>
+            </div>
+          </div>
+        )}
         <CardContent>
           {mode === 'easy' ? (
             /* Easy Mode: Simplified Asset Table */
@@ -517,7 +630,28 @@ export default function RetirementCalculatorPage() {
               <div className="grid grid-cols-12 gap-3 text-sm font-medium text-gray-500 border-b pb-2">
                 <div className="col-span-5">Asset</div>
                 <div className="col-span-3 text-right">Value</div>
-                <div className="col-span-4 text-right">After-Tax Value</div>
+                <div className="col-span-4 text-right flex items-center justify-end gap-1">
+                  After-Tax Value
+                  <div className="group relative">
+                    <svg className="w-4 h-4 text-gray-400 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div className="absolute right-0 top-6 w-72 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                      <p className="font-medium mb-2">Estimated value after taxes:</p>
+                      <ul className="space-y-1 text-gray-300">
+                        <li><span className="text-white">Retirement accounts:</span> Taxed at {((assumptions.federalTaxRate + assumptions.stateTaxRate + assumptions.localTaxRate) * 100).toFixed(0)}% income rate</li>
+                        <li><span className="text-white">Investments & Real Estate:</span> {(assumptions.capitalGainsTaxRate * 100).toFixed(0)}% capital gains rate</li>
+                        <li><span className="text-white">Cash & other:</span> Already taxed (no deduction)</li>
+                      </ul>
+                      <button
+                        onClick={() => setMode('pro')}
+                        className="mt-2 text-primary-foreground bg-primary/80 hover:bg-primary px-2 py-1 rounded text-xs w-full"
+                      >
+                        Switch to Pro to adjust rates
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {assets.length === 0 ? (
@@ -576,15 +710,24 @@ export default function RetirementCalculatorPage() {
 
               {/* Totals */}
               {assets.length > 0 && (
-                <div className="grid grid-cols-12 gap-3 pt-3 font-medium">
-                  <div className="col-span-5 text-gray-700">Total</div>
-                  <div className="col-span-3 text-right">
-                    {formatCurrency(assets.reduce((sum, a) => sum + a.currentValue, 0))}
+                <>
+                  <div className="grid grid-cols-12 gap-3 pt-3 font-medium">
+                    <div className="col-span-5 text-gray-700">Total</div>
+                    <div className="col-span-3 text-right">
+                      {formatCurrency(assets.reduce((sum, a) => sum + a.currentValue, 0))}
+                    </div>
+                    <div className="col-span-4 text-right text-green-600">
+                      {formatCurrency(projections.totalAfterTaxToday)}
+                    </div>
                   </div>
-                  <div className="col-span-4 text-right text-green-600">
-                    {formatCurrency(projections.totalAfterTaxToday)}
-                  </div>
-                </div>
+                  <p className="text-xs text-gray-500 pt-3 border-t mt-3">
+                    After-tax values use default rates ({((assumptions.federalTaxRate + assumptions.stateTaxRate + assumptions.localTaxRate) * 100).toFixed(0)}% income, {(assumptions.capitalGainsTaxRate * 100).toFixed(0)}% cap gains).{' '}
+                    <button onClick={() => setMode('pro')} className="text-primary hover:underline">
+                      Switch to Pro mode
+                    </button>{' '}
+                    to customize tax rates and cost basis.
+                  </p>
+                </>
               )}
             </div>
           ) : (
@@ -626,20 +769,33 @@ export default function RetirementCalculatorPage() {
                   })()
                   const showCostBasis = asset.taxTreatment === 'capital_gains'
 
+                  const isManualAsset = asset.id.startsWith('manual-')
+                  const hasOverrides = !isManualAsset && assetOverrides[asset.id] !== undefined
+
                   return (
                     <div
                       key={asset.id}
-                      className="grid grid-cols-12 gap-3 items-start py-2 border-b border-gray-100"
+                      className={`grid grid-cols-12 gap-3 items-start py-2 border-b border-gray-100 ${isManualAsset ? 'bg-blue-50/50' : hasOverrides ? 'bg-amber-50/50' : ''}`}
                     >
                       <div className="col-span-3">
-                        <input
-                          type="text"
-                          value={asset.name}
-                          onChange={(e) => updateAsset(asset.id, 'name', e.target.value)}
-                          placeholder="Asset name"
-                          className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                        />
-                        <span className="text-xs text-gray-400 block mt-0.5">{asset.category}</span>
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="text"
+                            value={asset.name}
+                            onChange={(e) => updateAsset(asset.id, 'name', e.target.value)}
+                            placeholder="Asset name"
+                            className={`w-full px-2 py-1.5 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary ${isManualAsset ? 'border-blue-300 bg-white' : hasOverrides ? 'border-amber-300 bg-white' : 'border-gray-300'}`}
+                          />
+                        </div>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <span className="text-xs text-gray-400">{asset.category}</span>
+                          {isManualAsset && (
+                            <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">Added</span>
+                          )}
+                          {hasOverrides && (
+                            <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">Modified</span>
+                          )}
+                        </div>
                       </div>
                       <div className="col-span-2">
                         <div className="relative">
@@ -700,20 +856,17 @@ export default function RetirementCalculatorPage() {
                         <button
                           onClick={() => removeAsset(asset.id)}
                           className="text-gray-400 hover:text-red-600"
+                          title={isManualAsset ? 'Delete this modeling asset' : 'Exclude from calculation (can restore later)'}
                         >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
+                          {isManualAsset ? (
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          ) : (
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                            </svg>
+                          )}
                         </button>
                       </div>
                     </div>
@@ -740,14 +893,27 @@ export default function RetirementCalculatorPage() {
 
           {/* Tax Treatment Legend - Pro mode only */}
           {mode === 'pro' && (
-            <div className="mt-4 pt-4 border-t">
-              <p className="text-xs font-medium text-gray-500 mb-2">Tax Treatment Guide:</p>
-              <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
-                {TAX_TREATMENTS.map((t) => (
-                  <div key={t.value}>
-                    <span className="font-medium">{t.label}:</span> {t.description}
-                  </div>
-                ))}
+            <div className="mt-4 pt-4 border-t space-y-4">
+              <div>
+                <p className="text-xs font-medium text-gray-500 mb-2">Tax Treatment Guide:</p>
+                <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                  {TAX_TREATMENTS.map((t) => (
+                    <div key={t.value}>
+                      <span className="font-medium">{t.label}:</span> {t.description}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <p className="text-xs text-gray-600">
+                  <span className="font-medium">About Modeling Adjustments:</span> Assets marked with{' '}
+                  <span className="bg-blue-100 text-blue-700 px-1 py-0.5 rounded text-xs">Modeling</span>{' '}
+                  are for scenario planning only and are saved locally to this calculator.
+                  To permanently add or change assets, update your{' '}
+                  <Link href="/dashboard/financials/personal" className="text-primary hover:underline font-medium">
+                    Personal Financial Statement
+                  </Link>.
+                </p>
               </div>
             </div>
           )}

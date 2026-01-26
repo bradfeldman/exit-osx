@@ -6,8 +6,20 @@ import { useCompany } from '@/contexts/CompanyContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { AssessmentWizard } from '@/components/assessment/AssessmentWizard'
+import {
+  Check,
+  ChevronRight,
+  Loader2,
+  AlertCircle,
+  Clock,
+  Target,
+  Sparkles,
+  ArrowRight,
+  Info,
+  TrendingUp,
+} from 'lucide-react'
 
-// Types for Project Assessment
+// Types
 interface QuestionOption {
   id: string
   optionText: string
@@ -71,6 +83,24 @@ interface CompletionResult {
   }
 }
 
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 }
+  }
+} as const
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 100, damping: 15 }
+  }
+} as const
+
 const CATEGORY_LABELS: Record<string, string> = {
   FINANCIAL: 'Financial',
   TRANSFERABILITY: 'Transferability',
@@ -99,7 +129,6 @@ const COMPLETION_STEPS = [
 export default function RiskAssessmentPage() {
   const { selectedCompanyId, selectedCompany, isLoading: companyLoading } = useCompany()
 
-  // State
   const [loading, setLoading] = useState(true)
   const [needsInitialAssessment, setNeedsInitialAssessment] = useState(false)
   const [currentAssessment, setCurrentAssessment] = useState<ProjectAssessment | null>(null)
@@ -135,14 +164,12 @@ export default function RiskAssessmentPage() {
     return () => clearTimeout(timer)
   }, [creating, creatingStep])
 
-  // Finish creating when both animation progresses enough AND assessment is ready
   useEffect(() => {
     if (assessmentReady && creatingStep >= 3) {
       setCreating(false)
     }
   }, [assessmentReady, creatingStep])
 
-  // Animate through completion steps when completing
   useEffect(() => {
     if (!completing) {
       setCompletingStep(0)
@@ -162,14 +189,12 @@ export default function RiskAssessmentPage() {
     return () => clearTimeout(timer)
   }, [completing, completingStep])
 
-  // Finish completing when both animation progresses enough AND results are ready
   useEffect(() => {
     if (resultsReady && completingStep >= 3) {
       setCompleting(false)
     }
   }, [resultsReady, completingStep])
 
-  // Check if company has completed initial assessment
   const checkInitialAssessment = useCallback(async () => {
     if (!selectedCompanyId) return false
 
@@ -177,7 +202,6 @@ export default function RiskAssessmentPage() {
       const response = await fetch(`/api/companies/${selectedCompanyId}/dashboard`)
       if (response.ok) {
         const data = await response.json()
-        // Check if BRI score exists in tier1 - if present, initial assessment is done
         const briScore = data.tier1?.briScore
         const hasInitialAssessment = briScore !== null && briScore !== undefined
 
@@ -195,7 +219,6 @@ export default function RiskAssessmentPage() {
     }
   }, [selectedCompanyId])
 
-  // Load current/latest Project Assessment
   const loadProjectAssessment = useCallback(async () => {
     if (!selectedCompanyId) return
 
@@ -207,27 +230,23 @@ export default function RiskAssessmentPage() {
       if (response.ok) {
         const data = await response.json()
 
-        // Find in-progress assessment first, then most recent
         const inProgress = data.assessments?.find((a: ProjectAssessment) => a.status === 'IN_PROGRESS')
-        const mostRecent = data.assessments?.[0] // Already sorted by desc
+        const mostRecent = data.assessments?.[0]
 
         const assessmentToShow = inProgress || mostRecent
 
         if (assessmentToShow) {
-          // Load full assessment details
           const detailResponse = await fetch(`/api/project-assessments/${assessmentToShow.id}`)
           if (detailResponse.ok) {
             const detailData = await detailResponse.json()
             setCurrentAssessment(detailData.assessment)
 
-            // Initialize responses from existing
             const existingResponses: Record<string, string> = {}
             for (const r of detailData.assessment.responses || []) {
               existingResponses[r.questionId] = r.selectedOptionId
             }
             setResponses(existingResponses)
 
-            // Find first unanswered question
             const firstUnanswered = detailData.assessment.questions.findIndex(
               (q: AssessmentQuestion) => !existingResponses[q.questionId]
             )
@@ -258,7 +277,6 @@ export default function RiskAssessmentPage() {
     init()
   }, [selectedCompanyId, checkInitialAssessment, loadProjectAssessment])
 
-  // Create new assessment
   async function createNewAssessment() {
     if (!selectedCompanyId) return
 
@@ -284,7 +302,6 @@ export default function RiskAssessmentPage() {
         setCurrentAssessment(data.assessment)
         setResponses({})
         setCurrentQuestionIndex(0)
-        // Signal that assessment data is ready - animation will finish before showing
         setAssessmentReady(true)
       } else {
         setError(data.error || 'Failed to create assessment')
@@ -296,7 +313,6 @@ export default function RiskAssessmentPage() {
     }
   }
 
-  // Save response
   async function saveResponse(questionId: string, optionId: string) {
     if (!currentAssessment) return
 
@@ -324,20 +340,16 @@ export default function RiskAssessmentPage() {
     }
   }
 
-  // Handle option selection
   async function handleOptionSelect(optionId: string) {
     if (!currentAssessment) return
 
     const question = currentAssessment.questions[currentQuestionIndex]
     const questionId = question.questionId
 
-    // Update local state
     setResponses(prev => ({ ...prev, [questionId]: optionId }))
 
-    // Save to server
     await saveResponse(questionId, optionId)
 
-    // Auto-advance
     setTimeout(() => {
       if (currentQuestionIndex < currentAssessment.questions.length - 1) {
         setCurrentQuestionIndex(prev => prev + 1)
@@ -345,7 +357,6 @@ export default function RiskAssessmentPage() {
     }, 300)
   }
 
-  // Complete assessment
   async function handleComplete() {
     if (!currentAssessment) return
 
@@ -369,9 +380,7 @@ export default function RiskAssessmentPage() {
           scoreImpactSummary: data.scoreImpactSummary,
           milestone: data.milestone,
         })
-        // Update assessment status locally
         setCurrentAssessment(prev => prev ? { ...prev, status: 'COMPLETED' } : null)
-        // Signal that results are ready - animation will finish before showing
         setResultsReady(true)
       } else {
         setError(data.error || 'Failed to complete assessment')
@@ -387,8 +396,14 @@ export default function RiskAssessmentPage() {
   if (companyLoading || loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading assessment...</p>
+        </motion.div>
       </div>
     )
   }
@@ -410,54 +425,38 @@ export default function RiskAssessmentPage() {
         className="flex items-center justify-center min-h-[500px] p-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.4 }}
       >
         <div className="w-full max-w-lg">
-          {/* Card container */}
           <motion.div
-            className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
+            className="bg-card rounded-3xl shadow-2xl border border-border overflow-hidden"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1, duration: 0.5 }}
           >
-            {/* Header with gradient */}
-            <div className="bg-gradient-to-r from-primary via-primary/90 to-amber-500 p-6 text-white">
-              <div className="flex items-center gap-4">
-                {/* Animated icon */}
-                <div className="relative w-14 h-14">
+            <div className="bg-gradient-to-r from-primary via-primary/90 to-amber-500 p-8 text-white">
+              <div className="flex items-center gap-5">
+                <div className="relative w-16 h-16">
                   <motion.div
-                    className="absolute inset-0 rounded-full border-3 border-white/30 border-t-white"
+                    className="absolute inset-0 rounded-full border-4 border-white/30 border-t-white"
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
                   />
-                  <motion.div
-                    className="absolute inset-2 rounded-full border-2 border-white/20 border-b-white/60"
-                    animate={{ rotate: -360 }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <motion.span
-                      className="text-2xl"
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      🎯
-                    </motion.span>
+                    <Target className="w-7 h-7 text-white" />
                   </div>
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold font-display">
+                  <h2 className="text-2xl font-bold font-display">
                     Building Your Assessment
                   </h2>
-                  <p className="text-white/80 text-sm">
+                  <p className="text-white/80">
                     Personalizing 10 high-impact questions
                   </p>
                 </div>
               </div>
 
-              {/* Progress bar */}
-              <div className="mt-4">
-                <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
+              <div className="mt-6">
+                <div className="h-2 bg-white/20 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-white rounded-full"
                     initial={{ width: 0 }}
@@ -468,13 +467,11 @@ export default function RiskAssessmentPage() {
               </div>
             </div>
 
-            {/* Steps content */}
             <div className="p-6">
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {PROGRESS_STEPS.map((step, index) => {
                   const isCompleted = index < creatingStep
                   const isCurrent = index === creatingStep
-                  const isPending = index > creatingStep
 
                   return (
                     <motion.div
@@ -482,22 +479,19 @@ export default function RiskAssessmentPage() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.3, delay: index * 0.1 }}
-                      className={`flex items-center gap-4 p-3 rounded-lg transition-colors ${
+                      className={`flex items-center gap-4 p-3 rounded-xl transition-colors ${
                         isCurrent ? 'bg-primary/5' : ''
                       }`}
                     >
-                      {/* Status indicator */}
                       <div className="flex-shrink-0">
                         {isCompleted ? (
                           <motion.div
-                            className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center"
+                            className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             transition={{ type: "spring", stiffness: 300, damping: 20 }}
                           >
-                            <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
+                            <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                           </motion.div>
                         ) : isCurrent ? (
                           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -508,19 +502,18 @@ export default function RiskAssessmentPage() {
                             />
                           </div>
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                            <div className="w-2 h-2 rounded-full bg-gray-300" />
+                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                            <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
                           </div>
                         )}
                       </div>
 
-                      {/* Step text */}
                       <span className={`text-sm ${
                         isCompleted
-                          ? 'text-green-700 font-medium'
+                          ? 'text-emerald-700 dark:text-emerald-400 font-medium'
                           : isCurrent
-                          ? 'text-gray-900 font-medium'
-                          : 'text-gray-400'
+                          ? 'text-foreground font-medium'
+                          : 'text-muted-foreground'
                       }`}>
                         {step.label}
                       </span>
@@ -529,9 +522,8 @@ export default function RiskAssessmentPage() {
                 })}
               </div>
 
-              {/* Footer message */}
               <motion.div
-                className="mt-6 pt-4 border-t border-gray-100 text-center"
+                className="mt-6 pt-4 border-t border-border text-center"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
@@ -569,54 +561,38 @@ export default function RiskAssessmentPage() {
         className="flex items-center justify-center min-h-[500px] p-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.4 }}
       >
         <div className="w-full max-w-lg">
-          {/* Card container */}
           <motion.div
-            className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
+            className="bg-card rounded-3xl shadow-2xl border border-border overflow-hidden"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1, duration: 0.5 }}
           >
-            {/* Header with green gradient */}
-            <div className="bg-gradient-to-r from-green-600 via-green-500 to-emerald-500 p-6 text-white">
-              <div className="flex items-center gap-4">
-                {/* Animated icon */}
-                <div className="relative w-14 h-14">
+            <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 p-8 text-white">
+              <div className="flex items-center gap-5">
+                <div className="relative w-16 h-16">
                   <motion.div
-                    className="absolute inset-0 rounded-full border-3 border-white/30 border-t-white"
+                    className="absolute inset-0 rounded-full border-4 border-white/30 border-t-white"
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
                   />
-                  <motion.div
-                    className="absolute inset-2 rounded-full border-2 border-white/20 border-b-white/60"
-                    animate={{ rotate: -360 }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <motion.span
-                      className="text-2xl"
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      ✨
-                    </motion.span>
+                    <Sparkles className="w-7 h-7 text-white" />
                   </div>
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold font-display">
+                  <h2 className="text-2xl font-bold font-display">
                     Processing Your Results
                   </h2>
-                  <p className="text-white/80 text-sm">
+                  <p className="text-white/80">
                     Refining your Buyer Readiness score
                   </p>
                 </div>
               </div>
 
-              {/* Progress bar */}
-              <div className="mt-4">
-                <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
+              <div className="mt-6">
+                <div className="h-2 bg-white/20 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-white rounded-full"
                     initial={{ width: 0 }}
@@ -627,13 +603,11 @@ export default function RiskAssessmentPage() {
               </div>
             </div>
 
-            {/* Steps content */}
             <div className="p-6">
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {COMPLETION_STEPS.map((step, index) => {
                   const isCompleted = index < completingStep
                   const isCurrent = index === completingStep
-                  const isPending = index > completingStep
 
                   return (
                     <motion.div
@@ -641,45 +615,41 @@ export default function RiskAssessmentPage() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.3, delay: index * 0.1 }}
-                      className={`flex items-center gap-4 p-3 rounded-lg transition-colors ${
-                        isCurrent ? 'bg-green-50' : ''
+                      className={`flex items-center gap-4 p-3 rounded-xl transition-colors ${
+                        isCurrent ? 'bg-emerald-50 dark:bg-emerald-900/20' : ''
                       }`}
                     >
-                      {/* Status indicator */}
                       <div className="flex-shrink-0">
                         {isCompleted ? (
                           <motion.div
-                            className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center"
+                            className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             transition={{ type: "spring", stiffness: 300, damping: 20 }}
                           >
-                            <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
+                            <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                           </motion.div>
                         ) : isCurrent ? (
-                          <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
                             <motion.div
-                              className="w-3 h-3 rounded-full bg-green-500"
+                              className="w-3 h-3 rounded-full bg-emerald-500"
                               animate={{ scale: [1, 1.3, 1] }}
                               transition={{ duration: 0.8, repeat: Infinity }}
                             />
                           </div>
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                            <div className="w-2 h-2 rounded-full bg-gray-300" />
+                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                            <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
                           </div>
                         )}
                       </div>
 
-                      {/* Step text */}
                       <span className={`text-sm ${
                         isCompleted
-                          ? 'text-green-700 font-medium'
+                          ? 'text-emerald-700 dark:text-emerald-400 font-medium'
                           : isCurrent
-                          ? 'text-gray-900 font-medium'
-                          : 'text-gray-400'
+                          ? 'text-foreground font-medium'
+                          : 'text-muted-foreground'
                       }`}>
                         {step.label}
                       </span>
@@ -688,9 +658,8 @@ export default function RiskAssessmentPage() {
                 })}
               </div>
 
-              {/* Footer message */}
               <motion.div
-                className="mt-6 pt-4 border-t border-gray-100 text-center"
+                className="mt-6 pt-4 border-t border-border text-center"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
@@ -709,7 +678,6 @@ export default function RiskAssessmentPage() {
   // Show completion results
   if (completionResult) {
     const { briRefinement, actionPlan, scoreImpactSummary, milestone } = completionResult
-    // API already returns impact in 0-100 scale (points, not decimal)
     const briChange = briRefinement.impact !== null ? briRefinement.impact : null
     const hasBriComparison = briRefinement.before !== null && briChange !== null
 
@@ -720,28 +688,24 @@ export default function RiskAssessmentPage() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
       >
-        <Card className="overflow-hidden">
-          <div className="bg-gradient-to-br from-primary via-primary/90 to-violet-600 text-white p-8 text-center">
+        <Card className="overflow-hidden border-0 shadow-2xl">
+          <div className="bg-gradient-to-br from-primary via-primary/90 to-violet-600 text-white p-10 text-center">
             <motion.div
-              className="mx-auto w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-4"
+              className="mx-auto w-20 h-20 rounded-2xl bg-white/20 flex items-center justify-center mb-6"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 15 }}
             >
-              <motion.svg
-                className="w-8 h-8 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ delay: 0.4, duration: 0.4 }}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.4, type: "spring" }}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </motion.svg>
+                <Check className="w-10 h-10 text-white" strokeWidth={3} />
+              </motion.div>
             </motion.div>
             <motion.h1
-              className="text-2xl font-bold mb-2 font-display"
+              className="text-3xl font-bold mb-3 font-display"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.4 }}
@@ -749,7 +713,7 @@ export default function RiskAssessmentPage() {
               Assessment Complete!
             </motion.h1>
             <motion.p
-              className="text-white/90"
+              className="text-white/90 text-lg"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.4 }}
@@ -760,40 +724,46 @@ export default function RiskAssessmentPage() {
             </motion.p>
           </div>
 
-          <CardContent className="p-6 space-y-6">
+          <CardContent className="p-8 space-y-6">
             {/* Findings */}
             {milestone.isNewLearning && scoreImpactSummary.keyFindings.length > 0 && (
               <motion.div
-                className="bg-gray-50 rounded-lg p-4"
+                className="bg-muted/50 rounded-2xl p-5"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6, duration: 0.4 }}
               >
-                <h3 className="font-semibold text-gray-900 mb-3">Key Findings</h3>
-                <ul className="space-y-2">
+                <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  Key Findings
+                </h3>
+                <ul className="space-y-3">
                   {scoreImpactSummary.keyFindings.map((finding, i) => (
                     <motion.li
                       key={i}
-                      className="flex items-start gap-2 text-sm text-gray-700"
+                      className="flex items-start gap-3 text-sm text-muted-foreground"
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.7 + i * 0.1, duration: 0.3 }}
                     >
-                      <span className="text-primary">•</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
                       {finding}
                     </motion.li>
                   ))}
                 </ul>
                 {hasBriComparison && (
                   <motion.div
-                    className="mt-3 pt-3 border-t flex justify-between"
+                    className="mt-5 pt-4 border-t border-border flex justify-between items-center"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1, duration: 0.3 }}
                   >
-                    <span className="text-sm text-gray-600">BRI Impact</span>
-                    <span className={`font-bold ${briChange > 0 ? 'text-green-600' : briChange < 0 ? 'text-amber-600' : 'text-gray-600'}`}>
-                      {briChange === 0 ? 'No change' : `${briChange > 0 ? '+' : ''}${briChange} ${Math.abs(briChange) === 1 ? 'point' : 'points'}`}
+                    <span className="text-sm text-muted-foreground flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4" />
+                      BRI Impact
+                    </span>
+                    <span className={`text-lg font-bold ${briChange && briChange > 0 ? 'text-emerald-600' : briChange && briChange < 0 ? 'text-amber-600' : 'text-muted-foreground'}`}>
+                      {briChange === 0 ? 'No change' : `${briChange && briChange > 0 ? '+' : ''}${briChange} ${Math.abs(briChange || 0) === 1 ? 'point' : 'points'}`}
                     </span>
                   </motion.div>
                 )}
@@ -803,27 +773,27 @@ export default function RiskAssessmentPage() {
             {/* Tasks Created */}
             {actionPlan.tasksCreated > 0 && (
               <motion.div
-                className="bg-primary/5 rounded-lg p-4 border border-primary/10"
+                className="bg-primary/5 rounded-2xl p-5 border border-primary/10"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8, duration: 0.4 }}
               >
-                <h3 className="font-semibold text-gray-900 mb-2">New Actions Added</h3>
-                <div className="text-2xl font-bold text-primary font-display">{actionPlan.tasksCreated} Tasks</div>
+                <h3 className="font-semibold text-foreground mb-2">New Actions Added</h3>
+                <div className="text-3xl font-bold text-primary font-display">{actionPlan.tasksCreated} Tasks</div>
               </motion.div>
             )}
 
             {/* Actions */}
             <motion.div
-              className="flex gap-3"
+              className="flex gap-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.4 }}
             >
-              <Button onClick={createNewAssessment} disabled={creating} className="flex-1 btn-hover">
+              <Button onClick={createNewAssessment} disabled={creating} className="flex-1 h-12 bg-primary hover:bg-primary/90">
                 {creating ? 'Creating...' : 'Start Another Assessment'}
               </Button>
-              <Button variant="outline" onClick={() => window.location.href = '/dashboard'} className="flex-1 btn-hover">
+              <Button variant="outline" onClick={() => window.location.href = '/dashboard'} className="flex-1 h-12">
                 Return to Dashboard
               </Button>
             </motion.div>
@@ -837,33 +807,36 @@ export default function RiskAssessmentPage() {
   if (!currentAssessment || currentAssessment.status === 'COMPLETED') {
     return (
       <motion.div
-        className="max-w-2xl mx-auto py-8 space-y-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+        className="max-w-2xl mx-auto py-8 space-y-8"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
       >
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 font-display">10-Minute Risk Assessment</h1>
-          <p className="text-gray-600 mt-1">
+        <motion.div variants={itemVariants}>
+          <h1 className="text-3xl font-bold text-foreground font-display tracking-tight">10-Minute Risk Assessment</h1>
+          <p className="text-lg text-muted-foreground mt-2">
             Answer 10 targeted questions to refine your Buyer Readiness score
           </p>
-        </div>
+        </motion.div>
 
         {currentAssessment?.status === 'COMPLETED' && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.4 }}
-          >
-            <Card className="card-hover">
+          <motion.div variants={itemVariants}>
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader>
-                <CardTitle className="text-lg">Last Assessment</CardTitle>
-                <CardDescription>
-                  {currentAssessment.title} • Completed {new Date(currentAssessment.completedAt!).toLocaleDateString()}
-                </CardDescription>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                    <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Last Assessment</CardTitle>
+                    <CardDescription>
+                      {currentAssessment.title} • Completed {new Date(currentAssessment.completedAt!).toLocaleDateString()}
+                    </CardDescription>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   {currentAssessment.questions.length} questions answered across{' '}
                   {currentAssessment.primaryCategory ? CATEGORY_LABELS[currentAssessment.primaryCategory] : 'multiple'} categories.
                 </p>
@@ -872,36 +845,60 @@ export default function RiskAssessmentPage() {
           </motion.div>
         )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.4 }}
-        >
-          <Card className="border-primary/20 bg-primary/5 card-hover">
+        <motion.div variants={itemVariants}>
+          <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 shadow-xl hover:shadow-2xl transition-all">
             <CardHeader>
-              <CardTitle className="font-display">Ready for your next assessment?</CardTitle>
-              <CardDescription>
-                Each assessment asks new questions based on your current risk profile
-              </CardDescription>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-display">Ready for your next assessment?</CardTitle>
+                  <CardDescription className="text-base">
+                    Each assessment asks new questions based on your current risk profile
+                  </CardDescription>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent>
-              <Button onClick={createNewAssessment} disabled={creating} size="lg" className="w-full btn-hover">
-                {creating ? 'Creating Assessment...' : 'Start 10-Minute Assessment'}
+            <CardContent className="space-y-4">
+              <Button
+                onClick={createNewAssessment}
+                disabled={creating}
+                size="lg"
+                className="w-full h-14 text-lg bg-primary hover:bg-primary/90 gap-3"
+              >
+                {creating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Creating Assessment...
+                  </>
+                ) : (
+                  <>
+                    Start 10-Minute Assessment
+                    <ArrowRight className="w-5 h-5" />
+                  </>
+                )}
               </Button>
               {error && (
-                <p className="text-sm text-red-600 mt-3">{error}</p>
+                <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4" />
+                  {error}
+                </p>
               )}
             </CardContent>
           </Card>
         </motion.div>
 
         {/* Link to Baseline Assessment */}
-        <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <svg className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-          </svg>
+        <motion.div
+          variants={itemVariants}
+          className="flex items-start gap-4 p-5 bg-muted/50 rounded-2xl border border-border"
+        >
+          <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+            <Info className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          </div>
           <div className="flex-1">
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-muted-foreground">
               Need to update your initial assessment answers? You can review and edit all baseline questions in{' '}
               <a href="/dashboard/assessment/company" className="text-primary hover:underline font-medium">
                 Baseline Assessment
@@ -909,7 +906,7 @@ export default function RiskAssessmentPage() {
               .
             </p>
           </div>
-        </div>
+        </motion.div>
       </motion.div>
     )
   }
@@ -922,77 +919,86 @@ export default function RiskAssessmentPage() {
   const currentQuestion = currentAssessment.questions[currentQuestionIndex]
 
   return (
-    <div className="max-w-3xl mx-auto py-8">
+    <motion.div
+      className="max-w-3xl mx-auto py-8"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <span className="text-lg font-bold text-primary">10</span>
+      <motion.div className="mb-8" variants={itemVariants}>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/25">
+              <span className="text-xl font-bold text-white font-display">10</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900 font-display">10-Minute Risk Assessment</h1>
-              <p className="text-sm text-muted-foreground">Refine your Buyer Readiness score</p>
+              <h1 className="text-2xl font-bold text-foreground font-display">10-Minute Risk Assessment</h1>
+              <p className="text-muted-foreground">Refine your Buyer Readiness score</p>
             </div>
           </div>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm font-medium text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
             {answeredCount} of {totalQuestions} answered
           </span>
         </div>
 
         {/* Progress Bar */}
-        <div className="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary transition-all duration-300"
-            style={{ width: `${progress}%` }}
+        <div className="h-3 bg-muted rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
           />
         </div>
-      </div>
+      </motion.div>
 
       {/* Question Navigation */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <motion.div className="flex flex-wrap gap-2 mb-8" variants={itemVariants}>
         {currentAssessment.questions.map((q, index) => {
           const isAnswered = !!responses[q.questionId]
           const isCurrent = index === currentQuestionIndex
 
           return (
-            <button
+            <motion.button
               key={q.id}
               onClick={() => setCurrentQuestionIndex(index)}
-              className={`w-8 h-8 rounded-full text-sm font-medium transition-colors ${
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className={`w-10 h-10 rounded-xl text-sm font-semibold transition-all duration-200 ${
                 isCurrent
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-white shadow-lg shadow-primary/25'
                   : isAnswered
-                  ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             >
               {index + 1}
-            </button>
+            </motion.button>
           )
         })}
-      </div>
+      </motion.div>
 
       {/* Current Question */}
       <AnimatePresence mode="wait">
         {currentQuestion && (
           <motion.div
             key={currentQuestionIndex}
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            exit={{ opacity: 0, x: -30 }}
+            transition={{ type: "spring", stiffness: 80, damping: 15 }}
           >
-            <Card className="mb-6">
-              <CardHeader>
-                <div className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary text-sm font-medium flex items-center justify-center">
+            <Card className="mb-8 border-0 shadow-xl">
+              <CardHeader className="pb-4">
+                <div className="flex items-start gap-4">
+                  <span className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary/10 text-primary text-sm font-bold flex items-center justify-center">
                     {currentQuestionIndex + 1}
                   </span>
                   <div className="flex-1">
-                    <CardTitle className="text-lg">{currentQuestion.question.questionText}</CardTitle>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded">
+                    <CardTitle className="text-xl">{currentQuestion.question.questionText}</CardTitle>
+                    <div className="flex items-center gap-2 mt-3">
+                      <span className="text-xs font-medium px-3 py-1 bg-primary/10 text-primary rounded-full">
                         {CATEGORY_LABELS[currentQuestion.question.briCategory] || currentQuestion.question.briCategory}
                       </span>
                       {currentQuestion.question.subCategory && (
@@ -1019,13 +1025,31 @@ export default function RiskAssessmentPage() {
                           transition={{ duration: 0.2, delay: index * 0.05 }}
                           onClick={() => handleOptionSelect(option.id)}
                           disabled={saving}
-                          className={`w-full p-4 text-left rounded-lg border transition-all duration-200 ${
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
+                          className={`w-full p-5 text-left rounded-xl border-2 transition-all duration-200 flex items-center gap-4 ${
                             isSelected
-                              ? 'border-primary bg-primary/5 ring-2 ring-primary/20 scale-[1.02]'
-                              : 'border-gray-200 hover:border-primary/40 hover:bg-primary/5 hover:scale-[1.01] hover:shadow-sm'
+                              ? 'border-primary bg-primary/5 shadow-md shadow-primary/10'
+                              : 'border-border hover:border-primary/40 hover:bg-muted/50'
                           } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                          <span className="text-sm">{option.optionText}</span>
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                            isSelected
+                              ? 'border-primary bg-primary'
+                              : 'border-muted-foreground/30'
+                          }`}>
+                            {isSelected && (
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                              >
+                                <Check className="w-3 h-3 text-white" />
+                              </motion.div>
+                            )}
+                          </div>
+                          <span className={`text-sm ${isSelected ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+                            {option.optionText}
+                          </span>
                         </motion.button>
                       )
                     })}
@@ -1037,25 +1061,47 @@ export default function RiskAssessmentPage() {
       </AnimatePresence>
 
       {/* Error Message */}
-      {error && (
-        <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          {error}
-        </div>
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-3"
+          >
+            <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+            <span className="text-red-700 dark:text-red-300 text-sm">{error}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Complete Button */}
       {allAnswered && (
-        <div className="flex justify-center">
+        <motion.div
+          className="flex justify-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
           <Button
             onClick={handleComplete}
             disabled={completing}
             size="lg"
-            className="bg-green-600 hover:bg-green-700"
+            className="h-14 px-8 text-lg bg-emerald-600 hover:bg-emerald-700 gap-3"
           >
-            {completing ? 'Completing...' : 'Complete Assessment'}
+            {completing ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Completing...
+              </>
+            ) : (
+              <>
+                Complete Assessment
+                <ChevronRight className="w-5 h-5" />
+              </>
+            )}
           </Button>
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   )
 }

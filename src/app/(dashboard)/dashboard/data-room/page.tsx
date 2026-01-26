@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useCompany } from '@/contexts/CompanyContext'
@@ -31,6 +32,25 @@ import { SearchFilters, FilterState } from '@/components/dataroom/SearchFilters'
 import { NotificationBell } from '@/components/dataroom/NotificationBell'
 import { AnalyticsPanel } from '@/components/dataroom/AnalyticsPanel'
 import { DocumentAnalytics } from '@/components/dataroom/DocumentAnalytics'
+import { Loader2 } from 'lucide-react'
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06, delayChildren: 0.1 }
+  }
+} as const
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring" as const, stiffness: 100, damping: 15 }
+  }
+}
 
 // Stage order for comparison (lower index = earlier stage)
 const STAGE_ORDER: DataRoomStageType[] = ['PREPARATION', 'TEASER', 'POST_NDA', 'DUE_DILIGENCE', 'CLOSED']
@@ -105,9 +125,9 @@ const FREQUENCY_LABELS: Record<string, string> = {
 }
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  CURRENT: { bg: 'bg-green-100', text: 'text-green-700', label: 'Current' },
-  NEEDS_UPDATE: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Update Soon' },
-  OVERDUE: { bg: 'bg-red-100', text: 'text-red-700', label: 'Overdue' },
+  CURRENT: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', label: 'Current' },
+  NEEDS_UPDATE: { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-400', label: 'Update Soon' },
+  OVERDUE: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', label: 'Overdue' },
 }
 
 function formatFileSize(bytes: number): string {
@@ -597,17 +617,37 @@ export default function DataRoomPage() {
 
   if (!selectedCompany) {
     return (
-      <div className="p-6">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="p-6 text-center py-16"
+      >
+        <div className="w-16 h-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
+          <FolderIcon className="h-8 w-8 text-muted-foreground" />
+        </div>
         <p className="text-muted-foreground">Please select a company to view the data room.</p>
-      </div>
+      </motion.div>
     )
   }
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <p className="text-muted-foreground">Loading data room...</p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex items-center justify-center min-h-[400px]"
+      >
+        <div className="text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="mx-auto mb-4"
+          >
+            <Loader2 className="h-10 w-10 text-primary" />
+          </motion.div>
+          <p className="text-muted-foreground font-medium">Loading data room...</p>
+        </div>
+      </motion.div>
     )
   }
 
@@ -633,7 +673,7 @@ export default function DataRoomPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Data Room</h1>
+          <h1 className="text-3xl font-bold font-display text-foreground tracking-tight">Data Room</h1>
           <p className="text-muted-foreground mt-1">
             Organize documents for buyer due diligence
           </p>
@@ -665,10 +705,13 @@ export default function DataRoomPage() {
             <UsersIcon className="h-4 w-4 mr-2" />
             Manage Access
           </Button>
-          <Button onClick={() => {
-            setNewDocument({ ...newDocument, folderId: selectedFolder?.id || '' })
-            setShowAddDialog(true)
-          }}>
+          <Button
+            onClick={() => {
+              setNewDocument({ ...newDocument, folderId: selectedFolder?.id || '' })
+              setShowAddDialog(true)
+            }}
+            className="shadow-lg shadow-primary/20"
+          >
             <PlusIcon className="h-4 w-4 mr-2" />
             Add Document
           </Button>
@@ -678,53 +721,86 @@ export default function DataRoomPage() {
       {/* Readiness Score */}
       {readiness && (
         <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Readiness Score</p>
-                  <p className="text-2xl font-semibold">{readiness.score}%</p>
+          <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 300 }}>
+            <Card className="border-border/50 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 overflow-hidden">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Readiness Score</p>
+                    <p className="text-3xl font-bold font-display text-foreground">{readiness.score}%</p>
+                  </div>
+                  <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <CheckCircleIcon className="h-6 w-6 text-primary" />
+                  </div>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <CheckCircleIcon className="h-6 w-6 text-primary" />
+                <div className="mt-3 w-full bg-muted rounded-full h-2.5 overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${readiness.score}%` }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                    className="bg-gradient-to-r from-primary to-primary/70 h-2.5 rounded-full"
+                  />
                 </div>
-              </div>
-              <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-primary h-2 rounded-full transition-all"
-                  style={{ width: `${readiness.score}%` }}
-                />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Folders</p>
-              <p className="text-2xl font-semibold">{dataRoom?.folders?.length || 0}</p>
-            </CardContent>
-          </Card>
+          <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 300 }}>
+            <Card className="border-border/50">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Folders</p>
+                    <p className="text-3xl font-bold font-display text-foreground">{dataRoom?.folders?.length || 0}</p>
+                  </div>
+                  <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+                    <FolderIcon className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Documents</p>
-              <p className="text-2xl font-semibold">
-                {dataRoom?.folders?.reduce((sum, f) => sum + f.documentCount + f.children.reduce((cs, c) => cs + c.documentCount, 0), 0) || 0}
-              </p>
-            </CardContent>
-          </Card>
+          <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 300 }}>
+            <Card className="border-border/50">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Documents</p>
+                    <p className="text-3xl font-bold font-display text-foreground">
+                      {dataRoom?.folders?.reduce((sum, f) => sum + f.documentCount + f.children.reduce((cs, c) => cs + c.documentCount, 0), 0) || 0}
+                    </p>
+                  </div>
+                  <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+                    <EditIcon className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Missing Critical</p>
-              <p className="text-2xl font-semibold text-red-600">{readiness.missingCritical.length}</p>
-              {readiness.missingCritical.length > 0 && (
-                <p className="text-xs text-muted-foreground mt-1 truncate">
-                  {readiness.missingCritical.join(', ')}
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 300 }}>
+            <Card className={`border-border/50 ${readiness.missingCritical.length > 0 ? 'border-red-200 dark:border-red-900/50 bg-red-50/30 dark:bg-red-950/10' : ''}`}>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Missing Critical</p>
+                    <p className={`text-3xl font-bold font-display ${readiness.missingCritical.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                      {readiness.missingCritical.length}
+                    </p>
+                    {readiness.missingCritical.length > 0 && (
+                      <p className="text-xs text-muted-foreground mt-1 truncate max-w-[150px]">
+                        {readiness.missingCritical.join(', ')}
+                      </p>
+                    )}
+                  </div>
+                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${readiness.missingCritical.length > 0 ? 'bg-red-100 dark:bg-red-900/30' : 'bg-green-100 dark:bg-green-900/30'}`}>
+                    <CheckCircleIcon className={`h-5 w-5 ${readiness.missingCritical.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       )}
 
@@ -763,9 +839,9 @@ export default function DataRoomPage() {
       {/* Main Content - Folder Tree + Documents */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Folder Tree */}
-        <Card className="lg:col-span-1">
+        <Card className="lg:col-span-1 border-border/50">
           <CardHeader>
-            <CardTitle className="text-base">Folders</CardTitle>
+            <CardTitle className="text-base font-display">Folders</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y">
@@ -795,11 +871,11 @@ export default function DataRoomPage() {
                       onDragEnter={(e) => handleFolderDragEnter(e, folder.id)}
                       onDragLeave={handleFolderDragLeave}
                       onDrop={(e) => handleFolderDrop(e, folder.id)}
-                      className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors ${
+                      className={`w-full flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors ${
                         isSelected ? 'bg-primary/5 border-l-2 border-primary' : ''
                       } ${isDragOver ? 'bg-primary/20 ring-2 ring-primary ring-inset' : ''}`}
                     >
-                      <div className={`p-1.5 rounded ${categoryInfo?.color || 'bg-gray-100 text-gray-700'}`}>
+                      <div className={`p-1.5 rounded-lg ${categoryInfo?.color || 'bg-muted text-muted-foreground'}`}>
                         <FolderIcon className="h-4 w-4" />
                       </div>
                       <div className="flex-1 text-left min-w-0">
@@ -813,7 +889,7 @@ export default function DataRoomPage() {
                         <span className="text-xs text-primary font-medium">Drop here</span>
                       )}
                       {accessibleChildren.length > 0 && !isDragOver && (
-                        <ChevronIcon className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                        <ChevronIcon className={`h-4 w-4 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                       )}
                     </button>
 
@@ -828,11 +904,11 @@ export default function DataRoomPage() {
                           onDragEnter={(e) => handleFolderDragEnter(e, child.id)}
                           onDragLeave={handleFolderDragLeave}
                           onDrop={(e) => handleFolderDrop(e, child.id)}
-                          className={`w-full flex items-center gap-3 p-3 pl-10 hover:bg-gray-50 transition-colors ${
+                          className={`w-full flex items-center gap-3 p-3 pl-10 hover:bg-muted/50 transition-colors ${
                             isChildSelected ? 'bg-primary/5 border-l-2 border-primary' : ''
                           } ${isChildDragOver ? 'bg-primary/20 ring-2 ring-primary ring-inset' : ''}`}
                         >
-                          <FolderIcon className="h-4 w-4 text-gray-400" />
+                          <FolderIcon className="h-4 w-4 text-muted-foreground" />
                           <div className="flex-1 text-left min-w-0">
                             <p className="text-sm truncate">{child.name}</p>
                             <p className="text-xs text-muted-foreground">{child.documentCount} docs</p>
@@ -851,10 +927,10 @@ export default function DataRoomPage() {
         </Card>
 
         {/* Document List */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 border-border/50">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base">
+              <CardTitle className="text-base font-display">
                 {searchResults !== null
                   ? 'Search Results'
                   : selectedFolder
@@ -884,9 +960,9 @@ export default function DataRoomPage() {
           >
             {/* Upload indicator */}
             {isUploading && (
-              <div className="mb-4 p-3 bg-blue-50 rounded-lg flex items-center gap-2">
-                <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full" />
-                <span className="text-sm text-blue-700">Uploading files...</span>
+              <div className="mb-4 p-3 bg-primary/10 rounded-xl border border-primary/20 flex items-center gap-2">
+                <Loader2 className="h-4 w-4 text-primary animate-spin" />
+                <span className="text-sm text-primary font-medium">Uploading files...</span>
               </div>
             )}
 
@@ -914,8 +990,8 @@ export default function DataRoomPage() {
               if (showNoResults) {
                 return (
                   <div className="text-center py-8">
-                    <SearchIcon className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-                    <p className="text-muted-foreground">No documents match your search</p>
+                    <SearchIcon className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
+                    <p className="text-foreground font-medium">No documents match your search</p>
                     <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters or search terms</p>
                   </div>
                 )
@@ -924,8 +1000,8 @@ export default function DataRoomPage() {
               if (showEmptyFolderDocs) {
                 return (
                   <div className="text-center py-8">
-                    <UploadIcon className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-                    <p className="text-muted-foreground">No documents in this folder</p>
+                    <UploadIcon className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
+                    <p className="text-foreground font-medium">No documents in this folder</p>
                     <p className="text-sm text-muted-foreground mt-1">Drag and drop files here or click to add</p>
                     <Button
                       variant="outline"
@@ -945,21 +1021,25 @@ export default function DataRoomPage() {
               // Show documents
               return (
                 <div className="space-y-3 relative">
-                  {displayDocs.map((doc) => (
-                  <div
+                  {displayDocs.map((doc, index) => (
+                  <motion.div
                     key={doc.id}
-                    draggable
-                    onDragStart={(e) => handleDocumentDragStart(e, doc.id)}
-                    onDragEnd={handleDocumentDragEnd}
-                    className={`flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-grab active:cursor-grabbing transition-opacity ${
-                      draggingDocId === doc.id ? 'opacity-50' : ''
-                    }`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.03 }}
+                    className={`group ${draggingDocId === doc.id ? 'opacity-50 scale-95' : ''}`}
                   >
+                    <div
+                      draggable
+                      onDragStart={(e) => handleDocumentDragStart(e as unknown as React.DragEvent, doc.id)}
+                      onDragEnd={handleDocumentDragEnd}
+                      className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border/50 cursor-grab active:cursor-grabbing transition-all hover:border-border hover:shadow-sm hover:bg-muted/50 group-hover:translate-x-1"
+                    >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="font-medium text-gray-900 truncate">{doc.documentName}</p>
+                        <p className="font-medium text-foreground truncate">{doc.documentName}</p>
                         {doc.isCustom && (
-                          <span className="text-xs px-1.5 py-0.5 bg-gray-200 text-gray-600 rounded">Custom</span>
+                          <span className="text-xs px-1.5 py-0.5 bg-muted text-muted-foreground rounded">Custom</span>
                         )}
                         {doc.isConfidential && (
                           <span className="text-xs px-1.5 py-0.5 bg-red-100 text-red-600 rounded">Confidential</span>
@@ -1015,7 +1095,7 @@ export default function DataRoomPage() {
 
                     <div className="flex items-center gap-2 ml-4">
                       {(doc.fileUrl || doc.filePath) && (
-                        <span className={`text-xs px-2 py-1 rounded ${STATUS_STYLES[doc.status]?.bg || 'bg-gray-100'} ${STATUS_STYLES[doc.status]?.text || 'text-gray-700'}`}>
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_STYLES[doc.status]?.bg || 'bg-muted'} ${STATUS_STYLES[doc.status]?.text || 'text-muted-foreground'}`}>
                           {STATUS_STYLES[doc.status]?.label || 'Uploaded'}
                         </span>
                       )}
@@ -1025,25 +1105,25 @@ export default function DataRoomPage() {
                           {canPreview(doc) && (
                             <button
                               onClick={() => setPreviewDocument(doc)}
-                              className="p-2 hover:bg-gray-200 rounded-md transition-colors"
+                              className="p-2 hover:bg-primary/10 hover:text-primary rounded-lg transition-all"
                               title="Preview document"
                             >
-                              <EyeIcon className="h-4 w-4 text-gray-600" />
+                              <EyeIcon className="h-4 w-4" />
                             </button>
                           )}
                           <button
                             onClick={() => handleDownload(doc.id, doc.fileName)}
-                            className="p-2 hover:bg-gray-200 rounded-md transition-colors"
+                            className="p-2 hover:bg-primary/10 hover:text-primary rounded-lg transition-all"
                             title="Download document"
                           >
-                            <DownloadIcon className="h-4 w-4 text-gray-600" />
+                            <DownloadIcon className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => setAnalyticsDocument(doc)}
-                            className="p-2 hover:bg-gray-200 rounded-md transition-colors"
+                            className="p-2 hover:bg-primary/10 hover:text-primary rounded-lg transition-all"
                             title="View analytics"
                           >
-                            <ChartIcon className="h-4 w-4 text-gray-600" />
+                            <ChartIcon className="h-4 w-4" />
                           </button>
                           <Button
                             size="sm"
@@ -1076,23 +1156,24 @@ export default function DataRoomPage() {
 
                       <button
                         onClick={() => setShowEditDialog(doc)}
-                        className="p-2 hover:bg-gray-200 rounded-md transition-colors"
+                        className="p-2 hover:bg-muted rounded-lg transition-all text-muted-foreground hover:text-foreground"
                         title="Edit"
                       >
-                        <EditIcon className="h-4 w-4 text-gray-600" />
+                        <EditIcon className="h-4 w-4" />
                       </button>
 
                       {(doc.isCustom || doc.filePath) && (
                         <button
                           onClick={() => handleDeleteDocument(doc.id, doc.isCustom)}
-                          className="p-2 hover:bg-red-100 rounded-md transition-colors"
+                          className="p-2 hover:bg-red-100 dark:hover:bg-red-950/50 rounded-lg transition-all text-muted-foreground hover:text-red-600"
                           title={doc.isCustom ? 'Delete' : 'Remove file'}
                         >
-                          <TrashIcon className="h-4 w-4 text-red-600" />
+                          <TrashIcon className="h-4 w-4" />
                         </button>
                       )}
                     </div>
-                  </div>
+                    </div>
+                  </motion.div>
                   ))}
                 </div>
               )

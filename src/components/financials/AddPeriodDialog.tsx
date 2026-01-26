@@ -12,6 +12,19 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Calendar } from 'lucide-react'
 
 interface AddPeriodDialogProps {
   open: boolean
@@ -41,6 +54,22 @@ interface CompanySettings {
   fiscalYearEndDay: number
 }
 
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+]
+
+const MONTH_NAMES_SHORT = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+]
+
+// Get days in a month (using a non-leap year as reference for fiscal year end)
+function getDaysInMonth(month: number): number {
+  // Use 2023 as reference year (non-leap year)
+  return new Date(2023, month, 0).getDate()
+}
+
 export function AddPeriodDialog({
   open,
   onOpenChange,
@@ -58,6 +87,10 @@ export function AddPeriodDialog({
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isSavingFYE, setIsSavingFYE] = useState(false)
+  const [showFYEPicker, setShowFYEPicker] = useState(false)
+  const [tempMonth, setTempMonth] = useState(12)
+  const [tempDay, setTempDay] = useState(31)
 
   // Fetch company settings when dialog opens
   useEffect(() => {
@@ -69,14 +102,14 @@ export function AddPeriodDialog({
         const response = await fetch(`/api/companies/${companyId}`)
         if (response.ok) {
           const data = await response.json()
-          setCompanySettings({
-            fiscalYearEndMonth: data.company.fiscalYearEndMonth || 12,
-            fiscalYearEndDay: data.company.fiscalYearEndDay || 31,
-          })
+          const month = data.company.fiscalYearEndMonth || 12
+          const day = data.company.fiscalYearEndDay || 31
+          setCompanySettings({ fiscalYearEndMonth: month, fiscalYearEndDay: day })
+          setTempMonth(month)
+          setTempDay(day)
         }
       } catch (err) {
         console.error('Error fetching company settings:', err)
-        // Keep defaults on error
       } finally {
         setIsLoading(false)
       }
@@ -84,6 +117,44 @@ export function AddPeriodDialog({
 
     fetchCompanySettings()
   }, [open, companyId])
+
+  // When month changes, adjust day if needed
+  useEffect(() => {
+    const maxDay = getDaysInMonth(tempMonth)
+    if (tempDay > maxDay) {
+      setTempDay(maxDay)
+    }
+  }, [tempMonth, tempDay])
+
+  // Save fiscal year end
+  const handleSaveFYE = async () => {
+    setCompanySettings({
+      fiscalYearEndMonth: tempMonth,
+      fiscalYearEndDay: tempDay,
+    })
+    setShowFYEPicker(false)
+
+    setIsSavingFYE(true)
+    try {
+      await fetch(`/api/companies/${companyId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fiscalYearEndMonth: tempMonth,
+          fiscalYearEndDay: tempDay,
+        }),
+      })
+    } catch (err) {
+      console.error('Error saving fiscal year end:', err)
+    } finally {
+      setIsSavingFYE(false)
+    }
+  }
+
+  // Format fiscal year end for display
+  const formatFYE = (month: number, day: number) => {
+    return `${MONTH_NAMES[month - 1]} ${day}`
+  }
 
   // Calculate start and end dates based on fiscal year end
   const calculateDates = () => {
@@ -106,8 +177,7 @@ export function AddPeriodDialog({
     if (fiscalYearEndMonth === 12 && fiscalYearEndDay === 31) {
       return `FY${fiscalYear}` // Calendar year
     }
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    return `FY${fiscalYear} (YE ${monthNames[fiscalYearEndMonth - 1]})`
+    return `FY${fiscalYear} (YE ${MONTH_NAMES_SHORT[fiscalYearEndMonth - 1]} ${fiscalYearEndDay})`
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -149,11 +219,6 @@ export function AddPeriodDialog({
     }
   }
 
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ]
-
   // Preview dates
   const dates = calculateDates()
   const startDatePreview = new Date(dates.startDate).toLocaleDateString('en-US', {
@@ -162,9 +227,6 @@ export function AddPeriodDialog({
   const endDatePreview = new Date(dates.endDate).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric'
   })
-
-  const { fiscalYearEndMonth, fiscalYearEndDay } = companySettings
-  const isCalendarYear = fiscalYearEndMonth === 12 && fiscalYearEndDay === 31
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -197,18 +259,99 @@ export function AddPeriodDialog({
               </p>
             </div>
 
-            {/* Preview */}
-            <div className="rounded-md bg-muted p-3 space-y-1">
+            {/* Preview with subtle FYE edit */}
+            <div className="rounded-md bg-muted p-3 space-y-2">
               <p className="text-sm font-medium">{generateLabel()}</p>
               <p className="text-xs text-muted-foreground">
                 {startDatePreview} - {endDatePreview}
               </p>
-              {!isCalendarYear && (
-                <p className="text-xs text-muted-foreground mt-2">
-                  Fiscal year ends on {monthNames[fiscalYearEndMonth - 1]} {fiscalYearEndDay}
-                  {' '}(set in Company Settings)
-                </p>
-              )}
+
+              {/* Subtle fiscal year end link */}
+              <Popover open={showFYEPicker} onOpenChange={setShowFYEPicker}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
+                    disabled={isSavingFYE}
+                  >
+                    <Calendar className="h-3 w-3" />
+                    {companySettings.fiscalYearEndMonth === 12 && companySettings.fiscalYearEndDay === 31
+                      ? 'Change fiscal year end'
+                      : `Year ends ${formatFYE(companySettings.fiscalYearEndMonth, companySettings.fiscalYearEndDay)}`
+                    }
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-3" align="start">
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium">Fiscal Year End Date</p>
+                    <p className="text-xs text-muted-foreground">
+                      Applies to all fiscal years
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Month</Label>
+                        <Select
+                          value={tempMonth.toString()}
+                          onValueChange={(v) => setTempMonth(parseInt(v))}
+                        >
+                          <SelectTrigger className="h-8 text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {MONTH_NAMES.map((name, i) => (
+                              <SelectItem key={i + 1} value={(i + 1).toString()}>
+                                {name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label className="text-xs">Day</Label>
+                        <Select
+                          value={tempDay.toString()}
+                          onValueChange={(v) => setTempDay(parseInt(v))}
+                        >
+                          <SelectTrigger className="h-8 text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: getDaysInMonth(tempMonth) }, (_, i) => i + 1).map((day) => (
+                              <SelectItem key={day} value={day.toString()}>
+                                {day}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setTempMonth(companySettings.fiscalYearEndMonth)
+                          setTempDay(companySettings.fiscalYearEndDay)
+                          setShowFYEPicker(false)
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleSaveFYE}
+                      >
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
 
             {error && (
@@ -224,7 +367,7 @@ export function AddPeriodDialog({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting || isSavingFYE}>
                 {isSubmitting ? 'Creating...' : 'Create Period'}
               </Button>
             </DialogFooter>

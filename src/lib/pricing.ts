@@ -115,3 +115,81 @@ export function hasFeatureAccess(tier: PlanTier, featureName: string): boolean {
 export function getPlan(tier: PlanTier): PricingPlan | undefined {
   return PRICING_PLANS.find(p => p.id === tier)
 }
+
+// Map features to minimum required plan
+export const FEATURE_REQUIREMENTS: Record<string, PlanTier> = {
+  // Foundation (free)
+  'initial-assessment': 'foundation',
+  'basic-valuation': 'foundation',
+  'bri-overview': 'foundation',
+
+  // Growth required
+  'company-assessment': 'growth',
+  'risk-assessment': 'growth',
+  'personal-assessment': 'growth',
+  'action-plan': 'growth',
+  'personal-financials': 'growth',
+  'retirement-calculator': 'growth',
+  'business-loans': 'growth',
+  'business-financials': 'growth',
+  'quickbooks': 'growth',
+  'team-members': 'growth', // limit: 3
+
+  // Exit-Ready required
+  'data-room': 'exit-ready',
+  'dcf-valuation': 'exit-ready',
+  'deal-tracker': 'exit-ready',
+  'unlimited-team': 'exit-ready',
+  'multiple-companies': 'exit-ready',
+}
+
+// Plan hierarchy for comparison
+const PLAN_HIERARCHY: PlanTier[] = ['foundation', 'growth', 'exit-ready']
+
+/**
+ * Get the minimum required plan for a feature
+ */
+export function getRequiredPlan(feature: string): PlanTier {
+  return FEATURE_REQUIREMENTS[feature] || 'foundation'
+}
+
+/**
+ * Check if a user's plan meets the requirement for a feature
+ */
+export function planMeetsRequirement(userPlan: PlanTier, requiredPlan: PlanTier): boolean {
+  return PLAN_HIERARCHY.indexOf(userPlan) >= PLAN_HIERARCHY.indexOf(requiredPlan)
+}
+
+/**
+ * Check if a user can access a specific feature
+ */
+export function canAccessFeature(userPlan: PlanTier, feature: string): boolean {
+  const requiredPlan = getRequiredPlan(feature)
+  return planMeetsRequirement(userPlan, requiredPlan)
+}
+
+/**
+ * Get upgrade message for a locked feature
+ */
+export function getUpgradeMessage(feature: string): string {
+  const requiredPlan = getRequiredPlan(feature)
+  const plan = getPlan(requiredPlan)
+  return plan ? `Upgrade to ${plan.name} to unlock this feature` : 'Upgrade to unlock this feature'
+}
+
+/**
+ * Team member limits by plan
+ */
+export const TEAM_MEMBER_LIMITS: Record<PlanTier, number> = {
+  'foundation': 1,
+  'growth': 3,
+  'exit-ready': Infinity,
+}
+
+/**
+ * Check if user can add more team members
+ */
+export function canAddTeamMember(userPlan: PlanTier, currentCount: number): boolean {
+  const limit = TEAM_MEMBER_LIMITS[userPlan]
+  return currentCount < limit
+}

@@ -7,9 +7,10 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Eye, EyeOff, AlertTriangle, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, AlertTriangle, Loader2, Sparkles } from 'lucide-react'
 import { secureSignup } from '@/app/actions/auth'
 import { getRedirectUrl, buildUrlWithRedirect, isInviteRedirect } from '@/lib/utils/redirect'
+import { PRICING_PLANS, type PlanTier } from '@/lib/pricing'
 
 export default function SignupPage() {
   return (
@@ -31,6 +32,8 @@ function SignupPageContent() {
   const searchParams = useSearchParams()
   const redirectUrl = getRedirectUrl(searchParams)
   const isFromInvite = isInviteRedirect(redirectUrl)
+  const selectedPlanId = searchParams.get('plan') as PlanTier | null
+  const selectedPlan = selectedPlanId ? PRICING_PLANS.find(p => p.id === selectedPlanId) : null
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -56,7 +59,7 @@ function SignupPageContent() {
     }
 
     try {
-      const result = await secureSignup(name, email, password, redirectUrl)
+      const result = await secureSignup(name, email, password, redirectUrl, selectedPlanId || undefined)
 
       if (!result.success) {
         setError(result.error || 'Unable to create account')
@@ -273,6 +276,36 @@ function SignupPageContent() {
                 : 'Get started with Exit OSx in minutes'}
             </p>
           </div>
+
+          {/* Selected Plan Banner */}
+          {selectedPlan && !isFromInvite && (
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/5 border border-primary/20">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                <Sparkles className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-foreground">
+                  {selectedPlan.name} Plan
+                  {selectedPlan.monthlyPrice > 0 && (
+                    <span className="ml-2 text-xs font-normal text-muted-foreground">
+                      14-day free trial
+                    </span>
+                  )}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {selectedPlan.monthlyPrice === 0
+                    ? 'Free forever'
+                    : `Then $${selectedPlan.annualPrice}/mo billed annually`}
+                </p>
+              </div>
+              <Link
+                href="/pricing"
+                className="text-sm text-primary hover:underline"
+              >
+                Change
+              </Link>
+            </div>
+          )}
 
           <form onSubmit={handleSignup} className="space-y-5">
             {error && (

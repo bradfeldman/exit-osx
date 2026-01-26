@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { logActivity, checkDataRoomAccess } from '@/lib/dataroom'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { PDFDocument, rgb, StandardFonts, degrees } from 'pdf-lib'
 import { DataRoomStage } from '@prisma/client'
 import { SIGNED_URL_EXPIRY_SECONDS } from '@/lib/security'
@@ -170,7 +170,8 @@ export async function GET(
       return NextResponse.json({ error: 'No file uploaded' }, { status: 404 })
     }
 
-    const supabase = await createClient()
+    // Use service client to bypass RLS for private bucket access
+    const supabase = createServiceClient()
     const isPdf = document.mimeType === 'application/pdf' ||
                   document.fileName?.toLowerCase().endsWith('.pdf')
 

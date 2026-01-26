@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import { Button } from '@/components/ui/button'
 import { StepIndicator } from './StepIndicator'
@@ -95,42 +96,93 @@ export function CompanySetupWizard() {
     setCurrentStep(prev => Math.max(prev - 1, 1))
   }
 
-  // Fire confetti when celebration shows
+  // Fire confetti when celebration shows - SPECTACULAR version
   useEffect(() => {
-    if (showCelebration) {
-      const duration = 3000
-      const end = Date.now() + duration
+    if (!showCelebration || typeof window === 'undefined') return
 
-      const frame = () => {
-        confetti({
-          particleCount: 3,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0, y: 0.8 },
-          colors: ['#B87333', '#3D3D3D', '#FFD700']
-        })
-        confetti({
-          particleCount: 3,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1, y: 0.8 },
-          colors: ['#B87333', '#3D3D3D', '#FFD700']
-        })
+    // Initial massive burst from center
+    confetti({
+      particleCount: 150,
+      spread: 100,
+      origin: { y: 0.5, x: 0.5 },
+      colors: ['#B87333', '#D4A574', '#FFD700', '#FFFFFF'],
+      startVelocity: 45,
+      gravity: 0.8,
+      scalar: 1.2,
+      zIndex: 9999,
+    })
 
-        if (Date.now() < end) {
-          requestAnimationFrame(frame)
-        }
-      }
-
-      // Initial burst
+    // Delayed side bursts
+    const sideTimer = setTimeout(() => {
       confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#B87333', '#3D3D3D', '#FFD700', '#FFFFFF']
+        particleCount: 80,
+        angle: 60,
+        spread: 80,
+        origin: { x: 0, y: 0.7 },
+        colors: ['#B87333', '#FFD700', '#FFFFFF'],
+        startVelocity: 35,
+        zIndex: 9999,
+      })
+      confetti({
+        particleCount: 80,
+        angle: 120,
+        spread: 80,
+        origin: { x: 1, y: 0.7 },
+        colors: ['#B87333', '#FFD700', '#FFFFFF'],
+        startVelocity: 35,
+        zIndex: 9999,
+      })
+    }, 200)
+
+    // Continuous gentle rain for 4 seconds
+    const duration = 4000
+    const end = Date.now() + duration
+    let animationId: number
+
+    const frame = () => {
+      confetti({
+        particleCount: 2,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.7 },
+        colors: ['#B87333', '#D4A574', '#FFD700'],
+        startVelocity: 25,
+        zIndex: 9999,
+      })
+      confetti({
+        particleCount: 2,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.7 },
+        colors: ['#B87333', '#D4A574', '#FFD700'],
+        startVelocity: 25,
+        zIndex: 9999,
       })
 
-      frame()
+      if (Date.now() < end) {
+        animationId = requestAnimationFrame(frame)
+      }
+    }
+
+    frame()
+
+    // Second burst at 1.5 seconds
+    const secondTimer = setTimeout(() => {
+      confetti({
+        particleCount: 60,
+        spread: 80,
+        origin: { y: 0.6, x: 0.5 },
+        colors: ['#B87333', '#FFD700'],
+        startVelocity: 30,
+        zIndex: 9999,
+      })
+    }, 1500)
+
+    // Cleanup
+    return () => {
+      clearTimeout(sideTimer)
+      clearTimeout(secondTimer)
+      if (animationId) cancelAnimationFrame(animationId)
     }
   }, [showCelebration])
 
@@ -245,41 +297,142 @@ export function CompanySetupWizard() {
   // Celebration screen
   if (showCelebration) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[500px] text-center px-4">
-        {/* Success animation */}
-        <div className="relative mb-8">
-          <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
-          <div className="relative w-24 h-24 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center shadow-2xl">
-            <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+      <motion.div
+        className="relative flex flex-col items-center justify-center min-h-[600px] text-center px-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        {/* Floating sparkle particles */}
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-2 h-2 bg-primary/60 rounded-full"
+            style={{
+              left: `${15 + i * 15}%`,
+              top: `${20 + (i % 3) * 20}%`,
+            }}
+            animate={{
+              y: [-10, 10, -10],
+              opacity: [0.3, 0.8, 0.3],
+              scale: [0.8, 1.2, 0.8],
+            }}
+            transition={{
+              duration: 2 + i * 0.3,
+              repeat: Infinity,
+              delay: i * 0.2,
+            }}
+          />
+        ))}
+
+        {/* Success animation - LARGER */}
+        <motion.div
+          className="relative mb-10"
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ delay: 0.2, type: "spring", stiffness: 150, damping: 15 }}
+        >
+          {/* Outer glow rings */}
+          <motion.div
+            className="absolute inset-[-20px] bg-primary/10 rounded-full blur-3xl"
+            animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+          <motion.div
+            className="absolute inset-[-10px] bg-amber-500/20 rounded-full blur-2xl"
+            animate={{ scale: [1.1, 1, 1.1], opacity: [0.4, 0.7, 0.4] }}
+            transition={{ duration: 2.5, repeat: Infinity, delay: 0.3 }}
+          />
+
+          {/* Main icon circle */}
+          <div className="relative w-36 h-36 bg-gradient-to-br from-primary via-primary/90 to-amber-500 rounded-full flex items-center justify-center shadow-2xl shadow-primary/30">
+            <motion.svg
+              className="w-18 h-18 text-white"
+              style={{ width: 72, height: 72 }}
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.6, ease: "easeOut" }}
+            >
+              <motion.path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M4.5 12.75l6 6 9-13.5"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ delay: 0.6, duration: 0.6, ease: "easeOut" }}
+              />
+            </motion.svg>
           </div>
-        </div>
+        </motion.div>
 
         {/* Content */}
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          You&apos;re All Set!
-        </h1>
-        <p className="text-lg text-muted-foreground mb-1 max-w-md">
-          Your company profile for <span className="font-semibold text-foreground">{formData.name}</span>
-          <br />has been created.
-        </p>
-        <p className="text-sm text-muted-foreground max-w-lg mb-8">
-          Head to your dashboard to see your preliminary valuation.
-        </p>
-
-        {/* CTA */}
-        <Button
-          size="lg"
-          onClick={handleContinueToDashboard}
-          className="text-base px-8 py-6 shadow-lg hover:shadow-xl transition-all"
+        <motion.h1
+          className="text-4xl md:text-5xl font-bold text-foreground mb-3 font-display"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.6 }}
         >
-          <span>Go to Dashboard</span>
-          <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-          </svg>
-        </Button>
-      </div>
+          You&apos;re All Set!
+        </motion.h1>
+
+        <motion.p
+          className="text-xl text-muted-foreground mb-2 max-w-md"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
+        >
+          <span className="font-semibold text-foreground">{formData.name}</span> is ready.
+        </motion.p>
+
+        <motion.p
+          className="text-base text-muted-foreground max-w-lg mb-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8, duration: 0.5 }}
+        >
+          Your preliminary valuation is waiting on your dashboard.
+        </motion.p>
+
+        {/* CTA - Larger and more prominent */}
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ delay: 1, duration: 0.5, type: "spring" }}
+        >
+          <Button
+            size="lg"
+            onClick={handleContinueToDashboard}
+            className="text-lg px-10 py-7 shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/30 hover:-translate-y-1 transition-all font-semibold"
+          >
+            <span>See Your Valuation</span>
+            <motion.svg
+              className="ml-3 h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2.5}
+              stroke="currentColor"
+              animate={{ x: [0, 5, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, delay: 1.5 }}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+            </motion.svg>
+          </Button>
+        </motion.div>
+
+        {/* Subtle hint */}
+        <motion.p
+          className="text-xs text-muted-foreground mt-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, duration: 0.5 }}
+        >
+          Based on your revenue and industry data
+        </motion.p>
+      </motion.div>
     )
   }
 
@@ -289,7 +442,14 @@ export function CompanySetupWizard() {
       <StepIndicator steps={steps} currentStep={currentStep} />
 
       {/* Form Container */}
-      <div className="bg-card rounded-2xl border border-border shadow-sm p-6 sm:p-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="relative bg-card rounded-2xl border border-border shadow-xl shadow-black/5 p-6 sm:p-8 overflow-hidden"
+      >
+        {/* Subtle gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-amber-500/[0.02] pointer-events-none" />
         {error && (
           <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl text-sm flex items-start gap-3">
             <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -299,10 +459,20 @@ export function CompanySetupWizard() {
           </div>
         )}
 
-        <div className="min-h-[400px]">
-          {renderStep()}
+        <div className="relative min-h-[400px]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            >
+              {renderStep()}
+            </motion.div>
+          </AnimatePresence>
         </div>
-      </div>
+      </motion.div>
 
       {/* Navigation */}
       <div className="flex items-center justify-between mt-6">

@@ -23,16 +23,22 @@ export async function GET(request: NextRequest) {
 
     // Handle OAuth errors
     if (error) {
+      // User cancelled - just redirect back silently without showing an error
+      if (error === 'access_denied') {
+        return NextResponse.redirect(new URL('/dashboard/financials', request.url))
+      }
+
+      // Actual error - show error message
       const errorDescription = searchParams.get('error_description') || 'Authorization failed'
       console.error('QuickBooks OAuth error:', error, errorDescription)
       return NextResponse.redirect(
-        new URL(`/dashboard/financials/pnl?qb_error=${encodeURIComponent(errorDescription)}`, request.url)
+        new URL(`/dashboard/financials?qb_error=${encodeURIComponent(errorDescription)}`, request.url)
       )
     }
 
     if (!code || !state) {
       return NextResponse.redirect(
-        new URL('/dashboard/financials/pnl?qb_error=Missing authorization code', request.url)
+        new URL('/dashboard/financials?qb_error=Missing authorization code', request.url)
       )
     }
 
@@ -42,14 +48,14 @@ export async function GET(request: NextRequest) {
     if (!stateResult.valid) {
       console.error('QuickBooks OAuth state validation failed:', stateResult.error)
       return NextResponse.redirect(
-        new URL('/dashboard/financials/pnl?qb_error=Invalid or expired authorization', request.url)
+        new URL('/dashboard/financials?qb_error=Invalid or expired authorization', request.url)
       )
     }
 
     const companyId = stateResult.data.companyId
     if (!companyId) {
       return NextResponse.redirect(
-        new URL('/dashboard/financials/pnl?qb_error=Invalid state parameter', request.url)
+        new URL('/dashboard/financials?qb_error=Invalid state parameter', request.url)
       )
     }
 
@@ -77,7 +83,7 @@ export async function GET(request: NextRequest) {
 
     if (!hasAccess) {
       return NextResponse.redirect(
-        new URL('/dashboard/financials/pnl?qb_error=Access denied', request.url)
+        new URL('/dashboard/financials?qb_error=Access denied', request.url)
       )
     }
 
@@ -137,15 +143,15 @@ export async function GET(request: NextRequest) {
       console.error('Background sync failed:', e)
     })
 
-    // Redirect back to financials page with success message
+    // Redirect back to financials statements page with success message
     return NextResponse.redirect(
-      new URL('/dashboard/financials/pnl?qb_connected=true', request.url)
+      new URL('/dashboard/financials/statements?tab=pnl&qb_connected=true', request.url)
     )
   } catch (error) {
     console.error('QuickBooks callback error:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.redirect(
-      new URL(`/dashboard/financials/pnl?qb_error=${encodeURIComponent(errorMessage)}`, request.url)
+      new URL(`/dashboard/financials?qb_error=${encodeURIComponent(errorMessage)}`, request.url)
     )
   }
 }

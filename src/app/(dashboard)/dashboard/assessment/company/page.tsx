@@ -1,10 +1,25 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useCompany } from '@/contexts/CompanyContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  AlertCircle,
+  DollarSign,
+  RefreshCw,
+  TrendingUp,
+  Users,
+  Building2,
+  User,
+  Lock
+} from 'lucide-react'
 
 // Types
 interface CoreFactors {
@@ -32,11 +47,45 @@ interface Question {
   options: QuestionOption[]
 }
 
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05, delayChildren: 0.1 }
+  }
+} as const
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 100, damping: 15 }
+  }
+} as const
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring", stiffness: 80, damping: 15 }
+  },
+  exit: {
+    opacity: 0,
+    y: -20,
+    transition: { duration: 0.2 }
+  }
+} as const
+
 // Constants
 const FACTOR_OPTIONS = {
   revenueSizeCategory: {
     label: 'Annual Revenue',
     description: 'What is your annual revenue range?',
+    icon: DollarSign,
     options: [
       { value: 'UNDER_500K', label: 'Under $500K' },
       { value: 'FROM_500K_TO_1M', label: '$500K - $1M' },
@@ -49,6 +98,7 @@ const FACTOR_OPTIONS = {
   revenueModel: {
     label: 'Revenue Model',
     description: 'How does your business generate revenue?',
+    icon: RefreshCw,
     options: [
       { value: 'PROJECT_BASED', label: 'Project-Based' },
       { value: 'TRANSACTIONAL', label: 'Transactional' },
@@ -59,6 +109,7 @@ const FACTOR_OPTIONS = {
   grossMarginProxy: {
     label: 'Gross Margin',
     description: 'What is your typical gross margin?',
+    icon: TrendingUp,
     options: [
       { value: 'LOW', label: 'Low (< 30%)' },
       { value: 'MODERATE', label: 'Moderate (30-50%)' },
@@ -69,6 +120,7 @@ const FACTOR_OPTIONS = {
   laborIntensity: {
     label: 'Labor Intensity',
     description: 'How labor-intensive is your business?',
+    icon: Users,
     options: [
       { value: 'LOW', label: 'Low - Highly automated' },
       { value: 'MODERATE', label: 'Moderate' },
@@ -79,6 +131,7 @@ const FACTOR_OPTIONS = {
   assetIntensity: {
     label: 'Asset Intensity',
     description: 'How asset-intensive is your business?',
+    icon: Building2,
     options: [
       { value: 'ASSET_LIGHT', label: 'Asset Light' },
       { value: 'MODERATE', label: 'Moderate' },
@@ -88,6 +141,7 @@ const FACTOR_OPTIONS = {
   ownerInvolvement: {
     label: 'Owner Involvement',
     description: 'How involved is the owner in daily operations?',
+    icon: User,
     options: [
       { value: 'MINIMAL', label: 'Minimal - Business runs independently' },
       { value: 'LOW', label: 'Low' },
@@ -169,11 +223,19 @@ export default function BaselineAssessmentPage() {
 
     try {
       // Load core factors
+      const emptyFactors: CoreFactors = {
+        revenueSizeCategory: '',
+        revenueModel: '',
+        grossMarginProxy: '',
+        laborIntensity: '',
+        assetIntensity: '',
+        ownerInvolvement: '',
+      }
+
       const coreFactorsRes = await fetch(`/api/companies/${selectedCompanyId}/core-factors`)
       if (coreFactorsRes.ok) {
         const data = await coreFactorsRes.json()
         if (data.coreFactors) {
-          // Extract only the factor values, not metadata like id, companyId, updatedAt
           const loadedFactors: CoreFactors = {
             revenueSizeCategory: data.coreFactors.revenueSizeCategory || '',
             revenueModel: data.coreFactors.revenueModel || '',
@@ -185,17 +247,12 @@ export default function BaselineAssessmentPage() {
           setFactors(loadedFactors)
           setOriginalFactors(loadedFactors)
         } else {
-          const emptyFactors: CoreFactors = {
-            revenueSizeCategory: '',
-            revenueModel: '',
-            grossMarginProxy: '',
-            laborIntensity: '',
-            assetIntensity: '',
-            ownerInvolvement: '',
-          }
           setFactors(emptyFactors)
           setOriginalFactors(emptyFactors)
         }
+      } else {
+        setFactors(emptyFactors)
+        setOriginalFactors(emptyFactors)
       }
 
       // Check if initial assessment exists (has BRI score)
@@ -271,14 +328,12 @@ export default function BaselineAssessmentPage() {
 
   // Check for unsaved changes
   function hasChanges(): boolean {
-    // Check core factors
     if (factors && originalFactors) {
       if (JSON.stringify(factors) !== JSON.stringify(originalFactors)) {
         return true
       }
     }
 
-    // Check assessment responses
     if (responses.size !== originalResponses.size) return true
     for (const [key, value] of responses) {
       if (originalResponses.get(key) !== value) return true
@@ -300,6 +355,10 @@ export default function BaselineAssessmentPage() {
     return catQuestions.every(q => responses.has(q.id))
   }
 
+  // Calculate progress
+  const completedSteps = steps.filter((_, i) => isStepComplete(i)).length
+  const progressPercent = Math.round((completedSteps / steps.length) * 100)
+
   // Save all changes
   async function handleSave() {
     if (!selectedCompanyId || !factors) return
@@ -309,8 +368,6 @@ export default function BaselineAssessmentPage() {
     setSuccess(null)
 
     try {
-      // Save core factors (this triggers snapshot recalculation)
-      // Only send non-empty values - empty strings are invalid for enum fields
       const factorsPayload: Record<string, string> = {}
       if (factors.revenueSizeCategory) factorsPayload.revenueSizeCategory = factors.revenueSizeCategory
       if (factors.revenueModel) factorsPayload.revenueModel = factors.revenueModel
@@ -330,7 +387,6 @@ export default function BaselineAssessmentPage() {
         throw new Error(errorData.error || 'Failed to save business profile')
       }
 
-      // Save assessment responses if we have changes
       if (assessmentId && hasInitialAssessment) {
         const changedResponses: Array<{ questionId: string; selectedOptionId: string }> = []
 
@@ -340,7 +396,6 @@ export default function BaselineAssessmentPage() {
           }
         }
 
-        // Use the reassess endpoint to update responses and recalculate
         if (changedResponses.length > 0) {
           const reassessRes = await fetch(`/api/companies/${selectedCompanyId}/reassess`, {
             method: 'POST',
@@ -360,7 +415,6 @@ export default function BaselineAssessmentPage() {
         }
       }
 
-      // Update original values
       setOriginalFactors(factors)
       setOriginalResponses(new Map(responses))
 
@@ -372,14 +426,13 @@ export default function BaselineAssessmentPage() {
     }
   }
 
-  // Navigate to next step
+  // Navigate
   function goToNextStep() {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1)
     }
   }
 
-  // Navigate to previous step
   function goToPrevStep() {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1)
@@ -390,7 +443,14 @@ export default function BaselineAssessmentPage() {
   if (companyLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Loading assessment...</p>
+        </motion.div>
       </div>
     )
   }
@@ -404,219 +464,346 @@ export default function BaselineAssessmentPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <motion.div
+      className="space-y-8 max-w-4xl mx-auto"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Baseline Assessment</h1>
-        <p className="text-gray-600">
+      <motion.div variants={itemVariants}>
+        <h1 className="text-3xl font-bold text-foreground font-display tracking-tight">
+          Baseline Assessment
+        </h1>
+        <p className="text-muted-foreground mt-2 text-lg">
           {hasInitialAssessment
-            ? `Review and update ${selectedCompany?.name || 'your company'}'s baseline profile and assessment answers. Changes will recalculate your BRI score and update your task recommendations.`
-            : `Set ${selectedCompany?.name || 'your company'}'s business profile. Complete the initial Risk Assessment to unlock full baseline editing.`
+            ? `Review and update ${selectedCompany?.name || 'your company'}'s baseline profile and assessment answers.`
+            : `Set ${selectedCompany?.name || 'your company'}'s business profile to calculate your Core Score.`
           }
         </p>
-      </div>
+      </motion.div>
+
+      {/* Progress Bar */}
+      <motion.div variants={itemVariants} className="space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-muted-foreground">Progress</span>
+          <span className="font-medium text-foreground">{progressPercent}% Complete</span>
+        </div>
+        <div className="h-2 bg-muted rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${progressPercent}%` }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          />
+        </div>
+      </motion.div>
 
       {/* Step Navigation */}
-      <div className="flex flex-wrap gap-2">
+      <motion.div variants={itemVariants} className="flex flex-wrap gap-2">
         {steps.map((step, index) => {
           const isComplete = isStepComplete(index)
           const isCurrent = index === currentStep
           const isAccessible = index === 0 || hasInitialAssessment
 
           return (
-            <button
+            <motion.button
               key={step.id}
               onClick={() => isAccessible && setCurrentStep(index)}
               disabled={!isAccessible}
+              whileHover={isAccessible ? { scale: 1.02, y: -1 } : {}}
+              whileTap={isAccessible ? { scale: 0.98 } : {}}
               className={cn(
-                'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                'px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2',
                 isCurrent
-                  ? 'bg-primary text-white shadow-md'
+                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
                   : isComplete
-                  ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                  ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400'
                   : isAccessible
-                  ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                  ? 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+                  : 'bg-muted/50 text-muted-foreground/50 cursor-not-allowed'
               )}
             >
               {isComplete && !isCurrent && (
-                <span className="mr-1">✓</span>
+                <Check className="h-4 w-4" />
+              )}
+              {!isAccessible && (
+                <Lock className="h-3 w-3" />
               )}
               {step.label}
-            </button>
+            </motion.button>
           )
         })}
-      </div>
+      </motion.div>
 
       {/* Step Content */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{currentStepData?.label}</CardTitle>
-          <CardDescription>
-            {currentStepData?.id === 'profile'
-              ? 'These factors determine your Core Score and base valuation multiple.'
-              : `Review and update your ${currentStepData?.label?.toLowerCase()} answers.`
-            }
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Business Profile Step */}
-          {currentStepData?.id === 'profile' && factors && (
-            <div className="space-y-8">
-              {(Object.keys(FACTOR_OPTIONS) as Array<keyof typeof FACTOR_OPTIONS>).map((factorKey) => {
-                const config = FACTOR_OPTIONS[factorKey]
-                const currentValue = factors[factorKey] || ''
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentStep}
+          variants={cardVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
+          <Card className="border-0 shadow-xl bg-card/50 backdrop-blur-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-display">{currentStepData?.label}</CardTitle>
+              <CardDescription className="text-base">
+                {currentStepData?.id === 'profile'
+                  ? 'These factors determine your Core Score and base valuation multiple.'
+                  : `Review and update your ${currentStepData?.label?.toLowerCase()} answers.`
+                }
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Business Profile Step */}
+              {currentStepData?.id === 'profile' && factors && (
+                <motion.div
+                  className="space-y-8"
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  {(Object.keys(FACTOR_OPTIONS) as Array<keyof typeof FACTOR_OPTIONS>).map((factorKey, index) => {
+                    const config = FACTOR_OPTIONS[factorKey]
+                    const currentValue = factors[factorKey] || ''
+                    const Icon = config.icon
 
-                return (
-                  <div key={factorKey} className="space-y-3">
-                    <div>
-                      <h3 className="font-medium text-gray-900">{config.label}</h3>
-                      <p className="text-sm text-gray-500">{config.description}</p>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {config.options.map((option) => (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() => handleFactorChange(factorKey, option.value)}
-                          className={cn(
-                            'p-3 text-left rounded-lg border transition-colors',
-                            currentValue === option.value
-                              ? 'border-[#B87333] bg-orange-50 text-gray-900'
-                              : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                    return (
+                      <motion.div
+                        key={factorKey}
+                        className="space-y-4"
+                        variants={itemVariants}
+                        custom={index}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                            <Icon className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-foreground">{config.label}</h3>
+                            <p className="text-sm text-muted-foreground">{config.description}</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pl-12">
+                          {config.options.map((option) => (
+                            <motion.button
+                              key={option.value}
+                              type="button"
+                              onClick={() => handleFactorChange(factorKey, option.value)}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              className={cn(
+                                'p-4 text-left rounded-xl border-2 transition-all duration-200',
+                                currentValue === option.value
+                                  ? 'border-primary bg-primary/5 shadow-md shadow-primary/10'
+                                  : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                              )}
+                            >
+                              <span className={cn(
+                                'text-sm font-medium',
+                                currentValue === option.value ? 'text-primary' : 'text-foreground'
+                              )}>
+                                {option.label}
+                              </span>
+                              {currentValue === option.value && (
+                                <motion.div
+                                  initial={{ scale: 0 }}
+                                  animate={{ scale: 1 }}
+                                  className="absolute top-2 right-2"
+                                >
+                                  <Check className="h-4 w-4 text-primary" />
+                                </motion.div>
+                              )}
+                            </motion.button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )
+                  })}
+                </motion.div>
+              )}
+
+              {/* Assessment Category Steps */}
+              {currentStepData?.category && currentCategoryQuestions.length > 0 && (
+                <motion.div
+                  className="space-y-8"
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  {currentCategoryQuestions.map((question, qIndex) => {
+                    const selectedOptionId = responses.get(question.id)
+
+                    return (
+                      <motion.div
+                        key={question.id}
+                        className="space-y-4"
+                        variants={itemVariants}
+                        custom={qIndex}
+                      >
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                              Q{qIndex + 1}
+                            </span>
+                          </div>
+                          <h3 className="font-semibold text-foreground text-lg">{question.questionText}</h3>
+                          {question.helpText && (
+                            <p className="text-sm text-muted-foreground mt-1">{question.helpText}</p>
                           )}
-                        >
-                          <span className="text-sm font-medium">{option.label}</span>
-                        </button>
-                      ))}
-                    </div>
+                        </div>
+                        <div className="space-y-2">
+                          {question.options
+                            .sort((a, b) => a.displayOrder - b.displayOrder)
+                            .map((option) => (
+                              <motion.button
+                                key={option.id}
+                                type="button"
+                                onClick={() => handleResponseChange(question.id, option.id)}
+                                whileHover={{ scale: 1.01 }}
+                                whileTap={{ scale: 0.99 }}
+                                className={cn(
+                                  'w-full p-4 text-left rounded-xl border-2 transition-all duration-200 flex items-center gap-3',
+                                  selectedOptionId === option.id
+                                    ? 'border-primary bg-primary/5 shadow-md shadow-primary/10'
+                                    : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                                )}
+                              >
+                                <div className={cn(
+                                  'w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors',
+                                  selectedOptionId === option.id
+                                    ? 'border-primary bg-primary'
+                                    : 'border-muted-foreground/30'
+                                )}>
+                                  {selectedOptionId === option.id && (
+                                    <motion.div
+                                      initial={{ scale: 0 }}
+                                      animate={{ scale: 1 }}
+                                    >
+                                      <Check className="h-3 w-3 text-primary-foreground" />
+                                    </motion.div>
+                                  )}
+                                </div>
+                                <span className={cn(
+                                  'text-sm',
+                                  selectedOptionId === option.id ? 'text-foreground font-medium' : 'text-muted-foreground'
+                                )}>
+                                  {option.optionText}
+                                </span>
+                              </motion.button>
+                            ))}
+                        </div>
+                      </motion.div>
+                    )
+                  })}
+                </motion.div>
+              )}
+
+              {/* No initial assessment message */}
+              {currentStepData?.category && !hasInitialAssessment && (
+                <motion.div
+                  className="text-center py-12"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <div className="w-20 h-20 mx-auto mb-6 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center">
+                    <Lock className="w-10 h-10 text-amber-600 dark:text-amber-400" />
                   </div>
-                )
-              })}
-            </div>
-          )}
+                  <h3 className="text-xl font-semibold text-foreground mb-2">Complete Initial Assessment First</h3>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    Complete your initial Risk Assessment to unlock full baseline editing capabilities.
+                  </p>
+                  <Button
+                    onClick={() => window.location.href = '/dashboard/assessment/risk'}
+                    size="lg"
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    Go to Risk Assessment
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </motion.div>
+              )}
 
-          {/* Assessment Category Steps */}
-          {currentStepData?.category && currentCategoryQuestions.length > 0 && (
-            <div className="space-y-6">
-              {currentCategoryQuestions.map((question, qIndex) => {
-                const selectedOptionId = responses.get(question.id)
-
-                return (
-                  <div key={question.id} className="space-y-3">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded">
-                          Q{qIndex + 1}
-                        </span>
-                      </div>
-                      <h3 className="font-medium text-gray-900">{question.questionText}</h3>
-                      {question.helpText && (
-                        <p className="text-sm text-gray-500 mt-1">{question.helpText}</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      {question.options
-                        .sort((a, b) => a.displayOrder - b.displayOrder)
-                        .map((option) => (
-                          <button
-                            key={option.id}
-                            type="button"
-                            onClick={() => handleResponseChange(question.id, option.id)}
-                            className={cn(
-                              'w-full p-3 text-left rounded-lg border transition-colors',
-                              selectedOptionId === option.id
-                                ? 'border-[#B87333] bg-orange-50 text-gray-900 ring-2 ring-[#B87333]/20'
-                                : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                            )}
-                          >
-                            <span className="text-sm">{option.optionText}</span>
-                          </button>
-                        ))}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-
-          {/* No initial assessment message */}
-          {currentStepData?.category && !hasInitialAssessment && (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 mx-auto mb-4 bg-amber-100 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-amber-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Complete Initial Assessment First</h3>
-              <p className="text-gray-600 mb-4">
-                Complete your initial Risk Assessment to unlock full baseline editing capabilities.
-              </p>
-              <Button
-                onClick={() => window.location.href = '/dashboard/assessment/risk'}
-                className="bg-[#B87333] hover:bg-[#9A5F2A]"
-              >
-                Go to Risk Assessment
-              </Button>
-            </div>
-          )}
-
-          {/* Messages */}
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
-            </div>
-          )}
-          {success && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-              {success}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              {/* Messages */}
+              <AnimatePresence>
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-3"
+                  >
+                    <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
+                    <span className="text-red-700 dark:text-red-300 text-sm">{error}</span>
+                  </motion.div>
+                )}
+                {success && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center gap-3"
+                  >
+                    <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                    <span className="text-emerald-700 dark:text-emerald-300 text-sm">{success}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </AnimatePresence>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between">
+      <motion.div
+        variants={itemVariants}
+        className="flex items-center justify-between"
+      >
         <Button
           variant="outline"
           onClick={goToPrevStep}
           disabled={currentStep === 0}
           className="gap-2"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-          </svg>
+          <ChevronLeft className="h-4 w-4" />
           Previous
         </Button>
 
         <div className="flex items-center gap-3">
-          {/* Always show save button when there are changes */}
           {hasChanges() && (
             <Button
               onClick={handleSave}
               disabled={saving}
-              className="bg-[#B87333] hover:bg-[#9A5F2A]"
+              variant="outline"
+              className="gap-2"
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Check className="h-4 w-4" />
+                  Save Changes
+                </>
+              )}
             </Button>
           )}
 
-          {/* Show Next button if not on last step */}
           {currentStep < steps.length - 1 && (
             <Button
-              variant={hasChanges() ? 'outline' : 'default'}
               onClick={goToNextStep}
               disabled={!isStepComplete(currentStep) || (currentStep > 0 && !hasInitialAssessment)}
-              className={hasChanges() ? 'gap-2' : 'gap-2 bg-[#B87333] hover:bg-[#9A5F2A]'}
+              className="gap-2 bg-primary hover:bg-primary/90"
             >
               Next
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-              </svg>
+              <ChevronRight className="h-4 w-4" />
             </Button>
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }

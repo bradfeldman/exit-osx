@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useCompany } from '@/contexts/CompanyContext'
@@ -21,6 +22,7 @@ interface DashboardData {
     currentValue: number
     potentialValue: number
     valueGap: number
+    marketPremium: number
     briScore: number | null
     coreScore: number | null
     finalMultiple: number
@@ -131,95 +133,199 @@ export function DashboardContent({ userName }: DashboardContentProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-          <p className="text-gray-600">Loading your dashboard...</p>
-        </div>
+      <div className="max-w-5xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="relative bg-card rounded-2xl border border-border shadow-xl shadow-black/5 overflow-hidden"
+        >
+          {/* Shimmer effect */}
+          <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+          <div className="pt-4 md:pt-6 px-8 md:px-12 pb-8 md:pb-12">
+            {/* Hero metrics skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-8">
+              <div className="h-48 bg-gradient-to-br from-muted to-muted/50 rounded-xl animate-pulse" />
+              <div className="grid grid-cols-2 gap-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-[88px] bg-muted rounded-xl animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
+                ))}
+              </div>
+            </div>
+
+            {/* Value drivers skeleton */}
+            <div className="py-8 border-t border-border">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <div className="h-4 w-24 bg-muted rounded animate-pulse" />
+                  <div className="h-8 w-32 bg-muted rounded animate-pulse" />
+                </div>
+                <div className="space-y-2">
+                  <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+                  <div className="h-8 w-full bg-muted rounded animate-pulse" />
+                </div>
+              </div>
+            </div>
+
+            {/* BRI breakdown skeleton */}
+            <div className="py-8 border-t border-border">
+              <div className="h-4 w-48 bg-muted rounded animate-pulse mb-6" />
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="space-y-2" style={{ animationDelay: `${i * 50}ms` }}>
+                    <div className="h-4 w-20 bg-muted rounded animate-pulse" />
+                    <div className="h-2 bg-muted rounded-full animate-pulse" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Loading indicator */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
+            <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+            <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+            <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+          </div>
+        </motion.div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-        <p className="text-red-700">{error}</p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="p-5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl flex items-center gap-4"
+      >
+        <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
+          <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div>
+          <p className="font-medium text-red-800 dark:text-red-200">Something went wrong</p>
+          <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+        </div>
+      </motion.div>
     )
   }
 
   // No company selected - show onboarding
   if (noCompany || !dashboardData) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Welcome to Exit OSx</h1>
-          <p className="text-gray-600">
+      <motion.div
+        className="space-y-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <h1 className="text-4xl font-bold text-foreground font-display tracking-tight">Welcome to Exit OSx</h1>
+          <p className="text-lg text-muted-foreground mt-2">
             {userName ? `Hi ${userName}! ` : ''}Let&apos;s get started by setting up your company.
           </p>
-        </div>
+        </motion.div>
 
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader>
-            <CardTitle>Set Up Your Company</CardTitle>
-            <CardDescription>
-              Add your company details to get your valuation and buyer readiness score.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/dashboard/company/setup">
-              <Button size="lg">
-                Get Started
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>What You&apos;ll Get</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="p-4 rounded-lg bg-gray-50">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                  <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 shadow-xl">
+            <CardHeader>
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center">
+                  <svg className="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
                 </div>
-                <h3 className="font-medium text-gray-900">Enterprise Valuation</h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  See your business value based on industry multiples and your financial performance.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-lg bg-gray-50">
-                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mb-3">
-                  <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                <div>
+                  <CardTitle className="text-2xl font-display">Set Up Your Company</CardTitle>
+                  <CardDescription className="text-base">
+                    Add your company details to get your valuation and buyer readiness score.
+                  </CardDescription>
                 </div>
-                <h3 className="font-medium text-gray-900">Buyer Readiness Index</h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Understand how ready your business is for acquisition across 6 key categories.
-                </p>
               </div>
-
-              <div className="p-4 rounded-lg bg-gray-50">
-                <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mb-3">
-                  <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </CardHeader>
+            <CardContent>
+              <Link href="/dashboard/company/setup">
+                <Button size="lg" className="h-14 px-8 text-lg bg-primary hover:bg-primary/90 gap-3">
+                  Get Started
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
-                </div>
-                <h3 className="font-medium text-gray-900">Action Playbook</h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Get prioritized tasks with dollar-value attribution to close your value gap.
-                </p>
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-xl font-display">What You&apos;ll Get</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6 md:grid-cols-3">
+                <motion.div
+                  className="p-6 rounded-2xl bg-muted/50 border border-border hover:border-primary/30 hover:bg-muted transition-all"
+                  whileHover={{ y: -4 }}
+                >
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                    <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-foreground text-lg">Enterprise Valuation</h3>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    See your business value based on industry multiples and your financial performance.
+                  </p>
+                </motion.div>
+
+                <motion.div
+                  className="p-6 rounded-2xl bg-muted/50 border border-border hover:border-emerald-500/30 hover:bg-muted transition-all"
+                  whileHover={{ y: -4 }}
+                >
+                  <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mb-4">
+                    <svg className="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-foreground text-lg">Buyer Readiness Index</h3>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Understand how ready your business is for acquisition across 6 key categories.
+                  </p>
+                </motion.div>
+
+                <motion.div
+                  className="p-6 rounded-2xl bg-muted/50 border border-border hover:border-violet-500/30 hover:bg-muted transition-all"
+                  whileHover={{ y: -4 }}
+                >
+                  <div className="w-12 h-12 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center mb-4">
+                    <svg className="w-6 h-6 text-violet-600 dark:text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-foreground text-lg">Action Playbook</h3>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Get prioritized tasks with dollar-value attribution to close your value gap.
+                  </p>
+                </motion.div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
     )
   }
 
@@ -246,26 +352,36 @@ export function DashboardContent({ userName }: DashboardContentProps) {
   const previewCurrentValue = isPreviewMode && tier1
     ? tier2.adjustedEbitda * previewMultiple
     : tier1?.currentValue ?? 0
+
   const previewValueGap = isPreviewMode && tier1
-    ? tier1.potentialValue - previewCurrentValue
+    ? Math.max(0, tier1.potentialValue - previewCurrentValue)
     : tier1?.valueGap ?? 0
 
   // Check if preview exceeds the achievable potential (based on Core Score)
-  const isAbovePotential = isPreviewMode && previewMultiple > baseMultiple
+  // Also true when DCF already exceeds potential (marketPremium > 0)
+  const isAbovePotential = (tier1?.marketPremium ?? 0) > 0 || (isPreviewMode && previewMultiple > baseMultiple)
 
   // Show the full dashboard (with assessment prompt if needed)
   return (
     <div className="max-w-5xl mx-auto">
 
       {/* Main Dashboard Card */}
-      <Card className="overflow-hidden">
-        <CardContent className="pt-4 md:pt-6 px-8 md:px-12 pb-8 md:pb-12">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card className="overflow-hidden border-border/50 shadow-xl shadow-black/5">
+          <CardContent className="relative pt-4 md:pt-6 px-8 md:px-12 pb-8 md:pb-12">
+            {/* Subtle gradient background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-amber-500/[0.02] pointer-events-none" />
           {/* Tier 1: Hero Metrics */}
           {tier1 && (
             <HeroMetrics
               currentValue={isPreviewMode ? previewCurrentValue : tier1.currentValue}
               potentialValue={tier1.potentialValue}
               valueGap={isPreviewMode ? previewValueGap : tier1.valueGap}
+              marketPremium={tier1.marketPremium}
               briScore={tier1.briScore}
               coreScore={tier1.coreScore}
               personalReadinessScore={tier3?.categories.find(c => c.key === 'PERSONAL')?.score ?? null}
@@ -291,8 +407,9 @@ export function DashboardContent({ userName }: DashboardContentProps) {
             topConstraints={tier3?.topConstraints || []}
             hasAssessment={hasAssessment}
           />
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   )
 }

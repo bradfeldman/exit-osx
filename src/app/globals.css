@@ -152,6 +152,32 @@
   font-family: 'Satoshi', system-ui, sans-serif;
 }
 
+/* Hero typography scale - for dramatic focal points */
+.text-hero {
+  font-size: clamp(3rem, 8vw, 5rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-family: 'Satoshi', system-ui, sans-serif;
+  font-weight: 700;
+}
+
+.text-hero-lg {
+  font-size: clamp(3.5rem, 10vw, 6rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-family: 'Satoshi', system-ui, sans-serif;
+  font-weight: 900;
+}
+
+/* Display text for section headlines */
+.text-display {
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-family: 'Satoshi', system-ui, sans-serif;
+  font-weight: 700;
+}
+
 /* Card hover lift effect */
 .card-hover {
   transition: transform 0.2s ease, box-shadow 0.2s ease;

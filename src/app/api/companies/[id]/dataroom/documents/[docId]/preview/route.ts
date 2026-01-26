@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { logActivity } from '@/lib/dataroom'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { SIGNED_URL_PREVIEW_EXPIRY_SECONDS } from '@/lib/security'
 
 /**
@@ -33,7 +33,8 @@ export async function GET(
     }
 
     // SECURITY: Generate signed URL with reduced expiry (10 minutes instead of 1 hour)
-    const supabase = await createClient()
+    // Use service client to bypass RLS for private bucket access
+    const supabase = createServiceClient()
     const { data, error } = await supabase.storage
       .from('data-room')
       .createSignedUrl(document.filePath, SIGNED_URL_PREVIEW_EXPIRY_SECONDS)

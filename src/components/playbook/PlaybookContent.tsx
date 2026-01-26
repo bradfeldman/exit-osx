@@ -1,11 +1,51 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { TaskCard } from './TaskCard'
 import { TaskAssignDialog } from './TaskAssignDialog'
 import { GenerateActionPlanDialog } from './GenerateActionPlanDialog'
+import {
+  RefreshCw,
+  Loader2,
+  AlertCircle,
+  ClipboardList,
+  CheckCircle2,
+  Clock,
+  ListTodo,
+  Filter,
+  DollarSign,
+  Users,
+  Settings,
+  Target,
+  Scale,
+  User
+} from 'lucide-react'
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06, delayChildren: 0.1 }
+  }
+} as const
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring" as const, stiffness: 100, damping: 15 }
+  }
+}
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } }
+}
 
 interface TaskUser {
   id: string
@@ -75,6 +115,15 @@ const CATEGORY_LABELS: Record<string, string> = {
   MARKET: 'Market Position',
   LEGAL_TAX: 'Legal & Tax',
   PERSONAL: 'Personal Readiness',
+}
+
+const CATEGORY_ICONS: Record<string, typeof DollarSign> = {
+  FINANCIAL: DollarSign,
+  TRANSFERABILITY: Users,
+  OPERATIONAL: Settings,
+  MARKET: Target,
+  LEGAL_TAX: Scale,
+  PERSONAL: User,
 }
 
 const STATUS_FILTERS = [
@@ -163,123 +212,246 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex items-center justify-center min-h-[400px]"
+      >
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-          <p className="text-gray-600">Loading your playbook...</p>
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="mx-auto mb-4"
+          >
+            <Loader2 className="h-10 w-10 text-primary" />
+          </motion.div>
+          <p className="text-muted-foreground font-medium">Loading your action plan...</p>
         </div>
-      </div>
+      </motion.div>
     )
   }
 
   if (error) {
     return (
-      <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-        <p className="text-red-700">{error}</p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="p-6 bg-destructive/10 border border-destructive/20 rounded-xl"
+      >
+        <div className="flex items-start gap-4">
+          <div className="p-2 rounded-lg bg-destructive/10">
+            <AlertCircle className="h-5 w-5 text-destructive" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-destructive mb-1">Unable to load action plan</h3>
+            <p className="text-muted-foreground">{error}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadTasks}
+              className="mt-3"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </motion.div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="space-y-6"
+    >
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <motion.div variants={itemVariants} className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Action Plan</h1>
-          <p className="text-gray-600">{companyName}</p>
-          {stats && (
-            <p className="text-sm text-gray-500 mt-1">
-              {stats.inActionPlan} of {stats.maxActionPlan} tasks
-              {stats.inQueue > 0 && ` • ${stats.inQueue} in queue`}
-            </p>
-          )}
+          <h1 className="text-3xl font-bold font-display text-foreground tracking-tight">Action Plan</h1>
+          <p className="text-muted-foreground mt-1">{companyName}</p>
         </div>
         <Button
           onClick={() => setGenerateDialogOpen(true)}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
         >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-          </svg>
+          <RefreshCw className="h-4 w-4" />
           Generate Action Plan
         </Button>
-      </div>
+      </motion.div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-wrap gap-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Status</label>
-              <div className="flex gap-2">
-                {STATUS_FILTERS.map(filter => (
-                  <Button
-                    key={filter.value}
-                    variant={statusFilter === filter.value ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setStatusFilter(filter.value)}
-                  >
-                    {filter.label}
-                    {filter.value === 'PENDING' && stats && ` (${stats.pending})`}
-                    {filter.value === 'IN_PROGRESS' && stats && ` (${stats.inProgress})`}
-                    {filter.value === 'COMPLETED' && stats && ` (${stats.completed})`}
-                  </Button>
-                ))}
+      {/* Stats Cards */}
+      {stats && (
+        <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="p-4 rounded-xl bg-muted/50 border border-border">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <ClipboardList className="h-5 w-5 text-primary" />
               </div>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Category</label>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant={categoryFilter === '' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setCategoryFilter('')}
-                >
-                  All
-                </Button>
-                {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
-                  <Button
-                    key={value}
-                    variant={categoryFilter === value ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setCategoryFilter(value)}
-                  >
-                    {label}
-                  </Button>
-                ))}
+              <div>
+                <p className="text-2xl font-bold font-display text-foreground">{stats.inActionPlan}</p>
+                <p className="text-xs text-muted-foreground">of {stats.maxActionPlan} tasks</p>
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+          <div className="p-4 rounded-xl bg-muted/50 border border-border">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-amber-500/10">
+                <ListTodo className="h-5 w-5 text-amber-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold font-display text-foreground">{stats.pending}</p>
+                <p className="text-xs text-muted-foreground">To Do</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-4 rounded-xl bg-muted/50 border border-border">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-500/10">
+                <Clock className="h-5 w-5 text-blue-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold font-display text-foreground">{stats.inProgress}</p>
+                <p className="text-xs text-muted-foreground">In Progress</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-4 rounded-xl bg-muted/50 border border-border">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-emerald-500/10">
+                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold font-display text-foreground">{stats.completed}</p>
+                <p className="text-xs text-muted-foreground">Completed</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
-      {/* Task List */}
-      {tasks.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-gray-500">
-              {statusFilter || categoryFilter
-                ? 'No tasks match your filters'
-                : 'No tasks have been generated yet. Complete the BRI assessment first.'}
-            </p>
+      {/* Filters */}
+      <motion.div variants={itemVariants}>
+        <Card className="border-border/50">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">Filter Tasks</span>
+            </div>
+            <div className="flex flex-wrap gap-6">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">Status</label>
+                <div className="flex gap-2">
+                  {STATUS_FILTERS.map(filter => (
+                    <Button
+                      key={filter.value}
+                      variant={statusFilter === filter.value ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setStatusFilter(filter.value)}
+                      className={statusFilter === filter.value ? 'shadow-md' : ''}
+                    >
+                      {filter.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">Category</label>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={categoryFilter === '' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setCategoryFilter('')}
+                    className={categoryFilter === '' ? 'shadow-md' : ''}
+                  >
+                    All
+                  </Button>
+                  {Object.entries(CATEGORY_LABELS).map(([value, label]) => {
+                    const Icon = CATEGORY_ICONS[value]
+                    return (
+                      <Button
+                        key={value}
+                        variant={categoryFilter === value ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setCategoryFilter(value)}
+                        className={categoryFilter === value ? 'shadow-md' : ''}
+                      >
+                        {Icon && <Icon className="h-3.5 w-3.5 mr-1.5" />}
+                        {label}
+                      </Button>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
-      ) : (
-        <div className="space-y-4">
-          {tasks.map(task => (
-            <div key={task.id} id={`task-${task.id}`}>
-              <TaskCard
-                task={task}
-                onStatusChange={handleStatusChange}
-                onAssign={handleAssign}
-                onTaskUpdate={loadTasks}
-                defaultExpanded={task.id === expandTaskId}
-              />
-            </div>
-          ))}
-        </div>
-      )}
+      </motion.div>
+
+      {/* Task List */}
+      <AnimatePresence mode="wait">
+        {tasks.length === 0 ? (
+          <motion.div
+            key="empty"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            <Card className="border-dashed border-2">
+              <CardContent className="py-16 text-center">
+                <div className="w-16 h-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
+                  <ClipboardList className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  {statusFilter || categoryFilter ? 'No matching tasks' : 'No action plan yet'}
+                </h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  {statusFilter || categoryFilter
+                    ? 'Try adjusting your filters to see more tasks.'
+                    : 'Complete the BRI assessment to generate your personalized action plan with prioritized tasks.'}
+                </p>
+                {!statusFilter && !categoryFilter && (
+                  <Button
+                    onClick={() => setGenerateDialogOpen(true)}
+                    className="mt-6"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Generate Action Plan
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="list"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-4"
+          >
+            {tasks.map((task, index) => (
+              <motion.div
+                key={task.id}
+                id={`task-${task.id}`}
+                variants={itemVariants}
+                custom={index}
+              >
+                <TaskCard
+                  task={task}
+                  onStatusChange={handleStatusChange}
+                  onAssign={handleAssign}
+                  onTaskUpdate={loadTasks}
+                  defaultExpanded={task.id === expandTaskId}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Assignment Dialog */}
       {selectedTaskForAssign && (
@@ -303,6 +475,6 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
         currentTaskCount={tasks.filter(t => t.status !== 'COMPLETED' && t.status !== 'CANCELLED' && t.status !== 'NOT_APPLICABLE').length}
         onSuccess={loadTasks}
       />
-    </div>
+    </motion.div>
   )
 }

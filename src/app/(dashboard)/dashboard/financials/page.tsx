@@ -1,142 +1,317 @@
 'use client'
 
 import { useState, useEffect, useCallback, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useCompany } from '@/contexts/CompanyContext'
 import { AddPeriodDialog } from '@/components/financials/AddPeriodDialog'
-import { FinancialTable, DataType, PeriodData, PendingChange } from '@/components/financials/FinancialTable'
-import { QuickBooksStatus } from '@/components/financials/QuickBooksStatus'
-import { FinancialSettingsModal } from '@/components/financials/FinancialSettingsModal'
-import { Plus, Settings, Pencil, X, Save, Loader2 } from 'lucide-react'
+import { FinancialsSpreadsheet } from '@/components/financials/FinancialsSpreadsheet'
+import { Plus, Pencil, Loader2, CheckCircle, Link2, AlertCircle, X } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 
 interface FinancialPeriod {
   id: string
-  periodType: 'ANNUAL' | 'QUARTERLY' | 'MONTHLY'
   fiscalYear: number
-  quarter?: 'Q1' | 'Q2' | 'Q3' | 'Q4' | null
-  month?: number | null
-  startDate: string
-  endDate: string
   label: string
-  hasIncomeStatement: boolean
-  hasBalanceSheet: boolean
-  adjustmentCount: number
-  ebitda: number | null
-  createdAt: string
-}
-
-interface IncomeStatement {
-  grossRevenue: number
-  cogs: number
-  grossProfit: number
-  grossMarginPct: number
-  operatingExpenses: number
-  ebitda: number
-  ebitdaMarginPct: number
-  depreciation?: number
-  amortization?: number
-  interestExpense?: number
-  taxExpense?: number
-  netIncome?: number
-}
-
-interface Adjustment {
-  id: string
-  type: 'ADD_BACK' | 'DEDUCTION'
-  amount: number
-  description: string
-}
-
-interface CashFlowStatement {
-  freeCashFlow: number
-  cashFromOperations: number
-  cashFromInvesting: number
-  cashFromFinancing: number
-  netIncome?: number
-  depreciation?: number
-  amortization?: number
-  capitalExpenditures?: number
-  netChangeInCash?: number
-}
-
-interface BalanceSheet {
-  // Current Assets
-  cashAndEquivalents?: number
-  accountsReceivable?: number
-  inventory?: number
-  prepaidExpenses?: number
-  otherCurrentAssets?: number
-  totalCurrentAssets?: number
-  // Long-term Assets
-  ppeGross?: number
-  accumulatedDepreciation?: number
-  intangibleAssets?: number
-  otherLongTermAssets?: number
-  totalAssets?: number
-  // Current Liabilities
-  accountsPayable?: number
-  accruedExpenses?: number
-  currentPortionLtd?: number
-  otherCurrentLiabilities?: number
-  totalCurrentLiabilities?: number
-  // Long-term Liabilities
-  longTermDebt?: number
-  deferredTaxLiabilities?: number
-  otherLongTermLiabilities?: number
-  totalLiabilities?: number
-  // Equity
-  retainedEarnings?: number
-  ownersEquity?: number
-  totalEquity?: number
-}
-
-interface PeriodWithData extends FinancialPeriod {
-  incomeStatement?: IncomeStatement | null
-  adjustments?: Adjustment[]
-  cashFlowStatement?: CashFlowStatement | null
-  balanceSheet?: BalanceSheet | null
-  netAddBacks?: number
-  adjustedEbitda?: number
 }
 
 interface IntegrationData {
+  configured: boolean
   hasQuickBooksIntegration: boolean
   lastSyncedAt: string | null
+  providerCompanyName?: string | null
 }
 
-function FinancialsOverviewContent() {
-  const router = useRouter()
+// QuickBooks Logo Component
+function QuickBooksLogo({ className = "w-8 h-8" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 40 40" className={className}>
+      <circle cx="20" cy="20" r="18" fill="#2CA01C" />
+      <path
+        d="M12 20c0-4.4 3.6-8 8-8s8 3.6 8 8-3.6 8-8 8"
+        stroke="white"
+        strokeWidth="3"
+        fill="none"
+      />
+      <circle cx="20" cy="20" r="3" fill="white" />
+    </svg>
+  )
+}
+
+// Empty State Component
+function FinancialsEmptyState({
+  companyId,
+  integrationData,
+  onAddYear,
+  onQuickBooksConnect,
+  isConnecting,
+}: {
+  companyId: string
+  integrationData: IntegrationData
+  onAddYear: () => void
+  onQuickBooksConnect: () => void
+  isConnecting: boolean
+}) {
+  const currentYear = new Date().getFullYear()
+  const requiredYears = [
+    { year: currentYear - 3, label: `FY ${currentYear - 3}`, description: '3 years ago' },
+    { year: currentYear - 2, label: `FY ${currentYear - 2}`, description: '2 years ago' },
+    { year: currentYear - 1, label: `FY ${currentYear - 1}`, description: 'Last year' },
+    { year: currentYear, label: 'T12', description: 'Trailing 12 months' },
+  ]
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-8"
+    >
+      {/* Hero Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="text-center max-w-2xl mx-auto"
+      >
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+          className="w-20 h-20 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl flex items-center justify-center mx-auto mb-6"
+        >
+          <svg className="w-10 h-10 text-primary" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+          </svg>
+        </motion.div>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="text-3xl md:text-4xl font-bold text-foreground font-display mb-3"
+        >
+          Unlock Your True Valuation
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="text-lg text-muted-foreground"
+        >
+          Add 3 years of historical financials plus your trailing 12 months to calculate your company&apos;s value based on actual performance.
+        </motion.p>
+      </motion.div>
+
+      {/* Timeline Visual */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="max-w-3xl mx-auto"
+      >
+        <Card className="border-border/50 shadow-lg overflow-hidden">
+          <CardContent className="p-6 md:p-8">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-6 text-center">
+              Required Financial Periods
+            </h3>
+
+            {/* Timeline */}
+            <div className="relative">
+              <div className="absolute top-8 left-0 right-0 h-0.5 bg-gradient-to-r from-muted via-primary/30 to-primary hidden md:block" />
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {requiredYears.map((period, index) => (
+                  <motion.div
+                    key={period.year}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 + index * 0.1 }}
+                    className="relative"
+                  >
+                    <div className="hidden md:flex w-4 h-4 rounded-full bg-muted border-2 border-primary/30 mx-auto mb-4 relative z-10" />
+
+                    <div className="bg-muted/50 rounded-xl p-4 text-center hover:bg-muted/70 transition-colors">
+                      <div className="text-2xl font-bold text-foreground font-display">
+                        {period.label}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {period.description}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="relative my-8">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-card text-muted-foreground">Choose how to add your data</span>
+              </div>
+            </div>
+
+            {/* Two Paths */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* QuickBooks Path */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.9 }}
+                className={`relative p-6 rounded-xl border-2 transition-all ${
+                  integrationData.hasQuickBooksIntegration
+                    ? 'border-green-500/50 bg-green-50/50'
+                    : 'border-primary/20 bg-gradient-to-br from-primary/5 to-transparent hover:border-primary/40'
+                }`}
+              >
+                {integrationData.configured && !integrationData.hasQuickBooksIntegration && (
+                  <div className="absolute -top-3 left-4">
+                    <span className="px-2 py-1 text-xs font-medium bg-primary text-primary-foreground rounded-full">
+                      Recommended
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+                    <QuickBooksLogo />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-foreground">QuickBooks Online</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {integrationData.hasQuickBooksIntegration
+                        ? `Connected${integrationData.providerCompanyName ? ` to ${integrationData.providerCompanyName}` : ''}`
+                        : 'Import P&L and Balance Sheet data automatically'
+                      }
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  {integrationData.hasQuickBooksIntegration ? (
+                    <div className="flex items-center gap-2 text-sm text-green-600">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>Connected and syncing</span>
+                    </div>
+                  ) : integrationData.configured ? (
+                    <Button
+                      onClick={onQuickBooksConnect}
+                      disabled={isConnecting}
+                      className="w-full"
+                    >
+                      {isConnecting ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <Link2 className="h-4 w-4 mr-2" />
+                      )}
+                      Connect QuickBooks
+                    </Button>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      QuickBooks integration not configured for your account
+                    </p>
+                  )}
+                </div>
+              </motion.div>
+
+              {/* Manual Path */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 1 }}
+                className="p-6 rounded-xl border-2 border-border hover:border-primary/30 transition-all"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                    <Pencil className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-foreground">Enter Manually</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Add your financial data year by year
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <Button variant="outline" onClick={onAddYear} className="w-full">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add First Year
+                  </Button>
+                </div>
+              </motion.div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Benefits */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.1 }}
+        className="max-w-3xl mx-auto"
+      >
+        <div className="grid md:grid-cols-3 gap-4">
+          {[
+            { icon: '📊', title: 'Accurate Valuation', desc: 'Based on your actual EBITDA trends' },
+            { icon: '📈', title: 'Growth Analysis', desc: 'See revenue and profit trajectories' },
+            { icon: '💰', title: 'DCF Modeling', desc: 'Unlock discounted cash flow analysis' },
+          ].map((benefit, index) => (
+            <motion.div
+              key={benefit.title}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.2 + index * 0.1 }}
+              className="text-center p-4"
+            >
+              <div className="text-3xl mb-2">{benefit.icon}</div>
+              <h4 className="font-medium text-foreground">{benefit.title}</h4>
+              <p className="text-sm text-muted-foreground">{benefit.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
+// Main content component
+function FinancialsContent() {
   const searchParams = useSearchParams()
   const { selectedCompanyId } = useCompany()
-
-  const tabFromUrl = searchParams.get('tab') || 'pnl'
-  const [activeTab, setActiveTab] = useState<DataType>(tabFromUrl as DataType)
-
-  const [periods, setPeriods] = useState<PeriodWithData[]>([])
-  const [loading, setLoading] = useState(true)
-  const [showAddDialog, setShowAddDialog] = useState(false)
-  const [showSettingsModal, setShowSettingsModal] = useState(false)
+  const [periods, setPeriods] = useState<FinancialPeriod[]>([])
   const [integrationData, setIntegrationData] = useState<IntegrationData>({
+    configured: false,
     hasQuickBooksIntegration: false,
     lastSyncedAt: null,
   })
+  const [isLoading, setIsLoading] = useState(true)
+  const [isConnecting, setIsConnecting] = useState(false)
+  const [showAddDialog, setShowAddDialog] = useState(false)
+  const [qbError, setQbError] = useState<string | null>(null)
+  const [qbSuccess, setQbSuccess] = useState<string | null>(null)
 
-  // Bulk edit state
-  const [bulkEditMode, setBulkEditMode] = useState(false)
-  const [pendingChanges, setPendingChanges] = useState<Map<string, PendingChange>>(new Map())
-  const [isSaving, setIsSaving] = useState(false)
+  // Load periods
+  const loadPeriods = useCallback(async () => {
+    if (!selectedCompanyId) return
 
-  // Update URL when tab changes
-  const handleTabChange = (value: string) => {
-    setActiveTab(value as DataType)
-    const params = new URLSearchParams(searchParams.toString())
-    params.set('tab', value)
-    router.replace(`/dashboard/financials?${params.toString()}`, { scroll: false })
-  }
+    try {
+      const response = await fetch(`/api/companies/${selectedCompanyId}/financial-periods`)
+      if (response.ok) {
+        const data = await response.json()
+        setPeriods(data.periods || [])
+      }
+    } catch (err) {
+      console.error('Error loading periods:', err)
+    }
+  }, [selectedCompanyId])
 
+  // Load integration data
   const loadIntegrationData = useCallback(async () => {
     if (!selectedCompanyId) return
 
@@ -145,478 +320,142 @@ function FinancialsOverviewContent() {
       if (response.ok) {
         const data = await response.json()
         setIntegrationData({
+          configured: data.configured || false,
           hasQuickBooksIntegration: data.connected || false,
-          lastSyncedAt: data.integration?.lastSyncAt || null,
+          lastSyncedAt: data.lastSyncedAt || null,
+          providerCompanyName: data.providerCompanyName,
         })
       }
-    } catch (error) {
-      console.error('Error loading integration data:', error)
+    } catch (err) {
+      console.error('Error loading integration data:', err)
     }
   }, [selectedCompanyId])
 
-  const loadPeriods = useCallback(async () => {
-    if (!selectedCompanyId) {
-      setLoading(false)
-      return
-    }
-
-    setLoading(true)
-    try {
-      const response = await fetch(`/api/companies/${selectedCompanyId}/financial-periods`)
-      if (response.ok) {
-        const data = await response.json()
-        const fetchedPeriods: FinancialPeriod[] = data.periods || []
-
-        // Fetch all data for each period
-        const periodsWithData: PeriodWithData[] = await Promise.all(
-          fetchedPeriods.map(async (period) => {
-            let incomeStatement = null
-            let adjustments: Adjustment[] = []
-            let cashFlowStatement: CashFlowStatement | null = null
-            let balanceSheet: BalanceSheet | null = null
-
-            // Fetch income statement
-            if (period.hasIncomeStatement) {
-              try {
-                const incomeRes = await fetch(
-                  `/api/companies/${selectedCompanyId}/financial-periods/${period.id}/income-statement`
-                )
-                if (incomeRes.ok) {
-                  const incomeData = await incomeRes.json()
-                  incomeStatement = incomeData.incomeStatement
-                }
-              } catch (err) {
-                console.error('Error fetching income statement:', err)
-              }
-            }
-
-            // Fetch balance sheet
-            if (period.hasBalanceSheet) {
-              try {
-                const bsRes = await fetch(
-                  `/api/companies/${selectedCompanyId}/financial-periods/${period.id}/balance-sheet`
-                )
-                if (bsRes.ok) {
-                  const bsData = await bsRes.json()
-                  balanceSheet = bsData.balanceSheet
-                }
-              } catch (err) {
-                console.error('Error fetching balance sheet:', err)
-              }
-            }
-
-            // Fetch adjustments
-            try {
-              const adjRes = await fetch(
-                `/api/companies/${selectedCompanyId}/adjustments?periodId=${period.id}`
-              )
-              if (adjRes.ok) {
-                const adjData = await adjRes.json()
-                adjustments = adjData.adjustments || []
-              }
-            } catch (err) {
-              console.error('Error fetching adjustments:', err)
-            }
-
-            // Fetch cash flow statement
-            try {
-              const cfsRes = await fetch(
-                `/api/companies/${selectedCompanyId}/financial-periods/${period.id}/cash-flow`
-              )
-              if (cfsRes.ok) {
-                const cfsData = await cfsRes.json()
-                if (cfsData.cashFlowStatement) {
-                  cashFlowStatement = cfsData.cashFlowStatement
-                }
-              }
-            } catch (err) {
-              console.error('Error fetching cash flow:', err)
-            }
-
-            // Calculate add-backs
-            const netAddBacks = adjustments.reduce((sum, adj) => {
-              const amount = Number(adj.amount) || 0
-              return sum + (adj.type === 'ADD_BACK' ? amount : -amount)
-            }, 0)
-
-            const ebitda = Number(incomeStatement?.ebitda) || 0
-            const adjustedEbitda = ebitda + netAddBacks
-
-            return {
-              ...period,
-              incomeStatement,
-              adjustments,
-              cashFlowStatement,
-              balanceSheet,
-              netAddBacks,
-              adjustedEbitda,
-            }
-          })
-        )
-
-        const sortedPeriods = periodsWithData.sort((a, b) => a.fiscalYear - b.fiscalYear)
-        setPeriods(sortedPeriods)
-      }
-    } catch (error) {
-      console.error('Error loading periods:', error)
-    } finally {
-      setLoading(false)
-    }
-  }, [selectedCompanyId])
-
+  // Initial load
   useEffect(() => {
-    loadPeriods()
-    loadIntegrationData()
+    async function load() {
+      setIsLoading(true)
+      await Promise.all([loadPeriods(), loadIntegrationData()])
+      setIsLoading(false)
+    }
+    load()
   }, [loadPeriods, loadIntegrationData])
 
-  const handlePeriodCreated = (newPeriod: FinancialPeriod) => {
-    router.push(`/dashboard/financials/statements/${newPeriod.id}?tab=pnl`)
-  }
+  // Check for OAuth callback params
+  // This effect intentionally sets state based on URL params for OAuth callback handling
+  useEffect(() => {
+    const qbConnected = searchParams.get('qb_connected')
+    const qbErrorParam = searchParams.get('qb_error')
 
-  const handleYearClick = (periodId: string) => {
-    router.push(`/dashboard/financials/statements/${periodId}?tab=${activeTab}`)
-  }
-
-  // Bulk edit handlers
-  const handleEnterBulkEdit = () => {
-    setBulkEditMode(true)
-    setPendingChanges(new Map())
-  }
-
-  const handleCancelBulkEdit = () => {
-    setBulkEditMode(false)
-    setPendingChanges(new Map())
-  }
-
-  const handleCellChange = (periodId: string, field: string, value: number) => {
-    const tableData = getTableData()
-    const originalValue = tableData[periodId]?.[field as keyof PeriodData] as number | null ?? null
-
-    setPendingChanges((prev) => {
-      const next = new Map(prev)
-      const key = `${periodId}-${field}`
-
-      // If value equals original, remove the change
-      if (value === originalValue) {
-        next.delete(key)
-      } else {
-        next.set(key, {
-          periodId,
-          field,
-          originalValue,
-          newValue: value,
-        })
-      }
-      return next
-    })
-  }
-
-  const handleSaveAll = async () => {
-    if (pendingChanges.size === 0) {
-      setBulkEditMode(false)
-      return
+    if (qbConnected === 'true') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setQbSuccess('QuickBooks connected successfully! Syncing your data...')
+      window.history.replaceState({}, '', window.location.pathname)
+      loadIntegrationData()
+      loadPeriods()
+    } else if (qbErrorParam) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setQbError(decodeURIComponent(qbErrorParam))
+      window.history.replaceState({}, '', window.location.pathname)
     }
+  }, [searchParams, loadIntegrationData, loadPeriods])
 
-    setIsSaving(true)
+  // Handle QuickBooks connect
+  const handleQuickBooksConnect = async () => {
+    if (!selectedCompanyId) return
+
+    setIsConnecting(true)
+    setQbError(null)
 
     try {
-      // Group changes by periodId and type (pnl vs balance-sheet)
-      const changesByPeriod = new Map<string, { pnl: Record<string, number>; balanceSheet: Record<string, number> }>()
-
-      const pnlFields = ['grossRevenue', 'cogs', 'operatingExpenses', 'depreciation', 'amortization', 'interestExpense', 'taxExpense']
-      const balanceSheetFields = [
-        'cash', 'accountsReceivable', 'inventory', 'otherCurrentAssets',
-        'ppeNet', 'intangibleAssets', 'otherLongTermAssets',
-        'accountsPayable', 'accruedExpenses', 'currentPortionLtd', 'otherCurrentLiabilities',
-        'longTermDebt', 'otherLongTermLiabilities',
-        'retainedEarnings', 'ownersEquity'
-      ]
-
-      pendingChanges.forEach((change) => {
-        if (!changesByPeriod.has(change.periodId)) {
-          changesByPeriod.set(change.periodId, { pnl: {}, balanceSheet: {} })
-        }
-        const periodChanges = changesByPeriod.get(change.periodId)!
-
-        if (pnlFields.includes(change.field)) {
-          periodChanges.pnl[change.field] = change.newValue
-        } else if (balanceSheetFields.includes(change.field)) {
-          // Map field names to API field names
-          const fieldMapping: Record<string, string> = {
-            cash: 'cashAndEquivalents',
-            ppeNet: 'ppeGross', // Note: API uses ppeGross, we'll handle this specially
-          }
-          const apiField = fieldMapping[change.field] || change.field
-          periodChanges.balanceSheet[apiField] = change.newValue
-        }
+      const response = await fetch('/api/integrations/quickbooks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'connect', companyId: selectedCompanyId }),
       })
 
-      // Execute API calls for each period
-      const savePromises: Promise<Response>[] = []
-
-      changesByPeriod.forEach((changes, periodId) => {
-        // Save P&L changes
-        if (Object.keys(changes.pnl).length > 0) {
-          // Get existing P&L data to merge
-          const period = periods.find(p => p.id === periodId)
-          const existingPnl = period?.incomeStatement
-
-          const pnlPayload = {
-            grossRevenue: changes.pnl.grossRevenue ?? existingPnl?.grossRevenue ?? 0,
-            cogs: changes.pnl.cogs ?? existingPnl?.cogs ?? 0,
-            operatingExpenses: changes.pnl.operatingExpenses ?? existingPnl?.operatingExpenses ?? 0,
-            depreciation: changes.pnl.depreciation ?? existingPnl?.depreciation ?? 0,
-            amortization: changes.pnl.amortization ?? existingPnl?.amortization ?? 0,
-            interestExpense: changes.pnl.interestExpense ?? existingPnl?.interestExpense ?? 0,
-            taxExpense: changes.pnl.taxExpense ?? existingPnl?.taxExpense ?? 0,
-          }
-
-          savePromises.push(
-            fetch(`/api/companies/${selectedCompanyId}/financial-periods/${periodId}/income-statement`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(pnlPayload),
-            })
-          )
-        }
-
-        // Save Balance Sheet changes
-        if (Object.keys(changes.balanceSheet).length > 0) {
-          const period = periods.find(p => p.id === periodId)
-          const existingBs = period?.balanceSheet
-
-          const bsPayload = {
-            cashAndEquivalents: changes.balanceSheet.cashAndEquivalents ?? existingBs?.cashAndEquivalents ?? 0,
-            accountsReceivable: changes.balanceSheet.accountsReceivable ?? existingBs?.accountsReceivable ?? 0,
-            inventory: changes.balanceSheet.inventory ?? existingBs?.inventory ?? 0,
-            prepaidExpenses: existingBs?.prepaidExpenses ?? 0,
-            otherCurrentAssets: changes.balanceSheet.otherCurrentAssets ?? existingBs?.otherCurrentAssets ?? 0,
-            ppeGross: changes.balanceSheet.ppeGross ?? existingBs?.ppeGross ?? 0,
-            accumulatedDepreciation: existingBs?.accumulatedDepreciation ?? 0,
-            intangibleAssets: changes.balanceSheet.intangibleAssets ?? existingBs?.intangibleAssets ?? 0,
-            otherLongTermAssets: changes.balanceSheet.otherLongTermAssets ?? existingBs?.otherLongTermAssets ?? 0,
-            accountsPayable: changes.balanceSheet.accountsPayable ?? existingBs?.accountsPayable ?? 0,
-            accruedExpenses: changes.balanceSheet.accruedExpenses ?? existingBs?.accruedExpenses ?? 0,
-            currentPortionLtd: changes.balanceSheet.currentPortionLtd ?? existingBs?.currentPortionLtd ?? 0,
-            otherCurrentLiabilities: changes.balanceSheet.otherCurrentLiabilities ?? existingBs?.otherCurrentLiabilities ?? 0,
-            longTermDebt: changes.balanceSheet.longTermDebt ?? existingBs?.longTermDebt ?? 0,
-            deferredTaxLiabilities: existingBs?.deferredTaxLiabilities ?? 0,
-            otherLongTermLiabilities: changes.balanceSheet.otherLongTermLiabilities ?? existingBs?.otherLongTermLiabilities ?? 0,
-            retainedEarnings: changes.balanceSheet.retainedEarnings ?? existingBs?.retainedEarnings ?? 0,
-            ownersEquity: changes.balanceSheet.ownersEquity ?? existingBs?.ownersEquity ?? 0,
-          }
-
-          savePromises.push(
-            fetch(`/api/companies/${selectedCompanyId}/financial-periods/${periodId}/balance-sheet`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(bsPayload),
-            })
-          )
-        }
-      })
-
-      // Wait for all saves to complete
-      const results = await Promise.allSettled(savePromises)
-
-      // Check for failures
-      const failures = results.filter((r) => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok))
-      if (failures.length > 0) {
-        console.error('Some saves failed:', failures)
+      if (response.ok) {
+        const data = await response.json()
+        window.location.href = data.authUrl
+      } else {
+        const data = await response.json()
+        setQbError(data.error || 'Failed to start connection')
+        setIsConnecting(false)
       }
-
-      // Reload data
-      await loadPeriods()
-
-      // Exit bulk edit mode
-      setBulkEditMode(false)
-      setPendingChanges(new Map())
-    } catch (error) {
-      console.error('Error saving changes:', error)
-    } finally {
-      setIsSaving(false)
+    } catch (_err) {
+      setQbError('Failed to connect to QuickBooks')
+      setIsConnecting(false)
     }
   }
 
-  // Transform periods data for the table
-  const getTableData = (): Record<string, PeriodData> => {
-    const result: Record<string, PeriodData> = {}
-
-    for (const period of periods) {
-      const totalAddBacks = period.adjustments
-        ?.filter((a) => a.type === 'ADD_BACK')
-        .reduce((sum, a) => sum + (Number(a.amount) || 0), 0) || 0
-
-      const totalDeductions = period.adjustments
-        ?.filter((a) => a.type === 'DEDUCTION')
-        .reduce((sum, a) => sum + (Number(a.amount) || 0), 0) || 0
-
-      const bs = period.balanceSheet
-      const cfs = period.cashFlowStatement
-      const is = period.incomeStatement
-
-      result[period.id] = {
-        // P&L
-        grossRevenue: is?.grossRevenue ?? null,
-        cogs: is?.cogs ?? null,
-        grossProfit: is?.grossProfit ?? null,
-        grossMarginPct: is?.grossMarginPct ?? null,
-        operatingExpenses: is?.operatingExpenses ?? null,
-        depreciation: is?.depreciation ?? null,
-        amortization: is?.amortization ?? null,
-        interestExpense: is?.interestExpense ?? null,
-        taxExpense: is?.taxExpense ?? null,
-        ebitda: is?.ebitda ?? null,
-        ebitdaMarginPct: is?.ebitdaMarginPct ?? null,
-        // Add-backs
-        totalAddBacks: totalAddBacks,
-        totalDeductions: totalDeductions,
-        netAdjustment: period.netAddBacks ?? 0,
-        adjustedEbitda: period.adjustedEbitda ?? null,
-        // Balance sheet
-        cash: bs?.cashAndEquivalents ?? null,
-        accountsReceivable: bs?.accountsReceivable ?? null,
-        inventory: bs?.inventory ?? null,
-        otherCurrentAssets: bs ? (bs.prepaidExpenses || 0) + (bs.otherCurrentAssets || 0) : null,
-        totalCurrentAssets: bs?.totalCurrentAssets ?? null,
-        ppeNet: bs?.ppeGross != null
-          ? (bs.ppeGross || 0) - (bs.accumulatedDepreciation || 0)
-          : null,
-        intangibleAssets: bs?.intangibleAssets ?? null,
-        otherLongTermAssets: bs?.otherLongTermAssets ?? null,
-        totalAssets: bs?.totalAssets ?? null,
-        accountsPayable: bs?.accountsPayable ?? null,
-        accruedExpenses: bs?.accruedExpenses ?? null,
-        currentPortionLtd: bs?.currentPortionLtd ?? null,
-        otherCurrentLiabilities: bs?.otherCurrentLiabilities ?? null,
-        totalCurrentLiabilities: bs?.totalCurrentLiabilities ?? null,
-        longTermDebt: bs?.longTermDebt ?? null,
-        otherLongTermLiabilities: bs
-          ? (bs.deferredTaxLiabilities || 0) + (bs.otherLongTermLiabilities || 0)
-          : null,
-        totalLiabilities: bs?.totalLiabilities ?? null,
-        retainedEarnings: bs?.retainedEarnings ?? null,
-        ownersEquity: bs?.ownersEquity ?? null,
-        totalEquity: bs?.totalEquity ?? null,
-        // Cash flow
-        netIncome: cfs?.netIncome ?? is?.netIncome ?? null,
-        depreciationAmortization: (cfs || is)
-          ? (cfs?.depreciation || is?.depreciation || 0) + (cfs?.amortization || is?.amortization || 0)
-          : null,
-        workingCapitalChanges: null, // Calculated field - would need more data
-        cashFromOperations: cfs?.cashFromOperations ?? null,
-        capitalExpenditures: cfs?.capitalExpenditures ?? null,
-        otherInvesting: null, // Calculated field
-        cashFromInvesting: cfs?.cashFromInvesting ?? null,
-        debtChanges: null, // Calculated field
-        equityChanges: null, // Calculated field
-        cashFromFinancing: cfs?.cashFromFinancing ?? null,
-        netChangeInCash: cfs?.netChangeInCash ?? null,
-        freeCashFlow: cfs?.freeCashFlow ?? null,
-      }
-    }
-
-    return result
+  // Handle period created
+  const handlePeriodCreated = () => {
+    setShowAddDialog(false)
+    loadPeriods()
   }
-
-  // Get periods in format for FinancialTable
-  const tablePeriods = periods.map((p) => ({
-    id: p.id,
-    label: p.label,
-    fiscalYear: p.fiscalYear,
-  }))
 
   if (!selectedCompanyId) {
     return (
-      <div className="space-y-6 max-w-6xl">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Financials</h1>
-          <p className="text-gray-600">Select a company to view financial data</p>
-        </div>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-center text-gray-500">
-              No company selected. Please select a company from the dropdown above.
-            </p>
-          </CardContent>
-        </Card>
+      <div className="flex items-center justify-center py-20">
+        <p className="text-muted-foreground">Please select a company</p>
+      </div>
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
   }
 
   return (
     <div className="space-y-6 max-w-6xl">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Financials</h1>
-          <p className="text-gray-600">View and compare financial performance across years</p>
-        </div>
-        <Button variant="outline" size="icon" onClick={() => setShowSettingsModal(true)}>
-          <Settings className="h-4 w-4" />
-        </Button>
-      </div>
+      {/* QB Messages */}
+      <AnimatePresence>
+        {qbError && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="flex items-start gap-2 text-sm text-red-600 bg-red-50 px-4 py-3 rounded-lg"
+          >
+            <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <span>{qbError}</span>
+            <button onClick={() => setQbError(null)} className="ml-auto">
+              <X className="h-4 w-4" />
+            </button>
+          </motion.div>
+        )}
+        {qbSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="flex items-start gap-2 text-sm text-green-600 bg-green-50 px-4 py-3 rounded-lg"
+          >
+            <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <span>{qbSuccess}</span>
+            <button onClick={() => setQbSuccess(null)} className="ml-auto">
+              <X className="h-4 w-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* QuickBooks Status */}
-      <QuickBooksStatus
-        isConnected={integrationData.hasQuickBooksIntegration}
-        lastSyncedAt={integrationData.lastSyncedAt}
-      />
-
-      {/* Tab Navigation with Add Year and Bulk Edit buttons */}
-      <div className="flex items-center justify-between">
-        <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="pnl" disabled={bulkEditMode}>P&L</TabsTrigger>
-            <TabsTrigger value="add-backs" disabled={bulkEditMode}>Add-Backs</TabsTrigger>
-            <TabsTrigger value="balance-sheet" disabled={bulkEditMode}>Balance Sheet</TabsTrigger>
-            <TabsTrigger value="cash-flow" disabled={bulkEditMode}>Cash Flow</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <div className="flex items-center gap-2">
-          {bulkEditMode ? (
-            <>
-              <Button variant="outline" onClick={handleCancelBulkEdit} disabled={isSaving}>
-                <X className="mr-2 h-4 w-4" />
-                Cancel
-              </Button>
-              <Button onClick={handleSaveAll} disabled={isSaving || pendingChanges.size === 0}>
-                {isSaving ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="mr-2 h-4 w-4" />
-                )}
-                Save All {pendingChanges.size > 0 && `(${pendingChanges.size})`}
-              </Button>
-            </>
-          ) : (
-            <>
-              {(activeTab === 'pnl' || activeTab === 'balance-sheet') && periods.length > 0 && (
-                <Button variant="outline" onClick={handleEnterBulkEdit}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Bulk Edit
-                </Button>
-              )}
-              <Button onClick={() => setShowAddDialog(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Year
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Financial Table */}
-      <FinancialTable
-        periods={tablePeriods}
-        dataType={activeTab}
-        data={getTableData()}
-        onYearClick={handleYearClick}
-        loading={loading}
-        bulkEditMode={bulkEditMode}
-        pendingChanges={pendingChanges}
-        onCellChange={handleCellChange}
-      />
+      {/* Empty state or Spreadsheet */}
+      {periods.length === 0 ? (
+        <FinancialsEmptyState
+          companyId={selectedCompanyId}
+          integrationData={integrationData}
+          onAddYear={() => setShowAddDialog(true)}
+          onQuickBooksConnect={handleQuickBooksConnect}
+          isConnecting={isConnecting}
+        />
+      ) : (
+        <FinancialsSpreadsheet companyId={selectedCompanyId} />
+      )}
 
       {/* Add Period Dialog */}
       <AddPeriodDialog
@@ -625,38 +464,19 @@ function FinancialsOverviewContent() {
         companyId={selectedCompanyId}
         onPeriodCreated={handlePeriodCreated}
       />
-
-      {/* Settings Modal */}
-      <FinancialSettingsModal
-        open={showSettingsModal}
-        onClose={() => setShowSettingsModal(false)}
-        companyId={selectedCompanyId}
-        isQuickBooksConnected={integrationData.hasQuickBooksIntegration}
-        lastSyncedAt={integrationData.lastSyncedAt}
-        onSaved={() => {
-          // Optionally reload data after settings change
-        }}
-      />
     </div>
   )
 }
 
-export default function FinancialsOverviewPage() {
+// Page component with Suspense
+export default function FinancialsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="space-y-6 max-w-6xl">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Financials</h1>
-            <p className="text-gray-600">View and manage your financial data</p>
-          </div>
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-          </div>
-        </div>
-      }
-    >
-      <FinancialsOverviewContent />
+    <Suspense fallback={
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    }>
+      <FinancialsContent />
     </Suspense>
   )
 }

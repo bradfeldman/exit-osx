@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { TaskCompletionDialog } from './TaskCompletionDialog'
 import { TaskUploadDialog } from './TaskUploadDialog'
-import { FileText, ChevronDown, ChevronRight, Target, AlertTriangle, CheckCircle2, ListChecks, FileOutput, TrendingUp, Upload } from 'lucide-react'
+import { FileText, ChevronDown, ChevronRight, Target, AlertTriangle, CheckCircle2, ListChecks, FileOutput, TrendingUp, Upload, Check } from 'lucide-react'
 import { type RichTaskDescription, hasRichDescription } from '@/lib/playbook/rich-task-description'
 // TERM-001 FIX: Use shared constants for consistent terminology
 import { getBRICategoryLabel, getBRICategoryColor } from '@/lib/constants/bri-categories'
@@ -102,20 +103,20 @@ function getImpactEffortColor(effort: string, issueTier: string | null | undefin
 
   // Critical issues always get red tones
   if (issueTier === 'CRITICAL') {
-    if (isLowEffort) return 'bg-red-100 text-red-700' // Quick win on critical issue
-    return 'bg-red-50 text-red-600'
+    if (isLowEffort) return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' // Quick win on critical issue
+    return 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
   }
 
   // Significant issues get orange/yellow tones
   if (issueTier === 'SIGNIFICANT') {
-    if (isLowEffort) return 'bg-orange-100 text-orange-700' // Quick win on significant issue
-    return 'bg-yellow-100 text-yellow-700'
+    if (isLowEffort) return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' // Quick win on significant issue
+    return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
   }
 
   // Optimization issues get blue/green tones
-  if (isLowEffort) return 'bg-green-100 text-green-700'
-  if (isHighEffort) return 'bg-gray-100 text-gray-600'
-  return 'bg-blue-100 text-blue-700'
+  if (isLowEffort) return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+  if (isHighEffort) return 'bg-muted text-muted-foreground'
+  return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
 }
 
 const ACTION_TYPE_LABELS: Record<string, string> = {
@@ -154,13 +155,13 @@ function formatDueDate(dateStr: string): { text: string; className: string } {
   const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 
   if (diffDays < 0) {
-    return { text: `Overdue (${formatted})`, className: 'text-red-600' }
+    return { text: `Overdue (${formatted})`, className: 'text-destructive' }
   } else if (diffDays === 0) {
-    return { text: 'Due today', className: 'text-orange-600' }
+    return { text: 'Due today', className: 'text-orange-600 dark:text-orange-400' }
   } else if (diffDays <= 3) {
-    return { text: `Due ${formatted}`, className: 'text-yellow-600' }
+    return { text: `Due ${formatted}`, className: 'text-yellow-600 dark:text-yellow-400' }
   }
-  return { text: `Due ${formatted}`, className: 'text-gray-500' }
+  return { text: `Due ${formatted}`, className: 'text-muted-foreground' }
 }
 
 /**
@@ -182,24 +183,35 @@ function RichDescriptionSection({
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
+    <div className="border border-border rounded-lg overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+        className="w-full flex items-center gap-3 px-4 py-3 bg-muted/50 hover:bg-muted transition-colors text-left"
       >
         <Icon className={`h-5 w-5 flex-shrink-0 ${iconColor}`} />
-        <span className="font-medium text-gray-900 flex-1">{title}</span>
-        {isOpen ? (
-          <ChevronDown className="h-4 w-4 text-gray-400" />
-        ) : (
-          <ChevronRight className="h-4 w-4 text-gray-400" />
-        )}
+        <span className="font-medium text-foreground flex-1">{title}</span>
+        <motion.div
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        </motion.div>
       </button>
-      {isOpen && (
-        <div className="px-4 py-3 bg-white">
-          {children}
-        </div>
-      )}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 py-3 bg-background">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -214,10 +226,10 @@ function RichDescriptionView({ richDescription }: { richDescription: RichTaskDes
       <RichDescriptionSection
         title="Why This Applies to Your Business"
         icon={Target}
-        iconColor="text-blue-600"
+        iconColor="text-blue-600 dark:text-blue-400"
         defaultOpen={true}
       >
-        <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
+        <p className="text-sm text-foreground/80 whitespace-pre-line leading-relaxed">
           {richDescription.whyThisApplies}
         </p>
       </RichDescriptionSection>
@@ -226,19 +238,19 @@ function RichDescriptionView({ richDescription }: { richDescription: RichTaskDes
       <RichDescriptionSection
         title="Why This Is a Buyer Risk"
         icon={AlertTriangle}
-        iconColor="text-amber-600"
+        iconColor="text-amber-600 dark:text-amber-400"
       >
         <div className="space-y-3">
-          <p className="text-sm text-gray-700 font-medium italic">
+          <p className="text-sm text-foreground font-medium italic">
             &quot;{richDescription.buyerRisk.mainQuestion}&quot;
           </p>
-          <p className="text-sm text-gray-600">If the answer is unclear, buyers price in risk by:</p>
+          <p className="text-sm text-muted-foreground">If the answer is unclear, buyers price in risk by:</p>
           <ul className="list-disc pl-5 space-y-1">
             {richDescription.buyerRisk.consequences.map((consequence, i) => (
-              <li key={i} className="text-sm text-gray-700">{consequence}</li>
+              <li key={i} className="text-sm text-foreground/80">{consequence}</li>
             ))}
           </ul>
-          <p className="text-sm text-gray-700 mt-2">{richDescription.buyerRisk.conclusion}</p>
+          <p className="text-sm text-foreground/80 mt-2">{richDescription.buyerRisk.conclusion}</p>
         </div>
       </RichDescriptionSection>
 
@@ -246,13 +258,13 @@ function RichDescriptionView({ richDescription }: { richDescription: RichTaskDes
       <RichDescriptionSection
         title="What Success Looks Like"
         icon={CheckCircle2}
-        iconColor="text-green-600"
+        iconColor="text-green-600 dark:text-green-400"
       >
         <div className="space-y-2">
-          <p className="text-sm text-gray-700">{richDescription.successCriteria.overview}</p>
+          <p className="text-sm text-foreground/80">{richDescription.successCriteria.overview}</p>
           <ul className="list-disc pl-5 space-y-1">
             {richDescription.successCriteria.outcomes.map((outcome, i) => (
-              <li key={i} className="text-sm text-gray-700">{outcome}</li>
+              <li key={i} className="text-sm text-foreground/80">{outcome}</li>
             ))}
           </ul>
         </div>
@@ -262,17 +274,17 @@ function RichDescriptionView({ richDescription }: { richDescription: RichTaskDes
       <RichDescriptionSection
         title="What Should Be Addressed"
         icon={ListChecks}
-        iconColor="text-purple-600"
+        iconColor="text-purple-600 dark:text-purple-400"
       >
         <div className="space-y-4">
           {richDescription.subTasks.map((subTask, i) => (
             <div key={i}>
-              <h4 className="text-sm font-semibold text-gray-900 mb-2">
+              <h4 className="text-sm font-semibold text-foreground mb-2">
                 {i + 1}. {subTask.title}
               </h4>
               <ul className="list-disc pl-5 space-y-1">
                 {subTask.items.map((item, j) => (
-                  <li key={j} className="text-sm text-gray-700">{item}</li>
+                  <li key={j} className="text-sm text-foreground/80">{item}</li>
                 ))}
               </ul>
             </div>
@@ -284,16 +296,16 @@ function RichDescriptionView({ richDescription }: { richDescription: RichTaskDes
       <RichDescriptionSection
         title="Required Output Format"
         icon={FileOutput}
-        iconColor="text-indigo-600"
+        iconColor="text-indigo-600 dark:text-indigo-400"
       >
         <div className="space-y-2">
-          <p className="text-sm text-gray-700">{richDescription.outputFormat.description}</p>
+          <p className="text-sm text-foreground/80">{richDescription.outputFormat.description}</p>
           <ul className="list-disc pl-5 space-y-1">
             {richDescription.outputFormat.formats.map((format, i) => (
-              <li key={i} className="text-sm text-gray-700">{format}</li>
+              <li key={i} className="text-sm text-foreground/80">{format}</li>
             ))}
           </ul>
-          <p className="text-sm text-gray-600 italic mt-2">{richDescription.outputFormat.guidance}</p>
+          <p className="text-sm text-muted-foreground italic mt-2">{richDescription.outputFormat.guidance}</p>
         </div>
       </RichDescriptionSection>
 
@@ -301,13 +313,13 @@ function RichDescriptionView({ richDescription }: { richDescription: RichTaskDes
       <RichDescriptionSection
         title="How This Impacts Exit Outcomes"
         icon={TrendingUp}
-        iconColor="text-emerald-600"
+        iconColor="text-emerald-600 dark:text-emerald-400"
       >
         <div className="space-y-2">
-          <p className="text-sm text-gray-700">{richDescription.exitImpact.overview}</p>
+          <p className="text-sm text-foreground/80">{richDescription.exitImpact.overview}</p>
           <ul className="list-disc pl-5 space-y-1">
             {richDescription.exitImpact.benefits.map((benefit, i) => (
-              <li key={i} className="text-sm text-gray-700">{benefit}</li>
+              <li key={i} className="text-sm text-foreground/80">{benefit}</li>
             ))}
           </ul>
         </div>
@@ -358,40 +370,40 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
   }
 
   const statusBorder = {
-    PENDING: 'border-l-gray-300',
+    PENDING: 'border-l-muted-foreground/30',
     IN_PROGRESS: 'border-l-primary',
     COMPLETED: 'border-l-green-500',
     DEFERRED: 'border-l-yellow-500',
     BLOCKED: 'border-l-red-500',
-    CANCELLED: 'border-l-gray-400',
-  }[task.status] || 'border-l-gray-300'
+    CANCELLED: 'border-l-muted-foreground/50',
+  }[task.status] || 'border-l-muted-foreground/30'
 
   return (
-    <Card className={`border-l-4 ${statusBorder} ${task.status === 'COMPLETED' ? 'opacity-75' : ''}`}>
+    <Card className={`border-l-4 ${statusBorder} ${task.status === 'COMPLETED' ? 'opacity-75' : ''} hover:shadow-md transition-shadow`}>
       <CardContent className="pt-4">
         <div className="flex items-start gap-4">
           {/* Checkbox */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => handleStatusChange(task.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED')}
             disabled={isUpdating}
-            className={`flex-shrink-0 w-6 h-6 mt-0.5 rounded border-2 transition-colors ${
+            className={`flex-shrink-0 w-6 h-6 mt-0.5 rounded border-2 transition-colors flex items-center justify-center ${
               task.status === 'COMPLETED'
                 ? 'bg-green-500 border-green-500 text-white'
-                : 'border-gray-300 hover:border-green-500'
+                : 'border-border hover:border-green-500'
             } ${isUpdating ? 'opacity-50' : ''}`}
           >
             {task.status === 'COMPLETED' && (
-              <svg className="w-full h-full p-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-              </svg>
+              <Check className="h-4 w-4" strokeWidth={3} />
             )}
-          </button>
+          </motion.button>
 
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className={`font-medium text-gray-900 ${task.status === 'COMPLETED' ? 'line-through text-gray-500' : ''}`}>
+                <h3 className={`font-medium text-foreground ${task.status === 'COMPLETED' ? 'line-through text-muted-foreground' : ''}`}>
                   {task.title}
                 </h3>
 
@@ -440,12 +452,12 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
                             {getInitials(task.primaryAssignee.name, task.primaryAssignee.email)}
                           </div>
                         )}
-                        <span className="text-xs text-gray-600">
+                        <span className="text-xs text-muted-foreground">
                           {task.primaryAssignee.name || task.primaryAssignee.email.split('@')[0]}
                         </span>
                       </div>
                     ) : task.invites && task.invites.length > 0 ? (
-                      <div className="flex items-center gap-1 text-xs text-yellow-600" title="Pending invite">
+                      <div className="flex items-center gap-1 text-xs text-yellow-600 dark:text-yellow-400" title="Pending invite">
                         <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -454,7 +466,7 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
                     ) : onAssign ? (
                       <button
                         onClick={() => onAssign(task.id)}
-                        className="flex items-center gap-1 text-xs text-gray-400 hover:text-primary transition-colors"
+                        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
                       >
                         <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -493,12 +505,12 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
                           {getInitials(task.primaryAssignee.name, task.primaryAssignee.email)}
                         </div>
                       )}
-                      <span className="text-xs text-gray-600 truncate max-w-[120px]">
+                      <span className="text-xs text-muted-foreground truncate max-w-[120px]">
                         {task.primaryAssignee.name || task.primaryAssignee.email.split('@')[0]}
                       </span>
                     </div>
                   ) : task.invites && task.invites.length > 0 ? (
-                    <div className="flex items-center gap-1 text-xs text-yellow-600 whitespace-nowrap" title="Pending invite">
+                    <div className="flex items-center gap-1 text-xs text-yellow-600 dark:text-yellow-400 whitespace-nowrap" title="Pending invite">
                       <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
@@ -507,7 +519,7 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
                   ) : onAssign ? (
                     <button
                       onClick={() => onAssign(task.id)}
-                      className="flex items-center gap-1 text-xs text-gray-400 hover:text-primary transition-colors whitespace-nowrap"
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
                     >
                       <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -527,19 +539,26 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
               {isExpanded ? 'Show less' : 'Show details'}
             </button>
 
-            {isExpanded && (
-              <div className="mt-3">
+            <AnimatePresence>
+              {isExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="mt-3 overflow-hidden"
+              >
                 {/* Rich Description Display */}
                 {hasRichDescription(task.richDescription) ? (
                   <RichDescriptionView richDescription={task.richDescription} />
                 ) : (
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-700">{task.description}</p>
+                  <div className="p-3 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-foreground/80">{task.description}</p>
                   </div>
                 )}
 
-                <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-4 text-xs text-gray-500">
+                <div className="mt-3 p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <span>Type: {ACTION_TYPE_LABELS[task.actionType] || task.actionType}</span>
                     <span>Complexity: {COMPLEXITY_LABELS[task.complexity] || task.complexity}</span>
                   </div>
@@ -685,7 +704,7 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="text-gray-500 hover:text-gray-700"
+                        className="text-muted-foreground hover:text-foreground"
                         onClick={() => handleStatusChange('NOT_APPLICABLE')}
                         disabled={isUpdating}
                       >
@@ -694,8 +713,9 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
                     </div>
                   )}
                 </div>
-              </div>
+              </motion.div>
             )}
+            </AnimatePresence>
           </div>
         </div>
       </CardContent>

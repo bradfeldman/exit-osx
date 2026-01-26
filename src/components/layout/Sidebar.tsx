@@ -6,7 +6,10 @@ import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useUserRole } from '@/contexts/UserRoleContext'
+import { useSubscription } from '@/contexts/SubscriptionContext'
 import { useAssessmentStatus } from '@/hooks/useAssessmentStatus'
+import { UpgradeModal } from '@/components/subscription/UpgradeModal'
+import { PlanTier } from '@/lib/pricing'
 import packageJson from '../../../package.json'
 import {
   Select,
@@ -16,20 +19,33 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-const assessmentLinks = [
-  { name: 'Baseline Assessment', href: '/dashboard/assessment/company', icon: BriefcaseIcon },
-  { name: 'Risk Assessment', href: '/dashboard/assessment/risk', icon: ShieldIcon },
+interface NavLink {
+  name: string
+  href: string
+  icon: React.ComponentType<{ className?: string }>
+  requiredPlan?: PlanTier
+  featureKey?: string
+}
+
+const assessmentLinks: NavLink[] = [
+  { name: 'Baseline Assessment', href: '/dashboard/assessment/company', icon: BriefcaseIcon, requiredPlan: 'growth', featureKey: 'company-assessment' },
+  { name: 'Risk Assessment', href: '/dashboard/assessment/risk', icon: ShieldIcon, requiredPlan: 'growth', featureKey: 'risk-assessment' },
 ]
 
-const financialsLinks = [
-  { name: 'Business Financials', href: '/dashboard/financials', icon: FinancialsIcon },
-  { name: 'DCF Valuation', href: '/dashboard/valuation', icon: ChartBarIcon },
-  { name: 'Personal Financial Statement', href: '/dashboard/financials/personal', icon: WalletIcon },
-  { name: 'Retirement Calculator', href: '/dashboard/financials/retirement', icon: CalculatorIcon },
+const financialsLinks: NavLink[] = [
+  { name: 'Business Financials', href: '/dashboard/financials', icon: FinancialsIcon, requiredPlan: 'growth', featureKey: 'business-financials' },
+  { name: 'DCF Valuation', href: '/dashboard/valuation', icon: ChartBarIcon, requiredPlan: 'exit-ready', featureKey: 'dcf-valuation' },
+  { name: 'Personal Financial Statement', href: '/dashboard/financials/personal', icon: WalletIcon, requiredPlan: 'growth', featureKey: 'personal-financials' },
+  { name: 'Retirement Calculator', href: '/dashboard/financials/retirement', icon: CalculatorIcon, requiredPlan: 'growth', featureKey: 'retirement-calculator' },
 ]
 
-const loanCenterLinks = [
-  { name: 'Business Loans', href: '/dashboard/loans/business', icon: BankIcon },
+const loanCenterLinks: NavLink[] = [
+  { name: 'Business Loans', href: '/dashboard/loans/business', icon: BankIcon, requiredPlan: 'growth', featureKey: 'business-loans' },
+]
+
+const dealRoomLinks: NavLink[] = [
+  { name: 'Data Room', href: '/dashboard/data-room', icon: FolderIcon, requiredPlan: 'exit-ready', featureKey: 'data-room' },
+  { name: 'Deal Tracker', href: '/dashboard/deal-tracker', icon: TargetIcon, requiredPlan: 'exit-ready', featureKey: 'deal-tracker' },
 ]
 
 export function Sidebar() {
@@ -37,9 +53,22 @@ export function Sidebar() {
   const router = useRouter()
   const { companies, selectedCompanyId, setSelectedCompanyId, isLoading } = useCompany()
   const { isSuperAdmin } = useUserRole()
+  const subscription = useSubscription()
   const { hasInitialAssessment, hasPendingAssessment } = useAssessmentStatus()
   const [developerExpanded, setDeveloperExpanded] = useState(false)
   const [globalExpanded, setGlobalExpanded] = useState(false)
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
+  const [lockedFeature, setLockedFeature] = useState<{ key: string; name: string } | null>(null)
+
+  // Defensive: if subscription is still loading, allow all features to prevent UI breaking
+  const canAccessFeature = subscription.isLoading
+    ? () => true
+    : subscription.canAccessFeature
+
+  const handleLockedClick = (featureKey: string, featureName: string) => {
+    setLockedFeature({ key: featureKey, name: featureName })
+    setUpgradeModalOpen(true)
+  }
 
   const handleCompanyChange = (companyId: string) => {
     if (companyId === '___add_new___') {
@@ -199,12 +228,29 @@ export function Sidebar() {
               {assessmentLinks.map((link) => {
                 const isActive = pathname === link.href || pathname.startsWith(link.href + '/')
                 const IconComponent = link.icon
+                const isLocked = link.featureKey && !canAccessFeature(link.featureKey)
                 // Show badge on Risk link when:
                 // 1. Initial assessment is not complete (amber !)
                 // 2. There's an open assessment waiting (red dot)
                 // 3. A new assessment is available (red dot)
                 const needsInitialAssessment = link.name === 'Risk Assessment' && !hasInitialAssessment
                 const hasPendingRiskAssessment = link.name === 'Risk Assessment' && hasInitialAssessment && hasPendingAssessment
+
+                if (isLocked) {
+                  return (
+                    <li key={link.href}>
+                      <button
+                        onClick={() => handleLockedClick(link.featureKey!, link.name)}
+                        className="group flex w-full gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors text-sidebar-foreground/50 hover:bg-sidebar-accent/50"
+                      >
+                        <IconComponent className="h-5 w-5 shrink-0 text-sidebar-foreground/40" />
+                        <span className="flex-1 text-left">{link.name}</span>
+                        <LockIcon className="h-4 w-4 text-sidebar-foreground/40" />
+                      </button>
+                    </li>
+                  )
+                }
+
                 return (
                   <li key={link.href}>
                     <Link
@@ -274,6 +320,23 @@ export function Sidebar() {
                   ? pathname === link.href || pathname.startsWith('/dashboard/financials/statements')
                   : pathname === link.href || pathname.startsWith(link.href + '/')
                 const IconComponent = link.icon
+                const isLocked = link.featureKey && !canAccessFeature(link.featureKey)
+
+                if (isLocked) {
+                  return (
+                    <li key={link.href}>
+                      <button
+                        onClick={() => handleLockedClick(link.featureKey!, link.name)}
+                        className="group flex w-full gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors text-sidebar-foreground/50 hover:bg-sidebar-accent/50"
+                      >
+                        <IconComponent className="h-5 w-5 shrink-0 text-sidebar-foreground/40" />
+                        <span className="flex-1 text-left">{link.name}</span>
+                        <LockIcon className="h-4 w-4 text-sidebar-foreground/40" />
+                      </button>
+                    </li>
+                  )
+                }
+
                 return (
                   <li key={link.href}>
                     <Link
@@ -308,6 +371,23 @@ export function Sidebar() {
               {loanCenterLinks.map((link) => {
                 const isActive = pathname === link.href || pathname.startsWith(link.href + '/')
                 const IconComponent = link.icon
+                const isLocked = link.featureKey && !canAccessFeature(link.featureKey)
+
+                if (isLocked) {
+                  return (
+                    <li key={link.href}>
+                      <button
+                        onClick={() => handleLockedClick(link.featureKey!, link.name)}
+                        className="group flex w-full gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors text-sidebar-foreground/50 hover:bg-sidebar-accent/50"
+                      >
+                        <IconComponent className="h-5 w-5 shrink-0 text-sidebar-foreground/40" />
+                        <span className="flex-1 text-left">{link.name}</span>
+                        <LockIcon className="h-4 w-4 text-sidebar-foreground/40" />
+                      </button>
+                    </li>
+                  )
+                }
+
                 return (
                   <li key={link.href}>
                     <Link
@@ -339,47 +419,48 @@ export function Sidebar() {
               Deal Room
             </p>
             <ul role="list" className="mt-1 space-y-1">
-              {/* Data Room */}
-              <li>
-                <Link
-                  href="/dashboard/data-room"
-                  className={cn(
-                    'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                    pathname.startsWith('/dashboard/data-room')
-                      ? 'bg-sidebar-accent text-sidebar-primary'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                  )}
-                >
-                  <FolderIcon
-                    className={cn(
-                      'h-5 w-5 shrink-0',
-                      pathname.startsWith('/dashboard/data-room') ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                    )}
-                  />
-                  Data Room
-                </Link>
-              </li>
+              {dealRoomLinks.map((link) => {
+                const isActive = pathname.startsWith(link.href)
+                const IconComponent = link.icon
+                const isLocked = link.featureKey && !canAccessFeature(link.featureKey)
 
-              {/* Deal Tracker */}
-              <li>
-                <Link
-                  href="/dashboard/deal-tracker"
-                  className={cn(
-                    'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                    pathname.startsWith('/dashboard/deal-tracker')
-                      ? 'bg-sidebar-accent text-sidebar-primary'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                  )}
-                >
-                  <TargetIcon
-                    className={cn(
-                      'h-5 w-5 shrink-0',
-                      pathname.startsWith('/dashboard/deal-tracker') ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                    )}
-                  />
-                  Deal Tracker
-                </Link>
-              </li>
+                if (isLocked) {
+                  return (
+                    <li key={link.href}>
+                      <button
+                        onClick={() => handleLockedClick(link.featureKey!, link.name)}
+                        className="group flex w-full gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors text-sidebar-foreground/50 hover:bg-sidebar-accent/50"
+                      >
+                        <IconComponent className="h-5 w-5 shrink-0 text-sidebar-foreground/40" />
+                        <span className="flex-1 text-left">{link.name}</span>
+                        <LockIcon className="h-4 w-4 text-sidebar-foreground/40" />
+                      </button>
+                    </li>
+                  )
+                }
+
+                return (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className={cn(
+                        'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
+                        isActive
+                          ? 'bg-sidebar-accent text-sidebar-primary'
+                          : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                      )}
+                    >
+                      <IconComponent
+                        className={cn(
+                          'h-5 w-5 shrink-0',
+                          isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
+                        )}
+                      />
+                      {link.name}
+                    </Link>
+                  </li>
+                )
+              })}
             </ul>
           </div>
 
@@ -597,6 +678,14 @@ export function Sidebar() {
           </p>
         </div>
       </div>
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        open={upgradeModalOpen}
+        onOpenChange={setUpgradeModalOpen}
+        feature={lockedFeature?.key}
+        featureDisplayName={lockedFeature?.name}
+      />
     </div>
   )
 }
@@ -793,6 +882,14 @@ function TargetIcon({ className }: { className?: string }) {
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+    </svg>
+  )
+}
+
+function LockIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
     </svg>
   )
 }

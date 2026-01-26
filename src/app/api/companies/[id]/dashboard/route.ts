@@ -124,6 +124,16 @@ export async function GET(
 
     const latestSnapshot = company.valuationSnapshots[0]
 
+    // Fetch DCF assumptions to check if DCF value should be used
+    const dcfAssumptions = await prisma.dCFAssumptions.findUnique({
+      where: { companyId },
+      select: {
+        useDCFValue: true,
+        enterpriseValue: true,
+        equityValue: true,
+      },
+    })
+
     // Fetch industry multiple range - prioritize most specific match
     let industryMultiple = null
     if (company.icbSubSector) {
@@ -387,6 +397,17 @@ export async function GET(
       ? multipleLow + calculatedCoreScore * (multipleHigh - multipleLow)
       : (multipleLow + multipleHigh) / 2
 
+    // Check if DCF value should be used (calculate once for both tier1 and tier2)
+    const useDCF = dcfAssumptions?.useDCFValue === true && !!dcfAssumptions?.enterpriseValue
+    const dcfEnterpriseValue = useDCF && dcfAssumptions?.enterpriseValue
+      ? Number(dcfAssumptions.enterpriseValue)
+      : null
+
+    // Calculate the implied multiple when using DCF
+    const dcfImpliedMultiple = dcfEnterpriseValue && adjustedEbitda > 0
+      ? dcfEnterpriseValue / adjustedEbitda
+      : null
+
     return NextResponse.json({
       company: {
         id: company.id,
@@ -398,47 +419,64 @@ export async function GET(
       // Tier 1: Core KPIs
       // Always recalculate valuations using the fresh adjustedEbitda
       // Use snapshot for BRI score, Core Score, and multiples - but recalculate dollar values
+      // UNLESS useDCFValue is enabled - then use DCF enterprise value
       tier1: (() => {
         if (latestSnapshot) {
           const snapshotMultiple = Number(latestSnapshot.finalMultiple)
           const snapshotMultipleHigh = Number(latestSnapshot.industryMultipleHigh)
 
-          // Recalculate valuations using fresh adjustedEbitda × snapshot multiples
-          const currentValue = adjustedEbitda * snapshotMultiple
+          // If using DCF, use that value and calculate implied multiple
+          // Otherwise, use EBITDA × snapshot multiple
+          const currentValue = dcfEnterpriseValue ?? (adjustedEbitda * snapshotMultiple)
+          const impliedMultiple = dcfImpliedMultiple ?? snapshotMultiple
           const potentialValue = adjustedEbitda * snapshotMultipleHigh
+          // Value gap: positive when below potential, zero when at or above
+          const valueGap = Math.max(0, potentialValue - currentValue)
+          // Market premium: positive when above potential (DCF exceeds industry max)
+          const marketPremium = Math.max(0, currentValue - potentialValue)
 
           return {
             currentValue,
             potentialValue,
-            valueGap: potentialValue - currentValue,
+            valueGap,
+            marketPremium,
             briScore: Math.round(Number(latestSnapshot.briScore) * 100),
             coreScore: Math.round(Number(latestSnapshot.coreScore) * 100),
-            finalMultiple: snapshotMultiple,
+            finalMultiple: impliedMultiple,
             multipleRange: {
               low: Number(latestSnapshot.industryMultipleLow),
               high: snapshotMultipleHigh,
             },
             industryName: buildIndustryPath(company),
             isEstimated: false,
+            useDCFValue: useDCF,
           }
         } else {
           // No snapshot - estimate values based on industry multiples
-          const currentValue = adjustedEbitda * estimatedMultiple
+          // Still respect DCF value if enabled
+          const currentValue = dcfEnterpriseValue ?? (adjustedEbitda * estimatedMultiple)
+          const impliedMultiple = dcfImpliedMultiple ?? estimatedMultiple
           const potentialValue = adjustedEbitda * multipleHigh
+          // Value gap: positive when below potential, zero when at or above
+          const valueGap = Math.max(0, potentialValue - currentValue)
+          // Market premium: positive when above potential (DCF exceeds industry max)
+          const marketPremium = Math.max(0, currentValue - potentialValue)
 
           return {
             currentValue,
             potentialValue,
-            valueGap: potentialValue - currentValue,
+            valueGap,
+            marketPremium,
             briScore: null, // No BRI score without assessment
             coreScore: calculatedCoreScore !== null ? Math.round(calculatedCoreScore * 100) : null,
-            finalMultiple: estimatedMultiple,
+            finalMultiple: impliedMultiple,
             multipleRange: {
               low: multipleLow,
               high: multipleHigh,
             },
             industryName: buildIndustryPath(company),
-            isEstimated: true,
+            isEstimated: !useDCF,
+            useDCFValue: useDCF,
           }
         }
       })(),
@@ -457,11 +495,11 @@ export async function GET(
         multipleRange: latestSnapshot ? {
           low: Number(latestSnapshot.industryMultipleLow),
           high: Number(latestSnapshot.industryMultipleHigh),
-          current: Number(latestSnapshot.finalMultiple),
+          current: dcfImpliedMultiple ?? Number(latestSnapshot.finalMultiple),
         } : {
           low: multipleLow,
           high: multipleHigh,
-          current: estimatedMultiple, // Show the core-score-based multiple on the range
+          current: dcfImpliedMultiple ?? estimatedMultiple,
         },
       },
       // Tier 3: Risk Breakdown

@@ -3,7 +3,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useCompany } from '@/contexts/CompanyContext'
 import { Button } from '@/components/ui/button'
-import { Loader2, Save } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Switch } from '@/components/ui/switch'
+import { Loader2, Save, Calculator, Info } from 'lucide-react'
 import {
   MarketDataPanel,
   WACCCalculator,
@@ -63,6 +65,8 @@ export default function ValuationPage() {
   const [ebitda, setEbitda] = useState(600000) // Default $600K EBITDA
   const [hasChanges, setHasChanges] = useState(false)
   const [originalAssumptions, setOriginalAssumptions] = useState<DCFAssumptions | null>(null)
+  const [useDCFValue, setUseDCFValue] = useState(false) // Toggle to use DCF value for scorecard/PFS/loans
+  const [originalUseDCFValue, setOriginalUseDCFValue] = useState(false)
 
   // Industry data (could be fetched from API based on company)
   const [industryData, setIndustryData] = useState({
@@ -113,6 +117,15 @@ export default function ValuationPage() {
           }
           setAssumptions(loadedAssumptions)
           setOriginalAssumptions(loadedAssumptions)
+
+          // Load useDCFValue toggle
+          const dcfToggle = data.assumptions.useDCFValue ?? false
+          setUseDCFValue(dcfToggle)
+          setOriginalUseDCFValue(dcfToggle)
+        } else {
+          // No saved assumptions - use defaults and set original for change tracking
+          setOriginalAssumptions(DEFAULT_ASSUMPTIONS)
+          setOriginalUseDCFValue(false)
         }
 
         // Try to get financial data for base FCF and EBITDA
@@ -155,10 +168,11 @@ export default function ValuationPage() {
   // Track changes
   useEffect(() => {
     if (originalAssumptions) {
-      const changed = JSON.stringify(assumptions) !== JSON.stringify(originalAssumptions)
-      setHasChanges(changed)
+      const assumptionsChanged = JSON.stringify(assumptions) !== JSON.stringify(originalAssumptions)
+      const toggleChanged = useDCFValue !== originalUseDCFValue
+      setHasChanges(assumptionsChanged || toggleChanged)
     }
-  }, [assumptions, originalAssumptions])
+  }, [assumptions, originalAssumptions, useDCFValue, originalUseDCFValue])
 
   // Save assumptions
   const handleSave = async () => {
@@ -169,11 +183,18 @@ export default function ValuationPage() {
       const response = await fetch(`/api/companies/${selectedCompanyId}/dcf`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(assumptions),
+        body: JSON.stringify({
+          ...assumptions,
+          calculatedWACC,
+          enterpriseValue: dcfResults?.enterpriseValue ?? null,
+          equityValue: dcfResults?.equityValue ?? null,
+          useDCFValue,
+        }),
       })
 
       if (response.ok) {
         setOriginalAssumptions(assumptions)
+        setOriginalUseDCFValue(useDCFValue)
         setHasChanges(false)
       } else {
         const data = await response.json()
@@ -290,7 +311,12 @@ export default function ValuationPage() {
   if (!selectedCompanyId) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-gray-500">Please select a company to view valuation</p>
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
+            <Calculator className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <p className="text-muted-foreground">Please select a company to view valuation</p>
+        </div>
       </div>
     )
   }
@@ -298,7 +324,10 @@ export default function ValuationPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="text-center">
+          <Loader2 className="h-10 w-10 text-primary animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground font-medium">Running valuation analysis...</p>
+        </div>
       </div>
     )
   }
@@ -308,12 +337,12 @@ export default function ValuationPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">DCF Valuation</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-3xl font-bold font-display text-foreground tracking-tight">DCF Valuation</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Interactive discounted cash flow analysis with Monte Carlo simulation
           </p>
         </div>
-        <Button onClick={handleSave} disabled={saving || !hasChanges}>
+        <Button onClick={handleSave} disabled={saving || !hasChanges} className="shadow-lg shadow-primary/20">
           {saving ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -384,6 +413,49 @@ export default function ValuationPage() {
             netDebt={netDebt}
             isLoading={false}
           />
+
+          {/* Use DCF Value Toggle */}
+          <Card className={useDCFValue ? 'border-primary/50 bg-primary/5' : ''}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-medium">Use DCF for Valuation</CardTitle>
+                <Switch
+                  checked={useDCFValue}
+                  onCheckedChange={setUseDCFValue}
+                  disabled={!dcfResults}
+                />
+              </div>
+              <CardDescription>
+                {useDCFValue
+                  ? 'DCF enterprise value is being used across the platform'
+                  : 'Using EBITDA multiple-based valuation (default)'}
+              </CardDescription>
+            </CardHeader>
+            {useDCFValue && dcfResults && (
+              <CardContent className="pt-0">
+                <div className="p-3 bg-primary/10 rounded-lg space-y-2">
+                  <div className="flex items-start gap-2 text-sm">
+                    <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <div className="text-muted-foreground">
+                      <p className="font-medium text-foreground mb-1">This DCF value will be used for:</p>
+                      <ul className="list-disc list-inside space-y-0.5">
+                        <li>Dashboard Scorecard company value</li>
+                        <li>Personal Financial Statement business assets</li>
+                        <li>Retirement Calculator business value</li>
+                        <li>Business Loan collateral calculations</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="text-sm pt-2 border-t border-primary/20">
+                    <span className="text-muted-foreground">Implied EBITDA Multiple: </span>
+                    <span className="font-semibold text-foreground">
+                      {ebitda > 0 ? `${(dcfResults.enterpriseValue / ebitda).toFixed(1)}x` : 'N/A'}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            )}
+          </Card>
 
           <SensitivityTable
             baseInputs={dcfInputsForMonteCarlo}

@@ -282,12 +282,12 @@ export async function DELETE(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    // Delete the adjustment
-    await prisma.ebitdaAdjustment.delete({
+    // Delete the adjustment (use deleteMany to avoid error if already deleted)
+    const result = await prisma.ebitdaAdjustment.deleteMany({
       where: { id: adjustmentId }
     })
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, deleted: result.count })
   } catch (error) {
     console.error('Error deleting adjustment:', error)
     return NextResponse.json(

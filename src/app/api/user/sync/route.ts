@@ -2,6 +2,51 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { getGravatarUrl } from '@/lib/utils/gravatar'
+import { PlanTier, SubscriptionStatus, BillingCycle } from '@prisma/client'
+
+// Map plan ID to Prisma PlanTier enum
+function getPlanTier(planId: string): PlanTier {
+  switch (planId) {
+    case 'growth':
+      return 'GROWTH'
+    case 'exit-ready':
+      return 'EXIT_READY'
+    default:
+      return 'FOUNDATION'
+  }
+}
+
+// Get subscription config based on selected plan
+function getSubscriptionConfig(planId: string): {
+  planTier: PlanTier
+  subscriptionStatus: SubscriptionStatus
+  billingCycle: BillingCycle | null
+  trialStartedAt: Date | null
+  trialEndsAt: Date | null
+} {
+  const planTier = getPlanTier(planId)
+  const now = new Date()
+  const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000) // 14 days from now
+
+  if (planTier === 'FOUNDATION') {
+    return {
+      planTier: 'FOUNDATION',
+      subscriptionStatus: 'ACTIVE',
+      billingCycle: null,
+      trialStartedAt: null,
+      trialEndsAt: null,
+    }
+  }
+
+  // Paid plans start with a 14-day trial
+  return {
+    planTier,
+    subscriptionStatus: 'TRIALING',
+    billingCycle: 'ANNUAL', // Default to annual (better value)
+    trialStartedAt: now,
+    trialEndsAt: trialEnd,
+  }
+}
 
 export async function POST() {
   const supabase = await createClient()
@@ -105,6 +150,10 @@ export async function POST() {
     // Use OAuth avatar if available, otherwise generate Gravatar URL
     const avatarUrl = user.user_metadata?.avatar_url || getGravatarUrl(user.email!, { size: 200 })
 
+    // Get selected plan from user metadata (set during signup)
+    const selectedPlan = user.user_metadata?.selected_plan || 'foundation'
+    const subscriptionConfig = getSubscriptionConfig(selectedPlan)
+
     const newUser = await prisma.user.create({
       data: {
         authId: user.id,
@@ -118,7 +167,13 @@ export async function POST() {
               create: {
                 name: user.user_metadata?.name
                   ? `${user.user_metadata.name}'s Organization`
-                  : 'My Organization'
+                  : 'My Organization',
+                // Apply subscription configuration based on selected plan
+                planTier: subscriptionConfig.planTier,
+                subscriptionStatus: subscriptionConfig.subscriptionStatus,
+                billingCycle: subscriptionConfig.billingCycle,
+                trialStartedAt: subscriptionConfig.trialStartedAt,
+                trialEndsAt: subscriptionConfig.trialEndsAt,
               }
             }
           }

@@ -1,5 +1,5 @@
 // Personal Financials API
-// GET/PUT personal financial data for a company (owner)
+// GET/PUT personal financial data for an organization (shared across all companies)
 
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
@@ -36,7 +36,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       }
     }
 
-    // Verify company exists and user has access
+    // Verify company exists and user has access, get organizationId
     const company = await prisma.company.findFirst({
       where: {
         id: companyId,
@@ -46,22 +46,25 @@ export async function GET(request: Request, { params }: RouteParams) {
             some: { userId: auth.auth.user.id }
           }
         }
-      }
+      },
+      select: { organizationId: true }
     })
 
     if (!company) {
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
-    // Get personal financials
+    const { organizationId } = company
+
+    // Get personal financials (now organization-level)
     const personalFinancials = await prisma.personalFinancials.findUnique({
-      where: { companyId }
+      where: { organizationId }
     })
 
     return NextResponse.json({
       personalFinancials: personalFinancials || {
         id: null,
-        companyId,
+        organizationId,
         retirementAccounts: [],
         totalRetirement: null,
         personalAssets: [],
@@ -106,7 +109,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       }
     }
 
-    // Verify company exists and user has access
+    // Verify company exists and user has access, get organizationId
     const company = await prisma.company.findFirst({
       where: {
         id: companyId,
@@ -116,13 +119,15 @@ export async function PUT(request: Request, { params }: RouteParams) {
             some: { userId: auth.auth.user.id }
           }
         }
-      }
+      },
+      select: { organizationId: true }
     })
 
     if (!company) {
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
+    const { organizationId } = company
     const body = await request.json()
 
     // Validate and extract data
@@ -137,9 +142,9 @@ export async function PUT(request: Request, { params }: RouteParams) {
       notes,
     } = body
 
-    // Upsert personal financials
+    // Upsert personal financials (now organization-level)
     const personalFinancials = await prisma.personalFinancials.upsert({
-      where: { companyId },
+      where: { organizationId },
       update: {
         retirementAccounts: retirementAccounts || null,
         totalRetirement: totalRetirement !== undefined ? totalRetirement : null,
@@ -151,7 +156,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
         notes: notes || null,
       },
       create: {
-        companyId,
+        organizationId,
         retirementAccounts: retirementAccounts || null,
         totalRetirement: totalRetirement !== undefined ? totalRetirement : null,
         personalAssets: personalAssets || null,

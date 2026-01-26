@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { motion } from 'framer-motion'
 import { useCompany } from '@/contexts/CompanyContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,6 +24,25 @@ import {
   STAGE_LABELS,
 } from '@/lib/deal-tracker/constants'
 import { DealStage, BuyerType, BuyerTier, ProspectApprovalStatus } from '@prisma/client'
+import { Loader2 } from 'lucide-react'
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06, delayChildren: 0.1 }
+  }
+} as const
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring" as const, stiffness: 100, damping: 15 }
+  }
+}
 
 interface ProspectiveBuyer {
   id: string
@@ -121,43 +141,59 @@ export function DealTrackerDashboard() {
 
   if (!selectedCompanyId) {
     return (
-      <div className="flex items-center justify-center h-64 text-muted-foreground">
-        Please select a company to view the deal tracker.
-      </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex items-center justify-center h-64"
+      >
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
+            <UsersIcon className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <p className="text-muted-foreground">Please select a company to view the deal tracker.</p>
+        </div>
+      </motion.div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="space-y-6"
+    >
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <motion.div variants={itemVariants} className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Deal Tracker</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-3xl font-bold font-display tracking-tight text-foreground">Deal Tracker</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Track prospective buyers through the M&A process
           </p>
         </div>
         {mainTab === 'pipeline' && (
-          <Button onClick={() => setShowAddBuyer(true)}>
+          <Button onClick={() => setShowAddBuyer(true)} className="shadow-lg shadow-primary/20">
             <PlusIcon className="h-4 w-4 mr-2" />
             Add Buyer
           </Button>
         )}
-      </div>
+      </motion.div>
 
       {/* Main Tabs: Pipeline vs Prospects */}
-      <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as 'pipeline' | 'prospects')}>
-        <TabsList>
-          <TabsTrigger value="pipeline">
-            <KanbanIcon className="h-4 w-4 mr-1" />
-            Pipeline
-          </TabsTrigger>
-          <TabsTrigger value="prospects">
-            <UsersIcon className="h-4 w-4 mr-1" />
-            Prospect List
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <motion.div variants={itemVariants}>
+        <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as 'pipeline' | 'prospects')}>
+          <TabsList>
+            <TabsTrigger value="pipeline">
+              <KanbanIcon className="h-4 w-4 mr-1" />
+              Pipeline
+            </TabsTrigger>
+            <TabsTrigger value="prospects">
+              <UsersIcon className="h-4 w-4 mr-1" />
+              Prospect List
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </motion.div>
 
       {/* Prospects Tab Content */}
       {mainTab === 'prospects' && (
@@ -238,21 +274,40 @@ export function DealTrackerDashboard() {
 
           {/* Main Content */}
           {isLoading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center justify-center h-64"
+            >
+              <div className="text-center">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="mx-auto mb-4"
+                >
+                  <Loader2 className="h-10 w-10 text-primary" />
+                </motion.div>
+                <p className="text-muted-foreground font-medium">Loading pipeline...</p>
+              </div>
+            </motion.div>
           ) : buyers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-center">
-              <UsersIcon className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-medium text-muted-foreground">No buyers yet</h3>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center justify-center h-64 text-center"
+            >
+              <div className="w-16 h-16 rounded-full bg-muted mb-4 flex items-center justify-center">
+                <UsersIcon className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground">No buyers yet</h3>
               <p className="text-sm text-muted-foreground mb-4">
                 Start tracking prospective buyers for your deal process.
               </p>
-              <Button onClick={() => setShowAddBuyer(true)}>
+              <Button onClick={() => setShowAddBuyer(true)} className="shadow-lg shadow-primary/20">
                 <PlusIcon className="h-4 w-4 mr-2" />
                 Add Your First Buyer
               </Button>
-            </div>
+            </motion.div>
           ) : view === 'pipeline' ? (
             <BuyerPipeline
               buyers={buyers}
@@ -280,7 +335,7 @@ export function DealTrackerDashboard() {
         onCreated={handleBuyerCreated}
         preselectedProspect={selectedProspectForBuyer}
       />
-    </div>
+    </motion.div>
   )
 }
 

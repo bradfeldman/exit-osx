@@ -19,6 +19,7 @@ interface HeroMetricsProps {
   currentValue: number
   potentialValue: number
   valueGap: number
+  marketPremium: number
   briScore: number | null
   coreScore: number | null
   personalReadinessScore: number | null
@@ -181,6 +182,7 @@ export function HeroMetrics({
   currentValue,
   potentialValue,
   valueGap,
+  marketPremium,
   briScore,
   coreScore,
   personalReadinessScore,
@@ -197,9 +199,9 @@ export function HeroMetrics({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Left: Primary KPI - Estimated Market Value (or description on hover) */}
         <motion.div
-          className={`relative flex items-center justify-center p-8 md:p-12 rounded-xl shadow-lg overflow-hidden ${
+          className={`relative flex items-center justify-center p-10 md:p-16 rounded-2xl shadow-2xl overflow-hidden min-h-[280px] md:min-h-[320px] ${
             isAbovePotential ? 'bg-amber-600 ring-4 ring-amber-500/30' :
-            isPreviewMode ? 'bg-[#B87333] ring-4 ring-[#B87333]/30' : 'bg-[#3D3D3D]'
+            isPreviewMode ? 'bg-[#B87333] ring-4 ring-[#B87333]/30' : 'bg-gradient-to-br from-[#3D3D3D] to-[#2A2A2A]'
           }`}
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -208,16 +210,19 @@ export function HeroMetrics({
             ease: [0.4, 0, 0.2, 1],
           }}
         >
-          {/* Subtle glow effect */}
+          {/* Animated gradient glow effect */}
           <motion.div
             className="absolute inset-0 pointer-events-none"
             animate={{
               boxShadow: isPreviewMode
-                ? 'inset 0 0 60px rgba(255, 255, 255, 0.1)'
-                : 'inset 0 0 60px rgba(184, 115, 51, 0.1)',
+                ? 'inset 0 0 80px rgba(255, 255, 255, 0.15)'
+                : 'inset 0 0 80px rgba(184, 115, 51, 0.15)',
             }}
             transition={{ duration: 0.3 }}
           />
+          {/* Decorative corner accents */}
+          <div className="absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-[#B87333]/30 rounded-tl-lg" />
+          <div className="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-[#B87333]/30 rounded-br-lg" />
 
           <AnimatePresence mode="wait">
             {hoveredCard ? (
@@ -245,40 +250,43 @@ export function HeroMetrics({
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                <p className={`text-sm font-medium uppercase tracking-wide mb-1 ${
-                  isPreviewMode ? 'text-white' : 'text-gray-300'
+                <p className={`text-sm md:text-base font-semibold uppercase tracking-widest mb-2 ${
+                  isAbovePotential ? 'text-white' : isPreviewMode ? 'text-white/90' : 'text-[#B87333]'
                 }`}>
-                  {isAbovePotential ? 'Above Your Potential' : isPreviewMode ? 'Preview: Market Value' : 'Estimated Market Value Today'}
+                  {isAbovePotential ? 'Premium to Market' : isPreviewMode ? 'Preview: Market Value' : 'Estimated Market Value'}
                 </p>
-                {!isPreviewMode && (
-                  <p className="text-xs text-gray-400 mb-3">
+                {!isPreviewMode && !isAbovePotential && (
+                  <p className="text-xs md:text-sm text-gray-400 mb-4">
                     {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                   </p>
                 )}
                 {isPreviewMode && !isAbovePotential && (
-                  <p className="text-xs text-white/70 mb-3">
+                  <p className="text-xs md:text-sm text-white/70 mb-4">
                     Based on selected multiple
                   </p>
                 )}
                 {isAbovePotential && (
-                  <p className="text-xs text-white/90 mb-3">
-                    Requires higher Core Index to achieve
+                  <p className="text-xs md:text-sm text-white/80 mb-4">
+                    DCF valuation exceeds industry benchmarks
                   </p>
                 )}
                 <motion.h1
-                  className={`text-hero font-bold tracking-tight text-white ${
+                  className={`text-hero-lg text-white drop-shadow-lg ${
                     isPreviewMode ? 'scale-105' : ''
                   }`}
-                  key={currentValue}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  key={isPreviewMode ? 'preview' : 'normal'}
+                  initial={isPreviewMode ? false : { opacity: 0, scale: 0.9, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{
                     type: 'spring',
                     stiffness: 100,
                     damping: 12,
                   }}
                 >
-                  {isClient ? (
+                  {isPreviewMode ? (
+                    // During slider drag, show value directly without animation
+                    formatCurrency(currentValue)
+                  ) : isClient ? (
                     <AnimatedValue value={currentValue} delay={200} />
                   ) : (
                     formatCurrency(currentValue)
@@ -291,7 +299,7 @@ export function HeroMetrics({
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.5 }}
                   >
-                    Based on estimated EBITDA
+                    Based on Adjusted EBITDA
                     <br />
                     Complete assessment to see risk-adjusted value
                   </motion.p>
@@ -309,27 +317,34 @@ export function HeroMetrics({
             isHovered={hoveredCard === 'valueGap'}
             onHover={() => setHoveredCard('valueGap')}
             onLeave={() => setHoveredCard(null)}
-            className={isAbovePotential ? 'ring-2 ring-amber-500/50' : isPreviewMode ? 'ring-2 ring-[#B87333]/50' : ''}
+            className={isAbovePotential ? 'ring-2 ring-emerald-500/50' : isPreviewMode ? 'ring-2 ring-[#B87333]/50' : ''}
           >
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
-              {isAbovePotential ? 'Exceeds Potential' : isPreviewMode ? 'Preview: Value Gap' : 'Value Gap'}
+              {isAbovePotential ? 'Market Premium' : isPreviewMode ? 'Preview: Value Gap' : 'Value Gap'}
             </p>
             <p className={`text-2xl md:text-3xl font-semibold transition-all ${
-              isAbovePotential ? 'text-amber-600' : isPreviewMode ? 'text-[#B87333]' : 'text-[#3D3D3D]'
+              isAbovePotential ? 'text-emerald-600' : isPreviewMode ? 'text-[#B87333]' : 'text-[#3D3D3D]'
             }`}>
-              {isClient && valueGap !== 0 ? (
-                <AnimatedValue
-                  value={Math.abs(valueGap)}
-                  delay={300}
-                  className={valueGap < 0 ? '' : ''}
-                />
+              {isAbovePotential ? (
+                // Show market premium when DCF exceeds potential
+                isClient && marketPremium > 0 ? (
+                  <AnimatedValue value={marketPremium} delay={300} />
+                ) : (
+                  formatCurrency(marketPremium)
+                )
+              ) : isPreviewMode ? (
+                // During slider drag, show value directly without animation
+                formatCurrency(valueGap)
+              ) : isClient && valueGap !== 0 ? (
+                <AnimatedValue value={valueGap} delay={300} />
               ) : (
-                valueGap < 0 ? `+${formatCurrency(Math.abs(valueGap))}` : formatCurrency(valueGap)
+                formatCurrency(valueGap)
               )}
-              {valueGap < 0 && isClient && '+'}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {isAbovePotential ? 'Above max for Core Index' : `Max EV: ${formatCurrency(potentialValue)}`}
+              {isAbovePotential
+                ? `Above industry max of ${formatCurrency(potentialValue)}`
+                : `Max EV: ${formatCurrency(potentialValue)}`}
             </p>
           </MetricCard>
 
