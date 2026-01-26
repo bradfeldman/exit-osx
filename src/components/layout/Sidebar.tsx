@@ -9,6 +9,7 @@ import { useUserRole } from '@/contexts/UserRoleContext'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { useAssessmentStatus } from '@/hooks/useAssessmentStatus'
 import { UpgradeModal } from '@/components/subscription/UpgradeModal'
+import { AccessRequestModal } from '@/components/access/AccessRequestModal'
 import { PlanTier } from '@/lib/pricing'
 import packageJson from '../../../package.json'
 import {
@@ -18,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { isPersonalFeature } from '@/lib/pricing'
 
 interface NavLink {
   name: string
@@ -51,7 +53,7 @@ const dealRoomLinks: NavLink[] = [
 export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const { companies, selectedCompanyId, setSelectedCompanyId, isLoading } = useCompany()
+  const { companies, selectedCompanyId, setSelectedCompanyId, isLoading, isSelectedCompanySubscribingOwner } = useCompany()
   const { isSuperAdmin } = useUserRole()
   const subscription = useSubscription()
   const { hasInitialAssessment, hasPendingAssessment } = useAssessmentStatus()
@@ -59,15 +61,27 @@ export function Sidebar() {
   const [globalExpanded, setGlobalExpanded] = useState(false)
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
   const [lockedFeature, setLockedFeature] = useState<{ key: string; name: string } | null>(null)
+  const [requestAccessModalOpen, setRequestAccessModalOpen] = useState(false)
+  const [requestAccessFeature, setRequestAccessFeature] = useState<{ key: string; name: string } | null>(null)
 
   // Defensive: if subscription is still loading, allow all features to prevent UI breaking
   const canAccessFeature = subscription.isLoading
     ? () => true
     : subscription.canAccessFeature
 
+  const shouldShowRequestAccess = subscription.isLoading
+    ? () => false
+    : subscription.shouldShowRequestAccess
+
   const handleLockedClick = (featureKey: string, featureName: string) => {
-    setLockedFeature({ key: featureKey, name: featureName })
-    setUpgradeModalOpen(true)
+    // Check if this is a personal feature that staff can request access to
+    if (isPersonalFeature(featureKey) && shouldShowRequestAccess(featureKey)) {
+      setRequestAccessFeature({ key: featureKey, name: featureName })
+      setRequestAccessModalOpen(true)
+    } else {
+      setLockedFeature({ key: featureKey, name: featureName })
+      setUpgradeModalOpen(true)
+    }
   }
 
   const handleCompanyChange = (companyId: string) => {
@@ -159,7 +173,11 @@ export function Sidebar() {
                     </>
                   ) : (
                     <>
-                      <BuildingIcon className="h-4 w-4 shrink-0 text-sidebar-foreground/60" />
+                      {isSelectedCompanySubscribingOwner ? (
+                        <CrownIcon className="h-4 w-4 shrink-0 text-amber-500" />
+                      ) : (
+                        <BuildingIcon className="h-4 w-4 shrink-0 text-sidebar-foreground/60" />
+                      )}
                       <SelectValue placeholder="Select company">
                         {selectedCompany?.name || 'Select company'}
                       </SelectValue>
@@ -170,7 +188,15 @@ export function Sidebar() {
               <SelectContent>
                 {companies.map((company) => (
                   <SelectItem key={company.id} value={company.id}>
-                    {company.name}
+                    <span className="flex items-center gap-2">
+                      {company.isSubscribingOwner && (
+                        <CrownIcon className="h-3.5 w-3.5 text-amber-500" />
+                      )}
+                      {company.name}
+                      {company.role === 'staff' && (
+                        <span className="text-xs text-muted-foreground">(Staff)</span>
+                      )}
+                    </span>
                   </SelectItem>
                 ))}
                 <div className="border-t border-border my-1" />
@@ -686,6 +712,16 @@ export function Sidebar() {
         feature={lockedFeature?.key}
         featureDisplayName={lockedFeature?.name}
       />
+
+      {/* Request Access Modal */}
+      {requestAccessFeature && (
+        <AccessRequestModal
+          open={requestAccessModalOpen}
+          onOpenChange={setRequestAccessModalOpen}
+          feature={requestAccessFeature.key}
+          featureDisplayName={requestAccessFeature.name}
+        />
+      )}
     </div>
   )
 }
@@ -890,6 +926,14 @@ function LockIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+    </svg>
+  )
+}
+
+function CrownIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l2.5 5 5.5.75-4 4 1 5.75-5-2.75-5 2.75 1-5.75-4-4L9.5 8 12 3z" />
     </svg>
   )
 }

@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { getUserAccessInfo, getCompanyPlanTier } from '@/lib/access'
 
-export async function GET() {
+export async function GET(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -11,11 +12,16 @@ export async function GET() {
   }
 
   try {
+    // Get companyId from query params if provided
+    const { searchParams } = new URL(request.url)
+    const companyId = searchParams.get('companyId')
+
     // Get user with their organization's subscription info
     const dbUser = await prisma.user.findUnique({
       where: { authId: user.id },
       select: {
         id: true,
+        userType: true,
         organizations: {
           select: {
             organization: {
@@ -66,11 +72,29 @@ export async function GET() {
     // Check if trial has expired but status hasn't been updated
     const trialExpired = isTrialing && org.trialEndsAt && org.trialEndsAt < now
 
+    // Get company-specific access info if companyId provided
+    let userRole: 'subscribing_owner' | 'owner' | 'staff' | undefined
+    let staffAccess: { hasPFSAccess: boolean; hasRetirementAccess: boolean; hasLoansAccess: boolean } | undefined
+    let effectivePlanTier = org.planTier.toLowerCase().replace('_', '-') as 'foundation' | 'growth' | 'exit-ready'
+
+    if (companyId) {
+      const accessInfo = await getUserAccessInfo(dbUser.id, companyId)
+      if (accessInfo) {
+        userRole = accessInfo.role
+        staffAccess = accessInfo.staffAccess
+        // Use company's effective plan tier (considers subscribing owner's subscription)
+        effectivePlanTier = await getCompanyPlanTier(companyId)
+      }
+    }
+
+    // Check if user is COMPED
+    const isComped = dbUser.userType === 'COMPED'
+
     return NextResponse.json({
       subscription: {
         organizationId: org.id,
         organizationName: org.name,
-        planTier: org.planTier.toLowerCase().replace('_', '-') as 'foundation' | 'growth' | 'exit-ready',
+        planTier: isComped ? 'exit-ready' : effectivePlanTier,
         status: trialExpired ? 'EXPIRED' : org.subscriptionStatus,
         billingCycle: org.billingCycle,
         isTrialing: isTrialing && !trialExpired,
@@ -79,6 +103,10 @@ export async function GET() {
         trialDaysRemaining: trialExpired ? 0 : trialDaysRemaining,
         teamMemberCount: org._count.users,
         hasStripeSubscription: !!org.stripeSubscriptionId,
+        // New company-based access fields
+        userRole,
+        staffAccess,
+        isComped,
       }
     })
   } catch (error) {

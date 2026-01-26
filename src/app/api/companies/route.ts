@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { getUserAccessibleCompanies } from '@/lib/access'
 
 export async function GET() {
   const result = await checkPermission('COMPANY_VIEW')
@@ -9,8 +10,8 @@ export async function GET() {
   const { auth } = result
 
   try {
-    // Get active (non-deleted) companies from the user's organization
-    const companies = await prisma.company.findMany({
+    // Get active (non-deleted) companies from the user's organization (legacy)
+    const orgCompanies = await prisma.company.findMany({
       where: {
         deletedAt: null, // Exclude soft-deleted companies
         organization: {
@@ -28,6 +29,45 @@ export async function GET() {
         }
       }
     })
+
+    // Get company access roles for the user
+    const accessibleCompanies = await getUserAccessibleCompanies(auth.user.id)
+
+    // Merge role info into companies
+    const companies = orgCompanies.map(company => {
+      const accessInfo = accessibleCompanies.find(c => c.id === company.id)
+      return {
+        ...company,
+        role: accessInfo?.role,
+        isSubscribingOwner: accessInfo?.isSubscribingOwner,
+        ownershipPercent: accessInfo?.ownershipPercent,
+      }
+    })
+
+    // Also include companies from new ownership model that might not be in org
+    for (const accessCompany of accessibleCompanies) {
+      if (!companies.some(c => c.id === accessCompany.id)) {
+        const company = await prisma.company.findUnique({
+          where: { id: accessCompany.id },
+          include: {
+            coreFactors: true,
+            ebitdaAdjustments: true,
+            valuationSnapshots: {
+              orderBy: { createdAt: 'desc' },
+              take: 1
+            }
+          }
+        })
+        if (company && !company.deletedAt) {
+          companies.push({
+            ...company,
+            role: accessCompany.role,
+            isSubscribingOwner: accessCompany.isSubscribingOwner,
+            ownershipPercent: accessCompany.ownershipPercent,
+          })
+        }
+      }
+    }
 
     return NextResponse.json({ companies })
   } catch (error) {
@@ -85,7 +125,25 @@ export async function POST(request: Request) {
       }
     })
 
-    return NextResponse.json({ company }, { status: 201 })
+    // Create company ownership record - creator becomes subscribing owner
+    await prisma.companyOwnership.create({
+      data: {
+        companyId: company.id,
+        userId: auth.user.id,
+        isSubscribingOwner: true,
+        ownershipPercent: 100,
+        status: 'ACTIVE',
+      }
+    })
+
+    return NextResponse.json({
+      company: {
+        ...company,
+        role: 'subscribing_owner',
+        isSubscribingOwner: true,
+        ownershipPercent: 100,
+      }
+    }, { status: 201 })
   } catch (error) {
     console.error('Error creating company:', error)
     return NextResponse.json(

@@ -2,17 +2,24 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkAssessmentTriggers } from '@/lib/assessment/assessment-triggers'
+import { getUserAlerts, markAllAsRead } from '@/lib/alerts'
+
+// Combined alert types
+type AssessmentAlertType = 'NO_ASSESSMENT' | 'STALE_ASSESSMENT' | 'QUARTERLY_REMINDER' | 'OPEN_ASSESSMENT' | 'ASSESSMENT_AVAILABLE'
+type SystemAlertType = 'ACCESS_REQUEST' | 'ACCESS_GRANTED' | 'ACCESS_DENIED' | 'STAFF_PAUSED' | 'OWNERSHIP_TRANSFER' | 'TRIAL_ENDING' | 'TRIAL_EXPIRED'
 
 interface Alert {
   id: string
-  type: 'NO_ASSESSMENT' | 'STALE_ASSESSMENT' | 'QUARTERLY_REMINDER' | 'OPEN_ASSESSMENT' | 'ASSESSMENT_AVAILABLE'
+  type: AssessmentAlertType | SystemAlertType
   title: string
   message: string
-  actionUrl: string
-  companyId: string
-  companyName: string
+  actionUrl: string | null
+  companyId?: string
+  companyName?: string
   severity: 'info' | 'warning' | 'urgent'
+  isRead?: boolean
   createdAt: string
+  source: 'computed' | 'database'
 }
 
 // Assessment is considered stale after 90 days (quarterly)
@@ -68,6 +75,7 @@ export async function GET() {
           companyName: company.name,
           severity: 'urgent',
           createdAt: company.createdAt.toISOString(),
+          source: 'computed',
         })
         continue // Skip other alerts if no assessment exists
       }
@@ -93,6 +101,7 @@ export async function GET() {
           companyName: company.name,
           severity: 'warning',
           createdAt: new Date().toISOString(),
+          source: 'computed',
         })
       } else {
         // No open assessment - check if conditions warrant offering a new one
@@ -108,6 +117,7 @@ export async function GET() {
             companyName: company.name,
             severity: 'info',
             createdAt: new Date().toISOString(),
+            source: 'computed',
           })
         }
       }
@@ -126,6 +136,7 @@ export async function GET() {
           companyName: company.name,
           severity: snapshotAge >= STALE_THRESHOLD_DAYS * 2 ? 'urgent' : 'warning',
           createdAt: latestSnapshot.createdAt.toISOString(),
+          source: 'computed',
         })
       }
 
@@ -145,8 +156,43 @@ export async function GET() {
             companyName: company.name,
             severity: 'info',
             createdAt: latestAssessment.updatedAt.toISOString(),
+            source: 'computed',
           })
         }
+      }
+    }
+
+    // Get database-stored alerts for the user
+    const dbUser = await prisma.user.findUnique({
+      where: { authId: user.id },
+    })
+
+    if (dbUser) {
+      const dbAlerts = await getUserAlerts(dbUser.id, { limit: 50 })
+
+      // Map database alerts to the unified format
+      for (const dbAlert of dbAlerts) {
+        const severityMap: Record<string, 'info' | 'warning' | 'urgent'> = {
+          'ACCESS_REQUEST': 'warning',
+          'ACCESS_GRANTED': 'info',
+          'ACCESS_DENIED': 'info',
+          'STAFF_PAUSED': 'warning',
+          'OWNERSHIP_TRANSFER': 'info',
+          'TRIAL_ENDING': 'urgent',
+          'TRIAL_EXPIRED': 'urgent',
+        }
+
+        alerts.push({
+          id: dbAlert.id,
+          type: dbAlert.type as SystemAlertType,
+          title: dbAlert.title,
+          message: dbAlert.message,
+          actionUrl: dbAlert.actionUrl,
+          severity: severityMap[dbAlert.type] || 'info',
+          isRead: dbAlert.isRead,
+          createdAt: dbAlert.createdAt.toISOString(),
+          source: 'database',
+        })
       }
     }
 
@@ -158,15 +204,52 @@ export async function GET() {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     })
 
+    const unreadCount = alerts.filter(a => a.source === 'database' && !a.isRead).length
+    const computedCount = alerts.filter(a => a.source === 'computed').length
+
     return NextResponse.json({
       alerts,
       count: alerts.length,
       urgentCount: alerts.filter(a => a.severity === 'urgent').length,
+      unreadCount: unreadCount + computedCount, // Computed alerts are always "unread"
     })
   } catch (error) {
     console.error('Error fetching alerts:', error)
     return NextResponse.json(
       { error: 'Failed to fetch alerts' },
+      { status: 500 }
+    )
+  }
+}
+
+// POST - Mark all alerts as read
+export async function POST(_request: Request) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const dbUser = await prisma.user.findUnique({
+      where: { authId: user.id },
+    })
+
+    if (!dbUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const count = await markAllAsRead(dbUser.id)
+
+    return NextResponse.json({
+      success: true,
+      markedCount: count,
+    })
+  } catch (error) {
+    console.error('Error marking alerts as read:', error)
+    return NextResponse.json(
+      { error: 'Failed to mark alerts as read' },
       { status: 500 }
     )
   }

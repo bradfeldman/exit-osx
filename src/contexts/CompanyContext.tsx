@@ -2,15 +2,23 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
+type UserCompanyRole = 'subscribing_owner' | 'owner' | 'staff'
+
 interface Company {
   id: string
   name: string
+  role?: UserCompanyRole
+  isSubscribingOwner?: boolean
+  ownershipPercent?: number
 }
 
 interface CompanyContextType {
   companies: Company[]
   selectedCompanyId: string | null
   selectedCompany: Company | null
+  selectedCompanyRole: UserCompanyRole | null
+  isSelectedCompanyOwner: boolean
+  isSelectedCompanySubscribingOwner: boolean
   setSelectedCompanyId: (id: string | null) => void
   isLoading: boolean
   refreshCompanies: () => Promise<void>
@@ -76,6 +84,9 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
   }
 
   const selectedCompany = companies.find(c => c.id === selectedCompanyId) || null
+  const selectedCompanyRole = selectedCompany?.role || null
+  const isSelectedCompanyOwner = selectedCompanyRole === 'subscribing_owner' || selectedCompanyRole === 'owner'
+  const isSelectedCompanySubscribingOwner = selectedCompanyRole === 'subscribing_owner'
 
   const refreshCompanies = async () => {
     // Preserve the current selection when refreshing
@@ -88,6 +99,9 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         companies,
         selectedCompanyId,
         selectedCompany,
+        selectedCompanyRole,
+        isSelectedCompanyOwner,
+        isSelectedCompanySubscribingOwner,
         setSelectedCompanyId,
         isLoading,
         refreshCompanies,

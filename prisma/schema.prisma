@@ -33,6 +33,7 @@ model User {
   name                     String?
   avatarUrl                String?                   @map("avatar_url")
   isSuperAdmin             Boolean                   @default(false) @map("is_super_admin")
+  userType                 UserType                  @default(SUBSCRIBER) @map("user_type")
   createdAt                DateTime                  @default(now()) @map("created_at")
   updatedAt                DateTime                  @updatedAt @map("updated_at")
   advisorProfile           AdvisorProfile?
@@ -56,6 +57,13 @@ model User {
   consents                 UserConsent[]
   sessions                 UserSession[]
   createdSnapshots         ValuationSnapshot[]
+  // Company ownership & access relations
+  companyOwnerships        CompanyOwnership[]
+  companyStaffAccess       CompanyStaffAccess[]
+  accessRequestsSubmitted  AccessRequest[]           @relation("AccessRequester")
+  accessRequestsReceived   AccessRequest[]           @relation("AccessOwner")
+  alerts                   Alert[]
+  companyInvitesSent       CompanyInvite[]           @relation("CompanyInviter")
 
   @@map("users")
 }
@@ -173,6 +181,11 @@ model Company {
   sprints            Sprint[]
   tasks              Task[]
   valuationSnapshots ValuationSnapshot[]
+  // Company ownership & access relations
+  ownerships         CompanyOwnership[]
+  staffAccess        CompanyStaffAccess[]
+  accessRequests     AccessRequest[]
+  companyInvites     CompanyInvite[]
 
   @@map("companies")
 }
@@ -1421,6 +1434,103 @@ model ProspectImportBatch {
   @@map("prospect_import_batches")
 }
 
+// ============================================
+// Company Ownership & Access Models
+// ============================================
+
+model CompanyOwnership {
+  id                 String              @id @default(cuid())
+  companyId          String              @map("company_id")
+  userId             String              @map("user_id")
+  ownershipPercent   Decimal?            @map("ownership_percent") @db.Decimal(5, 2)
+  isSubscribingOwner Boolean             @default(false) @map("is_subscribing_owner")
+  invitedById        String?             @map("invited_by_id")
+  status             CompanyMemberStatus @default(ACTIVE)
+  createdAt          DateTime            @default(now()) @map("created_at")
+  company            Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, userId])
+  @@index([userId])
+  @@map("company_ownerships")
+}
+
+model CompanyStaffAccess {
+  id                  String              @id @default(cuid())
+  companyId           String              @map("company_id")
+  userId              String              @map("user_id")
+  invitedById         String              @map("invited_by_id")
+  hasPFSAccess        Boolean             @default(false) @map("has_pfs_access")
+  hasRetirementAccess Boolean             @default(false) @map("has_retirement_access")
+  hasLoansAccess      Boolean             @default(false) @map("has_loans_access")
+  status              CompanyMemberStatus @default(ACTIVE)
+  createdAt           DateTime            @default(now()) @map("created_at")
+  company             Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, userId])
+  @@index([userId])
+  @@map("company_staff_access")
+}
+
+model AccessRequest {
+  id          String              @id @default(cuid())
+  companyId   String              @map("company_id")
+  requesterId String              @map("requester_id")
+  ownerId     String              @map("owner_id")
+  featureKey  String              @map("feature_key") // 'pfs' | 'retirement' | 'loans'
+  status      AccessRequestStatus @default(PENDING)
+  reason      String?
+  respondedAt DateTime?           @map("responded_at")
+  expiresAt   DateTime            @map("expires_at")
+  createdAt   DateTime            @default(now()) @map("created_at")
+  company     Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  requester   User                @relation("AccessRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  owner       User                @relation("AccessOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, status])
+  @@index([ownerId, status])
+  @@index([requesterId])
+  @@map("access_requests")
+}
+
+model Alert {
+  id          String    @id @default(cuid())
+  recipientId String    @map("recipient_id")
+  type        AlertType
+  title       String
+  message     String
+  actionUrl   String?   @map("action_url")
+  metadata    Json?
+  isRead      Boolean   @default(false) @map("is_read")
+  readAt      DateTime? @map("read_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  recipient   User      @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, isRead])
+  @@index([recipientId, createdAt])
+  @@map("alerts")
+}
+
+model CompanyInvite {
+  id               String            @id @default(cuid())
+  companyId        String            @map("company_id")
+  email            String
+  inviteType       CompanyInviteType @default(STAFF) @map("invite_type")
+  ownershipPercent Decimal?          @map("ownership_percent") @db.Decimal(5, 2)
+  invitedById      String            @map("invited_by_id")
+  token            String            @unique @default(cuid())
+  expiresAt        DateTime          @map("expires_at")
+  acceptedAt       DateTime?         @map("accepted_at")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  company          Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  inviter          User              @relation("CompanyInviter", fields: [invitedById], references: [id])
+
+  @@unique([companyId, email])
+  @@index([token])
+  @@map("company_invites")
+}
+
 enum UserRole {
   SUPER_ADMIN
   ADMIN
@@ -1849,4 +1959,37 @@ enum MeetingType {
   EXPERT_SESSION
   NEGOTIATION
   OTHER
+}
+
+enum UserType {
+  SUBSCRIBER
+  GUEST
+  COMPED
+}
+
+enum AccessRequestStatus {
+  PENDING
+  APPROVED
+  DENIED
+  EXPIRED
+}
+
+enum AlertType {
+  ACCESS_REQUEST
+  ACCESS_GRANTED
+  ACCESS_DENIED
+  STAFF_PAUSED
+  OWNERSHIP_TRANSFER
+  TRIAL_ENDING
+  TRIAL_EXPIRED
+}
+
+enum CompanyMemberStatus {
+  ACTIVE
+  PAUSED
+}
+
+enum CompanyInviteType {
+  STAFF
+  GUEST_OWNER
 }

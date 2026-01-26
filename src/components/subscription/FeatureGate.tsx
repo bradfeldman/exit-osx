@@ -3,6 +3,7 @@
 import { ReactNode } from 'react'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { LockedFeature } from './LockedFeature'
+import { RequestAccessFeature } from './RequestAccessFeature'
 
 interface FeatureGateProps {
   feature: string
@@ -10,6 +11,8 @@ interface FeatureGateProps {
   children: ReactNode
   fallback?: ReactNode
   showLockedState?: boolean
+  /** Custom component to show when staff should request access instead of upgrade */
+  requestAccessFallback?: ReactNode
 }
 
 /**
@@ -20,6 +23,7 @@ interface FeatureGateProps {
  * @param children - Content to render if user has access
  * @param fallback - Custom fallback to render if user lacks access (overrides default locked state)
  * @param showLockedState - Whether to show the locked state UI (default: true)
+ * @param requestAccessFallback - Custom component for staff who should request access
  *
  * @example
  * // Basic usage - shows locked state if no access
@@ -45,8 +49,9 @@ export function FeatureGate({
   children,
   fallback,
   showLockedState = true,
+  requestAccessFallback,
 }: FeatureGateProps) {
-  const { canAccessFeature, isLoading } = useSubscription()
+  const { canAccessFeature, shouldShowRequestAccess, isLoading } = useSubscription()
 
   // While loading, render nothing to avoid flashing
   if (isLoading) {
@@ -58,7 +63,23 @@ export function FeatureGate({
     return <>{children}</>
   }
 
-  // User doesn't have access - show fallback or locked state
+  // User doesn't have access - check if they should request access (staff on personal features)
+  if (shouldShowRequestAccess(feature)) {
+    if (requestAccessFallback) {
+      return <>{requestAccessFallback}</>
+    }
+    if (showLockedState) {
+      return (
+        <RequestAccessFeature
+          feature={feature}
+          featureDisplayName={featureDisplayName}
+        />
+      )
+    }
+    return null
+  }
+
+  // User should upgrade - show fallback or locked state
   if (fallback) {
     return <>{fallback}</>
   }
@@ -81,11 +102,12 @@ export function FeatureGate({
  * Hook version for more complex conditional logic
  */
 export function useFeatureAccess(feature: string) {
-  const { canAccessFeature, getUpgradeReason, isLoading } = useSubscription()
+  const { canAccessFeature, getUpgradeReason, shouldShowRequestAccess, isLoading } = useSubscription()
 
   return {
     hasAccess: canAccessFeature(feature),
     upgradeReason: getUpgradeReason(feature),
+    shouldRequestAccess: shouldShowRequestAccess(feature),
     isLoading,
   }
 }

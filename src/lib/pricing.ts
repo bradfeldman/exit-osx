@@ -193,3 +193,25 @@ export function canAddTeamMember(userPlan: PlanTier, currentCount: number): bool
   const limit = TEAM_MEMBER_LIMITS[userPlan]
   return currentCount < limit
 }
+
+/**
+ * Personal features that require owner status or explicit grant
+ * These features are tied to the individual, not just company access
+ */
+export const PERSONAL_FEATURES = ['personal-financials', 'retirement-calculator', 'business-loans'] as const
+export type PersonalFeature = typeof PERSONAL_FEATURES[number]
+
+/**
+ * Check if a feature is a personal feature
+ * Personal features require owner status or explicit staff grant
+ */
+export function isPersonalFeature(feature: string): feature is PersonalFeature {
+  return PERSONAL_FEATURES.includes(feature as PersonalFeature)
+}
+
+/**
+ * Get list of all personal feature keys
+ */
+export function getPersonalFeatures(): readonly string[] {
+  return PERSONAL_FEATURES
+}
