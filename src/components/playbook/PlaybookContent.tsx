@@ -11,17 +11,15 @@ import {
   RefreshCw,
   Loader2,
   AlertCircle,
-  ClipboardList,
   CheckCircle2,
   Clock,
   ListTodo,
-  Filter,
-  DollarSign,
-  Users,
-  Settings,
-  Target,
-  Scale,
-  User
+  TrendingDown,
+  TrendingUp,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  Target
 } from 'lucide-react'
 
 // Animation variants
@@ -40,11 +38,6 @@ const itemVariants = {
     y: 0,
     transition: { type: "spring" as const, stiffness: 100, damping: 15 }
   }
-}
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } }
 }
 
 interface TaskUser {
@@ -108,29 +101,20 @@ interface PlaybookContentProps {
   expandTaskId?: string
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  FINANCIAL: 'Financial Health',
-  TRANSFERABILITY: 'Transferability',
-  OPERATIONAL: 'Operations',
-  MARKET: 'Market Position',
-  LEGAL_TAX: 'Legal & Tax',
-  PERSONAL: 'Personal Readiness',
-}
+const BRI_CATEGORIES = [
+  { key: 'FINANCIAL', label: 'Financial', color: 'bg-blue-500' },
+  { key: 'TRANSFERABILITY', label: 'Transferability', color: 'bg-green-500' },
+  { key: 'OPERATIONAL', label: 'Operations', color: 'bg-yellow-500' },
+  { key: 'MARKET', label: 'Market', color: 'bg-purple-500' },
+  { key: 'LEGAL_TAX', label: 'Legal & Tax', color: 'bg-red-500' },
+  { key: 'PERSONAL', label: 'Personal', color: 'bg-orange-500' },
+]
 
-const CATEGORY_ICONS: Record<string, typeof DollarSign> = {
-  FINANCIAL: DollarSign,
-  TRANSFERABILITY: Users,
-  OPERATIONAL: Settings,
-  MARKET: Target,
-  LEGAL_TAX: Scale,
-  PERSONAL: User,
-}
-
-const STATUS_FILTERS = [
-  { value: '', label: 'All Tasks' },
-  { value: 'PENDING', label: 'To Do' },
-  { value: 'IN_PROGRESS', label: 'In Progress' },
-  { value: 'COMPLETED', label: 'Completed' },
+const STATUS_TABS = [
+  { value: '', label: 'All', icon: ListTodo },
+  { value: 'PENDING', label: 'To Do', icon: Target },
+  { value: 'IN_PROGRESS', label: 'In Progress', icon: Clock },
+  { value: 'COMPLETED', label: 'Done', icon: CheckCircle2 },
 ]
 
 export function PlaybookContent({ companyId, companyName, expandTaskId }: PlaybookContentProps) {
@@ -143,6 +127,7 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
   const [assignDialogOpen, setAssignDialogOpen] = useState(false)
   const [selectedTaskForAssign, setSelectedTaskForAssign] = useState<Task | null>(null)
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
 
   const loadTasks = async () => {
     try {
@@ -171,7 +156,6 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
   // Scroll to expanded task when coming from Scorecard
   useEffect(() => {
     if (expandTaskId && !loading && tasks.length > 0) {
-      // Small delay to ensure the DOM has rendered
       const timer = setTimeout(() => {
         const taskElement = document.getElementById(`task-${expandTaskId}`)
         if (taskElement) {
@@ -194,8 +178,6 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
       })
 
       if (!response.ok) throw new Error('Failed to update task')
-
-      // Reload tasks to get updated stats
       await loadTasks()
     } catch (err) {
       console.error('Error updating task:', err)
@@ -209,6 +191,9 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
       setAssignDialogOpen(true)
     }
   }
+
+  // Calculate progress percentage
+  const progressPercent = stats ? Math.round((stats.completed / Math.max(stats.inActionPlan, 1)) * 100) : 0
 
   if (loading) {
     return (
@@ -265,131 +250,211 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="space-y-6"
+      className="space-y-8"
     >
-      {/* Header */}
-      <motion.div variants={itemVariants} className="flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold font-display text-foreground tracking-tight">Action Plan</h1>
-          <p className="text-muted-foreground mt-1">{companyName}</p>
+      {/* Hero Section - The WHY */}
+      <motion.div variants={itemVariants}>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#3D3D3D] to-[#2A2A2A] p-8 md:p-10">
+          {/* Decorative elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#B87333]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#B87333]/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+
+          <div className="relative z-10">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="h-5 w-5 text-[#B87333]" />
+                  <span className="text-sm font-medium text-[#B87333] uppercase tracking-wide">Your Value-Building Playbook</span>
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold font-display text-white tracking-tight mb-3">
+                  Every Task Completed<br />
+                  <span className="text-[#B87333]">Reduces Buyer Risk</span>
+                </h1>
+                <p className="text-gray-400 max-w-xl">
+                  These tasks are personalized based on your assessment. Complete them to improve your Buyer Readiness Index and maximize your exit value.
+                </p>
+              </div>
+
+              {/* Progress Ring */}
+              {stats && stats.inActionPlan > 0 && (
+                <div className="flex-shrink-0">
+                  <div className="relative w-32 h-32 md:w-40 md:h-40">
+                    {/* Background circle */}
+                    <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                      <circle
+                        cx="60"
+                        cy="60"
+                        r="54"
+                        fill="none"
+                        stroke="rgba(255,255,255,0.1)"
+                        strokeWidth="12"
+                      />
+                      <motion.circle
+                        cx="60"
+                        cy="60"
+                        r="54"
+                        fill="none"
+                        stroke="#B87333"
+                        strokeWidth="12"
+                        strokeLinecap="round"
+                        strokeDasharray={`${2 * Math.PI * 54}`}
+                        initial={{ strokeDashoffset: 2 * Math.PI * 54 }}
+                        animate={{ strokeDashoffset: 2 * Math.PI * 54 * (1 - progressPercent / 100) }}
+                        transition={{ duration: 1.5, ease: "easeOut" }}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+                      <span className="text-3xl md:text-4xl font-bold font-display">{progressPercent}%</span>
+                      <span className="text-xs text-gray-400 uppercase tracking-wide">Complete</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Impact Stats Row */}
+            {stats && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-amber-500/20">
+                    <ListTodo className="h-5 w-5 text-amber-400" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-white">{stats.pending}</p>
+                    <p className="text-xs text-gray-400">To Do</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-blue-500/20">
+                    <Clock className="h-5 w-5 text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-white">{stats.inProgress}</p>
+                    <p className="text-xs text-gray-400">In Progress</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-emerald-500/20">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-white">{stats.completed}</p>
+                    <p className="text-xs text-gray-400">Completed</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-[#B87333]/20">
+                    <TrendingDown className="h-5 w-5 text-[#B87333]" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-white">{stats.inActionPlan}</p>
+                    <p className="text-xs text-gray-400">Total Tasks</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-        <Button
-          onClick={() => setGenerateDialogOpen(true)}
-          className="flex items-center gap-2 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Generate Action Plan
-        </Button>
       </motion.div>
 
-      {/* Stats Cards */}
-      {stats && (
-        <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 rounded-xl bg-muted/50 border border-border">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <ClipboardList className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold font-display text-foreground">{stats.inActionPlan}</p>
-                <p className="text-xs text-muted-foreground">of {stats.maxActionPlan} tasks</p>
-              </div>
-            </div>
-          </div>
-          <div className="p-4 rounded-xl bg-muted/50 border border-border">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-500/10">
-                <ListTodo className="h-5 w-5 text-amber-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold font-display text-foreground">{stats.pending}</p>
-                <p className="text-xs text-muted-foreground">To Do</p>
-              </div>
-            </div>
-          </div>
-          <div className="p-4 rounded-xl bg-muted/50 border border-border">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-500/10">
-                <Clock className="h-5 w-5 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold font-display text-foreground">{stats.inProgress}</p>
-                <p className="text-xs text-muted-foreground">In Progress</p>
-              </div>
-            </div>
-          </div>
-          <div className="p-4 rounded-xl bg-muted/50 border border-border">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-emerald-500/10">
-                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold font-display text-foreground">{stats.completed}</p>
-                <p className="text-xs text-muted-foreground">Completed</p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
+      {/* Quick Actions Bar */}
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {/* Status Tabs */}
+        <div className="flex bg-muted/50 rounded-lg p-1 gap-1">
+          {STATUS_TABS.map(tab => {
+            const Icon = tab.icon
+            const count = tab.value === '' ? tasks.length
+              : tab.value === 'PENDING' ? stats?.pending
+              : tab.value === 'IN_PROGRESS' ? stats?.inProgress
+              : stats?.completed
+            return (
+              <button
+                key={tab.value}
+                onClick={() => setStatusFilter(tab.value)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  statusFilter === tab.value
+                    ? 'bg-white dark:bg-gray-800 text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{tab.label}</span>
+                {count !== undefined && count > 0 && (
+                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                    statusFilter === tab.value ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                  }`}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
 
-      {/* Filters */}
-      <motion.div variants={itemVariants}>
-        <Card className="border-border/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">Filter Tasks</span>
-            </div>
-            <div className="flex flex-wrap gap-6">
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Status</label>
-                <div className="flex gap-2">
-                  {STATUS_FILTERS.map(filter => (
-                    <Button
-                      key={filter.value}
-                      variant={statusFilter === filter.value ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setStatusFilter(filter.value)}
-                      className={statusFilter === filter.value ? 'shadow-md' : ''}
+        {/* Actions */}
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+            className="text-muted-foreground"
+          >
+            {showFilters ? <ChevronUp className="h-4 w-4 mr-2" /> : <ChevronDown className="h-4 w-4 mr-2" />}
+            Category Filter
+          </Button>
+          <Button
+            onClick={() => setGenerateDialogOpen(true)}
+            size="sm"
+            className="shadow-md shadow-primary/20"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh Plan
+          </Button>
+        </div>
+      </motion.div>
+
+      {/* Category Filter (Collapsible) */}
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Card className="border-border/50">
+              <CardContent className="pt-4 pb-4">
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setCategoryFilter('')}
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                      categoryFilter === ''
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                    }`}
+                  >
+                    All Categories
+                  </button>
+                  {BRI_CATEGORIES.map(cat => (
+                    <button
+                      key={cat.key}
+                      onClick={() => setCategoryFilter(cat.key)}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                        categoryFilter === cat.key
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                      }`}
                     >
-                      {filter.label}
-                    </Button>
+                      <div className={`w-2 h-2 rounded-full ${cat.color}`} />
+                      {cat.label}
+                    </button>
                   ))}
                 </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Category</label>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant={categoryFilter === '' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setCategoryFilter('')}
-                    className={categoryFilter === '' ? 'shadow-md' : ''}
-                  >
-                    All
-                  </Button>
-                  {Object.entries(CATEGORY_LABELS).map(([value, label]) => {
-                    const Icon = CATEGORY_ICONS[value]
-                    return (
-                      <Button
-                        key={value}
-                        variant={categoryFilter === value ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setCategoryFilter(value)}
-                        className={categoryFilter === value ? 'shadow-md' : ''}
-                      >
-                        {Icon && <Icon className="h-3.5 w-3.5 mr-1.5" />}
-                        {label}
-                      </Button>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Task List */}
       <AnimatePresence mode="wait">
@@ -402,24 +467,25 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
           >
             <Card className="border-dashed border-2">
               <CardContent className="py-16 text-center">
-                <div className="w-16 h-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
-                  <ClipboardList className="h-8 w-8 text-muted-foreground" />
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 mx-auto mb-6 flex items-center justify-center">
+                  <TrendingUp className="h-10 w-10 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {statusFilter || categoryFilter ? 'No matching tasks' : 'No action plan yet'}
+                <h3 className="text-xl font-semibold text-foreground mb-2">
+                  {statusFilter || categoryFilter ? 'No matching tasks' : 'Ready to Build Value?'}
                 </h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
+                <p className="text-muted-foreground max-w-md mx-auto mb-6">
                   {statusFilter || categoryFilter
                     ? 'Try adjusting your filters to see more tasks.'
-                    : 'Complete the BRI assessment to generate your personalized action plan with prioritized tasks.'}
+                    : 'Generate your personalized action plan based on your assessment. Each task is designed to reduce buyer risk and increase your exit value.'}
                 </p>
                 {!statusFilter && !categoryFilter && (
                   <Button
                     onClick={() => setGenerateDialogOpen(true)}
-                    className="mt-6"
+                    size="lg"
+                    className="shadow-lg shadow-primary/20"
                   >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Generate Action Plan
+                    <Sparkles className="h-5 w-5 mr-2" />
+                    Generate My Action Plan
                   </Button>
                 )}
               </CardContent>
@@ -431,8 +497,17 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="space-y-4"
+            className="space-y-3"
           >
+            {/* Section Header */}
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-muted-foreground">
+                {tasks.length} task{tasks.length !== 1 ? 's' : ''}
+                {statusFilter && ` \u2022 ${STATUS_TABS.find(t => t.value === statusFilter)?.label}`}
+                {categoryFilter && ` \u2022 ${BRI_CATEGORIES.find(c => c.key === categoryFilter)?.label}`}
+              </p>
+            </div>
+
             {tasks.map((task, index) => (
               <motion.div
                 key={task.id}

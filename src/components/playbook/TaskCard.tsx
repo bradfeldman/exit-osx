@@ -2,15 +2,17 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { TaskCompletionDialog } from './TaskCompletionDialog'
 import { TaskUploadDialog } from './TaskUploadDialog'
-import { FileText, ChevronDown, ChevronRight, Target, AlertTriangle, CheckCircle2, ListChecks, FileOutput, TrendingUp, Upload, Check } from 'lucide-react'
+import {
+  FileText, ChevronDown, Target, AlertTriangle, CheckCircle2,
+  ListChecks, FileOutput, TrendingUp, Upload, Check, Clock,
+  User, AlertCircle, Zap, Shield, Play, Pause, XCircle
+} from 'lucide-react'
 import { type RichTaskDescription, hasRichDescription } from '@/lib/playbook/rich-task-description'
-// TERM-001 FIX: Use shared constants for consistent terminology
 import { getBRICategoryLabel, getBRICategoryColor } from '@/lib/constants/bri-categories'
 
 interface ProofDocument {
@@ -60,63 +62,111 @@ interface Task {
 
 interface TaskCardProps {
   task: Task
-  // TASK-001 FIX: Extended extra parameter to include completionNotes
   onStatusChange: (taskId: string, status: string, extra?: { blockedReason?: string; completionNotes?: string }) => void
   onAssign?: (taskId: string) => void
-  onTaskUpdate?: () => void  // Called when task data changes (e.g., after upload)
+  onTaskUpdate?: () => void
   showAssignment?: boolean
   defaultExpanded?: boolean
 }
 
-// TERM-001 FIX: Removed local category definitions - now using shared constants from @/lib/constants/bri-categories
-
-function getEffortLevel(effort: string): string {
+function getEffortBadge(effort: string): { label: string; color: string } {
   switch (effort) {
     case 'MINIMAL':
     case 'LOW':
-      return 'Low Effort'
+      return { label: 'Quick Win', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' }
     case 'MODERATE':
-      return 'Mid Effort'
+      return { label: 'Medium Effort', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' }
     case 'HIGH':
     case 'MAJOR':
-      return 'High Effort'
+      return { label: 'Major Project', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' }
     default:
-      return 'Mid Effort'
+      return { label: 'Medium Effort', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' }
   }
 }
 
-function getImpactLevel(issueTier: string | null | undefined): string {
+function getImpactInfo(issueTier: string | null | undefined): { label: string; icon: typeof Zap; color: string; bgColor: string } {
   switch (issueTier) {
     case 'CRITICAL':
-      return 'Critical'
+      return {
+        label: 'Critical Risk',
+        icon: AlertCircle,
+        color: 'text-red-600 dark:text-red-400',
+        bgColor: 'bg-red-50 dark:bg-red-900/20'
+      }
     case 'SIGNIFICANT':
-      return 'Significant'
-    case 'OPTIMIZATION':
+      return {
+        label: 'High Impact',
+        icon: Zap,
+        color: 'text-orange-600 dark:text-orange-400',
+        bgColor: 'bg-orange-50 dark:bg-orange-900/20'
+      }
     default:
-      return 'Optimization'
+      return {
+        label: 'Optimization',
+        icon: TrendingUp,
+        color: 'text-blue-600 dark:text-blue-400',
+        bgColor: 'bg-blue-50 dark:bg-blue-900/20'
+      }
   }
 }
 
-function getImpactEffortColor(effort: string, issueTier: string | null | undefined): string {
-  const isLowEffort = effort === 'MINIMAL' || effort === 'LOW'
-  const isHighEffort = effort === 'HIGH' || effort === 'MAJOR'
-
-  // Critical issues always get red tones
-  if (issueTier === 'CRITICAL') {
-    if (isLowEffort) return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' // Quick win on critical issue
-    return 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+function getStatusConfig(status: string): {
+  label: string;
+  icon: typeof CheckCircle2;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+} {
+  switch (status) {
+    case 'COMPLETED':
+      return {
+        label: 'Completed',
+        icon: CheckCircle2,
+        color: 'text-green-600 dark:text-green-400',
+        bgColor: 'bg-green-50 dark:bg-green-900/20',
+        borderColor: 'border-green-200 dark:border-green-800'
+      }
+    case 'IN_PROGRESS':
+      return {
+        label: 'In Progress',
+        icon: Play,
+        color: 'text-blue-600 dark:text-blue-400',
+        bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+        borderColor: 'border-blue-200 dark:border-blue-800'
+      }
+    case 'BLOCKED':
+      return {
+        label: 'Blocked',
+        icon: Pause,
+        color: 'text-red-600 dark:text-red-400',
+        bgColor: 'bg-red-50 dark:bg-red-900/20',
+        borderColor: 'border-red-200 dark:border-red-800'
+      }
+    case 'DEFERRED':
+      return {
+        label: 'Deferred',
+        icon: Clock,
+        color: 'text-yellow-600 dark:text-yellow-400',
+        bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
+        borderColor: 'border-yellow-200 dark:border-yellow-800'
+      }
+    case 'NOT_APPLICABLE':
+      return {
+        label: 'Not Applicable',
+        icon: XCircle,
+        color: 'text-gray-500 dark:text-gray-400',
+        bgColor: 'bg-gray-50 dark:bg-gray-900/20',
+        borderColor: 'border-gray-200 dark:border-gray-700'
+      }
+    default:
+      return {
+        label: 'To Do',
+        icon: Target,
+        color: 'text-gray-600 dark:text-gray-400',
+        bgColor: 'bg-gray-50 dark:bg-gray-900/20',
+        borderColor: 'border-gray-200 dark:border-gray-700'
+      }
   }
-
-  // Significant issues get orange/yellow tones
-  if (issueTier === 'SIGNIFICANT') {
-    if (isLowEffort) return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' // Quick win on significant issue
-    return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-  }
-
-  // Optimization issues get blue/green tones
-  if (isLowEffort) return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-  if (isHighEffort) return 'bg-muted text-muted-foreground'
-  return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
 }
 
 const ACTION_TYPE_LABELS: Record<string, string> = {
@@ -132,14 +182,6 @@ const ACTION_TYPE_LABELS: Record<string, string> = {
   TYPE_X_DEFER: 'Defer',
 }
 
-// UI-002 FIX: Add complexity labels for user-friendly display
-const COMPLEXITY_LABELS: Record<string, string> = {
-  SIMPLE: 'Simple',
-  MODERATE: 'Moderate',
-  COMPLEX: 'Complex',
-  STRATEGIC: 'Strategic',
-}
-
 function getInitials(name: string | null, email: string): string {
   if (name) {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -147,21 +189,20 @@ function getInitials(name: string | null, email: string): string {
   return email[0].toUpperCase()
 }
 
-function formatDueDate(dateStr: string): { text: string; className: string } {
+function formatDueDate(dateStr: string): { text: string; isOverdue: boolean; isUrgent: boolean } {
   const date = new Date(dateStr)
   const now = new Date()
   const diffDays = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-
   const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 
   if (diffDays < 0) {
-    return { text: `Overdue (${formatted})`, className: 'text-destructive' }
+    return { text: `Overdue`, isOverdue: true, isUrgent: false }
   } else if (diffDays === 0) {
-    return { text: 'Due today', className: 'text-orange-600 dark:text-orange-400' }
+    return { text: 'Due today', isOverdue: false, isUrgent: true }
   } else if (diffDays <= 3) {
-    return { text: `Due ${formatted}`, className: 'text-yellow-600 dark:text-yellow-400' }
+    return { text: `Due ${formatted}`, isOverdue: false, isUrgent: true }
   }
-  return { text: `Due ${formatted}`, className: 'text-muted-foreground' }
+  return { text: `Due ${formatted}`, isOverdue: false, isUrgent: false }
 }
 
 /**
@@ -188,8 +229,8 @@ function RichDescriptionSection({
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center gap-3 px-4 py-3 bg-muted/50 hover:bg-muted transition-colors text-left"
       >
-        <Icon className={`h-5 w-5 flex-shrink-0 ${iconColor}`} />
-        <span className="font-medium text-foreground flex-1">{title}</span>
+        <Icon className={`h-4 w-4 flex-shrink-0 ${iconColor}`} />
+        <span className="text-sm font-medium text-foreground flex-1">{title}</span>
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
@@ -206,7 +247,7 @@ function RichDescriptionSection({
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-4 py-3 bg-background">
+            <div className="px-4 py-3 bg-background text-sm">
               {children}
             </div>
           </motion.div>
@@ -221,50 +262,50 @@ function RichDescriptionSection({
  */
 function RichDescriptionView({ richDescription }: { richDescription: RichTaskDescription }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Why This Applies */}
       <RichDescriptionSection
-        title="Why This Applies to Your Business"
+        title="Why This Applies"
         icon={Target}
         iconColor="text-blue-600 dark:text-blue-400"
         defaultOpen={true}
       >
-        <p className="text-sm text-foreground/80 whitespace-pre-line leading-relaxed">
+        <p className="text-foreground/80 whitespace-pre-line leading-relaxed">
           {richDescription.whyThisApplies}
         </p>
       </RichDescriptionSection>
 
       {/* Buyer Risk */}
       <RichDescriptionSection
-        title="Why This Is a Buyer Risk"
+        title="Buyer Risk"
         icon={AlertTriangle}
         iconColor="text-amber-600 dark:text-amber-400"
       >
         <div className="space-y-3">
-          <p className="text-sm text-foreground font-medium italic">
+          <p className="text-foreground font-medium italic">
             &quot;{richDescription.buyerRisk.mainQuestion}&quot;
           </p>
-          <p className="text-sm text-muted-foreground">If the answer is unclear, buyers price in risk by:</p>
+          <p className="text-muted-foreground">If unclear, buyers may:</p>
           <ul className="list-disc pl-5 space-y-1">
             {richDescription.buyerRisk.consequences.map((consequence, i) => (
-              <li key={i} className="text-sm text-foreground/80">{consequence}</li>
+              <li key={i} className="text-foreground/80">{consequence}</li>
             ))}
           </ul>
-          <p className="text-sm text-foreground/80 mt-2">{richDescription.buyerRisk.conclusion}</p>
+          <p className="text-foreground/80 mt-2">{richDescription.buyerRisk.conclusion}</p>
         </div>
       </RichDescriptionSection>
 
       {/* Success Criteria */}
       <RichDescriptionSection
-        title="What Success Looks Like"
+        title="Success Criteria"
         icon={CheckCircle2}
         iconColor="text-green-600 dark:text-green-400"
       >
         <div className="space-y-2">
-          <p className="text-sm text-foreground/80">{richDescription.successCriteria.overview}</p>
+          <p className="text-foreground/80">{richDescription.successCriteria.overview}</p>
           <ul className="list-disc pl-5 space-y-1">
             {richDescription.successCriteria.outcomes.map((outcome, i) => (
-              <li key={i} className="text-sm text-foreground/80">{outcome}</li>
+              <li key={i} className="text-foreground/80">{outcome}</li>
             ))}
           </ul>
         </div>
@@ -272,19 +313,19 @@ function RichDescriptionView({ richDescription }: { richDescription: RichTaskDes
 
       {/* Sub-Tasks */}
       <RichDescriptionSection
-        title="What Should Be Addressed"
+        title="Steps to Complete"
         icon={ListChecks}
         iconColor="text-purple-600 dark:text-purple-400"
       >
         <div className="space-y-4">
           {richDescription.subTasks.map((subTask, i) => (
             <div key={i}>
-              <h4 className="text-sm font-semibold text-foreground mb-2">
+              <h4 className="font-semibold text-foreground mb-2">
                 {i + 1}. {subTask.title}
               </h4>
               <ul className="list-disc pl-5 space-y-1">
                 {subTask.items.map((item, j) => (
-                  <li key={j} className="text-sm text-foreground/80">{item}</li>
+                  <li key={j} className="text-foreground/80">{item}</li>
                 ))}
               </ul>
             </div>
@@ -294,32 +335,32 @@ function RichDescriptionView({ richDescription }: { richDescription: RichTaskDes
 
       {/* Output Format */}
       <RichDescriptionSection
-        title="Required Output Format"
+        title="Required Output"
         icon={FileOutput}
         iconColor="text-indigo-600 dark:text-indigo-400"
       >
         <div className="space-y-2">
-          <p className="text-sm text-foreground/80">{richDescription.outputFormat.description}</p>
+          <p className="text-foreground/80">{richDescription.outputFormat.description}</p>
           <ul className="list-disc pl-5 space-y-1">
             {richDescription.outputFormat.formats.map((format, i) => (
-              <li key={i} className="text-sm text-foreground/80">{format}</li>
+              <li key={i} className="text-foreground/80">{format}</li>
             ))}
           </ul>
-          <p className="text-sm text-muted-foreground italic mt-2">{richDescription.outputFormat.guidance}</p>
+          <p className="text-muted-foreground italic mt-2">{richDescription.outputFormat.guidance}</p>
         </div>
       </RichDescriptionSection>
 
       {/* Exit Impact */}
       <RichDescriptionSection
-        title="How This Impacts Exit Outcomes"
+        title="Exit Impact"
         icon={TrendingUp}
         iconColor="text-emerald-600 dark:text-emerald-400"
       >
         <div className="space-y-2">
-          <p className="text-sm text-foreground/80">{richDescription.exitImpact.overview}</p>
+          <p className="text-foreground/80">{richDescription.exitImpact.overview}</p>
           <ul className="list-disc pl-5 space-y-1">
             {richDescription.exitImpact.benefits.map((benefit, i) => (
-              <li key={i} className="text-sm text-foreground/80">{benefit}</li>
+              <li key={i} className="text-foreground/80">{benefit}</li>
             ))}
           </ul>
         </div>
@@ -336,13 +377,19 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
   const [showUploadDialog, setShowUploadDialog] = useState(false)
   const [blockedReason, setBlockedReason] = useState('')
 
+  const statusConfig = getStatusConfig(task.status)
+  const impactInfo = getImpactInfo(task.issueTier)
+  const effortBadge = getEffortBadge(task.effortLevel)
+  const ImpactIcon = impactInfo.icon
+  const StatusIcon = statusConfig.icon
+  const isCompleted = task.status === 'COMPLETED'
+  const isBlocked = task.status === 'BLOCKED'
+
   const handleStatusChange = async (newStatus: string) => {
-    // Show completion dialog when completing a task
     if (newStatus === 'COMPLETED' && task.status !== 'COMPLETED') {
       setShowCompletionDialog(true)
       return
     }
-    // Show blocked dialog when blocking a task
     if (newStatus === 'BLOCKED' && task.status !== 'BLOCKED') {
       setShowBlockedDialog(true)
       return
@@ -361,364 +408,404 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
     setIsUpdating(false)
   }
 
-  // TASK-001 FIX: Actually pass completionNotes through to the handler
   const handleComplete = async (taskId: string, completionNotes?: string) => {
     setIsUpdating(true)
-    // Pass completion notes via the onStatusChange handler
     await onStatusChange(taskId, 'COMPLETED', completionNotes ? { completionNotes } : undefined)
     setIsUpdating(false)
   }
 
-  const statusBorder = {
-    PENDING: 'border-l-muted-foreground/30',
-    IN_PROGRESS: 'border-l-primary',
-    COMPLETED: 'border-l-green-500',
-    DEFERRED: 'border-l-yellow-500',
-    BLOCKED: 'border-l-red-500',
-    CANCELLED: 'border-l-muted-foreground/50',
-  }[task.status] || 'border-l-muted-foreground/30'
-
   return (
-    <Card className={`border-l-4 ${statusBorder} ${task.status === 'COMPLETED' ? 'opacity-75' : ''} hover:shadow-md transition-shadow`}>
-      <CardContent className="pt-4">
-        <div className="flex items-start gap-4">
-          {/* Checkbox */}
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`group relative rounded-xl border bg-card transition-all duration-200 ${
+        isCompleted
+          ? 'border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/10'
+          : isBlocked
+            ? 'border-red-200 dark:border-red-800'
+            : 'border-border hover:border-[#B87333]/30 hover:shadow-lg'
+      }`}
+    >
+      {/* Main Card Content */}
+      <div className="p-5">
+        <div className="flex gap-4">
+          {/* Completion Checkbox - Made more prominent */}
           <motion.button
             whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => handleStatusChange(task.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED')}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => handleStatusChange(isCompleted ? 'PENDING' : 'COMPLETED')}
             disabled={isUpdating}
-            className={`flex-shrink-0 w-6 h-6 mt-0.5 rounded border-2 transition-colors flex items-center justify-center ${
-              task.status === 'COMPLETED'
-                ? 'bg-green-500 border-green-500 text-white'
-                : 'border-border hover:border-green-500'
+            className={`flex-shrink-0 w-7 h-7 mt-0.5 rounded-full border-2 transition-all duration-200 flex items-center justify-center ${
+              isCompleted
+                ? 'bg-green-500 border-green-500 text-white shadow-md'
+                : 'border-gray-300 dark:border-gray-600 hover:border-[#B87333] hover:bg-[#B87333]/5'
             } ${isUpdating ? 'opacity-50' : ''}`}
           >
-            {task.status === 'COMPLETED' && (
-              <Check className="h-4 w-4" strokeWidth={3} />
+            {isCompleted && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              >
+                <Check className="h-4 w-4" strokeWidth={3} />
+              </motion.div>
             )}
           </motion.button>
 
-          {/* Content */}
+          {/* Content Area */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className={`font-medium text-foreground ${task.status === 'COMPLETED' ? 'line-through text-muted-foreground' : ''}`}>
-                  {task.title}
-                </h3>
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <span className={`px-2 py-0.5 text-xs font-medium rounded ${getBRICategoryColor(task.briCategory)}`}>
-                    {getBRICategoryLabel(task.briCategory, true)}
-                  </span>
-                  <span className={`px-2 py-0.5 text-xs font-medium rounded ${getImpactEffortColor(task.effortLevel, task.issueTier)}`}>
-                    {getImpactLevel(task.issueTier)} / {getEffortLevel(task.effortLevel)}
-                  </span>
-                  {task.status === 'BLOCKED' && (
-                    <span className="px-2 py-0.5 text-xs font-medium rounded bg-red-100 text-red-700 flex items-center gap-1">
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                      Blocked
-                    </span>
-                  )}
-                </div>
-
-                {/* Mobile: Assignment & Due Date - shown below tags on small screens */}
-                {showAssignment && (
-                  <div className="flex sm:hidden flex-wrap items-center gap-3 mt-3 text-sm">
-                    {/* Due Date */}
-                    {task.dueDate && (
-                      <div className={`flex items-center gap-1 ${formatDueDate(task.dueDate).className}`}>
-                        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span className="text-xs">{formatDueDate(task.dueDate).text}</span>
-                      </div>
-                    )}
-
-                    {/* Primary Assignee */}
-                    {task.primaryAssignee ? (
-                      <div className="flex items-center gap-1.5" title={task.primaryAssignee.email}>
-                        {task.primaryAssignee.avatarUrl ? (
-                          <img
-                            src={task.primaryAssignee.avatarUrl}
-                            alt={task.primaryAssignee.name || task.primaryAssignee.email}
-                            className="w-5 h-5 rounded-full flex-shrink-0"
-                          />
-                        ) : (
-                          <div className="w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] flex items-center justify-center font-medium flex-shrink-0">
-                            {getInitials(task.primaryAssignee.name, task.primaryAssignee.email)}
-                          </div>
-                        )}
-                        <span className="text-xs text-muted-foreground">
-                          {task.primaryAssignee.name || task.primaryAssignee.email.split('@')[0]}
-                        </span>
-                      </div>
-                    ) : task.invites && task.invites.length > 0 ? (
-                      <div className="flex items-center gap-1 text-xs text-yellow-600 dark:text-yellow-400" title="Pending invite">
-                        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>Invite pending</span>
-                      </div>
-                    ) : onAssign ? (
-                      <button
-                        onClick={() => onAssign(task.id)}
-                        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
-                      >
-                        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                        </svg>
-                        <span>Assign</span>
-                      </button>
-                    ) : null}
-                  </div>
-                )}
+            {/* Top Row: Impact indicator + Category */}
+            <div className="flex items-center gap-2 mb-2">
+              <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${impactInfo.bgColor} ${impactInfo.color}`}>
+                <ImpactIcon className="h-3 w-3" />
+                {impactInfo.label}
               </div>
+              <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getBRICategoryColor(task.briCategory)}`}>
+                {getBRICategoryLabel(task.briCategory, true)}
+              </span>
+            </div>
 
-              {/* Assignment & Due Date - Right side (hidden on mobile, shown below title) */}
+            {/* Title */}
+            <h3 className={`text-base font-semibold mb-2 leading-tight ${
+              isCompleted
+                ? 'text-muted-foreground line-through'
+                : 'text-foreground'
+            }`}>
+              {task.title}
+            </h3>
+
+            {/* Meta Row: Effort, Status, Due Date, Assignee */}
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              {/* Effort Badge */}
+              <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${effortBadge.color}`}>
+                {effortBadge.label}
+              </span>
+
+              {/* Status Badge (if not pending) */}
+              {task.status !== 'PENDING' && (
+                <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${statusConfig.bgColor} ${statusConfig.color}`}>
+                  <StatusIcon className="h-3 w-3" />
+                  {statusConfig.label}
+                </div>
+              )}
+
+              {/* Due Date */}
+              {task.dueDate && (
+                <div className={`inline-flex items-center gap-1 text-xs ${
+                  formatDueDate(task.dueDate).isOverdue
+                    ? 'text-red-600 dark:text-red-400 font-medium'
+                    : formatDueDate(task.dueDate).isUrgent
+                      ? 'text-orange-600 dark:text-orange-400'
+                      : 'text-muted-foreground'
+                }`}>
+                  <Clock className="h-3 w-3" />
+                  {formatDueDate(task.dueDate).text}
+                </div>
+              )}
+
+              {/* Assignee */}
               {showAssignment && (
-                <div className="hidden sm:flex flex-col items-end gap-2 text-sm flex-shrink-0">
-                  {/* Due Date */}
-                  {task.dueDate && (
-                    <div className={`flex items-center gap-1 whitespace-nowrap ${formatDueDate(task.dueDate).className}`}>
-                      <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span className="text-xs">{formatDueDate(task.dueDate).text}</span>
-                    </div>
-                  )}
-
-                  {/* Primary Assignee */}
+                <>
                   {task.primaryAssignee ? (
-                    <div className="flex items-center gap-2" title={task.primaryAssignee.email}>
+                    <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                       {task.primaryAssignee.avatarUrl ? (
                         <img
                           src={task.primaryAssignee.avatarUrl}
                           alt={task.primaryAssignee.name || task.primaryAssignee.email}
-                          className="w-6 h-6 rounded-full flex-shrink-0"
+                          className="w-4 h-4 rounded-full"
                         />
                       ) : (
-                        <div className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center font-medium flex-shrink-0">
+                        <div className="w-4 h-4 rounded-full bg-[#B87333]/10 text-[#B87333] text-[10px] flex items-center justify-center font-medium">
                           {getInitials(task.primaryAssignee.name, task.primaryAssignee.email)}
                         </div>
                       )}
-                      <span className="text-xs text-muted-foreground truncate max-w-[120px]">
+                      <span className="truncate max-w-[80px]">
                         {task.primaryAssignee.name || task.primaryAssignee.email.split('@')[0]}
                       </span>
                     </div>
                   ) : task.invites && task.invites.length > 0 ? (
-                    <div className="flex items-center gap-1 text-xs text-yellow-600 dark:text-yellow-400 whitespace-nowrap" title="Pending invite">
-                      <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span>Invite pending</span>
+                    <div className="inline-flex items-center gap-1 text-xs text-yellow-600 dark:text-yellow-400">
+                      <Clock className="h-3 w-3" />
+                      Invite pending
                     </div>
                   ) : onAssign ? (
                     <button
-                      onClick={() => onAssign(task.id)}
-                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
+                      onClick={(e) => { e.stopPropagation(); onAssign(task.id) }}
+                      className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-[#B87333] transition-colors"
                     >
-                      <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                      </svg>
-                      <span>Assign</span>
+                      <User className="h-3 w-3" />
+                      Assign
                     </button>
                   ) : null}
-                </div>
+                </>
               )}
             </div>
 
-            {/* Expandable Description */}
+            {/* Blocked Reason Preview */}
+            {isBlocked && task.blockedReason && (
+              <div className="mt-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-red-700 dark:text-red-400">Blocked</p>
+                    <p className="text-sm text-red-600 dark:text-red-300">{task.blockedReason}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Expand/Collapse Button */}
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="mt-3 text-sm text-primary hover:text-primary/80"
+              className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#B87333] hover:text-[#A36429] transition-colors"
             >
-              {isExpanded ? 'Show less' : 'Show details'}
-            </button>
-
-            <AnimatePresence>
-              {isExpanded && (
+              {isExpanded ? 'Hide details' : 'View details'}
               <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
+                animate={{ rotate: isExpanded ? 180 : 0 }}
                 transition={{ duration: 0.2 }}
-                className="mt-3 overflow-hidden"
               >
-                {/* Rich Description Display */}
-                {hasRichDescription(task.richDescription) ? (
-                  <RichDescriptionView richDescription={task.richDescription} />
-                ) : (
-                  <div className="p-3 bg-muted/50 rounded-lg">
-                    <p className="text-sm text-foreground/80">{task.description}</p>
-                  </div>
-                )}
+                <ChevronDown className="h-4 w-4" />
+              </motion.div>
+            </button>
+          </div>
 
-                <div className="mt-3 p-3 bg-muted/50 rounded-lg">
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span>Type: {ACTION_TYPE_LABELS[task.actionType] || task.actionType}</span>
-                    <span>Complexity: {COMPLEXITY_LABELS[task.complexity] || task.complexity}</span>
-                  </div>
+          {/* Right Side: Quick Action Button */}
+          {!isCompleted && task.status !== 'NOT_APPLICABLE' && (
+            <div className="flex-shrink-0 hidden sm:block">
+              {task.status === 'PENDING' && (
+                <Button
+                  size="sm"
+                  onClick={() => handleStatusChange('IN_PROGRESS')}
+                  disabled={isUpdating}
+                  className="bg-[#B87333] hover:bg-[#A36429] text-white"
+                >
+                  <Play className="h-3.5 w-3.5 mr-1.5" />
+                  Start
+                </Button>
+              )}
+              {task.status === 'IN_PROGRESS' && (
+                <Button
+                  size="sm"
+                  onClick={() => handleStatusChange('COMPLETED')}
+                  disabled={isUpdating}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Check className="h-3.5 w-3.5 mr-1.5" />
+                  Complete
+                </Button>
+              )}
+              {task.status === 'BLOCKED' && (
+                <Button
+                  size="sm"
+                  onClick={() => handleStatusChange('IN_PROGRESS')}
+                  disabled={isUpdating}
+                  variant="outline"
+                >
+                  <Play className="h-3.5 w-3.5 mr-1.5" />
+                  Resume
+                </Button>
+              )}
+              {task.status === 'DEFERRED' && (
+                <Button
+                  size="sm"
+                  onClick={() => handleStatusChange('IN_PROGRESS')}
+                  disabled={isUpdating}
+                  variant="outline"
+                >
+                  <Play className="h-3.5 w-3.5 mr-1.5" />
+                  Resume
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
-                  {/* Blocked Reason Display */}
-                  {task.status === 'BLOCKED' && task.blockedReason && (
-                    <div className="mt-4 p-3 bg-red-50 rounded border border-red-200">
-                      <p className="text-xs font-medium text-red-700 mb-1">Blocked Reason</p>
-                      <p className="text-sm text-red-800">{task.blockedReason}</p>
-                      {task.blockedAt && (
-                        <p className="text-xs text-red-600 mt-1">
-                          Blocked on {new Date(task.blockedAt).toLocaleDateString()}
-                        </p>
-                      )}
-                    </div>
-                  )}
+      {/* Expanded Details Section */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden border-t border-border"
+          >
+            <div className="p-5 space-y-4 bg-muted/30">
+              {/* Rich Description or Basic Description */}
+              {hasRichDescription(task.richDescription) ? (
+                <RichDescriptionView richDescription={task.richDescription} />
+              ) : (
+                <div className="p-4 bg-background rounded-lg border border-border">
+                  <p className="text-sm text-foreground/80 leading-relaxed">{task.description}</p>
+                </div>
+              )}
 
-                  {/* Upload Proof Document */}
-                  {task.status !== 'COMPLETED' && (
-                    <div className="mt-4">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setShowUploadDialog(true)}
-                        className="flex items-center gap-2"
-                      >
-                        <Upload className="h-4 w-4" />
-                        Upload Document
-                      </Button>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Upload supporting documents for this task
-                      </p>
-                    </div>
-                  )}
+              {/* Task Details Grid */}
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="p-3 bg-background rounded-lg border border-border">
+                  <p className="text-xs text-muted-foreground mb-1">Action Type</p>
+                  <p className="font-medium text-foreground">{ACTION_TYPE_LABELS[task.actionType] || task.actionType}</p>
+                </div>
+                <div className="p-3 bg-background rounded-lg border border-border">
+                  <p className="text-xs text-muted-foreground mb-1">Complexity</p>
+                  <p className="font-medium text-foreground capitalize">{task.complexity.toLowerCase()}</p>
+                </div>
+              </div>
 
-                  {/* Uploaded Proof Documents */}
-                  {task.proofDocuments && task.proofDocuments.length > 0 && (
-                    <div className={`mt-4 p-3 rounded border ${
-                      task.status === 'COMPLETED'
-                        ? 'bg-green-50 border-green-200'
-                        : 'bg-blue-50 border-blue-200'
-                    }`}>
-                      <p className={`text-xs font-medium mb-2 ${
-                        task.status === 'COMPLETED' ? 'text-green-700' : 'text-blue-700'
-                      }`}>
-                        {task.status === 'COMPLETED' ? 'Proof of Completion' : 'Uploaded Documents'}
-                      </p>
-                      <div className="space-y-1">
-                        {task.proofDocuments.map(doc => (
-                          <button
-                            key={doc.id}
-                            onClick={async () => {
-                              // Fetch signed URL and open in new tab
-                              try {
-                                const response = await fetch(`/api/tasks/${task.id}/proof`)
-                                if (response.ok) {
-                                  const data = await response.json()
-                                  const docWithUrl = data.proofDocuments?.find((d: { id: string; signedUrl?: string }) => d.id === doc.id)
-                                  if (docWithUrl?.signedUrl) {
-                                    window.open(docWithUrl.signedUrl, '_blank')
-                                  }
-                                }
-                              } catch (err) {
-                                console.error('Error fetching document URL:', err)
+              {/* Upload Section */}
+              {!isCompleted && (
+                <div className="flex items-center gap-3">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowUploadDialog(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <Upload className="h-4 w-4" />
+                    Upload Document
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Attach supporting documents for this task
+                  </p>
+                </div>
+              )}
+
+              {/* Uploaded Documents */}
+              {task.proofDocuments && task.proofDocuments.length > 0 && (
+                <div className={`p-4 rounded-lg border ${
+                  isCompleted
+                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                    : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                }`}>
+                  <p className={`text-xs font-semibold mb-2 uppercase tracking-wide ${
+                    isCompleted ? 'text-green-700 dark:text-green-400' : 'text-blue-700 dark:text-blue-400'
+                  }`}>
+                    {isCompleted ? 'Proof of Completion' : 'Attached Documents'}
+                  </p>
+                  <div className="space-y-2">
+                    {task.proofDocuments.map(doc => (
+                      <button
+                        key={doc.id}
+                        onClick={async () => {
+                          try {
+                            const response = await fetch(`/api/tasks/${task.id}/proof`)
+                            if (response.ok) {
+                              const data = await response.json()
+                              const docWithUrl = data.proofDocuments?.find((d: { id: string; signedUrl?: string }) => d.id === doc.id)
+                              if (docWithUrl?.signedUrl) {
+                                window.open(docWithUrl.signedUrl, '_blank')
                               }
-                            }}
-                            className={`flex items-center gap-2 text-sm hover:opacity-80 ${
-                              task.status === 'COMPLETED' ? 'text-green-700' : 'text-blue-700'
-                            }`}
-                          >
-                            <FileText className="h-4 w-4" />
-                            <span className="underline">{doc.fileName || 'View document'}</span>
-                          </button>
-                        ))}
-                      </div>
-                      {task.completionNotes && (
-                        <p className="mt-2 text-xs text-gray-600 italic">
-                          Notes: {task.completionNotes}
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Status Actions */}
-                  {task.status !== 'COMPLETED' && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {task.status === 'PENDING' && (
-                        <Button
-                          size="sm"
-                          onClick={() => handleStatusChange('IN_PROGRESS')}
-                          disabled={isUpdating}
-                        >
-                          Start Working
-                        </Button>
-                      )}
-                      {task.status === 'IN_PROGRESS' && (
-                        <Button
-                          size="sm"
-                          onClick={() => handleStatusChange('COMPLETED')}
-                          disabled={isUpdating}
-                        >
-                          Mark Complete
-                        </Button>
-                      )}
-                      {task.status === 'BLOCKED' && (
-                        <Button
-                          size="sm"
-                          onClick={() => handleStatusChange('IN_PROGRESS')}
-                          disabled={isUpdating}
-                        >
-                          Resume Working
-                        </Button>
-                      )}
-                      {(task.status === 'IN_PROGRESS' || task.status === 'PENDING') && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-red-600 border-red-200 hover:bg-red-50"
-                          onClick={() => handleStatusChange('BLOCKED')}
-                          disabled={isUpdating}
-                        >
-                          Mark Blocked
-                        </Button>
-                      )}
-                      {onAssign && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onAssign(task.id)}
-                          disabled={isUpdating}
-                        >
-                          Re-assign
-                        </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleStatusChange('DEFERRED')}
-                        disabled={isUpdating}
+                            }
+                          } catch (err) {
+                            console.error('Error fetching document URL:', err)
+                          }
+                        }}
+                        className={`flex items-center gap-2 text-sm hover:underline ${
+                          isCompleted ? 'text-green-700 dark:text-green-300' : 'text-blue-700 dark:text-blue-300'
+                        }`}
                       >
-                        Defer
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-muted-foreground hover:text-foreground"
-                        onClick={() => handleStatusChange('NOT_APPLICABLE')}
-                        disabled={isUpdating}
-                      >
-                        Not Applicable
-                      </Button>
-                    </div>
+                        <FileText className="h-4 w-4" />
+                        {doc.fileName || 'View document'}
+                      </button>
+                    ))}
+                  </div>
+                  {task.completionNotes && (
+                    <p className="mt-3 text-sm text-foreground/70 italic border-t border-current/10 pt-2">
+                      Notes: {task.completionNotes}
+                    </p>
                   )}
                 </div>
-              </motion.div>
-            )}
-            </AnimatePresence>
-          </div>
-        </div>
-      </CardContent>
+              )}
+
+              {/* Action Buttons */}
+              {!isCompleted && task.status !== 'NOT_APPLICABLE' && (
+                <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+                  {/* Primary Actions - Mobile */}
+                  <div className="sm:hidden w-full mb-2">
+                    {task.status === 'PENDING' && (
+                      <Button
+                        className="w-full bg-[#B87333] hover:bg-[#A36429] text-white"
+                        onClick={() => handleStatusChange('IN_PROGRESS')}
+                        disabled={isUpdating}
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        Start Working
+                      </Button>
+                    )}
+                    {task.status === 'IN_PROGRESS' && (
+                      <Button
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => handleStatusChange('COMPLETED')}
+                        disabled={isUpdating}
+                      >
+                        <Check className="h-4 w-4 mr-2" />
+                        Mark Complete
+                      </Button>
+                    )}
+                    {(task.status === 'BLOCKED' || task.status === 'DEFERRED') && (
+                      <Button
+                        className="w-full"
+                        variant="outline"
+                        onClick={() => handleStatusChange('IN_PROGRESS')}
+                        disabled={isUpdating}
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        Resume Working
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Secondary Actions */}
+                  {(task.status === 'IN_PROGRESS' || task.status === 'PENDING') && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20"
+                      onClick={() => handleStatusChange('BLOCKED')}
+                      disabled={isUpdating}
+                    >
+                      <Pause className="h-3.5 w-3.5 mr-1.5" />
+                      Mark Blocked
+                    </Button>
+                  )}
+                  {onAssign && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onAssign(task.id)}
+                      disabled={isUpdating}
+                    >
+                      <User className="h-3.5 w-3.5 mr-1.5" />
+                      {task.primaryAssignee ? 'Re-assign' : 'Assign'}
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleStatusChange('DEFERRED')}
+                    disabled={isUpdating}
+                  >
+                    <Clock className="h-3.5 w-3.5 mr-1.5" />
+                    Defer
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-muted-foreground"
+                    onClick={() => handleStatusChange('NOT_APPLICABLE')}
+                    disabled={isUpdating}
+                  >
+                    <XCircle className="h-3.5 w-3.5 mr-1.5" />
+                    Not Applicable
+                  </Button>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Completion Dialog */}
       <TaskCompletionDialog
@@ -738,15 +825,15 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
           <DialogHeader>
             <DialogTitle>Mark Task as Blocked</DialogTitle>
             <DialogDescription>
-              Please explain why this task is blocked. This will be visible to managers and team leads.
+              What&apos;s preventing progress on this task?
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <Textarea
-              placeholder="What's preventing you from completing this task? (e.g., waiting on client response, missing information, dependency on another task...)"
+              placeholder="e.g., Waiting on client response, missing information, dependency on another task..."
               value={blockedReason}
               onChange={(e) => setBlockedReason(e.target.value)}
-              className="min-h-[120px]"
+              className="min-h-[100px]"
             />
           </div>
           <DialogFooter>
@@ -762,9 +849,9 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
             <Button
               onClick={handleBlocked}
               disabled={!blockedReason.trim() || isUpdating}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
-              {isUpdating ? 'Saving...' : 'Mark as Blocked'}
+              {isUpdating ? 'Saving...' : 'Mark Blocked'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -781,6 +868,6 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
         }}
         onUploadComplete={onTaskUpdate}
       />
-    </Card>
+    </motion.div>
   )
 }
