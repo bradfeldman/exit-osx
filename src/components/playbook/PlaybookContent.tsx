@@ -253,112 +253,99 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
       className="space-y-8"
     >
       {/* Hero Section - The WHY */}
-      <motion.div variants={itemVariants}>
-        <div
-          className="relative overflow-hidden rounded-2xl p-8 md:p-10"
-          style={{ background: 'linear-gradient(to bottom right, #3D3D3D, #1F1F1F)' }}
-        >
-          {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" style={{ backgroundColor: 'rgba(184, 115, 51, 0.15)' }} />
-          <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" style={{ backgroundColor: 'rgba(184, 115, 51, 0.08)' }} />
-
-          <div className="relative z-10">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  <span className="text-sm font-medium text-primary uppercase tracking-wide">Your Value-Building Playbook</span>
-                </div>
-                <h1 className="text-3xl md:text-4xl font-bold font-display text-white tracking-tight mb-3">
-                  Every Task Completed<br />
-                  <span className="text-primary">Reduces Buyer Risk</span>
-                </h1>
-                <p className="text-gray-400 max-w-xl">
-                  These tasks are personalized based on your assessment. Complete them to improve your Buyer Readiness Index and maximize your exit value.
-                </p>
-              </div>
-
-              {/* Progress Ring */}
-              {stats && stats.inActionPlan > 0 && (
-                <div className="flex-shrink-0">
-                  <div className="relative w-32 h-32 md:w-40 md:h-40">
-                    {/* Background circle */}
-                    <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
-                      <circle
-                        cx="60"
-                        cy="60"
-                        r="54"
-                        fill="none"
-                        stroke="rgba(255,255,255,0.1)"
-                        strokeWidth="12"
-                      />
-                      <motion.circle
-                        cx="60"
-                        cy="60"
-                        r="54"
-                        fill="none"
-                        stroke="#B87333"
-                        strokeWidth="12"
-                        strokeLinecap="round"
-                        strokeDasharray={`${2 * Math.PI * 54}`}
-                        initial={{ strokeDashoffset: 2 * Math.PI * 54 }}
-                        animate={{ strokeDashoffset: 2 * Math.PI * 54 * (1 - progressPercent / 100) }}
-                        transition={{ duration: 1.5, ease: "easeOut" }}
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-                      <span className="text-3xl md:text-4xl font-bold font-display">{progressPercent}%</span>
-                      <span className="text-xs text-gray-400 uppercase tracking-wide">Complete</span>
-                    </div>
-                  </div>
-                </div>
-              )}
+      <div className="rounded-2xl p-8 md:p-10 bg-sidebar text-sidebar-foreground">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium text-primary uppercase tracking-wide">Your Value-Building Playbook</span>
             </div>
+            <h1 className="text-3xl md:text-4xl font-bold font-display tracking-tight mb-3">
+              Every Task Completed<br />
+              <span className="text-primary">Reduces Buyer Risk</span>
+            </h1>
+            <p className="text-sidebar-foreground/70 max-w-xl">
+              These tasks are personalized based on your assessment. Complete them to improve your Buyer Readiness Index and maximize your exit value.
+            </p>
+          </div>
 
-            {/* Impact Stats Row */}
-            {stats && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/10">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-amber-500/20">
-                    <ListTodo className="h-5 w-5 text-amber-400" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-white">{stats.pending}</p>
-                    <p className="text-xs text-gray-400">To Do</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-blue-500/20">
-                    <Clock className="h-5 w-5 text-blue-400" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-white">{stats.inProgress}</p>
-                    <p className="text-xs text-gray-400">In Progress</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-emerald-500/20">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-400" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-white">{stats.completed}</p>
-                    <p className="text-xs text-gray-400">Completed</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-[#B87333]/20">
-                    <TrendingDown className="h-5 w-5 text-[#B87333]" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-white">{stats.inActionPlan}</p>
-                    <p className="text-xs text-gray-400">Total Tasks</p>
-                  </div>
+          {/* Progress Ring */}
+          {stats && stats.inActionPlan > 0 && (
+            <div className="flex-shrink-0">
+              <div className="relative w-32 h-32 md:w-40 md:h-40">
+                <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="54"
+                    fill="none"
+                    stroke="rgba(255,255,255,0.2)"
+                    strokeWidth="12"
+                  />
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="54"
+                    fill="none"
+                    stroke="#B87333"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 54}`}
+                    strokeDashoffset={2 * Math.PI * 54 * (1 - progressPercent / 100)}
+                    style={{ transition: 'stroke-dashoffset 1s ease-out' }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-3xl md:text-4xl font-bold font-display">{progressPercent}%</span>
+                  <span className="text-xs text-sidebar-foreground/60 uppercase tracking-wide">Complete</span>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
-      </motion.div>
+
+        {/* Impact Stats Row */}
+        {stats && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-sidebar-foreground/10">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-amber-500/20">
+                <ListTodo className="h-5 w-5 text-amber-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.pending}</p>
+                <p className="text-xs text-sidebar-foreground/60">To Do</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-500/20">
+                <Clock className="h-5 w-5 text-blue-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.inProgress}</p>
+                <p className="text-xs text-sidebar-foreground/60">In Progress</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-emerald-500/20">
+                <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.completed}</p>
+                <p className="text-xs text-sidebar-foreground/60">Completed</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/20">
+                <TrendingDown className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.inActionPlan}</p>
+                <p className="text-xs text-sidebar-foreground/60">Total Tasks</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Quick Actions Bar */}
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
