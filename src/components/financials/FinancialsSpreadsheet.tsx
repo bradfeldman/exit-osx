@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
+import { fetchWithRetry } from '@/lib/fetch-with-retry'
 import { Plus, Save, Check, Loader2, TrendingUp, TrendingDown, Minus, AlertCircle, Trash2, PlusCircle, MinusCircle, ChevronDown, ChevronRight } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import {
@@ -574,23 +575,23 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
     setError(null)
 
     try {
-      // Fetch periods
-      const periodsRes = await fetch(`/api/companies/${companyId}/financial-periods`)
+      // Fetch periods with retry
+      const periodsRes = await fetchWithRetry(`/api/companies/${companyId}/financial-periods`)
       if (!periodsRes.ok) throw new Error('Failed to load periods')
       const periodsData = await periodsRes.json()
       setPeriods(periodsData.periods || [])
 
-      // Fetch all period data in parallel
+      // Fetch all period data in parallel with retry
       const periodsList = periodsData.periods || []
 
-      // Create all fetch promises for all periods at once
+      // Create all fetch promises for all periods at once (with retry logic)
       const allFetches = periodsList.map(async (period: FinancialPeriod) => {
-        // Fetch all 4 data types for this period in parallel
+        // Fetch all 4 data types for this period in parallel with retry
         const [plRes, bsRes, adjRes, cfRes] = await Promise.all([
-          fetch(`/api/companies/${companyId}/financial-periods/${period.id}/income-statement`).catch(() => null),
-          fetch(`/api/companies/${companyId}/financial-periods/${period.id}/balance-sheet`).catch(() => null),
-          fetch(`/api/companies/${companyId}/adjustments?periodId=${period.id}`).catch(() => null),
-          fetch(`/api/companies/${companyId}/financial-periods/${period.id}/cash-flow`).catch(() => null),
+          fetchWithRetry(`/api/companies/${companyId}/financial-periods/${period.id}/income-statement`).catch(() => null),
+          fetchWithRetry(`/api/companies/${companyId}/financial-periods/${period.id}/balance-sheet`).catch(() => null),
+          fetchWithRetry(`/api/companies/${companyId}/adjustments?periodId=${period.id}`).catch(() => null),
+          fetchWithRetry(`/api/companies/${companyId}/financial-periods/${period.id}/cash-flow`).catch(() => null),
         ])
 
         const periodData: PeriodData = {}
@@ -736,7 +737,7 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
             taxExpense: fields.get('taxExpense') ?? periodData.taxExpense ?? 0,
           }
 
-          await fetch(`/api/companies/${companyId}/financial-periods/${periodId}/income-statement`, {
+          await fetchWithRetry(`/api/companies/${companyId}/financial-periods/${periodId}/income-statement`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(pnlData),
@@ -749,7 +750,7 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
             bsData[field] = fields.get(field) ?? (periodData as Record<string, number>)[field] ?? 0
           })
 
-          await fetch(`/api/companies/${companyId}/financial-periods/${periodId}/balance-sheet`, {
+          await fetchWithRetry(`/api/companies/${companyId}/financial-periods/${periodId}/balance-sheet`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(bsData),
@@ -807,7 +808,7 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
 
     setIsDeleting(true)
     try {
-      const response = await fetch(
+      const response = await fetchWithRetry(
         `/api/companies/${companyId}/financial-periods/${periodToDelete.id}`,
         { method: 'DELETE' }
       )
@@ -836,7 +837,7 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
       // Add to all periods with amount = 0 (user will fill in amounts)
       const newAdjustments: Adjustment[] = []
       for (const period of sortedPeriods) {
-        const response = await fetch(`/api/companies/${companyId}/adjustments`, {
+        const response = await fetchWithRetry(`/api/companies/${companyId}/adjustments`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -863,7 +864,7 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
   // Update an adjustment amount
   const handleUpdateAdjustmentAmount = useCallback(async (adjustmentId: string, amount: number) => {
     try {
-      const response = await fetch(`/api/companies/${companyId}/adjustments?adjustmentId=${adjustmentId}`, {
+      const response = await fetchWithRetry(`/api/companies/${companyId}/adjustments?adjustmentId=${adjustmentId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount }),
@@ -908,7 +909,7 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
       // Find all adjustments with this description and delete them
       const toDelete = adjustments.filter(a => a.description === description)
       for (const adj of toDelete) {
-        await fetch(`/api/companies/${companyId}/adjustments?adjustmentId=${adj.id}`, {
+        await fetchWithRetry(`/api/companies/${companyId}/adjustments?adjustmentId=${adj.id}`, {
           method: 'DELETE',
         })
       }

@@ -9,6 +9,7 @@ import { AddPeriodDialog } from '@/components/financials/AddPeriodDialog'
 import { FinancialsSpreadsheet } from '@/components/financials/FinancialsSpreadsheet'
 import { Plus, Pencil, Loader2, CheckCircle, Link2, AlertCircle, X } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
+import { fetchWithRetry } from '@/lib/fetch-with-retry'
 
 interface FinancialPeriod {
   id: string
@@ -301,7 +302,7 @@ function FinancialsContent() {
     if (!selectedCompanyId) return
 
     try {
-      const response = await fetch(`/api/companies/${selectedCompanyId}/financial-periods`)
+      const response = await fetchWithRetry(`/api/companies/${selectedCompanyId}/financial-periods`)
       if (response.ok) {
         const data = await response.json()
         setPeriods(data.periods || [])
@@ -316,7 +317,7 @@ function FinancialsContent() {
     if (!selectedCompanyId) return
 
     try {
-      const response = await fetch(`/api/integrations/quickbooks?companyId=${selectedCompanyId}`)
+      const response = await fetchWithRetry(`/api/integrations/quickbooks?companyId=${selectedCompanyId}`)
       if (response.ok) {
         const data = await response.json()
         setIntegrationData({
