@@ -324,6 +324,7 @@ function SpreadsheetCell({
   // When becoming active, initialize input value and focus
   useEffect(() => {
     if (isActive && editable) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInputValue(value?.toLocaleString() ?? '')
       isNavigatingRef.current = false
       // Small delay to ensure DOM is ready
@@ -468,6 +469,7 @@ function AdjustmentCell({
   // When becoming active, initialize input value and focus
   useEffect(() => {
     if (isActive) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInputValue(value ? value.toLocaleString() : '')
       isNavigatingRef.current = false
       setTimeout(() => {
