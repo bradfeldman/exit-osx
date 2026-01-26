@@ -104,7 +104,7 @@ export default function ResetPasswordPage() {
         <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground">
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="/logo.webp"
+              src="/logo-icon.png"
               alt="Exit OSx"
               width={40}
               height={40}
@@ -141,7 +141,7 @@ export default function ResetPasswordPage() {
           <div className="lg:hidden text-center">
             <Link href="/" className="inline-flex items-center gap-2">
               <Image
-                src="/logo.webp"
+                src="/logo-icon.png"
                 alt="Exit OSx"
                 width={32}
                 height={32}

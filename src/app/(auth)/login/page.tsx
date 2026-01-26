@@ -154,7 +154,7 @@ function LoginPageContent() {
         >
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="/logo.webp"
+              src="/logo-icon.png"
               alt="Exit OSx"
               width={40}
               height={40}
@@ -221,7 +221,7 @@ function LoginPageContent() {
           <motion.div variants={fadeInUp} className="lg:hidden text-center">
             <Link href="/" className="inline-flex items-center gap-2">
               <Image
-                src="/logo.webp"
+                src="/logo-icon.png"
                 alt="Exit OSx"
                 width={32}
                 height={32}
