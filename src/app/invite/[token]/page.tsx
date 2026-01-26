@@ -418,7 +418,7 @@ export default function InviteAcceptPage() {
           </div>
 
           <p className="text-sm opacity-70">
-            A Pasadena Private product
+            A Pasadena Private Financial Group Company
           </p>
         </div>
       </div>

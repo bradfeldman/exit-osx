@@ -204,7 +204,7 @@ function LoginPageContent() {
           </div>
 
           <p className="text-sm opacity-70">
-            A Pasadena Private product
+            A Pasadena Private Financial Group Company
           </p>
         </motion.div>
       </div>
