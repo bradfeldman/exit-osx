@@ -254,21 +254,24 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
     >
       {/* Hero Section - The WHY */}
       <motion.div variants={itemVariants}>
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#3D3D3D] to-[#2A2A2A] p-8 md:p-10">
+        <div
+          className="relative overflow-hidden rounded-2xl p-8 md:p-10"
+          style={{ background: 'linear-gradient(to bottom right, #3D3D3D, #1F1F1F)' }}
+        >
           {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#B87333]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#B87333]/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+          <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" style={{ backgroundColor: 'rgba(184, 115, 51, 0.15)' }} />
+          <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" style={{ backgroundColor: 'rgba(184, 115, 51, 0.08)' }} />
 
           <div className="relative z-10">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="h-5 w-5 text-[#B87333]" />
-                  <span className="text-sm font-medium text-[#B87333] uppercase tracking-wide">Your Value-Building Playbook</span>
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  <span className="text-sm font-medium text-primary uppercase tracking-wide">Your Value-Building Playbook</span>
                 </div>
                 <h1 className="text-3xl md:text-4xl font-bold font-display text-white tracking-tight mb-3">
                   Every Task Completed<br />
-                  <span className="text-[#B87333]">Reduces Buyer Risk</span>
+                  <span className="text-primary">Reduces Buyer Risk</span>
                 </h1>
                 <p className="text-gray-400 max-w-xl">
                   These tasks are personalized based on your assessment. Complete them to improve your Buyer Readiness Index and maximize your exit value.
