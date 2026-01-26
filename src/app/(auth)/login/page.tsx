@@ -4,6 +4,7 @@ import { useState, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,6 +12,20 @@ import { Captcha, resetCaptcha } from '@/components/ui/captcha'
 import { Eye, EyeOff, Shield as ShieldIcon, Loader2 } from 'lucide-react'
 import { secureLogin } from '@/app/actions/auth'
 import { getRedirectUrl, buildUrlWithRedirect, isInviteRedirect } from '@/lib/utils/redirect'
+
+// Animation variants
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+}
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.2 }
+  }
+}
 
 export default function LoginPage() {
   return (
@@ -128,7 +143,15 @@ function LoginPageContent() {
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
-        <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground">
+        {/* Decorative elements */}
+        <div className="absolute top-20 right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 left-10 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
+        <motion.div
+          className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+        >
           <Link href="/" className="flex items-center gap-3">
             <Image
               src="/logo.webp"
@@ -147,45 +170,55 @@ function LoginPageContent() {
           </Link>
 
           <div className="space-y-6">
-            <h1 className="text-4xl font-bold leading-tight">
+            <h1 className="text-4xl font-bold font-display leading-tight tracking-tight">
               Build a Business<br />Buyers Want to Own
             </h1>
             <p className="text-lg opacity-90 max-w-md">
               Get your valuation estimate, Buyer Readiness Score, and a personalized roadmap to maximize your exit outcome.
             </p>
-            <div className="space-y-4 pt-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                  <CheckIcon className="w-4 h-4" />
-                </div>
-                <span>Real-time business valuation</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                  <CheckIcon className="w-4 h-4" />
-                </div>
-                <span>Buyer Readiness Score across 6 dimensions</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                  <CheckIcon className="w-4 h-4" />
-                </div>
-                <span>Prioritized value-building playbook</span>
-              </div>
-            </div>
+            <motion.div
+              className="space-y-4 pt-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+            >
+              {[
+                'Real-time business valuation',
+                'Buyer Readiness Score across 6 dimensions',
+                'Prioritized value-building playbook'
+              ].map((text, i) => (
+                <motion.div
+                  key={text}
+                  className="flex items-center gap-3"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 + i * 0.1 }}
+                >
+                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                    <CheckIcon className="w-4 h-4" />
+                  </div>
+                  <span>{text}</span>
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
 
           <p className="text-sm opacity-70">
             A Pasadena Private product
           </p>
-        </div>
+        </motion.div>
       </div>
 
       {/* Right side - Login Form */}
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-background">
-        <div className="w-full max-w-md space-y-8">
+        <motion.div
+          className="w-full max-w-md space-y-8"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
           {/* Mobile logo */}
-          <div className="lg:hidden text-center">
+          <motion.div variants={fadeInUp} className="lg:hidden text-center">
             <Link href="/" className="inline-flex items-center gap-2">
               <Image
                 src="/logo.webp"
@@ -202,10 +235,10 @@ function LoginPageContent() {
                 className="h-6 w-auto"
               />
             </Link>
-          </div>
+          </motion.div>
 
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-foreground">
+          <motion.div variants={fadeInUp} className="text-center">
+            <h2 className="text-3xl font-bold font-display text-foreground tracking-tight">
               {isFromInvite ? 'Sign in to accept your invite' : 'Welcome back'}
             </h2>
             <p className="mt-2 text-muted-foreground">
@@ -213,18 +246,22 @@ function LoginPageContent() {
                 ? 'Log in to your account to join the team'
                 : 'Sign in to continue to your dashboard'}
             </p>
-          </div>
+          </motion.div>
 
-          <form onSubmit={handleLogin} className="space-y-6">
+          <motion.form variants={fadeInUp} onSubmit={handleLogin} className="space-y-6">
             {(error || getLockoutMessage()) && (
-              <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg space-y-1">
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg space-y-1"
+              >
                 <p>{getLockoutMessage() || error}</p>
                 {attemptsRemaining !== null && attemptsRemaining > 0 && (
                   <p className="text-xs text-red-500">
                     {attemptsRemaining} attempt{attemptsRemaining > 1 ? 's' : ''} remaining before account lockout
                   </p>
                 )}
-              </div>
+              </motion.div>
             )}
 
             {!requiresTwoFactor ? (
@@ -239,7 +276,7 @@ function LoginPageContent() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={loading || isLocked}
-                    className="h-12"
+                    className="h-12 transition-all duration-200 focus:scale-[1.01]"
                   />
                 </div>
 
@@ -262,7 +299,7 @@ function LoginPageContent() {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       disabled={loading || isLocked}
-                      className="h-12 pr-12"
+                      className="h-12 pr-12 transition-all duration-200 focus:scale-[1.01]"
                     />
                     <button
                       type="button"
@@ -314,7 +351,7 @@ function LoginPageContent() {
                     onChange={(e) => setTwoFactorCode(e.target.value.replace(/[^0-9-]/g, ''))}
                     required
                     disabled={loading}
-                    className="h-12 text-center text-lg tracking-widest font-mono"
+                    className="h-12 text-center text-lg tracking-widest font-mono transition-all duration-200 focus:scale-[1.01]"
                     autoFocus
                   />
                   <p className="text-xs text-muted-foreground text-center">
@@ -334,14 +371,14 @@ function LoginPageContent() {
 
             <Button
               type="submit"
-              className="w-full h-12 text-base"
+              className="w-full h-12 text-base transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/25"
               disabled={loading || isLocked || (showCaptcha && !captchaToken) || (requiresTwoFactor && twoFactorCode.length < 6)}
             >
               {loading ? 'Signing in...' : requiresTwoFactor ? 'Verify' : 'Sign In'}
             </Button>
-          </form>
+          </motion.form>
 
-          <div className="text-center space-y-4">
+          <motion.div variants={fadeInUp} className="text-center space-y-4">
             <p className="text-sm text-muted-foreground">
               Don&apos;t have an account?{' '}
               <Link href={buildUrlWithRedirect('/signup', redirectUrl)} className="font-medium text-primary hover:underline">
@@ -351,8 +388,8 @@ function LoginPageContent() {
             <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-block">
               &larr; Back to home
             </Link>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   )
