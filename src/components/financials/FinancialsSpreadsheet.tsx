@@ -254,6 +254,73 @@ function parseInputValue(input: string): number {
   return isNaN(parsed) ? 0 : parsed
 }
 
+// Calculate derived P&L values from input fields
+function calculatePnlDerivedValues(data: PeriodData): Partial<PeriodData> {
+  const grossRevenue = data.grossRevenue ?? 0
+  const cogs = data.cogs ?? 0
+  const operatingExpenses = data.operatingExpenses ?? 0
+  const depreciation = data.depreciation ?? 0
+  const amortization = data.amortization ?? 0
+  const interestExpense = data.interestExpense ?? 0
+
+  const grossProfit = grossRevenue - cogs
+  const grossMarginPct = grossRevenue > 0 ? grossProfit / grossRevenue : 0
+
+  // EBITDA = Gross Profit - Operating Expenses + D + A + I (add back since they're in OpEx)
+  const ebitda = grossProfit - operatingExpenses + depreciation + amortization + interestExpense
+  const ebitdaMarginPct = grossRevenue > 0 ? ebitda / grossRevenue : 0
+
+  // Adjusted EBITDA includes add-backs
+  const netAdjustment = data.netAdjustment ?? 0
+  const adjustedEbitda = ebitda + netAdjustment
+
+  return {
+    grossProfit,
+    grossMarginPct,
+    ebitda,
+    ebitdaMarginPct,
+    adjustedEbitda,
+  }
+}
+
+// Calculate derived Balance Sheet values from input fields
+function calculateBsDerivedValues(data: PeriodData): Partial<PeriodData> {
+  const cash = data.cash ?? 0
+  const accountsReceivable = data.accountsReceivable ?? 0
+  const inventory = data.inventory ?? 0
+  const prepaidExpenses = data.prepaidExpenses ?? 0
+  const otherCurrentAssets = data.otherCurrentAssets ?? 0
+  const ppeGross = data.ppeGross ?? 0
+  const accumulatedDepreciation = data.accumulatedDepreciation ?? 0
+  const intangibleAssets = data.intangibleAssets ?? 0
+  const otherLongTermAssets = data.otherLongTermAssets ?? 0
+  const accountsPayable = data.accountsPayable ?? 0
+  const accruedExpenses = data.accruedExpenses ?? 0
+  const currentPortionLtd = data.currentPortionLtd ?? 0
+  const otherCurrentLiabilities = data.otherCurrentLiabilities ?? 0
+  const longTermDebt = data.longTermDebt ?? 0
+  const deferredTaxLiabilities = data.deferredTaxLiabilities ?? 0
+  const otherLongTermLiabilities = data.otherLongTermLiabilities ?? 0
+  const retainedEarnings = data.retainedEarnings ?? 0
+  const ownersEquity = data.ownersEquity ?? 0
+
+  const totalCurrentAssets = cash + accountsReceivable + inventory + prepaidExpenses + otherCurrentAssets
+  const ppeNet = ppeGross - accumulatedDepreciation
+  const totalAssets = totalCurrentAssets + ppeNet + intangibleAssets + otherLongTermAssets
+  const totalCurrentLiabilities = accountsPayable + accruedExpenses + currentPortionLtd + otherCurrentLiabilities
+  const totalLiabilities = totalCurrentLiabilities + longTermDebt + deferredTaxLiabilities + otherLongTermLiabilities
+  const totalEquity = retainedEarnings + ownersEquity
+
+  return {
+    totalCurrentAssets,
+    ppeNet,
+    totalAssets,
+    totalCurrentLiabilities,
+    totalLiabilities,
+    totalEquity,
+  }
+}
+
 // Convert Prisma Decimal values (returned as strings) to numbers
 function convertDecimalsToNumbers(obj: Record<string, unknown> | null | undefined): Record<string, number | null> {
   if (!obj) return {}
@@ -761,8 +828,8 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
       pendingChangesRef.current.clear()
       setSaveStatus('saved')
 
-      // Reload data to get calculated fields
-      await loadData()
+      // Note: We no longer reload data after save to avoid disrupting user input
+      // Derived values are calculated locally in handleCellChange
 
       // Reset status after a delay
       setTimeout(() => setSaveStatus('idle'), 2000)
@@ -772,28 +839,48 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
     } finally {
       setIsSaving(false)
     }
-  }, [companyId, data, loadData])
+  }, [companyId, data])
 
   // Handle cell change with debounced save
   const handleCellChange = useCallback((periodId: string, field: string, value: number) => {
-    // Update local state immediately
-    setData(prev => ({
-      ...prev,
-      [periodId]: {
+    // P&L fields that affect derived calculations
+    const pnlFields = ['grossRevenue', 'cogs', 'operatingExpenses', 'depreciation', 'amortization', 'interestExpense', 'taxExpense']
+    // Balance sheet fields that affect derived calculations
+    const bsFields = ['cash', 'accountsReceivable', 'inventory', 'prepaidExpenses', 'otherCurrentAssets', 'ppeGross', 'accumulatedDepreciation', 'intangibleAssets', 'otherLongTermAssets', 'accountsPayable', 'accruedExpenses', 'currentPortionLtd', 'otherCurrentLiabilities', 'longTermDebt', 'deferredTaxLiabilities', 'otherLongTermLiabilities', 'retainedEarnings', 'ownersEquity']
+
+    // Update local state immediately and recalculate derived values
+    setData(prev => {
+      const updatedPeriodData = {
         ...prev[periodId],
         [field]: value,
-      },
-    }))
+      }
+
+      // Recalculate derived values based on which field changed
+      let derivedValues: Partial<PeriodData> = {}
+      if (pnlFields.includes(field)) {
+        derivedValues = calculatePnlDerivedValues(updatedPeriodData)
+      } else if (bsFields.includes(field)) {
+        derivedValues = calculateBsDerivedValues(updatedPeriodData)
+      }
+
+      return {
+        ...prev,
+        [periodId]: {
+          ...updatedPeriodData,
+          ...derivedValues,
+        },
+      }
+    })
 
     // Track pending change
     const key = `${periodId}-${field}`
     pendingChangesRef.current.set(key, { periodId, field, value })
 
-    // Debounce save
+    // Debounce save - 3 seconds gives users time to finish entering data
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current)
     }
-    saveTimeoutRef.current = setTimeout(saveChanges, 1500)
+    saveTimeoutRef.current = setTimeout(saveChanges, 3000)
   }, [saveChanges])
 
   // Handle period created
