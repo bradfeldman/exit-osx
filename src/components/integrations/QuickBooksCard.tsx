@@ -243,19 +243,20 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
                 </div>
               ) : (
                 <p className="text-sm text-gray-500">
-                  Connect to import P&L and Balance Sheet data
+                  Import P&L and Balance Sheet data automatically
                 </p>
               )}
             </div>
             {!connected && (
-              <Button onClick={handleConnect} disabled={isConnecting}>
-                {isConnecting ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-1 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">
+                  Coming Soon
+                </span>
+                <Button disabled className="opacity-50 cursor-not-allowed">
                   <Link2 className="h-4 w-4 mr-2" />
-                )}
-                Connect
-              </Button>
+                  Connect
+                </Button>
+              </div>
             )}
           </div>
 

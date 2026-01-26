@@ -160,7 +160,7 @@ function getStatusConfig(status: string): {
       }
     default:
       return {
-        label: 'To Do',
+        label: 'Not Started',
         icon: Target,
         color: 'text-gray-600 dark:text-gray-400',
         bgColor: 'bg-gray-50 dark:bg-gray-900/20',
@@ -482,13 +482,11 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
                 {effortBadge.label}
               </span>
 
-              {/* Status Badge (if not pending) */}
-              {task.status !== 'PENDING' && (
-                <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${statusConfig.bgColor} ${statusConfig.color}`}>
-                  <StatusIcon className="h-3 w-3" />
-                  {statusConfig.label}
-                </div>
-              )}
+              {/* Status Badge - Always show */}
+              <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${statusConfig.bgColor} ${statusConfig.color}`}>
+                <StatusIcon className="h-3 w-3" />
+                {statusConfig.label}
+              </div>
 
               {/* Due Date */}
               {task.dueDate && (
@@ -571,7 +569,7 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
           </div>
 
           {/* Right Side: Quick Action Button */}
-          {!isCompleted && task.status !== 'NOT_APPLICABLE' && (
+          {task.status !== 'NOT_APPLICABLE' && (
             <div className="flex-shrink-0 hidden sm:block">
               {task.status === 'PENDING' && (
                 <Button
@@ -593,6 +591,17 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
                 >
                   <Check className="h-3.5 w-3.5 mr-1.5" />
                   Complete
+                </Button>
+              )}
+              {task.status === 'COMPLETED' && (
+                <Button
+                  size="sm"
+                  onClick={() => handleStatusChange('IN_PROGRESS')}
+                  disabled={isUpdating}
+                  variant="outline"
+                >
+                  <Play className="h-3.5 w-3.5 mr-1.5" />
+                  Reopen
                 </Button>
               )}
               {task.status === 'BLOCKED' && (
@@ -720,7 +729,7 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
               )}
 
               {/* Action Buttons */}
-              {!isCompleted && task.status !== 'NOT_APPLICABLE' && (
+              {task.status !== 'NOT_APPLICABLE' && (
                 <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
                   {/* Primary Actions - Mobile */}
                   <div className="sm:hidden w-full mb-2">
@@ -742,6 +751,17 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
                       >
                         <Check className="h-4 w-4 mr-2" />
                         Mark Complete
+                      </Button>
+                    )}
+                    {task.status === 'COMPLETED' && (
+                      <Button
+                        className="w-full"
+                        variant="outline"
+                        onClick={() => handleStatusChange('IN_PROGRESS')}
+                        disabled={isUpdating}
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        Reopen Task
                       </Button>
                     )}
                     {(task.status === 'BLOCKED' || task.status === 'DEFERRED') && (
