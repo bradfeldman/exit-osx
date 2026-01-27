@@ -697,10 +697,13 @@ export function Sidebar() {
           </div>
         </nav>
 
-        {/* Version */}
-        <div className="mt-auto pt-4 pb-2">
+        {/* Version & Company */}
+        <div className="mt-auto pt-4 pb-2 space-y-1">
           <p className="text-xs text-sidebar-foreground/40 text-center">
             Exit OSx v{packageJson.version}
+          </p>
+          <p className="text-[10px] text-sidebar-foreground/30 text-center leading-tight">
+            Exit OSx is a Pasadena Private Financial Group Company
           </p>
         </div>
       </div>
