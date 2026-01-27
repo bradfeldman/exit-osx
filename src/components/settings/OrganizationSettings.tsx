@@ -86,6 +86,7 @@ interface Organization {
   id: string
   name: string
   currentUserRole: UserRole
+  currentUserId: string
   users: Member[]
   invites: Invite[]
 }
@@ -531,6 +532,29 @@ export function OrganizationSettings() {
     setTimeout(() => setCopiedInviteId(null), 2000)
   }
 
+  async function handleLeaveTeam() {
+    if (!organization) return
+    if (!confirm('Are you sure you want to leave this team? You will lose access to all shared data.')) return
+
+    try {
+      const response = await fetch(
+        `/api/organizations/${organization.id}/members?userId=${organization.currentUserId}`,
+        { method: 'DELETE' }
+      )
+
+      if (response.ok) {
+        // Redirect to dashboard after leaving
+        window.location.href = '/dashboard'
+      } else {
+        const data = await response.json()
+        alert(data.error || 'Failed to leave team')
+      }
+    } catch (error) {
+      console.error('Failed to leave team:', error)
+      alert('Failed to leave team')
+    }
+  }
+
   function openPermissionsDialog(member: Member) {
     setSelectedMember(member)
     setPermissionsDialogOpen(true)
@@ -777,7 +801,7 @@ export function OrganizationSettings() {
                 <TableHead>Affiliation</TableHead>
                 <TableHead>Permissions</TableHead>
                 <TableHead>Joined</TableHead>
-                {canManageMembers && <TableHead className="w-[100px]">Actions</TableHead>}
+                <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -883,9 +907,20 @@ export function OrganizationSettings() {
                     <TableCell className="text-muted-foreground">
                       {new Date(member.joinedAt).toLocaleDateString()}
                     </TableCell>
-                    {canManageMembers && (
-                      <TableCell>
-                        {member.role !== 'SUPER_ADMIN' && (
+                    <TableCell>
+                      {member.user.id === organization?.currentUserId ? (
+                        // Current user can leave (unless they're the only admin)
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-muted-foreground hover:text-destructive"
+                          onClick={handleLeaveTeam}
+                        >
+                          Leave
+                        </Button>
+                      ) : (
+                        // Admins can remove other members
+                        canManageMembers && member.role !== 'SUPER_ADMIN' && (
                           <Button
                             variant="ghost"
                             size="sm"
@@ -894,9 +929,9 @@ export function OrganizationSettings() {
                           >
                             Remove
                           </Button>
-                        )}
-                      </TableCell>
-                    )}
+                        )
+                      )}
+                    </TableCell>
                   </TableRow>
                 )
               })}

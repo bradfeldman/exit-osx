@@ -162,67 +162,143 @@ export async function PATCH(
   }
 }
 
-// DELETE - Remove member from organization
+// DELETE - Remove member from organization (or leave if removing self)
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: organizationId } = await params
-  const result = await checkPermission('ORG_MANAGE_MEMBERS')
-  if (isAuthError(result)) return result.error
 
-  const { auth } = result
+  const { searchParams } = new URL(request.url)
+  const userId = searchParams.get('userId')
 
-  try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
-      )
-    }
-
-    // Prevent removing yourself
-    if (userId === auth.user.id) {
-      return NextResponse.json(
-        { error: 'You cannot remove yourself from the organization' },
-        { status: 400 }
-      )
-    }
-
-    // Check that there will still be at least one admin
-    const admins = await prisma.organizationUser.count({
-      where: {
-        organizationId,
-        role: 'ADMIN',
-        userId: { not: userId }
-      }
-    })
-
-    if (admins === 0) {
-      return NextResponse.json(
-        { error: 'Organization must have at least one admin' },
-        { status: 400 }
-      )
-    }
-
-    await prisma.organizationUser.delete({
-      where: {
-        organizationId_userId: {
-          organizationId,
-          userId,
-        }
-      }
-    })
-
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error removing member:', error)
+  if (!userId) {
     return NextResponse.json(
-      { error: 'Failed to remove member' },
-      { status: 500 }
+      { error: 'userId is required' },
+      { status: 400 }
     )
   }
+
+  // Check if user is leaving (removing self) or removing another member
+  const isLeavingTeam = await checkIfLeavingTeam(userId)
+
+  if (isLeavingTeam) {
+    // User is leaving - just need to be authenticated
+    const result = await checkPermission('ORG_VIEW')
+    if (isAuthError(result)) return result.error
+
+    const { auth } = result
+
+    // Verify they're actually removing themselves
+    if (userId !== auth.user.id) {
+      return NextResponse.json(
+        { error: 'Access denied' },
+        { status: 403 }
+      )
+    }
+
+    try {
+      // Check that there will still be at least one admin if user is an admin
+      const membership = await prisma.organizationUser.findUnique({
+        where: {
+          organizationId_userId: { organizationId, userId }
+        }
+      })
+
+      if (membership?.role === 'ADMIN') {
+        const remainingAdmins = await prisma.organizationUser.count({
+          where: {
+            organizationId,
+            role: 'ADMIN',
+            userId: { not: userId }
+          }
+        })
+
+        if (remainingAdmins === 0) {
+          return NextResponse.json(
+            { error: 'You cannot leave as the only admin. Please promote another member to admin first.' },
+            { status: 400 }
+          )
+        }
+      }
+
+      await prisma.organizationUser.delete({
+        where: {
+          organizationId_userId: { organizationId, userId }
+        }
+      })
+
+      return NextResponse.json({ success: true, left: true })
+    } catch (error) {
+      console.error('Error leaving organization:', error)
+      return NextResponse.json(
+        { error: 'Failed to leave organization' },
+        { status: 500 }
+      )
+    }
+  } else {
+    // Admin removing another member
+    const result = await checkPermission('ORG_MANAGE_MEMBERS')
+    if (isAuthError(result)) return result.error
+
+    const { auth } = result
+
+    try {
+      // Prevent removing yourself through this path (use leave instead)
+      if (userId === auth.user.id) {
+        return NextResponse.json(
+          { error: 'Use the Leave option to remove yourself' },
+          { status: 400 }
+        )
+      }
+
+      // Check that there will still be at least one admin
+      const admins = await prisma.organizationUser.count({
+        where: {
+          organizationId,
+          role: 'ADMIN',
+          userId: { not: userId }
+        }
+      })
+
+      if (admins === 0) {
+        return NextResponse.json(
+          { error: 'Organization must have at least one admin' },
+          { status: 400 }
+        )
+      }
+
+      await prisma.organizationUser.delete({
+        where: {
+          organizationId_userId: { organizationId, userId }
+        }
+      })
+
+      return NextResponse.json({ success: true })
+    } catch (error) {
+      console.error('Error removing member:', error)
+      return NextResponse.json(
+        { error: 'Failed to remove member' },
+        { status: 500 }
+      )
+    }
+  }
+}
+
+// Helper to check if the request is for the user to leave (removing themselves)
+async function checkIfLeavingTeam(userId: string): Promise<boolean> {
+  // We need to check auth without requiring specific permission
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return false
+
+  // Get the database user ID
+  const dbUser = await prisma.user.findUnique({
+    where: { authId: user.id },
+    select: { id: true }
+  })
+
+  return dbUser?.id === userId
 }

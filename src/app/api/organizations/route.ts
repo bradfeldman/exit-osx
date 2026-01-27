@@ -48,6 +48,7 @@ export async function GET() {
           },
           select: {
             id: true,
+            token: true,
             email: true,
             role: true,
             functionalCategories: true,
@@ -67,10 +68,11 @@ export async function GET() {
       }
     })
 
-    // Transform to include user role in response
+    // Transform to include user role and user ID in response
     const orgsWithRoles = organizations.map(org => ({
       ...org,
-      currentUserRole: org.users.find(u => u.userId === auth.user.id)?.role
+      currentUserRole: org.users.find(u => u.userId === auth.user.id)?.role,
+      currentUserId: auth.user.id,
     }))
 
     return NextResponse.json({ organizations: orgsWithRoles })
