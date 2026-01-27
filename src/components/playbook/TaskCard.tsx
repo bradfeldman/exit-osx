@@ -5,20 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { TaskCompletionDialog } from './TaskCompletionDialog'
 import { TaskUploadDialog } from './TaskUploadDialog'
 import {
   FileText, ChevronDown, Target, AlertTriangle, CheckCircle2,
   ListChecks, FileOutput, TrendingUp, Check, Clock,
-  User, AlertCircle, Zap, MoreHorizontal, Paperclip,
-  Circle, ArrowRight, Ban, CalendarClock, XCircle, PlayCircle
+  AlertCircle, Zap, Paperclip, Circle, Ban, CalendarClock,
+  XCircle, Play, UserCircle2
 } from 'lucide-react'
 import { type RichTaskDescription, hasRichDescription } from '@/lib/playbook/rich-task-description'
 import { getBRICategoryLabel, getBRICategoryColor } from '@/lib/constants/bri-categories'
@@ -78,33 +71,28 @@ interface TaskCardProps {
   defaultExpanded?: boolean
 }
 
-// Status configuration with clear progression
-type TaskStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'BLOCKED' | 'COMPLETED' | 'DEFERRED' | 'NOT_APPLICABLE'
+// Status configuration
+const STATUS_OPTIONS = [
+  { value: 'PENDING', label: 'Not Started', icon: Circle, color: 'text-slate-500', bg: 'bg-slate-100', activeBg: 'bg-slate-500' },
+  { value: 'IN_PROGRESS', label: 'In Progress', icon: Play, color: 'text-blue-600', bg: 'bg-blue-100', activeBg: 'bg-blue-500' },
+  { value: 'BLOCKED', label: 'Blocked', icon: Ban, color: 'text-amber-600', bg: 'bg-amber-100', activeBg: 'bg-amber-500' },
+  { value: 'COMPLETED', label: 'Completed', icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-100', activeBg: 'bg-emerald-500' },
+] as const
 
-const STATUS_CONFIG: Record<string, {
-  label: string
-  step: number
-  color: string
-  bgColor: string
-  ringColor: string
-}> = {
-  PENDING: { label: 'Not Started', step: 0, color: 'text-slate-500', bgColor: 'bg-slate-100', ringColor: 'ring-slate-200' },
-  IN_PROGRESS: { label: 'In Progress', step: 1, color: 'text-blue-600', bgColor: 'bg-blue-50', ringColor: 'ring-blue-200' },
-  BLOCKED: { label: 'Blocked', step: 1, color: 'text-amber-600', bgColor: 'bg-amber-50', ringColor: 'ring-amber-200' },
-  COMPLETED: { label: 'Completed', step: 2, color: 'text-emerald-600', bgColor: 'bg-emerald-50', ringColor: 'ring-emerald-200' },
-  DEFERRED: { label: 'Deferred', step: 0, color: 'text-slate-400', bgColor: 'bg-slate-50', ringColor: 'ring-slate-200' },
-  NOT_APPLICABLE: { label: 'Not Applicable', step: -1, color: 'text-slate-400', bgColor: 'bg-slate-50', ringColor: 'ring-slate-200' },
-}
+const PLANNING_OPTIONS = [
+  { value: 'DEFERRED', label: 'Defer Task', icon: CalendarClock, color: 'text-slate-500' },
+  { value: 'NOT_APPLICABLE', label: 'Not Applicable', icon: XCircle, color: 'text-slate-400' },
+] as const
 
-// Impact indicator - subtle but present
+// Impact indicator
 function getImpactConfig(issueTier: string | null | undefined) {
   switch (issueTier) {
     case 'CRITICAL':
-      return { label: 'Critical', color: 'text-rose-600', dotColor: 'bg-rose-500', icon: AlertCircle }
+      return { label: 'Critical', color: 'text-rose-600', dotColor: 'bg-rose-500' }
     case 'SIGNIFICANT':
-      return { label: 'High Impact', color: 'text-amber-600', dotColor: 'bg-amber-500', icon: Zap }
+      return { label: 'High Impact', color: 'text-amber-600', dotColor: 'bg-amber-500' }
     default:
-      return { label: 'Optimization', color: 'text-sky-600', dotColor: 'bg-sky-500', icon: TrendingUp }
+      return { label: 'Optimization', color: 'text-sky-600', dotColor: 'bg-sky-500' }
   }
 }
 
@@ -158,79 +146,6 @@ function formatDueDate(dateStr: string): { text: string; isOverdue: boolean; isU
     return { text: `Due ${formatted}`, isOverdue: false, isUrgent: true }
   }
   return { text: `Due ${formatted}`, isOverdue: false, isUrgent: false }
-}
-
-/**
- * Status Progress Indicator - Visual representation of task progress
- */
-function StatusIndicator({ status }: { status: string }) {
-  const config = STATUS_CONFIG[status] || STATUS_CONFIG.PENDING
-  const isCompleted = status === 'COMPLETED'
-  const isBlocked = status === 'BLOCKED'
-  const isInProgress = status === 'IN_PROGRESS'
-  const isNotApplicable = status === 'NOT_APPLICABLE'
-  const isDeferred = status === 'DEFERRED'
-
-  if (isNotApplicable || isDeferred) {
-    return (
-      <div className="flex items-center gap-1.5">
-        <div className={cn(
-          "w-5 h-5 rounded-full flex items-center justify-center",
-          isNotApplicable ? "bg-slate-200" : "bg-slate-100"
-        )}>
-          {isNotApplicable ? (
-            <XCircle className="w-3 h-3 text-slate-400" />
-          ) : (
-            <CalendarClock className="w-3 h-3 text-slate-400" />
-          )}
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex items-center gap-1">
-      {/* Step 1: Not Started / In Progress */}
-      <div className={cn(
-        "w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300",
-        isInProgress || isBlocked || isCompleted
-          ? isBlocked
-            ? "bg-amber-500 ring-2 ring-amber-200"
-            : "bg-blue-500 ring-2 ring-blue-200"
-          : "bg-slate-200"
-      )}>
-        {isBlocked ? (
-          <AlertCircle className="w-3 h-3 text-white" />
-        ) : isInProgress ? (
-          <PlayCircle className="w-3 h-3 text-white" />
-        ) : (isCompleted) ? (
-          <Check className="w-3 h-3 text-white" />
-        ) : (
-          <Circle className="w-2.5 h-2.5 text-slate-400" />
-        )}
-      </div>
-
-      {/* Connector */}
-      <div className={cn(
-        "w-6 h-0.5 transition-all duration-300",
-        isCompleted ? "bg-emerald-500" : "bg-slate-200"
-      )} />
-
-      {/* Step 2: Completed */}
-      <div className={cn(
-        "w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300",
-        isCompleted
-          ? "bg-emerald-500 ring-2 ring-emerald-200"
-          : "bg-slate-200"
-      )}>
-        {isCompleted ? (
-          <Check className="w-3 h-3 text-white" strokeWidth={3} />
-        ) : (
-          <Circle className="w-2.5 h-2.5 text-slate-400" />
-        )}
-      </div>
-    </div>
-  )
 }
 
 /**
@@ -399,26 +314,28 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
   const [showUploadDialog, setShowUploadDialog] = useState(false)
   const [blockedReason, setBlockedReason] = useState('')
 
-  const statusConfig = STATUS_CONFIG[task.status] || STATUS_CONFIG.PENDING
   const impactConfig = getImpactConfig(task.issueTier)
   const effortConfig = getEffortConfig(task.effortLevel)
   const isCompleted = task.status === 'COMPLETED'
   const isBlocked = task.status === 'BLOCKED'
-  const isInProgress = task.status === 'IN_PROGRESS'
-  const isPending = task.status === 'PENDING'
   const isDeferred = task.status === 'DEFERRED'
   const isNotApplicable = task.status === 'NOT_APPLICABLE'
   const hasDocuments = task.proofDocuments && task.proofDocuments.length > 0
 
+  const currentStatus = STATUS_OPTIONS.find(s => s.value === task.status) || STATUS_OPTIONS[0]
+
   const handleStatusChange = async (newStatus: string) => {
-    if (newStatus === 'COMPLETED' && task.status !== 'COMPLETED') {
+    if (newStatus === task.status) return
+
+    if (newStatus === 'COMPLETED') {
       setShowCompletionDialog(true)
       return
     }
-    if (newStatus === 'BLOCKED' && task.status !== 'BLOCKED') {
+    if (newStatus === 'BLOCKED') {
       setShowBlockedDialog(true)
       return
     }
+
     setIsUpdating(true)
     await onStatusChange(task.id, newStatus)
     setIsUpdating(false)
@@ -439,48 +356,6 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
     setIsUpdating(false)
   }
 
-  // Primary action based on current status
-  const getPrimaryAction = () => {
-    if (isNotApplicable) return null
-
-    if (isCompleted) {
-      return {
-        label: 'Reopen',
-        action: () => handleStatusChange('IN_PROGRESS'),
-        variant: 'outline' as const,
-        className: 'text-slate-600 hover:text-slate-700',
-      }
-    }
-
-    if (isBlocked || isDeferred) {
-      return {
-        label: 'Resume',
-        action: () => handleStatusChange('IN_PROGRESS'),
-        variant: 'outline' as const,
-        className: 'text-blue-600 border-blue-200 hover:bg-blue-50',
-      }
-    }
-
-    if (isInProgress) {
-      return {
-        label: 'Complete',
-        action: () => handleStatusChange('COMPLETED'),
-        variant: 'default' as const,
-        className: 'bg-emerald-600 hover:bg-emerald-700 text-white',
-      }
-    }
-
-    // Pending
-    return {
-      label: 'Start',
-      action: () => handleStatusChange('IN_PROGRESS'),
-      variant: 'default' as const,
-      className: 'bg-blue-600 hover:bg-blue-700 text-white',
-    }
-  }
-
-  const primaryAction = getPrimaryAction()
-
   return (
     <motion.div
       layout
@@ -499,226 +374,201 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
     >
       {/* Main Card Content */}
       <div className="p-5">
-        <div className="flex gap-4">
-          {/* Status Indicator */}
-          <div className="flex-shrink-0 pt-0.5">
-            <StatusIndicator status={task.status} />
-          </div>
+        {/* Title and Meta */}
+        <div className="mb-4">
+          <h3 className={cn(
+            "text-base font-semibold leading-snug mb-2",
+            isCompleted ? "text-emerald-800 dark:text-emerald-300" : "text-slate-900 dark:text-slate-100",
+            (isNotApplicable || isDeferred) && "text-slate-500 dark:text-slate-400"
+          )}>
+            {task.title}
+          </h3>
 
-          {/* Content Area */}
-          <div className="flex-1 min-w-0">
-            {/* Title */}
-            <h3 className={cn(
-              "text-base font-semibold leading-snug mb-2",
-              isCompleted ? "text-emerald-800 dark:text-emerald-300" : "text-slate-900 dark:text-slate-100",
-              (isNotApplicable || isDeferred) && "text-slate-500 dark:text-slate-400"
+          {/* Meta Row */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm">
+            {/* Category Badge */}
+            <span className={cn(
+              "px-2 py-0.5 text-xs font-medium rounded-md",
+              getBRICategoryColor(task.briCategory)
             )}>
-              {task.title}
-            </h3>
+              {getBRICategoryLabel(task.briCategory, true)}
+            </span>
 
-            {/* Meta Row */}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm">
-              {/* Category Badge */}
+            {/* Impact */}
+            <span className={cn("flex items-center gap-1 text-xs", impactConfig.color)}>
+              <span className={cn("w-1.5 h-1.5 rounded-full", impactConfig.dotColor)} />
+              {impactConfig.label}
+            </span>
+
+            {/* Effort */}
+            <span className={cn("text-xs", effortConfig.color)}>
+              {effortConfig.label} effort
+            </span>
+
+            {/* Due Date */}
+            {task.dueDate && (
               <span className={cn(
-                "px-2 py-0.5 text-xs font-medium rounded-md",
-                getBRICategoryColor(task.briCategory)
+                "flex items-center gap-1 text-xs",
+                formatDueDate(task.dueDate).isOverdue
+                  ? "text-rose-600 font-medium"
+                  : formatDueDate(task.dueDate).isUrgent
+                    ? "text-amber-600"
+                    : "text-slate-500"
               )}>
-                {getBRICategoryLabel(task.briCategory, true)}
+                <Clock className="h-3 w-3" />
+                {formatDueDate(task.dueDate).text}
               </span>
-
-              {/* Impact */}
-              <span className={cn("flex items-center gap-1 text-xs", impactConfig.color)}>
-                <span className={cn("w-1.5 h-1.5 rounded-full", impactConfig.dotColor)} />
-                {impactConfig.label}
-              </span>
-
-              {/* Effort */}
-              <span className={cn("text-xs", effortConfig.color)}>
-                {effortConfig.label} effort
-              </span>
-
-              {/* Due Date */}
-              {task.dueDate && (
-                <span className={cn(
-                  "flex items-center gap-1 text-xs",
-                  formatDueDate(task.dueDate).isOverdue
-                    ? "text-rose-600 font-medium"
-                    : formatDueDate(task.dueDate).isUrgent
-                      ? "text-amber-600"
-                      : "text-slate-500"
-                )}>
-                  <Clock className="h-3 w-3" />
-                  {formatDueDate(task.dueDate).text}
-                </span>
-              )}
-
-              {/* Assignee */}
-              {showAssignment && task.primaryAssignee && (
-                <span className="flex items-center gap-1.5 text-xs text-slate-500">
-                  {task.primaryAssignee.avatarUrl ? (
-                    <img
-                      src={task.primaryAssignee.avatarUrl}
-                      alt=""
-                      className="w-4 h-4 rounded-full"
-                    />
-                  ) : (
-                    <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] flex items-center justify-center font-medium text-slate-600 dark:text-slate-300">
-                      {getInitials(task.primaryAssignee.name, task.primaryAssignee.email)}
-                    </span>
-                  )}
-                  <span className="truncate max-w-[80px]">
-                    {task.primaryAssignee.name || task.primaryAssignee.email.split('@')[0]}
-                  </span>
-                </span>
-              )}
-
-              {/* Evidence indicator */}
-              {hasDocuments && (
-                <span className="flex items-center gap-1 text-xs text-slate-500">
-                  <Paperclip className="h-3 w-3" />
-                  {task.proofDocuments!.length}
-                </span>
-              )}
-            </div>
-
-            {/* Blocked Alert */}
-            {isBlocked && task.blockedReason && (
-              <div className="mt-3 flex items-start gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/50">
-                <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-amber-800 dark:text-amber-200">{task.blockedReason}</p>
-              </div>
             )}
 
-            {/* Status Label + Expand */}
-            <div className="mt-3 flex items-center gap-3">
-              <span className={cn(
-                "text-xs font-medium",
-                statusConfig.color
-              )}>
-                {statusConfig.label}
+            {/* Evidence indicator */}
+            {hasDocuments && (
+              <span className="flex items-center gap-1 text-xs text-slate-500">
+                <Paperclip className="h-3 w-3" />
+                {task.proofDocuments!.length}
               </span>
-              <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors flex items-center gap-1"
-              >
-                {isExpanded ? 'Hide details' : 'Show details'}
-                <motion.div
-                  animate={{ rotate: isExpanded ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <ChevronDown className="h-3 w-3" />
-                </motion.div>
-              </button>
-            </div>
-          </div>
-
-          {/* Right Side Actions */}
-          <div className="flex-shrink-0 flex items-start gap-2">
-            {/* Primary Action Button */}
-            {primaryAction && (
-              <Button
-                size="sm"
-                variant={primaryAction.variant}
-                onClick={primaryAction.action}
-                disabled={isUpdating}
-                className={cn("hidden sm:flex", primaryAction.className)}
-              >
-                {primaryAction.label}
-                <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-              </Button>
-            )}
-
-            {/* More Actions Menu */}
-            {!isNotApplicable && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600"
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  {/* Status Changes */}
-                  {isPending && (
-                    <DropdownMenuItem onClick={() => handleStatusChange('IN_PROGRESS')}>
-                      <PlayCircle className="mr-2 h-4 w-4 text-blue-500" />
-                      Start Task
-                    </DropdownMenuItem>
-                  )}
-                  {isInProgress && (
-                    <DropdownMenuItem onClick={() => handleStatusChange('COMPLETED')}>
-                      <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-500" />
-                      Mark Complete
-                    </DropdownMenuItem>
-                  )}
-                  {(isBlocked || isDeferred) && (
-                    <DropdownMenuItem onClick={() => handleStatusChange('IN_PROGRESS')}>
-                      <PlayCircle className="mr-2 h-4 w-4 text-blue-500" />
-                      Resume Task
-                    </DropdownMenuItem>
-                  )}
-                  {isCompleted && (
-                    <DropdownMenuItem onClick={() => handleStatusChange('IN_PROGRESS')}>
-                      <PlayCircle className="mr-2 h-4 w-4 text-blue-500" />
-                      Reopen Task
-                    </DropdownMenuItem>
-                  )}
-
-                  {(isPending || isInProgress) && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => setShowBlockedDialog(true)}>
-                        <Ban className="mr-2 h-4 w-4 text-amber-500" />
-                        Mark Blocked
-                      </DropdownMenuItem>
-                    </>
-                  )}
-
-                  <DropdownMenuSeparator />
-
-                  {/* Assignment */}
-                  {onAssign && (
-                    <DropdownMenuItem onClick={() => onAssign(task.id)}>
-                      <User className="mr-2 h-4 w-4" />
-                      {task.primaryAssignee ? 'Reassign' : 'Assign'}
-                    </DropdownMenuItem>
-                  )}
-
-                  {/* Evidence */}
-                  {!isCompleted && (
-                    <DropdownMenuItem onClick={() => setShowUploadDialog(true)}>
-                      <Paperclip className="mr-2 h-4 w-4" />
-                      Add Evidence
-                    </DropdownMenuItem>
-                  )}
-
-                  <DropdownMenuSeparator />
-
-                  {/* Planning */}
-                  {!isDeferred && !isCompleted && (
-                    <DropdownMenuItem
-                      onClick={() => handleStatusChange('DEFERRED')}
-                      className="text-slate-500"
-                    >
-                      <CalendarClock className="mr-2 h-4 w-4" />
-                      Defer Task
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem
-                    onClick={() => handleStatusChange('NOT_APPLICABLE')}
-                    className="text-slate-500"
-                  >
-                    <XCircle className="mr-2 h-4 w-4" />
-                    Not Applicable
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             )}
           </div>
         </div>
+
+        {/* Blocked Alert */}
+        {isBlocked && task.blockedReason && (
+          <div className="mb-4 flex items-start gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/50">
+            <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-amber-800 dark:text-amber-200">{task.blockedReason}</p>
+          </div>
+        )}
+
+        {/* Status Selection - THE CORE INTERACTION */}
+        <div className="space-y-3">
+          {/* Main Status Options */}
+          <div className="flex flex-wrap gap-2">
+            {STATUS_OPTIONS.map((status) => {
+              const Icon = status.icon
+              const isActive = task.status === status.value
+
+              return (
+                <button
+                  key={status.value}
+                  onClick={() => handleStatusChange(status.value)}
+                  disabled={isUpdating}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150",
+                    isActive
+                      ? `${status.activeBg} text-white shadow-sm`
+                      : `${status.bg} ${status.color} hover:opacity-80`,
+                    isUpdating && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {status.label}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Secondary Row: Planning Options + Add Evidence + Assignee */}
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            {/* Planning Options */}
+            {PLANNING_OPTIONS.map((option) => {
+              const Icon = option.icon
+              const isActive = task.status === option.value
+
+              return (
+                <button
+                  key={option.value}
+                  onClick={() => handleStatusChange(option.value)}
+                  disabled={isUpdating}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs transition-all duration-150",
+                    isActive
+                      ? "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+                      : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800",
+                    isUpdating && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <Icon className="h-3 w-3" />
+                  {option.label}
+                </button>
+              )
+            })}
+
+            {/* Divider */}
+            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
+
+            {/* Add Evidence */}
+            <button
+              onClick={() => setShowUploadDialog(true)}
+              disabled={isUpdating}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs transition-all duration-150",
+                "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800",
+                isUpdating && "opacity-50 cursor-not-allowed"
+              )}
+            >
+              <Paperclip className="h-3 w-3" />
+              Add Evidence
+            </button>
+
+            {/* Assignee - Clickable */}
+            {showAssignment && onAssign && (
+              <>
+                <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
+                <button
+                  onClick={() => onAssign(task.id)}
+                  disabled={isUpdating}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs transition-all duration-150",
+                    "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800",
+                    isUpdating && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  {task.primaryAssignee ? (
+                    <>
+                      {task.primaryAssignee.avatarUrl ? (
+                        <img
+                          src={task.primaryAssignee.avatarUrl}
+                          alt=""
+                          className="w-4 h-4 rounded-full"
+                        />
+                      ) : (
+                        <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] flex items-center justify-center font-medium text-slate-600 dark:text-slate-300">
+                          {getInitials(task.primaryAssignee.name, task.primaryAssignee.email)}
+                        </span>
+                      )}
+                      <span className="truncate max-w-[80px]">
+                        {task.primaryAssignee.name || task.primaryAssignee.email.split('@')[0]}
+                      </span>
+                    </>
+                  ) : task.invites && task.invites.length > 0 ? (
+                    <>
+                      <Clock className="h-3 w-3 text-amber-500" />
+                      <span className="text-amber-600">Invite pending</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserCircle2 className="h-3.5 w-3.5" />
+                      <span>Unassigned</span>
+                    </>
+                  )}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Expand/Collapse */}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="mt-4 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors flex items-center gap-1"
+        >
+          {isExpanded ? 'Hide details' : 'Show details'}
+          <motion.div
+            animate={{ rotate: isExpanded ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <ChevronDown className="h-3 w-3" />
+          </motion.div>
+        </button>
       </div>
 
       {/* Expanded Details Section */}
@@ -764,87 +614,53 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
               </div>
 
               {/* Evidence Section */}
-              {(hasDocuments || !isCompleted) && (
+              {hasDocuments && (
                 <div className={cn(
                   "p-4 rounded-lg border",
                   isCompleted
                     ? "bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-200/50 dark:border-emerald-700/50"
                     : "bg-white dark:bg-slate-900 border-slate-200/50 dark:border-slate-700/50"
                 )}>
-                  <div className="flex items-center justify-between mb-3">
-                    <p className={cn(
-                      "text-xs font-semibold uppercase tracking-wide",
-                      isCompleted ? "text-emerald-700 dark:text-emerald-400" : "text-slate-500"
-                    )}>
-                      {isCompleted ? 'Evidence & Proof' : 'Evidence'}
-                    </p>
-                    {!isCompleted && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setShowUploadDialog(true)}
-                        className="h-7 text-xs text-slate-600 hover:text-slate-900"
+                  <p className={cn(
+                    "text-xs font-semibold uppercase tracking-wide mb-3",
+                    isCompleted ? "text-emerald-700 dark:text-emerald-400" : "text-slate-500"
+                  )}>
+                    {isCompleted ? 'Evidence & Proof' : 'Attached Evidence'}
+                  </p>
+
+                  <div className="space-y-2">
+                    {task.proofDocuments!.map(doc => (
+                      <button
+                        key={doc.id}
+                        onClick={async () => {
+                          try {
+                            const response = await fetch(`/api/tasks/${task.id}/proof`)
+                            if (response.ok) {
+                              const data = await response.json()
+                              const docWithUrl = data.proofDocuments?.find((d: { id: string; signedUrl?: string }) => d.id === doc.id)
+                              if (docWithUrl?.signedUrl) {
+                                window.open(docWithUrl.signedUrl, '_blank')
+                              }
+                            }
+                          } catch (err) {
+                            console.error('Error fetching document URL:', err)
+                          }
+                        }}
+                        className={cn(
+                          "flex items-center gap-2 text-sm hover:underline",
+                          isCompleted ? "text-emerald-700 dark:text-emerald-300" : "text-blue-600 dark:text-blue-400"
+                        )}
                       >
-                        <Paperclip className="h-3 w-3 mr-1.5" />
-                        Add
-                      </Button>
+                        <FileText className="h-4 w-4" />
+                        {doc.fileName || 'View document'}
+                      </button>
+                    ))}
+                    {task.completionNotes && (
+                      <p className="mt-3 text-sm text-slate-600 dark:text-slate-400 italic border-t border-current/10 pt-3">
+                        {task.completionNotes}
+                      </p>
                     )}
                   </div>
-
-                  {hasDocuments ? (
-                    <div className="space-y-2">
-                      {task.proofDocuments!.map(doc => (
-                        <button
-                          key={doc.id}
-                          onClick={async () => {
-                            try {
-                              const response = await fetch(`/api/tasks/${task.id}/proof`)
-                              if (response.ok) {
-                                const data = await response.json()
-                                const docWithUrl = data.proofDocuments?.find((d: { id: string; signedUrl?: string }) => d.id === doc.id)
-                                if (docWithUrl?.signedUrl) {
-                                  window.open(docWithUrl.signedUrl, '_blank')
-                                }
-                              }
-                            } catch (err) {
-                              console.error('Error fetching document URL:', err)
-                            }
-                          }}
-                          className={cn(
-                            "flex items-center gap-2 text-sm hover:underline",
-                            isCompleted ? "text-emerald-700 dark:text-emerald-300" : "text-blue-600 dark:text-blue-400"
-                          )}
-                        >
-                          <FileText className="h-4 w-4" />
-                          {doc.fileName || 'View document'}
-                        </button>
-                      ))}
-                      {task.completionNotes && (
-                        <p className="mt-3 text-sm text-slate-600 dark:text-slate-400 italic border-t border-current/10 pt-3">
-                          {task.completionNotes}
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-slate-500">
-                      No evidence attached yet
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* Mobile Primary Action */}
-              {primaryAction && (
-                <div className="sm:hidden">
-                  <Button
-                    className={cn("w-full", primaryAction.className)}
-                    variant={primaryAction.variant}
-                    onClick={primaryAction.action}
-                    disabled={isUpdating}
-                  >
-                    {primaryAction.label}
-                    <ArrowRight className="ml-1.5 h-4 w-4" />
-                  </Button>
                 </div>
               )}
             </div>
