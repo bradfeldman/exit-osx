@@ -22,6 +22,7 @@ interface InviteDetails {
   emailHint: string
   role: string
   organizationName: string
+  companyName: string | null
   inviterName: string
   roleTemplate?: { name: string; icon: string | null }
   isExternalAdvisor: boolean
@@ -207,7 +208,7 @@ export default function InviteAcceptPage() {
                   Team Invitation
                 </motion.div>
                 <h1 className="text-3xl font-semibold text-slate-900">
-                  Join {invite.organizationName}
+                  Join {invite.companyName || invite.organizationName}
                 </h1>
                 <p className="text-muted-foreground">
                   {invite.inviterName} invited you to collaborate

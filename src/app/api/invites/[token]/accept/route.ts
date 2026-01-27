@@ -28,7 +28,18 @@ export async function POST(
     const invite = await prisma.organizationInvite.findUnique({
       where: { token },
       include: {
-        organization: { select: { id: true, name: true } },
+        organization: {
+          select: {
+            id: true,
+            name: true,
+            companies: {
+              where: { deletedAt: null },
+              orderBy: { createdAt: 'asc' },
+              take: 1,
+              select: { name: true }
+            }
+          }
+        },
         roleTemplate: { select: { id: true, slug: true, name: true } }
       }
     })
@@ -155,9 +166,12 @@ export async function POST(
       }
     }
 
+    // Use company name if available for better UX
+    const displayName = invite.organization.companies[0]?.name || invite.organization.name
+
     return NextResponse.json({
       success: true,
-      message: `You have joined ${invite.organization.name}`,
+      message: `You have joined ${displayName}`,
       organization: invite.organization,
     })
   } catch (error) {
@@ -191,7 +205,17 @@ export async function GET(
     const invite = await prisma.organizationInvite.findUnique({
       where: { token },
       include: {
-        organization: { select: { name: true } },
+        organization: {
+          select: {
+            name: true,
+            companies: {
+              where: { deletedAt: null },
+              orderBy: { createdAt: 'asc' },
+              take: 1,
+              select: { name: true }
+            }
+          }
+        },
         inviter: { select: { name: true, email: true } },
         roleTemplate: { select: { name: true, icon: true } }
       }
@@ -223,6 +247,9 @@ export async function GET(
       select: { id: true }
     })
 
+    // Get the primary company name (first company in org) for better UX
+    const primaryCompanyName = invite.organization.companies[0]?.name
+
     return NextResponse.json({
       invite: {
         // SECURITY: Only reveal minimal info needed for the acceptance flow
@@ -230,6 +257,8 @@ export async function GET(
         emailHint: invite.email.replace(/(.{2})(.*)(@.*)/, '$1***$3'),
         role: invite.role,
         organizationName: invite.organization.name,
+        // Show company name if available, otherwise fall back to org name
+        companyName: primaryCompanyName || null,
         inviterName: invite.inviter.name || 'A team member',
         roleTemplate: invite.roleTemplate ? { name: invite.roleTemplate.name, icon: invite.roleTemplate.icon } : null,
         isExternalAdvisor: invite.isExternalAdvisor,
