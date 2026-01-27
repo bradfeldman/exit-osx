@@ -990,6 +990,55 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
     }
   }, [companyId, adjustments])
 
+  // Create a new adjustment for a specific period (when one doesn't exist)
+  const handleCreateAdjustmentForPeriod = useCallback(async (
+    periodId: string,
+    description: string,
+    type: 'ADD_BACK' | 'DEDUCTION',
+    amount: number
+  ) => {
+    try {
+      const response = await fetchWithRetry(`/api/companies/${companyId}/adjustments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description,
+          amount,
+          type,
+          frequency: 'ANNUAL',
+          periodId,
+        }),
+      })
+      if (response.ok) {
+        const data = await response.json()
+        const newAdj = { ...data.adjustment, amount: Number(data.adjustment.amount) || 0 }
+        setAdjustments(prev => [...prev, newAdj])
+
+        // Recalculate totals for the period
+        const periodAdjs = [...adjustments.filter(a => a.periodId === periodId), newAdj]
+        const totalAddBacks = periodAdjs
+          .filter(a => a.type === 'ADD_BACK')
+          .reduce((sum, a) => sum + (a.frequency === 'MONTHLY' ? a.amount * 12 : a.amount), 0)
+        const totalDeductions = periodAdjs
+          .filter(a => a.type === 'DEDUCTION')
+          .reduce((sum, a) => sum + (a.frequency === 'MONTHLY' ? a.amount * 12 : a.amount), 0)
+        const netAdjustment = totalAddBacks - totalDeductions
+        setData(prev => ({
+          ...prev,
+          [periodId]: {
+            ...prev[periodId],
+            totalAddBacks,
+            totalDeductions,
+            netAdjustment,
+            adjustedEbitda: (prev[periodId]?.ebitda || 0) + netAdjustment,
+          }
+        }))
+      }
+    } catch (err) {
+      console.error('Error creating adjustment:', err)
+    }
+  }, [companyId, adjustments])
+
   // Delete an adjustment (from all periods with same description)
   const handleDeleteAdjustment = useCallback(async (description: string) => {
     try {
@@ -1343,7 +1392,14 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
                           <td key={period.id} className="p-0">
                             <AdjustmentCell
                               value={adj?.amount || 0}
-                              onChange={(amount) => adj && handleUpdateAdjustmentAmount(adj.id, amount)}
+                              onChange={(amount) => {
+                                if (adj) {
+                                  handleUpdateAdjustmentAmount(adj.id, amount)
+                                } else {
+                                  // No adjustment exists for this period - create one
+                                  handleCreateAdjustmentForPeriod(period.id, item.description, item.type, amount)
+                                }
+                              }}
                               cellId={cellId}
                               isActive={activeCellId === cellId}
                               onActivate={setActiveCellId}
@@ -1409,7 +1465,14 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
                             <td key={period.id} className="p-0">
                               <AdjustmentCell
                                 value={adj?.amount || 0}
-                                onChange={(amount) => adj && handleUpdateAdjustmentAmount(adj.id, amount)}
+                                onChange={(amount) => {
+                                  if (adj) {
+                                    handleUpdateAdjustmentAmount(adj.id, amount)
+                                  } else {
+                                    // No adjustment exists for this period - create one
+                                    handleCreateAdjustmentForPeriod(period.id, item.description, item.type, amount)
+                                  }
+                                }}
                                 cellId={cellId}
                                 isActive={activeCellId === cellId}
                                 onActivate={setActiveCellId}
