@@ -112,24 +112,7 @@ CREATE POLICY "org_users_service_role" ON organization_users
   FOR ALL USING (auth.role() = 'service_role');
 
 -- ============================================
--- 4. MEMBER_PERMISSIONS TABLE
--- ============================================
-ALTER TABLE member_permissions ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "member_perms_select" ON member_permissions
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM organization_users ou
-      WHERE ou.id = member_permissions.organization_user_id
-      AND public.user_in_org(ou.organization_id)
-    )
-  );
-
-CREATE POLICY "member_perms_service_role" ON member_permissions
-  FOR ALL USING (auth.role() = 'service_role');
-
--- ============================================
--- 5. COMPANIES TABLE
+-- 4. COMPANIES TABLE
 -- ============================================
 ALTER TABLE companies ENABLE ROW LEVEL SECURITY;
 
