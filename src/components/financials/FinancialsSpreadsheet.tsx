@@ -958,17 +958,13 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
 
   // Update an adjustment amount
   const handleUpdateAdjustmentAmount = useCallback(async (adjustmentId: string, amount: number) => {
-    console.log('[AddBacks] Updating adjustment:', { adjustmentId, amount })
     try {
       const response = await fetchWithRetry(`/api/companies/${companyId}/adjustments?adjustmentId=${adjustmentId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount }),
       })
-      console.log('[AddBacks] Update response:', response.status, response.ok)
       if (response.ok) {
-        const responseData = await response.json()
-        console.log('[AddBacks] Update response data:', responseData)
         setAdjustments(prev => prev.map(a =>
           a.id === adjustmentId ? { ...a, amount } : a
         ))
@@ -998,7 +994,7 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
         }
       }
     } catch (err) {
-      console.error('[AddBacks] Error updating adjustment:', err)
+      console.error('Error updating adjustment:', err)
     }
   }, [companyId, adjustments])
 
@@ -1009,7 +1005,6 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
     type: 'ADD_BACK' | 'DEDUCTION',
     amount: number
   ) => {
-    console.log('[AddBacks] Creating new adjustment:', { periodId, description, type, amount })
     try {
       const response = await fetchWithRetry(`/api/companies/${companyId}/adjustments`, {
         method: 'POST',
@@ -1406,7 +1401,6 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
                             <AdjustmentCell
                               value={adj?.amount || 0}
                               onChange={(amount) => {
-                                console.log('[AddBacks] Cell onChange:', { periodId: period.id, description: item.description, amount, hasAdj: !!adj, adjId: adj?.id })
                                 if (adj) {
                                   handleUpdateAdjustmentAmount(adj.id, amount)
                                 } else {
@@ -1480,7 +1474,6 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
                               <AdjustmentCell
                                 value={adj?.amount || 0}
                                 onChange={(amount) => {
-                                  console.log('[AddBacks] Deduction cell onChange:', { periodId: period.id, description: item.description, amount, hasAdj: !!adj, adjId: adj?.id })
                                   if (adj) {
                                     handleUpdateAdjustmentAmount(adj.id, amount)
                                   } else {
