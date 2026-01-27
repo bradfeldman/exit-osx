@@ -67,6 +67,7 @@ interface Member {
 
 interface Invite {
   id: string
+  token: string
   email: string
   role: UserRole
   functionalCategories: FunctionalCategory[]
@@ -327,6 +328,7 @@ export function OrganizationSettings() {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
   const [permissionsDialogOpen, setPermissionsDialogOpen] = useState(false)
   const [selectedMember, setSelectedMember] = useState<Member | null>(null)
+  const [copiedInviteId, setCopiedInviteId] = useState<string | null>(null)
 
   // Invite form state
   const [inviteEmail, setInviteEmail] = useState('')
@@ -519,6 +521,14 @@ export function OrganizationSettings() {
     } catch (error) {
       console.error('Failed to cancel invite:', error)
     }
+  }
+
+  function handleCopyInviteLink(invite: Invite) {
+    const baseUrl = window.location.origin
+    const inviteUrl = `${baseUrl}/invite/${invite.token}`
+    navigator.clipboard.writeText(inviteUrl)
+    setCopiedInviteId(invite.id)
+    setTimeout(() => setCopiedInviteId(null), 2000)
   }
 
   function openPermissionsDialog(member: Member) {
@@ -942,14 +952,34 @@ export function OrganizationSettings() {
                         {new Date(invite.expiresAt).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => handleCancelInvite(invite.id)}
-                        >
-                          Cancel
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCopyInviteLink(invite)}
+                            className="text-muted-foreground hover:text-foreground"
+                          >
+                            {copiedInviteId === invite.id ? (
+                              <>
+                                <Check className="h-4 w-4 mr-1" />
+                                Copied
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="h-4 w-4 mr-1" />
+                                Copy Link
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => handleCancelInvite(invite.id)}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   )
