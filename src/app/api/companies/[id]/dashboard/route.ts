@@ -125,12 +125,15 @@ export async function GET(
     const latestSnapshot = company.valuationSnapshots[0]
 
     // Fetch DCF assumptions to check if DCF value should be used
+    // Also fetch EBITDA multiple overrides for custom valuation ranges
     const dcfAssumptions = await prisma.dCFAssumptions.findUnique({
       where: { companyId },
       select: {
         useDCFValue: true,
         enterpriseValue: true,
         equityValue: true,
+        ebitdaMultipleLowOverride: true,
+        ebitdaMultipleHighOverride: true,
       },
     })
 
@@ -390,8 +393,15 @@ export async function GET(
 
     // Pre-calculate estimated multiple for companies without snapshot
     // This is used in both tier1 and tier2
-    const multipleLow = industryMultiple ? Number(industryMultiple.ebitdaMultipleLow) : 3.0
-    const multipleHigh = industryMultiple ? Number(industryMultiple.ebitdaMultipleHigh) : 6.0
+    // Check for custom EBITDA multiple overrides from DCF settings
+    const hasMultipleOverride = dcfAssumptions?.ebitdaMultipleLowOverride != null &&
+                                dcfAssumptions?.ebitdaMultipleHighOverride != null
+    const multipleLow = hasMultipleOverride
+      ? Number(dcfAssumptions.ebitdaMultipleLowOverride)
+      : (industryMultiple ? Number(industryMultiple.ebitdaMultipleLow) : 3.0)
+    const multipleHigh = hasMultipleOverride
+      ? Number(dcfAssumptions.ebitdaMultipleHighOverride)
+      : (industryMultiple ? Number(industryMultiple.ebitdaMultipleHigh) : 6.0)
     const calculatedCoreScore = calculateCoreScore(company.coreFactors)
     const estimatedMultiple = calculatedCoreScore !== null
       ? multipleLow + calculatedCoreScore * (multipleHigh - multipleLow)
@@ -422,14 +432,29 @@ export async function GET(
       // UNLESS useDCFValue is enabled - then use DCF enterprise value
       tier1: (() => {
         if (latestSnapshot) {
-          const snapshotMultiple = Number(latestSnapshot.finalMultiple)
-          const snapshotMultipleHigh = Number(latestSnapshot.industryMultipleHigh)
+          // Use override multiples if set, otherwise use snapshot's original industry multiples
+          const effectiveMultipleLow = hasMultipleOverride
+            ? multipleLow
+            : Number(latestSnapshot.industryMultipleLow)
+          const effectiveMultipleHigh = hasMultipleOverride
+            ? multipleHigh
+            : Number(latestSnapshot.industryMultipleHigh)
+
+          // Recalculate the final multiple using the effective range and the snapshot's scores
+          const snapshotCoreScore = Number(latestSnapshot.coreScore)
+          const snapshotBriScore = Number(latestSnapshot.briScore)
+          const ALPHA = 1.4
+
+          // Recalculate base and final multiples using the (possibly overridden) range
+          const baseMultiple = effectiveMultipleLow + snapshotCoreScore * (effectiveMultipleHigh - effectiveMultipleLow)
+          const discountFraction = Math.pow(1 - snapshotBriScore, ALPHA)
+          const recalculatedFinalMultiple = effectiveMultipleLow + (baseMultiple - effectiveMultipleLow) * (1 - discountFraction)
 
           // If using DCF, use that value and calculate implied multiple
-          // Otherwise, use EBITDA × snapshot multiple
-          const currentValue = dcfEnterpriseValue ?? (adjustedEbitda * snapshotMultiple)
-          const impliedMultiple = dcfImpliedMultiple ?? snapshotMultiple
-          const potentialValue = adjustedEbitda * snapshotMultipleHigh
+          // Otherwise, use EBITDA × recalculated multiple
+          const currentValue = dcfEnterpriseValue ?? (adjustedEbitda * recalculatedFinalMultiple)
+          const impliedMultiple = dcfImpliedMultiple ?? recalculatedFinalMultiple
+          const potentialValue = adjustedEbitda * effectiveMultipleHigh
           // Value gap: positive when below potential, zero when at or above
           const valueGap = Math.max(0, potentialValue - currentValue)
           // Market premium: positive when above potential (DCF exceeds industry max)
@@ -440,19 +465,20 @@ export async function GET(
             potentialValue,
             valueGap,
             marketPremium,
-            briScore: Math.round(Number(latestSnapshot.briScore) * 100),
-            coreScore: Math.round(Number(latestSnapshot.coreScore) * 100),
+            briScore: Math.round(snapshotBriScore * 100),
+            coreScore: Math.round(snapshotCoreScore * 100),
             finalMultiple: impliedMultiple,
             multipleRange: {
-              low: Number(latestSnapshot.industryMultipleLow),
-              high: snapshotMultipleHigh,
+              low: effectiveMultipleLow,
+              high: effectiveMultipleHigh,
             },
             industryName: buildIndustryPath(company),
             isEstimated: false,
             useDCFValue: useDCF,
+            hasCustomMultiples: hasMultipleOverride,
           }
         } else {
-          // No snapshot - estimate values based on industry multiples
+          // No snapshot - estimate values based on industry multiples (or overrides)
           // Still respect DCF value if enabled
           const currentValue = dcfEnterpriseValue ?? (adjustedEbitda * estimatedMultiple)
           const impliedMultiple = dcfImpliedMultiple ?? estimatedMultiple
@@ -477,31 +503,47 @@ export async function GET(
             industryName: buildIndustryPath(company),
             isEstimated: !useDCF,
             useDCFValue: useDCF,
+            hasCustomMultiples: hasMultipleOverride,
           }
         }
       })(),
       // Tier 2: Value Drivers
       // Priority: 1. Financials, 2. Revenue conversion, 3. Company Assessment
-      tier2: {
-        adjustedEbitda,
-        isEbitdaEstimated,
-        isEbitdaFromFinancials,
-        ebitdaSource: isEbitdaFromFinancials
-          ? 'financials'
-          : isEbitdaEstimated
-            ? 'revenue_conversion'
-            : 'company_assessment',
-        fiscalYear: selectedFiscalYear, // Which FY the EBITDA is from (null if not from financials)
-        multipleRange: latestSnapshot ? {
-          low: Number(latestSnapshot.industryMultipleLow),
-          high: Number(latestSnapshot.industryMultipleHigh),
-          current: dcfImpliedMultiple ?? Number(latestSnapshot.finalMultiple),
-        } : {
-          low: multipleLow,
-          high: multipleHigh,
-          current: dcfImpliedMultiple ?? estimatedMultiple,
-        },
-      },
+      tier2: (() => {
+        // Recalculate current multiple for tier2 if we have a snapshot and overrides
+        let tier2CurrentMultiple = estimatedMultiple
+        if (latestSnapshot) {
+          if (hasMultipleOverride) {
+            // Recalculate with override range
+            const snapshotCoreScore = Number(latestSnapshot.coreScore)
+            const snapshotBriScore = Number(latestSnapshot.briScore)
+            const ALPHA = 1.4
+            const baseMultiple = multipleLow + snapshotCoreScore * (multipleHigh - multipleLow)
+            const discountFraction = Math.pow(1 - snapshotBriScore, ALPHA)
+            tier2CurrentMultiple = multipleLow + (baseMultiple - multipleLow) * (1 - discountFraction)
+          } else {
+            tier2CurrentMultiple = Number(latestSnapshot.finalMultiple)
+          }
+        }
+
+        return {
+          adjustedEbitda,
+          isEbitdaEstimated,
+          isEbitdaFromFinancials,
+          ebitdaSource: isEbitdaFromFinancials
+            ? 'financials'
+            : isEbitdaEstimated
+              ? 'revenue_conversion'
+              : 'company_assessment',
+          fiscalYear: selectedFiscalYear, // Which FY the EBITDA is from (null if not from financials)
+          multipleRange: {
+            low: multipleLow,
+            high: multipleHigh,
+            current: dcfImpliedMultiple ?? tier2CurrentMultiple,
+          },
+          hasCustomMultiples: hasMultipleOverride,
+        }
+      })(),
       // Tier 3: Risk Breakdown
       tier3: latestSnapshot ? {
         categories: [
