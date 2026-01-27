@@ -1,20 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { formatPercent } from '@/lib/valuation/dcf-calculator'
-import { Pencil, X } from 'lucide-react'
+import { Settings2, RotateCcw } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface MarketDataPanelProps {
   industryBetaLow?: number
@@ -49,6 +45,52 @@ const MARKET_DATA = {
   }),
 }
 
+// Clean number input component
+function MultipleInput({
+  value,
+  onChange,
+  placeholder,
+  label,
+}: {
+  value: string
+  onChange: (value: string) => void
+  placeholder: string
+  label: string
+}) {
+  return (
+    <div className="flex-1">
+      <label className="block text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          type="text"
+          inputMode="decimal"
+          value={value}
+          onChange={(e) => {
+            // Allow empty, numbers, and decimals only
+            const val = e.target.value
+            if (val === '' || /^\d*\.?\d*$/.test(val)) {
+              onChange(val)
+            }
+          }}
+          placeholder={placeholder}
+          className={cn(
+            "w-full h-10 px-3 pr-7 rounded-lg text-sm font-medium",
+            "bg-muted/50 border border-border/50",
+            "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50",
+            "placeholder:text-muted-foreground/50 placeholder:font-normal",
+            "transition-all duration-150"
+          )}
+        />
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+          x
+        </span>
+      </div>
+    </div>
+  )
+}
+
 export function MarketDataPanel({
   industryBetaLow = 0.8,
   industryBetaHigh = 1.2,
@@ -61,60 +103,51 @@ export function MarketDataPanel({
   ebitdaMultipleHighOverride,
   onMultipleOverrideChange,
 }: MarketDataPanelProps) {
-  const [showMultipleDialog, setShowMultipleDialog] = useState(false)
+  const [open, setOpen] = useState(false)
   const [lowInput, setLowInput] = useState('')
   const [highInput, setHighInput] = useState('')
-  const [error, setError] = useState('')
 
   // Determine which values to display
   const hasOverride = ebitdaMultipleLowOverride != null && ebitdaMultipleHighOverride != null
   const displayLow = hasOverride ? ebitdaMultipleLowOverride : ebitdaMultipleLow
   const displayHigh = hasOverride ? ebitdaMultipleHighOverride : ebitdaMultipleHigh
 
-  const handleOpenDialog = () => {
-    // Pre-fill with current override or empty
-    setLowInput(ebitdaMultipleLowOverride?.toString() || '')
-    setHighInput(ebitdaMultipleHighOverride?.toString() || '')
-    setError('')
-    setShowMultipleDialog(true)
-  }
+  // Initialize inputs when popover opens
+  useEffect(() => {
+    if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLowInput(ebitdaMultipleLowOverride?.toString() || '')
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setHighInput(ebitdaMultipleHighOverride?.toString() || '')
+    }
+  }, [open, ebitdaMultipleLowOverride, ebitdaMultipleHighOverride])
 
-  const handleSave = () => {
+  // Validation
+  const lowNum = lowInput ? parseFloat(lowInput) : null
+  const highNum = highInput ? parseFloat(highInput) : null
+
+  const isLowValid = lowInput === '' || (lowNum !== null && !isNaN(lowNum) && lowNum > 0)
+  const isHighValid = highInput === '' || (highNum !== null && !isNaN(highNum) && highNum > 0)
+  const isRangeValid = !(lowNum !== null && highNum !== null && highNum <= lowNum)
+  const bothFilledOrBothEmpty = (lowInput === '' && highInput === '') || (lowInput !== '' && highInput !== '')
+
+  const canSave = isLowValid && isHighValid && isRangeValid && bothFilledOrBothEmpty
+
+  const handleApply = () => {
+    if (!canSave) return
+
     const low = lowInput ? parseFloat(lowInput) : null
     const high = highInput ? parseFloat(highInput) : null
 
-    // Validation
-    if ((low !== null && isNaN(low)) || (high !== null && isNaN(high))) {
-      setError('Please enter valid numbers')
-      return
-    }
-
-    if (low !== null && high !== null && high <= low) {
-      setError('High multiple must be greater than low multiple')
-      return
-    }
-
-    if ((low !== null && low <= 0) || (high !== null && high <= 0)) {
-      setError('Multiples must be greater than 0')
-      return
-    }
-
-    // If one is set, both must be set
-    if ((low !== null && high === null) || (low === null && high !== null)) {
-      setError('Please enter both low and high values, or clear both to use defaults')
-      return
-    }
-
     onMultipleOverrideChange?.(low, high)
-    setShowMultipleDialog(false)
+    setOpen(false)
   }
 
-  const handleClear = () => {
+  const handleReset = () => {
     setLowInput('')
     setHighInput('')
-    setError('')
     onMultipleOverrideChange?.(null, null)
-    setShowMultipleDialog(false)
+    setOpen(false)
   }
 
   return (
@@ -191,133 +224,133 @@ export function MarketDataPanel({
               </span>
             </div>
 
-            {/* EBITDA Multiples */}
-            <div className="flex justify-between items-center py-1">
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm text-gray-600">EBITDA Multiples</span>
-                {onMultipleOverrideChange && (
+            {/* EBITDA Multiples - Interactive Row */}
+            {onMultipleOverrideChange ? (
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
                   <button
-                    onClick={handleOpenDialog}
-                    className="text-xs text-primary hover:text-primary/80 hover:underline"
-                  >
-                    {hasOverride ? (
-                      <span className="flex items-center gap-0.5">
-                        <Pencil className="h-3 w-3" />
-                        Edit
-                      </span>
-                    ) : (
-                      'Change'
+                    className={cn(
+                      "w-full flex justify-between items-center py-2 px-2 -mx-2 rounded-md transition-all duration-150",
+                      "hover:bg-muted/50 group cursor-pointer",
+                      hasOverride && "bg-primary/5"
                     )}
+                  >
+                    <span className="text-sm text-gray-600 flex items-center gap-2">
+                      EBITDA Multiples
+                      <Settings2 className={cn(
+                        "h-3.5 w-3.5 transition-all duration-150",
+                        hasOverride
+                          ? "text-primary opacity-100"
+                          : "text-muted-foreground/40 opacity-0 group-hover:opacity-100"
+                      )} />
+                    </span>
+                    <span className={cn(
+                      "text-sm font-medium flex items-center gap-2",
+                      hasOverride ? "text-primary" : "text-gray-900"
+                    )}>
+                      {hasOverride && (
+                        <span className="text-[10px] font-medium text-primary/70 uppercase tracking-wide">
+                          Custom
+                        </span>
+                      )}
+                      {displayLow.toFixed(1)}x – {displayHigh.toFixed(1)}x
+                    </span>
                   </button>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5">
-                {hasOverride && (
-                  <span className="text-xs text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">
-                    Custom
-                  </span>
-                )}
+                </PopoverTrigger>
+                <PopoverContent
+                  align="end"
+                  className="w-72 p-0"
+                  sideOffset={8}
+                >
+                  <div className="p-4 space-y-4">
+                    {/* Header */}
+                    <div>
+                      <h4 className="font-medium text-sm">Custom Multiple Range</h4>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Industry default: {ebitdaMultipleLow.toFixed(1)}x – {ebitdaMultipleHigh.toFixed(1)}x
+                      </p>
+                    </div>
+
+                    {/* Inputs */}
+                    <div className="flex gap-3">
+                      <MultipleInput
+                        label="Low"
+                        value={lowInput}
+                        onChange={setLowInput}
+                        placeholder={ebitdaMultipleLow.toFixed(1)}
+                      />
+                      <MultipleInput
+                        label="High"
+                        value={highInput}
+                        onChange={setHighInput}
+                        placeholder={ebitdaMultipleHigh.toFixed(1)}
+                      />
+                    </div>
+
+                    {/* Validation feedback */}
+                    {!isRangeValid && (
+                      <p className="text-xs text-red-500">
+                        High must be greater than low
+                      </p>
+                    )}
+                    {!bothFilledOrBothEmpty && (
+                      <p className="text-xs text-muted-foreground">
+                        Enter both values or leave both empty
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="flex items-center justify-between gap-2 px-4 py-3 bg-muted/30 border-t">
+                    {hasOverride ? (
+                      <button
+                        onClick={handleReset}
+                        className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+                      >
+                        <RotateCcw className="h-3 w-3" />
+                        Reset to default
+                      </button>
+                    ) : (
+                      <div />
+                    )}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setOpen(false)}
+                        className="h-8 px-3 text-xs"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleApply}
+                        disabled={!canSave}
+                        className="h-8 px-4 text-xs"
+                      >
+                        Apply
+                      </Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <div className="flex justify-between items-center py-1">
+                <span className="text-sm text-gray-600">EBITDA Multiples</span>
                 <span className="text-sm font-medium text-gray-900">
                   {displayLow.toFixed(1)}x - {displayHigh.toFixed(1)}x
                 </span>
               </div>
-            </div>
+            )}
           </div>
 
           <div className="mt-3 pt-2 border-t border-gray-100">
             <span className="text-xs text-gray-400">
-              Source: {hasOverride ? 'Custom override' : industrySource}
+              Source: {hasOverride ? 'Custom' : industrySource}
             </span>
           </div>
         </CardContent>
       </Card>
-
-      {/* EBITDA Multiple Override Dialog */}
-      <Dialog open={showMultipleDialog} onOpenChange={setShowMultipleDialog}>
-        <DialogContent className="sm:max-w-[360px]">
-          <DialogHeader>
-            <DialogTitle>Custom EBITDA Multiple Range</DialogTitle>
-            <DialogDescription>
-              Override the industry default multiples ({ebitdaMultipleLow.toFixed(1)}x - {ebitdaMultipleHigh.toFixed(1)}x) with custom values.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="low-multiple">Low Multiple</Label>
-                <div className="relative">
-                  <Input
-                    id="low-multiple"
-                    type="number"
-                    step="0.1"
-                    min="0.1"
-                    placeholder={ebitdaMultipleLow.toFixed(1)}
-                    value={lowInput}
-                    onChange={(e) => {
-                      setLowInput(e.target.value)
-                      setError('')
-                    }}
-                    className="pr-6"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">x</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="high-multiple">High Multiple</Label>
-                <div className="relative">
-                  <Input
-                    id="high-multiple"
-                    type="number"
-                    step="0.1"
-                    min="0.1"
-                    placeholder={ebitdaMultipleHigh.toFixed(1)}
-                    value={highInput}
-                    onChange={(e) => {
-                      setHighInput(e.target.value)
-                      setError('')
-                    }}
-                    className="pr-6"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">x</span>
-                </div>
-              </div>
-            </div>
-
-            {error && (
-              <p className="text-sm text-red-600">{error}</p>
-            )}
-
-            <p className="text-xs text-muted-foreground">
-              Leave both fields empty to use industry defaults.
-            </p>
-          </div>
-
-          <DialogFooter className="flex justify-between sm:justify-between">
-            {hasOverride && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleClear}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-              >
-                <X className="h-4 w-4 mr-1" />
-                Clear Override
-              </Button>
-            )}
-            <div className="flex gap-2 ml-auto">
-              <Button variant="outline" onClick={() => setShowMultipleDialog(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSave}>
-                Save
-              </Button>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
