@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { getUserAccessibleCompanies } from '@/lib/access'
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET() {
   const result = await checkPermission('COMPANY_VIEW')
@@ -80,10 +81,16 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const result = await checkPermission('COMPANY_CREATE')
-  if (isAuthError(result)) return result.error
+  // First, check if user is authenticated
+  const supabase = await createClient()
+  const { data: { user: supabaseUser } } = await supabase.auth.getUser()
 
-  const { auth } = result
+  if (!supabaseUser) {
+    return NextResponse.json(
+      { error: 'Unauthorized', message: 'You must be logged in' },
+      { status: 401 }
+    )
+  }
 
   try {
     const body = await request.json()
@@ -106,10 +113,67 @@ export async function POST(request: Request) {
       )
     }
 
-    // Create the company in the user's organization
+    // Get the user from our database
+    const dbUser = await prisma.user.findUnique({
+      where: { authId: supabaseUser.id },
+      include: {
+        organizations: {
+          include: { organization: true }
+        }
+      }
+    })
+
+    if (!dbUser) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    // Find an organization where user has ADMIN or SUPER_ADMIN role (can create companies)
+    let targetOrg = dbUser.organizations.find(
+      ou => ou.role === 'ADMIN' || ou.role === 'SUPER_ADMIN'
+    )
+
+    // If user doesn't have an org where they can create companies, create one for them
+    if (!targetOrg) {
+      // Create a new personal organization for this user
+      const newOrg = await prisma.organization.create({
+        data: {
+          name: dbUser.name
+            ? `${dbUser.name}'s Organization`
+            : 'My Organization',
+          planTier: 'FOUNDATION',
+          subscriptionStatus: 'ACTIVE',
+          users: {
+            create: {
+              userId: dbUser.id,
+              role: 'ADMIN',
+            }
+          }
+        }
+      })
+
+      // Fetch the org user relationship we just created
+      const newOrgUser = await prisma.organizationUser.findFirst({
+        where: {
+          organizationId: newOrg.id,
+          userId: dbUser.id,
+        },
+        include: { organization: true }
+      })
+
+      if (!newOrgUser) {
+        throw new Error('Failed to create organization membership')
+      }
+
+      targetOrg = newOrgUser
+    }
+
+    // Create the company in the target organization
     const company = await prisma.company.create({
       data: {
-        organizationId: auth.organizationUser.organizationId,
+        organizationId: targetOrg.organizationId,
         name,
         icbIndustry,
         icbSuperSector,
@@ -129,7 +193,7 @@ export async function POST(request: Request) {
     await prisma.companyOwnership.create({
       data: {
         companyId: company.id,
-        userId: auth.user.id,
+        userId: dbUser.id,
         isSubscribingOwner: true,
         ownershipPercent: 100,
         status: 'ACTIVE',
