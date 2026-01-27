@@ -191,6 +191,9 @@ export async function POST(
     // First, add initial assessment responses
     if (initialAssessment) {
       for (const response of initialAssessment.responses) {
+        // Skip NOT_APPLICABLE responses (they don't have a selected option)
+        if (!response.selectedOption) continue
+
         const maxPoints = Number(response.question.maxImpactPoints)
         const scoreValue = Number(response.selectedOption.scoreValue)
         responseMap.set(response.questionId, {

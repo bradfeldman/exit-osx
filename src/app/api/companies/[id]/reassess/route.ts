@@ -87,7 +87,7 @@ export async function GET(
     })
 
     // Create a map of questionId -> response
-    const responseMap: Record<string, { selectedOptionId: string; confidenceLevel: string; notes: string | null }> = {}
+    const responseMap: Record<string, { selectedOptionId: string | null; confidenceLevel: string; notes: string | null }> = {}
     for (const response of responses) {
       responseMap[response.questionId] = {
         selectedOptionId: response.selectedOptionId,
@@ -103,7 +103,7 @@ export async function GET(
       helpText: string | null
       maxImpactPoints: number
       options: Array<{ id: string; optionText: string; scoreValue: number; displayOrder: number }>
-      currentResponse: { selectedOptionId: string; confidenceLevel: string; notes: string | null } | null
+      currentResponse: { selectedOptionId: string | null; confidenceLevel: string; notes: string | null } | null
     }>> = {}
 
     for (const question of questions) {

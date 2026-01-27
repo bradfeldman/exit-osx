@@ -327,7 +327,7 @@ model AssessmentResponse {
   id                String          @id @default(cuid())
   assessmentId      String          @map("assessment_id")
   questionId        String          @map("question_id")
-  selectedOptionId  String          @map("selected_option_id")
+  selectedOptionId  String?         @map("selected_option_id")
   effectiveOptionId String?         @map("effective_option_id")
   confidenceLevel   ConfidenceLevel @map("confidence_level")
   notes             String?
@@ -338,7 +338,7 @@ model AssessmentResponse {
   assessment        Assessment      @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
   effectiveOption   QuestionOption? @relation("EffectiveOption", fields: [effectiveOptionId], references: [id])
   question          Question        @relation(fields: [questionId], references: [id])
-  selectedOption    QuestionOption  @relation("SelectedOption", fields: [selectedOptionId], references: [id])
+  selectedOption    QuestionOption? @relation("SelectedOption", fields: [selectedOptionId], references: [id])
 
   @@unique([assessmentId, questionId])
   @@map("assessment_responses")
@@ -1601,6 +1601,7 @@ enum ConfidenceLevel {
   SOMEWHAT_CONFIDENT
   CONFIDENT
   VERIFIED
+  NOT_APPLICABLE
 }
 
 enum BriCategory {

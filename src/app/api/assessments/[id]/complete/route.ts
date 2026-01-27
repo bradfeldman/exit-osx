@@ -126,10 +126,16 @@ export async function POST(
     }
 
     // Calculate category scores
+    // Skip NOT_APPLICABLE responses - they don't count toward score
     const categoryScores: CategoryScore[] = []
     const scoresByCategory: Record<string, { total: number; earned: number }> = {}
 
     for (const response of assessment.responses) {
+      // Skip NOT_APPLICABLE responses - question doesn't apply to this business
+      if (response.confidenceLevel === 'NOT_APPLICABLE' || !response.selectedOption) {
+        continue
+      }
+
       const category = response.question.briCategory
       const maxPoints = Number(response.question.maxImpactPoints)
       const scoreValue = Number(response.selectedOption.scoreValue)
@@ -312,9 +318,14 @@ export async function POST(
     })
 
     // Generate playbook tasks based on assessment responses
+    // Filter out NOT_APPLICABLE responses (they don't have options to upgrade)
+    const applicableResponses = assessment.responses.filter(
+      r => r.confidenceLevel !== 'NOT_APPLICABLE' && r.selectedOption !== null && r.selectedOptionId !== null
+    ) as Array<typeof assessment.responses[number] & { selectedOptionId: string; selectedOption: NonNullable<typeof assessment.responses[number]['selectedOption']> }>
+
     const taskResult = await generateTasksForCompany(
       assessment.companyId,
-      assessment.responses,
+      applicableResponses,
       snapshot
     )
 

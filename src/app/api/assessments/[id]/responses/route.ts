@@ -23,9 +23,19 @@ export async function POST(
       notes,
     } = body
 
-    if (!questionId || !selectedOptionId) {
+    // For NOT_APPLICABLE, we don't require a selectedOptionId
+    const isNotApplicable = confidenceLevel === 'NOT_APPLICABLE'
+
+    if (!questionId) {
       return NextResponse.json(
-        { error: 'Question ID and selected option ID required' },
+        { error: 'Question ID required' },
+        { status: 400 }
+      )
+    }
+
+    if (!isNotApplicable && !selectedOptionId) {
+      return NextResponse.json(
+        { error: 'Selected option ID required (unless marking as Not Applicable)' },
         { status: 400 }
       )
     }
@@ -65,6 +75,9 @@ export async function POST(
 
     // Upsert the response (update if exists, create if not)
     // Initialize effectiveOptionId = selectedOptionId for Answer Upgrade System
+    // For NOT_APPLICABLE responses, selectedOptionId is null
+    const optionId = isNotApplicable ? null : selectedOptionId
+
     const response = await prisma.assessmentResponse.upsert({
       where: {
         assessmentId_questionId: {
@@ -73,16 +86,16 @@ export async function POST(
         },
       },
       update: {
-        selectedOptionId,
-        effectiveOptionId: selectedOptionId, // Reset to selected when user changes answer
+        selectedOptionId: optionId,
+        effectiveOptionId: optionId, // Reset to selected when user changes answer
         confidenceLevel,
         notes,
       },
       create: {
         assessmentId,
         questionId,
-        selectedOptionId,
-        effectiveOptionId: selectedOptionId, // Initialize effective = selected
+        selectedOptionId: optionId,
+        effectiveOptionId: optionId, // Initialize effective = selected
         confidenceLevel,
         notes,
       },

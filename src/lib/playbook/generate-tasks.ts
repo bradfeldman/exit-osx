@@ -608,11 +608,18 @@ export async function generateTasksFromProjectAssessment(
       continue
     }
 
-    // Check if a task already exists for this question
+    // Generate the task title for duplicate checking
+    const taskTitle = `Improve: ${question.subCategory}`
+
+    // Check if a task already exists for this question OR with the same title
+    // (prevents duplicate "Improve: Exit Timeline" when multiple questions share the same subCategory)
     const existingTask = await prisma.task.findFirst({
       where: {
         companyId,
-        linkedQuestionId: question.id,
+        OR: [
+          { linkedQuestionId: question.id },
+          { title: taskTitle }
+        ],
         status: { notIn: ['COMPLETED', 'CANCELLED', 'NOT_APPLICABLE'] }
       }
     })
@@ -668,7 +675,7 @@ export async function generateTasksFromProjectAssessment(
       await prisma.task.create({
         data: {
           companyId,
-          title: `Improve: ${question.subCategory}`,
+          title: taskTitle,
           description: `Address the ${question.briCategory.toLowerCase()} issue identified in assessment: ${question.questionText}\n\nCurrent situation: ${response.selectedOption.optionText}\nTarget: ${targetOption.optionText}`,
           actionType: 'TYPE_III_OPERATIONAL',
           briCategory: question.briCategory as never,

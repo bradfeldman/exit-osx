@@ -19,6 +19,7 @@ import {
   Scale,
   User,
   HelpCircle,
+  MinusCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -210,8 +211,47 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
   const markAsUncertain = async () => {
     if (!currentQuestion) return
     const currentResponse = responses.get(currentQuestion.id)
-    if (currentResponse) {
+    if (currentResponse && currentResponse.selectedOptionId) {
       await handleAnswer(currentResponse.selectedOptionId, 'UNCERTAIN')
+    }
+  }
+
+  // Mark question as not applicable to this business
+  const markAsNotApplicable = async () => {
+    if (!assessmentId || !currentQuestion || saving) return
+
+    setSaving(true)
+
+    try {
+      const res = await fetch(`/api/assessments/${assessmentId}/responses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionId: currentQuestion.id,
+          selectedOptionId: null,
+          confidenceLevel: 'NOT_APPLICABLE',
+        }),
+      })
+
+      if (!res.ok) throw new Error('Failed to save response')
+
+      const newResponses = new Map(responses)
+      newResponses.set(currentQuestion.id, {
+        questionId: currentQuestion.id,
+        selectedOptionId: '',
+        confidenceLevel: 'NOT_APPLICABLE',
+      })
+      setResponses(newResponses)
+
+      // Auto-advance after a brief moment
+      setTimeout(() => {
+        advanceToNext()
+      }, 500)
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -410,6 +450,7 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
   const allAnswered = responses.size >= orderedQuestions.length
   const currentResponse = currentQuestion ? responses.get(currentQuestion.id) : null
   const isCurrentUncertain = currentResponse?.confidenceLevel === 'UNCERTAIN'
+  const isCurrentNotApplicable = currentResponse?.confidenceLevel === 'NOT_APPLICABLE'
 
   return (
     <motion.div
@@ -595,9 +636,38 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
                   )
                 })}
 
-              {/* Subtle "Not sure" option - appears after answering */}
+              {/* "Doesn't apply" option - always visible */}
+              <AnimatePresence mode="wait">
+                {isCurrentNotApplicable ? (
+                  <motion.div
+                    key="na-state"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="flex items-center justify-center gap-2 py-3 text-sm text-slate-500 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-200 dark:border-slate-800"
+                  >
+                    <MinusCircle className="w-4 h-4" />
+                    Marked as not applicable to your business
+                  </motion.div>
+                ) : (
+                  <motion.button
+                    key="na-button"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={markAsNotApplicable}
+                    disabled={saving}
+                    className="w-full flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <MinusCircle className="w-3.5 h-3.5" />
+                    This doesn&apos;t apply to my business
+                  </motion.button>
+                )}
+              </AnimatePresence>
+
+              {/* Subtle "Not sure" option - appears after answering (but not for N/A) */}
               <AnimatePresence>
-                {currentResponse && !isCurrentUncertain && (
+                {currentResponse && !isCurrentUncertain && !isCurrentNotApplicable && currentResponse.selectedOptionId && (
                   <motion.button
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}

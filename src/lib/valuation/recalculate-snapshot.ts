@@ -167,10 +167,13 @@ export async function recalculateSnapshotForCompany(
     const scoresByCategory: Record<string, { total: number; earned: number }> = {}
 
     for (const response of latestAssessment.responses) {
+      // Skip NOT_APPLICABLE responses (they don't have a selected option)
+      const optionToUse = response.effectiveOption || response.selectedOption
+      if (!optionToUse) continue
+
       const category = response.question.briCategory
       const maxPoints = Number(response.question.maxImpactPoints)
       // Answer Upgrade System: use effective answer if tasks have upgraded it
-      const optionToUse = response.effectiveOption || response.selectedOption
       const scoreValue = Number(optionToUse.scoreValue)
       const earnedPoints = maxPoints * scoreValue
 
