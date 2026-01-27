@@ -51,13 +51,49 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Get the first organization (most users have one)
-    const orgMembership = dbUser.organizations[0]
-    if (!orgMembership) {
-      return NextResponse.json({ error: 'No organization found' }, { status: 404 })
+    // Determine which organization to use for subscription info
+    let org
+
+    if (companyId) {
+      // If companyId is provided, use that company's organization
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+        select: {
+          organization: {
+            select: {
+              id: true,
+              name: true,
+              planTier: true,
+              subscriptionStatus: true,
+              billingCycle: true,
+              trialStartedAt: true,
+              trialEndsAt: true,
+              stripeCustomerId: true,
+              stripeSubscriptionId: true,
+              _count: {
+                select: {
+                  users: true,
+                }
+              }
+            }
+          }
+        }
+      })
+
+      if (company) {
+        org = company.organization
+      }
     }
 
-    const org = orgMembership.organization
+    // Fallback to user's first organization if no company provided or company not found
+    if (!org) {
+      const orgMembership = dbUser.organizations[0]
+      if (!orgMembership) {
+        return NextResponse.json({ error: 'No organization found' }, { status: 404 })
+      }
+      org = orgMembership.organization
+    }
+
     const now = new Date()
 
     // Calculate trial days remaining

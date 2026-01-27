@@ -164,10 +164,55 @@ export async function POST() {
       })
     }
 
-    // Create new user with a default organization
     // Use OAuth avatar if available, otherwise generate Gravatar URL
     const avatarUrl = user.user_metadata?.avatar_url || getGravatarUrl(user.email!, { size: 200 })
 
+    // Check for pending invites BEFORE creating user
+    // If user has a pending invite, don't create a personal organization
+    const pendingInvite = await prisma.organizationInvite.findFirst({
+      where: {
+        email: { equals: user.email!, mode: 'insensitive' },
+        acceptedAt: null,
+        expiresAt: { gt: new Date() }
+      },
+      select: { token: true, organization: { select: { name: true } } }
+    })
+
+    // If user has a pending invite, create user WITHOUT a personal organization
+    // They will be added to the invited organization when they accept the invite
+    if (pendingInvite) {
+      const newUser = await prisma.user.create({
+        data: {
+          authId: user.id,
+          email: user.email!,
+          name: user.user_metadata?.name || user.user_metadata?.full_name,
+          avatarUrl,
+          // No organizations created - user will join via invite acceptance
+        },
+        include: {
+          organizations: {
+            include: {
+              organization: {
+                include: {
+                  companies: true
+                }
+              }
+            }
+          }
+        }
+      })
+
+      return NextResponse.json({
+        user: newUser,
+        isNew: true,
+        pendingInvite: {
+          token: pendingInvite.token,
+          organizationName: pendingInvite.organization.name
+        }
+      })
+    }
+
+    // No pending invite - create user with a default personal organization
     // Get selected plan from user metadata (set during signup)
     const selectedPlan = user.user_metadata?.selected_plan || 'foundation'
     const subscriptionConfig = getSubscriptionConfig(selectedPlan)
@@ -210,23 +255,10 @@ export async function POST() {
       }
     })
 
-    // Check for pending invites for this new user's email
-    const pendingInvite = await prisma.organizationInvite.findFirst({
-      where: {
-        email: { equals: user.email!, mode: 'insensitive' },
-        acceptedAt: null,
-        expiresAt: { gt: new Date() }
-      },
-      select: { token: true, organization: { select: { name: true } } }
-    })
-
     return NextResponse.json({
       user: newUser,
       isNew: true,
-      pendingInvite: pendingInvite ? {
-        token: pendingInvite.token,
-        organizationName: pendingInvite.organization.name
-      } : null
+      pendingInvite: null
     })
   } catch (error) {
     console.error('Error syncing user:', error)
