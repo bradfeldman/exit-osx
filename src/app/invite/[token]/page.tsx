@@ -4,20 +4,19 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import {
   Loader2,
   CheckCircle2,
   XCircle,
-  Clock,
   AlertTriangle,
-  Users,
-  Building2,
-  UserPlus
+  ArrowRight,
+  Sparkles,
 } from 'lucide-react'
 import { buildUrlWithRedirect } from '@/lib/utils/redirect'
+import { cn } from '@/lib/utils'
 
 interface InviteDetails {
   emailHint: string
@@ -47,19 +46,15 @@ export default function InviteAcceptPage() {
   useEffect(() => {
     async function loadInviteAndCheckAuth() {
       const supabase = createClient()
-
-      // Check auth status
       const { data: { user } } = await supabase.auth.getUser()
 
-      // Load invite details
       try {
         const response = await fetch(`/api/invites/${token}/accept`)
 
         if (!response.ok) {
           const data = await response.json()
-          // Could be expired, accepted, or invalid - API returns same error for security
           setInviteStatus('invalid')
-          setUserState('not_logged_in') // Set user state so we exit loading
+          setUserState('not_logged_in')
           setError(data.error || 'Invalid invitation')
           return
         }
@@ -68,12 +63,10 @@ export default function InviteAcceptPage() {
         setInvite(data.invite)
         setInviteStatus('valid')
 
-        // Determine user state based on auth and email
         if (!user) {
           setUserState('not_logged_in')
         } else {
           setUserEmail(user.email || null)
-          // Compare email hint with user's email
           const userEmailHint = user.email?.replace(/(.{2})(.*)(@.*)/, '$1***$3')
           if (userEmailHint === data.invite.emailHint) {
             setUserState('logged_in_correct')
@@ -83,7 +76,7 @@ export default function InviteAcceptPage() {
         }
       } catch {
         setInviteStatus('invalid')
-        setUserState('not_logged_in') // Set user state so we exit loading
+        setUserState('not_logged_in')
         setError('Failed to load invitation')
       }
     }
@@ -112,7 +105,6 @@ export default function InviteAcceptPage() {
         return
       }
 
-      // Redirect to dashboard on success
       router.push('/dashboard')
     } catch {
       setError('Failed to accept invitation')
@@ -135,326 +127,240 @@ export default function InviteAcceptPage() {
     router.push(buildUrlWithRedirect('/signup', `/invite/${token}`))
   }
 
-  // Render the appropriate content based on status
-  const renderContent = () => {
-    // Loading state
-    if (inviteStatus === 'loading' || userState === 'checking') {
-      return (
-        <div className="w-full max-w-md text-center space-y-6">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">Loading invitation...</h2>
-            <p className="mt-2 text-muted-foreground">Please wait while we verify your invitation</p>
-          </div>
-        </div>
-      )
-    }
+  const roleName = invite?.roleTemplate?.name || invite?.role.toLowerCase().replace('_', ' ')
 
-    // Invalid or not found
-    if (inviteStatus === 'invalid') {
-      return (
-        <div className="w-full max-w-md text-center space-y-6">
-          <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto">
-            <XCircle className="w-8 h-8 text-red-600" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">Invitation Not Found</h2>
-            <p className="mt-2 text-muted-foreground">
-              This invitation may have expired or already been used.
-            </p>
-          </div>
-          <Card>
-            <CardContent className="pt-6 space-y-3">
-              <p className="text-sm text-muted-foreground">
-                If you just received this link, please ask the sender to create a new invitation.
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Already have an account? <Link href="/login" className="text-primary hover:underline">Sign in</Link>
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )
-    }
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex flex-col">
+      {/* Header */}
+      <header className="p-6">
+        <Link href="/" className="inline-flex items-center gap-2">
+          <Image
+            src="/logo-icon.png"
+            alt="Exit OSx"
+            width={32}
+            height={32}
+            className="h-8 w-8"
+          />
+          <Image
+            src="/wordmark.svg"
+            alt="Exit OSx"
+            width={100}
+            height={28}
+            className="h-6 w-auto"
+          />
+        </Link>
+      </header>
 
-    // Valid invite - show based on user state
-    if (inviteStatus === 'valid' && invite) {
-      // Logged in with correct email
-      if (userState === 'logged_in_correct') {
-        return (
-          <div className="w-full max-w-md space-y-6">
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-                <UserPlus className="w-8 h-8 text-green-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-foreground">You&apos;re Invited!</h2>
-              <p className="mt-2 text-muted-foreground">
-                Join <strong>{invite.organizationName}</strong> on Exit OSx
-              </p>
+      {/* Main Content */}
+      <main className="flex-1 flex items-center justify-center px-4 pb-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="w-full max-w-lg"
+        >
+          {/* Loading State */}
+          {(inviteStatus === 'loading' || userState === 'checking') && (
+            <div className="text-center py-12">
+              <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto" />
+              <p className="mt-4 text-muted-foreground">Loading invitation...</p>
             </div>
+          )}
 
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                <div className="flex items-center gap-3 pb-4 border-b">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-primary" />
+          {/* Invalid/Expired State */}
+          {inviteStatus === 'invalid' && (
+            <div className="text-center space-y-6">
+              <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto">
+                <XCircle className="w-8 h-8 text-red-500" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold text-slate-900">Invitation Not Found</h1>
+                <p className="mt-2 text-muted-foreground">
+                  This invitation may have expired or already been used.
+                </p>
+              </div>
+              <div className="pt-4 space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Please ask the sender to create a new invitation.
+                </p>
+                <Link href="/login">
+                  <Button variant="outline" className="w-full">
+                    Go to Sign In
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Valid Invite */}
+          {inviteStatus === 'valid' && invite && (
+            <div className="space-y-8">
+              {/* Invite Header */}
+              <div className="text-center space-y-4">
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.1 }}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Team Invitation
+                </motion.div>
+                <h1 className="text-3xl font-semibold text-slate-900">
+                  Join {invite.organizationName}
+                </h1>
+                <p className="text-muted-foreground">
+                  {invite.inviterName} invited you to collaborate
+                </p>
+              </div>
+
+              {/* Role Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+              >
+                <div className="p-6 space-y-4">
+                  {/* Role Badge */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Your Role</span>
+                    <span className={cn(
+                      "px-3 py-1 rounded-full text-sm font-medium",
+                      invite.isExternalAdvisor
+                        ? "bg-violet-100 text-violet-700"
+                        : "bg-primary/10 text-primary"
+                    )}>
+                      {roleName}
+                    </span>
                   </div>
-                  <div>
-                    <p className="font-medium">{invite.organizationName}</p>
-                    <p className="text-sm text-muted-foreground">Invited by {invite.inviterName}</p>
+
+                  {invite.isExternalAdvisor && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Access Type</span>
+                      <span className="text-sm font-medium text-slate-700">External Advisor</span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Invited to</span>
+                    <span className="text-sm font-medium text-slate-700">{invite.emailHint}</span>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Your role</span>
-                    <span className="font-medium capitalize">
-                      {invite.roleTemplate?.name || invite.role.toLowerCase().replace('_', ' ')}
-                    </span>
-                  </div>
-                  {invite.isExternalAdvisor && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Access type</span>
-                      <span className="font-medium">External Advisor</span>
+                {/* Action Section */}
+                <div className="px-6 py-4 bg-slate-50 border-t border-slate-100">
+                  {/* Logged in with correct email */}
+                  {userState === 'logged_in_correct' && (
+                    <div className="space-y-3">
+                      {error && (
+                        <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+                          {error}
+                        </div>
+                      )}
+                      <Button
+                        onClick={handleAccept}
+                        disabled={accepting}
+                        className="w-full h-12 text-base"
+                        size="lg"
+                      >
+                        {accepting ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Joining...
+                          </>
+                        ) : (
+                          <>
+                            Accept & Join Team
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Logged in with wrong email */}
+                  {userState === 'logged_in_wrong' && (
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                        <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                        <div className="text-sm">
+                          <p className="font-medium text-amber-800">Wrong account</p>
+                          <p className="text-amber-700 mt-1">
+                            You&apos;re signed in as <strong>{userEmail}</strong>
+                          </p>
+                        </div>
+                      </div>
+                      <Button onClick={handleSwitchAccount} className="w-full h-12" size="lg">
+                        Switch Account
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Not logged in */}
+                  {userState === 'not_logged_in' && (
+                    <div className="space-y-3">
+                      <Button
+                        onClick={invite.hasExistingAccount ? handleLogin : handleSignup}
+                        className="w-full h-12 text-base"
+                        size="lg"
+                      >
+                        {invite.hasExistingAccount ? 'Sign In to Accept' : 'Create Account to Accept'}
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                      <p className="text-xs text-center text-muted-foreground">
+                        {invite.hasExistingAccount ? (
+                          <>
+                            Don&apos;t have an account?{' '}
+                            <button onClick={handleSignup} className="text-primary hover:underline">
+                              Create one
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            Already have an account?{' '}
+                            <button onClick={handleLogin} className="text-primary hover:underline">
+                              Sign in
+                            </button>
+                          </>
+                        )}
+                      </p>
                     </div>
                   )}
                 </div>
+              </motion.div>
 
-                {error && (
-                  <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
-                    {error}
-                  </div>
-                )}
-
-                <Button
-                  onClick={handleAccept}
-                  disabled={accepting}
-                  className="w-full h-12"
-                >
-                  {accepting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Joining...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Accept Invitation
-                    </>
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        )
-      }
-
-      // Logged in with wrong email
-      if (userState === 'logged_in_wrong') {
-        return (
-          <div className="w-full max-w-md space-y-6">
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
-                <AlertTriangle className="w-8 h-8 text-amber-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-foreground">Wrong Account</h2>
-              <p className="mt-2 text-muted-foreground">
-                You&apos;re signed in with a different email
-              </p>
+              {/* What you'll get access to */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="space-y-3"
+              >
+                <p className="text-sm font-medium text-slate-700 text-center">What you&apos;ll have access to:</p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {['Exit Scorecard', 'Action Plan', 'Data Room', 'Valuations'].map((feature) => (
+                    <span
+                      key={feature}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 text-sm"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                      {feature}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
             </div>
+          )}
+        </motion.div>
+      </main>
 
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                <div className="space-y-3 text-sm">
-                  <div className="p-3 bg-muted rounded-lg">
-                    <p className="text-muted-foreground">This invite was sent to:</p>
-                    <p className="font-medium mt-1">{invite.emailHint}</p>
-                  </div>
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                    <p className="text-amber-800">You&apos;re currently signed in as:</p>
-                    <p className="font-medium mt-1 text-amber-900">{userEmail}</p>
-                  </div>
-                </div>
-
-                <div className="border-t pt-4 space-y-3">
-                  <p className="text-sm text-muted-foreground text-center">
-                    To accept this invitation, sign in with the correct email address.
-                  </p>
-                  <Button onClick={handleSwitchAccount} className="w-full h-12">
-                    Switch Account
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )
-      }
-
-      // Not logged in
-      if (userState === 'not_logged_in') {
-        const handleAcceptInvitation = () => {
-          if (invite.hasExistingAccount) {
-            handleLogin()
-          } else {
-            handleSignup()
-          }
-        }
-
-        return (
-          <div className="w-full max-w-md space-y-6">
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-primary" />
-              </div>
-              <h2 className="text-2xl font-bold text-foreground">You&apos;re Invited!</h2>
-              <p className="mt-2 text-muted-foreground">
-                {invite.inviterName} invited you to join <strong>{invite.organizationName}</strong>
-              </p>
-            </div>
-
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                <div className="flex items-center gap-3 pb-4 border-b">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium">{invite.organizationName}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Role: {invite.roleTemplate?.name || invite.role.toLowerCase().replace('_', ' ')}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground text-center">
-                    {invite.hasExistingAccount
-                      ? 'Sign in to accept this invitation'
-                      : 'Create an account to accept this invitation'}
-                  </p>
-
-                  <Button onClick={handleAcceptInvitation} className="w-full h-12">
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Accept Invitation
-                  </Button>
-
-                  {invite.hasExistingAccount ? (
-                    <p className="text-xs text-muted-foreground text-center">
-                      Don&apos;t have an account? <button onClick={handleSignup} className="text-primary hover:underline">Create one</button>
-                    </p>
-                  ) : (
-                    <p className="text-xs text-muted-foreground text-center">
-                      Already have an account? <button onClick={handleLogin} className="text-primary hover:underline">Sign in</button>
-                    </p>
-                  )}
-                </div>
-
-                <p className="text-xs text-muted-foreground text-center pt-2">
-                  This invitation was sent to <strong>{invite.emailHint}</strong>
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        )
-      }
-    }
-
-    return null
-  }
-
-  return (
-    <div className="min-h-screen flex">
-      {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
-        <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground">
-          <Link href="/" className="flex items-center gap-3">
-            <Image
-              src="/logo.webp"
-              alt="Exit OSx"
-              width={40}
-              height={40}
-              className="h-10 w-10"
-            />
-            <Image
-              src="/wordmark.svg"
-              alt="Exit OSx"
-              width={120}
-              height={34}
-              className="h-8 w-auto brightness-0 invert"
-            />
-          </Link>
-
-          <div className="space-y-6">
-            <h1 className="text-4xl font-bold leading-tight">
-              You&apos;ve Been Invited<br />to Join the Team
-            </h1>
-            <p className="text-lg opacity-90 max-w-md">
-              Exit OSx helps businesses prepare for successful exits with real-time valuations,
-              buyer readiness scores, and actionable playbooks.
-            </p>
-            <div className="space-y-4 pt-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                  <CheckIcon className="w-4 h-4" />
-                </div>
-                <span>Collaborate with your team in real-time</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                  <CheckIcon className="w-4 h-4" />
-                </div>
-                <span>Track progress on value-building tasks</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                  <CheckIcon className="w-4 h-4" />
-                </div>
-                <span>Share documents securely in the data room</span>
-              </div>
-            </div>
-          </div>
-
-          <p className="text-sm opacity-70">
-            A Pasadena Private Financial Group Company
-          </p>
-        </div>
-      </div>
-
-      {/* Right side - Invite Content */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-background">
-        {/* Mobile logo */}
-        <div className="lg:hidden absolute top-6 left-6">
-          <Link href="/" className="flex items-center gap-2">
-            <Image
-              src="/logo.webp"
-              alt="Exit OSx"
-              width={32}
-              height={32}
-              className="h-8 w-8"
-            />
-            <Image
-              src="/wordmark.svg"
-              alt="Exit OSx"
-              width={100}
-              height={28}
-              className="h-6 w-auto"
-            />
-          </Link>
-        </div>
-
-        {renderContent()}
-      </div>
+      {/* Footer */}
+      <footer className="p-6 text-center">
+        <p className="text-xs text-muted-foreground">
+          A Pasadena Private Financial Group Company
+        </p>
+      </footer>
     </div>
-  )
-}
-
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-    </svg>
   )
 }
