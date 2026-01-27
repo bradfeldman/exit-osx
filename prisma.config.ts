@@ -12,6 +12,6 @@ export default defineConfig({
   },
   datasource: {
     // Direct URL for migrations (port 5432)
-    url: process.env["DIRECT_URL"],
+    url: process.env["DIRECT_URL"] ?? process.env["DATABASE_URL"] ?? "",
   },
 });
