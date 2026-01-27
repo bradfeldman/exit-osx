@@ -1,7 +1,20 @@
 'use client'
 
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { formatPercent } from '@/lib/valuation/dcf-calculator'
+import { Pencil, X } from 'lucide-react'
 
 interface MarketDataPanelProps {
   industryBetaLow?: number
@@ -11,6 +24,10 @@ interface MarketDataPanelProps {
   ebitdaMultipleLow?: number
   ebitdaMultipleHigh?: number
   industrySource?: string
+  // Override props
+  ebitdaMultipleLowOverride?: number | null
+  ebitdaMultipleHighOverride?: number | null
+  onMultipleOverrideChange?: (low: number | null, high: number | null) => void
 }
 
 // Market data as of January 2026
@@ -40,7 +57,66 @@ export function MarketDataPanel({
   ebitdaMultipleLow = 4.0,
   ebitdaMultipleHigh = 8.0,
   industrySource = 'Default industry benchmarks',
+  ebitdaMultipleLowOverride,
+  ebitdaMultipleHighOverride,
+  onMultipleOverrideChange,
 }: MarketDataPanelProps) {
+  const [showMultipleDialog, setShowMultipleDialog] = useState(false)
+  const [lowInput, setLowInput] = useState('')
+  const [highInput, setHighInput] = useState('')
+  const [error, setError] = useState('')
+
+  // Determine which values to display
+  const hasOverride = ebitdaMultipleLowOverride != null && ebitdaMultipleHighOverride != null
+  const displayLow = hasOverride ? ebitdaMultipleLowOverride : ebitdaMultipleLow
+  const displayHigh = hasOverride ? ebitdaMultipleHighOverride : ebitdaMultipleHigh
+
+  const handleOpenDialog = () => {
+    // Pre-fill with current override or empty
+    setLowInput(ebitdaMultipleLowOverride?.toString() || '')
+    setHighInput(ebitdaMultipleHighOverride?.toString() || '')
+    setError('')
+    setShowMultipleDialog(true)
+  }
+
+  const handleSave = () => {
+    const low = lowInput ? parseFloat(lowInput) : null
+    const high = highInput ? parseFloat(highInput) : null
+
+    // Validation
+    if ((low !== null && isNaN(low)) || (high !== null && isNaN(high))) {
+      setError('Please enter valid numbers')
+      return
+    }
+
+    if (low !== null && high !== null && high <= low) {
+      setError('High multiple must be greater than low multiple')
+      return
+    }
+
+    if ((low !== null && low <= 0) || (high !== null && high <= 0)) {
+      setError('Multiples must be greater than 0')
+      return
+    }
+
+    // If one is set, both must be set
+    if ((low !== null && high === null) || (low === null && high !== null)) {
+      setError('Please enter both low and high values, or clear both to use defaults')
+      return
+    }
+
+    onMultipleOverrideChange?.(low, high)
+    setShowMultipleDialog(false)
+  }
+
+  const handleClear = () => {
+    setLowInput('')
+    setHighInput('')
+    setError('')
+    onMultipleOverrideChange?.(null, null)
+    setShowMultipleDialog(false)
+  }
+
   return (
     <div className="space-y-4">
       {/* Market Data Panel */}
@@ -117,18 +193,131 @@ export function MarketDataPanel({
 
             {/* EBITDA Multiples */}
             <div className="flex justify-between items-center py-1">
-              <span className="text-sm text-gray-600">EBITDA Multiples</span>
-              <span className="text-sm font-medium text-gray-900">
-                {ebitdaMultipleLow.toFixed(1)}x - {ebitdaMultipleHigh.toFixed(1)}x
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm text-gray-600">EBITDA Multiples</span>
+                {onMultipleOverrideChange && (
+                  <button
+                    onClick={handleOpenDialog}
+                    className="text-xs text-primary hover:text-primary/80 hover:underline"
+                  >
+                    {hasOverride ? (
+                      <span className="flex items-center gap-0.5">
+                        <Pencil className="h-3 w-3" />
+                        Edit
+                      </span>
+                    ) : (
+                      'Change'
+                    )}
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5">
+                {hasOverride && (
+                  <span className="text-xs text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">
+                    Custom
+                  </span>
+                )}
+                <span className="text-sm font-medium text-gray-900">
+                  {displayLow.toFixed(1)}x - {displayHigh.toFixed(1)}x
+                </span>
+              </div>
             </div>
           </div>
 
           <div className="mt-3 pt-2 border-t border-gray-100">
-            <span className="text-xs text-gray-400">Source: {industrySource}</span>
+            <span className="text-xs text-gray-400">
+              Source: {hasOverride ? 'Custom override' : industrySource}
+            </span>
           </div>
         </CardContent>
       </Card>
+
+      {/* EBITDA Multiple Override Dialog */}
+      <Dialog open={showMultipleDialog} onOpenChange={setShowMultipleDialog}>
+        <DialogContent className="sm:max-w-[360px]">
+          <DialogHeader>
+            <DialogTitle>Custom EBITDA Multiple Range</DialogTitle>
+            <DialogDescription>
+              Override the industry default multiples ({ebitdaMultipleLow.toFixed(1)}x - {ebitdaMultipleHigh.toFixed(1)}x) with custom values.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="low-multiple">Low Multiple</Label>
+                <div className="relative">
+                  <Input
+                    id="low-multiple"
+                    type="number"
+                    step="0.1"
+                    min="0.1"
+                    placeholder={ebitdaMultipleLow.toFixed(1)}
+                    value={lowInput}
+                    onChange={(e) => {
+                      setLowInput(e.target.value)
+                      setError('')
+                    }}
+                    className="pr-6"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">x</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="high-multiple">High Multiple</Label>
+                <div className="relative">
+                  <Input
+                    id="high-multiple"
+                    type="number"
+                    step="0.1"
+                    min="0.1"
+                    placeholder={ebitdaMultipleHigh.toFixed(1)}
+                    value={highInput}
+                    onChange={(e) => {
+                      setHighInput(e.target.value)
+                      setError('')
+                    }}
+                    className="pr-6"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">x</span>
+                </div>
+              </div>
+            </div>
+
+            {error && (
+              <p className="text-sm text-red-600">{error}</p>
+            )}
+
+            <p className="text-xs text-muted-foreground">
+              Leave both fields empty to use industry defaults.
+            </p>
+          </div>
+
+          <DialogFooter className="flex justify-between sm:justify-between">
+            {hasOverride && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleClear}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Clear Override
+              </Button>
+            )}
+            <div className="flex gap-2 ml-auto">
+              <Button variant="outline" onClick={() => setShowMultipleDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave}>
+                Save
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

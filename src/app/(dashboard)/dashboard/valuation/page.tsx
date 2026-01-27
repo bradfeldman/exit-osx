@@ -34,6 +34,8 @@ interface DCFAssumptions {
   perpetualGrowthRate: number
   exitMultiple: number | null
   growthAssumptions: Record<string, number>
+  ebitdaMultipleLowOverride: number | null
+  ebitdaMultipleHighOverride: number | null
 }
 
 const DEFAULT_ASSUMPTIONS: DCFAssumptions = {
@@ -53,6 +55,8 @@ const DEFAULT_ASSUMPTIONS: DCFAssumptions = {
     year4: 0.025,
     year5: 0.02,
   },
+  ebitdaMultipleLowOverride: null,
+  ebitdaMultipleHighOverride: null,
 }
 
 export default function ValuationPage() {
@@ -114,6 +118,12 @@ export default function ValuationPage() {
               : null,
             growthAssumptions:
               data.assumptions.growthAssumptions || DEFAULT_ASSUMPTIONS.growthAssumptions,
+            ebitdaMultipleLowOverride: data.assumptions.ebitdaMultipleLowOverride
+              ? Number(data.assumptions.ebitdaMultipleLowOverride)
+              : null,
+            ebitdaMultipleHighOverride: data.assumptions.ebitdaMultipleHighOverride
+              ? Number(data.assumptions.ebitdaMultipleHighOverride)
+              : null,
           }
           setAssumptions(loadedAssumptions)
           setOriginalAssumptions(loadedAssumptions)
@@ -189,6 +199,8 @@ export default function ValuationPage() {
           enterpriseValue: dcfResults?.enterpriseValue ?? null,
           equityValue: dcfResults?.equityValue ?? null,
           useDCFValue,
+          ebitdaMultipleLowOverride: assumptions.ebitdaMultipleLowOverride,
+          ebitdaMultipleHighOverride: assumptions.ebitdaMultipleHighOverride,
         }),
       })
 
@@ -288,6 +300,19 @@ export default function ValuationPage() {
     }))
   }
 
+  // Handle EBITDA multiple override changes
+  const handleMultipleOverrideChange = (low: number | null, high: number | null) => {
+    setAssumptions((prev) => ({
+      ...prev,
+      ebitdaMultipleLowOverride: low,
+      ebitdaMultipleHighOverride: high,
+    }))
+  }
+
+  // Calculate effective EBITDA multiples (override or industry default)
+  const effectiveEbitdaMultipleLow = assumptions.ebitdaMultipleLowOverride ?? industryData.ebitdaMultipleLow
+  const effectiveEbitdaMultipleHigh = assumptions.ebitdaMultipleHighOverride ?? industryData.ebitdaMultipleHigh
+
   // DCF inputs for Monte Carlo
   const dcfInputsForMonteCarlo: DCFInputs = useMemo(
     () => ({
@@ -369,6 +394,9 @@ export default function ValuationPage() {
             ebitdaMultipleLow={industryData.ebitdaMultipleLow}
             ebitdaMultipleHigh={industryData.ebitdaMultipleHigh}
             industrySource={industryData.source}
+            ebitdaMultipleLowOverride={assumptions.ebitdaMultipleLowOverride}
+            ebitdaMultipleHighOverride={assumptions.ebitdaMultipleHighOverride}
+            onMultipleOverrideChange={handleMultipleOverrideChange}
           />
         </div>
 
@@ -400,8 +428,8 @@ export default function ValuationPage() {
             onExitMultipleChange={(value) =>
               setAssumptions((prev) => ({ ...prev, exitMultiple: value }))
             }
-            industryMultipleLow={industryData.ebitdaMultipleLow}
-            industryMultipleHigh={industryData.ebitdaMultipleHigh}
+            industryMultipleLow={effectiveEbitdaMultipleLow}
+            industryMultipleHigh={effectiveEbitdaMultipleHigh}
           />
         </div>
 

@@ -47,6 +47,12 @@ export async function GET(
           ? Number(dcfAssumptions.equityValue)
           : null,
         useDCFValue: dcfAssumptions.useDCFValue,
+        ebitdaMultipleLowOverride: dcfAssumptions.ebitdaMultipleLowOverride
+          ? Number(dcfAssumptions.ebitdaMultipleLowOverride)
+          : null,
+        ebitdaMultipleHighOverride: dcfAssumptions.ebitdaMultipleHighOverride
+          ? Number(dcfAssumptions.ebitdaMultipleHighOverride)
+          : null,
       },
     })
   } catch (error) {
@@ -84,6 +90,8 @@ export async function PUT(
       enterpriseValue,
       equityValue,
       useDCFValue,
+      ebitdaMultipleLowOverride,
+      ebitdaMultipleHighOverride,
     } = body
 
     const dcfAssumptions = await prisma.dCFAssumptions.upsert({
@@ -104,6 +112,8 @@ export async function PUT(
         enterpriseValue: enterpriseValue ?? null,
         equityValue: equityValue ?? null,
         useDCFValue: useDCFValue ?? false,
+        ebitdaMultipleLowOverride: ebitdaMultipleLowOverride ?? null,
+        ebitdaMultipleHighOverride: ebitdaMultipleHighOverride ?? null,
       },
       update: {
         riskFreeRate,
@@ -120,6 +130,8 @@ export async function PUT(
         enterpriseValue: enterpriseValue ?? null,
         equityValue: equityValue ?? null,
         useDCFValue: useDCFValue ?? false,
+        ebitdaMultipleLowOverride: ebitdaMultipleLowOverride ?? null,
+        ebitdaMultipleHighOverride: ebitdaMultipleHighOverride ?? null,
       },
     })
 
@@ -151,6 +163,12 @@ export async function PUT(
           ? Number(dcfAssumptions.equityValue)
           : null,
         useDCFValue: dcfAssumptions.useDCFValue,
+        ebitdaMultipleLowOverride: dcfAssumptions.ebitdaMultipleLowOverride
+          ? Number(dcfAssumptions.ebitdaMultipleLowOverride)
+          : null,
+        ebitdaMultipleHighOverride: dcfAssumptions.ebitdaMultipleHighOverride
+          ? Number(dcfAssumptions.ebitdaMultipleHighOverride)
+          : null,
       },
     })
   } catch (error) {
