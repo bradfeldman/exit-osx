@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Switch } from '@/components/ui/switch'
 import {
   Table,
   TableBody,
@@ -32,40 +30,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { UserRole, FunctionalCategory } from '@prisma/client'
 import {
-  ChevronDown,
-  ChevronRight,
   Crown,
-  Calculator,
-  Settings,
-  Users,
-  Scale,
-  Megaphone,
-  Monitor,
-  UserCheck,
   Briefcase,
-  Wallet,
-  Handshake,
-  Eye,
-  User,
-  Lock,
-  Shield,
-  ExternalLink,
+  UserCheck,
   Copy,
   Check,
+  Eye,
+  Pencil,
+  EyeOff,
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 // Types
 interface Member {
@@ -127,73 +104,221 @@ interface RoleTemplate {
   }
 }
 
-interface PermissionCategory {
+// Simplified types for UI
+type Affiliation = 'owner' | 'employee' | 'advisor'
+type PermissionLevel = 'edit' | 'view' | 'hide'
+
+// Simplified page permissions - maps to granular permissions behind the scenes
+interface PagePermission {
   key: string
   label: string
-  icon: string
-  sensitive: boolean
-  permissions: string[]
+  viewPermissions: string[]
+  editPermissions: string[]
 }
 
-// Constants
-const categoryLabels: Record<FunctionalCategory, string> = {
-  OWNER: 'Owner',
-  FINANCE: 'Finance',
-  OPERATIONS: 'Operations',
-  HR: 'HR',
-  LEGAL: 'Legal',
-  SALES_MARKETING: 'Sales & Marketing',
-  IT: 'IT',
-  EXTERNAL: 'External Advisor',
+const PAGE_PERMISSIONS: PagePermission[] = [
+  {
+    key: 'scorecard',
+    label: 'Exit OSx Scorecard',
+    viewPermissions: ['valuation.summary:view', 'valuation.detailed:view'],
+    editPermissions: [],
+  },
+  {
+    key: 'baseline',
+    label: 'Baseline Assessment',
+    viewPermissions: ['assessments.company:view'],
+    editPermissions: ['assessments.company:edit'],
+  },
+  {
+    key: 'risk',
+    label: 'Risk Assessments',
+    viewPermissions: ['assessments.personal:view'],
+    editPermissions: ['assessments.personal:edit'],
+  },
+  {
+    key: 'actionplan',
+    label: 'Action Plan',
+    viewPermissions: ['playbook.tasks:view'],
+    editPermissions: ['playbook.tasks:complete', 'playbook.tasks:create', 'playbook.tasks:assign'],
+  },
+  {
+    key: 'financials',
+    label: 'Business Financials',
+    viewPermissions: ['financials.statements:view', 'financials.adjustments:view'],
+    editPermissions: ['financials.statements:edit', 'financials.adjustments:edit'],
+  },
+  {
+    key: 'dcf',
+    label: 'DCF Valuation',
+    viewPermissions: ['financials.dcf:view'],
+    editPermissions: ['financials.dcf:edit'],
+  },
+  {
+    key: 'pfs',
+    label: 'Personal Financial Statement',
+    viewPermissions: ['personal.net_worth:view'],
+    editPermissions: ['personal.net_worth:edit'],
+  },
+  {
+    key: 'retirement',
+    label: 'Retirement Calculator',
+    viewPermissions: ['personal.retirement:view'],
+    editPermissions: ['personal.retirement:edit'],
+  },
+  {
+    key: 'loans',
+    label: 'Business Loans',
+    viewPermissions: ['financials.statements:view'], // Uses same permission as financials for now
+    editPermissions: ['financials.statements:edit'],
+  },
+  {
+    key: 'dataroom',
+    label: 'Data Room',
+    viewPermissions: [
+      'dataroom.financial:view',
+      'dataroom.legal:view',
+      'dataroom.operations:view',
+      'dataroom.customers:view',
+      'dataroom.employees:view',
+      'dataroom.ip:view',
+    ],
+    editPermissions: [
+      'dataroom.financial:upload',
+      'dataroom.legal:upload',
+      'dataroom.operations:upload',
+      'dataroom.customers:upload',
+      'dataroom.employees:upload',
+      'dataroom.ip:upload',
+    ],
+  },
+  {
+    key: 'dealtracker',
+    label: 'Deal Tracker',
+    viewPermissions: ['playbook.tasks:view'], // Uses action plan permission for now
+    editPermissions: ['playbook.tasks:create'],
+  },
+  {
+    key: 'exitteam',
+    label: 'Exit Team',
+    viewPermissions: ['team.members:view'],
+    editPermissions: ['team.members:invite', 'team.members:manage', 'team.members:remove'],
+  },
+  {
+    key: 'settings',
+    label: 'Settings',
+    viewPermissions: ['team.members:view'],
+    editPermissions: ['team.members:manage'],
+  },
+]
+
+// Map affiliation to functional categories and external flag
+function affiliationToData(affiliation: Affiliation): { categories: FunctionalCategory[]; isExternal: boolean } {
+  switch (affiliation) {
+    case 'owner':
+      return { categories: ['OWNER'], isExternal: false }
+    case 'employee':
+      return { categories: [], isExternal: false }
+    case 'advisor':
+      return { categories: ['EXTERNAL'], isExternal: true }
+  }
 }
 
-const categoryIcons: Record<FunctionalCategory, React.ElementType> = {
-  OWNER: Crown,
-  FINANCE: Calculator,
-  OPERATIONS: Settings,
-  HR: Users,
-  LEGAL: Scale,
-  SALES_MARKETING: Megaphone,
-  IT: Monitor,
-  EXTERNAL: UserCheck,
+// Map member data back to affiliation
+function dataToAffiliation(categories: FunctionalCategory[], isExternal: boolean): Affiliation {
+  if (categories.includes('OWNER')) return 'owner'
+  if (isExternal || categories.includes('EXTERNAL')) return 'advisor'
+  return 'employee'
 }
 
-const categoryColors: Record<FunctionalCategory, string> = {
-  OWNER: 'bg-amber-100 text-amber-800 border-amber-200',
-  FINANCE: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-  OPERATIONS: 'bg-blue-100 text-blue-800 border-blue-200',
-  HR: 'bg-purple-100 text-purple-800 border-purple-200',
-  LEGAL: 'bg-slate-100 text-slate-800 border-slate-200',
-  SALES_MARKETING: 'bg-pink-100 text-pink-800 border-pink-200',
-  IT: 'bg-cyan-100 text-cyan-800 border-cyan-200',
-  EXTERNAL: 'bg-orange-100 text-orange-800 border-orange-200',
+// Get default permissions for an affiliation
+function getDefaultPermissionsForAffiliation(affiliation: Affiliation): Record<string, PermissionLevel> {
+  const defaults: Record<string, PermissionLevel> = {}
+
+  if (affiliation === 'owner') {
+    // Owner gets edit on everything
+    PAGE_PERMISSIONS.forEach(page => {
+      defaults[page.key] = 'edit'
+    })
+  } else if (affiliation === 'employee') {
+    // Employee gets limited view/edit
+    PAGE_PERMISSIONS.forEach(page => {
+      if (['scorecard', 'baseline', 'actionplan'].includes(page.key)) {
+        defaults[page.key] = 'edit'
+      } else if (['risk', 'pfs', 'retirement', 'loans'].includes(page.key)) {
+        defaults[page.key] = 'hide'
+      } else {
+        defaults[page.key] = 'view'
+      }
+    })
+  } else {
+    // Advisor gets view on business, hide on personal
+    PAGE_PERMISSIONS.forEach(page => {
+      if (['pfs', 'retirement', 'exitteam', 'settings'].includes(page.key)) {
+        defaults[page.key] = 'hide'
+      } else {
+        defaults[page.key] = 'view'
+      }
+    })
+  }
+
+  return defaults
 }
 
-const roleLabels: Record<UserRole, string> = {
-  SUPER_ADMIN: 'Super Admin',
+// Convert page permissions to granular permissions
+function pagePermissionsToGranular(pagePerms: Record<string, PermissionLevel>): Record<string, boolean> {
+  const granular: Record<string, boolean> = {}
+
+  PAGE_PERMISSIONS.forEach(page => {
+    const level = pagePerms[page.key] || 'hide'
+
+    // Set view permissions
+    page.viewPermissions.forEach(perm => {
+      granular[perm] = level === 'view' || level === 'edit'
+    })
+
+    // Set edit permissions
+    page.editPermissions.forEach(perm => {
+      granular[perm] = level === 'edit'
+    })
+  })
+
+  return granular
+}
+
+// Constants for simplified UI
+const affiliationLabels: Record<Affiliation, string> = {
+  owner: 'Owner',
+  employee: 'Employee',
+  advisor: 'Advisor',
+}
+
+const affiliationIcons: Record<Affiliation, React.ElementType> = {
+  owner: Crown,
+  employee: Briefcase,
+  advisor: UserCheck,
+}
+
+const affiliationColors: Record<Affiliation, string> = {
+  owner: 'bg-amber-100 text-amber-800 border-amber-200',
+  employee: 'bg-blue-100 text-blue-800 border-blue-200',
+  advisor: 'bg-purple-100 text-purple-800 border-purple-200',
+}
+
+const roleLabels: Record<'ADMIN' | 'MEMBER', string> = {
   ADMIN: 'Admin',
-  TEAM_LEADER: 'Team Leader',
   MEMBER: 'Member',
-  VIEWER: 'Viewer',
 }
 
-const roleBadgeVariant: Record<UserRole, 'default' | 'secondary' | 'outline'> = {
-  SUPER_ADMIN: 'default',
-  ADMIN: 'default',
-  TEAM_LEADER: 'secondary',
-  MEMBER: 'secondary',
-  VIEWER: 'outline',
+const permissionLevelIcons: Record<PermissionLevel, React.ElementType> = {
+  edit: Pencil,
+  view: Eye,
+  hide: EyeOff,
 }
 
-const templateIcons: Record<string, React.ElementType> = {
-  crown: Crown,
-  calculator: Calculator,
-  scale: Scale,
-  wallet: Wallet,
-  handshake: Handshake,
-  briefcase: Briefcase,
-  user: User,
-  eye: Eye,
+const permissionLevelLabels: Record<PermissionLevel, string> = {
+  edit: 'Edit',
+  view: 'View',
+  hide: 'Hide',
 }
 
 export function OrganizationSettings() {
@@ -204,29 +329,28 @@ export function OrganizationSettings() {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null)
 
   // Invite form state
-  const [inviteStep, setInviteStep] = useState(1)
   const [inviteEmail, setInviteEmail] = useState('')
-  const [inviteRole, setInviteRole] = useState<UserRole>('MEMBER')
-  const [inviteCategories, setInviteCategories] = useState<FunctionalCategory[]>([])
-  const [isExternalAdvisor, setIsExternalAdvisor] = useState(false)
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
-  const [customizePermissions, setCustomizePermissions] = useState(false)
-  const [customPermissions, setCustomPermissions] = useState<Record<string, boolean>>({})
+  const [inviteRole, setInviteRole] = useState<'ADMIN' | 'MEMBER'>('MEMBER')
+  const [inviteAffiliation, setInviteAffiliation] = useState<Affiliation>('employee')
+  const [invitePagePermissions, setInvitePagePermissions] = useState<Record<string, PermissionLevel>>({})
 
   const [inviting, setInviting] = useState(false)
   const [inviteError, setInviteError] = useState<string | null>(null)
   const [inviteUrl, setInviteUrl] = useState<string | null>(null)
   const [inviteCopied, setInviteCopied] = useState(false)
-  const [updatingCategories, setUpdatingCategories] = useState<string | null>(null)
 
-  // Role templates
+  // Role templates (for mapping to backend)
   const [roleTemplates, setRoleTemplates] = useState<RoleTemplate[]>([])
-  const [permissionCategories, setPermissionCategories] = useState<PermissionCategory[]>([])
 
   useEffect(() => {
     loadOrganization()
     loadRoleTemplates()
   }, [])
+
+  // Update page permissions when affiliation changes
+  useEffect(() => {
+    setInvitePagePermissions(getDefaultPermissionsForAffiliation(inviteAffiliation))
+  }, [inviteAffiliation])
 
   async function loadOrganization() {
     try {
@@ -250,7 +374,6 @@ export function OrganizationSettings() {
       if (response.ok) {
         const data = await response.json()
         setRoleTemplates(data.templates)
-        setPermissionCategories(data.categories)
       }
     } catch (error) {
       console.error('Failed to load role templates:', error)
@@ -258,14 +381,10 @@ export function OrganizationSettings() {
   }
 
   function resetInviteForm() {
-    setInviteStep(1)
     setInviteEmail('')
     setInviteRole('MEMBER')
-    setInviteCategories([])
-    setIsExternalAdvisor(false)
-    setSelectedTemplateId(null)
-    setCustomizePermissions(false)
-    setCustomPermissions({})
+    setInviteAffiliation('employee')
+    setInvitePagePermissions(getDefaultPermissionsForAffiliation('employee'))
     setInviteError(null)
     setInviteUrl(null)
     setInviteCopied(false)
@@ -279,12 +398,17 @@ export function OrganizationSettings() {
     setInviteUrl(null)
 
     try {
-      // Build custom permissions array if customizing
-      const customPermsArray = customizePermissions
-        ? Object.entries(customPermissions)
-            .filter(([, value]) => value !== undefined)
-            .map(([permission, granted]) => ({ permission, granted }))
-        : undefined
+      const { categories, isExternal } = affiliationToData(inviteAffiliation)
+
+      // Find the appropriate role template based on affiliation
+      const templateSlug = inviteAffiliation === 'owner' ? 'owner' :
+                          inviteAffiliation === 'advisor' ? 'consultant' : 'internal_team'
+      const template = roleTemplates.find(t => t.slug === templateSlug)
+
+      // Convert page permissions to granular permissions
+      const granularPermissions = pagePermissionsToGranular(invitePagePermissions)
+      const customPermsArray = Object.entries(granularPermissions)
+        .map(([permission, granted]) => ({ permission, granted }))
 
       const response = await fetch(`/api/organizations/${organization.id}/invites`, {
         method: 'POST',
@@ -292,10 +416,10 @@ export function OrganizationSettings() {
         body: JSON.stringify({
           email: inviteEmail,
           role: inviteRole,
-          functionalCategories: inviteCategories,
-          roleTemplateId: selectedTemplateId,
+          functionalCategories: categories,
+          roleTemplateId: template?.id,
           customPermissions: customPermsArray,
-          isExternalAdvisor,
+          isExternalAdvisor: isExternal,
         }),
       })
 
@@ -315,37 +439,36 @@ export function OrganizationSettings() {
     }
   }
 
-  async function handleCategoryChange(userId: string, categories: FunctionalCategory[]) {
+  async function handleAffiliationChange(userId: string, affiliation: Affiliation) {
     if (!organization) return
 
-    setUpdatingCategories(userId)
+    const { categories, isExternal } = affiliationToData(affiliation)
 
     try {
-      const response = await fetch(`/api/organizations/${organization.id}/members`, {
+      // Update functional categories
+      await fetch(`/api/organizations/${organization.id}/members`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, functionalCategories: categories }),
       })
 
-      if (response.ok) {
-        loadOrganization()
+      // Update external advisor flag via permissions endpoint
+      const member = organization.users.find(m => m.user.id === userId)
+      if (member) {
+        await fetch(`/api/organizations/${organization.id}/members/${member.id}/permissions`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isExternalAdvisor: isExternal }),
+        })
       }
+
+      loadOrganization()
     } catch (error) {
-      console.error('Failed to update categories:', error)
-    } finally {
-      setUpdatingCategories(null)
+      console.error('Failed to update affiliation:', error)
     }
   }
 
-  function toggleInviteCategory(category: FunctionalCategory) {
-    setInviteCategories(prev =>
-      prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
-    )
-  }
-
-  async function handleRoleChange(userId: string, newRole: UserRole) {
+  async function handleRoleChange(userId: string, newRole: 'ADMIN' | 'MEMBER') {
     if (!organization) return
 
     try {
@@ -406,8 +529,6 @@ export function OrganizationSettings() {
   const canManageMembers = organization?.currentUserRole === 'ADMIN' || organization?.currentUserRole === 'SUPER_ADMIN'
   const canInvite = canManageMembers || organization?.currentUserRole === 'TEAM_LEADER'
 
-  const selectedTemplate = roleTemplates.find(t => t.id === selectedTemplateId)
-
   if (loading) {
     return (
       <Card>
@@ -434,7 +555,7 @@ export function OrganizationSettings() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Team Members</CardTitle>
+            <CardTitle>Exit Team</CardTitle>
             <CardDescription>
               {organization.users.length} member{organization.users.length !== 1 ? 's' : ''} in {organization.name}
             </CardDescription>
@@ -450,19 +571,15 @@ export function OrganizationSettings() {
               <DialogTrigger asChild>
                 <Button>Invite Member</Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
-                    {inviteUrl ? 'Invite Sent!' : `Invite Team Member - Step ${inviteStep} of 3`}
+                    {inviteUrl ? 'Invite Sent!' : 'Invite Team Member'}
                   </DialogTitle>
                   <DialogDescription>
                     {inviteUrl
                       ? 'Share the invite link below'
-                      : inviteStep === 1
-                        ? 'Enter email and member type'
-                        : inviteStep === 2
-                          ? 'Select a role template'
-                          : 'Customize permissions (optional)'
+                      : 'Add a new member to your exit team'
                     }
                   </DialogDescription>
                 </DialogHeader>
@@ -503,236 +620,123 @@ export function OrganizationSettings() {
                     </p>
                   </div>
                 ) : (
-                  <>
-                    {/* Step 1: Basic Info */}
-                    {inviteStep === 1 && (
-                      <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="email">Email Address</Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            placeholder="colleague@example.com"
-                            value={inviteEmail}
-                            onChange={(e) => setInviteEmail(e.target.value)}
-                          />
-                        </div>
+                  <div className="space-y-6 py-4">
+                    {/* Email */}
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email Address</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="colleague@example.com"
+                        value={inviteEmail}
+                        onChange={(e) => setInviteEmail(e.target.value)}
+                      />
+                    </div>
 
-                        <div className="space-y-2">
-                          <Label>Member Type</Label>
-                          <div className="grid grid-cols-2 gap-3">
+                    {/* Role */}
+                    <div className="space-y-2">
+                      <Label htmlFor="role">Role</Label>
+                      <Select
+                        value={inviteRole}
+                        onValueChange={(value) => setInviteRole(value as 'ADMIN' | 'MEMBER')}
+                      >
+                        <SelectTrigger id="role">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ADMIN">Admin</SelectItem>
+                          <SelectItem value="MEMBER">Member</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Admins can manage team members and settings
+                      </p>
+                    </div>
+
+                    {/* Affiliation */}
+                    <div className="space-y-2">
+                      <Label>Affiliation</Label>
+                      <div className="grid grid-cols-3 gap-3">
+                        {(['owner', 'employee', 'advisor'] as Affiliation[]).map((aff) => {
+                          const Icon = affiliationIcons[aff]
+                          const isSelected = inviteAffiliation === aff
+                          return (
                             <button
+                              key={aff}
                               type="button"
-                              onClick={() => setIsExternalAdvisor(false)}
-                              className={`p-4 border rounded-lg text-left transition-colors ${
-                                !isExternalAdvisor
+                              onClick={() => setInviteAffiliation(aff)}
+                              className={cn(
+                                'p-3 border rounded-lg text-center transition-colors',
+                                isSelected
                                   ? 'border-primary bg-primary/5'
                                   : 'hover:bg-muted'
-                              }`}
+                              )}
                             >
-                              <Users className="h-5 w-5 mb-2" />
-                              <div className="font-medium">Internal Team</div>
-                              <p className="text-xs text-muted-foreground">
-                                Employee or internal stakeholder
-                              </p>
+                              <Icon className="h-5 w-5 mx-auto mb-1" />
+                              <div className="text-sm font-medium">{affiliationLabels[aff]}</div>
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => setIsExternalAdvisor(true)}
-                              className={`p-4 border rounded-lg text-left transition-colors ${
-                                isExternalAdvisor
-                                  ? 'border-primary bg-primary/5'
-                                  : 'hover:bg-muted'
-                              }`}
-                            >
-                              <ExternalLink className="h-5 w-5 mb-2" />
-                              <div className="font-medium">External Advisor</div>
-                              <p className="text-xs text-muted-foreground">
-                                CPA, attorney, consultant
-                              </p>
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="role">System Role</Label>
-                          <Select
-                            value={inviteRole}
-                            onValueChange={(value) => setInviteRole(value as UserRole)}
-                          >
-                            <SelectTrigger id="role">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="ADMIN">Admin</SelectItem>
-                              <SelectItem value="TEAM_LEADER">Team Leader</SelectItem>
-                              <SelectItem value="MEMBER">Member</SelectItem>
-                              <SelectItem value="VIEWER">Viewer</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <p className="text-xs text-muted-foreground">
-                            This controls basic system access. Granular permissions are set in the next step.
-                          </p>
-                        </div>
+                          )
+                        })}
                       </div>
-                    )}
+                    </div>
 
-                    {/* Step 2: Role Template */}
-                    {inviteStep === 2 && (
-                      <div className="space-y-4 py-4 max-h-[400px] overflow-y-auto">
-                        <div className="grid grid-cols-2 gap-3">
-                          {roleTemplates
-                            .filter(t => isExternalAdvisor
-                              ? ['cpa', 'attorney', 'wealth_advisor', 'ma_advisor', 'consultant'].includes(t.slug)
-                              : ['owner', 'internal_team', 'view_only'].includes(t.slug)
-                            )
-                            .map((template) => {
-                              const Icon = templateIcons[template.icon] || User
-                              const isSelected = selectedTemplateId === template.id
-                              return (
-                                <button
-                                  key={template.id}
-                                  type="button"
-                                  onClick={() => setSelectedTemplateId(template.id)}
-                                  className={`p-4 border rounded-lg text-left transition-colors ${
-                                    isSelected
-                                      ? 'border-primary bg-primary/5'
-                                      : 'hover:bg-muted'
-                                  }`}
-                                >
-                                  <Icon className="h-5 w-5 mb-2" />
-                                  <div className="font-medium">{template.name}</div>
-                                  <p className="text-xs text-muted-foreground line-clamp-2">
-                                    {template.description}
-                                  </p>
-                                  {template.summary && (
-                                    <div className="mt-2 flex flex-wrap gap-1">
-                                      {template.summary.fullAccess.slice(0, 3).map(m => (
-                                        <Badge key={m} variant="secondary" className="text-xs">
-                                          {m}
-                                        </Badge>
-                                      ))}
-                                      {template.summary.fullAccess.length > 3 && (
-                                        <Badge variant="outline" className="text-xs">
-                                          +{template.summary.fullAccess.length - 3}
-                                        </Badge>
+                    {/* Page Permissions */}
+                    <div className="space-y-3">
+                      <Label>Permissions</Label>
+                      <div className="border rounded-lg divide-y max-h-[300px] overflow-y-auto">
+                        {PAGE_PERMISSIONS.map((page) => {
+                          const currentLevel = invitePagePermissions[page.key] || 'hide'
+                          return (
+                            <div key={page.key} className="flex items-center justify-between p-3">
+                              <span className="text-sm">{page.label}</span>
+                              <div className="flex gap-1">
+                                {(['edit', 'view', 'hide'] as PermissionLevel[]).map((level) => {
+                                  const Icon = permissionLevelIcons[level]
+                                  const isSelected = currentLevel === level
+                                  return (
+                                    <button
+                                      key={level}
+                                      type="button"
+                                      onClick={() => {
+                                        setInvitePagePermissions({
+                                          ...invitePagePermissions,
+                                          [page.key]: level,
+                                        })
+                                      }}
+                                      className={cn(
+                                        'p-2 rounded transition-colors',
+                                        isSelected
+                                          ? level === 'edit'
+                                            ? 'bg-green-100 text-green-700'
+                                            : level === 'view'
+                                              ? 'bg-blue-100 text-blue-700'
+                                              : 'bg-gray-100 text-gray-700'
+                                          : 'hover:bg-muted text-muted-foreground'
                                       )}
-                                    </div>
-                                  )}
-                                </button>
-                              )
-                            })}
-                        </div>
+                                      title={permissionLevelLabels[level]}
+                                    >
+                                      <Icon className="h-4 w-4" />
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          )
+                        })}
                       </div>
-                    )}
-
-                    {/* Step 3: Customize Permissions */}
-                    {inviteStep === 3 && (
-                      <div className="space-y-4 py-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <Label>Customize Permissions</Label>
-                            <p className="text-xs text-muted-foreground">
-                              Override template defaults for specific permissions
-                            </p>
-                          </div>
-                          <Switch
-                            checked={customizePermissions}
-                            onCheckedChange={setCustomizePermissions}
-                          />
-                        </div>
-
-                        {customizePermissions && selectedTemplate && (
-                          <div className="max-h-[300px] overflow-y-auto space-y-2 border rounded-lg p-3">
-                            {permissionCategories.map((category) => (
-                              <Collapsible key={category.key}>
-                                <CollapsibleTrigger className="flex items-center gap-2 w-full p-2 hover:bg-muted rounded">
-                                  <ChevronRight className="h-4 w-4" />
-                                  <span className="font-medium">{category.label}</span>
-                                  {category.sensitive && (
-                                    <Lock className="h-3 w-3 text-muted-foreground" />
-                                  )}
-                                </CollapsibleTrigger>
-                                <CollapsibleContent className="pl-6 space-y-1">
-                                  {category.permissions.map((perm) => {
-                                    const defaultValue = selectedTemplate.defaultPermissions[perm] ?? false
-                                    const customValue = customPermissions[perm]
-                                    const currentValue = customValue !== undefined ? customValue : defaultValue
-                                    const isOverridden = customValue !== undefined
-
-                                    return (
-                                      <div
-                                        key={perm}
-                                        className={`flex items-center justify-between p-2 rounded ${
-                                          isOverridden ? 'bg-amber-50' : ''
-                                        }`}
-                                      >
-                                        <span className="text-sm">{perm.split(':')[1]}</span>
-                                        <div className="flex items-center gap-2">
-                                          {isOverridden && (
-                                            <button
-                                              type="button"
-                                              onClick={() => {
-                                                const newPerms = { ...customPermissions }
-                                                delete newPerms[perm]
-                                                setCustomPermissions(newPerms)
-                                              }}
-                                              className="text-xs text-muted-foreground hover:text-foreground"
-                                            >
-                                              Reset
-                                            </button>
-                                          )}
-                                          <Switch
-                                            checked={currentValue}
-                                            onCheckedChange={(checked) => {
-                                              setCustomPermissions({
-                                                ...customPermissions,
-                                                [perm]: checked,
-                                              })
-                                            }}
-                                          />
-                                        </div>
-                                      </div>
-                                    )
-                                  })}
-                                </CollapsibleContent>
-                              </Collapsible>
-                            ))}
-                          </div>
-                        )}
-
-                        <div className="space-y-2">
-                          <Label>Functional Categories (Optional)</Label>
-                          <p className="text-xs text-muted-foreground mb-2">
-                            Used to default task assignments
-                          </p>
-                          <div className="grid grid-cols-2 gap-2">
-                            {(Object.keys(categoryLabels) as FunctionalCategory[]).map((category) => {
-                              const Icon = categoryIcons[category]
-                              return (
-                                <div
-                                  key={category}
-                                  className={`flex items-center gap-2 p-2 rounded-md border cursor-pointer transition-colors ${
-                                    inviteCategories.includes(category)
-                                      ? categoryColors[category]
-                                      : 'bg-background hover:bg-muted'
-                                  }`}
-                                  onClick={() => toggleInviteCategory(category)}
-                                >
-                                  <Checkbox
-                                    checked={inviteCategories.includes(category)}
-                                    onCheckedChange={() => toggleInviteCategory(category)}
-                                  />
-                                  <Icon className="h-4 w-4" />
-                                  <span className="text-sm">{categoryLabels[category]}</span>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        </div>
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Pencil className="h-3 w-3" /> Edit
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Eye className="h-3 w-3" /> View
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <EyeOff className="h-3 w-3" /> Hide
+                        </span>
                       </div>
-                    )}
-                  </>
+                    </div>
+                  </div>
                 )}
 
                 {inviteError && (
@@ -745,31 +749,9 @@ export function OrganizationSettings() {
                       Close
                     </Button>
                   ) : (
-                    <>
-                      {inviteStep > 1 && (
-                        <Button
-                          variant="outline"
-                          onClick={() => setInviteStep(inviteStep - 1)}
-                        >
-                          Back
-                        </Button>
-                      )}
-                      {inviteStep < 3 ? (
-                        <Button
-                          onClick={() => setInviteStep(inviteStep + 1)}
-                          disabled={
-                            (inviteStep === 1 && !inviteEmail) ||
-                            (inviteStep === 2 && !selectedTemplateId)
-                          }
-                        >
-                          Next
-                        </Button>
-                      ) : (
-                        <Button onClick={handleInvite} disabled={inviting}>
-                          {inviting ? 'Sending...' : 'Send Invite'}
-                        </Button>
-                      )}
-                    </>
+                    <Button onClick={handleInvite} disabled={inviting || !inviteEmail}>
+                      {inviting ? 'Sending...' : 'Send Invite'}
+                    </Button>
                   )}
                 </DialogFooter>
               </DialogContent>
@@ -782,17 +764,18 @@ export function OrganizationSettings() {
               <TableRow>
                 <TableHead>Member</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Affiliation</TableHead>
                 <TableHead>Permissions</TableHead>
-                <TableHead>Categories</TableHead>
                 <TableHead>Joined</TableHead>
                 {canManageMembers && <TableHead className="w-[100px]">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {organization.users.map((member) => {
-                const TemplateIcon = member.roleTemplate?.icon
-                  ? templateIcons[member.roleTemplate.icon] || Shield
-                  : Shield
+                const affiliation = dataToAffiliation(member.functionalCategories, member.isExternalAdvisor)
+                const AffiliationIcon = affiliationIcons[affiliation]
+                const displayRole = member.role === 'SUPER_ADMIN' || member.role === 'ADMIN' ? 'ADMIN' : 'MEMBER'
+
                 return (
                   <TableRow key={member.id}>
                     <TableCell>
@@ -803,14 +786,8 @@ export function OrganizationSettings() {
                           size="sm"
                         />
                         <div>
-                          <div className="font-medium flex items-center gap-2">
+                          <div className="font-medium">
                             {member.user.name || 'No name'}
-                            {member.isExternalAdvisor && (
-                              <Badge variant="outline" className="text-xs">
-                                <ExternalLink className="h-3 w-3 mr-1" />
-                                Advisor
-                              </Badge>
-                            )}
                           </div>
                           <div className="text-sm text-muted-foreground">
                             {member.user.email}
@@ -821,135 +798,76 @@ export function OrganizationSettings() {
                     <TableCell>
                       {canManageMembers && member.role !== 'SUPER_ADMIN' ? (
                         <Select
-                          value={member.role}
-                          onValueChange={(value) => handleRoleChange(member.user.id, value as UserRole)}
+                          value={displayRole}
+                          onValueChange={(value) => handleRoleChange(member.user.id, value as 'ADMIN' | 'MEMBER')}
                         >
-                          <SelectTrigger className="w-[140px]">
+                          <SelectTrigger className="w-[100px]">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="ADMIN">Admin</SelectItem>
-                            <SelectItem value="TEAM_LEADER">Team Leader</SelectItem>
                             <SelectItem value="MEMBER">Member</SelectItem>
-                            <SelectItem value="VIEWER">Viewer</SelectItem>
                           </SelectContent>
                         </Select>
                       ) : (
-                        <Badge variant={roleBadgeVariant[member.role]}>
-                          {roleLabels[member.role]}
+                        <Badge variant={member.role === 'SUPER_ADMIN' || member.role === 'ADMIN' ? 'default' : 'secondary'}>
+                          {roleLabels[displayRole]}
                         </Badge>
                       )}
                     </TableCell>
                     <TableCell>
-                      {member.roleTemplate ? (
-                        <button
-                          onClick={() => canManageMembers && openPermissionsDialog(member)}
-                          className={`flex items-center gap-2 px-2 py-1 rounded border ${
-                            canManageMembers ? 'hover:bg-muted cursor-pointer' : ''
-                          }`}
+                      {canManageMembers && member.role !== 'SUPER_ADMIN' ? (
+                        <Select
+                          value={affiliation}
+                          onValueChange={(value) => handleAffiliationChange(member.user.id, value as Affiliation)}
                         >
-                          <TemplateIcon className="h-4 w-4" />
-                          <span className="text-sm">{member.roleTemplate.name}</span>
-                          {canManageMembers && <ChevronDown className="h-3 w-3" />}
-                        </button>
+                          <SelectTrigger className="w-[120px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="owner">
+                              <div className="flex items-center gap-2">
+                                <Crown className="h-4 w-4" />
+                                Owner
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="employee">
+                              <div className="flex items-center gap-2">
+                                <Briefcase className="h-4 w-4" />
+                                Employee
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="advisor">
+                              <div className="flex items-center gap-2">
+                                <UserCheck className="h-4 w-4" />
+                                Advisor
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                       ) : (
-                        <span className="text-muted-foreground text-sm">
-                          {member.role === 'SUPER_ADMIN' || member.role === 'ADMIN'
-                            ? 'Full Access'
-                            : 'Default'}
+                        <span className={cn(
+                          'inline-flex items-center gap-1 px-2 py-1 rounded text-xs border',
+                          affiliationColors[affiliation]
+                        )}>
+                          <AffiliationIcon className="h-3 w-3" />
+                          {affiliationLabels[affiliation]}
                         </span>
                       )}
                     </TableCell>
                     <TableCell>
-                      {canManageMembers ? (
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-auto min-h-[32px] py-1 px-2"
-                              disabled={updatingCategories === member.user.id}
-                            >
-                              {member.functionalCategories.length > 0 ? (
-                                <div className="flex flex-wrap gap-1">
-                                  {member.functionalCategories.map((cat) => {
-                                    const Icon = categoryIcons[cat]
-                                    return (
-                                      <span
-                                        key={cat}
-                                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs border ${categoryColors[cat]}`}
-                                      >
-                                        <Icon className="h-3 w-3" />
-                                        {categoryLabels[cat]}
-                                      </span>
-                                    )
-                                  })}
-                                </div>
-                              ) : (
-                                <span className="text-muted-foreground text-xs">Assign categories...</span>
-                              )}
-                              <ChevronDown className="ml-1 h-3 w-3 shrink-0" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-64 p-2" align="start">
-                            <div className="space-y-1">
-                              <p className="text-xs text-muted-foreground mb-2 px-1">
-                                Select functional areas
-                              </p>
-                              {(Object.keys(categoryLabels) as FunctionalCategory[]).map((category) => {
-                                const Icon = categoryIcons[category]
-                                const isSelected = member.functionalCategories.includes(category)
-                                return (
-                                  <div
-                                    key={category}
-                                    className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors ${
-                                      isSelected
-                                        ? categoryColors[category]
-                                        : 'hover:bg-muted'
-                                    }`}
-                                    onClick={() => {
-                                      const newCategories = isSelected
-                                        ? member.functionalCategories.filter(c => c !== category)
-                                        : [...member.functionalCategories, category]
-                                      handleCategoryChange(member.user.id, newCategories)
-                                    }}
-                                  >
-                                    <Checkbox
-                                      checked={isSelected}
-                                      onCheckedChange={() => {
-                                        const newCategories = isSelected
-                                          ? member.functionalCategories.filter(c => c !== category)
-                                          : [...member.functionalCategories, category]
-                                        handleCategoryChange(member.user.id, newCategories)
-                                      }}
-                                    />
-                                    <Icon className="h-4 w-4" />
-                                    <span className="text-sm">{categoryLabels[category]}</span>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          </PopoverContent>
-                        </Popover>
+                      {canManageMembers && member.role !== 'SUPER_ADMIN' ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openPermissionsDialog(member)}
+                        >
+                          Configure
+                        </Button>
                       ) : (
-                        <div className="flex flex-wrap gap-1">
-                          {member.functionalCategories.length > 0 ? (
-                            member.functionalCategories.map((cat) => {
-                              const Icon = categoryIcons[cat]
-                              return (
-                                <span
-                                  key={cat}
-                                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs border ${categoryColors[cat]}`}
-                                >
-                                  <Icon className="h-3 w-3" />
-                                  {categoryLabels[cat]}
-                                </span>
-                              )
-                            })
-                          ) : (
-                            <span className="text-muted-foreground text-xs">None</span>
-                          )}
-                        </div>
+                        <span className="text-muted-foreground text-sm">
+                          {member.role === 'SUPER_ADMIN' || member.role === 'ADMIN' ? 'Full Access' : 'Default'}
+                        </span>
                       )}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
@@ -992,64 +910,33 @@ export function OrganizationSettings() {
                 <TableRow>
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
-                  <TableHead>Permission Template</TableHead>
-                  <TableHead>Categories</TableHead>
+                  <TableHead>Affiliation</TableHead>
                   <TableHead>Expires</TableHead>
                   <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {organization.invites.map((invite) => {
-                  const TemplateIcon = invite.roleTemplate?.icon
-                    ? templateIcons[invite.roleTemplate.icon] || Shield
-                    : Shield
+                  const affiliation = dataToAffiliation(invite.functionalCategories, invite.isExternalAdvisor)
+                  const AffiliationIcon = affiliationIcons[affiliation]
+                  const displayRole = invite.role === 'ADMIN' ? 'ADMIN' : 'MEMBER'
+
                   return (
                     <TableRow key={invite.id}>
+                      <TableCell>{invite.email}</TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          {invite.email}
-                          {invite.isExternalAdvisor && (
-                            <Badge variant="outline" className="text-xs">
-                              <ExternalLink className="h-3 w-3 mr-1" />
-                              Advisor
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={roleBadgeVariant[invite.role]}>
-                          {roleLabels[invite.role]}
+                        <Badge variant={invite.role === 'ADMIN' ? 'default' : 'secondary'}>
+                          {roleLabels[displayRole]}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {invite.roleTemplate ? (
-                          <div className="flex items-center gap-2">
-                            <TemplateIcon className="h-4 w-4" />
-                            <span className="text-sm">{invite.roleTemplate.name}</span>
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">None</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {invite.functionalCategories.length > 0 ? (
-                            invite.functionalCategories.map((cat) => {
-                              const Icon = categoryIcons[cat]
-                              return (
-                                <span
-                                  key={cat}
-                                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs border ${categoryColors[cat]}`}
-                                >
-                                  <Icon className="h-3 w-3" />
-                                  {categoryLabels[cat]}
-                                </span>
-                              )
-                            })
-                          ) : (
-                            <span className="text-muted-foreground text-xs">None</span>
-                          )}
-                        </div>
+                        <span className={cn(
+                          'inline-flex items-center gap-1 px-2 py-1 rounded text-xs border',
+                          affiliationColors[affiliation]
+                        )}>
+                          <AffiliationIcon className="h-3 w-3" />
+                          {affiliationLabels[affiliation]}
+                        </span>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {new Date(invite.expiresAt).toLocaleDateString()}
@@ -1075,13 +962,13 @@ export function OrganizationSettings() {
 
       {/* Permissions Dialog */}
       <Dialog open={permissionsDialogOpen} onOpenChange={setPermissionsDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              Manage Permissions for {selectedMember?.user.name || selectedMember?.user.email}
+              Permissions for {selectedMember?.user.name || selectedMember?.user.email}
             </DialogTitle>
             <DialogDescription>
-              View and customize this member&apos;s access permissions
+              Configure page access for this team member
             </DialogDescription>
           </DialogHeader>
           {selectedMember && (
@@ -1089,7 +976,6 @@ export function OrganizationSettings() {
               organizationId={organization.id}
               member={selectedMember}
               roleTemplates={roleTemplates}
-              permissionCategories={permissionCategories}
               onClose={() => {
                 setPermissionsDialogOpen(false)
                 loadOrganization()
@@ -1102,30 +988,21 @@ export function OrganizationSettings() {
   )
 }
 
-// Separate component for managing member permissions
+// Simplified permissions editor component
 function MemberPermissionsEditor({
   organizationId,
   member,
   roleTemplates,
-  permissionCategories,
   onClose,
 }: {
   organizationId: string
   member: Member
   roleTemplates: RoleTemplate[]
-  permissionCategories: PermissionCategory[]
   onClose: () => void
 }) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [_permissions, setPermissions] = useState<{
-    resolvedPermissions: Record<string, boolean>
-    customPermissions: Array<{ permission: string; granted: boolean }>
-  } | null>(null)
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(
-    member.roleTemplate?.id || null
-  )
-  const [customOverrides, setCustomOverrides] = useState<Record<string, boolean>>({})
+  const [pagePermissions, setPagePermissions] = useState<Record<string, PermissionLevel>>({})
 
   useEffect(() => {
     loadPermissions()
@@ -1139,13 +1016,9 @@ function MemberPermissionsEditor({
       )
       if (response.ok) {
         const data = await response.json()
-        setPermissions(data)
-        // Initialize custom overrides from existing data
-        const overrides: Record<string, boolean> = {}
-        for (const perm of data.customPermissions) {
-          overrides[perm.permission] = perm.granted
-        }
-        setCustomOverrides(overrides)
+        // Convert granular permissions to page permissions
+        const pagePerms = granularToPagePermissions(data.resolvedPermissions)
+        setPagePermissions(pagePerms)
       }
     } catch (error) {
       console.error('Failed to load permissions:', error)
@@ -1154,12 +1027,43 @@ function MemberPermissionsEditor({
     }
   }
 
+  // Convert granular permissions to simplified page permissions
+  function granularToPagePermissions(granular: Record<string, boolean>): Record<string, PermissionLevel> {
+    const pagePerms: Record<string, PermissionLevel> = {}
+
+    PAGE_PERMISSIONS.forEach(page => {
+      // Check if all edit permissions are granted
+      const hasAllEdit = page.editPermissions.length > 0 &&
+        page.editPermissions.every(p => granular[p])
+
+      // Check if all view permissions are granted
+      const hasAllView = page.viewPermissions.every(p => granular[p])
+
+      if (hasAllEdit && hasAllView) {
+        pagePerms[page.key] = 'edit'
+      } else if (hasAllView) {
+        pagePerms[page.key] = 'view'
+      } else {
+        pagePerms[page.key] = 'hide'
+      }
+    })
+
+    return pagePerms
+  }
+
   async function handleSave() {
     setSaving(true)
     try {
-      const customPermsArray = Object.entries(customOverrides).map(
-        ([permission, granted]) => ({ permission, granted })
-      )
+      // Find appropriate template based on current affiliation
+      const affiliation = dataToAffiliation(member.functionalCategories, member.isExternalAdvisor)
+      const templateSlug = affiliation === 'owner' ? 'owner' :
+                          affiliation === 'advisor' ? 'consultant' : 'internal_team'
+      const template = roleTemplates.find(t => t.slug === templateSlug)
+
+      // Convert page permissions to granular
+      const granularPermissions = pagePermissionsToGranular(pagePermissions)
+      const customPermsArray = Object.entries(granularPermissions)
+        .map(([permission, granted]) => ({ permission, granted }))
 
       await fetch(
         `/api/organizations/${organizationId}/members/${member.id}/permissions`,
@@ -1167,7 +1071,7 @@ function MemberPermissionsEditor({
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            roleTemplateId: selectedTemplateId,
+            roleTemplateId: template?.id,
             customPermissions: customPermsArray,
           }),
         }
@@ -1181,8 +1085,6 @@ function MemberPermissionsEditor({
     }
   }
 
-  const selectedTemplate = roleTemplates.find(t => t.id === selectedTemplateId)
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -1193,98 +1095,59 @@ function MemberPermissionsEditor({
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <Label>Role Template</Label>
-        <Select
-          value={selectedTemplateId || ''}
-          onValueChange={(value) => {
-            setSelectedTemplateId(value || null)
-            setCustomOverrides({}) // Reset overrides when changing template
-          }}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select a role template" />
-          </SelectTrigger>
-          <SelectContent>
-            {roleTemplates.map((template) => {
-              const Icon = templateIcons[template.icon] || User
-              return (
-                <SelectItem key={template.id} value={template.id}>
-                  <div className="flex items-center gap-2">
-                    <Icon className="h-4 w-4" />
-                    {template.name}
-                  </div>
-                </SelectItem>
-              )
-            })}
-          </SelectContent>
-        </Select>
+      <div className="border rounded-lg divide-y max-h-[400px] overflow-y-auto">
+        {PAGE_PERMISSIONS.map((page) => {
+          const currentLevel = pagePermissions[page.key] || 'hide'
+          return (
+            <div key={page.key} className="flex items-center justify-between p-3">
+              <span className="text-sm">{page.label}</span>
+              <div className="flex gap-1">
+                {(['edit', 'view', 'hide'] as PermissionLevel[]).map((level) => {
+                  const Icon = permissionLevelIcons[level]
+                  const isSelected = currentLevel === level
+                  return (
+                    <button
+                      key={level}
+                      type="button"
+                      onClick={() => {
+                        setPagePermissions({
+                          ...pagePermissions,
+                          [page.key]: level,
+                        })
+                      }}
+                      className={cn(
+                        'p-2 rounded transition-colors',
+                        isSelected
+                          ? level === 'edit'
+                            ? 'bg-green-100 text-green-700'
+                            : level === 'view'
+                              ? 'bg-blue-100 text-blue-700'
+                              : 'bg-gray-100 text-gray-700'
+                          : 'hover:bg-muted text-muted-foreground'
+                      )}
+                      title={permissionLevelLabels[level]}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })}
       </div>
 
-      {selectedTemplate && (
-        <div className="space-y-2">
-          <Label>Permission Overrides</Label>
-          <p className="text-xs text-muted-foreground">
-            Toggle permissions to override the template defaults
-          </p>
-          <div className="max-h-[300px] overflow-y-auto space-y-2 border rounded-lg p-3">
-            {permissionCategories.map((category) => (
-              <Collapsible key={category.key}>
-                <CollapsibleTrigger className="flex items-center gap-2 w-full p-2 hover:bg-muted rounded">
-                  <ChevronRight className="h-4 w-4" />
-                  <span className="font-medium">{category.label}</span>
-                  {category.sensitive && (
-                    <Lock className="h-3 w-3 text-muted-foreground" />
-                  )}
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pl-6 space-y-1">
-                  {category.permissions.map((perm) => {
-                    const defaultValue = selectedTemplate.defaultPermissions[perm] ?? false
-                    const customValue = customOverrides[perm]
-                    const currentValue = customValue !== undefined ? customValue : defaultValue
-                    const isOverridden = customValue !== undefined
-
-                    return (
-                      <div
-                        key={perm}
-                        className={`flex items-center justify-between p-2 rounded ${
-                          isOverridden ? 'bg-amber-50' : ''
-                        }`}
-                      >
-                        <span className="text-sm">{perm}</span>
-                        <div className="flex items-center gap-2">
-                          {isOverridden && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newOverrides = { ...customOverrides }
-                                delete newOverrides[perm]
-                                setCustomOverrides(newOverrides)
-                              }}
-                              className="text-xs text-muted-foreground hover:text-foreground"
-                            >
-                              Reset
-                            </button>
-                          )}
-                          <Switch
-                            checked={currentValue}
-                            onCheckedChange={(checked) => {
-                              setCustomOverrides({
-                                ...customOverrides,
-                                [perm]: checked,
-                              })
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )
-                  })}
-                </CollapsibleContent>
-              </Collapsible>
-            ))}
-          </div>
-        </div>
-      )}
+      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1">
+          <Pencil className="h-3 w-3" /> Edit
+        </span>
+        <span className="flex items-center gap-1">
+          <Eye className="h-3 w-3" /> View
+        </span>
+        <span className="flex items-center gap-1">
+          <EyeOff className="h-3 w-3" /> Hide
+        </span>
+      </div>
 
       <div className="flex justify-end gap-2 pt-4">
         <Button variant="outline" onClick={onClose}>
