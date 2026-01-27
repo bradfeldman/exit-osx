@@ -108,7 +108,7 @@ export function Sidebar() {
     <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
       <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-sidebar px-6 pb-4">
         {/* Logo */}
-        <Link href="/dashboard" className="flex h-16 shrink-0 items-center">
+        <a href="https://exitosx.com" target="_blank" rel="noopener noreferrer" className="flex h-16 shrink-0 items-center">
           {/* Wordmark - Light version for dark sidebar */}
           <svg viewBox="0 0 800 200" className="h-7 w-auto" aria-label="Exit OSx">
             <g transform="translate(0.000000,200.000000) scale(0.100000,-0.100000)">
@@ -142,7 +142,7 @@ export function Sidebar() {
             </g>
             <polygon fill="#B87333" points="181.9,126.2 315.1,19 277.4,19 196.2,99 178.4,118.1"/>
           </svg>
-        </Link>
+        </a>
 
         {/* Company Selector */}
         <div className="-mt-2 mb-2">
