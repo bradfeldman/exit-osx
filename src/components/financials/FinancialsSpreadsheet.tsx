@@ -388,10 +388,13 @@ function SpreadsheetCell({
   const [inputValue, setInputValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const isNavigatingRef = useRef(false)
+  const wasActiveRef = useRef(false)
 
   // When becoming active, initialize input value and focus
+  // Only set input value when transitioning from inactive to active (not on value changes while editing)
   useEffect(() => {
-    if (isActive && editable) {
+    if (isActive && editable && !wasActiveRef.current) {
+      // Transitioning from inactive to active - initialize input
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setInputValue(value?.toLocaleString() ?? '')
       isNavigatingRef.current = false
@@ -401,6 +404,7 @@ function SpreadsheetCell({
         inputRef.current?.select()
       }, 0)
     }
+    wasActiveRef.current = isActive && !!editable
   }, [isActive, editable, value])
 
   const handleClick = () => {
@@ -533,10 +537,13 @@ function AdjustmentCell({
   const [inputValue, setInputValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const isNavigatingRef = useRef(false)
+  const wasActiveRef = useRef(false)
 
   // When becoming active, initialize input value and focus
+  // Only set input value when transitioning from inactive to active (not on value changes while editing)
   useEffect(() => {
-    if (isActive) {
+    if (isActive && !wasActiveRef.current) {
+      // Transitioning from inactive to active - initialize input
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setInputValue(value ? value.toLocaleString() : '')
       isNavigatingRef.current = false
@@ -545,6 +552,7 @@ function AdjustmentCell({
         inputRef.current?.select()
       }, 0)
     }
+    wasActiveRef.current = isActive
   }, [isActive, value])
 
   const handleClick = () => {
