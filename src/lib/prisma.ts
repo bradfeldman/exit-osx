@@ -4,13 +4,16 @@ import pg from 'pg'
 
 const { Pool } = pg
 
-// Create a new pool for each request in serverless to avoid stale connections
+// Create a pool with SSL enabled for Supabase
 function createPool() {
   return new Pool({
     connectionString: process.env.DATABASE_URL,
     max: 1, // Single connection per serverless instance
     idleTimeoutMillis: 10000, // Close idle connections quickly
     connectionTimeoutMillis: 10000, // Fail fast on connection issues
+    ssl: {
+      rejectUnauthorized: false, // Required for Supabase pooler
+    },
   })
 }
 
