@@ -105,7 +105,7 @@ export async function isUserSubscribingOwner(userId: string, companyId: string):
 }
 
 /**
- * Check if a user can access a company (as owner or staff)
+ * Check if a user can access a company (as owner, staff, or org member)
  */
 export async function canUserAccessCompany(userId: string, companyId: string): Promise<boolean> {
   // Check ownership
@@ -119,14 +119,39 @@ export async function canUserAccessCompany(userId: string, companyId: string): P
     return true
   }
 
-  // Check staff access
+  // Check staff access (company-level)
   const staffAccess = await prisma.companyStaffAccess.findUnique({
     where: {
       companyId_userId: { companyId, userId },
     },
   })
 
-  return staffAccess !== null && staffAccess.status === 'ACTIVE'
+  if (staffAccess && staffAccess.status === 'ACTIVE') {
+    return true
+  }
+
+  // Check organization membership
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { organizationId: true },
+  })
+
+  if (company) {
+    const orgMember = await prisma.organizationUser.findUnique({
+      where: {
+        organizationId_userId: {
+          organizationId: company.organizationId,
+          userId,
+        },
+      },
+    })
+
+    if (orgMember) {
+      return true
+    }
+  }
+
+  return false
 }
 
 /**
@@ -181,7 +206,8 @@ export async function canAccessCompanyFeature(
  * Check if a user can access a personal feature (PFS, Retirement, Loans)
  * Personal features require:
  * 1. Being an owner of the company, OR
- * 2. Being staff with the specific feature grant
+ * 2. Being staff with the specific feature grant, OR
+ * 3. Being an org member with the specific permission grant
  */
 export async function canAccessPersonalFeature(
   userId: string,
@@ -217,26 +243,66 @@ export async function canAccessPersonalFeature(
     return canAccessPlanFeature(planTier, feature)
   }
 
-  // Check staff access with feature grant
+  // Check staff access with feature grant (company-level)
   const staffAccess = await prisma.companyStaffAccess.findUnique({
     where: {
       companyId_userId: { companyId, userId },
     },
   })
 
-  if (!staffAccess || staffAccess.status !== 'ACTIVE') {
-    return false
+  if (staffAccess && staffAccess.status === 'ACTIVE') {
+    // Check if the company's plan includes this feature
+    const planTier = await getCompanyPlanTier(companyId)
+    if (!canAccessPlanFeature(planTier, feature)) {
+      return false
+    }
+
+    // Check if staff has been granted this specific feature
+    const fieldKey = FEATURE_TO_STAFF_FIELD[feature as PersonalFeature]
+    return staffAccess[fieldKey] === true
   }
 
-  // Check if the company's plan includes this feature
-  const planTier = await getCompanyPlanTier(companyId)
-  if (!canAccessPlanFeature(planTier, feature)) {
-    return false
+  // Check organization membership with permission grants
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { organizationId: true },
+  })
+
+  if (company) {
+    const orgMember = await prisma.organizationUser.findUnique({
+      where: {
+        organizationId_userId: {
+          organizationId: company.organizationId,
+          userId,
+        },
+      },
+      include: {
+        customPermissions: true,
+      },
+    })
+
+    if (orgMember) {
+      // Check if the company's plan includes this feature
+      const planTier = await getCompanyPlanTier(companyId)
+      if (!canAccessPlanFeature(planTier, feature)) {
+        return false
+      }
+
+      // Map feature to granular permission pattern
+      const permissionPatterns: Record<PersonalFeature, string[]> = {
+        'personal-financials': ['personal.net_worth:view', 'personal.net_worth:edit'],
+        'retirement-calculator': ['personal.retirement:view', 'personal.retirement:edit'],
+        'business-loans': ['personal.net_worth:view', 'personal.net_worth:edit'], // Loans is part of PFS
+      }
+
+      const patterns = permissionPatterns[feature as PersonalFeature]
+      return orgMember.customPermissions.some(
+        p => p.granted && patterns.includes(p.permission)
+      )
+    }
   }
 
-  // Check if staff has been granted this specific feature
-  const fieldKey = FEATURE_TO_STAFF_FIELD[feature as PersonalFeature]
-  return staffAccess[fieldKey] === true
+  return false
 }
 
 /**
@@ -268,7 +334,7 @@ export async function getUserAccessibleCompanies(userId: string): Promise<Compan
     },
   })
 
-  // Get staff access companies
+  // Get staff access companies (company-level)
   const staffAccess = await prisma.companyStaffAccess.findMany({
     where: {
       userId,
@@ -276,6 +342,20 @@ export async function getUserAccessibleCompanies(userId: string): Promise<Compan
     },
     include: {
       company: true,
+    },
+  })
+
+  // Get companies from organizations the user is a member of
+  const orgMemberships = await prisma.organizationUser.findMany({
+    where: {
+      userId,
+    },
+    include: {
+      organization: {
+        include: {
+          companies: true,
+        },
+      },
     },
   })
 
@@ -309,7 +389,41 @@ export async function getUserAccessibleCompanies(userId: string): Promise<Compan
     })
   }
 
+  // Add organization member companies (if not already added)
+  for (const membership of orgMemberships) {
+    for (const company of membership.organization.companies) {
+      if (company.deletedAt) continue
+      if (companies.some(c => c.id === company.id)) continue
+
+      companies.push({
+        id: company.id,
+        name: company.name,
+        role: 'staff', // Org members are treated as staff
+        isSubscribingOwner: false,
+        status: 'ACTIVE',
+      })
+    }
+  }
+
   return companies.sort((a, b) => a.name.localeCompare(b.name))
+}
+
+/**
+ * Map granular permissions to personal feature access
+ */
+function mapPermissionsToStaffAccess(
+  permissions: Array<{ permission: string; granted: boolean }>
+): { hasPFSAccess: boolean; hasRetirementAccess: boolean; hasLoansAccess: boolean } {
+  const hasPFSAccess = permissions.some(
+    p => p.granted && (p.permission === 'personal.net_worth:view' || p.permission === 'personal.net_worth:edit')
+  )
+  const hasRetirementAccess = permissions.some(
+    p => p.granted && (p.permission === 'personal.retirement:view' || p.permission === 'personal.retirement:edit')
+  )
+  // Business loans uses personal.net_worth permissions as it's part of the PFS module
+  const hasLoansAccess = hasPFSAccess
+
+  return { hasPFSAccess, hasRetirementAccess, hasLoansAccess }
 }
 
 /**
@@ -343,7 +457,7 @@ export async function getUserAccessInfo(
     }
   }
 
-  // Check staff access
+  // Check staff access (company-level)
   const staffAccess = await prisma.companyStaffAccess.findUnique({
     where: {
       companyId_userId: { companyId, userId },
@@ -363,6 +477,43 @@ export async function getUserAccessInfo(
         hasRetirementAccess: staffAccess.hasRetirementAccess,
         hasLoansAccess: staffAccess.hasLoansAccess,
       },
+    }
+  }
+
+  // Check organization membership (org-level staff via invite)
+  // Get the company's organization
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { organizationId: true },
+  })
+
+  if (company) {
+    // Check if user is a member of this organization
+    const orgMember = await prisma.organizationUser.findUnique({
+      where: {
+        organizationId_userId: {
+          organizationId: company.organizationId,
+          userId,
+        },
+      },
+      include: {
+        customPermissions: true,
+      },
+    })
+
+    if (orgMember) {
+      const planTier = await getCompanyPlanTier(companyId)
+      // Map MemberPermission to staffAccess format
+      const memberStaffAccess = mapPermissionsToStaffAccess(orgMember.customPermissions)
+
+      return {
+        userId,
+        userType: user.userType,
+        companyId,
+        role: 'staff', // Org members who aren't owners are treated as staff
+        planTier,
+        staffAccess: memberStaffAccess,
+      }
     }
   }
 
