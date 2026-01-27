@@ -115,6 +115,16 @@ export async function POST() {
     }
 
     if (existingUser) {
+      // Check for pending invites for this user's email
+      const pendingInvite = await prisma.organizationInvite.findFirst({
+        where: {
+          email: { equals: user.email!, mode: 'insensitive' },
+          acceptedAt: null,
+          expiresAt: { gt: new Date() }
+        },
+        select: { token: true, organization: { select: { name: true } } }
+      })
+
       // Update avatar URL if missing
       if (!existingUser.avatarUrl) {
         const updatedUser = await prisma.user.update({
@@ -136,13 +146,21 @@ export async function POST() {
         })
         return NextResponse.json({
           user: updatedUser,
-          isNew: false
+          isNew: false,
+          pendingInvite: pendingInvite ? {
+            token: pendingInvite.token,
+            organizationName: pendingInvite.organization.name
+          } : null
         })
       }
 
       return NextResponse.json({
         user: existingUser,
-        isNew: false
+        isNew: false,
+        pendingInvite: pendingInvite ? {
+          token: pendingInvite.token,
+          organizationName: pendingInvite.organization.name
+        } : null
       })
     }
 
@@ -192,9 +210,23 @@ export async function POST() {
       }
     })
 
+    // Check for pending invites for this new user's email
+    const pendingInvite = await prisma.organizationInvite.findFirst({
+      where: {
+        email: { equals: user.email!, mode: 'insensitive' },
+        acceptedAt: null,
+        expiresAt: { gt: new Date() }
+      },
+      select: { token: true, organization: { select: { name: true } } }
+    })
+
     return NextResponse.json({
       user: newUser,
-      isNew: true
+      isNew: true,
+      pendingInvite: pendingInvite ? {
+        token: pendingInvite.token,
+        organizationName: pendingInvite.organization.name
+      } : null
     })
   } catch (error) {
     console.error('Error syncing user:', error)

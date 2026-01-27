@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -83,6 +84,7 @@ interface DashboardContentProps {
 }
 
 export function DashboardContent({ userName }: DashboardContentProps) {
+  const router = useRouter()
   const { selectedCompanyId, companies, setSelectedCompanyId, isLoading: companyLoading } = useCompany()
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [noCompany, setNoCompany] = useState(false)
@@ -98,8 +100,15 @@ export function DashboardContent({ userName }: DashboardContentProps) {
       setError(null)
 
       try {
-        // First sync the user
-        await fetch('/api/user/sync', { method: 'POST' })
+        // First sync the user and check for pending invites
+        const syncRes = await fetch('/api/user/sync', { method: 'POST' })
+        const syncData = await syncRes.json()
+
+        // If user has a pending invite, redirect them to accept it
+        if (syncData.pendingInvite?.token) {
+          router.push(`/invite/${syncData.pendingInvite.token}`)
+          return
+        }
 
         if (!selectedCompanyId) {
           // No company selected - check if companies exist in context
