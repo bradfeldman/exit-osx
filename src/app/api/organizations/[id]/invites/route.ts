@@ -232,17 +232,31 @@ export async function POST(
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.exitosx.com'
     const inviteUrl = `${baseUrl}/invite/${invite.token}`
 
+    // Get primary company name for better UX in email
+    const primaryCompany = await prisma.company.findFirst({
+      where: {
+        organizationId,
+        deletedAt: null,
+      },
+      orderBy: { createdAt: 'asc' },
+      select: { name: true },
+    })
+    const displayName = primaryCompany?.name || invite.organization.name
+
     // Send email notification with invite link
+    let emailSent = false
+    let emailError: string | null = null
+
     if (resend) {
       try {
-        await resend.emails.send({
+        const result = await resend.emails.send({
           from: process.env.RESEND_FROM_EMAIL || 'Exit OSx <noreply@exitosx.com>',
           to: invite.email,
-          subject: `You've been invited to join ${invite.organization.name} on Exit OSx`,
+          subject: `You've been invited to join ${displayName} on Exit OSx`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <h2 style="color: #333;">You're Invited!</h2>
-              <p>${invite.inviter.name || invite.inviter.email} has invited you to join <strong>${invite.organization.name}</strong> on Exit OSx.</p>
+              <p>${invite.inviter.name || invite.inviter.email} has invited you to join <strong>${displayName}</strong> on Exit OSx.</p>
               <p>You've been assigned the role of <strong>${invite.role.replace('_', ' ').toLowerCase()}</strong>.</p>
               <div style="margin: 30px 0;">
                 <a href="${inviteUrl}" style="background-color: #c9a66b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
@@ -256,10 +270,15 @@ export async function POST(
             </div>
           `,
         })
-      } catch (emailError) {
-        console.error('Error sending invite email:', emailError)
+        emailSent = true
+        console.log('[Invite Email] Sent successfully to:', invite.email, 'Resend ID:', result.data?.id)
+      } catch (err) {
+        emailError = err instanceof Error ? err.message : 'Unknown error'
+        console.error('[Invite Email] Failed to send to:', invite.email, 'Error:', emailError)
         // Don't fail the invite creation if email fails
       }
+    } else {
+      console.warn('[Invite Email] Resend not configured - RESEND_API_KEY missing')
     }
 
     return NextResponse.json({
@@ -273,6 +292,9 @@ export async function POST(
         roleTemplate: invite.roleTemplate,
         customPermissions: invite.customPermissions,
         isExternalAdvisor: invite.isExternalAdvisor,
+        // Email delivery status for user feedback
+        emailSent,
+        emailError,
       }
     }, { status: 201 })
   } catch (error) {
