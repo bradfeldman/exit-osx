@@ -148,6 +148,12 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       return false
     }
 
+    // If no company is selected (userRole is null), treat user as owner of their org
+    // This allows users without a company yet to see features as unlocked
+    if (userRole === null) {
+      return true
+    }
+
     // Owners always have access to personal features
     if (isOwner) {
       return true
@@ -167,7 +173,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
 
     return false
-  }, [checkCompanyFeatureAccess, isOwner, isStaff, staffAccess, isComped])
+  }, [checkCompanyFeatureAccess, isOwner, isStaff, staffAccess, isComped, userRole])
 
   // Combined feature access check
   const checkFeatureAccess = useCallback((feature: string): boolean => {
