@@ -28,11 +28,15 @@ export async function GET(request: Request) {
     const orgUser = await prisma.organizationUser.findUnique({
       where: { id: context.organizationUserId },
       include: {
+        user: {
+          select: {
+            userType: true,
+          },
+        },
         organization: {
           select: {
             planTier: true,
             subscriptionStatus: true,
-            isComped: true,
           },
         },
       },
@@ -40,7 +44,8 @@ export async function GET(request: Request) {
 
     // If user is organization owner (SUPER_ADMIN/ADMIN) and on Exit-Ready tier, grant all permissions
     const isOwnerRole = orgUser?.role === 'SUPER_ADMIN' || orgUser?.role === 'ADMIN'
-    const isExitReadyOrComped = orgUser?.organization.planTier === 'EXIT_READY' || orgUser?.organization.isComped
+    const isComped = orgUser?.user.userType === 'COMPED'
+    const isExitReadyOrComped = orgUser?.organization.planTier === 'EXIT_READY' || isComped
     const hasActiveSubscription = orgUser?.organization.subscriptionStatus !== 'CANCELLED' && orgUser?.organization.subscriptionStatus !== 'EXPIRED'
 
     // Resolve all permissions for this user
