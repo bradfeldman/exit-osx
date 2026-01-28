@@ -496,27 +496,6 @@ export function Sidebar() {
               Admin
             </p>
             <ul role="list" className="mt-1 space-y-1">
-              {/* Team Settings */}
-              <li>
-                <Link
-                  href="/dashboard/settings/organization"
-                  className={cn(
-                    'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                    pathname.startsWith('/dashboard/settings/organization')
-                      ? 'bg-sidebar-accent text-sidebar-primary'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                  )}
-                >
-                  <UsersIcon className={cn(
-                    'h-5 w-5 shrink-0',
-                    pathname.startsWith('/dashboard/settings/organization')
-                      ? 'text-sidebar-primary'
-                      : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                  )} />
-                  Exit Team
-                </Link>
-              </li>
-
               {/* Company Settings */}
               <li>
                 <Link
