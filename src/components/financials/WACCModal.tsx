@@ -22,6 +22,7 @@ import {
 import { Loader2 } from 'lucide-react'
 
 interface WACCAssumptions {
+  baseFCF: number | null
   riskFreeRate: number
   marketRiskPremium: number
   beta: number
@@ -42,6 +43,7 @@ interface WACCModalProps {
 }
 
 const DEFAULT_ASSUMPTIONS: WACCAssumptions = {
+  baseFCF: null,
   riskFreeRate: 0.04, // 4%
   marketRiskPremium: 0.055, // 5.5%
   beta: 1.0,
@@ -60,10 +62,54 @@ const DEFAULT_ASSUMPTIONS: WACCAssumptions = {
   },
 }
 
+// Format number with commas for display
+function formatNumberWithCommas(value: number | null): string {
+  if (value === null) return ''
+  return new Intl.NumberFormat('en-US').format(Math.round(value))
+}
+
+// Parse number from formatted string (removes commas)
+function parseFormattedNumber(value: string): number | null {
+  const cleaned = value.replace(/,/g, '')
+  if (!cleaned || isNaN(Number(cleaned))) return null
+  return Number(cleaned)
+}
+
 export function WACCModal({ open, onClose, companyId, onSaved }: WACCModalProps) {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [assumptions, setAssumptions] = useState<WACCAssumptions>(DEFAULT_ASSUMPTIONS)
+  const [baseFCFDisplay, setBaseFCFDisplay] = useState('')
+
+  // Fetch latest FCF from financials for default
+  const fetchLatestFCF = useCallback(async (): Promise<number | null> => {
+    try {
+      // Fetch financial periods to find the most recent one with cash flow data
+      const periodsResponse = await fetch(`/api/companies/${companyId}/financial-periods`)
+      if (!periodsResponse.ok) return null
+
+      const periodsData = await periodsResponse.json()
+      const periods = periodsData.periods || []
+
+      // Sort by fiscal year descending to get the most recent
+      const sortedPeriods = periods.sort((a: { fiscalYear: number }, b: { fiscalYear: number }) => b.fiscalYear - a.fiscalYear)
+
+      for (const period of sortedPeriods) {
+        // Try to get cash flow for this period
+        const cfResponse = await fetch(`/api/companies/${companyId}/financial-periods/${period.id}/cash-flow`)
+        if (cfResponse.ok) {
+          const cfData = await cfResponse.json()
+          if (cfData.cashFlowStatement?.freeCashFlow) {
+            return cfData.cashFlowStatement.freeCashFlow
+          }
+        }
+      }
+      return null
+    } catch (error) {
+      console.error('Failed to fetch latest FCF:', error)
+      return null
+    }
+  }, [companyId])
 
   // Fetch existing assumptions
   const fetchAssumptions = useCallback(async () => {
@@ -75,7 +121,9 @@ export function WACCModal({ open, onClose, companyId, onSaved }: WACCModalProps)
       if (response.ok) {
         const data = await response.json()
         if (data.assumptions) {
+          const savedBaseFCF = data.assumptions.baseFCF ? Number(data.assumptions.baseFCF) : null
           setAssumptions({
+            baseFCF: savedBaseFCF,
             riskFreeRate: Number(data.assumptions.riskFreeRate) || DEFAULT_ASSUMPTIONS.riskFreeRate,
             marketRiskPremium: Number(data.assumptions.marketRiskPremium) || DEFAULT_ASSUMPTIONS.marketRiskPremium,
             beta: Number(data.assumptions.beta) || DEFAULT_ASSUMPTIONS.beta,
@@ -87,6 +135,23 @@ export function WACCModal({ open, onClose, companyId, onSaved }: WACCModalProps)
             exitMultiple: data.assumptions.exitMultiple ? Number(data.assumptions.exitMultiple) : null,
             growthAssumptions: data.assumptions.growthAssumptions || DEFAULT_ASSUMPTIONS.growthAssumptions,
           })
+          setBaseFCFDisplay(formatNumberWithCommas(savedBaseFCF))
+
+          // If no saved baseFCF, try to get it from financials
+          if (!savedBaseFCF) {
+            const latestFCF = await fetchLatestFCF()
+            if (latestFCF !== null) {
+              setAssumptions(prev => ({ ...prev, baseFCF: latestFCF }))
+              setBaseFCFDisplay(formatNumberWithCommas(latestFCF))
+            }
+          }
+        } else {
+          // No saved assumptions, try to get baseFCF from financials
+          const latestFCF = await fetchLatestFCF()
+          if (latestFCF !== null) {
+            setAssumptions(prev => ({ ...prev, baseFCF: latestFCF }))
+            setBaseFCFDisplay(formatNumberWithCommas(latestFCF))
+          }
         }
       }
     } catch (error) {
@@ -94,7 +159,7 @@ export function WACCModal({ open, onClose, companyId, onSaved }: WACCModalProps)
     } finally {
       setLoading(false)
     }
-  }, [companyId, open])
+  }, [companyId, open, fetchLatestFCF])
 
   useEffect(() => {
     if (open) {
@@ -161,6 +226,38 @@ export function WACCModal({ open, onClose, companyId, onSaved }: WACCModalProps)
           </div>
         ) : (
           <div className="space-y-6 py-4">
+            {/* Base Free Cash Flow Section */}
+            <div>
+              <h4 className="font-medium text-gray-900 mb-3">Base Free Cash Flow (Year 0)</h4>
+              <div>
+                <Label htmlFor="baseFCF">Free Cash Flow ($)</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <Input
+                    id="baseFCF"
+                    type="text"
+                    className="pl-7"
+                    placeholder="Enter or pulled from Financials"
+                    value={baseFCFDisplay}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^\d,]/g, '') // Only allow digits and commas
+                      setBaseFCFDisplay(value)
+                      updateAssumption('baseFCF', parseFormattedNumber(value))
+                    }}
+                    onBlur={() => {
+                      // Reformat on blur
+                      if (assumptions.baseFCF !== null) {
+                        setBaseFCFDisplay(formatNumberWithCommas(assumptions.baseFCF))
+                      }
+                    }}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Defaults to the most recent Free Cash Flow from your Financials
+                </p>
+              </div>
+            </div>
+
             {/* Cost of Equity Section */}
             <div>
               <h4 className="font-medium text-gray-900 mb-3">Cost of Equity (CAPM)</h4>

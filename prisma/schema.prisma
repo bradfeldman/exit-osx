@@ -907,6 +907,7 @@ model CashFlowStatement {
 model DCFAssumptions {
   id                        String   @id @default(cuid())
   companyId                 String   @unique @map("company_id")
+  baseFCF                   Decimal? @map("base_fcf") @db.Decimal(15, 2) // Base Free Cash Flow (Year 0) for DCF calculation
   riskFreeRate              Decimal  @map("risk_free_rate") @db.Decimal(5, 4)
   marketRiskPremium         Decimal  @map("market_risk_premium") @db.Decimal(5, 4)
   beta                      Decimal  @db.Decimal(4, 2)

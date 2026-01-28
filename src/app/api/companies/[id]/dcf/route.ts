@@ -21,6 +21,9 @@ export async function GET(
 
     return NextResponse.json({
       assumptions: {
+        baseFCF: dcfAssumptions.baseFCF
+          ? Number(dcfAssumptions.baseFCF)
+          : null,
         riskFreeRate: Number(dcfAssumptions.riskFreeRate),
         marketRiskPremium: Number(dcfAssumptions.marketRiskPremium),
         beta: Number(dcfAssumptions.beta),
@@ -76,6 +79,7 @@ export async function PUT(
     const body = await request.json()
 
     const {
+      baseFCF,
       riskFreeRate,
       marketRiskPremium,
       beta,
@@ -98,6 +102,7 @@ export async function PUT(
       where: { companyId },
       create: {
         companyId,
+        baseFCF: baseFCF ?? null,
         riskFreeRate,
         marketRiskPremium,
         beta,
@@ -116,6 +121,7 @@ export async function PUT(
         ebitdaMultipleHighOverride: ebitdaMultipleHighOverride ?? null,
       },
       update: {
+        baseFCF: baseFCF ?? null,
         riskFreeRate,
         marketRiskPremium,
         beta,
@@ -137,6 +143,9 @@ export async function PUT(
 
     return NextResponse.json({
       assumptions: {
+        baseFCF: dcfAssumptions.baseFCF
+          ? Number(dcfAssumptions.baseFCF)
+          : null,
         riskFreeRate: Number(dcfAssumptions.riskFreeRate),
         marketRiskPremium: Number(dcfAssumptions.marketRiskPremium),
         beta: Number(dcfAssumptions.beta),
