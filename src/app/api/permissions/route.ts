@@ -4,7 +4,8 @@
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { getPermissionContext, resolveUserPermissions } from '@/lib/auth/check-granular-permission'
-import { GRANULAR_PERMISSIONS, GranularPermission } from '@/lib/auth/permissions'
+import { GRANULAR_PERMISSIONS, GranularPermission, ROLE_TEMPLATES } from '@/lib/auth/permissions'
+import { prisma } from '@/lib/prisma'
 
 export async function GET(request: Request) {
   try {
@@ -22,15 +23,50 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Resolve all permissions for this user
-    const resolved = await resolveUserPermissions(context.organizationUserId)
+    // Check organization's subscription tier and user's role
+    // Exit-Ready tier owners get all permissions automatically
+    const orgUser = await prisma.organizationUser.findUnique({
+      where: { id: context.organizationUserId },
+      include: {
+        organization: {
+          select: {
+            planTier: true,
+            subscriptionStatus: true,
+            isComped: true,
+          },
+        },
+      },
+    })
 
-    // DEBUG: Log personal permissions
-    console.log('[DEBUG] Resolved permissions for personal:', {
+    // If user is organization owner (SUPER_ADMIN/ADMIN) and on Exit-Ready tier, grant all permissions
+    const isOwnerRole = orgUser?.role === 'SUPER_ADMIN' || orgUser?.role === 'ADMIN'
+    const isExitReadyOrComped = orgUser?.organization.planTier === 'EXIT_READY' || orgUser?.organization.isComped
+    const hasActiveSubscription = orgUser?.organization.subscriptionStatus !== 'CANCELLED' && orgUser?.organization.subscriptionStatus !== 'EXPIRED'
+
+    // Resolve all permissions for this user
+    let resolved = await resolveUserPermissions(context.organizationUserId)
+
+    // Override permissions for Exit-Ready owners
+    if (isOwnerRole && isExitReadyOrComped && hasActiveSubscription) {
+      // Grant all permissions from owner template
+      resolved = {
+        ...resolved,
+        permissions: { ...ROLE_TEMPLATES.owner.defaultPermissions },
+        templateSlug: resolved.templateSlug || 'owner',
+      }
+    }
+
+    // DEBUG: Log permission resolution details
+    console.log('[DEBUG] Permission resolution:', {
+      userId: context.userId,
+      organizationUserId: context.organizationUserId,
+      isOwnerRole,
+      isExitReadyOrComped,
+      hasActiveSubscription,
+      planTier: orgUser?.organization.planTier,
       'personal.retirement:view': resolved.permissions['personal.retirement:view'],
       'personal.net_worth:view': resolved.permissions['personal.net_worth:view'],
       templateSlug: resolved.templateSlug,
-      hasCustomOverrides: resolved.hasCustomOverrides,
     })
 
     // Build permission list with details
