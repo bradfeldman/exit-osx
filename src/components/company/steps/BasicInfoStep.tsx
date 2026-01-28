@@ -163,6 +163,12 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
             id="business-description"
             value={businessDescription}
             onChange={(e) => setBusinessDescription(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey && businessDescription.trim()) {
+                e.preventDefault()
+                handleFindIndustry()
+              }
+            }}
             placeholder="e.g., We manufacture and sell a mouthguard to help people stop bruxing (teeth grinding)"
             rows={3}
             className="w-full px-4 py-3 border-2 border-border rounded-xl focus:border-primary focus:ring-0 outline-none transition-all text-sm resize-none placeholder:text-muted-foreground/40"

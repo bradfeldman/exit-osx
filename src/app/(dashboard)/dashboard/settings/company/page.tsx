@@ -335,6 +335,12 @@ export default function CompanySettingsPage() {
               id="business-description"
               value={businessDescription}
               onChange={(e) => setBusinessDescription(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && businessDescription.trim()) {
+                  e.preventDefault()
+                  handleFindIndustry()
+                }
+              }}
               placeholder="e.g., We manufacture and sell a mouthguard to help people stop bruxing (teeth grinding)"
               rows={3}
               className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm resize-none"
