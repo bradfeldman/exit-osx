@@ -25,10 +25,14 @@ const revenueTiers = [
 ]
 
 function getCurrentTier(revenue: number) {
-  return revenueTiers.find(tier => revenue >= tier.min && revenue < tier.max) || revenueTiers[0]
+  // Return undefined if no revenue entered (0 means no selection)
+  if (revenue <= 0) return undefined
+  return revenueTiers.find(tier => revenue >= tier.min && revenue < tier.max)
 }
 
 function getTierIndex(revenue: number) {
+  // Return -1 if no revenue entered (0 means no selection)
+  if (revenue <= 0) return -1
   return revenueTiers.findIndex(tier => revenue >= tier.min && revenue < tier.max)
 }
 
@@ -103,7 +107,8 @@ export function RevenueStep({ formData, updateFormData }: RevenueStepProps) {
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Quick Select Range</p>
         <div className="grid grid-cols-3 gap-3">
           {revenueTiers.map((tier, idx) => {
-            const isSelected = formData.annualRevenue >= tier.min && formData.annualRevenue < tier.max
+            // Only show as selected if revenue > 0 and falls within this tier
+            const isSelected = formData.annualRevenue > 0 && formData.annualRevenue >= tier.min && formData.annualRevenue < tier.max
             return (
               <motion.button
                 key={tier.label}
@@ -145,7 +150,7 @@ export function RevenueStep({ formData, updateFormData }: RevenueStepProps) {
       </motion.div>
 
       {/* Current Tier Display */}
-      {formData.annualRevenue > 0 && (
+      {formData.annualRevenue > 0 && currentTier && (
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
