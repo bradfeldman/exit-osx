@@ -98,7 +98,7 @@ export function Header({ user }: HeaderProps) {
         <div className="flex items-center gap-x-4 lg:gap-x-6">
           {/* Subscription Status */}
           {!subscriptionLoading && (
-            <div className="hidden sm:flex items-center gap-2">
+            <div className="hidden sm:flex flex-col items-center gap-0.5">
               <a
                 href="/pricing"
                 target="_blank"
@@ -107,11 +107,11 @@ export function Header({ user }: HeaderProps) {
               >
                 {formatPlanTier(planTier)}
               </a>
-              {isTrialing && trialDaysRemaining !== null && (
-                <span className="text-xs text-muted-foreground">
-                  {trialDaysRemaining} {trialDaysRemaining === 1 ? 'day' : 'days'} left
-                </span>
-              )}
+              <span className="text-[10px] text-muted-foreground">
+                {isTrialing && trialDaysRemaining !== null
+                  ? `${trialDaysRemaining} ${trialDaysRemaining === 1 ? 'day' : 'days'} left`
+                  : 'member'}
+              </span>
             </div>
           )}
           <NotificationBell />
