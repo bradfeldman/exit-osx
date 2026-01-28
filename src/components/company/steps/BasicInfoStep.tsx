@@ -173,140 +173,148 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
           )}
         </div>
 
-        {/* Business Description Input */}
-        <div className="space-y-2">
-          <label htmlFor="business-description" className="text-xs text-muted-foreground">
-            What does your business do?
-          </label>
-          <textarea
-            id="business-description"
-            value={businessDescription}
-            onChange={(e) => setBusinessDescription(e.target.value.slice(0, 250))}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey && businessDescription.trim()) {
-                e.preventDefault()
-                handleFindIndustry()
-              }
-            }}
-            placeholder="e.g., We manufacture and sell a mouthguard to help people stop bruxing (teeth grinding)"
-            rows={3}
-            maxLength={250}
-            className="w-full px-4 py-3 border-2 border-border rounded-xl focus:border-primary focus:ring-0 outline-none transition-all text-sm resize-none placeholder:text-muted-foreground/40"
-            disabled={matchingIndustry}
-          />
-          <div className="flex justify-between items-center text-xs text-muted-foreground">
-            <IndustryListDialog
-              value={
-                formData.icbSubSector
-                  ? {
-                      icbIndustry: formData.icbIndustry,
-                      icbSuperSector: formData.icbSuperSector,
-                      icbSector: formData.icbSector,
-                      icbSubSector: formData.icbSubSector,
-                    }
-                  : undefined
-              }
-              onSelect={handleIndustrySelect}
-            />
-            <span>{businessDescription.length}/250</span>
-          </div>
-        </div>
-
-        {/* AI Match Error */}
-        {industryMatchError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-            {industryMatchError}
-          </div>
-        )}
-
-        {/* Loading state */}
-        {matchingIndustry && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-            </svg>
-            Finding classification...
-          </div>
-        )}
-
-        {/* AI Match Recommendation */}
-        {industryMatchResult && (
+        {/* Show selected industry OR input form */}
+        {isIndustrySelected ? (
+          /* Selected Industry Display */
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-4 bg-amber-50 border border-amber-200 rounded-xl"
+            className="relative overflow-hidden p-4 bg-gradient-to-br from-primary/15 via-primary/10 to-amber-500/5 rounded-xl border border-primary/30"
           >
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-amber-900">Recommended Classification</p>
-                  <p className="text-base font-bold text-amber-800 mt-1">{industryMatchResult.subSectorLabel}</p>
-                  <p className="text-xs text-amber-700 mt-1">{industryMatchResult.reasoning}</p>
-                </div>
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-amber-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-md shadow-primary/20">
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
+                </svg>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  onClick={handleAcceptRecommendation}
-                  size="sm"
-                  className="bg-[#B87333] hover:bg-[#9A5F2A]"
-                >
-                  Accept
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setIndustryMatchResult(null)
-                    setBusinessDescription('')
-                  }}
-                >
-                  Clear
-                </Button>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-foreground truncate">{formData.icbSubSector}</p>
+                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                  <span>{formData.icbIndustry}</span>
+                  <span className="text-primary">→</span>
+                  <span>{formData.icbSuperSector}</span>
+                  <span className="text-primary">→</span>
+                  <span>{formData.icbSector}</span>
+                </p>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  updateFormData({
+                    icbIndustry: '',
+                    icbSuperSector: '',
+                    icbSector: '',
+                    icbSubSector: '',
+                  })
+                  setBusinessDescription('')
+                  setIndustryMatchResult(null)
+                }}
+                className="p-1.5 hover:bg-red-100 rounded-full transition-colors group"
+                title="Remove selection"
+              >
+                <svg className="w-4 h-4 text-muted-foreground group-hover:text-red-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
           </motion.div>
+        ) : (
+          /* Business Description Input Form */
+          <>
+            <div className="space-y-2">
+              <label htmlFor="business-description" className="text-xs text-muted-foreground">
+                What does your business do?
+              </label>
+              <textarea
+                id="business-description"
+                value={businessDescription}
+                onChange={(e) => setBusinessDescription(e.target.value.slice(0, 250))}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey && businessDescription.trim()) {
+                    e.preventDefault()
+                    handleFindIndustry()
+                  }
+                }}
+                placeholder="e.g., We manufacture and sell a mouthguard to help people stop bruxing (teeth grinding)"
+                rows={3}
+                maxLength={250}
+                className="w-full px-4 py-3 border-2 border-border rounded-xl focus:border-primary focus:ring-0 outline-none transition-all text-sm resize-none placeholder:text-muted-foreground/40"
+                disabled={matchingIndustry}
+              />
+              <div className="flex justify-between items-center text-xs text-muted-foreground">
+                <IndustryListDialog
+                  value={undefined}
+                  onSelect={handleIndustrySelect}
+                />
+                <span>{businessDescription.length}/250</span>
+              </div>
+            </div>
+
+            {/* AI Match Error */}
+            {industryMatchError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                {industryMatchError}
+              </div>
+            )}
+
+            {/* Loading state */}
+            {matchingIndustry && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Finding classification...
+              </div>
+            )}
+
+            {/* AI Match Recommendation */}
+            {industryMatchResult && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 bg-amber-50 border border-amber-200 rounded-xl"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-amber-900">Recommended Classification</p>
+                      <p className="text-base font-bold text-amber-800 mt-1">{industryMatchResult.subSectorLabel}</p>
+                      <p className="text-xs text-amber-700 mt-1">{industryMatchResult.reasoning}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      onClick={handleAcceptRecommendation}
+                      size="sm"
+                      className="bg-[#B87333] hover:bg-[#9A5F2A]"
+                    >
+                      Accept
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setIndustryMatchResult(null)
+                        setBusinessDescription('')
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </>
         )}
       </motion.div>
-
-      {/* Industry Selection Preview - moved outside the motion.div */}
-      {isIndustrySelected && (
-        <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 20 }}
-          className="relative overflow-hidden p-5 bg-gradient-to-br from-primary/15 via-primary/10 to-amber-500/5 rounded-2xl border border-primary/30 shadow-lg shadow-primary/10"
-        >
-          {/* Decorative glow */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-
-          <div className="relative flex items-start gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-amber-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/30">
-              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
-              </svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-primary font-semibold uppercase tracking-wider">Selected Industry</p>
-              <p className="font-bold text-lg text-foreground truncate mt-0.5">{formData.icbSubSector}</p>
-              <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1.5">
-                <span>{formData.icbIndustry}</span>
-                <span className="text-primary">→</span>
-                <span>{formData.icbSuperSector}</span>
-                <span className="text-primary">→</span>
-                <span>{formData.icbSector}</span>
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      )}
 
       {/* Info Box */}
       <motion.div
