@@ -10,6 +10,7 @@ import {
   withTimingSafeResponse,
   securityLogger,
 } from '@/lib/security'
+import { serverAnalytics } from '@/lib/analytics/server'
 
 interface LoginResult {
   success: boolean
@@ -168,6 +169,13 @@ export async function secureLogin(
       userAgent,
     })
 
+    // Track successful login (non-blocking)
+    serverAnalytics.auth.loginSuccess({
+      userId: '', // Will be populated after user sync
+      email,
+      method: 'email',
+    }).catch(() => {})
+
     return { success: true }
   })
 }
@@ -209,6 +217,7 @@ export async function secureSignup(
   selectedPlan?: string
 ): Promise<SignupResult> {
   const { validatePassword, getPasswordWarning } = await import('@/lib/security')
+  const { sendAccountExistsEmail } = await import('@/lib/email/send-account-exists-email')
 
   // Validate password strength and check for breaches
   const validationError = await validatePassword(password)
@@ -227,7 +236,7 @@ export async function secureSignup(
     : `${baseUrl}/auth/callback`
 
   const supabase = await createClient()
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -240,11 +249,17 @@ export async function secureSignup(
   })
 
   if (error) {
-    // Generic error message to prevent enumeration
+    // If user already registered, send helpful email instead of generic error
     if (error.message.includes('already registered')) {
+      // Send account exists email (non-blocking for security - always return success)
+      sendAccountExistsEmail({ email, name }).catch((err) => {
+        console.error('[Auth] Failed to send account exists email:', err)
+      })
+
+      // Return success to prevent email enumeration
+      // User will receive an email explaining they already have an account
       return {
-        success: false,
-        error: 'Unable to create account. Please try a different email or sign in.',
+        success: true,
       }
     }
     return {
@@ -252,6 +267,26 @@ export async function secureSignup(
       error: error.message,
     }
   }
+
+  // Check if user already exists (Supabase returns user with identities: null for existing users)
+  // In this case, Supabase doesn't send a confirmation email, so we send our helpful email
+  if (data?.user && data.user.identities && data.user.identities.length === 0) {
+    // User already exists - send account exists email
+    sendAccountExistsEmail({ email, name }).catch((err) => {
+      console.error('[Auth] Failed to send account exists email:', err)
+    })
+
+    // Return success to prevent email enumeration
+    return {
+      success: true,
+    }
+  }
+
+  // Track signup initiated (non-blocking)
+  serverAnalytics.auth.signupInitiated({
+    email,
+    method: 'email',
+  }).catch(() => {})
 
   // Check for password warning (non-blocking)
   const warning = await getPasswordWarning(password)
