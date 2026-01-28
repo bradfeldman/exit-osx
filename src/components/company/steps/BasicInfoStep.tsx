@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { IndustryListDialog } from '../IndustryListDialog'
+import { IndustryListInline } from '../IndustryListInline'
 import type { CompanyFormData } from '../CompanySetupWizard'
 
 interface BasicInfoStepProps {
@@ -15,6 +15,7 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
   const [businessDescription, setBusinessDescription] = useState('')
   const [matchingIndustry, setMatchingIndustry] = useState(false)
   const [industryMatchError, setIndustryMatchError] = useState<string | null>(null)
+  const [showIndustryList, setShowIndustryList] = useState(false)
   const [industryMatchResult, setIndustryMatchResult] = useState<{
     icbIndustry: string
     icbSuperSector: string
@@ -39,6 +40,7 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
     // Clear AI match result when manually selecting
     setIndustryMatchResult(null)
     setBusinessDescription('')
+    setShowIndustryList(false)
   }
 
   const handleAcceptRecommendation = () => {
@@ -242,13 +244,27 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
                 disabled={matchingIndustry}
               />
               <div className="flex justify-between items-center text-xs text-muted-foreground">
-                <IndustryListDialog
-                  value={undefined}
-                  onSelect={handleIndustrySelect}
-                />
+                <button
+                  type="button"
+                  onClick={() => setShowIndustryList(!showIndustryList)}
+                  className="text-xs text-primary hover:text-primary/80 hover:underline focus:outline-none"
+                >
+                  {showIndustryList ? 'Hide Industry List' : 'Choose from Industry List'}
+                </button>
                 <span>{businessDescription.length}/250</span>
               </div>
             </div>
+
+            {/* Inline Industry List */}
+            <AnimatePresence>
+              {showIndustryList && (
+                <IndustryListInline
+                  value={undefined}
+                  onSelect={handleIndustrySelect}
+                  onClose={() => setShowIndustryList(false)}
+                />
+              )}
+            </AnimatePresence>
 
             {/* AI Match Error */}
             {industryMatchError && (

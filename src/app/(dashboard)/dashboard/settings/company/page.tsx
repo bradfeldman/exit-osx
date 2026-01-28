@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { AnimatePresence } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useCompany } from '@/contexts/CompanyContext'
-import { IndustryListDialog } from '@/components/company/IndustryListDialog'
+import { IndustryListInline } from '@/components/company/IndustryListInline'
 import { QuickBooksCard } from '@/components/integrations'
 import { getFlattenedOptionBySubSector } from '@/lib/data/industries'
 
@@ -79,6 +80,7 @@ export default function CompanySettingsPage() {
   const [businessDescription, setBusinessDescription] = useState('')
   const [matchingIndustry, setMatchingIndustry] = useState(false)
   const [industryMatchError, setIndustryMatchError] = useState<string | null>(null)
+  const [showIndustryList, setShowIndustryList] = useState(false)
   const [industryMatchResult, setIndustryMatchResult] = useState<{
     icbIndustry: string
     icbSuperSector: string
@@ -131,6 +133,7 @@ export default function CompanySettingsPage() {
     // Clear AI match result when manually selecting
     setIndustryMatchResult(null)
     setBusinessDescription('')
+    setShowIndustryList(false)
   }
 
   const handleAcceptRecommendation = () => {
@@ -385,13 +388,27 @@ export default function CompanySettingsPage() {
                   disabled={matchingIndustry}
                 />
                 <div className="flex justify-between items-center text-xs text-muted-foreground">
-                  <IndustryListDialog
-                    value={undefined}
-                    onSelect={handleIndustrySelect}
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowIndustryList(!showIndustryList)}
+                    className="text-xs text-primary hover:text-primary/80 hover:underline focus:outline-none"
+                  >
+                    {showIndustryList ? 'Hide Industry List' : 'Choose from Industry List'}
+                  </button>
                   <span>{businessDescription.length}/250</span>
                 </div>
               </div>
+
+              {/* Inline Industry List */}
+              <AnimatePresence>
+                {showIndustryList && (
+                  <IndustryListInline
+                    value={undefined}
+                    onSelect={handleIndustrySelect}
+                    onClose={() => setShowIndustryList(false)}
+                  />
+                )}
+              </AnimatePresence>
 
               {/* AI Match Error */}
               {industryMatchError && (
