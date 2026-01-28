@@ -84,9 +84,6 @@ export default function CompanySettingsPage() {
     icbSuperSector: string
     icbSector: string
     icbSubSector: string
-    industryLabel: string
-    superSectorLabel: string
-    sectorLabel: string
     subSectorLabel: string
     reasoning: string
   } | null>(null)
@@ -136,6 +133,17 @@ export default function CompanySettingsPage() {
     setBusinessDescription('')
   }
 
+  const handleAcceptRecommendation = () => {
+    if (industryMatchResult) {
+      setIcbIndustry(industryMatchResult.icbIndustry)
+      setIcbSuperSector(industryMatchResult.icbSuperSector)
+      setIcbSector(industryMatchResult.icbSector)
+      setIcbSubSector(industryMatchResult.icbSubSector)
+      setIndustryMatchResult(null)
+      setBusinessDescription('')
+    }
+  }
+
   const handleFindIndustry = async () => {
     if (!businessDescription.trim()) return
 
@@ -158,12 +166,15 @@ export default function CompanySettingsPage() {
       const data = await response.json()
       const match = data.match
 
-      // Automatically apply the matched industry
-      setIcbIndustry(match.icbIndustry)
-      setIcbSuperSector(match.icbSuperSector)
-      setIcbSector(match.icbSector)
-      setIcbSubSector(match.icbSubSector)
-      setIndustryMatchResult(match)
+      // Store the recommendation (don't auto-apply)
+      setIndustryMatchResult({
+        icbIndustry: match.icbIndustry,
+        icbSuperSector: match.icbSuperSector,
+        icbSector: match.icbSector,
+        icbSubSector: match.icbSubSector,
+        subSectorLabel: match.subSectorLabel,
+        reasoning: match.reasoning,
+      })
     } catch (err) {
       setIndustryMatchError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -358,18 +369,42 @@ export default function CompanySettingsPage() {
             </div>
           )}
 
-          {/* AI Match Result */}
+          {/* AI Match Recommendation */}
           {industryMatchResult && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <div className="flex items-start gap-2">
-                <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <svg className="w-3 h-3 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-amber-900">Recommended Classification</p>
+                    <p className="text-base font-bold text-amber-800 mt-1">{industryMatchResult.subSectorLabel}</p>
+                    <p className="text-xs text-amber-700 mt-1">{industryMatchResult.reasoning}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-green-900">Classification Applied</p>
-                  <p className="text-xs text-green-700 mt-1">{industryMatchResult.reasoning}</p>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    onClick={handleAcceptRecommendation}
+                    size="sm"
+                    className="bg-[#B87333] hover:bg-[#9A5F2A]"
+                  >
+                    Use This Classification
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setIndustryMatchResult(null)
+                      setBusinessDescription('')
+                    }}
+                  >
+                    Try Different Description
+                  </Button>
                 </div>
               </div>
             </div>
