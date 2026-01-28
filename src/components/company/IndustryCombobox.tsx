@@ -115,14 +115,14 @@ export function IndustryCombobox({ value, onSelect, triggerId }: IndustryCombobo
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[500px] p-0" align="start">
-        <Command shouldFilter={false}>
+      <PopoverContent className="w-[500px] max-h-[400px] p-0 overflow-hidden" align="start">
+        <Command shouldFilter={false} className="flex flex-col max-h-[400px]">
           <CommandInput
             placeholder="Type to search industries..."
             value={search}
             onValueChange={setSearch}
           />
-          <CommandList className="max-h-[300px] overflow-y-auto">
+          <CommandList className="flex-1 overflow-y-auto">
             <CommandEmpty>No industry found.</CommandEmpty>
             {Object.entries(groupedOptions).map(([industryLabel, options]) => (
               <CommandGroup key={industryLabel} heading={industryLabel}>
