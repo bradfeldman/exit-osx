@@ -46,7 +46,7 @@ export function IndustryListDialog({ value, onSelect }: IndustryListDialogProps)
           type="button"
           className="text-xs text-primary hover:text-primary/80 hover:underline focus:outline-none"
         >
-          Or select from a predetermined list
+          Choose from Industry List
         </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[550px]">

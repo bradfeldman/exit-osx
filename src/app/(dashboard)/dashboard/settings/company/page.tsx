@@ -345,7 +345,7 @@ export default function CompanySettingsPage() {
             <textarea
               id="business-description"
               value={businessDescription}
-              onChange={(e) => setBusinessDescription(e.target.value.slice(0, 500))}
+              onChange={(e) => setBusinessDescription(e.target.value.slice(0, 250))}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey && businessDescription.trim()) {
                   e.preventDefault()
@@ -354,13 +354,25 @@ export default function CompanySettingsPage() {
               }}
               placeholder="e.g., We manufacture and sell a mouthguard to help people stop bruxing (teeth grinding)"
               rows={3}
-              maxLength={500}
+              maxLength={250}
               className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm resize-none"
               disabled={matchingIndustry}
             />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Press Enter to find classification</span>
-              <span>{businessDescription.length}/500</span>
+            <div className="flex justify-between items-center text-xs text-muted-foreground">
+              <IndustryListDialog
+                value={
+                  icbSubSector
+                    ? {
+                        icbIndustry,
+                        icbSuperSector,
+                        icbSector,
+                        icbSubSector,
+                      }
+                    : undefined
+                }
+                onSelect={handleIndustrySelect}
+              />
+              <span>{businessDescription.length}/250</span>
             </div>
           </div>
 
@@ -405,7 +417,7 @@ export default function CompanySettingsPage() {
                     size="sm"
                     className="bg-[#B87333] hover:bg-[#9A5F2A]"
                   >
-                    Use This Classification
+                    Accept
                   </Button>
                   <Button
                     type="button"
@@ -416,29 +428,12 @@ export default function CompanySettingsPage() {
                       setBusinessDescription('')
                     }}
                   >
-                    Try Different Description
+                    Clear
                   </Button>
                 </div>
               </div>
             </div>
           )}
-
-          {/* Link to manual selection */}
-          <div className="pt-2">
-            <IndustryListDialog
-              value={
-                icbSubSector
-                  ? {
-                      icbIndustry,
-                      icbSuperSector,
-                      icbSector,
-                      icbSubSector,
-                    }
-                  : undefined
-              }
-              onSelect={handleIndustrySelect}
-            />
-          </div>
         </CardContent>
       </Card>
 

@@ -122,7 +122,7 @@ export function IndustryCombobox({ value, onSelect, triggerId }: IndustryCombobo
             value={search}
             onValueChange={setSearch}
           />
-          <CommandList>
+          <CommandList className="max-h-[300px] overflow-y-auto">
             <CommandEmpty>No industry found.</CommandEmpty>
             {Object.entries(groupedOptions).map(([industryLabel, options]) => (
               <CommandGroup key={industryLabel} heading={industryLabel}>

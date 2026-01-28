@@ -181,7 +181,7 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
           <textarea
             id="business-description"
             value={businessDescription}
-            onChange={(e) => setBusinessDescription(e.target.value.slice(0, 500))}
+            onChange={(e) => setBusinessDescription(e.target.value.slice(0, 250))}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey && businessDescription.trim()) {
                 e.preventDefault()
@@ -190,13 +190,25 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
             }}
             placeholder="e.g., We manufacture and sell a mouthguard to help people stop bruxing (teeth grinding)"
             rows={3}
-            maxLength={500}
+            maxLength={250}
             className="w-full px-4 py-3 border-2 border-border rounded-xl focus:border-primary focus:ring-0 outline-none transition-all text-sm resize-none placeholder:text-muted-foreground/40"
             disabled={matchingIndustry}
           />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Press Enter to find classification</span>
-            <span>{businessDescription.length}/500</span>
+          <div className="flex justify-between items-center text-xs text-muted-foreground">
+            <IndustryListDialog
+              value={
+                formData.icbSubSector
+                  ? {
+                      icbIndustry: formData.icbIndustry,
+                      icbSuperSector: formData.icbSuperSector,
+                      icbSector: formData.icbSector,
+                      icbSubSector: formData.icbSubSector,
+                    }
+                  : undefined
+              }
+              onSelect={handleIndustrySelect}
+            />
+            <span>{businessDescription.length}/250</span>
           </div>
         </div>
 
@@ -245,7 +257,7 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
                   size="sm"
                   className="bg-[#B87333] hover:bg-[#9A5F2A]"
                 >
-                  Use This Classification
+                  Accept
                 </Button>
                 <Button
                   type="button"
@@ -256,32 +268,15 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
                     setBusinessDescription('')
                   }}
                 >
-                  Try Different Description
+                  Clear
                 </Button>
               </div>
             </div>
           </motion.div>
         )}
-
-        {/* Link to manual selection */}
-        <div className="pt-1">
-          <IndustryListDialog
-            value={
-              formData.icbSubSector
-                ? {
-                    icbIndustry: formData.icbIndustry,
-                    icbSuperSector: formData.icbSuperSector,
-                    icbSector: formData.icbSector,
-                    icbSubSector: formData.icbSubSector,
-                  }
-                : undefined
-            }
-            onSelect={handleIndustrySelect}
-          />
-        </div>
       </motion.div>
 
-      {/* Industry Selection Preview */}
+      {/* Industry Selection Preview - moved outside the motion.div */}
       {isIndustrySelected && (
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
