@@ -99,9 +99,14 @@ export function Header({ user }: HeaderProps) {
           {/* Subscription Status */}
           {!subscriptionLoading && (
             <div className="hidden sm:flex items-center gap-2">
-              <span className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium ${getPlanBadgeClass(planTier)}`}>
+              <a
+                href="/pricing"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium hover:opacity-80 transition-opacity ${getPlanBadgeClass(planTier)}`}
+              >
                 {formatPlanTier(planTier)}
-              </span>
+              </a>
               {isTrialing && trialDaysRemaining !== null && (
                 <span className="text-xs text-muted-foreground">
                   {trialDaysRemaining} {trialDaysRemaining === 1 ? 'day' : 'days'} left
