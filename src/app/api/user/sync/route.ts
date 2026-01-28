@@ -16,33 +16,24 @@ function getPlanTier(planId: string): PlanTier {
   }
 }
 
-// Get subscription config based on selected plan
-function getSubscriptionConfig(planId: string): {
+// Get subscription config for new users
+// All new signups get EXIT_READY tier with a 14-day trial, regardless of selected plan
+function getSubscriptionConfig(_planId: string): {
   planTier: PlanTier
   subscriptionStatus: SubscriptionStatus
   billingCycle: BillingCycle | null
   trialStartedAt: Date | null
   trialEndsAt: Date | null
 } {
-  const planTier = getPlanTier(planId)
   const now = new Date()
   const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000) // 14 days from now
 
-  if (planTier === 'FOUNDATION') {
-    return {
-      planTier: 'FOUNDATION',
-      subscriptionStatus: 'ACTIVE',
-      billingCycle: null,
-      trialStartedAt: null,
-      trialEndsAt: null,
-    }
-  }
-
-  // Paid plans start with a 14-day trial
+  // All new users start with EXIT_READY on a 14-day trial
+  // This gives them full access to evaluate all features before choosing a plan
   return {
-    planTier,
+    planTier: 'EXIT_READY',
     subscriptionStatus: 'TRIALING',
-    billingCycle: 'ANNUAL', // Default to annual (better value)
+    billingCycle: 'ANNUAL',
     trialStartedAt: now,
     trialEndsAt: trialEnd,
   }
