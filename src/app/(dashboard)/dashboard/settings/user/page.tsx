@@ -22,13 +22,26 @@ export default function UserSettingsPage() {
 
   useEffect(() => {
     async function loadUser() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      if (authUser) {
+        // First try to get name from our database, fall back to Supabase Auth metadata
+        let dbName: string | null = null
+        try {
+          const response = await fetch('/api/user/profile')
+          if (response.ok) {
+            const data = await response.json()
+            dbName = data.name || null
+          }
+        } catch (error) {
+          console.error('Failed to fetch user profile:', error)
+        }
+
+        const displayName = dbName || authUser.user_metadata?.name || null
         setUser({
-          email: user.email || '',
-          name: user.user_metadata?.name || null,
+          email: authUser.email || '',
+          name: displayName,
         })
-        setName(user.user_metadata?.name || '')
+        setName(displayName || '')
       }
       setLoading(false)
     }
@@ -40,11 +53,21 @@ export default function UserSettingsPage() {
     setMessage(null)
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        data: { name },
-      })
+      // Update both Supabase Auth metadata and our database
+      const [authResult, dbResult] = await Promise.all([
+        supabase.auth.updateUser({ data: { name } }),
+        fetch('/api/user/profile', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name }),
+        }),
+      ])
 
-      if (error) throw error
+      if (authResult.error) throw authResult.error
+      if (!dbResult.ok) {
+        const errorData = await dbResult.json()
+        throw new Error(errorData.error || 'Failed to update profile')
+      }
 
       setUser(prev => prev ? { ...prev, name } : null)
       setMessage({ type: 'success', text: 'Profile updated successfully' })
