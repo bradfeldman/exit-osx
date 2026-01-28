@@ -107,7 +107,7 @@ export function Header({ user }: HeaderProps) {
               >
                 {formatPlanTier(planTier)}
               </a>
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[10px] text-muted-foreground text-center w-full">
                 {isTrialing && trialDaysRemaining !== null
                   ? `${trialDaysRemaining} ${trialDaysRemaining === 1 ? 'day' : 'days'} left`
                   : 'member'}
