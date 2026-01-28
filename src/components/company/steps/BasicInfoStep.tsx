@@ -1,8 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { IndustryCombobox } from '../IndustryCombobox'
-import { IndustryFinderDialog } from '../IndustryFinderDialog'
+import { Button } from '@/components/ui/button'
+import { IndustryListDialog } from '../IndustryListDialog'
 import type { CompanyFormData } from '../CompanySetupWizard'
 
 interface BasicInfoStepProps {
@@ -11,6 +12,13 @@ interface BasicInfoStepProps {
 }
 
 export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) {
+  const [businessDescription, setBusinessDescription] = useState('')
+  const [matchingIndustry, setMatchingIndustry] = useState(false)
+  const [industryMatchError, setIndustryMatchError] = useState<string | null>(null)
+  const [industryMatchResult, setIndustryMatchResult] = useState<{
+    reasoning: string
+  } | null>(null)
+
   const handleIndustrySelect = (selection: {
     icbIndustry: string
     icbSuperSector: string
@@ -23,16 +31,45 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
       icbSector: selection.icbSector,
       icbSubSector: selection.icbSubSector,
     })
+    // Clear AI match result when manually selecting
+    setIndustryMatchResult(null)
+    setBusinessDescription('')
   }
 
-  const handleNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      // Focus and open the industry combobox
-      const industryTrigger = document.getElementById('industry-combobox-trigger')
-      if (industryTrigger) {
-        industryTrigger.click()
+  const handleFindIndustry = async () => {
+    if (!businessDescription.trim()) return
+
+    setMatchingIndustry(true)
+    setIndustryMatchError(null)
+    setIndustryMatchResult(null)
+
+    try {
+      const response = await fetch('/api/industries/match', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: businessDescription.trim() }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to find industry match')
       }
+
+      const data = await response.json()
+      const match = data.match
+
+      // Automatically apply the matched industry
+      updateFormData({
+        icbIndustry: match.icbIndustry,
+        icbSuperSector: match.icbSuperSector,
+        icbSector: match.icbSector,
+        icbSubSector: match.icbSubSector,
+      })
+      setIndustryMatchResult({ reasoning: match.reasoning })
+    } catch (err) {
+      setIndustryMatchError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setMatchingIndustry(false)
     }
   }
 
@@ -86,14 +123,13 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
             type="text"
             value={formData.name}
             onChange={(e) => updateFormData({ name: e.target.value })}
-            onKeyDown={handleNameKeyDown}
             placeholder="Enter your company name"
             className="relative w-full px-5 py-4 text-lg font-medium bg-card border-2 border-border rounded-xl focus:border-primary focus:ring-0 outline-none transition-all placeholder:text-muted-foreground/40"
           />
         </div>
       </motion.div>
 
-      {/* Industry Selection */}
+      {/* Industry Classification */}
       <motion.div
         className="space-y-3"
         initial={{ opacity: 0, y: 20 }}
@@ -117,26 +153,90 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
             </motion.div>
           )}
         </div>
-        <div className="flex items-center justify-between -mt-1">
+
+        {/* Business Description Input */}
+        <div className="space-y-2">
+          <label htmlFor="business-description" className="text-xs text-muted-foreground">
+            What does your business do?
+          </label>
+          <textarea
+            id="business-description"
+            value={businessDescription}
+            onChange={(e) => setBusinessDescription(e.target.value)}
+            placeholder="e.g., We manufacture and sell a mouthguard to help people stop bruxing (teeth grinding)"
+            rows={3}
+            className="w-full px-4 py-3 border-2 border-border rounded-xl focus:border-primary focus:ring-0 outline-none transition-all text-sm resize-none placeholder:text-muted-foreground/40"
+            disabled={matchingIndustry}
+          />
           <p className="text-xs text-muted-foreground">
-            Search by typing any part of the industry name
+            Be specific about your products, services, and target customers.
           </p>
-          <IndustryFinderDialog onSelect={handleIndustrySelect} />
         </div>
-        <IndustryCombobox
-          triggerId="industry-combobox-trigger"
-          value={
-            formData.icbSubSector
-              ? {
-                  icbIndustry: formData.icbIndustry,
-                  icbSuperSector: formData.icbSuperSector,
-                  icbSector: formData.icbSector,
-                  icbSubSector: formData.icbSubSector,
-                }
-              : undefined
-          }
-          onSelect={handleIndustrySelect}
-        />
+
+        {/* AI Match Error */}
+        {industryMatchError && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            {industryMatchError}
+          </div>
+        )}
+
+        {/* AI Match Result */}
+        {industryMatchResult && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-3 bg-green-50 border border-green-200 rounded-lg"
+          >
+            <div className="flex items-start gap-2">
+              <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg className="w-3 h-3 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-green-900">Classification Applied</p>
+                <p className="text-xs text-green-700 mt-1">{industryMatchResult.reasoning}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Find Classification Button */}
+        <Button
+          type="button"
+          onClick={handleFindIndustry}
+          disabled={matchingIndustry || !businessDescription.trim()}
+          className="bg-[#B87333] hover:bg-[#9A5F2A]"
+        >
+          {matchingIndustry ? (
+            <>
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              Finding Classification...
+            </>
+          ) : (
+            'Find Classification'
+          )}
+        </Button>
+
+        {/* Link to manual selection */}
+        <div className="pt-1">
+          <IndustryListDialog
+            value={
+              formData.icbSubSector
+                ? {
+                    icbIndustry: formData.icbIndustry,
+                    icbSuperSector: formData.icbSuperSector,
+                    icbSector: formData.icbSector,
+                    icbSubSector: formData.icbSubSector,
+                  }
+                : undefined
+            }
+            onSelect={handleIndustrySelect}
+          />
+        </div>
       </motion.div>
 
       {/* Industry Selection Preview */}
