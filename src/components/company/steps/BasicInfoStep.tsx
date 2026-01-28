@@ -181,7 +181,7 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
           <textarea
             id="business-description"
             value={businessDescription}
-            onChange={(e) => setBusinessDescription(e.target.value)}
+            onChange={(e) => setBusinessDescription(e.target.value.slice(0, 500))}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey && businessDescription.trim()) {
                 e.preventDefault()
@@ -190,18 +190,31 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
             }}
             placeholder="e.g., We manufacture and sell a mouthguard to help people stop bruxing (teeth grinding)"
             rows={3}
+            maxLength={500}
             className="w-full px-4 py-3 border-2 border-border rounded-xl focus:border-primary focus:ring-0 outline-none transition-all text-sm resize-none placeholder:text-muted-foreground/40"
             disabled={matchingIndustry}
           />
-          <p className="text-xs text-muted-foreground">
-            Be specific about your products, services, and target customers.
-          </p>
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>Press Enter to find classification</span>
+            <span>{businessDescription.length}/500</span>
+          </div>
         </div>
 
         {/* AI Match Error */}
         {industryMatchError && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
             {industryMatchError}
+          </div>
+        )}
+
+        {/* Loading state */}
+        {matchingIndustry && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            Finding classification...
           </div>
         )}
 
@@ -249,26 +262,6 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
             </div>
           </motion.div>
         )}
-
-        {/* Find Classification Button */}
-        <Button
-          type="button"
-          onClick={handleFindIndustry}
-          disabled={matchingIndustry || !businessDescription.trim()}
-          className="bg-[#B87333] hover:bg-[#9A5F2A]"
-        >
-          {matchingIndustry ? (
-            <>
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-              </svg>
-              Finding Classification...
-            </>
-          ) : (
-            'Find Classification'
-          )}
-        </Button>
 
         {/* Link to manual selection */}
         <div className="pt-1">
