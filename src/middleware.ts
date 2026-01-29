@@ -165,21 +165,12 @@ export async function middleware(request: NextRequest) {
   // SECURITY: Check if this is an admin route
   const isAdminRoute = ADMIN_ROUTE_PATTERNS.some(pattern => pathname.startsWith(pattern))
 
-  // Handle admin subdomain - rewrite to /admin routes
-  if (isAdminSubdomain && !pathname.startsWith('/admin') && !isPublicRoute) {
+  // Handle admin subdomain - rewrite ALL routes to /admin routes
+  // This includes public routes like /login which become /admin/login
+  if (isAdminSubdomain && !pathname.startsWith('/admin')) {
     const url = request.nextUrl.clone()
     url.pathname = `/admin${pathname === '/' ? '' : pathname}`
     return NextResponse.rewrite(url)
-  }
-
-  // If on admin subdomain and not authenticated, redirect to admin login (not main login)
-  if (isAdminSubdomain && !user && !isAdminPublicRoute && !isPublicRoute) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/admin/login'
-    if (pathname !== '/' && pathname !== '/admin') {
-      url.searchParams.set('next', pathname)
-    }
-    return NextResponse.redirect(url)
   }
 
   // SECURITY: Enhanced admin route protection at middleware level

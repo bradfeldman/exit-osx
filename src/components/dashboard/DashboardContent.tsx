@@ -99,6 +99,7 @@ export function DashboardContent({ userName }: DashboardContentProps) {
   const hasTrackedFirstView = useRef(false)
   const hasTrackedValuation = useRef(false)
   const hasTrackedBriScore = useRef(false)
+  const hasTrackedReturnView = useRef(false)
   const assessmentCtaWasVisible = useRef(false)
   const featuresClicked = useRef<string[]>([])
 
@@ -215,6 +216,94 @@ export function DashboardContent({ userName }: DashboardContentProps) {
       hasTrackedBriScore.current = true
     }
   }, [dashboardData, loading])
+
+  // Track dashboard return visits and value changes
+  useEffect(() => {
+    if (!dashboardData || loading || hasTrackedReturnView.current) return
+    hasTrackedReturnView.current = true
+
+    const { tier1 } = dashboardData
+    const storageKey = `dashboard_last_visit_${selectedCompanyId}`
+    const visitsKey = `dashboard_visits_${selectedCompanyId}`
+
+    try {
+      const lastVisitData = localStorage.getItem(storageKey)
+      const visitsData = localStorage.getItem(visitsKey)
+
+      // Parse visit count and dates
+      let visitsThisMonth = 1
+      const now = new Date()
+      const currentMonth = `${now.getFullYear()}-${now.getMonth()}`
+
+      if (visitsData) {
+        const parsed = JSON.parse(visitsData)
+        if (parsed.month === currentMonth) {
+          visitsThisMonth = (parsed.count || 0) + 1
+        }
+      }
+
+      // Track return visit if this is not the first visit
+      if (lastVisitData) {
+        const lastVisit = JSON.parse(lastVisitData)
+        const lastVisitDate = new Date(lastVisit.timestamp)
+        const daysSinceLastVisit = Math.floor(
+          (now.getTime() - lastVisitDate.getTime()) / (1000 * 60 * 60 * 24)
+        )
+
+        // Only track return visits if at least 1 hour has passed
+        const hoursSinceLastVisit = (now.getTime() - lastVisitDate.getTime()) / (1000 * 60 * 60)
+        if (hoursSinceLastVisit >= 1) {
+          analytics.track('dashboard_return_view', {
+            daysSinceLastVisit,
+            visitsThisMonth,
+          })
+
+          // Track valuation change if significant (>5% change)
+          if (tier1 && lastVisit.valuation && lastVisit.valuation > 0) {
+            const valuationChange = tier1.currentValue - lastVisit.valuation
+            const changePercent = (valuationChange / lastVisit.valuation) * 100
+
+            if (Math.abs(changePercent) >= 5) {
+              analytics.track('valuation_change_noticed', {
+                previousValue: lastVisit.valuation,
+                newValue: tier1.currentValue,
+                changePercent,
+                interactionType: 'none', // Will be updated if user interacts
+              })
+            }
+          }
+
+          // Track BRI score change if different
+          if (tier1?.briScore !== undefined && lastVisit.briScore !== undefined && lastVisit.briScore !== null) {
+            const scoreDiff = (tier1.briScore ?? 0) - lastVisit.briScore
+            if (scoreDiff !== 0) {
+              analytics.track('bri_change_noticed', {
+                previousScore: lastVisit.briScore,
+                newScore: tier1.briScore ?? 0,
+                interactionType: 'none',
+              })
+            }
+          }
+        }
+      }
+
+      // Store current visit data
+      localStorage.setItem(storageKey, JSON.stringify({
+        timestamp: now.toISOString(),
+        valuation: tier1?.currentValue ?? null,
+        briScore: tier1?.briScore ?? null,
+      }))
+
+      // Update visit count
+      localStorage.setItem(visitsKey, JSON.stringify({
+        month: currentMonth,
+        count: visitsThisMonth,
+      }))
+    } catch (error) {
+      // Silently fail if localStorage is unavailable
+      console.debug('Could not track return visit:', error)
+    }
+  }, [dashboardData, loading, selectedCompanyId])
 
   // Track exit without assessment on unmount
   useEffect(() => {

@@ -21,6 +21,9 @@ import {
   User,
   HelpCircle,
   MinusCircle,
+  ArrowRight,
+  Sparkles,
+  CheckCircle2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -74,7 +77,8 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
   const [responses, setResponses] = useState<Map<string, Response>>(new Map())
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [showCelebration, setShowCelebration] = useState(false)
-  const [celebrationData, setCelebrationData] = useState<{ briScore: number; currentValue: number } | null>(null)
+  const [celebrationData, setCelebrationData] = useState<{ briScore: number; currentValue: number; tasksCreated?: number } | null>(null)
+  const [revealStage, setRevealStage] = useState(0)
   const [showSkippedWarning, setShowSkippedWarning] = useState(false)
   const [recentlySelected, setRecentlySelected] = useState<string | null>(null)
 
@@ -381,6 +385,50 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
     return orderedQuestions.filter(q => !responses.has(q.id))
   }
 
+  // Score interpretation with honest framing
+  const getScoreInterpretation = (briScore: number) => {
+    if (briScore >= 75) {
+      return {
+        headline: "Strong Foundation",
+        message: "Your business shows strong buyer appeal. Fine-tuning a few areas could push you into premium territory.",
+        tone: "positive"
+      }
+    }
+    if (briScore >= 60) {
+      return {
+        headline: "Solid Position",
+        message: "You have good fundamentals. Addressing key gaps could meaningfully increase what buyers would pay.",
+        tone: "encouraging"
+      }
+    }
+    if (briScore >= 45) {
+      return {
+        headline: "Room to Grow",
+        message: "Your score indicates several areas that would concern buyers. The good news: these are addressable. Your action plan targets the highest-impact improvements.",
+        tone: "constructive"
+      }
+    }
+    // Below 45 - be honest
+    return {
+      headline: "Work to Do",
+      message: "Let's be direct: buyers would see significant risks in your current state. But that's why you're here. The action plan we've created addresses the critical gaps — start with the high-impact items.",
+      tone: "honest"
+    }
+  }
+
+  // Progress through reveal stages when celebration shows
+  useEffect(() => {
+    if (showCelebration) {
+      setRevealStage(0)
+      const timers = [
+        setTimeout(() => setRevealStage(1), 500),   // Show score
+        setTimeout(() => setRevealStage(2), 2000),  // Show context
+        setTimeout(() => setRevealStage(3), 3500),  // Show next step
+      ]
+      return () => timers.forEach(clearTimeout)
+    }
+  }, [showCelebration])
+
   const handleCompleteWithWarningCheck = () => {
     const skipped = getSkippedQuestions()
     if (skipped.length > 0) {
@@ -438,13 +486,16 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
       // Reset tracking state
       hasTrackedStart.current = false
 
+      // Set initial celebration data (tasksCreated will be fetched async)
       setCelebrationData({
         briScore: data.summary?.briScore || 0,
         currentValue: data.summary?.currentValue || 0,
+        tasksCreated: undefined, // Will be populated async
       })
       setShowCelebration(true)
       setSaving(false)
 
+      // Trigger confetti
       confetti({
         particleCount: 100,
         spread: 70,
@@ -475,10 +526,23 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
       }
       frame()
 
-      setTimeout(() => {
-        router.push('/dashboard')
-        router.refresh()
-      }, 3000)
+      // Fetch task count async (don't block celebration)
+      try {
+        const tasksRes = await fetch(`/api/tasks?companyId=${companyId}&status=PENDING`)
+        if (tasksRes.ok) {
+          const tasksData = await tasksRes.json()
+          const taskCount = tasksData.stats?.pending || tasksData.tasks?.length || 0
+          setCelebrationData(prev => prev ? { ...prev, tasksCreated: taskCount } : null)
+        } else {
+          // If fetch fails, just show "Assessment complete"
+          setCelebrationData(prev => prev ? { ...prev, tasksCreated: 0 } : null)
+        }
+      } catch {
+        // If fetch fails, just show "Assessment complete"
+        setCelebrationData(prev => prev ? { ...prev, tasksCreated: 0 } : null)
+      }
+
+      // NO auto-redirect - user clicks CTA to navigate
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to complete')
       setSaving(false)
@@ -503,98 +567,162 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
     )
   }
 
-  // Celebration screen
+  // Celebration screen - Staged reveal
   if (showCelebration && celebrationData) {
-    const formatCurrency = (value: number) =>
-      new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value)
+    const briScore = Math.round(celebrationData.briScore)
+    const interpretation = getScoreInterpretation(briScore)
+    const tasksCreated = celebrationData.tasksCreated
 
     return (
       <motion.div
-        className="flex flex-col items-center justify-center min-h-[500px] text-center px-4"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
+        className="relative flex flex-col items-center justify-center min-h-[600px] text-center px-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
       >
-        <motion.div
-          className="relative mb-8"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 15 }}
-        >
-          <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl animate-pulse" />
-          <div className="relative w-28 h-28 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center shadow-2xl">
+        {/* Stage 1: Score Reveal */}
+        <AnimatePresence>
+          {revealStage >= 1 && (
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.4, type: "spring", stiffness: 300 }}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              className="mb-8"
             >
-              <Check className="w-14 h-14 text-white" strokeWidth={3} />
+              {/* Score Circle */}
+              <div className="relative w-48 h-48 mx-auto">
+                {/* Animated ring */}
+                <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                  <circle
+                    cx="60" cy="60" r="54"
+                    fill="none"
+                    stroke="rgba(184, 115, 51, 0.2)"
+                    strokeWidth="8"
+                  />
+                  <motion.circle
+                    cx="60" cy="60" r="54"
+                    fill="none"
+                    stroke="#B87333"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeDasharray={2 * Math.PI * 54}
+                    initial={{ strokeDashoffset: 2 * Math.PI * 54 }}
+                    animate={{ strokeDashoffset: 2 * Math.PI * 54 * (1 - briScore / 100) }}
+                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
+                  />
+                </svg>
+
+                {/* Score number */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <motion.span
+                    className="text-6xl font-bold text-foreground font-display"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    {briScore}
+                  </motion.span>
+                  <span className="text-sm text-muted-foreground uppercase tracking-wide">
+                    BRI Score
+                  </span>
+                </div>
+              </div>
             </motion.div>
-          </div>
-        </motion.div>
+          )}
+        </AnimatePresence>
 
-        <motion.h1
-          className="text-4xl font-bold text-foreground mb-3 font-display"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          Assessment Complete!
-        </motion.h1>
-        <motion.p
-          className="text-lg text-muted-foreground mb-6 max-w-md"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          Your Buyer Readiness Index has been calculated
-        </motion.p>
+        {/* Stage 2: Context - with HONEST score messaging */}
+        <AnimatePresence>
+          {revealStage >= 2 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8 max-w-md"
+            >
+              <h2 className="text-2xl font-bold text-foreground font-display mb-3">
+                {interpretation.headline}
+              </h2>
+              <p className="text-muted-foreground">
+                {interpretation.message}
+              </p>
 
-        {(celebrationData.briScore > 0 || celebrationData.currentValue > 0) && (
-          <motion.div
-            className="flex gap-8 mb-10"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            {celebrationData.briScore > 0 && (
-              <div className="text-center">
-                <motion.p
-                  className="text-5xl font-bold text-primary font-display"
+              {/* Benchmark context */}
+              <div className="mt-4 p-4 bg-muted/50 rounded-xl">
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">How you compare:</span>
+                  {' '}Businesses with BRI scores above 75 typically command
+                  <span className="text-primary font-semibold"> 20-40% higher multiples</span>
+                  {' '}than industry average.
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Stage 3: Next Step CTA */}
+        <AnimatePresence>
+          {revealStage >= 3 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-4"
+            >
+              {/* Tasks badge - handle loading/async */}
+              {tasksCreated === undefined ? (
+                // Still calculating
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-full mb-4">
+                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    Building your action plan...
+                  </span>
+                </div>
+              ) : tasksCreated > 0 ? (
+                // Tasks ready
+                <motion.div
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-4"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  transition={{ delay: 0.6, type: "spring" }}
+                  transition={{ type: "spring" }}
                 >
-                  {Math.round(celebrationData.briScore)}
-                </motion.p>
-                <p className="text-sm text-muted-foreground mt-1">BRI Score</p>
-              </div>
-            )}
-            {celebrationData.currentValue > 0 && (
-              <div className="text-center">
-                <motion.p
-                  className="text-5xl font-bold text-emerald-600 font-display"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.7, type: "spring" }}
-                >
-                  {formatCurrency(celebrationData.currentValue)}
-                </motion.p>
-                <p className="text-sm text-muted-foreground mt-1">Estimated Value</p>
-              </div>
-            )}
-          </motion.div>
-        )}
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-primary">
+                    {tasksCreated} personalized actions created
+                  </span>
+                </motion.div>
+              ) : (
+                // No tasks (edge case - assessment complete but no new tasks)
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-full mb-4">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  <span className="text-sm text-muted-foreground">
+                    Assessment complete
+                  </span>
+                </div>
+              )}
 
-        <motion.div
-          className="flex items-center gap-2 text-muted-foreground"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-        >
-          <Loader2 className="w-4 h-4 animate-spin" />
-          <span className="text-sm">Taking you to your dashboard...</span>
-        </motion.div>
+              {/* Primary CTA */}
+              <div>
+                <Button
+                  size="lg"
+                  onClick={() => router.push('/dashboard/playbook')}
+                  className="px-8 py-6 text-lg shadow-xl shadow-primary/25"
+                >
+                  See Your Action Plan
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </div>
+
+              {/* Secondary option */}
+              <p className="text-sm text-muted-foreground">
+                or{' '}
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  className="text-primary hover:underline"
+                >
+                  return to dashboard
+                </button>
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     )
   }

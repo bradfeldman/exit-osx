@@ -434,24 +434,49 @@ export interface TaskListScrollDepthParams extends BaseEventParams {
 
 export interface TaskExpandedParams extends BaseEventParams {
   taskId: string
+  taskTitle: string
   taskCategory: string
   taskPriority: string
+  issueTier: string | null
+  effortLevel: string
 }
 
 export interface TaskStartedParams extends BaseEventParams {
   taskId: string
+  taskTitle: string
   taskCategory: string
+  issueTier: string | null
+  effortLevel: string
+  taskNumber: number  // position in the list
 }
 
 export interface TaskCompletedParams extends BaseEventParams {
   taskId: string
+  taskTitle: string
   taskCategory: string
-  timeToComplete: number  // ms from started
+  issueTier: string | null
+  effortLevel: string
+  hasEvidence: boolean
+  hasCompletionNotes: boolean
 }
 
 export interface TaskDismissedParams extends BaseEventParams {
   taskId: string
-  dismissReason?: string
+  taskCategory: string
+  dismissReason: 'deferred' | 'not_applicable'
+}
+
+export interface TaskBlockedParams extends BaseEventParams {
+  taskId: string
+  taskCategory: string
+  blockedReason?: string
+}
+
+export interface PlaybookFilterChangedParams extends BaseEventParams {
+  filterType: 'status' | 'category'
+  filterValue: string
+  previousValue: string
+  tasksMatched: number
 }
 
 // Dashboard Return Visit Events
@@ -755,6 +780,8 @@ export interface AnalyticsEventMap {
   'task_started': TaskStartedParams
   'task_completed': TaskCompletedParams
   'task_dismissed': TaskDismissedParams
+  'task_blocked': TaskBlockedParams
+  'playbook_filter_changed': PlaybookFilterChangedParams
   'dashboard_return_view': DashboardReturnViewParams
   'valuation_change_noticed': ValuationChangeNoticedParams
   'bri_change_noticed': BriChangeNoticedParams

@@ -1,6 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { analytics } from '@/lib/analytics'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -14,12 +16,14 @@ import {
   CheckCircle2,
   Clock,
   ListTodo,
-  TrendingDown,
   TrendingUp,
-  Sparkles,
   ChevronDown,
   ChevronUp,
-  Target
+  Target,
+  Zap,
+  Lightbulb,
+  Trophy,
+  ClipboardCheck,
 } from 'lucide-react'
 
 // Animation variants
@@ -118,6 +122,7 @@ const STATUS_TABS = [
 ]
 
 export function PlaybookContent({ companyId, companyName, expandTaskId }: PlaybookContentProps) {
+  const router = useRouter()
   const [tasks, setTasks] = useState<Task[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -128,6 +133,32 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
   const [selectedTaskForAssign, setSelectedTaskForAssign] = useState<Task | null>(null)
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
+
+  // Analytics tracking refs
+  const hasTrackedPageView = useRef(false)
+  const previousStatusFilter = useRef('')
+  const previousCategoryFilter = useRef('')
+
+  // Calculate derived stats for quick wins and high impact
+  const taskStats = useMemo(() => {
+    const pending = tasks.filter(t => t.status === 'PENDING')
+
+    const quickWins = pending.filter(t =>
+      ['MINIMAL', 'LOW'].includes(t.effortLevel) &&
+      ['CRITICAL', 'SIGNIFICANT'].includes(t.issueTier || '')
+    )
+
+    const highImpact = pending.filter(t =>
+      ['CRITICAL', 'SIGNIFICANT'].includes(t.issueTier || '')
+    )
+
+    return {
+      quickWinCount: quickWins.length,
+      highImpactCount: highImpact.length,
+      quickWins,
+      highImpact,
+    }
+  }, [tasks])
 
   const loadTasks = async () => {
     try {
@@ -153,6 +184,49 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId, statusFilter, categoryFilter])
 
+  // Track playbook_viewed when tasks are first loaded
+  useEffect(() => {
+    if (hasTrackedPageView.current || loading || tasks.length === 0) return
+    hasTrackedPageView.current = true
+
+    analytics.track('playbook_viewed', {
+      entrySource: expandTaskId ? 'scorecard_link' : 'navigation',
+      tasksDisplayed: tasks.length,
+    })
+  }, [loading, tasks.length, expandTaskId])
+
+  // Track filter changes
+  useEffect(() => {
+    // Don't track on initial load
+    if (previousStatusFilter.current === '' && previousCategoryFilter.current === '' && statusFilter === '' && categoryFilter === '') {
+      previousStatusFilter.current = statusFilter
+      previousCategoryFilter.current = categoryFilter
+      return
+    }
+
+    // Track status filter changes
+    if (statusFilter !== previousStatusFilter.current) {
+      analytics.track('playbook_filter_changed', {
+        filterType: 'status',
+        filterValue: statusFilter || 'all',
+        previousValue: previousStatusFilter.current || 'all',
+        tasksMatched: tasks.length,
+      })
+      previousStatusFilter.current = statusFilter
+    }
+
+    // Track category filter changes
+    if (categoryFilter !== previousCategoryFilter.current) {
+      analytics.track('playbook_filter_changed', {
+        filterType: 'category',
+        filterValue: categoryFilter || 'all',
+        previousValue: previousCategoryFilter.current || 'all',
+        tasksMatched: tasks.length,
+      })
+      previousCategoryFilter.current = categoryFilter
+    }
+  }, [statusFilter, categoryFilter, tasks.length])
+
   // Scroll to expanded task when coming from Scorecard
   useEffect(() => {
     if (expandTaskId && !loading && tasks.length > 0) {
@@ -166,7 +240,10 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
     }
   }, [expandTaskId, loading, tasks])
 
-  const handleStatusChange = async (taskId: string, newStatus: string, extra?: { blockedReason?: string }) => {
+  const handleStatusChange = async (taskId: string, newStatus: string, extra?: { blockedReason?: string; completionNotes?: string }) => {
+    const task = tasks.find(t => t.id === taskId)
+    const taskIndex = tasks.findIndex(t => t.id === taskId)
+
     try {
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
@@ -174,10 +251,48 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
         body: JSON.stringify({
           status: newStatus,
           ...(extra?.blockedReason && { blockedReason: extra.blockedReason }),
+          ...(extra?.completionNotes && { completionNotes: extra.completionNotes }),
         }),
       })
 
       if (!response.ok) throw new Error('Failed to update task')
+
+      // Track status change analytics
+      if (task) {
+        if (newStatus === 'IN_PROGRESS') {
+          analytics.track('task_started', {
+            taskId: task.id,
+            taskTitle: task.title,
+            taskCategory: task.briCategory,
+            issueTier: task.issueTier ?? null,
+            effortLevel: task.effortLevel,
+            taskNumber: taskIndex + 1,
+          })
+        } else if (newStatus === 'COMPLETED') {
+          analytics.track('task_completed', {
+            taskId: task.id,
+            taskTitle: task.title,
+            taskCategory: task.briCategory,
+            issueTier: task.issueTier ?? null,
+            effortLevel: task.effortLevel,
+            hasEvidence: (task.proofDocuments?.length ?? 0) > 0,
+            hasCompletionNotes: !!extra?.completionNotes,
+          })
+        } else if (newStatus === 'DEFERRED' || newStatus === 'NOT_APPLICABLE') {
+          analytics.track('task_dismissed', {
+            taskId: task.id,
+            taskCategory: task.briCategory,
+            dismissReason: newStatus === 'DEFERRED' ? 'deferred' : 'not_applicable',
+          })
+        } else if (newStatus === 'BLOCKED') {
+          analytics.track('task_blocked', {
+            taskId: task.id,
+            taskCategory: task.briCategory,
+            blockedReason: extra?.blockedReason,
+          })
+        }
+      }
+
       await loadTasks()
     } catch (err) {
       console.error('Error updating task:', err)
@@ -252,26 +367,51 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
       variants={containerVariants}
       className="space-y-8"
     >
-      {/* Hero Section - The WHY */}
-      <div className="rounded-2xl p-8 md:p-10 bg-sidebar text-sidebar-foreground">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      {/* Hero Section - Value-Focused */}
+      <div className="rounded-2xl p-8 md:p-10 bg-gradient-to-br from-sidebar via-sidebar to-sidebar/95 text-sidebar-foreground relative overflow-hidden">
+        {/* Decorative background */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-32 translate-x-32" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full translate-y-24 -translate-x-24" />
+
+        <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium text-primary uppercase tracking-wide">Your Value-Building Playbook</span>
+              <TrendingUp className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium text-primary uppercase tracking-wide">
+                Your Value-Building Roadmap
+              </span>
             </div>
+
             <h1 className="text-3xl md:text-4xl font-bold font-display tracking-tight mb-3">
-              Every Task Completed<br />
-              <span className="text-primary">Reduces Buyer Risk</span>
+              {stats?.completed === 0
+                ? "Ready to Increase Your Exit Value?"
+                : stats?.completed === stats?.inActionPlan
+                  ? "Roadmap Complete!"
+                  : `${stats?.completed} Down, ${(stats?.pending || 0) + (stats?.inProgress || 0)} to Go`}
             </h1>
+
             <p className="text-sidebar-foreground/70 max-w-xl">
-              These tasks are personalized based on your assessment. Complete them to improve your Buyer Readiness Index and maximize your exit value.
+              {stats?.completed === 0
+                ? "Each task below addresses a specific factor that impacts what buyers will pay. Start with the high-impact items."
+                : stats?.completed === stats?.inActionPlan
+                  ? "You've completed your action plan. Consider retaking the assessment to identify new opportunities."
+                  : "These tasks are prioritized by impact on your BRI score and exit value."}
             </p>
+
+            {/* Quick Win Callout */}
+            {stats && stats.pending > 0 && taskStats.quickWinCount > 0 && (
+              <div className="mt-4 inline-flex items-center gap-2 px-3 py-2 bg-emerald-500/20 rounded-lg">
+                <Zap className="w-4 h-4 text-emerald-400" />
+                <span className="text-sm text-emerald-300">
+                  {taskStats.quickWinCount} quick wins available
+                </span>
+              </div>
+            )}
           </div>
 
-          {/* Progress Ring */}
+          {/* Progress Ring - unchanged but with value context */}
           {stats && stats.inActionPlan > 0 && (
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 text-center">
               <div className="relative w-32 h-32 md:w-40 md:h-40">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
                   <circle
@@ -300,22 +440,40 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
                   <span className="text-xs text-sidebar-foreground/60 uppercase tracking-wide">Complete</span>
                 </div>
               </div>
+              {/* Add value context below ring */}
+              <p className="text-xs text-sidebar-foreground/60 mt-2">
+                of value-building tasks
+              </p>
             </div>
           )}
         </div>
 
-        {/* Impact Stats Row */}
+        {/* Impact Stats Row - Enhanced */}
         {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-sidebar-foreground/10">
+          <div className="relative grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-sidebar-foreground/10">
+            {/* Quick Wins */}
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-500/20">
-                <ListTodo className="h-5 w-5 text-amber-400" />
+              <div className="p-2 rounded-lg bg-emerald-500/20">
+                <Zap className="h-5 w-5 text-emerald-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.pending}</p>
-                <p className="text-xs text-sidebar-foreground/60">To Do</p>
+                <p className="text-2xl font-bold">{taskStats.quickWinCount}</p>
+                <p className="text-xs text-sidebar-foreground/60">Quick Wins</p>
               </div>
             </div>
+
+            {/* High Impact */}
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-amber-500/20">
+                <Target className="h-5 w-5 text-amber-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{taskStats.highImpactCount}</p>
+                <p className="text-xs text-sidebar-foreground/60">High Impact</p>
+              </div>
+            </div>
+
+            {/* In Progress */}
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-blue-500/20">
                 <Clock className="h-5 w-5 text-blue-400" />
@@ -325,22 +483,15 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
                 <p className="text-xs text-sidebar-foreground/60">In Progress</p>
               </div>
             </div>
+
+            {/* Completed */}
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-emerald-500/20">
-                <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+              <div className="p-2 rounded-lg bg-primary/20">
+                <CheckCircle2 className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.completed}</p>
                 <p className="text-xs text-sidebar-foreground/60">Completed</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/20">
-                <TrendingDown className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.inActionPlan}</p>
-                <p className="text-xs text-sidebar-foreground/60">Total Tasks</p>
               </div>
             </div>
           </div>
@@ -446,38 +597,117 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
         )}
       </AnimatePresence>
 
+      {/* Priority Guidance - Show for new users */}
+      {stats && stats.completed < 3 && tasks.length > 0 && !statusFilter && !categoryFilter && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-primary/5 to-amber-500/5 border border-primary/20 rounded-xl p-5"
+        >
+          <div className="flex items-start gap-4">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Lightbulb className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground mb-1">Where to Start</h3>
+              <p className="text-sm text-muted-foreground">
+                Look for tasks marked <span className="font-medium text-emerald-600">&quot;Quick&quot;</span> effort
+                with <span className="font-medium text-amber-600">&quot;High Impact&quot;</span> —
+                these give you the most value improvement for the least work.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Playbook Completion State */}
+      {stats && stats.pending === 0 && stats.inProgress === 0 && stats.completed > 0 && !statusFilter && !categoryFilter && (
+        <Card className="bg-gradient-to-br from-emerald-50 to-primary/5 border-emerald-200">
+          <CardContent className="py-8 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-100 mx-auto mb-4 flex items-center justify-center">
+              <Trophy className="h-8 w-8 text-emerald-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-foreground mb-2">
+              Roadmap Complete!
+            </h3>
+            <p className="text-muted-foreground max-w-md mx-auto mb-6">
+              You&apos;ve completed all your action items. Retake the assessment to see
+              how your BRI score has improved — and identify any new opportunities.
+            </p>
+            <Button
+              onClick={() => router.push('/dashboard/assessment/risk')}
+              size="lg"
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              <RefreshCw className="h-5 w-5 mr-2" />
+              Measure My Progress
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Task List */}
       <AnimatePresence mode="wait">
-        {tasks.length === 0 ? (
+        {tasks.length === 0 && !statusFilter && !categoryFilter ? (
           <motion.div
             key="empty"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
           >
-            <Card className="border-dashed border-2">
+            <Card className="border-2 border-dashed">
               <CardContent className="py-16 text-center">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 mx-auto mb-6 flex items-center justify-center">
-                  <TrendingUp className="h-10 w-10 text-primary" />
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 mx-auto mb-6 flex items-center justify-center">
+                  <Target className="h-10 w-10 text-primary" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground mb-2">
-                  {statusFilter || categoryFilter ? 'No matching tasks' : 'Ready to Build Value?'}
+                  Your Roadmap Awaits
+                </h3>
+                <p className="text-muted-foreground max-w-md mx-auto mb-2">
+                  Complete your BRI Assessment to generate a personalized action plan.
+                </p>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
+                  Each task will be tailored to your business&apos;s specific strengths and gaps,
+                  designed to maximize your exit value.
+                </p>
+                <Button
+                  onClick={() => router.push('/dashboard/assessment/risk')}
+                  size="lg"
+                  className="shadow-lg shadow-primary/20"
+                >
+                  <ClipboardCheck className="h-5 w-5 mr-2" />
+                  Take Assessment First
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ) : tasks.length === 0 ? (
+          <motion.div
+            key="no-matches"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            <Card className="border-dashed border-2">
+              <CardContent className="py-16 text-center">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-muted/50 to-muted/20 mx-auto mb-6 flex items-center justify-center">
+                  <ListTodo className="h-10 w-10 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">
+                  No matching tasks
                 </h3>
                 <p className="text-muted-foreground max-w-md mx-auto mb-6">
-                  {statusFilter || categoryFilter
-                    ? 'Try adjusting your filters to see more tasks.'
-                    : 'Generate your personalized action plan based on your assessment. Each task is designed to reduce buyer risk and increase your exit value.'}
+                  Try adjusting your filters to see more tasks.
                 </p>
-                {!statusFilter && !categoryFilter && (
-                  <Button
-                    onClick={() => setGenerateDialogOpen(true)}
-                    size="lg"
-                    className="shadow-lg shadow-primary/20"
-                  >
-                    <Sparkles className="h-5 w-5 mr-2" />
-                    Generate My Action Plan
-                  </Button>
-                )}
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setStatusFilter('')
+                    setCategoryFilter('')
+                  }}
+                >
+                  Clear Filters
+                </Button>
               </CardContent>
             </Card>
           </motion.div>

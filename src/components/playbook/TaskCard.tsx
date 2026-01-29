@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { analytics } from '@/lib/analytics'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
@@ -314,6 +315,9 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
   const [showUploadDialog, setShowUploadDialog] = useState(false)
   const [blockedReason, setBlockedReason] = useState('')
 
+  // Track if we've already tracked the expand for this task
+  const hasTrackedExpand = useRef(false)
+
   const impactConfig = getImpactConfig(task.issueTier)
   const effortConfig = getEffortConfig(task.effortLevel)
   const isCompleted = task.status === 'COMPLETED'
@@ -355,6 +359,25 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
     await onStatusChange(taskId, 'COMPLETED', completionNotes ? { completionNotes } : undefined)
     setIsUpdating(false)
   }
+
+  // Handle expand/collapse with analytics tracking
+  const handleToggleExpand = useCallback(() => {
+    const willExpand = !isExpanded
+    setIsExpanded(willExpand)
+
+    // Only track the first time user expands this task
+    if (willExpand && !hasTrackedExpand.current) {
+      hasTrackedExpand.current = true
+      analytics.track('task_expanded', {
+        taskId: task.id,
+        taskTitle: task.title,
+        taskCategory: task.briCategory,
+        taskPriority: task.rawImpact,
+        issueTier: task.issueTier ?? null,
+        effortLevel: task.effortLevel,
+      })
+    }
+  }, [isExpanded, task.id, task.title, task.briCategory, task.rawImpact, task.issueTier, task.effortLevel])
 
   return (
     <motion.div
@@ -558,7 +581,7 @@ export function TaskCard({ task, onStatusChange, onAssign, onTaskUpdate, showAss
 
         {/* Expand/Collapse */}
         <button
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={handleToggleExpand}
           className="mt-4 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors flex items-center gap-1"
         >
           {isExpanded ? 'Hide details' : 'Show details'}
