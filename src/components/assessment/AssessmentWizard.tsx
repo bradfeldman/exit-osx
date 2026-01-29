@@ -755,8 +755,8 @@ export function AssessmentWizard({ companyId, companyName, title: _title = 'Buye
         {/* Dynamic headline based on progress */}
         <h1 className="text-2xl md:text-3xl font-bold text-foreground font-display tracking-tight mb-2">
           {currentCategory
-            ? `How&apos;s Your ${CATEGORY_LABELS[currentCategory]}?`
-            : `Let&apos;s Evaluate ${companyName}`}
+            ? `How's Your ${CATEGORY_LABELS[currentCategory]}?`
+            : `Let's Evaluate ${companyName}`}
         </h1>
 
         <p className="text-muted-foreground max-w-md mx-auto">
