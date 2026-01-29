@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { cookies } from 'next/headers'
+import { headers } from 'next/headers'
 import { getAdminUser, getImpersonationContext } from '@/lib/admin'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 
@@ -8,26 +8,27 @@ export default async function AdminRootLayout({
 }: {
   children: React.ReactNode
 }) {
+  // Check if this is an admin auth route (login/forgot-password)
+  // These routes should bypass the admin layout authentication
+  const headersList = await headers()
+  const pathname = headersList.get('x-pathname') || ''
+
+  // Detect admin auth routes by checking the URL patterns
+  const isAuthRoute = pathname === '/admin/login' ||
+    pathname === '/admin/forgot-password' ||
+    pathname.startsWith('/admin/login') ||
+    pathname.startsWith('/admin/forgot-password')
+
+  // For auth routes, just render the children without the admin layout
+  if (isAuthRoute) {
+    return <>{children}</>
+  }
+
   const user = await getAdminUser()
 
   if (!user) {
-    // SECURITY: Clear admin verification cookie if user is not an admin
-    const cookieStore = await cookies()
-    cookieStore.delete('admin_verified')
-    redirect('/dashboard')
+    redirect('/admin/login')
   }
-
-  // SECURITY: Set admin verification cookie for middleware defense-in-depth
-  // This cookie is checked by middleware before allowing admin API access
-  // It has a short expiry and is HttpOnly to prevent client-side access
-  const cookieStore = await cookies()
-  cookieStore.set('admin_verified', 'true', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 60 * 15, // 15 minutes - requires re-verification on expiry
-    path: '/',
-  })
 
   const impersonation = await getImpersonationContext()
 

@@ -112,8 +112,14 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Add pathname header for server components to detect route
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-pathname', pathname)
+
   let supabaseResponse = NextResponse.next({
-    request,
+    request: {
+      headers: requestHeaders,
+    },
   })
 
   const supabase = createServerClient(
@@ -151,6 +157,10 @@ export async function middleware(request: NextRequest) {
   const publicRoutes = ['/login', '/signup', '/auth/callback', '/auth/confirm', '/pricing', '/terms', '/privacy', '/invite', '/api/invites', '/api/cron', '/forgot-password', '/reset-password']
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
 
+  // Admin public routes (login/forgot-password on admin subdomain)
+  const adminPublicRoutes = ['/admin/login', '/admin/forgot-password']
+  const isAdminPublicRoute = adminPublicRoutes.some(route => pathname.startsWith(route))
+
   // SECURITY: Check if this is an admin route
   const isAdminRoute = ADMIN_ROUTE_PATTERNS.some(pattern => pathname.startsWith(pattern))
 
@@ -161,10 +171,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.rewrite(url)
   }
 
-  // If user is not logged in and trying to access protected route
-  if (!user && !isPublicRoute && pathname !== '/') {
+  // If on admin subdomain and not authenticated, redirect to admin login (not main login)
+  if (isAdminSubdomain && !user && !isAdminPublicRoute && !isPublicRoute) {
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    url.pathname = '/admin/login'
+    if (pathname !== '/' && pathname !== '/admin') {
+      url.searchParams.set('next', pathname)
+    }
     return NextResponse.redirect(url)
   }
 
@@ -192,19 +205,31 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Block non-authenticated users from admin routes entirely
-  if (isAdminRoute && !user) {
+  // Block non-authenticated users from admin routes entirely (except admin public routes)
+  // Must be checked before general protected routes
+  if (isAdminRoute && !user && !isAdminPublicRoute) {
+    const url = request.nextUrl.clone()
+    // Always redirect admin routes to admin login
+    url.pathname = '/admin/login'
+    if (pathname !== '/admin') {
+      url.searchParams.set('next', pathname)
+    }
+    return NextResponse.redirect(url)
+  }
+
+  // If user is not logged in and trying to access protected route
+  // But allow admin public routes (login/forgot-password)
+  if (!user && !isPublicRoute && !isAdminPublicRoute && pathname !== '/') {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    url.searchParams.set('next', pathname)
     return NextResponse.redirect(url)
   }
 
   // If user is logged in and trying to access auth pages, redirect to dashboard
-  if (user && (pathname === '/login' || pathname === '/signup')) {
+  if (user && (pathname === '/login' || pathname === '/signup' || pathname === '/admin/login')) {
     const url = request.nextUrl.clone()
-    // If on admin subdomain, redirect to admin dashboard
-    url.pathname = isAdminSubdomain ? '/admin' : '/dashboard'
+    // If on admin subdomain or trying to access admin login, redirect to admin dashboard
+    url.pathname = (isAdminSubdomain || pathname === '/admin/login') ? '/admin' : '/dashboard'
     return NextResponse.redirect(url)
   }
 

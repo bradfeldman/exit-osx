@@ -12,200 +12,187 @@ import {
   Home,
   LogOut,
   Shield,
-  Code,
-  Settings,
   ChevronDown,
   Calculator,
   Scale,
   Camera,
   TrendingUp,
   ListTodo,
-  Cog,
+  Headset,
+  SlidersHorizontal,
+  FlaskConical,
 } from 'lucide-react'
 
-const navItems = [
-  {
-    label: 'Dashboard',
-    href: '/admin',
-    icon: Home,
-  },
-  {
-    label: 'Users',
-    href: '/admin/users',
-    icon: Users,
-  },
-  {
-    label: 'Organizations',
-    href: '/admin/organizations',
-    icon: Building2,
-  },
-  {
-    label: 'Support Tickets',
-    href: '/admin/tickets',
-    icon: Ticket,
-  },
-  {
-    label: 'Activity Log',
-    href: '/admin/activity',
-    icon: Activity,
-  },
-]
+interface NavItem {
+  label: string
+  href: string
+  icon: React.ComponentType<{ className?: string }>
+}
 
-const developerTools = [
+interface NavSection {
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  href?: string
+  items: NavItem[]
+}
+
+const navSections: NavSection[] = [
   {
-    label: 'Multiple Adjustment',
-    href: '/admin/tools/multiple-adjustment',
-    icon: Calculator,
-    description: 'Adjust valuation multiples',
+    label: 'Customer Service',
+    icon: Headset,
+    href: '/admin/customer-service',
+    items: [
+      { label: 'Support Tickets', href: '/admin/tickets', icon: Ticket },
+      { label: 'Activity Log', href: '/admin/activity', icon: Activity },
+    ],
   },
   {
-    label: 'BRI Weights',
-    href: '/admin/tools/bri-weights',
-    icon: Scale,
-    description: 'Configure BRI category weights',
-  },
-  {
-    label: 'Snapshot',
-    href: '/admin/tools/snapshot',
-    icon: Camera,
-    description: 'Create valuation snapshots',
-  },
-  {
-    label: 'Industry Multiples',
-    href: '/admin/tools/industry-multiples',
+    label: 'Sales & Marketing',
     icon: TrendingUp,
-    description: 'Manage industry multiple data',
+    href: '/admin/sales-marketing',
+    items: [],
   },
   {
-    label: 'Task Viewer',
-    href: '/admin/tools/task-viewer',
-    icon: ListTodo,
-    description: 'View and debug tasks',
+    label: 'Variable Management',
+    icon: SlidersHorizontal,
+    href: '/admin/variables',
+    items: [
+      { label: 'BRI Weights', href: '/admin/tools/bri-weights', icon: Scale },
+      { label: 'Industry Multiples', href: '/admin/tools/industry-multiples', icon: TrendingUp },
+      { label: 'Multiple Adjustment', href: '/admin/tools/multiple-adjustment', icon: Calculator },
+      { label: 'Global BRI Weighting', href: '/admin/tools/bri-weighting', icon: SlidersHorizontal },
+    ],
   },
-]
-
-const globalSettings = [
   {
-    label: 'Global BRI Weighting',
-    href: '/admin/tools/bri-weighting',
-    icon: Cog,
-    description: 'System-wide BRI configuration',
+    label: 'User Management',
+    icon: Users,
+    href: '/admin/users',
+    items: [
+      { label: 'Users', href: '/admin/users', icon: Users },
+      { label: 'Organizations', href: '/admin/organizations', icon: Building2 },
+    ],
+  },
+  {
+    label: 'R&D',
+    icon: FlaskConical,
+    href: '/admin/rd',
+    items: [
+      { label: 'Snapshot', href: '/admin/tools/snapshot', icon: Camera },
+      { label: 'Task Viewer', href: '/admin/tools/task-viewer', icon: ListTodo },
+    ],
   },
 ]
 
 export function AdminNav() {
   const pathname = usePathname()
-  const [developerExpanded, setDeveloperExpanded] = useState(true)
-  const [globalExpanded, setGlobalExpanded] = useState(true)
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    'Customer Service': true,
+    'Variable Management': true,
+    'User Management': true,
+    'R&D': true,
+  })
+
+  const toggleSection = (label: string) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [label]: !prev[label],
+    }))
+  }
+
+  const isSectionActive = (section: NavSection) => {
+    if (section.href && pathname === section.href) return true
+    return section.items.some(
+      (item) => pathname === item.href || pathname.startsWith(item.href + '/')
+    )
+  }
 
   return (
     <nav className="flex flex-col gap-1">
-      {navItems.map((item) => {
-        const isActive = pathname === item.href ||
-          (item.href !== '/admin' && pathname.startsWith(item.href))
+      {/* Dashboard link */}
+      <Link
+        href="/admin"
+        className={cn(
+          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+          pathname === '/admin'
+            ? 'bg-primary text-primary-foreground'
+            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+        )}
+      >
+        <Home className="h-4 w-4" />
+        Dashboard
+      </Link>
+
+      {/* Module sections */}
+      {navSections.map((section) => {
+        const isExpanded = expandedSections[section.label]
+        const hasItems = section.items.length > 0
+        const isActive = isSectionActive(section)
 
         return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-              isActive
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+          <div key={section.label} className="mt-2">
+            {hasItems ? (
+              <button
+                onClick={() => toggleSection(section.label)}
+                className={cn(
+                  'flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                  isActive
+                    ? 'text-foreground'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <section.icon className="h-4 w-4" />
+                  {section.label}
+                </div>
+                <ChevronDown
+                  className={cn(
+                    'h-4 w-4 transition-transform',
+                    isExpanded ? 'rotate-180' : ''
+                  )}
+                />
+              </button>
+            ) : (
+              <Link
+                href={section.href || '/admin'}
+                className={cn(
+                  'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                  pathname === section.href
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                )}
+              >
+                <section.icon className="h-4 w-4" />
+                {section.label}
+              </Link>
             )}
-          >
-            <item.icon className="h-4 w-4" />
-            {item.label}
-          </Link>
+
+            {hasItems && isExpanded && (
+              <div className="ml-4 mt-1 flex flex-col gap-1 border-l pl-3">
+                {section.items.map((item) => {
+                  const isItemActive =
+                    pathname === item.href || pathname.startsWith(item.href + '/')
+
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                        isItemActive
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      )}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {item.label}
+                    </Link>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         )
       })}
-
-      {/* Developer Tools Section */}
-      <div className="mt-4">
-        <button
-          onClick={() => setDeveloperExpanded(!developerExpanded)}
-          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
-          <div className="flex items-center gap-3">
-            <Code className="h-4 w-4" />
-            Developer Tools
-          </div>
-          <ChevronDown
-            className={cn(
-              'h-4 w-4 transition-transform',
-              developerExpanded ? 'rotate-180' : ''
-            )}
-          />
-        </button>
-        {developerExpanded && (
-          <div className="ml-4 mt-1 flex flex-col gap-1 border-l pl-3">
-            {developerTools.map((tool) => {
-              const isActive = pathname === tool.href ||
-                pathname.startsWith(tool.href)
-
-              return (
-                <Link
-                  key={tool.href}
-                  href={tool.href}
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                  )}
-                >
-                  <tool.icon className="h-4 w-4" />
-                  {tool.label}
-                </Link>
-              )
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Global Settings Section */}
-      <div className="mt-2">
-        <button
-          onClick={() => setGlobalExpanded(!globalExpanded)}
-          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
-          <div className="flex items-center gap-3">
-            <Settings className="h-4 w-4" />
-            Global Settings
-          </div>
-          <ChevronDown
-            className={cn(
-              'h-4 w-4 transition-transform',
-              globalExpanded ? 'rotate-180' : ''
-            )}
-          />
-        </button>
-        {globalExpanded && (
-          <div className="ml-4 mt-1 flex flex-col gap-1 border-l pl-3">
-            {globalSettings.map((setting) => {
-              const isActive = pathname === setting.href ||
-                pathname.startsWith(setting.href)
-
-              return (
-                <Link
-                  key={setting.href}
-                  href={setting.href}
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                  )}
-                >
-                  <setting.icon className="h-4 w-4" />
-                  {setting.label}
-                </Link>
-              )
-            })}
-          </div>
-        )}
-      </div>
     </nav>
   )
 }
