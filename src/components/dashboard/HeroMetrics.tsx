@@ -26,6 +26,7 @@ interface HeroMetricsProps {
   isEstimated?: boolean
   isPreviewMode?: boolean
   isAbovePotential?: boolean
+  hasAssessment?: boolean
 }
 
 type HoverState = null | 'valueGap' | 'bri' | 'coreIndex' | 'personalReadiness'
@@ -188,7 +189,8 @@ export function HeroMetrics({
   personalReadinessScore,
   isEstimated = false,
   isPreviewMode = false,
-  isAbovePotential = false
+  isAbovePotential = false,
+  hasAssessment = true
 }: HeroMetricsProps) {
   const [hoveredCard, setHoveredCard] = useState<HoverState>(null)
   const isClient = useIsClient()
@@ -250,11 +252,22 @@ export function HeroMetrics({
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                <p className={`text-sm md:text-base font-semibold uppercase tracking-widest mb-2 ${
-                  isAbovePotential ? 'text-white' : isPreviewMode ? 'text-white/90' : 'text-[#B87333]'
-                }`}>
-                  {isAbovePotential ? 'Premium to Market' : isPreviewMode ? 'Preview: Market Value' : 'Estimated Market Value'}
-                </p>
+                {!hasAssessment && !isPreviewMode && !isAbovePotential ? (
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <p className="text-sm md:text-base font-semibold uppercase tracking-widest text-[#B87333]">
+                      Industry Preview
+                    </p>
+                    <span className="px-2 py-0.5 text-xs font-medium bg-white/20 text-white/90 rounded-full">
+                      Based on averages
+                    </span>
+                  </div>
+                ) : (
+                  <p className={`text-sm md:text-base font-semibold uppercase tracking-widest mb-2 ${
+                    isAbovePotential ? 'text-white' : isPreviewMode ? 'text-white/90' : 'text-[#B87333]'
+                  }`}>
+                    {isAbovePotential ? 'Premium to Market' : isPreviewMode ? 'Preview: Market Value' : 'Estimated Market Value'}
+                  </p>
+                )}
                 {!isPreviewMode && !isAbovePotential && (
                   <p className="text-xs md:text-sm text-gray-400 mb-4">
                     {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
@@ -294,14 +307,24 @@ export function HeroMetrics({
                 </motion.h1>
                 {isEstimated && !isPreviewMode && (
                   <motion.p
-                    className="text-xs text-[#B87333] mt-3"
+                    className={`mt-4 max-w-xs mx-auto ${!hasAssessment ? 'text-sm text-white/80' : 'text-xs text-[#B87333]'}`}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.5 }}
                   >
-                    Based on Adjusted EBITDA
-                    <br />
-                    Complete assessment to see risk-adjusted value
+                    {!hasAssessment ? (
+                      <>
+                        This is what similar businesses sell for.
+                        <br />
+                        <span className="text-[#B87333] font-medium">Your number could be higher.</span>
+                      </>
+                    ) : (
+                      <>
+                        Based on Adjusted EBITDA
+                        <br />
+                        Complete assessment to see risk-adjusted value
+                      </>
+                    )}
                   </motion.p>
                 )}
               </motion.div>
@@ -317,35 +340,48 @@ export function HeroMetrics({
             isHovered={hoveredCard === 'valueGap'}
             onHover={() => setHoveredCard('valueGap')}
             onLeave={() => setHoveredCard(null)}
-            className={isAbovePotential ? 'ring-2 ring-emerald-500/50' : isPreviewMode ? 'ring-2 ring-[#B87333]/50' : ''}
+            className={`h-full ${isAbovePotential ? 'ring-2 ring-emerald-500/50' : isPreviewMode ? 'ring-2 ring-[#B87333]/50' : ''}`}
           >
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
-              {isAbovePotential ? 'Market Premium' : isPreviewMode ? 'Preview: Value Gap' : 'Value Gap'}
+              {hasAssessment ? (isAbovePotential ? 'Market Premium' : isPreviewMode ? 'Preview: Value Gap' : 'Value Gap') : 'Hidden Value'}
             </p>
-            <p className={`text-2xl md:text-3xl font-semibold transition-all ${
-              isAbovePotential ? 'text-emerald-600' : isPreviewMode ? 'text-[#B87333]' : 'text-[#3D3D3D]'
-            }`}>
-              {isAbovePotential ? (
-                // Show market premium when DCF exceeds potential
-                isClient && marketPremium > 0 ? (
-                  <AnimatedValue value={marketPremium} delay={300} />
+            {hasAssessment ? (
+              <p className={`text-2xl md:text-3xl font-semibold transition-all ${
+                isAbovePotential ? 'text-emerald-600' : isPreviewMode ? 'text-[#B87333]' : 'text-[#3D3D3D]'
+              }`}>
+                {isAbovePotential ? (
+                  // Show market premium when DCF exceeds potential
+                  isClient && marketPremium > 0 ? (
+                    <AnimatedValue value={marketPremium} delay={300} />
+                  ) : (
+                    formatCurrency(marketPremium)
+                  )
+                ) : isPreviewMode ? (
+                  // During slider drag, show value directly without animation
+                  formatCurrency(valueGap)
+                ) : isClient && valueGap !== 0 ? (
+                  <AnimatedValue value={valueGap} delay={300} />
                 ) : (
-                  formatCurrency(marketPremium)
-                )
-              ) : isPreviewMode ? (
-                // During slider drag, show value directly without animation
-                formatCurrency(valueGap)
-              ) : isClient && valueGap !== 0 ? (
-                <AnimatedValue value={valueGap} delay={300} />
-              ) : (
-                formatCurrency(valueGap)
-              )}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {isAbovePotential
-                ? `Above industry max of ${formatCurrency(potentialValue)}`
-                : `Max EV: ${formatCurrency(potentialValue)}`}
-            </p>
+                  formatCurrency(valueGap)
+                )}
+              </p>
+            ) : (
+              <>
+                <p className="text-2xl md:text-3xl font-semibold text-amber-500">
+                  $???
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Discover your potential
+                </p>
+              </>
+            )}
+            {hasAssessment && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {isAbovePotential
+                  ? `Above industry max of ${formatCurrency(potentialValue)}`
+                  : `Max EV: ${formatCurrency(potentialValue)}`}
+              </p>
+            )}
           </MetricCard>
 
           {/* BRI */}
@@ -354,7 +390,9 @@ export function HeroMetrics({
             isHovered={hoveredCard === 'bri'}
             onHover={() => setHoveredCard('bri')}
             onLeave={() => setHoveredCard(null)}
+            href={briScore === null ? "/dashboard/assessment/risk" : undefined}
             isPreviewMode={isPreviewMode}
+            className="h-full"
           >
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
               Buyer Readiness Index
@@ -374,11 +412,15 @@ export function HeroMetrics({
               </>
             ) : (
               <>
-                <p className="text-2xl md:text-3xl font-semibold text-gray-400">
-                  --
-                </p>
-                <p className="text-xs text-[#B87333] mt-1">
-                  Complete assessment
+                <motion.p
+                  className="text-2xl md:text-3xl font-semibold text-primary"
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  ?
+                </motion.p>
+                <p className="text-xs text-primary font-medium mt-1">
+                  How do buyers see you?
                 </p>
               </>
             )}
@@ -412,11 +454,15 @@ export function HeroMetrics({
               </>
             ) : (
               <>
-                <p className="text-2xl md:text-3xl font-semibold text-gray-400">
-                  --
-                </p>
-                <p className="text-xs text-[#B87333] mt-1">
-                  Complete assessment
+                <motion.p
+                  className="text-2xl md:text-3xl font-semibold text-primary/70"
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                >
+                  ?
+                </motion.p>
+                <p className="text-xs text-primary/70 mt-1">
+                  Unlock your score
                 </p>
               </>
             )}
@@ -450,11 +496,15 @@ export function HeroMetrics({
               </>
             ) : (
               <>
-                <p className="text-2xl md:text-3xl font-semibold text-gray-400">
-                  --
-                </p>
-                <p className="text-xs text-[#B87333] mt-1">
-                  Complete assessment
+                <motion.p
+                  className="text-2xl md:text-3xl font-semibold text-primary/70"
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}
+                >
+                  ?
+                </motion.p>
+                <p className="text-xs text-primary/70 mt-1">
+                  Are you ready?
                 </p>
               </>
             )}

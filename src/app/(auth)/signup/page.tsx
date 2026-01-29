@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect, useRef, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -12,6 +12,8 @@ import { Eye, EyeOff, AlertTriangle, Loader2, Sparkles } from 'lucide-react'
 import { secureSignup } from '@/app/actions/auth'
 import { getRedirectUrl, buildUrlWithRedirect, isInviteRedirect } from '@/lib/utils/redirect'
 import { PRICING_PLANS, type PlanTier } from '@/lib/pricing'
+import { analytics } from '@/lib/analytics'
+import { useFormTracking, useScrollDepthTracking, useExitIntent } from '@/lib/analytics/hooks'
 
 // Animation variants
 const fadeInUp = {
@@ -60,15 +62,79 @@ function SignupPageContent() {
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
 
+  // Analytics: Page load time reference
+  const pageLoadTime = useRef(Date.now())
+
+  // Analytics: Form tracking
+  const {
+    handleFieldFocus,
+    handleFieldBlur,
+    handleFieldError,
+    markSubmitted,
+    getFormStartTime,
+  } = useFormTracking({ formId: 'signup' })
+
+  // Analytics: Track scroll depth
+  useScrollDepthTracking()
+
+  // Analytics: Track exit intent
+  useExitIntent()
+
+  // Analytics: Track page view on mount
+  useEffect(() => {
+    analytics.trackPageView('signup', {
+      entryPoint: document.referrer || 'direct',
+      planPreselected: selectedPlanId || undefined,
+      isFromInvite,
+    })
+
+    // Start timer for time-to-submit tracking
+    analytics.startTimer('signup_page')
+  }, [selectedPlanId, isFromInvite])
+
+  // Analytics: Track success state
+  useEffect(() => {
+    if (success) {
+      const timeToSubmit = Date.now() - pageLoadTime.current
+      analytics.track('signup_complete', {
+        method: 'email',
+      })
+
+      // Track time from page load to successful signup
+      analytics.track('signup_submit', {
+        success: true,
+        timeToSubmit,
+      })
+    }
+  }, [success])
+
+  // Analytics: Track errors
+  const trackError = useCallback((errorMessage: string, fieldName?: string) => {
+    if (fieldName) {
+      handleFieldError(fieldName, 'validation', errorMessage)
+    }
+    analytics.track('form_field_error', {
+      formId: 'signup',
+      fieldName: fieldName || 'form',
+      errorType: 'validation',
+      errorMessage,
+    })
+  }, [handleFieldError])
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setWarning(null)
     setLoading(true)
 
+    // Mark form as submitted for analytics
+    markSubmitted()
+
     // Validate passwords match
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
+      const errorMsg = 'Passwords do not match'
+      setError(errorMsg)
+      trackError(errorMsg, 'confirmPassword')
       setLoading(false)
       return
     }
@@ -77,7 +143,15 @@ function SignupPageContent() {
       const result = await secureSignup(name, email, password, redirectUrl, selectedPlanId || undefined)
 
       if (!result.success) {
-        setError(result.error || 'Unable to create account')
+        const errorMsg = result.error || 'Unable to create account'
+        setError(errorMsg)
+
+        // Track failed signup
+        analytics.track('signup_submit', {
+          success: false,
+          timeToSubmit: Date.now() - pageLoadTime.current,
+          errorType: errorMsg,
+        })
         return
       }
 
@@ -87,7 +161,13 @@ function SignupPageContent() {
 
       setSuccess(true)
     } catch {
-      setError('An unexpected error occurred')
+      const errorMsg = 'An unexpected error occurred'
+      setError(errorMsg)
+      analytics.track('signup_submit', {
+        success: false,
+        timeToSubmit: Date.now() - pageLoadTime.current,
+        errorType: 'unexpected_error',
+      })
     } finally {
       setLoading(false)
     }
@@ -380,6 +460,8 @@ function SignupPageContent() {
                 placeholder="John Smith"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                onFocus={() => handleFieldFocus('name')}
+                onBlur={() => handleFieldBlur('name')}
                 required
                 disabled={loading}
                 className="h-12 transition-all duration-200 focus:scale-[1.01]"
@@ -394,6 +476,8 @@ function SignupPageContent() {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onFocus={() => handleFieldFocus('email')}
+                onBlur={() => handleFieldBlur('email')}
                 required
                 disabled={loading}
                 className="h-12 transition-all duration-200 focus:scale-[1.01]"
@@ -409,6 +493,8 @@ function SignupPageContent() {
                   placeholder="Create a password (min 8 characters)"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => handleFieldFocus('password')}
+                  onBlur={() => handleFieldBlur('password')}
                   required
                   disabled={loading}
                   className="h-12 pr-12 transition-all duration-200 focus:scale-[1.01]"
@@ -433,6 +519,8 @@ function SignupPageContent() {
                   placeholder="Confirm your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  onFocus={() => handleFieldFocus('confirmPassword')}
+                  onBlur={() => handleFieldBlur('confirmPassword')}
                   required
                   disabled={loading}
                   className="h-12 pr-12 transition-all duration-200 focus:scale-[1.01]"

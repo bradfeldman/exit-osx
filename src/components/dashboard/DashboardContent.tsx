@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -10,6 +10,8 @@ import { useCompany } from '@/contexts/CompanyContext'
 import { HeroMetrics } from './HeroMetrics'
 import { ValueDrivers } from './ValueDrivers'
 import { RiskBreakdown } from './RiskBreakdown'
+import { analytics } from '@/lib/analytics'
+import { useScrollDepthTracking } from '@/lib/analytics/hooks'
 
 interface DashboardData {
   company: {
@@ -92,6 +94,29 @@ export function DashboardContent({ userName }: DashboardContentProps) {
   const [error, setError] = useState<string | null>(null)
   const [previewMultiple, setPreviewMultiple] = useState<number | null>(null)
 
+  // Analytics tracking state
+  const dashboardLoadTime = useRef(Date.now())
+  const hasTrackedFirstView = useRef(false)
+  const hasTrackedValuation = useRef(false)
+  const hasTrackedBriScore = useRef(false)
+  const assessmentCtaWasVisible = useRef(false)
+  const featuresClicked = useRef<string[]>([])
+
+  // Track scroll depth
+  const { maxDepth: scrollDepthReached } = useScrollDepthTracking('dashboard')
+
+  // Track assessment CTA visibility (passed to ActionCenter)
+  const handleAssessmentCtaVisible = useCallback(() => {
+    assessmentCtaWasVisible.current = true
+  }, [])
+
+  // Track feature clicks for exit analysis (available for child components)
+  const _trackFeatureClick = useCallback((feature: string) => {
+    if (!featuresClicked.current.includes(feature)) {
+      featuresClicked.current.push(feature)
+    }
+  }, [])
+
   useEffect(() => {
     async function loadData() {
       if (companyLoading) return
@@ -139,6 +164,87 @@ export function DashboardContent({ userName }: DashboardContentProps) {
 
     loadData()
   }, [selectedCompanyId, companies, companyLoading, setSelectedCompanyId])
+
+  // Track dashboard first view
+  useEffect(() => {
+    if (hasTrackedFirstView.current) return
+
+    // Check if this is the first dashboard view this session
+    const hasViewedDashboard = sessionStorage.getItem('hasViewedDashboard')
+    const signupTimestamp = sessionStorage.getItem('signupTimestamp')
+
+    if (!hasViewedDashboard) {
+      const timeSinceSignup = signupTimestamp
+        ? Date.now() - parseInt(signupTimestamp, 10)
+        : 0
+
+      analytics.track('dashboard_first_view', {
+        timeSinceSignup,
+      })
+
+      sessionStorage.setItem('hasViewedDashboard', 'true')
+    }
+
+    hasTrackedFirstView.current = true
+  }, [])
+
+  // Track valuation and BRI score display when dashboard data loads
+  useEffect(() => {
+    if (!dashboardData || loading) return
+
+    const { tier1, hasAssessment } = dashboardData
+
+    // Track initial valuation displayed
+    if (tier1 && !hasTrackedValuation.current) {
+      analytics.track('initial_valuation_displayed', {
+        valuationAmount: tier1.currentValue,
+        industryMultiple: tier1.finalMultiple,
+        calculationMethod: tier1.isEstimated ? 'quick' : 'dcf',
+      })
+      hasTrackedValuation.current = true
+    }
+
+    // Track BRI score displayed
+    if (!hasTrackedBriScore.current) {
+      analytics.track('bri_score_displayed', {
+        score: tier1?.briScore ?? null,
+        status: hasAssessment
+          ? (tier1?.briScore ? 'complete' : 'incomplete')
+          : 'not_started',
+      })
+      hasTrackedBriScore.current = true
+    }
+  }, [dashboardData, loading])
+
+  // Track exit without assessment on unmount
+  useEffect(() => {
+    const trackExitWithoutAssessment = () => {
+      // Only track if dashboard was fully loaded and user hasn't started assessment
+      if (!dashboardData || dashboardData.hasAssessment) return
+
+      const timeOnDashboard = Date.now() - dashboardLoadTime.current
+
+      analytics.track('dashboard_exit_without_assessment', {
+        timeOnDashboard,
+        scrollDepthReached,
+        ctaWasVisible: assessmentCtaWasVisible.current,
+        featuresClicked: featuresClicked.current,
+      })
+    }
+
+    // Track on beforeunload (leaving the page)
+    const handleBeforeUnload = () => {
+      trackExitWithoutAssessment()
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
+    // Track on component unmount (navigation)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      trackExitWithoutAssessment()
+    }
+  }, [dashboardData, scrollDepthReached])
 
   if (loading) {
     return (
@@ -397,6 +503,7 @@ export function DashboardContent({ userName }: DashboardContentProps) {
               isEstimated={tier1.isEstimated}
               isPreviewMode={isPreviewMode}
               isAbovePotential={isAbovePotential}
+              hasAssessment={hasAssessment}
             />
           )}
 
@@ -415,6 +522,7 @@ export function DashboardContent({ userName }: DashboardContentProps) {
             categories={tier3?.categories || emptyCategories}
             topConstraints={tier3?.topConstraints || []}
             hasAssessment={hasAssessment}
+            onAssessmentCtaVisible={handleAssessmentCtaVisible}
           />
           </CardContent>
         </Card>

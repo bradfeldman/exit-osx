@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
@@ -11,6 +11,7 @@ import { RevenueStep } from './steps/RevenueStep'
 import { BusinessProfileStep } from './steps/BusinessProfileStep'
 import { useCompany } from '@/contexts/CompanyContext'
 import { cn } from '@/lib/utils'
+import { analytics } from '@/lib/analytics'
 
 interface Adjustment {
   description: string
@@ -84,16 +85,117 @@ export function CompanySetupWizard() {
   const [showCelebration, setShowCelebration] = useState(false)
   const [newCompanyId, setNewCompanyId] = useState<string | null>(null)
 
+  // Analytics: Tracking refs
+  const wizardStartTime = useRef(Date.now())
+  const stepStartTime = useRef(Date.now())
+  const stepsVisited = useRef<Set<number>>(new Set([1]))
+  const hasTrackedStart = useRef(false)
+
+  // Analytics: Step names for tracking (matches SetupStepViewedParams type)
+  const stepNames: Array<'basic_info' | 'revenue' | 'business_profile'> = ['basic_info', 'revenue', 'business_profile']
+
+  // Analytics: Track wizard started on mount
+  useEffect(() => {
+    if (!hasTrackedStart.current) {
+      hasTrackedStart.current = true
+      analytics.track('setup_wizard_started', {
+        entrySource: document.referrer || 'direct',
+      })
+      analytics.startTimer('setup_wizard')
+    }
+  }, [])
+
+  // Analytics: Track step views
+  useEffect(() => {
+    const stepName = stepNames[currentStep - 1]
+    stepStartTime.current = Date.now()
+
+    analytics.track('setup_step_viewed', {
+      stepNumber: currentStep,
+      stepName,
+    })
+  }, [currentStep])
+
+  // Analytics: Track abandonment on unmount
+  useEffect(() => {
+    return () => {
+      // Only track abandonment if wizard wasn't completed
+      if (!showCelebration && hasTrackedStart.current) {
+        const totalTimeSpent = Date.now() - wizardStartTime.current
+        analytics.track('setup_abandoned', {
+          lastStepCompleted: Math.max(...Array.from(stepsVisited.current)) - 1,
+          totalTimeSpent,
+        })
+      }
+    }
+  }, [showCelebration])
+
+  // Analytics: Track step completion helper
+  const trackStepCompleted = useCallback((stepNumber: number) => {
+    const stepName = stepNames[stepNumber - 1]
+    const duration = Date.now() - stepStartTime.current
+    stepsVisited.current.add(stepNumber)
+
+    analytics.track('setup_step_time', {
+      stepNumber,
+      stepName,
+      duration,
+    })
+
+    // Get relevant inputs for this step
+    let inputsProvided: Record<string, unknown> = {}
+    switch (stepNumber) {
+      case 1:
+        inputsProvided = {
+          hasName: !!formData.name,
+          hasIndustry: !!formData.icbSubSector,
+          industryPath: formData.icbIndustry ? `${formData.icbIndustry} > ${formData.icbSuperSector} > ${formData.icbSector}` : null,
+        }
+        break
+      case 2:
+        inputsProvided = {
+          revenueRange: getRevenueSizeCategory(formData.annualRevenue),
+          hasRevenue: formData.annualRevenue > 0,
+        }
+        break
+      case 3:
+        inputsProvided = {
+          revenueModel: formData.revenueModel,
+          laborIntensity: formData.laborIntensity,
+          assetIntensity: formData.assetIntensity,
+          ownerInvolvement: formData.ownerInvolvement,
+        }
+        break
+    }
+
+    analytics.track('setup_step_completed', {
+      stepNumber,
+      stepName,
+      inputsProvided,
+    })
+  }, [formData])
+
   const updateFormData = (updates: Partial<CompanyFormData>) => {
     setFormData(prev => ({ ...prev, ...updates }))
   }
 
   const handleNext = () => {
+    // Track step completion before moving to next
+    trackStepCompleted(currentStep)
     setCurrentStep(prev => Math.min(prev + 1, steps.length))
   }
 
   const handleBack = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1))
+    // Track step back navigation
+    const fromStep = currentStep
+    const toStep = Math.max(currentStep - 1, 1)
+
+    analytics.track('setup_step_back', {
+      fromStep,
+      toStep,
+    })
+
+    setCurrentStep(toStep)
   }
 
   // Fire confetti when celebration shows - SPECTACULAR version
@@ -248,12 +350,34 @@ export function CompanySetupWizard() {
         throw new Error(errorData.error || 'Failed to save business profile')
       }
 
+      // Track final step completion
+      trackStepCompleted(currentStep)
+
+      // Track wizard completion
+      const totalTime = Date.now() - wizardStartTime.current
+      const stepsRevisited = stepsVisited.current.size > steps.length
+        ? stepsVisited.current.size - steps.length
+        : 0
+
+      analytics.track('setup_completed', {
+        totalTime,
+        stepsRevisited,
+      })
+
       // Save the new company ID and show celebration
       setNewCompanyId(company.id)
       setShowCelebration(true)
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
+
+      // Track error
+      analytics.track('error_displayed', {
+        errorType: 'setup_wizard_submit',
+        errorMessage: err instanceof Error ? err.message : 'An error occurred',
+        errorContext: `step_${currentStep}`,
+      })
+
       setIsSubmitting(false)
     }
   }
@@ -389,12 +513,21 @@ export function CompanySetupWizard() {
         </motion.p>
 
         <motion.p
-          className="text-base text-muted-foreground max-w-lg mb-10"
+          className="text-base text-muted-foreground max-w-lg mb-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8, duration: 0.5 }}
         >
-          Your preliminary valuation is waiting on your dashboard.
+          We&apos;ve calculated a preview based on industry averages.
+        </motion.p>
+
+        <motion.p
+          className="text-base text-foreground font-medium max-w-lg mb-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1, duration: 0.5 }}
+        >
+          Want to see what buyers would actually pay for <span className="text-primary">your</span> business?
         </motion.p>
 
         {/* CTA - Larger and more prominent */}
@@ -408,7 +541,7 @@ export function CompanySetupWizard() {
             onClick={handleContinueToDashboard}
             className="text-lg px-10 py-7 shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/30 hover:-translate-y-1 transition-all font-semibold"
           >
-            <span>See Your Valuation</span>
+            <span>See Your Preview</span>
             <motion.svg
               className="ml-3 h-6 w-6"
               fill="none"

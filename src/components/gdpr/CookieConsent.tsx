@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { X, Settings, Cookie } from 'lucide-react'
+import { updateConsent } from '@/lib/analytics/consent'
 
 export interface CookiePreferences {
   essential: boolean // Always true, cannot be disabled
@@ -41,6 +42,8 @@ export function getCookiePreferences(): CookiePreferences {
 export function saveCookiePreferences(preferences: CookiePreferences): void {
   if (typeof window === 'undefined') return
   localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(preferences))
+  // Update Google Consent Mode
+  updateConsent(preferences)
 }
 
 // Lazy initializer for preferences state

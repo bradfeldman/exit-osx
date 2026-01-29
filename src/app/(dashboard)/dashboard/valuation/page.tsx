@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useCompany } from '@/contexts/CompanyContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Loader2, Save, Calculator, Info } from 'lucide-react'
+import { analytics } from '@/lib/analytics'
 import {
   MarketDataPanel,
   WACCCalculator,
@@ -71,6 +72,10 @@ export default function ValuationPage() {
   const [originalAssumptions, setOriginalAssumptions] = useState<DCFAssumptions | null>(null)
   const [useDCFValue, setUseDCFValue] = useState(false) // Toggle to use DCF value for scorecard/PFS/loans
   const [originalUseDCFValue, setOriginalUseDCFValue] = useState(false)
+
+  // Analytics tracking
+  const hasTrackedPageView = useRef(false)
+  const previousAssumptions = useRef<DCFAssumptions | null>(null)
 
   // Industry data (could be fetched from API based on company)
   const [industryData, setIndustryData] = useState({
@@ -175,6 +180,16 @@ export default function ValuationPage() {
     fetchAssumptions()
   }, [fetchAssumptions])
 
+  // Track page view
+  useEffect(() => {
+    if (hasTrackedPageView.current || loading) return
+
+    hasTrackedPageView.current = true
+    analytics.track('dcf_page_viewed', {
+      hasFinancials: baseFCF > 0 && ebitda > 0,
+    })
+  }, [loading, baseFCF, ebitda])
+
   // Track changes
   useEffect(() => {
     if (originalAssumptions) {
@@ -208,6 +223,14 @@ export default function ValuationPage() {
         setOriginalAssumptions(assumptions)
         setOriginalUseDCFValue(useDCFValue)
         setHasChanges(false)
+
+        // Track DCF result viewed/saved
+        if (dcfResults) {
+          analytics.track('dcf_result_viewed', {
+            valuationResult: dcfResults.equityValue,
+            scenarioName: 'base',
+          })
+        }
       } else {
         const data = await response.json()
         console.error('Failed to save:', data.error)
@@ -283,6 +306,12 @@ export default function ValuationPage() {
 
   // Handle WACC input changes
   const handleWACCInputChange = <K extends keyof WACCInputs>(key: K, value: WACCInputs[K]) => {
+    const prevValue = key === 'costOfDebt'
+      ? assumptions.costOfDebtOverride
+      : key === 'taxRate'
+        ? assumptions.taxRateOverride
+        : assumptions[key as keyof DCFAssumptions]
+
     if (key === 'costOfDebt') {
       setAssumptions((prev) => ({ ...prev, costOfDebtOverride: value as number | null }))
     } else if (key === 'taxRate') {
@@ -290,14 +319,43 @@ export default function ValuationPage() {
     } else {
       setAssumptions((prev) => ({ ...prev, [key]: value }))
     }
+
+    // Track assumption change
+    analytics.track('dcf_assumptions_modified', {
+      assumptionChanged: key,
+      previousValue: typeof prevValue === 'number' ? prevValue : 0,
+      newValue: typeof value === 'number' ? value : 0,
+    })
   }
 
   // Handle growth rate changes
   const handleGrowthRateChange = (year: string, value: number) => {
+    const prevValue = assumptions.growthAssumptions[year] || 0
+
     setAssumptions((prev) => ({
       ...prev,
       growthAssumptions: { ...prev.growthAssumptions, [year]: value },
     }))
+
+    // Track assumption change
+    analytics.track('dcf_assumptions_modified', {
+      assumptionChanged: `growth_${year}`,
+      previousValue: prevValue,
+      newValue: value,
+    })
+  }
+
+  // Handle DCF toggle change
+  const handleDcfToggleChange = (checked: boolean) => {
+    setUseDCFValue(checked)
+
+    analytics.track('dcf_toggle_changed', {
+      useDcfValue: checked,
+      dcfValue: dcfResults?.equityValue ?? null,
+      impliedMultiple: ebitda > 0 && dcfResults
+        ? dcfResults.enterpriseValue / ebitda
+        : null,
+    })
   }
 
   // Handle EBITDA multiple override changes
@@ -449,7 +507,7 @@ export default function ValuationPage() {
                 <CardTitle className="text-base font-medium">Use DCF for Valuation</CardTitle>
                 <Switch
                   checked={useDCFValue}
-                  onCheckedChange={setUseDCFValue}
+                  onCheckedChange={handleDcfToggleChange}
                   disabled={!dcfResults}
                 />
               </div>

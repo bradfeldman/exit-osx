@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, Suspense } from 'react'
+import { useState, useCallback, Suspense, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -12,6 +12,8 @@ import { Captcha, resetCaptcha } from '@/components/ui/captcha'
 import { Eye, EyeOff, Shield as ShieldIcon, Loader2 } from 'lucide-react'
 import { secureLogin } from '@/app/actions/auth'
 import { getRedirectUrl, buildUrlWithRedirect, isInviteRedirect } from '@/lib/utils/redirect'
+import { analytics } from '@/lib/analytics'
+import { useFormTracking } from '@/lib/analytics/hooks'
 
 // Animation variants
 const fadeInUp = {
@@ -60,6 +62,20 @@ function LoginPageContent() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
+  // Analytics: Page load time reference
+  const pageLoadTime = useRef(Date.now())
+
+  // Analytics: Form tracking
+  const { handleFieldFocus, handleFieldBlur, markSubmitted } = useFormTracking({ formId: 'login' })
+
+  // Analytics: Track page view on mount
+  useEffect(() => {
+    analytics.trackPageView('login', {
+      entryPoint: document.referrer || 'direct',
+      isFromInvite,
+    })
+  }, [isFromInvite])
+
   const handleCaptchaVerify = useCallback((token: string) => {
     setCaptchaToken(token)
   }, [])
@@ -73,6 +89,9 @@ function LoginPageContent() {
     setError(null)
     setAttemptsRemaining(null)
     setLoading(true)
+
+    // Mark form as submitted for analytics
+    markSubmitted()
 
     try {
       const result = await secureLogin(
@@ -93,6 +112,14 @@ function LoginPageContent() {
           return
         }
 
+        // Track failed login attempt
+        analytics.track('form_field_error', {
+          formId: 'login',
+          fieldName: 'form',
+          errorType: result.lockedUntilMs ? 'account_locked' : 'auth_failure',
+          errorMessage: result.error || 'Invalid credentials',
+        })
+
         setError(result.error || 'Invalid email or password')
         if (result.attemptsRemaining !== undefined) {
           setAttemptsRemaining(result.attemptsRemaining)
@@ -107,6 +134,12 @@ function LoginPageContent() {
         }
         return
       }
+
+      // Track successful login
+      analytics.track('signup_submit', {
+        success: true,
+        timeToSubmit: Date.now() - pageLoadTime.current,
+      })
 
       router.push(redirectUrl)
       router.refresh()
@@ -274,6 +307,8 @@ function LoginPageContent() {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    onFocus={() => handleFieldFocus('email')}
+                    onBlur={() => handleFieldBlur('email')}
                     required
                     disabled={loading || isLocked}
                     className="h-12 transition-all duration-200 focus:scale-[1.01]"
@@ -297,6 +332,8 @@ function LoginPageContent() {
                       placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => handleFieldFocus('password')}
+                      onBlur={() => handleFieldBlur('password')}
                       required
                       disabled={loading || isLocked}
                       className="h-12 pr-12 transition-all duration-200 focus:scale-[1.01]"

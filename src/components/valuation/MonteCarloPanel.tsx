@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { formatCurrency, type DCFInputs } from '@/lib/valuation/dcf-calculator'
 import { runMonteCarloSimulation, type MonteCarloResults } from '@/lib/valuation/monte-carlo'
+import { analytics } from '@/lib/analytics'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts'
 
 interface MonteCarloPanelProps {
@@ -42,6 +43,14 @@ export function MonteCarloPanel({ baseInputs, finalEBITDA }: MonteCarloPanelProp
         (p) => setProgress(p)
       )
       setResults(simulationResults)
+
+      // Track Monte Carlo simulation run
+      analytics.track('monte_carlo_run', {
+        iterations,
+        resultMedian: simulationResults.median,
+        resultP10: simulationResults.p10,
+        resultP90: simulationResults.p90,
+      })
     } catch (error) {
       console.error('Monte Carlo simulation failed:', error)
     } finally {

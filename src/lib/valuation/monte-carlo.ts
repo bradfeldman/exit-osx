@@ -21,6 +21,8 @@ export interface MonteCarloResults {
   percentile75: number
   percentile5: number
   percentile95: number
+  p10: number
+  p90: number
   min: number
   max: number
   histogram: HistogramBin[]
@@ -217,6 +219,8 @@ export async function runMonteCarloSimulation(
     percentile75: percentile(sortedSimulations, 75),
     percentile5: percentile(sortedSimulations, 5),
     percentile95: percentile(sortedSimulations, 95),
+    p10: percentile(sortedSimulations, 10),
+    p90: percentile(sortedSimulations, 90),
     min: sortedSimulations[0] || 0,
     max: sortedSimulations[sortedSimulations.length - 1] || 0,
     histogram,
@@ -262,6 +266,8 @@ export function runMonteCarloSync(inputs: MonteCarloInputs): MonteCarloResults {
     percentile75: percentile(sortedSimulations, 75),
     percentile5: percentile(sortedSimulations, 5),
     percentile95: percentile(sortedSimulations, 95),
+    p10: percentile(sortedSimulations, 10),
+    p90: percentile(sortedSimulations, 90),
     min: sortedSimulations[0] || 0,
     max: sortedSimulations[sortedSimulations.length - 1] || 0,
     histogram,

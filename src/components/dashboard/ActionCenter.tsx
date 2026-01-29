@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useUserRole } from '@/contexts/UserRoleContext'
+import { analytics } from '@/lib/analytics'
+import { useCtaTracking } from '@/lib/analytics/hooks'
 
 interface Task {
   id: string
@@ -132,10 +134,16 @@ function AssessmentSection({
   currentAssessment,
   recentlyCompleted,
   onRequestNew,
+  onCtaClick,
+  continueCtaRef,
+  updateCtaRef,
 }: {
   currentAssessment: CurrentAssessment | null
   recentlyCompleted: boolean
   onRequestNew: () => void
+  onCtaClick: (ctaId: string, ctaVariant: string, clickHandler: () => void) => void
+  continueCtaRef: React.RefObject<HTMLDivElement | null>
+  updateCtaRef: React.RefObject<HTMLDivElement | null>
 }) {
   // If there's an in-progress assessment
   if (currentAssessment && currentAssessment.status === 'IN_PROGRESS') {
@@ -143,6 +151,7 @@ function AssessmentSection({
 
     return (
       <motion.div
+        ref={continueCtaRef}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -208,7 +217,11 @@ function AssessmentSection({
             ~{10 - currentAssessment.questionsAnswered} min remaining
           </span>
           <Link href="/dashboard/assessment/risk">
-            <Button size="sm" className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all">
+            <Button
+              size="sm"
+              className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all"
+              onClick={() => onCtaClick('continue_assessment_cta', 'in_progress', () => {})}
+            >
               Continue Assessment
             </Button>
           </Link>
@@ -284,6 +297,7 @@ function AssessmentSection({
   // No in-progress assessment - show "Update BRI Score" CTA
   return (
     <motion.div
+      ref={updateCtaRef}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -350,7 +364,11 @@ function AssessmentSection({
         className="relative mt-4 flex items-center justify-end"
       >
         <Link href="/dashboard/assessment/risk">
-          <Button size="sm" className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 transition-all">
+          <Button
+            size="sm"
+            className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 transition-all"
+            onClick={() => onCtaClick('update_assessment_cta', 'update_bri', () => {})}
+          >
             Start Assessment
             <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
@@ -578,9 +596,10 @@ function YourTasksSection({ tasks, loading }: { tasks: MyTask[]; loading: boolea
 
 interface ActionCenterProps {
   hasAssessment?: boolean
+  onAssessmentCtaVisible?: () => void
 }
 
-export function ActionCenter({ hasAssessment = true }: ActionCenterProps) {
+export function ActionCenter({ hasAssessment = true, onAssessmentCtaVisible }: ActionCenterProps) {
   const { selectedCompanyId } = useCompany()
   const { user } = useUserRole()
   const [data, setData] = useState<ActionCenterData | null>(null)
@@ -681,6 +700,54 @@ export function ActionCenter({ hasAssessment = true }: ActionCenterProps) {
     window.location.href = '/dashboard/assessments/new'
   }
 
+  // Track dashboard load time for time-to-assessment calculation
+  const dashboardLoadTime = useRef(Date.now())
+
+  // Track initial assessment CTA visibility and interactions
+  const { ref: initialCtaRef, handleClick: handleInitialCtaClick } = useCtaTracking({
+    ctaId: 'initial_assessment_cta',
+    ctaText: 'Start Initial Assessment',
+    ctaType: 'primary',
+    destination: '/dashboard/assessment/risk',
+    onVisible: onAssessmentCtaVisible,
+  })
+
+  // Track update assessment CTA
+  const { ref: updateCtaRef } = useCtaTracking({
+    ctaId: 'update_assessment_cta',
+    ctaText: 'Start Assessment',
+    ctaType: 'primary',
+    destination: '/dashboard/assessment/risk',
+    onVisible: onAssessmentCtaVisible,
+  })
+
+  // Track continue assessment CTA
+  const { ref: continueCtaRef } = useCtaTracking({
+    ctaId: 'continue_assessment_cta',
+    ctaText: 'Continue Assessment',
+    ctaType: 'primary',
+    destination: '/dashboard/assessment/risk',
+    onVisible: onAssessmentCtaVisible,
+  })
+
+  // Handler for assessment CTA clicks with additional tracking
+  const handleAssessmentCtaClick = (ctaId: string, ctaVariant: string, clickHandler: () => void) => {
+    const timeOnDashboard = Date.now() - dashboardLoadTime.current
+
+    analytics.track('assessment_cta_click', {
+      ctaId,
+      ctaVariant,
+      timeOnDashboard,
+    })
+
+    // Also track time to assessment start
+    analytics.track('time_to_assessment_start', {
+      duration: timeOnDashboard,
+    })
+
+    clickHandler()
+  }
+
   // Show initial assessment CTA if needed
   if (!hasAssessment) {
     return (
@@ -691,49 +758,82 @@ export function ActionCenter({ hasAssessment = true }: ActionCenterProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h4 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wider">Your Assessment</h4>
+          <h4 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wider">Next Step</h4>
           <motion.div
+            ref={initialCtaRef}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
-            className="bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-xl p-5 border border-amber-200 relative overflow-hidden"
+            className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-amber-500/10 rounded-xl p-6 border-2 border-primary/30 overflow-hidden group"
           >
             {/* Animated background pulse */}
             <motion.div
-              className="absolute inset-0 bg-amber-200/20"
-              animate={{ opacity: [0, 0.5, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
+              className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/10 to-primary/0"
+              animate={{ x: ['-100%', '100%'] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
             />
 
-            <div className="relative flex items-start gap-4">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0"
-              >
-                <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-              </motion.div>
-              <div>
-                <h3 className="font-semibold text-foreground font-display">Initial Assessment Required</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Complete the Initial BRI Assessment to unlock your personalized action playbooks.
-                </p>
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="mt-3"
-                >
-                  <Link href="/dashboard/assessment/risk">
-                    <Button size="sm" className="shadow-lg shadow-primary/25 hover:shadow-xl hover:-translate-y-0.5 transition-all">
-                      Start Initial Assessment
-                    </Button>
-                  </Link>
-                </motion.div>
+            {/* Decorative corner accent */}
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -translate-y-12 translate-x-12" />
+
+            <div className="relative">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/20 rounded-full mb-4">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                </span>
+                <span className="text-xs font-semibold text-primary">10 minutes</span>
               </div>
+
+              {/* Headline */}
+              <h3 className="text-xl font-bold text-foreground font-display mb-2">
+                What Would Buyers Actually Pay?
+              </h3>
+
+              {/* Description */}
+              <p className="text-sm text-muted-foreground mb-1">
+                The number above is an industry average. Your business is unique.
+              </p>
+              <p className="text-sm text-foreground font-medium mb-5">
+                Answer 10 questions to see how acquirers would evaluate <span className="text-primary">your</span> business — and what you could do to increase the price.
+              </p>
+
+              {/* Value proposition bullets */}
+              <div className="flex flex-wrap gap-x-4 gap-y-2 mb-6 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Your personalized BRI score
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Risk-adjusted valuation
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Action plan to increase value
+                </span>
+              </div>
+
+              {/* CTA Button */}
+              <Link href="/dashboard/assessment/risk">
+                <Button
+                  size="lg"
+                  className="w-full sm:w-auto h-12 px-8 text-base font-semibold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 transition-all"
+                  onClick={() => handleAssessmentCtaClick('initial_assessment_cta', 'what_would_buyers_pay', handleInitialCtaClick)}
+                >
+                  Discover Your True Value
+                  <svg className="ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </Button>
+              </Link>
             </div>
           </motion.div>
         </motion.div>
@@ -744,26 +844,24 @@ export function ActionCenter({ hasAssessment = true }: ActionCenterProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <h4 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wider">Your Tasks</h4>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="bg-muted/50 rounded-lg p-6 text-center relative overflow-hidden"
-          >
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.4, type: "spring" }}
-            >
-              <svg className="w-10 h-10 text-muted-foreground/50 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </motion.div>
-            <p className="text-sm text-muted-foreground">
-              Tasks unlock after completing your initial assessment
-            </p>
-          </motion.div>
+          <h4 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Your Action Plan</h4>
+          <div className="bg-muted/30 rounded-xl p-6 border border-dashed border-border">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
+                <svg className="w-6 h-6 text-muted-foreground/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Your personalized roadmap appears here
+                </p>
+                <p className="text-xs text-muted-foreground/70 mt-0.5">
+                  Complete your assessment to unlock specific actions that increase value
+                </p>
+              </div>
+            </div>
+          </div>
         </motion.div>
       </div>
     )
@@ -833,6 +931,9 @@ export function ActionCenter({ hasAssessment = true }: ActionCenterProps) {
           currentAssessment={data?.currentAssessment || null}
           recentlyCompleted={data?.recentlyCompleted || false}
           onRequestNew={handleRequestNewAssessment}
+          onCtaClick={handleAssessmentCtaClick}
+          continueCtaRef={continueCtaRef}
+          updateCtaRef={updateCtaRef}
         />
       </motion.div>
 

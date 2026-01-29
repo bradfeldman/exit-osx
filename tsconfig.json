@@ -41,6 +41,7 @@
     "scripts",
     "docs",
     "prisma",
+    "prisma.config.ts",
     "e2e"
   ]
 }

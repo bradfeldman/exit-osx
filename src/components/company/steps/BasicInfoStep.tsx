@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { IndustryListInline } from '../IndustryListInline'
 import type { CompanyFormData } from '../CompanySetupWizard'
+import { analytics } from '@/lib/analytics'
 
 interface BasicInfoStepProps {
   formData: CompanyFormData
@@ -77,6 +78,13 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
 
       const data = await response.json()
       const match = data.match
+
+      // Track industry search usage
+      analytics.track('industry_search', {
+        searchQuery: businessDescription.trim().substring(0, 100), // Truncate for privacy
+        resultsCount: 1,
+        resultClicked: match.subSectorLabel,
+      })
 
       // Store the recommendation (don't auto-apply)
       setIndustryMatchResult({

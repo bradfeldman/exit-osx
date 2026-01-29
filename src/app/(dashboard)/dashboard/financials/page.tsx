@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useState, useEffect, useCallback, Suspense, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -10,6 +10,7 @@ import { FinancialsSpreadsheet } from '@/components/financials/FinancialsSpreads
 import { Plus, Pencil, Loader2, CheckCircle, Link2, AlertCircle, X } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { fetchWithRetry } from '@/lib/fetch-with-retry'
+import { analytics } from '@/lib/analytics'
 
 interface FinancialPeriod {
   id: string
@@ -297,6 +298,9 @@ function FinancialsContent() {
   const [qbError, setQbError] = useState<string | null>(null)
   const [qbSuccess, setQbSuccess] = useState<string | null>(null)
 
+  // Analytics tracking
+  const hasTrackedPageView = useRef(false)
+
   // Load periods
   const loadPeriods = useCallback(async () => {
     if (!selectedCompanyId) return
@@ -342,6 +346,25 @@ function FinancialsContent() {
     load()
   }, [loadPeriods, loadIntegrationData])
 
+  // Track page view after loading
+  useEffect(() => {
+    if (isLoading || hasTrackedPageView.current) return
+
+    hasTrackedPageView.current = true
+    analytics.track('financials_page_viewed', {
+      entryPoint: 'navigation',
+      subscriptionTier: 'unknown', // Could be enriched from context
+      hasExistingData: periods.length > 0,
+    })
+
+    // Track empty state if no data
+    if (periods.length === 0) {
+      analytics.track('financials_empty_state_seen', {
+        section: 'main',
+      })
+    }
+  }, [isLoading, periods.length])
+
   // Check for OAuth callback params
   // This effect intentionally sets state based on URL params for OAuth callback handling
   useEffect(() => {
@@ -364,6 +387,11 @@ function FinancialsContent() {
   // Handle QuickBooks connect
   const handleQuickBooksConnect = async () => {
     if (!selectedCompanyId) return
+
+    // Track QuickBooks connect click
+    analytics.track('quickbooks_connect_clicked', {
+      currentDataState: periods.length === 0 ? 'empty' : 'partial',
+    })
 
     setIsConnecting(true)
     setQbError(null)
@@ -390,9 +418,18 @@ function FinancialsContent() {
   }
 
   // Handle period created
-  const handlePeriodCreated = () => {
+  const handlePeriodCreated = (periodData?: { fiscalYear: number; periodType: string }) => {
     setShowAddDialog(false)
     loadPeriods()
+
+    // Track period creation
+    if (periodData) {
+      analytics.track('financial_period_created', {
+        fiscalYear: periodData.fiscalYear,
+        periodType: periodData.periodType.toLowerCase() as 'annual' | 'quarterly' | 'monthly' | 't12',
+        dataSource: 'manual',
+      })
+    }
   }
 
   if (!selectedCompanyId) {

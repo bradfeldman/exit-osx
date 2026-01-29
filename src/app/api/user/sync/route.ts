@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { getGravatarUrl } from '@/lib/utils/gravatar'
 import { PlanTier, SubscriptionStatus, BillingCycle } from '@prisma/client'
+import { serverAnalytics } from '@/lib/analytics/server'
 
 // Map plan ID to Prisma PlanTier enum
 function getPlanTier(planId: string): PlanTier {
@@ -193,6 +194,12 @@ export async function POST() {
         }
       })
 
+      // Track user created (non-blocking)
+      serverAnalytics.auth.userCreated({
+        userId: newUser.id,
+        authId: newUser.authId,
+      }).catch(() => {})
+
       return NextResponse.json({
         user: newUser,
         isNew: true,
@@ -245,6 +252,12 @@ export async function POST() {
         }
       }
     })
+
+    // Track user created (non-blocking)
+    serverAnalytics.auth.userCreated({
+      userId: newUser.id,
+      authId: newUser.authId,
+    }).catch(() => {})
 
     return NextResponse.json({
       user: newUser,

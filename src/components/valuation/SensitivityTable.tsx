@@ -1,8 +1,9 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useEffect, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { generateSensitivityTable, formatCurrency, formatPercent, type DCFInputs } from '@/lib/valuation/dcf-calculator'
+import { analytics } from '@/lib/analytics'
 
 interface SensitivityTableProps {
   baseInputs: DCFInputs
@@ -52,6 +53,19 @@ export function SensitivityTable({
   const centerValue = sensitivityData.find(
     (d) => d.wacc === centerWACC && d.growth === centerTerminalGrowth
   )?.enterpriseValue || 0
+
+  // Track when sensitivity table is viewed with valid data
+  const hasTrackedView = useRef(false)
+  useEffect(() => {
+    if (hasTrackedView.current || centerValue <= 0) return
+    hasTrackedView.current = true
+
+    analytics.track('sensitivity_table_viewed', {
+      centerWacc: centerWACC,
+      centerGrowth: centerTerminalGrowth,
+      baseValue: centerValue,
+    })
+  }, [centerValue, centerWACC, centerTerminalGrowth])
 
   // Calculate color for cell based on value relative to center
   const getCellColor = (value: number) => {

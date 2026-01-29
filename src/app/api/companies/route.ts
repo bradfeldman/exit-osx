@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { getUserAccessibleCompanies } from '@/lib/access'
 import { createClient } from '@/lib/supabase/server'
+import { serverAnalytics } from '@/lib/analytics/server'
 
 export async function GET() {
   const result = await checkPermission('COMPANY_VIEW')
@@ -199,6 +200,13 @@ export async function POST(request: Request) {
         status: 'ACTIVE',
       }
     })
+
+    // Track company created (non-blocking)
+    serverAnalytics.company.created({
+      userId: dbUser.id,
+      companyId: company.id,
+      industry: icbSubSector,
+    }).catch(() => {})
 
     return NextResponse.json({
       company: {

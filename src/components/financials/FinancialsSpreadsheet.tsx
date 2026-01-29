@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import { fetchWithRetry } from '@/lib/fetch-with-retry'
+import { analytics } from '@/lib/analytics'
 import { Plus, Save, Check, Loader2, TrendingUp, TrendingDown, Minus, AlertCircle, Trash2, PlusCircle, MinusCircle, ChevronDown, ChevronRight } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import {
@@ -833,6 +834,28 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
         }
       }
 
+      // Track financial data saved
+      const savedPeriods = new Set(Array.from(pendingChangesRef.current.values()).map(c => c.periodId))
+      const savedFields = Array.from(pendingChangesRef.current.values())
+
+      for (const periodId of savedPeriods) {
+        const periodFields = savedFields.filter(f => f.periodId === periodId)
+        const periodData = data[periodId] || {}
+        const hasPnlFields = periodFields.some(f =>
+          ['grossRevenue', 'cogs', 'operatingExpenses', 'depreciation', 'amortization', 'interestExpense', 'taxExpense'].includes(f.field)
+        )
+        const hasBsFields = periodFields.some(f =>
+          ['cash', 'accountsReceivable', 'inventory', 'totalAssets', 'totalLiabilities'].includes(f.field)
+        )
+
+        analytics.track('financial_data_saved', {
+          statementType: hasPnlFields ? 'pnl' : hasBsFields ? 'balance_sheet' : 'pnl',
+          periodId,
+          fieldsUpdated: periodFields.length,
+          hasEbitda: !!periodData.ebitda && periodData.ebitda > 0,
+        })
+      }
+
       pendingChangesRef.current.clear()
       setSaveStatus('saved')
 
@@ -951,6 +974,14 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
       setAdjustments(prev => [...prev, ...newAdjustments])
       setShowAddAdjustment(false)
       setNewAdjustment({ description: '', type: 'ADD_BACK' })
+
+      // Track EBITDA adjustment made
+      analytics.track('ebitda_adjustment_made', {
+        adjustmentType: type === 'ADD_BACK' ? 'add_back' : 'deduction',
+        adjustmentCategory: description,
+        amount: 0, // Initial amount is 0
+        isNew: true,
+      })
     } catch (err) {
       console.error('Error adding adjustment:', err)
     }
@@ -965,11 +996,23 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
         body: JSON.stringify({ amount }),
       })
       if (response.ok) {
+        const adjustment = adjustments.find(a => a.id === adjustmentId)
+
         setAdjustments(prev => prev.map(a =>
           a.id === adjustmentId ? { ...a, amount } : a
         ))
+
+        // Track EBITDA adjustment update
+        if (adjustment) {
+          analytics.track('ebitda_adjustment_made', {
+            adjustmentType: adjustment.type === 'ADD_BACK' ? 'add_back' : 'deduction',
+            adjustmentCategory: adjustment.description,
+            amount,
+            isNew: false,
+          })
+        }
+
         // Recalculate totals for the affected period
-        const adjustment = adjustments.find(a => a.id === adjustmentId)
         if (adjustment) {
           const periodAdjs = adjustments
             .map(a => a.id === adjustmentId ? { ...a, amount } : a)

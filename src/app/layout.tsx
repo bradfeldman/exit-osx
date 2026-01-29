@@ -3,6 +3,8 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { CookieConsent } from "@/components/gdpr/CookieConsent";
 import { Toaster } from "@/components/ui/toaster";
+import { GoogleTagManager, GoogleTagManagerBody } from "@/components/analytics";
+import { AnalyticsProvider } from "@/lib/analytics/provider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -57,12 +59,20 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
+
   return (
     <html lang="en">
+      <head>
+        {gtmId && <GoogleTagManager gtmId={gtmId} />}
+      </head>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
-        {children}
-        <CookieConsent />
-        <Toaster />
+        {gtmId && <GoogleTagManagerBody gtmId={gtmId} />}
+        <AnalyticsProvider>
+          {children}
+          <CookieConsent />
+          <Toaster />
+        </AnalyticsProvider>
       </body>
     </html>
   );

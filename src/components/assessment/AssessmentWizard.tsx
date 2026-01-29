@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import { Button } from '@/components/ui/button'
 import { BRI_CATEGORY_LABELS, BRI_CATEGORY_ORDER } from '@/lib/constants/bri-categories'
+import { analytics } from '@/lib/analytics'
 import {
   Check,
   ChevronLeft,
@@ -77,6 +78,13 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
   const [showSkippedWarning, setShowSkippedWarning] = useState(false)
   const [recentlySelected, setRecentlySelected] = useState<string | null>(null)
 
+  // Analytics tracking state
+  const assessmentStartTime = useRef<number>(0)
+  const questionStartTime = useRef<number>(0)
+  const questionsViewed = useRef<Set<number>>(new Set())
+  const hasTrackedStart = useRef(false)
+  const lastQuestionIndex = useRef<number>(-1)
+
   // Group questions by category
   const questionsByCategory = questions.reduce((acc, q) => {
     if (!acc[q.briCategory]) acc[q.briCategory] = []
@@ -124,6 +132,17 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
           return
         }
 
+        // Track assessment started
+        assessmentStartTime.current = Date.now()
+        hasTrackedStart.current = true
+
+        analytics.track('assessment_started', {
+          assessmentId: assessment.id,
+          assessmentType: 'initial',
+          totalQuestions: fetchedQuestions.length,
+          isFirstAssessment: true,
+        })
+
         const responsesRes = await fetch(`/api/assessments/${assessment.id}/responses`)
         if (responsesRes.ok) {
           const { responses: existingResponses } = await responsesRes.json()
@@ -158,6 +177,77 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId])
 
+  // Track question display when question index changes
+  useEffect(() => {
+    if (!assessmentId || orderedQuestions.length === 0) return
+    if (currentQuestionIndex === lastQuestionIndex.current) return
+
+    const question = orderedQuestions[currentQuestionIndex]
+    if (!question) return
+
+    // Track time spent on previous question
+    if (lastQuestionIndex.current >= 0 && questionStartTime.current > 0) {
+      const timeOnQuestion = Date.now() - questionStartTime.current
+      analytics.track('question_time', {
+        assessmentId,
+        questionNumber: lastQuestionIndex.current + 1,
+        timeSpent: timeOnQuestion,
+      })
+    }
+
+    // Track question displayed
+    const isFirstView = !questionsViewed.current.has(currentQuestionIndex)
+    questionsViewed.current.add(currentQuestionIndex)
+
+    analytics.track('question_displayed', {
+      assessmentId,
+      questionId: question.id,
+      questionNumber: currentQuestionIndex + 1,
+      totalQuestions: orderedQuestions.length,
+      category: question.briCategory,
+      isFirstView,
+    })
+
+    // Reset question timer
+    questionStartTime.current = Date.now()
+    lastQuestionIndex.current = currentQuestionIndex
+  }, [currentQuestionIndex, assessmentId, orderedQuestions])
+
+  // Track assessment abandonment on unmount
+  useEffect(() => {
+    const trackAbandonment = () => {
+      if (!assessmentId || !hasTrackedStart.current) return
+      if (showCelebration) return // Don't track abandonment if completed
+
+      const totalTime = assessmentStartTime.current > 0
+        ? Date.now() - assessmentStartTime.current
+        : 0
+
+      analytics.track('assessment_abandoned', {
+        assessmentId,
+        assessmentType: 'initial',
+        questionsAnswered: responses.size,
+        totalQuestions: orderedQuestions.length,
+        lastQuestionViewed: currentQuestionIndex + 1,
+        totalTime,
+        completionRate: orderedQuestions.length > 0
+          ? (responses.size / orderedQuestions.length) * 100
+          : 0,
+      })
+    }
+
+    const handleBeforeUnload = () => {
+      trackAbandonment()
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      trackAbandonment()
+    }
+  }, [assessmentId, currentQuestionIndex, responses.size, orderedQuestions.length, showCelebration])
+
   // Advance to next question
   const advanceToNext = useCallback(() => {
     if (currentQuestionIndex < orderedQuestions.length - 1) {
@@ -168,6 +258,12 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
   // Handle answer selection - SMOOTH FLOW: click = save = advance
   const handleAnswer = async (optionId: string, confidenceLevel: string = 'CONFIDENT') => {
     if (!assessmentId || !currentQuestion || saving) return
+
+    const selectedOption = currentQuestion.options.find(o => o.id === optionId)
+    const previousResponse = responses.get(currentQuestion.id)
+    const timeToAnswer = questionStartTime.current > 0
+      ? Date.now() - questionStartTime.current
+      : 0
 
     setRecentlySelected(optionId)
     setSaving(true)
@@ -192,6 +288,18 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
         confidenceLevel,
       })
       setResponses(newResponses)
+
+      // Track question response
+      analytics.track('question_response', {
+        assessmentId,
+        questionId: currentQuestion.id,
+        questionNumber: currentQuestionIndex + 1,
+        category: currentQuestion.briCategory,
+        responseValue: selectedOption ? parseFloat(selectedOption.scoreValue) : 0,
+        timeToAnswer,
+        wasEdited: !!previousResponse && previousResponse.selectedOptionId !== optionId,
+        confidenceLevel,
+      })
 
       // Auto-advance after a brief moment
       setTimeout(() => {
@@ -220,6 +328,10 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
   const markAsNotApplicable = async () => {
     if (!assessmentId || !currentQuestion || saving) return
 
+    const timeToAnswer = questionStartTime.current > 0
+      ? Date.now() - questionStartTime.current
+      : 0
+
     setSaving(true)
 
     try {
@@ -242,6 +354,16 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
         confidenceLevel: 'NOT_APPLICABLE',
       })
       setResponses(newResponses)
+
+      // Track question skipped/not applicable
+      analytics.track('question_skipped', {
+        assessmentId,
+        questionId: currentQuestion.id,
+        questionNumber: currentQuestionIndex + 1,
+        category: currentQuestion.briCategory,
+        skipReason: 'not_applicable',
+        timeToSkip: timeToAnswer,
+      })
 
       // Auto-advance after a brief moment
       setTimeout(() => {
@@ -272,6 +394,10 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
     if (!assessmentId) return
     setShowSkippedWarning(false)
 
+    const totalAssessmentTime = assessmentStartTime.current > 0
+      ? Date.now() - assessmentStartTime.current
+      : 0
+
     setSaving(true)
     setError(null)
 
@@ -285,6 +411,32 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
       if (!res.ok) {
         throw new Error(data.error || 'Failed to complete assessment')
       }
+
+      // Track assessment completed
+      analytics.track('assessment_completed', {
+        assessmentId,
+        assessmentType: 'initial',
+        totalTime: totalAssessmentTime,
+        questionsAnswered: responses.size,
+        totalQuestions: orderedQuestions.length,
+        completionRate: orderedQuestions.length > 0
+          ? (responses.size / orderedQuestions.length) * 100
+          : 100,
+      })
+
+      // Track results displayed
+      analytics.track('results_displayed', {
+        assessmentId,
+        briScoreBefore: null,
+        briScoreAfter: data.summary?.briScore ?? null,
+        briImpact: null,
+        tasksCreated: 0,
+        keyFindingsCount: 0,
+        estimatedValue: data.summary?.currentValue ?? null,
+      })
+
+      // Reset tracking state
+      hasTrackedStart.current = false
 
       setCelebrationData({
         briScore: data.summary?.briScore || 0,
@@ -477,7 +629,18 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
           return (
             <button
               key={cat}
-              onClick={() => firstQuestionIndex >= 0 && setCurrentQuestionIndex(firstQuestionIndex)}
+              onClick={() => {
+                if (firstQuestionIndex >= 0) {
+                  analytics.track('progress_indicator_interaction', {
+                    assessmentId: assessmentId || '',
+                    fromQuestion: currentQuestionIndex + 1,
+                    toQuestion: firstQuestionIndex + 1,
+                    direction: firstQuestionIndex > currentQuestionIndex ? 'forward' : 'backward',
+                    navigationType: 'category',
+                  })
+                  setCurrentQuestionIndex(firstQuestionIndex)
+                }
+              }}
               className={cn(
                 "relative rounded-xl p-3 text-center transition-all duration-200",
                 isComplete
@@ -700,7 +863,17 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
       <div className="flex justify-between">
         <Button
           variant="ghost"
-          onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
+          onClick={() => {
+            const newIndex = Math.max(0, currentQuestionIndex - 1)
+            analytics.track('progress_indicator_interaction', {
+              assessmentId: assessmentId || '',
+              fromQuestion: currentQuestionIndex + 1,
+              toQuestion: newIndex + 1,
+              direction: 'backward',
+              navigationType: 'button',
+            })
+            setCurrentQuestionIndex(newIndex)
+          }}
           disabled={currentQuestionIndex === 0}
           className="gap-2"
         >
@@ -728,7 +901,17 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
           </Button>
         ) : (
           <Button
-            onClick={() => setCurrentQuestionIndex(Math.min(orderedQuestions.length - 1, currentQuestionIndex + 1))}
+            onClick={() => {
+              const newIndex = Math.min(orderedQuestions.length - 1, currentQuestionIndex + 1)
+              analytics.track('progress_indicator_interaction', {
+                assessmentId: assessmentId || '',
+                fromQuestion: currentQuestionIndex + 1,
+                toQuestion: newIndex + 1,
+                direction: 'forward',
+                navigationType: 'button',
+              })
+              setCurrentQuestionIndex(newIndex)
+            }}
             disabled={currentQuestionIndex >= orderedQuestions.length - 1}
             className="gap-2 bg-primary hover:bg-primary/90"
           >

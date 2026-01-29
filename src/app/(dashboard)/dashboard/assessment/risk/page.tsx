@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCompany } from '@/contexts/CompanyContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { AssessmentWizard } from '@/components/assessment/AssessmentWizard'
+import { analytics } from '@/lib/analytics'
 import {
   Check,
   ChevronRight,
@@ -144,6 +145,13 @@ export default function RiskAssessmentPage() {
   const [error, setError] = useState<string | null>(null)
   const [completionResult, setCompletionResult] = useState<CompletionResult | null>(null)
 
+  // Analytics tracking state
+  const assessmentStartTime = useRef<number>(0)
+  const questionStartTime = useRef<number>(0)
+  const questionsViewed = useRef<Set<number>>(new Set())
+  const hasTrackedAssessmentStart = useRef(false)
+  const lastQuestionIndex = useRef<number>(-1)
+
   // Animate through progress steps when creating
   useEffect(() => {
     if (!creating) {
@@ -194,6 +202,89 @@ export default function RiskAssessmentPage() {
       setCompleting(false)
     }
   }, [resultsReady, completingStep])
+
+  // Track question display when question index changes
+  useEffect(() => {
+    if (!currentAssessment || currentAssessment.status !== 'IN_PROGRESS') return
+    if (currentQuestionIndex === lastQuestionIndex.current) return
+
+    const question = currentAssessment.questions[currentQuestionIndex]
+    if (!question) return
+
+    // Track time spent on previous question
+    if (lastQuestionIndex.current >= 0 && questionStartTime.current > 0) {
+      const timeOnQuestion = Date.now() - questionStartTime.current
+      analytics.track('question_time', {
+        assessmentId: currentAssessment.id,
+        questionNumber: lastQuestionIndex.current + 1,
+        timeSpent: timeOnQuestion,
+      })
+    }
+
+    // Track question displayed
+    const isFirstView = !questionsViewed.current.has(currentQuestionIndex)
+    questionsViewed.current.add(currentQuestionIndex)
+
+    analytics.track('question_displayed', {
+      assessmentId: currentAssessment.id,
+      questionId: question.questionId,
+      questionNumber: currentQuestionIndex + 1,
+      totalQuestions: currentAssessment.questions.length,
+      category: question.question.briCategory,
+      isFirstView,
+    })
+
+    // Reset question timer
+    questionStartTime.current = Date.now()
+    lastQuestionIndex.current = currentQuestionIndex
+  }, [currentQuestionIndex, currentAssessment])
+
+  // Track assessment abandonment on unmount
+  useEffect(() => {
+    const trackAbandonment = () => {
+      if (!currentAssessment || currentAssessment.status !== 'IN_PROGRESS') return
+      if (!hasTrackedAssessmentStart.current) return
+
+      const totalTime = assessmentStartTime.current > 0
+        ? Date.now() - assessmentStartTime.current
+        : 0
+
+      analytics.track('assessment_abandoned', {
+        assessmentId: currentAssessment.id,
+        assessmentType: 'project',
+        questionsAnswered: Object.keys(responses).length,
+        totalQuestions: currentAssessment.questions.length,
+        lastQuestionViewed: currentQuestionIndex + 1,
+        totalTime,
+        completionRate: (Object.keys(responses).length / currentAssessment.questions.length) * 100,
+      })
+    }
+
+    const handleBeforeUnload = () => {
+      trackAbandonment()
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      trackAbandonment()
+    }
+  }, [currentAssessment, currentQuestionIndex, responses])
+
+  // Track progress indicator clicks
+  const handleProgressClick = (index: number) => {
+    if (!currentAssessment) return
+
+    analytics.track('progress_indicator_interaction', {
+      assessmentId: currentAssessment.id,
+      fromQuestion: currentQuestionIndex + 1,
+      toQuestion: index + 1,
+      direction: index > currentQuestionIndex ? 'forward' : 'backward',
+    })
+
+    setCurrentQuestionIndex(index)
+  }
 
   const checkInitialAssessment = useCallback(async () => {
     if (!selectedCompanyId) return false
@@ -303,6 +394,18 @@ export default function RiskAssessmentPage() {
         setResponses({})
         setCurrentQuestionIndex(0)
         setAssessmentReady(true)
+
+        // Track assessment started
+        assessmentStartTime.current = Date.now()
+        questionsViewed.current = new Set()
+        hasTrackedAssessmentStart.current = true
+
+        analytics.track('assessment_started', {
+          assessmentId: data.assessment.id,
+          assessmentType: 'project',
+          totalQuestions: data.assessment.questions?.length || 10,
+          isFirstAssessment: !currentAssessment,
+        })
       } else {
         setError(data.error || 'Failed to create assessment')
         setCreating(false)
@@ -345,10 +448,26 @@ export default function RiskAssessmentPage() {
 
     const question = currentAssessment.questions[currentQuestionIndex]
     const questionId = question.questionId
+    const selectedOption = question.question.options.find(o => o.id === optionId)
+    const previousAnswer = responses[questionId]
+    const timeToAnswer = questionStartTime.current > 0
+      ? Date.now() - questionStartTime.current
+      : 0
 
     setResponses(prev => ({ ...prev, [questionId]: optionId }))
 
     await saveResponse(questionId, optionId)
+
+    // Track question response
+    analytics.track('question_response', {
+      assessmentId: currentAssessment.id,
+      questionId,
+      questionNumber: currentQuestionIndex + 1,
+      category: question.question.briCategory,
+      responseValue: selectedOption?.scoreValue ?? 0,
+      timeToAnswer,
+      wasEdited: !!previousAnswer && previousAnswer !== optionId,
+    })
 
     setTimeout(() => {
       if (currentQuestionIndex < currentAssessment.questions.length - 1) {
@@ -364,6 +483,10 @@ export default function RiskAssessmentPage() {
     setCompletingStep(0)
     setResultsReady(false)
     setError(null)
+
+    const totalAssessmentTime = assessmentStartTime.current > 0
+      ? Date.now() - assessmentStartTime.current
+      : 0
 
     try {
       const response = await fetch(`/api/project-assessments/${currentAssessment.id}/complete`, {
@@ -382,6 +505,29 @@ export default function RiskAssessmentPage() {
         })
         setCurrentAssessment(prev => prev ? { ...prev, status: 'COMPLETED' } : null)
         setResultsReady(true)
+
+        // Track assessment completed
+        analytics.track('assessment_completed', {
+          assessmentId: currentAssessment.id,
+          assessmentType: 'project',
+          totalTime: totalAssessmentTime,
+          questionsAnswered: Object.keys(responses).length,
+          totalQuestions: currentAssessment.questions.length,
+          completionRate: (Object.keys(responses).length / currentAssessment.questions.length) * 100,
+        })
+
+        // Track results displayed
+        analytics.track('results_displayed', {
+          assessmentId: currentAssessment.id,
+          briScoreBefore: data.briRefinement?.before ?? null,
+          briScoreAfter: data.briRefinement?.after ?? null,
+          briImpact: data.briRefinement?.impact ?? null,
+          tasksCreated: data.actionPlan?.tasksCreated ?? 0,
+          keyFindingsCount: data.scoreImpactSummary?.keyFindings?.length ?? 0,
+        })
+
+        // Reset tracking state
+        hasTrackedAssessmentStart.current = false
       } else {
         setError(data.error || 'Failed to complete assessment')
         setCompleting(false)
@@ -790,10 +936,30 @@ export default function RiskAssessmentPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.4 }}
             >
-              <Button onClick={createNewAssessment} disabled={creating} className="flex-1 h-12 bg-primary hover:bg-primary/90">
+              <Button
+                onClick={() => {
+                  analytics.track('action_plan_cta_clicked', {
+                    ctaType: 'start_another',
+                    source: 'assessment_results',
+                  })
+                  createNewAssessment()
+                }}
+                disabled={creating}
+                className="flex-1 h-12 bg-primary hover:bg-primary/90"
+              >
                 {creating ? 'Creating...' : 'Start Another Assessment'}
               </Button>
-              <Button variant="outline" onClick={() => window.location.href = '/dashboard'} className="flex-1 h-12">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  analytics.track('action_plan_cta_clicked', {
+                    ctaType: 'return_dashboard',
+                    source: 'assessment_results',
+                  })
+                  window.location.href = '/dashboard'
+                }}
+                className="flex-1 h-12"
+              >
                 Return to Dashboard
               </Button>
             </motion.div>
@@ -862,7 +1028,14 @@ export default function RiskAssessmentPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <Button
-                onClick={createNewAssessment}
+                onClick={() => {
+                  analytics.track('assessment_cta_click', {
+                    ctaId: 'start_10min_assessment',
+                    ctaVariant: 'start_new',
+                    timeOnDashboard: 0,
+                  })
+                  createNewAssessment()
+                }}
                 disabled={creating}
                 size="lg"
                 className="w-full h-14 text-lg bg-primary hover:bg-primary/90 gap-3"
@@ -962,7 +1135,7 @@ export default function RiskAssessmentPage() {
           return (
             <motion.button
               key={q.id}
-              onClick={() => setCurrentQuestionIndex(index)}
+              onClick={() => handleProgressClick(index)}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               className={`w-10 h-10 rounded-xl text-sm font-semibold transition-all duration-200 ${
