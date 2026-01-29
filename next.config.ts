@@ -9,16 +9,16 @@ const withBundleAnalyzer = bundleAnalyzer({
 // Adjust these directives based on your actual resource origins
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://vercel.live;
+  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://vercel.live https://www.googletagmanager.com https://www.google-analytics.com;
   style-src 'self' 'unsafe-inline';
-  img-src 'self' blob: data: https://*.supabase.co https://www.gravatar.com;
+  img-src 'self' blob: data: https://*.supabase.co https://www.gravatar.com https://www.googletagmanager.com https://www.google-analytics.com;
   font-src 'self';
   object-src 'none';
   base-uri 'self';
   form-action 'self';
   frame-ancestors 'none';
   frame-src 'self' https://js.stripe.com https://vercel.live;
-  connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.intuit.com https://vercel.live;
+  connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.intuit.com https://vercel.live https://www.googletagmanager.com https://www.google-analytics.com https://*.analytics.google.com https://*.g.doubleclick.net;
   upgrade-insecure-requests;
 `.replace(/\s{2,}/g, ' ').trim();
 
