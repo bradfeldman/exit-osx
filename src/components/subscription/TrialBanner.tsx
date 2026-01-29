@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useCallback, useSyncExternalStore } from 'react'
+import { useState, useCallback, useSyncExternalStore, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { X, Clock, ArrowRight, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSubscription } from '@/contexts/SubscriptionContext'
+import { analytics } from '@/lib/analytics'
 import { cn } from '@/lib/utils'
 
 const DISMISS_KEY = 'trial-banner-dismissed'
@@ -34,18 +35,9 @@ export function TrialBanner() {
   const { isTrialing, trialDaysRemaining, status, isLoading } = useSubscription()
   const wasDismissed = useDismissedState()
   const [manuallyDismissed, setManuallyDismissed] = useState(false)
+  const hasTrackedDisplay = useRef(false)
 
   const isDismissed = wasDismissed || manuallyDismissed
-
-  const handleDismiss = () => {
-    localStorage.setItem(DISMISS_KEY, Date.now().toString())
-    setManuallyDismissed(true)
-  }
-
-  // Don't show if loading, dismissed, not trialing, or more than 7 days remaining
-  if (isLoading || isDismissed) {
-    return null
-  }
 
   // Show for trial users with 7 or fewer days remaining
   const shouldShowTrialBanner = isTrialing && trialDaysRemaining !== null && trialDaysRemaining <= 7
@@ -53,11 +45,42 @@ export function TrialBanner() {
   // Show for expired trials
   const showExpiredBanner = status === 'EXPIRED'
 
-  if (!shouldShowTrialBanner && !showExpiredBanner) {
-    return null
+  const isUrgent = trialDaysRemaining !== null && trialDaysRemaining <= 3
+  const shouldShow = !isLoading && !isDismissed && (shouldShowTrialBanner || showExpiredBanner)
+
+  // Track banner display
+  useEffect(() => {
+    if (!shouldShow || hasTrackedDisplay.current) return
+    hasTrackedDisplay.current = true
+
+    analytics.track('trial_banner_displayed', {
+      daysRemaining: trialDaysRemaining,
+      isExpired: showExpiredBanner,
+      isUrgent,
+    })
+  }, [shouldShow, trialDaysRemaining, showExpiredBanner, isUrgent])
+
+  const handleDismiss = () => {
+    analytics.track('trial_banner_dismissed', {
+      daysRemaining: trialDaysRemaining,
+    })
+
+    localStorage.setItem(DISMISS_KEY, Date.now().toString())
+    setManuallyDismissed(true)
   }
 
-  const isUrgent = trialDaysRemaining !== null && trialDaysRemaining <= 3
+  const handleUpgradeClick = () => {
+    analytics.track('trial_banner_clicked', {
+      daysRemaining: trialDaysRemaining,
+      isExpired: showExpiredBanner,
+      destination: '/dashboard/settings/billing',
+    })
+  }
+
+  // Don't show if loading, dismissed, not trialing, or more than 7 days remaining
+  if (!shouldShow) {
+    return null
+  }
 
   return (
     <div
@@ -130,6 +153,7 @@ export function TrialBanner() {
             asChild
             size="sm"
             variant={showExpiredBanner || isUrgent ? 'default' : 'outline'}
+            onClick={handleUpgradeClick}
           >
             <Link href="/dashboard/settings/billing">
               Upgrade Now

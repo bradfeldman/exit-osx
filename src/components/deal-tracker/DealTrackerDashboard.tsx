@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useCompany } from '@/contexts/CompanyContext'
+import { analytics } from '@/lib/analytics'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -93,6 +94,18 @@ export function DealTrackerDashboard() {
   const [filterStage, setFilterStage] = useState<string>('all')
   const [filterType, setFilterType] = useState<string>('all')
   const [filterTier, setFilterTier] = useState<string>('all')
+
+  const hasTrackedFirstVisit = useRef(false)
+
+  // Track first visit to deal tracker
+  useEffect(() => {
+    if (hasTrackedFirstVisit.current || isLoading || !selectedCompanyId) return
+    hasTrackedFirstVisit.current = true
+
+    analytics.track('deal_tracker_first_visit', {
+      entrySource: 'dashboard_nav',
+    })
+  }, [isLoading, selectedCompanyId])
 
   const fetchBuyers = useCallback(async () => {
     if (!selectedCompanyId) return
@@ -294,19 +307,24 @@ export function DealTrackerDashboard() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center h-64 text-center"
+              className="border-2 border-dashed border-border rounded-2xl"
             >
-              <div className="w-16 h-16 rounded-full bg-muted mb-4 flex items-center justify-center">
-                <UsersIcon className="h-8 w-8 text-muted-foreground" />
+              <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 mb-6 flex items-center justify-center">
+                  <UsersIcon className="h-10 w-10 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">
+                  Track Your Buyer Conversations
+                </h3>
+                <p className="text-muted-foreground max-w-md mb-6">
+                  Add potential buyers to track meetings, share documents securely,
+                  and monitor engagement through the deal process.
+                </p>
+                <Button onClick={() => setShowAddBuyer(true)} size="lg" className="shadow-lg shadow-primary/20">
+                  <PlusIcon className="h-5 w-5 mr-2" />
+                  Add First Buyer
+                </Button>
               </div>
-              <h3 className="text-lg font-semibold text-foreground">No buyers yet</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Start tracking prospective buyers for your deal process.
-              </p>
-              <Button onClick={() => setShowAddBuyer(true)} className="shadow-lg shadow-primary/20">
-                <PlusIcon className="h-4 w-4 mr-2" />
-                Add Your First Buyer
-              </Button>
             </motion.div>
           ) : view === 'pipeline' ? (
             <BuyerPipeline

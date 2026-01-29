@@ -1,6 +1,8 @@
 'use client'
 
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { type RetirementProjections, formatCurrency } from '@/lib/retirement/retirement-calculator'
 
 interface ResultsPanelProps {
@@ -132,70 +134,97 @@ export function ResultsPanel({ projections, isOnTrack }: ResultsPanelProps) {
 
         {/* Action Items */}
         {!isOnTrack && (
-          <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-sm font-medium text-amber-900 mb-2">To Close the Gap:</p>
-            <ul className="text-xs text-amber-700 space-y-1">
-              <li>
-                Save an additional{' '}
-                <span className="font-medium">
-                  {formatCurrency(projections.additionalNeededToday)}
-                </span>{' '}
-                today
-              </li>
-              <li>
-                Work{' '}
-                <span className="font-medium">
-                  {Math.ceil(
-                    Math.abs(projections.surplusOrShortfall) / projections.annualWithdrawalNeeded
-                  )}
-                </span>{' '}
-                additional years
-              </li>
-              <li>
-                Reduce spending by{' '}
-                <span className="font-medium">
-                  {formatCurrency(
-                    Math.abs(projections.surplusOrShortfall) / projections.yearsInRetirement
-                  )}
-                </span>
-                /yr
-              </li>
-            </ul>
-          </div>
+          <>
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-sm font-medium text-amber-900 mb-2">To Close the Gap:</p>
+              <ul className="text-xs text-amber-700 space-y-1">
+                <li>
+                  Save an additional{' '}
+                  <span className="font-medium">
+                    {formatCurrency(projections.additionalNeededToday)}
+                  </span>{' '}
+                  today
+                </li>
+                <li>
+                  Work{' '}
+                  <span className="font-medium">
+                    {Math.ceil(
+                      Math.abs(projections.surplusOrShortfall) / projections.annualWithdrawalNeeded
+                    )}
+                  </span>{' '}
+                  additional years
+                </li>
+                <li>
+                  Reduce spending by{' '}
+                  <span className="font-medium">
+                    {formatCurrency(
+                      Math.abs(projections.surplusOrShortfall) / projections.yearsInRetirement
+                    )}
+                  </span>
+                  /yr
+                </li>
+              </ul>
+            </div>
+
+            {/* Journey Connection - Link to Playbook */}
+            <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+              <p className="text-sm text-gray-700 mb-3">
+                <span className="font-medium">Another option:</span> Increase your business value
+                before selling. Your action plan identifies specific improvements that could
+                boost your exit proceeds.
+              </p>
+              <Link href="/dashboard/playbook">
+                <Button variant="outline" size="sm" className="text-primary border-primary/30 hover:bg-primary/5">
+                  View Actions to Increase Exit Value →
+                </Button>
+              </Link>
+            </div>
+          </>
         )}
 
         {isOnTrack && (
-          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-sm font-medium text-green-900 mb-2">Options with Your Surplus:</p>
-            <ul className="text-xs text-green-700 space-y-1">
-              {(() => {
-                // Calculate years earlier, capped at years to retirement
-                const yearsEarlier = projections.annualWithdrawalNeeded > 0
-                  ? Math.floor(projections.surplusOrShortfall / projections.annualWithdrawalNeeded)
-                  : projections.yearsToRetirement
-                const cappedYears = Math.min(yearsEarlier, projections.yearsToRetirement)
+          <>
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-sm font-medium text-green-900 mb-2">Options with Your Surplus:</p>
+              <ul className="text-xs text-green-700 space-y-1">
+                {(() => {
+                  // Calculate years earlier, capped at years to retirement
+                  const yearsEarlier = projections.annualWithdrawalNeeded > 0
+                    ? Math.floor(projections.surplusOrShortfall / projections.annualWithdrawalNeeded)
+                    : projections.yearsToRetirement
+                  const cappedYears = Math.min(yearsEarlier, projections.yearsToRetirement)
 
-                if (cappedYears >= projections.yearsToRetirement) {
-                  return <li><span className="font-medium">You could retire now</span> based on your current assets</li>
-                } else if (cappedYears > 0) {
-                  return (
-                    <li>
-                      Retire <span className="font-medium">{cappedYears}</span> years earlier
-                    </li>
-                  )
-                }
-                return null
-              })()}
-              <li>
-                Increase spending by{' '}
-                <span className="font-medium">
-                  {formatCurrency(projections.surplusOrShortfall / projections.yearsInRetirement)}
-                </span>
-                /yr
-              </li>
-              <li>Leave a larger estate for heirs</li>
-            </ul>
-          </div>
+                  if (cappedYears >= projections.yearsToRetirement) {
+                    return <li><span className="font-medium">You could retire now</span> based on your current assets</li>
+                  } else if (cappedYears > 0) {
+                    return (
+                      <li>
+                        Retire <span className="font-medium">{cappedYears}</span> years earlier
+                      </li>
+                    )
+                  }
+                  return null
+                })()}
+                <li>
+                  Increase spending by{' '}
+                  <span className="font-medium">
+                    {formatCurrency(projections.surplusOrShortfall / projections.yearsInRetirement)}
+                  </span>
+                  /yr
+                </li>
+                <li>Leave a larger estate for heirs</li>
+              </ul>
+            </div>
+
+            {/* Success Context */}
+            <div className="p-3 bg-emerald-50/50 border border-emerald-200/50 rounded-lg">
+              <p className="text-sm text-emerald-800">
+                <span className="font-medium">You&apos;re on track.</span> Your projected exit proceeds
+                plus existing assets should support your retirement goals. Consider the action plan
+                to build additional cushion.
+              </p>
+            </div>
+          </>
         )}
       </CardContent>
     </Card>

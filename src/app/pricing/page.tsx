@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { PRICING_PLANS } from '@/lib/pricing'
+import { analytics } from '@/lib/analytics'
 import { cn } from '@/lib/utils'
 import { AnimatedSection, AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
 
@@ -67,6 +68,56 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual')
+  const hasTrackedPageView = useRef(false)
+
+  // Track pricing page view
+  useEffect(() => {
+    if (hasTrackedPageView.current) return
+    hasTrackedPageView.current = true
+
+    // Determine entry source from referrer
+    const referrer = typeof document !== 'undefined' ? document.referrer : ''
+    let entrySource = 'direct'
+    if (referrer.includes('/dashboard')) {
+      entrySource = 'dashboard'
+    } else if (referrer.includes('/signup') || referrer.includes('/login')) {
+      entrySource = 'auth_flow'
+    } else if (referrer.includes('exitosx.com') || referrer.includes('localhost')) {
+      entrySource = 'internal'
+    } else if (referrer) {
+      entrySource = 'external'
+    }
+
+    analytics.track('pricing_page_viewed', {
+      entrySource,
+      isLoggedIn: false, // Public pricing page, users typically not logged in
+    })
+  }, [])
+
+  // Track billing cycle toggle
+  const handleBillingToggle = () => {
+    const newCycle = billingCycle === 'monthly' ? 'annual' : 'monthly'
+
+    analytics.track('pricing_billing_toggle', {
+      selectedCycle: newCycle,
+      previousCycle: billingCycle,
+    })
+
+    setBillingCycle(newCycle)
+  }
+
+  // Track plan CTA click
+  const handlePlanCtaClick = (plan: typeof PRICING_PLANS[0]) => {
+    const price = billingCycle === 'annual' ? plan.annualPrice : plan.monthlyPrice
+
+    analytics.track('pricing_plan_cta_clicked', {
+      planId: plan.id,
+      planName: plan.name,
+      price,
+      billingCycle,
+      ctaText: plan.cta,
+    })
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -155,7 +206,7 @@ export default function PricingPage() {
               Monthly
             </span>
             <button
-              onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'annual' : 'monthly')}
+              onClick={handleBillingToggle}
               className={cn(
                 'relative inline-flex h-7 w-12 items-center rounded-full transition-colors',
                 billingCycle === 'annual' ? 'bg-primary' : 'bg-muted'
@@ -229,7 +280,11 @@ export default function PricingPage() {
                       )}
                     </div>
 
-                    <Link href={`/signup?plan=${plan.id}`} className="mb-8">
+                    <Link
+                      href={`/signup?plan=${plan.id}`}
+                      className="mb-8"
+                      onClick={() => handlePlanCtaClick(plan)}
+                    >
                       <Button
                         className={cn(
                           'w-full h-12 text-base btn-hover',

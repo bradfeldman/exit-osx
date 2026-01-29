@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import {
   Dialog,
@@ -12,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { getPlan, getRequiredPlan } from '@/lib/pricing'
+import { analytics } from '@/lib/analytics'
 import { Check, Sparkles, Lock, ArrowRight, Clock } from 'lucide-react'
 
 interface UpgradeModalProps {
@@ -28,6 +30,48 @@ export function UpgradeModal({
   featureDisplayName,
 }: UpgradeModalProps) {
   const { planTier, isTrialing, trialDaysRemaining, status } = useSubscription()
+
+  // Analytics tracking
+  const modalOpenTime = useRef<number>(0)
+  const hasTrackedDisplay = useRef(false)
+
+  // Track modal display
+  useEffect(() => {
+    if (open && !hasTrackedDisplay.current) {
+      hasTrackedDisplay.current = true
+      modalOpenTime.current = Date.now()
+
+      analytics.track('upgrade_modal_displayed', {
+        triggerFeature: feature || 'general',
+        currentTier: planTier,
+      })
+    }
+
+    // Reset tracking when modal closes
+    if (!open) {
+      hasTrackedDisplay.current = false
+    }
+  }, [open, feature, planTier])
+
+  // Track modal dismiss (Maybe Later button)
+  const handleDismiss = () => {
+    const timeDisplayed = Date.now() - modalOpenTime.current
+
+    analytics.track('upgrade_modal_dismissed', {
+      triggerFeature: feature || 'general',
+      timeDisplayed,
+    })
+
+    onOpenChange(false)
+  }
+
+  // Track upgrade CTA click
+  const handleUpgradeClick = () => {
+    analytics.track('upgrade_modal_clicked', {
+      selectedPlan: targetPlan,
+      triggerFeature: feature || 'general',
+    })
+  }
 
   const requiredPlan = feature ? getRequiredPlan(feature) : 'growth'
   const requiredPlanData = getPlan(requiredPlan)
@@ -175,7 +219,7 @@ export function UpgradeModal({
         </div>
 
         <DialogFooter className="flex-col gap-2 sm:flex-col">
-          <Button asChild className="w-full">
+          <Button asChild className="w-full" onClick={handleUpgradeClick}>
             <Link href={`/dashboard/settings/billing?upgrade=${targetPlan}`}>
               {getCtaText()}
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -184,7 +228,7 @@ export function UpgradeModal({
           <p className="text-xs text-center text-muted-foreground">
             {getUpgradeDescription()}
           </p>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} className="w-full">
+          <Button variant="ghost" onClick={handleDismiss} className="w-full">
             Maybe Later
           </Button>
         </DialogFooter>

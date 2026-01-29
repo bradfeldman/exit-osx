@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useCompany } from '@/contexts/CompanyContext'
@@ -79,6 +79,8 @@ interface DashboardData {
     exitWindow: string | null
   }
   hasAssessment: boolean
+  lastAssessmentDate?: string | null
+  tasksCompletedSinceAssessment?: number
 }
 
 interface DashboardContentProps {
@@ -106,10 +108,64 @@ export function DashboardContent({ userName }: DashboardContentProps) {
   // Track scroll depth
   const { maxDepth: scrollDepthReached } = useScrollDepthTracking('dashboard')
 
+  // State for re-assessment nudge dismissal
+  const [reassessmentNudgeDismissed, setReassessmentNudgeDismissed] = useState(false)
+
+  // State for returning user welcome banner
+  const [isReturningUser, setIsReturningUser] = useState(false)
+  const [lastVisitData, setLastVisitData] = useState<{
+    lastBriScore: number | null
+    lastValuation: number | null
+    daysSinceVisit: number
+  } | null>(null)
+
   // Track assessment CTA visibility (passed to ActionCenter)
   const handleAssessmentCtaVisible = useCallback(() => {
     assessmentCtaWasVisible.current = true
   }, [])
+
+  // Check if re-assessment should be suggested
+  const shouldSuggestReassessment = useCallback(() => {
+    if (!dashboardData || !dashboardData.hasAssessment || reassessmentNudgeDismissed) return false
+
+    const { lastAssessmentDate, tasksCompletedSinceAssessment } = dashboardData
+
+    // If we don't have the date, check localStorage fallback
+    if (!lastAssessmentDate) {
+      const storageKey = `reassessment_nudge_${selectedCompanyId}`
+      const nudgeData = localStorage.getItem(storageKey)
+      if (nudgeData) {
+        const data = JSON.parse(nudgeData)
+        // If already dismissed this session, don't show
+        if (data.dismissed) return false
+      }
+      return false
+    }
+
+    const daysSinceAssessment = Math.floor(
+      (Date.now() - new Date(lastAssessmentDate).getTime()) / (1000 * 60 * 60 * 24)
+    )
+
+    // Trigger if: 5+ tasks completed since assessment OR 30+ days passed
+    const tasksCompleted = tasksCompletedSinceAssessment || 0
+    return tasksCompleted >= 5 || daysSinceAssessment >= 30
+  }, [dashboardData, reassessmentNudgeDismissed, selectedCompanyId])
+
+  // Handle dismissing the re-assessment nudge
+  const handleDismissReassessmentNudge = useCallback(() => {
+    setReassessmentNudgeDismissed(true)
+    analytics.track('reassessment_nudge_dismissed', {})
+  }, [])
+
+  // Handle clicking the re-assessment CTA
+  const handleReassessmentClick = useCallback(() => {
+    analytics.track('reassessment_nudge_clicked', {
+      trigger: dashboardData?.tasksCompletedSinceAssessment && dashboardData.tasksCompletedSinceAssessment >= 5
+        ? 'task_count'
+        : 'time_based',
+    })
+    router.push('/dashboard/assessment/risk')
+  }, [dashboardData, router])
 
   // Track feature clicks for exit analysis (available for child components)
   const _trackFeatureClick = useCallback((feature: string) => {
@@ -253,6 +309,16 @@ export function DashboardContent({ userName }: DashboardContentProps) {
         // Only track return visits if at least 1 hour has passed
         const hoursSinceLastVisit = (now.getTime() - lastVisitDate.getTime()) / (1000 * 60 * 60)
         if (hoursSinceLastVisit >= 1) {
+          // Set returning user state for welcome banner (show if at least 1 day since last visit)
+          if (daysSinceLastVisit >= 1) {
+            setIsReturningUser(true)
+            setLastVisitData({
+              lastBriScore: lastVisit.briScore ?? null,
+              lastValuation: lastVisit.valuation ?? null,
+              daysSinceVisit: daysSinceLastVisit,
+            })
+          }
+
           analytics.track('dashboard_return_view', {
             daysSinceLastVisit,
             visitsThisMonth,
@@ -568,6 +634,113 @@ export function DashboardContent({ userName }: DashboardContentProps) {
   // Show the full dashboard (with assessment prompt if needed)
   return (
     <div className="max-w-5xl mx-auto">
+
+      {/* Re-assessment Nudge */}
+      <AnimatePresence>
+        {shouldSuggestReassessment() && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-6 p-4 bg-gradient-to-r from-emerald-500/10 to-primary/10 rounded-xl border border-emerald-500/20"
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-emerald-500/20">
+                  <svg className="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">
+                    Time to See Your Progress
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    You&apos;ve made changes since your last assessment. Retake it to see your updated BRI score.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDismissReassessmentNudge}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Dismiss
+                </Button>
+                <Button
+                  onClick={handleReassessmentClick}
+                  size="sm"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  Update My Score
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Returning User Welcome Banner */}
+      <AnimatePresence>
+        {isReturningUser && lastVisitData && dashboardData?.tier1 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-6 p-4 bg-gradient-to-r from-primary/5 to-amber-500/5 rounded-xl border border-primary/20"
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <svg className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">
+                    Welcome back!{' '}
+                    {lastVisitData.daysSinceVisit === 1
+                      ? "Here's what changed since yesterday:"
+                      : `Here's what changed in the last ${lastVisitData.daysSinceVisit} days:`}
+                  </p>
+                  <div className="flex items-center gap-4 mt-1 text-sm">
+                    {lastVisitData.lastBriScore !== null &&
+                      dashboardData.tier1.briScore !== null &&
+                      lastVisitData.lastBriScore !== dashboardData.tier1.briScore && (
+                        <span className={dashboardData.tier1.briScore > lastVisitData.lastBriScore ? 'text-emerald-600' : 'text-amber-600'}>
+                          BRI: {lastVisitData.lastBriScore} → {dashboardData.tier1.briScore}
+                          {dashboardData.tier1.briScore > lastVisitData.lastBriScore ? ' ↑' : ' ↓'}
+                        </span>
+                      )}
+                    {lastVisitData.lastValuation !== null &&
+                      lastVisitData.lastValuation !== dashboardData.tier1.currentValue && (
+                        <span className={dashboardData.tier1.currentValue > lastVisitData.lastValuation ? 'text-emerald-600' : 'text-amber-600'}>
+                          Valuation: ${(lastVisitData.lastValuation / 1000000).toFixed(1)}M → ${(dashboardData.tier1.currentValue / 1000000).toFixed(1)}M
+                        </span>
+                      )}
+                    {((lastVisitData.lastBriScore === null || lastVisitData.lastBriScore === dashboardData.tier1.briScore) &&
+                      (lastVisitData.lastValuation === null || lastVisitData.lastValuation === dashboardData.tier1.currentValue)) && (
+                        <span className="text-muted-foreground">
+                          No changes yet — complete a task to see progress
+                        </span>
+                      )}
+                  </div>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsReturningUser(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Dismiss
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Dashboard Card */}
       <motion.div

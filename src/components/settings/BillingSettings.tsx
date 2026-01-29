@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { PRICING_PLANS, getPlan, type PlanTier } from '@/lib/pricing'
+import { analytics } from '@/lib/analytics'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -26,11 +27,37 @@ export function BillingSettings() {
   const [isUpgrading, setIsUpgrading] = useState(false)
   const [upgradeSuccess, setUpgradeSuccess] = useState(false)
 
+  const hasTrackedPageView = useRef(false)
+
   const currentPlanData = getPlan(planTier)
 
+  // Track billing page view
+  useEffect(() => {
+    if (hasTrackedPageView.current || isLoading) return
+    hasTrackedPageView.current = true
+
+    analytics.track('billing_page_viewed', {
+      currentPlan: planTier,
+      isTrialing,
+      trialDaysRemaining: trialDaysRemaining ?? null,
+      requestedUpgrade,
+    })
+  }, [isLoading, planTier, isTrialing, trialDaysRemaining, requestedUpgrade])
+
   const handleUpgrade = async (targetPlan: PlanTier) => {
+    const previousPlan = planTier
+    const wasTrialingBefore = isTrialing
+
     setIsUpgrading(true)
     setSelectedPlan(targetPlan)
+
+    // Track upgrade initiated
+    analytics.track('plan_upgrade_initiated', {
+      currentPlan: planTier,
+      targetPlan,
+      isTrialing,
+      triggerSource: requestedUpgrade ? 'upgrade_modal' : 'billing_page',
+    })
 
     try {
       const response = await fetch('/api/subscription/upgrade', {
@@ -42,12 +69,37 @@ export function BillingSettings() {
       if (response.ok) {
         setUpgradeSuccess(true)
         await refetch()
+
+        // Track upgrade completed
+        analytics.track('plan_upgrade_completed', {
+          previousPlan,
+          newPlan: targetPlan,
+          wasTrialing: wasTrialingBefore,
+          isNowTrialing: previousPlan === 'foundation', // Starting a trial if coming from foundation
+        })
       } else {
         const error = await response.json()
-        alert(error.message || 'Failed to upgrade. Please try again.')
+        const errorMessage = error.message || 'Failed to upgrade. Please try again.'
+
+        // Track upgrade failed
+        analytics.track('plan_upgrade_failed', {
+          currentPlan: planTier,
+          targetPlan,
+          errorMessage,
+        })
+
+        alert(errorMessage)
       }
     } catch (error) {
       console.error('Upgrade failed:', error)
+
+      // Track upgrade failed
+      analytics.track('plan_upgrade_failed', {
+        currentPlan: planTier,
+        targetPlan,
+        errorMessage: 'Network error or unexpected failure',
+      })
+
       alert('Failed to upgrade. Please try again.')
     } finally {
       setIsUpgrading(false)

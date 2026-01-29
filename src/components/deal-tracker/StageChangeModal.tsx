@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/components/ui/toaster'
+import { analytics } from '@/lib/analytics'
 import {
   Dialog,
   DialogContent,
@@ -85,6 +86,22 @@ export function StageChangeModal({
       )
 
       if (res.ok) {
+        // Track stage advancement
+        analytics.track('buyer_stage_advanced', {
+          buyerId: buyer.id,
+          fromStage: buyer.currentStage,
+          toStage: targetStage,
+        })
+
+        // Track deal won if closing the deal
+        if (targetStage === DealStage.CLOSED) {
+          analytics.track('deal_won', {
+            buyerId: buyer.id,
+            dealValue: loiAmount ? parseFloat(loiAmount.replace(/[^0-9.]/g, '')) : undefined,
+            timeToClose: 0, // Time tracking would require createdAt from the buyer record
+          })
+        }
+
         setNotes('')
         setIoiAmount('')
         setLoiAmount('')

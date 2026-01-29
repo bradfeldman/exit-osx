@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Lock, ArrowUpRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { UpgradeModal } from './UpgradeModal'
 import { getRequiredPlan, getPlan } from '@/lib/pricing'
+import { analytics } from '@/lib/analytics'
+import { useSubscription } from '@/contexts/SubscriptionContext'
 import { cn } from '@/lib/utils'
 
 interface LockedFeatureProps {
@@ -21,15 +23,34 @@ export function LockedFeature({
   variant = 'card',
 }: LockedFeatureProps) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const { planTier } = useSubscription()
+  const hasTrackedDisplay = useRef(false)
 
   const requiredPlan = getRequiredPlan(feature)
   const planData = getPlan(requiredPlan)
+
+  // Track when locked feature is displayed
+  useEffect(() => {
+    if (hasTrackedDisplay.current) return
+    hasTrackedDisplay.current = true
+
+    analytics.track('feature_locked_displayed', {
+      featureName: feature,
+      requiredTier: requiredPlan,
+      currentTier: planTier,
+    })
+  }, [feature, requiredPlan, planTier])
+
+  // Track unlock button click
+  const handleUnlockClick = () => {
+    setShowUpgradeModal(true)
+  }
 
   if (variant === 'minimal') {
     return (
       <>
         <button
-          onClick={() => setShowUpgradeModal(true)}
+          onClick={handleUnlockClick}
           className={cn(
             'flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors',
             className
@@ -52,7 +73,7 @@ export function LockedFeature({
     return (
       <>
         <button
-          onClick={() => setShowUpgradeModal(true)}
+          onClick={handleUnlockClick}
           className={cn(
             'inline-flex items-center gap-2 rounded-md border border-dashed border-muted-foreground/30 bg-muted/30 px-3 py-1.5 text-sm text-muted-foreground hover:border-primary/50 hover:bg-primary/5 hover:text-foreground transition-colors',
             className
@@ -90,7 +111,7 @@ export function LockedFeature({
         <p className="mb-4 text-sm text-muted-foreground">
           Upgrade to {planData?.name || 'a higher plan'} to unlock this feature.
         </p>
-        <Button onClick={() => setShowUpgradeModal(true)}>
+        <Button onClick={handleUnlockClick}>
           Unlock Feature
           <ArrowUpRight className="ml-2 h-4 w-4" />
         </Button>

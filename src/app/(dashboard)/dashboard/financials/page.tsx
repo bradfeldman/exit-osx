@@ -41,20 +41,45 @@ function QuickBooksLogo({ className = "w-8 h-8" }: { className?: string }) {
   )
 }
 
+// Get conditional headline based on assessment status
+function getFinancialsHeadline(hasAssessment: boolean, hasBriScore: boolean) {
+  if (hasBriScore) {
+    return {
+      title: "Move Beyond Industry Averages",
+      description: "Your BRI shows how buyers see your business. Add your financials to see what they'd actually pay.",
+    }
+  }
+  if (hasAssessment) {
+    return {
+      title: "Your Profile is Missing Financials",
+      description: "Add 3 years of historical data to unlock your actual valuation — not just industry estimates.",
+    }
+  }
+  return {
+    title: "Unlock Your True Valuation",
+    description: "Add your financial data to see what your business is really worth.",
+  }
+}
+
 // Empty State Component
 function FinancialsEmptyState({
-  companyId,
+  companyId: _companyId,
   integrationData,
   onAddYear,
   onQuickBooksConnect,
   isConnecting,
+  hasAssessment = false,
+  hasBriScore = false,
 }: {
   companyId: string
   integrationData: IntegrationData
   onAddYear: () => void
   onQuickBooksConnect: () => void
   isConnecting: boolean
+  hasAssessment?: boolean
+  hasBriScore?: boolean
 }) {
+  const headline = getFinancialsHeadline(hasAssessment, hasBriScore)
   const currentYear = new Date().getFullYear()
   const requiredYears = [
     { year: currentYear - 3, label: `FY ${currentYear - 3}`, description: '3 years ago' },
@@ -93,7 +118,7 @@ function FinancialsEmptyState({
           transition={{ delay: 0.3 }}
           className="text-3xl md:text-4xl font-bold text-foreground font-display mb-3"
         >
-          Unlock Your True Valuation
+          {headline.title}
         </motion.h1>
 
         <motion.p
@@ -102,8 +127,20 @@ function FinancialsEmptyState({
           transition={{ delay: 0.4 }}
           className="text-lg text-muted-foreground"
         >
-          Add 3 years of historical financials plus your trailing 12 months to calculate your company&apos;s value based on actual performance.
+          {headline.description}
         </motion.p>
+
+        {/* Additional context for users with BRI score */}
+        {hasBriScore && (
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="text-sm text-muted-foreground mt-2"
+          >
+            Add 3 years of historical financials plus your trailing 12 months.
+          </motion.p>
+        )}
       </motion.div>
 
       {/* Timeline Visual */}
@@ -298,6 +335,10 @@ function FinancialsContent() {
   const [qbError, setQbError] = useState<string | null>(null)
   const [qbSuccess, setQbSuccess] = useState<string | null>(null)
 
+  // Assessment status for conditional messaging
+  const [hasAssessment, setHasAssessment] = useState(false)
+  const [hasBriScore, setHasBriScore] = useState(false)
+
   // Analytics tracking
   const hasTrackedPageView = useRef(false)
 
@@ -336,15 +377,31 @@ function FinancialsContent() {
     }
   }, [selectedCompanyId])
 
+  // Load assessment status for conditional messaging
+  const loadAssessmentStatus = useCallback(async () => {
+    if (!selectedCompanyId) return
+
+    try {
+      const response = await fetchWithRetry(`/api/companies/${selectedCompanyId}/dashboard`)
+      if (response.ok) {
+        const data = await response.json()
+        setHasAssessment(data.hasAssessment || false)
+        setHasBriScore(data.tier1?.briScore != null && data.tier1.briScore > 0)
+      }
+    } catch (err) {
+      console.error('Error loading assessment status:', err)
+    }
+  }, [selectedCompanyId])
+
   // Initial load
   useEffect(() => {
     async function load() {
       setIsLoading(true)
-      await Promise.all([loadPeriods(), loadIntegrationData()])
+      await Promise.all([loadPeriods(), loadIntegrationData(), loadAssessmentStatus()])
       setIsLoading(false)
     }
     load()
-  }, [loadPeriods, loadIntegrationData])
+  }, [loadPeriods, loadIntegrationData, loadAssessmentStatus])
 
   // Track page view after loading
   useEffect(() => {
@@ -490,6 +547,8 @@ function FinancialsContent() {
           onAddYear={() => setShowAddDialog(true)}
           onQuickBooksConnect={handleQuickBooksConnect}
           isConnecting={isConnecting}
+          hasAssessment={hasAssessment}
+          hasBriScore={hasBriScore}
         />
       ) : (
         <FinancialsSpreadsheet companyId={selectedCompanyId} />

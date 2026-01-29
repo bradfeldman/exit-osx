@@ -498,6 +498,16 @@ export interface BriChangeNoticedParams extends BaseEventParams {
   interactionType: 'hover' | 'click' | 'none'
 }
 
+// Re-assessment Nudge Events
+export interface ReassessmentNudgeDismissedParams extends BaseEventParams {
+  // companyId is inherited from BaseEventParams
+}
+
+export interface ReassessmentNudgeClickedParams extends BaseEventParams {
+  // companyId is inherited from BaseEventParams
+  trigger: 'task_count' | 'time_based'
+}
+
 // =============================================================================
 // PHASE 5: DEEPER ENGAGEMENT (FINANCIALS)
 // =============================================================================
@@ -691,6 +701,70 @@ export interface UpgradeModalDismissedParams extends BaseEventParams {
   timeDisplayed: number  // ms
 }
 
+// Trial Banner Events
+export interface TrialBannerDisplayedParams extends BaseEventParams {
+  daysRemaining: number | null
+  isExpired: boolean
+  isUrgent: boolean
+}
+
+export interface TrialBannerClickedParams extends BaseEventParams {
+  daysRemaining: number | null
+  isExpired: boolean
+  destination: string
+}
+
+export interface TrialBannerDismissedParams extends BaseEventParams {
+  daysRemaining: number | null
+}
+
+// Pricing Page Events
+export interface PricingPageViewedParams extends BaseEventParams {
+  entrySource: string
+  isLoggedIn: boolean
+}
+
+export interface PricingBillingToggleParams extends BaseEventParams {
+  selectedCycle: 'monthly' | 'annual'
+  previousCycle: 'monthly' | 'annual'
+}
+
+export interface PricingPlanCtaClickedParams extends BaseEventParams {
+  planId: string
+  planName: string
+  price: number
+  billingCycle: 'monthly' | 'annual'
+  ctaText: string
+}
+
+// Billing Settings Events
+export interface BillingPageViewedParams extends BaseEventParams {
+  currentPlan: string
+  isTrialing: boolean
+  trialDaysRemaining: number | null
+  requestedUpgrade: string | null
+}
+
+export interface PlanUpgradeInitiatedParams extends BaseEventParams {
+  currentPlan: string
+  targetPlan: string
+  isTrialing: boolean
+  triggerSource: 'billing_page' | 'upgrade_modal' | 'feature_gate' | 'trial_banner'
+}
+
+export interface PlanUpgradeCompletedParams extends BaseEventParams {
+  previousPlan: string
+  newPlan: string
+  wasTrialing: boolean
+  isNowTrialing: boolean
+}
+
+export interface PlanUpgradeFailedParams extends BaseEventParams {
+  currentPlan: string
+  targetPlan: string
+  errorMessage: string
+}
+
 export interface ErrorDisplayedParams extends BaseEventParams {
   errorType: string
   errorMessage: string
@@ -785,6 +859,8 @@ export interface AnalyticsEventMap {
   'dashboard_return_view': DashboardReturnViewParams
   'valuation_change_noticed': ValuationChangeNoticedParams
   'bri_change_noticed': BriChangeNoticedParams
+  'reassessment_nudge_dismissed': ReassessmentNudgeDismissedParams
+  'reassessment_nudge_clicked': ReassessmentNudgeClickedParams
 
   // Phase 5: Financials
   'financials_page_viewed': FinancialsPageViewedParams
@@ -826,6 +902,16 @@ export interface AnalyticsEventMap {
   'upgrade_modal_displayed': UpgradeModalDisplayedParams
   'upgrade_modal_clicked': UpgradeModalClickedParams
   'upgrade_modal_dismissed': UpgradeModalDismissedParams
+  'trial_banner_displayed': TrialBannerDisplayedParams
+  'trial_banner_clicked': TrialBannerClickedParams
+  'trial_banner_dismissed': TrialBannerDismissedParams
+  'pricing_page_viewed': PricingPageViewedParams
+  'pricing_billing_toggle': PricingBillingToggleParams
+  'pricing_plan_cta_clicked': PricingPlanCtaClickedParams
+  'billing_page_viewed': BillingPageViewedParams
+  'plan_upgrade_initiated': PlanUpgradeInitiatedParams
+  'plan_upgrade_completed': PlanUpgradeCompletedParams
+  'plan_upgrade_failed': PlanUpgradeFailedParams
   'error_displayed': ErrorDisplayedParams
   'help_accessed': HelpAccessedParams
   'support_ticket_created': SupportTicketCreatedParams

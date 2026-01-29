@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { analytics } from '@/lib/analytics'
+import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -278,6 +279,19 @@ export function PlaybookContent({ companyId, companyName, expandTaskId }: Playbo
             hasEvidence: (task.proofDocuments?.length ?? 0) > 0,
             hasCompletionNotes: !!extra?.completionNotes,
           })
+
+          // Milestone toast at 5 tasks completed
+          const newCompletedCount = (stats?.completed ?? 0) + 1
+          if (newCompletedCount === 5) {
+            toast.success('5 tasks complete!', {
+              description: 'Consider retaking your assessment to see your progress.',
+              action: {
+                label: 'Update Score',
+                onClick: () => router.push('/dashboard/assessment/risk'),
+              },
+              duration: 8000,
+            })
+          }
         } else if (newStatus === 'DEFERRED' || newStatus === 'NOT_APPLICABLE') {
           analytics.track('task_dismissed', {
             taskId: task.id,

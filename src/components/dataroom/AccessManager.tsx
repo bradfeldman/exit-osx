@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/components/ui/toaster'
+import { analytics } from '@/lib/analytics'
 import {
   Dialog,
   DialogContent,
@@ -106,6 +107,11 @@ export function AccessManager({ companyId, isOpen, onClose }: AccessManagerProps
       })
 
       if (res.ok) {
+        // Track dataroom shared
+        analytics.track('dataroom_shared', {
+          recipientType: 'buyer', // Default to buyer for external invites
+        })
+
         setShowInviteDialog(false)
         resetInviteForm()
         await fetchAccessGrants()

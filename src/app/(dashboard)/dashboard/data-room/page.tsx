@@ -5,7 +5,9 @@ import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useCompany } from '@/contexts/CompanyContext'
+import { useSubscription } from '@/contexts/SubscriptionContext'
 import { toast } from '@/components/ui/toaster'
+import { analytics } from '@/lib/analytics'
 import {
   Dialog,
   DialogContent,
@@ -158,6 +160,7 @@ function getRelativeTime(dateStr: string | null): string {
 
 export default function DataRoomPage() {
   const { selectedCompanyId, selectedCompany } = useCompany()
+  const { planTier } = useSubscription()
   const [dataRoom, setDataRoom] = useState<DataRoom | null>(null)
   const [readiness, setReadiness] = useState<ReadinessScore | null>(null)
   const [documents, setDocuments] = useState<DataRoomDocument[]>([])
@@ -190,6 +193,11 @@ export default function DataRoomPage() {
   const [dragOverDocList, setDragOverDocList] = useState(false)
   const [draggingDocId, setDraggingDocId] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+
+  // Analytics tracking refs
+  const hasTrackedFirstVisit = useRef(false)
+  const documentCountRef = useRef(0)
+  const trackedMilestones = useRef<Set<number>>(new Set())
 
   const fetchDataRoom = useCallback(async () => {
     if (!selectedCompanyId) {
@@ -296,6 +304,40 @@ export default function DataRoomPage() {
     }
   }, [selectedFolder, fetchFolderDocuments])
 
+  // Track first visit to data room
+  useEffect(() => {
+    if (hasTrackedFirstVisit.current || isLoading || !selectedCompanyId) return
+    hasTrackedFirstVisit.current = true
+
+    analytics.track('dataroom_first_visit', {
+      subscriptionTier: planTier || 'foundation',
+    })
+  }, [isLoading, selectedCompanyId, planTier])
+
+  // Track document milestones
+  useEffect(() => {
+    if (!dataRoom) return
+
+    const totalDocs = dataRoom.folders?.reduce(
+      (sum, f) => sum + f.documentCount + f.children.reduce((cs, c) => cs + c.documentCount, 0),
+      0
+    ) || 0
+
+    documentCountRef.current = totalDocs
+
+    // Check for milestones
+    const milestones = [5, 10, 25, 50] as const
+    for (const milestone of milestones) {
+      if (totalDocs >= milestone && !trackedMilestones.current.has(milestone)) {
+        trackedMilestones.current.add(milestone)
+        analytics.track('document_milestone', {
+          milestone,
+          totalDocuments: totalDocs,
+        })
+      }
+    }
+  }, [dataRoom])
+
   const toggleFolder = (folderId: string) => {
     setExpandedFolders((prev) => {
       const next = new Set(prev)
@@ -326,6 +368,13 @@ export default function DataRoomPage() {
         const error = await res.json()
         throw new Error(error.error || 'Upload failed')
       }
+
+      // Track document uploaded
+      analytics.track('document_uploaded', {
+        documentType: file.type || 'unknown',
+        fileSize: file.size,
+        category: selectedFolder?.category || 'unknown',
+      })
 
       // Refresh documents
       if (selectedFolder) {
@@ -484,10 +533,22 @@ export default function DataRoomPage() {
         const formData = new FormData()
         formData.append('file', file)
 
-        await fetch(`/api/companies/${selectedCompanyId}/dataroom/documents/${newDoc.id}/upload`, {
+        const uploadRes = await fetch(`/api/companies/${selectedCompanyId}/dataroom/documents/${newDoc.id}/upload`, {
           method: 'POST',
           body: formData,
         })
+
+        if (uploadRes.ok) {
+          // Find folder category for tracking
+          const folder = dataRoom?.folders?.find(f => f.id === folderId) ||
+                        dataRoom?.folders?.flatMap(f => f.children).find(c => c.id === folderId)
+
+          analytics.track('document_uploaded', {
+            documentType: file.type || 'unknown',
+            fileSize: file.size,
+            category: folder?.category || 'unknown',
+          })
+        }
       }
 
       // Refresh data
@@ -717,6 +778,43 @@ export default function DataRoomPage() {
           </Button>
         </div>
       </div>
+
+      {/* Data Room Readiness Indicator */}
+      {readiness && (
+        <motion.div variants={itemVariants}>
+          <Card className="border-border/50 bg-gradient-to-br from-primary/5 via-transparent to-transparent">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-display">Data Room Readiness</CardTitle>
+                <span className="text-2xl font-bold text-primary">{readiness.score}%</span>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
+                {Object.entries(readiness.byCategory).map(([category, data]) => {
+                  const isComplete = data.percentage === 100
+                  const categoryInfo = CATEGORY_INFO[category as keyof typeof CATEGORY_INFO]
+                  return (
+                    <div key={category} className="flex items-center gap-2">
+                      {isComplete ? (
+                        <CheckCircleIcon className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                      ) : (
+                        <CircleIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      )}
+                      <span className={`text-sm truncate ${isComplete ? 'text-foreground' : 'text-muted-foreground'}`}>
+                        {categoryInfo?.label || category}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Complete your data room before engaging buyers. Well-organized documentation signals professionalism and speeds up deals.
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Readiness Score */}
       {readiness && (
@@ -1515,6 +1613,14 @@ function CloseIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+    </svg>
+  )
+}
+
+function CircleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <circle cx="12" cy="12" r="9" />
     </svg>
   )
 }

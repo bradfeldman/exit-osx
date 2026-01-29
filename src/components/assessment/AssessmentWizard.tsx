@@ -66,7 +66,7 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
   PERSONAL: User,
 }
 
-export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readiness Assessment' }: AssessmentWizardProps) {
+export function AssessmentWizard({ companyId, companyName, title: _title = 'Buyer Readiness Assessment' }: AssessmentWizardProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -738,11 +738,35 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground font-display tracking-tight">{title}</h1>
-        <p className="text-lg text-muted-foreground mt-1">{companyName}</p>
-      </div>
+      {/* Assessment Header - Dynamic based on progress */}
+      <motion.div
+        className="text-center mb-2"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        {/* Progress context badge */}
+        <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full mb-4">
+          <Target className="w-4 h-4 text-primary" />
+          <span className="text-sm font-medium text-primary">
+            Discovering your buyer appeal
+          </span>
+        </div>
+
+        {/* Dynamic headline based on progress */}
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground font-display tracking-tight mb-2">
+          {currentCategory
+            ? `How&apos;s Your ${CATEGORY_LABELS[currentCategory]}?`
+            : `Let&apos;s Evaluate ${companyName}`}
+        </h1>
+
+        <p className="text-muted-foreground max-w-md mx-auto">
+          {orderedQuestions.length - responses.size > 5
+            ? "Each answer helps us understand how buyers would see your business."
+            : orderedQuestions.length - responses.size > 0
+              ? "Almost there — these final questions complete your profile."
+              : "Review your answers, then see your results."}
+        </p>
+      </motion.div>
 
       {/* Category Navigation - Simplified */}
       <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
@@ -802,10 +826,23 @@ export function AssessmentWizard({ companyId, companyName, title = 'Buyer Readin
         })}
       </div>
 
-      {/* Progress Bar - Clean and simple */}
+      {/* Progress Bar - With category encouragement */}
       <div className="bg-card rounded-xl border border-border p-4">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium">Overall Progress</span>
+          <span className="text-sm font-medium">
+            {(() => {
+              const catQuestions = questionsByCategory[currentCategory] || []
+              const catAnswered = catQuestions.filter(q => responses.has(q.id)).length
+              const catRemaining = catQuestions.length - catAnswered
+              if (catRemaining === 0 && catQuestions.length > 0) {
+                return `${CATEGORY_LABELS[currentCategory]} complete!`
+              }
+              if (catRemaining <= 2 && catRemaining > 0) {
+                return `${catRemaining} more in ${CATEGORY_LABELS[currentCategory]?.split(' ')[0]}`
+              }
+              return 'Overall Progress'
+            })()}
+          </span>
           <span className="text-sm font-bold text-primary">{progress}%</span>
         </div>
         <div className="h-2 bg-muted rounded-full overflow-hidden">

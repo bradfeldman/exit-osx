@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { toast as _toast } from '@/components/ui/toaster'
+import { analytics } from '@/lib/analytics'
 import {
   Dialog,
   DialogContent,
@@ -69,6 +70,8 @@ export function AddBuyerModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const buyerCountRef = useRef<number>(0)
 
   // Search state
   const [searchEmail, setSearchEmail] = useState('')
@@ -212,6 +215,14 @@ export function AddBuyerModal({
       })
 
       if (res.ok) {
+        const data = await res.json()
+
+        // Track buyer added
+        analytics.track('buyer_added', {
+          buyerNumber: data.buyerNumber || buyerCountRef.current + 1,
+          buyerType: buyerType,
+        })
+
         resetForm()
         onCreated()
       } else {

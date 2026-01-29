@@ -328,14 +328,21 @@ export default function RetirementCalculatorPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Header - Emotionally Connected */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Retirement Calculator</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full">
+              Personal Planning
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 font-display">
+            Can I Retire If I Sell?
+          </h1>
+          <p className="text-sm text-gray-500 mt-1 max-w-lg">
             {mode === 'easy'
-              ? 'Simple retirement planning - answer a few questions to see if you\'re on track'
-              : 'Advanced retirement planning with Monte Carlo simulation'}
+              ? 'See if your exit proceeds plus existing assets will fund your retirement lifestyle.'
+              : 'Model different scenarios to find your target exit value.'}
           </p>
         </div>
         <div className="flex items-center gap-3">
