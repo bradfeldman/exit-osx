@@ -500,7 +500,7 @@ export interface BriChangeNoticedParams extends BaseEventParams {
 
 // Re-assessment Nudge Events
 export interface ReassessmentNudgeDismissedParams extends BaseEventParams {
-  // companyId is inherited from BaseEventParams
+  dismissedAt?: string  // ISO timestamp
 }
 
 export interface ReassessmentNudgeClickedParams extends BaseEventParams {
