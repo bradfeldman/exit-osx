@@ -340,6 +340,7 @@ export function HeroMetrics({
             isHovered={hoveredCard === 'valueGap'}
             onHover={() => setHoveredCard('valueGap')}
             onLeave={() => setHoveredCard(null)}
+            href={!hasAssessment ? "/dashboard/assessment/risk" : undefined}
             className={`h-full ${isAbovePotential ? 'ring-2 ring-emerald-500/50' : isPreviewMode ? 'ring-2 ring-[#B87333]/50' : ''}`}
           >
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
@@ -367,10 +368,14 @@ export function HeroMetrics({
               </p>
             ) : (
               <>
-                <p className="text-2xl md:text-3xl font-semibold text-amber-500">
-                  $???
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <motion.p
+                  className="text-2xl md:text-3xl font-semibold text-primary"
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  ?
+                </motion.p>
+                <p className="text-xs text-primary font-medium mt-1">
                   Discover your potential
                 </p>
               </>
