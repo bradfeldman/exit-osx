@@ -12,25 +12,41 @@ export default async function AdminRootLayout({
   // These routes should bypass the admin layout authentication
   const headersList = await headers()
   const pathname = headersList.get('x-pathname') || ''
+  const referer = headersList.get('referer') || ''
+  const url = headersList.get('x-url') || ''
 
-  // Detect admin auth routes by checking the URL patterns
-  const isAuthRoute = pathname === '/admin/login' ||
-    pathname === '/admin/forgot-password' ||
-    pathname.startsWith('/admin/login') ||
-    pathname.startsWith('/admin/forgot-password')
+  // Detect admin auth routes by checking multiple sources
+  const isAuthRoute = pathname.includes('/admin/login') ||
+    pathname.includes('/admin/forgot-password') ||
+    referer.includes('/admin/login') ||
+    referer.includes('/admin/forgot-password') ||
+    url.includes('/admin/login') ||
+    url.includes('/admin/forgot-password')
 
   // For auth routes, just render the children without the admin layout
   if (isAuthRoute) {
     return <>{children}</>
   }
 
-  const user = await getAdminUser()
+  // Try to get admin user, handle errors gracefully
+  let user
+  try {
+    user = await getAdminUser()
+  } catch (error) {
+    console.error('Error getting admin user:', error)
+    redirect('/admin/login')
+  }
 
   if (!user) {
     redirect('/admin/login')
   }
 
-  const impersonation = await getImpersonationContext()
+  let impersonation = null
+  try {
+    impersonation = await getImpersonationContext()
+  } catch (error) {
+    console.error('Error getting impersonation context:', error)
+  }
 
   return (
     <AdminLayout

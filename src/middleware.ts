@@ -112,9 +112,10 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Add pathname header for server components to detect route
+  // Add pathname and URL headers for server components to detect route
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-pathname', pathname)
+  requestHeaders.set('x-url', request.url)
 
   let supabaseResponse = NextResponse.next({
     request: {

@@ -18,25 +18,30 @@ import {
 import Link from 'next/link'
 
 async function getStats() {
-  const [
-    userCount,
-    orgCount,
-    openTicketCount,
-    recentActivityCount,
-  ] = await Promise.all([
-    prisma.user.count(),
-    prisma.organization.count(),
-    prisma.supportTicket.count({
-      where: { status: { in: ['open', 'in_progress', 'waiting'] } },
-    }),
-    prisma.auditLog.count({
-      where: {
-        createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-      },
-    }),
-  ])
+  try {
+    const [
+      userCount,
+      orgCount,
+      openTicketCount,
+      recentActivityCount,
+    ] = await Promise.all([
+      prisma.user.count(),
+      prisma.organization.count(),
+      prisma.supportTicket.count({
+        where: { status: { in: ['open', 'in_progress', 'waiting'] } },
+      }),
+      prisma.auditLog.count({
+        where: {
+          createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+        },
+      }),
+    ])
 
-  return { userCount, orgCount, openTicketCount, recentActivityCount }
+    return { userCount, orgCount, openTicketCount, recentActivityCount }
+  } catch (error) {
+    console.error('Error fetching admin stats:', error)
+    return { userCount: 0, orgCount: 0, openTicketCount: 0, recentActivityCount: 0 }
+  }
 }
 
 const modules = [
