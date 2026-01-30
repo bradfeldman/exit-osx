@@ -21,6 +21,8 @@ import {
   Headset,
   SlidersHorizontal,
   FlaskConical,
+  MonitorCheck,
+  Server,
 } from 'lucide-react'
 
 interface NavItem {
@@ -81,6 +83,13 @@ const navSections: NavSection[] = [
       { label: 'Task Viewer', href: '/admin/tools/task-viewer', icon: ListTodo },
     ],
   },
+  {
+    label: 'System',
+    icon: Server,
+    items: [
+      { label: 'Site Monitoring', href: '/admin/monitoring', icon: MonitorCheck },
+    ],
+  },
 ]
 
 export function AdminNav() {
@@ -90,6 +99,7 @@ export function AdminNav() {
     'Variable Management': true,
     'User Management': true,
     'R&D': true,
+    'System': true,
   })
 
   const toggleSection = (label: string) => {

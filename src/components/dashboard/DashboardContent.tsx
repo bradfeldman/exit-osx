@@ -81,6 +81,9 @@ interface DashboardData {
   hasAssessment: boolean
   lastAssessmentDate?: string | null
   tasksCompletedSinceAssessment?: number
+  criticalTasksTotal?: number
+  criticalTasksCompleted?: number
+  significantTasksCompleted?: number
 }
 
 interface DashboardContentProps {
@@ -124,11 +127,17 @@ export function DashboardContent({ userName }: DashboardContentProps) {
     assessmentCtaWasVisible.current = true
   }, [])
 
-  // Check if re-assessment should be suggested
+  // Check if re-assessment should be suggested (sophisticated triggers)
   const shouldSuggestReassessment = useCallback(() => {
     if (!dashboardData || !dashboardData.hasAssessment || reassessmentNudgeDismissed) return false
 
-    const { lastAssessmentDate, tasksCompletedSinceAssessment } = dashboardData
+    const {
+      lastAssessmentDate,
+      tasksCompletedSinceAssessment,
+      criticalTasksTotal,
+      criticalTasksCompleted,
+      significantTasksCompleted,
+    } = dashboardData
 
     // If we don't have the date, check localStorage fallback
     if (!lastAssessmentDate) {
@@ -136,7 +145,6 @@ export function DashboardContent({ userName }: DashboardContentProps) {
       const nudgeData = localStorage.getItem(storageKey)
       if (nudgeData) {
         const data = JSON.parse(nudgeData)
-        // If already dismissed this session, don't show
         if (data.dismissed) return false
       }
       return false
@@ -145,10 +153,42 @@ export function DashboardContent({ userName }: DashboardContentProps) {
     const daysSinceAssessment = Math.floor(
       (Date.now() - new Date(lastAssessmentDate).getTime()) / (1000 * 60 * 60 * 24)
     )
-
-    // Trigger if: 5+ tasks completed since assessment OR 30+ days passed
     const tasksCompleted = tasksCompletedSinceAssessment || 0
-    return tasksCompleted >= 5 || daysSinceAssessment >= 30
+
+    // Trigger 1: 5+ tasks completed since last assessment
+    if (tasksCompleted >= 5) return true
+
+    // Trigger 2: 30+ days since last assessment
+    if (daysSinceAssessment >= 30) return true
+
+    // Trigger 3: All critical tasks completed (if there were any)
+    if (criticalTasksTotal && criticalTasksTotal > 0 && criticalTasksCompleted === criticalTasksTotal) {
+      return true
+    }
+
+    // Trigger 4: 3+ significant tasks completed (high-impact improvements)
+    if (significantTasksCompleted && significantTasksCompleted >= 3) {
+      return true
+    }
+
+    // Trigger 5: Weekly nudge after 7 days if at least 1 task completed
+    if (daysSinceAssessment >= 7 && tasksCompleted >= 1) {
+      // Only show once per week - check if we've already shown this week
+      const weeklyNudgeKey = `reassessment_weekly_${selectedCompanyId}`
+      const lastWeeklyNudge = localStorage.getItem(weeklyNudgeKey)
+      if (lastWeeklyNudge) {
+        const lastNudgeDate = new Date(lastWeeklyNudge)
+        const daysSinceNudge = Math.floor(
+          (Date.now() - lastNudgeDate.getTime()) / (1000 * 60 * 60 * 24)
+        )
+        if (daysSinceNudge < 7) return false
+      }
+      // Mark this week's nudge
+      localStorage.setItem(weeklyNudgeKey, new Date().toISOString())
+      return true
+    }
+
+    return false
   }, [dashboardData, reassessmentNudgeDismissed, selectedCompanyId])
 
   // Handle dismissing the re-assessment nudge
@@ -273,102 +313,145 @@ export function DashboardContent({ userName }: DashboardContentProps) {
     }
   }, [dashboardData, loading])
 
-  // Track dashboard return visits and value changes
+  // Track dashboard return visits and value changes (database-backed)
   useEffect(() => {
-    if (!dashboardData || loading || hasTrackedReturnView.current) return
+    if (!dashboardData || loading || hasTrackedReturnView.current || !selectedCompanyId) return
     hasTrackedReturnView.current = true
 
-    const { tier1 } = dashboardData
-    const storageKey = `dashboard_last_visit_${selectedCompanyId}`
-    const visitsKey = `dashboard_visits_${selectedCompanyId}`
+    const { tier1, tier4 } = dashboardData
 
-    try {
-      const lastVisitData = localStorage.getItem(storageKey)
-      const visitsData = localStorage.getItem(visitsKey)
+    // Fetch last visit from database and log current visit
+    async function handleVisitTracking() {
+      try {
+        // Get last visit from database
+        const lastVisitRes = await fetch(`/api/companies/${selectedCompanyId}/visits`)
+        if (lastVisitRes.ok) {
+          const { lastVisit } = await lastVisitRes.json()
 
-      // Parse visit count and dates
-      let visitsThisMonth = 1
-      const now = new Date()
-      const currentMonth = `${now.getFullYear()}-${now.getMonth()}`
+          if (lastVisit && lastVisit.daysSinceVisit >= 1) {
+            // Set returning user state for welcome banner
+            setIsReturningUser(true)
+            setLastVisitData({
+              lastBriScore: lastVisit.briScore ?? null,
+              lastValuation: lastVisit.valuation ?? null,
+              daysSinceVisit: lastVisit.daysSinceVisit,
+            })
 
-      if (visitsData) {
-        const parsed = JSON.parse(visitsData)
-        if (parsed.month === currentMonth) {
-          visitsThisMonth = (parsed.count || 0) + 1
+            // Track analytics
+            analytics.track('dashboard_return_view', {
+              daysSinceLastVisit: lastVisit.daysSinceVisit,
+              visitsThisMonth: 1, // Will be tracked more accurately in future
+            })
+
+            // Track valuation change if significant (>5% change)
+            if (tier1 && lastVisit.valuation && lastVisit.valuation > 0) {
+              const valuationChange = tier1.currentValue - lastVisit.valuation
+              const changePercent = (valuationChange / lastVisit.valuation) * 100
+
+              if (Math.abs(changePercent) >= 5) {
+                analytics.track('valuation_change_noticed', {
+                  previousValue: lastVisit.valuation,
+                  newValue: tier1.currentValue,
+                  changePercent,
+                  interactionType: 'none',
+                })
+              }
+            }
+
+            // Track BRI score change if different
+            if (tier1?.briScore !== undefined && lastVisit.briScore !== null) {
+              const scoreDiff = (tier1.briScore ?? 0) - lastVisit.briScore
+              if (scoreDiff !== 0) {
+                analytics.track('bri_change_noticed', {
+                  previousScore: lastVisit.briScore,
+                  newScore: tier1.briScore ?? 0,
+                  interactionType: 'none',
+                })
+              }
+            }
+          }
         }
+
+        // Log current visit to database
+        await fetch(`/api/companies/${selectedCompanyId}/visits`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            briScore: tier1?.briScore ?? null,
+            valuation: tier1?.currentValue ?? null,
+            tasksCompleted: tier4?.taskStats?.completed ?? 0,
+            criticalTasksCompleted: 0, // Will be calculated server-side in future
+          }),
+        })
+      } catch (error) {
+        // Fallback to localStorage if database fails
+        console.debug('Database visit tracking failed, using localStorage fallback:', error)
+        handleLocalStorageFallback()
       }
+    }
 
-      // Track return visit if this is not the first visit
-      if (lastVisitData) {
-        const lastVisit = JSON.parse(lastVisitData)
-        const lastVisitDate = new Date(lastVisit.timestamp)
-        const daysSinceLastVisit = Math.floor(
-          (now.getTime() - lastVisitDate.getTime()) / (1000 * 60 * 60 * 24)
-        )
+    // LocalStorage fallback (for offline/error cases)
+    function handleLocalStorageFallback() {
+      const storageKey = `dashboard_last_visit_${selectedCompanyId}`
+      const visitsKey = `dashboard_visits_${selectedCompanyId}`
 
-        // Only track return visits if at least 1 hour has passed
-        const hoursSinceLastVisit = (now.getTime() - lastVisitDate.getTime()) / (1000 * 60 * 60)
-        if (hoursSinceLastVisit >= 1) {
-          // Set returning user state for welcome banner (show if at least 1 day since last visit)
-          if (daysSinceLastVisit >= 1) {
+      try {
+        const lastVisitData = localStorage.getItem(storageKey)
+        const visitsData = localStorage.getItem(visitsKey)
+
+        let visitsThisMonth = 1
+        const now = new Date()
+        const currentMonth = `${now.getFullYear()}-${now.getMonth()}`
+
+        if (visitsData) {
+          const parsed = JSON.parse(visitsData)
+          if (parsed.month === currentMonth) {
+            visitsThisMonth = (parsed.count || 0) + 1
+          }
+        }
+
+        // Track return visit if this is not the first visit
+        if (lastVisitData) {
+          const lastVisit = JSON.parse(lastVisitData)
+          const lastVisitDate = new Date(lastVisit.timestamp)
+          const daysSinceLastVisit = Math.floor(
+            (now.getTime() - lastVisitDate.getTime()) / (1000 * 60 * 60 * 24)
+          )
+
+          const hoursSinceLastVisit = (now.getTime() - lastVisitDate.getTime()) / (1000 * 60 * 60)
+          if (hoursSinceLastVisit >= 1 && daysSinceLastVisit >= 1) {
             setIsReturningUser(true)
             setLastVisitData({
               lastBriScore: lastVisit.briScore ?? null,
               lastValuation: lastVisit.valuation ?? null,
               daysSinceVisit: daysSinceLastVisit,
             })
-          }
 
-          analytics.track('dashboard_return_view', {
-            daysSinceLastVisit,
-            visitsThisMonth,
-          })
-
-          // Track valuation change if significant (>5% change)
-          if (tier1 && lastVisit.valuation && lastVisit.valuation > 0) {
-            const valuationChange = tier1.currentValue - lastVisit.valuation
-            const changePercent = (valuationChange / lastVisit.valuation) * 100
-
-            if (Math.abs(changePercent) >= 5) {
-              analytics.track('valuation_change_noticed', {
-                previousValue: lastVisit.valuation,
-                newValue: tier1.currentValue,
-                changePercent,
-                interactionType: 'none', // Will be updated if user interacts
-              })
-            }
-          }
-
-          // Track BRI score change if different
-          if (tier1?.briScore !== undefined && lastVisit.briScore !== undefined && lastVisit.briScore !== null) {
-            const scoreDiff = (tier1.briScore ?? 0) - lastVisit.briScore
-            if (scoreDiff !== 0) {
-              analytics.track('bri_change_noticed', {
-                previousScore: lastVisit.briScore,
-                newScore: tier1.briScore ?? 0,
-                interactionType: 'none',
-              })
-            }
+            analytics.track('dashboard_return_view', {
+              daysSinceLastVisit,
+              visitsThisMonth,
+            })
           }
         }
+
+        // Store current visit data
+        localStorage.setItem(storageKey, JSON.stringify({
+          timestamp: now.toISOString(),
+          valuation: tier1?.currentValue ?? null,
+          briScore: tier1?.briScore ?? null,
+        }))
+
+        localStorage.setItem(visitsKey, JSON.stringify({
+          month: currentMonth,
+          count: visitsThisMonth,
+        }))
+      } catch (error) {
+        console.debug('Could not track return visit:', error)
       }
-
-      // Store current visit data
-      localStorage.setItem(storageKey, JSON.stringify({
-        timestamp: now.toISOString(),
-        valuation: tier1?.currentValue ?? null,
-        briScore: tier1?.briScore ?? null,
-      }))
-
-      // Update visit count
-      localStorage.setItem(visitsKey, JSON.stringify({
-        month: currentMonth,
-        count: visitsThisMonth,
-      }))
-    } catch (error) {
-      // Silently fail if localStorage is unavailable
-      console.debug('Could not track return visit:', error)
     }
+
+    // Run the database-backed tracking
+    handleVisitTracking()
   }, [dashboardData, loading, selectedCompanyId])
 
   // Track exit without assessment on unmount

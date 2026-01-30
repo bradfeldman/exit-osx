@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import bundleAnalyzer from "@next/bundle-analyzer";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
@@ -9,7 +10,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 // Adjust these directives based on your actual resource origins
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://vercel.live https://www.googletagmanager.com https://www.google-analytics.com;
+  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://vercel.live https://www.googletagmanager.com https://www.google-analytics.com https://*.sentry.io https://browser.sentry-cdn.com;
   style-src 'self' 'unsafe-inline';
   img-src 'self' blob: data: https://*.supabase.co https://www.gravatar.com https://www.googletagmanager.com https://www.google-analytics.com;
   font-src 'self';
@@ -18,7 +19,7 @@ const ContentSecurityPolicy = `
   form-action 'self';
   frame-ancestors 'none';
   frame-src 'self' https://js.stripe.com https://vercel.live;
-  connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.intuit.com https://vercel.live https://www.googletagmanager.com https://www.google-analytics.com https://*.analytics.google.com https://*.g.doubleclick.net;
+  connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.intuit.com https://vercel.live https://www.googletagmanager.com https://www.google-analytics.com https://*.analytics.google.com https://*.g.doubleclick.net https://*.sentry.io;
   upgrade-insecure-requests;
 `.replace(/\s{2,}/g, ' ').trim();
 
@@ -151,4 +152,22 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withBundleAnalyzer(nextConfig);
+// Sentry configuration options
+const sentryWebpackPluginOptions = {
+  // Suppresses source map uploading logs during build
+  silent: true,
+  // For all available options, see:
+  // https://github.com/getsentry/sentry-webpack-plugin#options
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  // Only upload source maps in production
+  disableServerWebpackPlugin: process.env.NODE_ENV !== 'production',
+  disableClientWebpackPlugin: process.env.NODE_ENV !== 'production',
+};
+
+// Wrap config with both bundle analyzer and Sentry
+const configWithPlugins = withBundleAnalyzer(nextConfig);
+
+export default process.env.NEXT_PUBLIC_SENTRY_DSN
+  ? withSentryConfig(configWithPlugins, sentryWebpackPluginOptions)
+  : configWithPlugins;
