@@ -79,7 +79,7 @@ export function PipelineSkeleton({ columns = 5 }: { columns?: number }) {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {Array.from({ length: 2 + Math.floor(Math.random() * 2) }).map((_, cardIndex) => (
+              {Array.from({ length: 2 + (colIndex % 2) }).map((_, cardIndex) => (
                 <motion.div
                   key={cardIndex}
                   initial={{ opacity: 0, scale: 0.95 }}

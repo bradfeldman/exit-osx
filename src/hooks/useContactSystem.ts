@@ -65,35 +65,39 @@ interface FetchState<T> {
 // ============================================
 
 function useFetch<T>(url: string | null): FetchState<T> & { refresh: () => void } {
-  const [state, setState] = useState<FetchState<T>>({
-    data: null,
-    isLoading: !!url,
-    error: null,
-  })
+  const [data, setData] = useState<T | null>(null)
+  const [isLoading, setIsLoading] = useState(!!url)
+  const [error, setError] = useState<Error | null>(null)
   const [refreshCount, setRefreshCount] = useState(0)
 
   useEffect(() => {
     if (!url) {
-      setState({ data: null, isLoading: false, error: null })
+      setData(null)
+      setIsLoading(false)
+      setError(null)
       return
     }
 
     let cancelled = false
-    setState(prev => ({ ...prev, isLoading: true, error: null }))
+    setIsLoading(true)
+    setError(null)
 
     fetch(url)
       .then(res => {
         if (!res.ok) throw new Error('Fetch failed')
         return res.json()
       })
-      .then(data => {
+      .then(fetchedData => {
         if (!cancelled) {
-          setState({ data, isLoading: false, error: null })
+          setData(fetchedData)
+          setIsLoading(false)
         }
       })
-      .catch(error => {
+      .catch(fetchError => {
         if (!cancelled) {
-          setState({ data: null, isLoading: false, error })
+          setData(null)
+          setIsLoading(false)
+          setError(fetchError)
         }
       })
 
@@ -106,7 +110,7 @@ function useFetch<T>(url: string | null): FetchState<T> & { refresh: () => void 
     setRefreshCount(prev => prev + 1)
   }, [])
 
-  return { ...state, refresh }
+  return { data, isLoading, error, refresh }
 }
 
 // ============================================
