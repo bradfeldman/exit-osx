@@ -187,6 +187,8 @@ model Company {
   staffAccess        CompanyStaffAccess[]
   accessRequests     AccessRequest[]
   companyInvites     CompanyInvite[]
+  // Contact System - deals where this company is the seller
+  deals              Deal[]
 
   @@map("companies")
 }
@@ -634,6 +636,8 @@ model DataRoomAccess {
   updatedAt    DateTime            @updatedAt @map("updated_at")
   buyerContact BuyerContact?
   dataRoom     DataRoom            @relation(fields: [dataRoomId], references: [id], onDelete: Cascade)
+  // Contact System - link to deal contact
+  dealContact  DealContact?
 
   @@unique([dataRoomId, email])
   @@index([dataRoomId, userId])
@@ -905,28 +909,28 @@ model CashFlowStatement {
 }
 
 model DCFAssumptions {
-  id                        String   @id @default(cuid())
-  companyId                 String   @unique @map("company_id")
-  baseFCF                   Decimal? @map("base_fcf") @db.Decimal(15, 2) // Base Free Cash Flow (Year 0) for DCF calculation
-  riskFreeRate              Decimal  @map("risk_free_rate") @db.Decimal(5, 4)
-  marketRiskPremium         Decimal  @map("market_risk_premium") @db.Decimal(5, 4)
-  beta                      Decimal  @db.Decimal(4, 2)
-  sizeRiskPremium           Decimal  @map("size_risk_premium") @db.Decimal(5, 4)
-  costOfDebtOverride        Decimal? @map("cost_of_debt_override") @db.Decimal(5, 4)
-  taxRateOverride           Decimal? @map("tax_rate_override") @db.Decimal(5, 4)
-  growthAssumptions         Json     @map("growth_assumptions")
-  terminalMethod            String   @map("terminal_method")
-  perpetualGrowthRate       Decimal  @map("perpetual_growth_rate") @db.Decimal(5, 4)
-  exitMultiple              Decimal? @map("exit_multiple") @db.Decimal(4, 2)
-  calculatedWACC            Decimal? @map("calculated_wacc") @db.Decimal(5, 4)
-  enterpriseValue           Decimal? @map("enterprise_value") @db.Decimal(15, 2)
-  equityValue               Decimal? @map("equity_value") @db.Decimal(15, 2)
-  useDCFValue               Boolean  @default(false) @map("use_dcf_value") // When true, scorecard uses DCF value instead of EBITDA multiple
+  id                         String   @id @default(cuid())
+  companyId                  String   @unique @map("company_id")
+  baseFCF                    Decimal? @map("base_fcf") @db.Decimal(15, 2) // Base Free Cash Flow (Year 0) for DCF calculation
+  riskFreeRate               Decimal  @map("risk_free_rate") @db.Decimal(5, 4)
+  marketRiskPremium          Decimal  @map("market_risk_premium") @db.Decimal(5, 4)
+  beta                       Decimal  @db.Decimal(4, 2)
+  sizeRiskPremium            Decimal  @map("size_risk_premium") @db.Decimal(5, 4)
+  costOfDebtOverride         Decimal? @map("cost_of_debt_override") @db.Decimal(5, 4)
+  taxRateOverride            Decimal? @map("tax_rate_override") @db.Decimal(5, 4)
+  growthAssumptions          Json     @map("growth_assumptions")
+  terminalMethod             String   @map("terminal_method")
+  perpetualGrowthRate        Decimal  @map("perpetual_growth_rate") @db.Decimal(5, 4)
+  exitMultiple               Decimal? @map("exit_multiple") @db.Decimal(4, 2)
+  calculatedWACC             Decimal? @map("calculated_wacc") @db.Decimal(5, 4)
+  enterpriseValue            Decimal? @map("enterprise_value") @db.Decimal(15, 2)
+  equityValue                Decimal? @map("equity_value") @db.Decimal(15, 2)
+  useDCFValue                Boolean  @default(false) @map("use_dcf_value") // When true, scorecard uses DCF value instead of EBITDA multiple
   ebitdaMultipleLowOverride  Decimal? @map("ebitda_multiple_low_override") @db.Decimal(4, 2)
   ebitdaMultipleHighOverride Decimal? @map("ebitda_multiple_high_override") @db.Decimal(4, 2)
-  createdAt                 DateTime @default(now()) @map("created_at")
-  updatedAt                 DateTime @updatedAt @map("updated_at")
-  company                   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt                  DateTime @default(now()) @map("created_at")
+  updatedAt                  DateTime @updatedAt @map("updated_at")
+  company                    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@map("dcf_assumptions")
 }
@@ -1997,4 +2001,717 @@ enum CompanyMemberStatus {
 enum CompanyInviteType {
   STAFF
   GUEST_OWNER
+}
+
+// ============================================
+// Visit Tracking for Returning User Experience
+// ============================================
+
+model CompanyVisitLog {
+  id                     String   @id @default(cuid())
+  companyId              String   @map("company_id")
+  userId                 String   @map("user_id")
+  visitedAt              DateTime @default(now()) @map("visited_at")
+  briScore               Float?   @map("bri_score")
+  valuation              Float?
+  tasksCompleted         Int      @default(0) @map("tasks_completed")
+  criticalTasksCompleted Int      @default(0) @map("critical_tasks_completed")
+
+  @@index([companyId, userId, visitedAt(sort: Desc)])
+  @@map("company_visit_logs")
+}
+
+// ============================================
+// CONTACT SYSTEM - CANONICAL LAYER
+// ============================================
+// These models persist across all deals and represent
+// the "source of truth" for companies and people.
+// ============================================
+
+// --------------------------------------------
+// CANONICAL COMPANY
+// --------------------------------------------
+// Represents a buyer organization that persists across deals.
+// A single canonical company can be a prospect in multiple deals.
+
+model CanonicalCompany {
+  id String @id @default(cuid())
+
+  // Identity
+  name           String
+  normalizedName String  @map("normalized_name") // Lowercase, stripped for matching
+  legalName      String? @map("legal_name")
+
+  // Online presence
+  website     String?
+  linkedInUrl String? @map("linkedin_url")
+
+  // Classification
+  companyType  BuyerType @default(OTHER) @map("company_type")
+  industryCode String?   @map("industry_code") // ICB or SIC
+  industryName String?   @map("industry_name")
+
+  // Location
+  headquarters String?
+  country      String?
+
+  // Firmographics
+  employeeCount Int?     @map("employee_count")
+  foundedYear   Int?     @map("founded_year")
+  aum           Decimal? @db.Decimal(15, 2) // Assets under management (for PE/VC)
+  description   String?
+
+  // Data quality tracking
+  dataQuality      DataQuality @default(PROVISIONAL) @map("data_quality")
+  verifiedAt       DateTime?   @map("verified_at")
+  verifiedByUserId String?     @map("verified_by_user_id")
+
+  // Merge tracking (for deduplication)
+  mergedIntoId String?   @map("merged_into_id")
+  mergedAt     DateTime? @map("merged_at")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  domains                 CanonicalDomain[]
+  people                  CanonicalPerson[]    @relation("CurrentEmployer")
+  employmentHistory       PersonEmployment[]
+  companyGroupMemberships CompanyGroupMember[]
+  dealBuyers              DealBuyer[]
+
+  // Self-reference for merges
+  mergedInto CanonicalCompany?  @relation("CompanyMerge", fields: [mergedIntoId], references: [id])
+  mergedFrom CanonicalCompany[] @relation("CompanyMerge")
+
+  @@index([normalizedName])
+  @@index([website])
+  @@index([dataQuality])
+  @@index([companyType])
+  @@index([mergedIntoId])
+  @@map("canonical_companies")
+}
+
+// --------------------------------------------
+// CANONICAL PERSON
+// --------------------------------------------
+// Represents a contact person that persists across deals.
+// Their employment may change, but they remain the same entity.
+
+model CanonicalPerson {
+  id String @id @default(cuid())
+
+  // Identity
+  firstName      String @map("first_name")
+  lastName       String @map("last_name")
+  normalizedName String @map("normalized_name") // For matching
+
+  // Contact info
+  email         String? @unique
+  emailVerified Boolean @default(false) @map("email_verified")
+  phone         String?
+  linkedInUrl   String? @map("linkedin_url")
+
+  // Current position (denormalized for quick access)
+  currentTitle     String? @map("current_title")
+  currentCompanyId String? @map("current_company_id")
+
+  // Data quality
+  dataQuality DataQuality @default(PROVISIONAL) @map("data_quality")
+  verifiedAt  DateTime?   @map("verified_at")
+
+  // Merge tracking
+  mergedIntoId String?   @map("merged_into_id")
+  mergedAt     DateTime? @map("merged_at")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  currentCompany    CanonicalCompany?  @relation("CurrentEmployer", fields: [currentCompanyId], references: [id])
+  employmentHistory PersonEmployment[]
+  dealContacts      DealContact[]
+  activities        DealActivity2[]
+  emailAttempts     EmailAttempt[]
+
+  // Self-reference for merges
+  mergedInto CanonicalPerson?  @relation("PersonMerge", fields: [mergedIntoId], references: [id])
+  mergedFrom CanonicalPerson[] @relation("PersonMerge")
+
+  @@index([normalizedName])
+  @@index([email])
+  @@index([currentCompanyId])
+  @@index([mergedIntoId])
+  @@map("canonical_people")
+}
+
+// --------------------------------------------
+// CANONICAL DOMAIN
+// --------------------------------------------
+// Maps email domains to canonical companies.
+// Used for automatic company detection from email addresses.
+
+model CanonicalDomain {
+  id        String  @id @default(cuid())
+  domain    String  @unique // e.g., "kkr.com"
+  isPrimary Boolean @default(true) @map("is_primary")
+
+  companyId String           @map("company_id")
+  company   CanonicalCompany @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([companyId])
+  @@map("canonical_domains")
+}
+
+// --------------------------------------------
+// PERSON EMPLOYMENT
+// --------------------------------------------
+// Tracks employment history for canonical people.
+// Enables "institutional memory" across deals.
+
+model PersonEmployment {
+  id String @id @default(cuid())
+
+  personId String          @map("person_id")
+  person   CanonicalPerson @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  companyId String           @map("company_id")
+  company   CanonicalCompany @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  title     String
+  startDate DateTime? @map("start_date")
+  endDate   DateTime? @map("end_date")
+  isCurrent Boolean   @default(true) @map("is_current")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([personId])
+  @@index([companyId])
+  @@index([personId, isCurrent])
+  @@map("person_employment")
+}
+
+// --------------------------------------------
+// COMPANY GROUP
+// --------------------------------------------
+// Groups related companies (e.g., "KKR Family" includes
+// KKR & Co, KKR Credit, portfolio companies, etc.)
+
+model CompanyGroup {
+  id          String           @id @default(cuid())
+  name        String // e.g., "KKR Family", "Blackstone Group"
+  description String?
+  groupType   CompanyGroupType @default(OTHER) @map("group_type")
+
+  members CompanyGroupMember[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("company_groups")
+}
+
+model CompanyGroupMember {
+  id String @id @default(cuid())
+
+  groupId String       @map("group_id")
+  group   CompanyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  companyId String           @map("company_id")
+  company   CanonicalCompany @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  relationship CompanyGroupRelationship @default(MEMBER)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([groupId, companyId])
+  @@map("company_group_members")
+}
+
+// --------------------------------------------
+// DUPLICATE CANDIDATES
+// --------------------------------------------
+// Stores potential duplicates for admin review.
+
+model DuplicateCandidate {
+  id         String              @id @default(cuid())
+  entityType DuplicateEntityType @map("entity_type")
+
+  // For companies
+  companyAId String? @map("company_a_id")
+  companyBId String? @map("company_b_id")
+
+  // For people
+  personAId String? @map("person_a_id")
+  personBId String? @map("person_b_id")
+
+  // Match details
+  confidence   Float // 0-1
+  matchReasons Json  @map("match_reasons") // Array of reason strings
+
+  // Resolution
+  status           DuplicateStatus      @default(PENDING)
+  resolvedAt       DateTime?            @map("resolved_at")
+  resolvedByUserId String?              @map("resolved_by_user_id")
+  resolution       DuplicateResolution? // MERGED, NOT_DUPLICATE, SKIPPED
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([entityType, status])
+  @@index([confidence])
+  @@map("duplicate_candidates")
+}
+
+// ============================================
+// CONTACT SYSTEM - DEAL LAYER
+// ============================================
+// These models are scoped to specific deals.
+// ============================================
+
+// --------------------------------------------
+// DEAL
+// --------------------------------------------
+// Represents a specific M&A engagement for a company.
+// One company can have multiple deals over time.
+
+model Deal {
+  id String @id @default(cuid())
+
+  // Link to the company being sold
+  companyId String  @map("company_id")
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Deal identity
+  codeName    String     @map("code_name") // "Project Atlas"
+  description String?
+  status      DealStatus @default(ACTIVE)
+
+  // Key dates
+  startedAt       DateTime  @default(now()) @map("started_at")
+  targetCloseDate DateTime? @map("target_close_date")
+  closedAt        DateTime? @map("closed_at")
+  terminatedAt    DateTime? @map("terminated_at")
+
+  // Settings
+  requireSellerApproval Boolean @default(true) @map("require_seller_approval")
+
+  // Timestamps
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  createdByUserId String   @map("created_by_user_id")
+
+  // Relationships
+  buyers     DealBuyer[]
+  activities DealActivity2[]
+
+  @@unique([companyId, codeName])
+  @@index([companyId])
+  @@index([status])
+  @@map("deals")
+}
+
+// --------------------------------------------
+// DEAL BUYER
+// --------------------------------------------
+// A buyer's participation in a specific deal.
+// Links to canonical company for identity.
+
+model DealBuyer {
+  id String @id @default(cuid())
+
+  // Deal association
+  dealId String @map("deal_id")
+  deal   Deal   @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  // Link to canonical company (the buyer's identity)
+  canonicalCompanyId String           @map("canonical_company_id")
+  canonicalCompany   CanonicalCompany @relation(fields: [canonicalCompanyId], references: [id])
+
+  // Deal-specific context
+  tier           BuyerTier @default(B_TIER)
+  buyerRationale String?   @map("buyer_rationale") // Why this buyer for this deal
+
+  // Current stage
+  currentStage   DealStage @default(IDENTIFIED) @map("current_stage")
+  stageUpdatedAt DateTime  @default(now()) @map("stage_updated_at")
+
+  // Seller approval (deal-specific)
+  approvalStatus   ApprovalStatus @default(PENDING) @map("approval_status")
+  approvalNote     String?        @map("approval_note")
+  approvedAt       DateTime?      @map("approved_at")
+  approvedByUserId String?        @map("approved_by_user_id")
+
+  // Key milestone dates
+  teaserSentAt  DateTime? @map("teaser_sent_at")
+  ndaExecutedAt DateTime? @map("nda_executed_at")
+  cimAccessAt   DateTime? @map("cim_access_at")
+  ioiReceivedAt DateTime? @map("ioi_received_at")
+  loiReceivedAt DateTime? @map("loi_received_at")
+  closedAt      DateTime? @map("closed_at")
+  exitedAt      DateTime? @map("exited_at")
+  exitReason    String?   @map("exit_reason")
+
+  // Financial tracking
+  ioiAmount        Decimal?  @map("ioi_amount") @db.Decimal(15, 2)
+  ioiDeadline      DateTime? @map("ioi_deadline")
+  loiAmount        Decimal?  @map("loi_amount") @db.Decimal(15, 2)
+  loiDeadline      DateTime? @map("loi_deadline")
+  exclusivityStart DateTime? @map("exclusivity_start")
+  exclusivityEnd   DateTime? @map("exclusivity_end")
+
+  // Internal notes (not visible to seller)
+  internalNotes String?  @map("internal_notes")
+  tags          String[]
+
+  // Timestamps
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  createdByUserId String   @map("created_by_user_id")
+
+  // Relationships
+  contacts      DealContact[]
+  stageHistory  DealStageHistory2[]
+  activities    DealActivity2[]
+  documents     DealDocument2[]
+  meetings      DealMeeting2[]
+  emailAttempts EmailAttempt[]
+
+  @@unique([dealId, canonicalCompanyId]) // One record per company per deal
+  @@index([dealId, currentStage])
+  @@index([dealId, approvalStatus])
+  @@index([canonicalCompanyId])
+  @@map("deal_buyers")
+}
+
+// --------------------------------------------
+// DEAL CONTACT
+// --------------------------------------------
+// A contact's participation in a specific deal buyer.
+// Links to canonical person for identity.
+
+model DealContact {
+  id String @id @default(cuid())
+
+  // Deal buyer association
+  dealBuyerId String    @map("deal_buyer_id")
+  dealBuyer   DealBuyer @relation(fields: [dealBuyerId], references: [id], onDelete: Cascade)
+
+  // Link to canonical person
+  canonicalPersonId String          @map("canonical_person_id")
+  canonicalPerson   CanonicalPerson @relation(fields: [canonicalPersonId], references: [id])
+
+  // Deal-specific role
+  role      BuyerContactRole @default(DEAL_LEAD)
+  isPrimary Boolean          @default(false) @map("is_primary")
+
+  // VDR access (links to existing DataRoomAccess)
+  dataRoomAccessId   String?         @unique @map("data_room_access_id")
+  dataRoomAccess     DataRoomAccess? @relation(fields: [dataRoomAccessId], references: [id])
+  vdrAccessLevel     VDRAccessLevel? @map("vdr_access_level")
+  vdrAccessGrantedAt DateTime?       @map("vdr_access_granted_at")
+
+  // Status
+  isActive Boolean @default(true) @map("is_active")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([dealBuyerId, canonicalPersonId]) // One record per person per buyer
+  @@index([canonicalPersonId])
+  @@map("deal_contacts")
+}
+
+// --------------------------------------------
+// DEAL STAGE HISTORY (v2)
+// --------------------------------------------
+// Immutable audit trail of stage changes.
+
+model DealStageHistory2 {
+  id String @id @default(cuid())
+
+  dealBuyerId String    @map("deal_buyer_id")
+  dealBuyer   DealBuyer @relation(fields: [dealBuyerId], references: [id], onDelete: Cascade)
+
+  fromStage DealStage? @map("from_stage")
+  toStage   DealStage  @map("to_stage")
+  note      String?
+
+  changedAt       DateTime @default(now()) @map("changed_at")
+  changedByUserId String   @map("changed_by_user_id")
+
+  @@index([dealBuyerId, changedAt])
+  @@map("deal_stage_history_v2")
+}
+
+// --------------------------------------------
+// DEAL ACTIVITY (v2)
+// --------------------------------------------
+// Activity log for deal buyers.
+
+model DealActivity2 {
+  id String @id @default(cuid())
+
+  // Can be linked to deal buyer OR deal directly
+  dealBuyerId String?    @map("deal_buyer_id")
+  dealBuyer   DealBuyer? @relation(fields: [dealBuyerId], references: [id], onDelete: Cascade)
+
+  dealId String @map("deal_id")
+  deal   Deal   @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  // Activity details
+  activityType ActivityType     @map("activity_type")
+  subject      String
+  description  String?
+  outcome      ActivityOutcome?
+
+  // Related entities
+  personId   String?          @map("person_id")
+  person     CanonicalPerson? @relation(fields: [personId], references: [id])
+  documentId String?          @map("document_id")
+  meetingId  String?          @map("meeting_id")
+
+  // Metadata (flexible JSON for activity-specific data)
+  metadata Json?
+
+  // Timestamps
+  performedAt       DateTime @default(now()) @map("performed_at")
+  performedByUserId String   @map("performed_by_user_id")
+
+  @@index([dealBuyerId, performedAt])
+  @@index([dealId, performedAt])
+  @@index([activityType])
+  @@map("deal_activities_v2")
+}
+
+// --------------------------------------------
+// DEAL DOCUMENT (v2)
+// --------------------------------------------
+
+model DealDocument2 {
+  id String @id @default(cuid())
+
+  dealBuyerId String    @map("deal_buyer_id")
+  dealBuyer   DealBuyer @relation(fields: [dealBuyerId], references: [id], onDelete: Cascade)
+
+  documentType DealDocumentType @map("document_type")
+  name         String
+  description  String?
+
+  // File info
+  filePath String? @map("file_path")
+  fileName String? @map("file_name")
+  fileSize Int?    @map("file_size")
+  mimeType String? @map("mime_type")
+
+  // Tracking
+  receivedAt DateTime? @map("received_at")
+  sentAt     DateTime? @map("sent_at")
+
+  // Timestamps
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  uploadedByUserId String   @map("uploaded_by_user_id")
+
+  @@index([dealBuyerId, documentType])
+  @@map("deal_documents_v2")
+}
+
+// --------------------------------------------
+// DEAL MEETING (v2)
+// --------------------------------------------
+
+model DealMeeting2 {
+  id String @id @default(cuid())
+
+  dealBuyerId String    @map("deal_buyer_id")
+  dealBuyer   DealBuyer @relation(fields: [dealBuyerId], references: [id], onDelete: Cascade)
+
+  meetingType MeetingType @map("meeting_type")
+  title       String
+  description String?
+
+  // Scheduling
+  scheduledAt DateTime @map("scheduled_at")
+  duration    Int? // minutes
+  location    String?
+  meetingLink String?  @map("meeting_link")
+
+  // Status
+  status      MeetingStatus @default(SCHEDULED)
+  completedAt DateTime?     @map("completed_at")
+  cancelledAt DateTime?     @map("cancelled_at")
+
+  // Content
+  notes     String?
+  attendees Json? // Array of attendee info
+
+  // Timestamps
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  createdByUserId String   @map("created_by_user_id")
+
+  @@index([dealBuyerId, scheduledAt])
+  @@index([status])
+  @@map("deal_meetings_v2")
+}
+
+// --------------------------------------------
+// EMAIL ATTEMPT
+// --------------------------------------------
+// Tracks outreach emails for a deal buyer.
+
+model EmailAttempt {
+  id String @id @default(cuid())
+
+  dealBuyerId String    @map("deal_buyer_id")
+  dealBuyer   DealBuyer @relation(fields: [dealBuyerId], references: [id], onDelete: Cascade)
+
+  // Recipient
+  personId String          @map("person_id")
+  person   CanonicalPerson @relation(fields: [personId], references: [id])
+  toEmail  String          @map("to_email")
+
+  // Email content
+  subject      String
+  templateUsed String? @map("template_used")
+
+  // Tracking timestamps
+  sentAt       DateTime? @map("sent_at")
+  deliveredAt  DateTime? @map("delivered_at")
+  openedAt     DateTime? @map("opened_at")
+  clickedAt    DateTime? @map("clicked_at")
+  repliedAt    DateTime? @map("replied_at")
+  bouncedAt    DateTime? @map("bounced_at")
+  bounceReason String?   @map("bounce_reason")
+
+  // Status
+  status EmailStatus @default(DRAFT)
+
+  // Timestamps
+  createdAt       DateTime @default(now()) @map("created_at")
+  createdByUserId String   @map("created_by_user_id")
+
+  @@index([dealBuyerId])
+  @@index([personId])
+  @@index([status])
+  @@map("email_attempts")
+}
+
+// ============================================
+// CONTACT SYSTEM ENUMS
+// ============================================
+
+enum DataQuality {
+  PROVISIONAL // Just entered, not verified
+  SUGGESTED // System suggested match, awaiting confirmation
+  VERIFIED // Human verified
+  ENRICHED // Third-party data added
+}
+
+enum CompanyGroupType {
+  PE_FAMILY // PE firm + portfolio companies
+  CONGLOMERATE // Corporate parent + subsidiaries
+  ALLIANCE // Strategic alliance members
+  OTHER
+}
+
+enum CompanyGroupRelationship {
+  PARENT
+  SUBSIDIARY
+  PORTFOLIO_COMPANY
+  FUND
+  AFFILIATE
+  MEMBER
+}
+
+enum DuplicateEntityType {
+  COMPANY
+  PERSON
+}
+
+enum DuplicateStatus {
+  PENDING
+  RESOLVED
+  SKIPPED
+}
+
+enum DuplicateResolution {
+  MERGED
+  NOT_DUPLICATE
+  SKIPPED
+}
+
+enum DealStatus {
+  ACTIVE
+  CLOSED
+  TERMINATED
+  ON_HOLD
+}
+
+enum ApprovalStatus {
+  PENDING // Awaiting seller review
+  APPROVED // Cleared for outreach
+  HOLD // Temporarily paused
+  DENIED // Seller rejected
+}
+
+enum VDRAccessLevel {
+  NONE
+  TEASER
+  POST_NDA
+  LEVEL_2
+  LEVEL_3
+  FULL
+}
+
+enum ActivityType {
+  EMAIL_SENT
+  EMAIL_RECEIVED
+  CALL_OUTBOUND
+  CALL_INBOUND
+  MEETING_SCHEDULED
+  MEETING_COMPLETED
+  MEETING_CANCELLED
+  NOTE_ADDED
+  STAGE_CHANGED
+  DOCUMENT_SENT
+  DOCUMENT_RECEIVED
+  VDR_ACCESS_GRANTED
+  VDR_ACCESS_REVOKED
+  APPROVAL_REQUESTED
+  APPROVAL_GRANTED
+  APPROVAL_DENIED
+}
+
+enum ActivityOutcome {
+  POSITIVE // Interest expressed
+  NEUTRAL // No clear signal
+  NEGATIVE // Declined / not interested
+  NO_RESPONSE // Awaiting response
+}
+
+enum MeetingStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum EmailStatus {
+  DRAFT
+  SCHEDULED
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  REPLIED
+  BOUNCED
+  FAILED
 }

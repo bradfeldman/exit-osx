@@ -164,7 +164,7 @@ export async function GET(
       })
     }
 
-    // Fetch task stats
+    // Fetch task stats with issue tier for sophisticated re-assessment triggers
     const tasks = await prisma.task.findMany({
       where: { companyId },
       select: {
@@ -173,8 +173,49 @@ export async function GET(
         rawImpact: true,
         briCategory: true,
         deferredUntil: true,
+        issueTier: true,
+        completedAt: true,
       },
     })
+
+    // Get last assessment completion date
+    const lastAssessment = await prisma.assessment.findFirst({
+      where: {
+        companyId,
+        completedAt: { not: null },
+      },
+      orderBy: { completedAt: 'desc' },
+      select: { completedAt: true },
+    })
+
+    const lastAssessmentDate = lastAssessment?.completedAt?.toISOString() ?? null
+
+    // Count tasks completed since last assessment
+    const tasksCompletedSinceAssessment = lastAssessmentDate
+      ? tasks.filter(t =>
+          t.status === 'COMPLETED' &&
+          t.completedAt &&
+          new Date(t.completedAt) > new Date(lastAssessmentDate)
+        ).length
+      : tasks.filter(t => t.status === 'COMPLETED').length
+
+    // Count critical and significant tasks for sophisticated triggers
+    const criticalTasks = tasks.filter(t => t.issueTier === 'CRITICAL')
+    const criticalTasksTotal = criticalTasks.length
+    const criticalTasksCompleted = criticalTasks.filter(t => t.status === 'COMPLETED').length
+
+    // Significant tasks = CRITICAL + SIGNIFICANT tier tasks completed since last assessment
+    const significantTasksCompleted = lastAssessmentDate
+      ? tasks.filter(t =>
+          t.status === 'COMPLETED' &&
+          t.completedAt &&
+          new Date(t.completedAt) > new Date(lastAssessmentDate) &&
+          (t.issueTier === 'CRITICAL' || t.issueTier === 'SIGNIFICANT')
+        ).length
+      : tasks.filter(t =>
+          t.status === 'COMPLETED' &&
+          (t.issueTier === 'CRITICAL' || t.issueTier === 'SIGNIFICANT')
+        ).length
 
     const taskStats = {
       total: tasks.length,
@@ -571,6 +612,12 @@ export async function GET(
         exitWindow,
       },
       hasAssessment: !!latestSnapshot,
+      // Re-assessment trigger data
+      lastAssessmentDate,
+      tasksCompletedSinceAssessment,
+      criticalTasksTotal,
+      criticalTasksCompleted,
+      significantTasksCompleted,
     })
   } catch (error) {
     console.error('Error fetching dashboard data:', error)
