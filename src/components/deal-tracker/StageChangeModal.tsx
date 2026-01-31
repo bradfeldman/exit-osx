@@ -19,21 +19,23 @@ import { STAGE_LABELS, STAGE_COLORS } from '@/lib/deal-tracker/constants'
 import { DealStage, BuyerType, BuyerTier } from '@prisma/client'
 import { cn } from '@/lib/utils'
 
-interface ProspectiveBuyer {
+interface BuyerInfo {
   id: string
   name: string
-  buyerType: BuyerType
-  tier: BuyerTier
+  buyerType?: BuyerType
+  tier?: BuyerTier
   currentStage: DealStage
 }
 
 interface StageChangeModalProps {
-  buyer: ProspectiveBuyer
+  buyer: BuyerInfo
   targetStage: DealStage
   companyId: string
   isOpen: boolean
   onClose: () => void
   onComplete: () => void
+  /** Optional custom API path. Defaults to old deal-tracker API. */
+  apiPath?: string
 }
 
 export function StageChangeModal({
@@ -43,6 +45,7 @@ export function StageChangeModal({
   isOpen,
   onClose,
   onComplete,
+  apiPath,
 }: StageChangeModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [notes, setNotes] = useState('')
@@ -76,14 +79,23 @@ export function StageChangeModal({
         body.loiAmount = parseFloat(loiAmount.replace(/[^0-9.]/g, ''))
       }
 
-      const res = await fetch(
-        `/api/companies/${companyId}/deal-tracker/buyers/${buyer.id}/stage`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        }
-      )
+      // Use custom apiPath if provided, otherwise use legacy deal-tracker API
+      const url = apiPath || `/api/companies/${companyId}/deal-tracker/buyers/${buyer.id}/stage`
+      const method = apiPath ? 'POST' : 'PUT' // New API uses POST, old uses PUT
+
+      // New API uses 'toStage' instead of 'stage'
+      if (apiPath) {
+        body.toStage = body.stage
+        delete body.stage
+        body.note = body.notes
+        delete body.notes
+      }
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
 
       if (res.ok) {
         // Track stage advancement

@@ -128,3 +128,113 @@ export {
   // Free email domains
   FREE_EMAIL_DOMAINS,
 } from './constants'
+
+// ============================================
+// STAGE SERVICE
+// ============================================
+
+export {
+  // Stage transition rules
+  VALID_STAGE_TRANSITIONS,
+  TERMINAL_STAGES,
+  EXIT_STAGES,
+  STAGE_LABELS,
+
+  // Types
+  type StageTransitionInput,
+  type StageTransitionResult,
+
+  // Validation
+  isValidTransition,
+  getValidNextStages,
+  isTerminalStage,
+  isExitStage,
+
+  // Stage operations
+  transitionStage,
+  bulkTransitionStage,
+
+  // VDR sync
+  syncVDRAccessForBuyer,
+  revokeVDRAccessForBuyer,
+
+  // Analytics
+  getStageHistory,
+  getTimeInStages,
+} from './stage-service'
+
+// ============================================
+// SELLER PROJECTION
+// ============================================
+
+export {
+  // Types
+  type SellerBuyerView,
+  type SellerDealSummary,
+  type SellerAccessCheck,
+
+  // Sanitization
+  sanitizeBuyerForSeller,
+  sanitizeBuyersForSeller,
+  createSellerDealSummary,
+
+  // Validation
+  validateNoBlockedFields,
+  stripBlockedFields,
+
+  // Access control
+  validateSellerAccess,
+} from './seller-projection'
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+export {
+  // Types
+  type NotificationType,
+  type NotificationPayload,
+  type NotificationResult,
+
+  // Send functions
+  sendNotification,
+  notifyApprovalChange,
+  notifyBuyerAdded,
+  notifyStageChange,
+  notifyVDRAccessGranted,
+
+  // Templates
+  EMAIL_TEMPLATES,
+  renderEmailTemplate,
+} from './notifications'
+
+// ============================================
+// MIGRATION
+// ============================================
+
+export {
+  // Types
+  type MigrationOptions,
+  type MigrationProgress,
+  type MigrationResult,
+  type MigrationSummary,
+  type MigrationError,
+  type ValidationResult,
+  type ValidationIssue,
+  type CSVBuyerRow,
+
+  // Migration helpers
+  ensureCanonicalCompany,
+  ensureCanonicalPerson,
+  ensureDealBuyer,
+
+  // Migration functions
+  runFullMigration,
+  importBuyersFromCSV,
+
+  // Validation
+  validateMigrationReadiness,
+
+  // Rollback
+  rollbackMigration,
+} from './migration'

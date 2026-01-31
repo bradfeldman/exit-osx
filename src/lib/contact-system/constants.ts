@@ -53,17 +53,23 @@ export const DATA_QUALITY_COLORS = {
 // BUYER TYPES
 // ============================================
 
-export const BUYER_TYPE_LABELS = {
+export const BUYER_TYPE_LABELS: Record<string, string> = {
   STRATEGIC: 'Strategic',
   FINANCIAL: 'Financial',
+  INDIVIDUAL: 'Individual',
+  MANAGEMENT: 'Management',
+  ESOP: 'ESOP',
   OTHER: 'Hybrid / Other',
-} as const
+}
 
-export const BUYER_TYPE_DESCRIPTIONS = {
+export const BUYER_TYPE_DESCRIPTIONS: Record<string, string> = {
   STRATEGIC: 'Corporate acquirer looking for synergies',
   FINANCIAL: 'PE firm or financial sponsor',
+  INDIVIDUAL: 'Individual investor or family office',
+  MANAGEMENT: 'Management buyout team',
+  ESOP: 'Employee Stock Ownership Plan',
   OTHER: 'Hybrid buyer or other type',
-} as const
+}
 
 // ============================================
 // APPROVAL STATUS
@@ -115,51 +121,58 @@ export const VDR_ACCESS_LABELS = {
 /**
  * Map deal stages to VDR access levels.
  * Used to auto-sync access when stage changes.
+ * Maps to DealStage enum values in prisma schema.
  */
 export const STAGE_TO_VDR_ACCESS = {
   // Early stages - no access
   IDENTIFIED: 'NONE',
-  RESEARCHING: 'NONE',
-  INITIAL_OUTREACH: 'NONE',
-  FOLLOW_UP: 'NONE',
+  SELLER_REVIEWING: 'NONE',
+  APPROVED: 'NONE',
+  DECLINED: 'NONE',
 
   // Post-teaser - teaser access
   TEASER_SENT: 'TEASER',
-  REVIEWING_TEASER: 'TEASER',
+  INTERESTED: 'TEASER',
+  PASSED: 'NONE',
 
-  // NDA stage - still teaser
+  // NDA stage - still teaser until executed
   NDA_SENT: 'TEASER',
-  NDA_IN_NEGOTIATION: 'TEASER',
+  NDA_NEGOTIATING: 'TEASER',
 
   // Post-NDA - CIM access
   NDA_EXECUTED: 'POST_NDA',
-  CIM_SENT: 'POST_NDA',
-  CIM_REVIEWING: 'POST_NDA',
+  CIM_ACCESS: 'POST_NDA',
+
+  // Level 2 and 3 access stages
+  LEVEL_2_ACCESS: 'LEVEL_2',
+  LEVEL_3_ACCESS: 'LEVEL_3',
+
+  // Management meetings
+  MANAGEMENT_MEETING_SCHEDULED: 'LEVEL_2',
+  MANAGEMENT_MEETING_COMPLETED: 'LEVEL_2',
 
   // IOI stage - Level 2
-  IOI_EXPECTED: 'LEVEL_2',
+  IOI_REQUESTED: 'LEVEL_2',
   IOI_RECEIVED: 'LEVEL_2',
-  IOI_UNDER_REVIEW: 'LEVEL_2',
-
-  // Management meeting
-  MGMT_MEETING_SCHEDULED: 'LEVEL_2',
-  MGMT_MEETING_COMPLETED: 'LEVEL_2',
+  IOI_ACCEPTED: 'LEVEL_2',
+  IOI_DECLINED: 'NONE',
 
   // LOI stage - Level 3
   LOI_REQUESTED: 'LEVEL_3',
   LOI_RECEIVED: 'LEVEL_3',
-  LOI_UNDER_NEGOTIATION: 'LEVEL_3',
-  LOI_SIGNED: 'LEVEL_3',
+  LOI_SELECTED: 'LEVEL_3',
+  LOI_BACKUP: 'LEVEL_3',
 
-  // Due diligence - Full
+  // Due diligence and closing - Full access
   DUE_DILIGENCE: 'FULL',
-  DEFINITIVE_AGREEMENT: 'FULL',
-
-  // Terminal stages
+  PA_DRAFTING: 'FULL',
+  PA_NEGOTIATING: 'FULL',
+  CLOSING: 'FULL',
   CLOSED: 'FULL',
-  PASSED: 'NONE',
-  DECLINED: 'NONE',
-  DISQUALIFIED: 'NONE',
+
+  // Exit stages - revoke access
+  WITHDRAWN: 'NONE',
+  TERMINATED: 'NONE',
 } as const
 
 // ============================================

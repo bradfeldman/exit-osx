@@ -1,11 +1,11 @@
 /**
  * Analytics Components
- * Export all analytics-related components
+ *
+ * Deal analytics and performance visualization components.
  */
 
-export {
-  GoogleTagManager,
-  GoogleTagManagerHead,
-  GoogleTagManagerBody,
-  GoogleAnalytics,
-} from './GoogleTagManager'
+export { AnalyticsDashboard } from './AnalyticsDashboard'
+export { PipelineFunnel } from './PipelineFunnel'
+export { TimeInStageChart } from './TimeInStageChart'
+export { BuyerMixChart } from './BuyerMixChart'
+export { ExitAnalysis } from './ExitAnalysis'
