@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { X, Settings, Cookie } from 'lucide-react'
@@ -46,23 +46,20 @@ export function saveCookiePreferences(preferences: CookiePreferences): void {
   updateConsent(preferences)
 }
 
-// Lazy initializer for preferences state
-function getInitialPreferences(): CookiePreferences {
-  if (typeof window === 'undefined') return DEFAULT_PREFERENCES
-  return getCookiePreferences()
-}
-
-// Lazy initializer for showBanner state
-function getInitialShowBanner(): boolean {
-  if (typeof window === 'undefined') return false
-  const prefs = getCookiePreferences()
-  return !prefs.consentGiven
-}
-
 export function CookieConsent() {
-  const [showBanner, setShowBanner] = useState(getInitialShowBanner)
+  // Start with null to avoid hydration mismatch - render nothing on server
+  const [mounted, setMounted] = useState(false)
+  const [showBanner, setShowBanner] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  const [preferences, setPreferences] = useState<CookiePreferences>(getInitialPreferences)
+  const [preferences, setPreferences] = useState<CookiePreferences>(DEFAULT_PREFERENCES)
+
+  // Initialize state after mount to avoid hydration mismatch
+  useEffect(() => {
+    const prefs = getCookiePreferences()
+    setPreferences(prefs)
+    setShowBanner(!prefs.consentGiven)
+    setMounted(true)
+  }, [])
 
   const handleAcceptAll = useCallback(() => {
     const newPreferences: CookiePreferences = {
@@ -114,7 +111,8 @@ export function CookieConsent() {
     }))
   }, [])
 
-  if (!showBanner) return null
+  // Don't render until mounted to avoid hydration mismatch
+  if (!mounted || !showBanner) return null
 
   return (
     <div
@@ -309,20 +307,24 @@ export function CookieConsent() {
   )
 }
 
-// Lazy initializer for CookieSettingsButton
-function getInitialSettingsPreferences(): CookiePreferences | null {
-  if (typeof window === 'undefined') return null
-  return getCookiePreferences()
-}
-
 // Export a component to manage cookies from settings page
 export function CookieSettingsButton() {
-  const [preferences] = useState<CookiePreferences | null>(getInitialSettingsPreferences)
+  const [mounted, setMounted] = useState(false)
+  const [preferences, setPreferences] = useState<CookiePreferences | null>(null)
+
+  useEffect(() => {
+    setPreferences(getCookiePreferences())
+    setMounted(true)
+  }, [])
 
   const handleReset = useCallback(() => {
     localStorage.removeItem(COOKIE_CONSENT_KEY)
     window.location.reload()
   }, [])
+
+  if (!mounted) {
+    return <p className="text-sm text-muted-foreground">Loading preferences...</p>
+  }
 
   if (!preferences?.consentGiven) {
     return (

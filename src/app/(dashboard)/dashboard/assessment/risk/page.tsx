@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCompany } from '@/contexts/CompanyContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -1073,9 +1074,9 @@ export default function RiskAssessmentPage() {
           <div className="flex-1">
             <p className="text-sm text-muted-foreground">
               Need to update your initial assessment answers? You can review and edit all baseline questions in{' '}
-              <a href="/dashboard/assessment/company" className="text-primary hover:underline font-medium">
+              <Link href="/dashboard/assessment/company" className="text-primary hover:underline font-medium">
                 Baseline Assessment
-              </a>
+              </Link>
               .
             </p>
           </div>
