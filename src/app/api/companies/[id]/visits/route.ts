@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 
 interface RouteContext {
-  params: Promise<{ companyId: string }>
+  params: Promise<{ id: string }>
 }
 
 // GET - Retrieve the last visit for the current user
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
     const authId = user.id
 
-    const { companyId } = await context.params
+    const { id: companyId } = await context.params
 
     // Get the user from database
     const dbUser = await prisma.user.findUnique({
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
     const authId = user.id
 
-    const { companyId } = await context.params
+    const { id: companyId } = await context.params
     const body = await request.json()
 
     // Get the user from database
