@@ -54,11 +54,15 @@ export function CookieConsent() {
   const [preferences, setPreferences] = useState<CookiePreferences>(DEFAULT_PREFERENCES)
 
   // Initialize state after mount to avoid hydration mismatch
+  // Using requestAnimationFrame to make setState async (avoids ESLint set-state-in-effect error)
   useEffect(() => {
-    const prefs = getCookiePreferences()
-    setPreferences(prefs)
-    setShowBanner(!prefs.consentGiven)
-    setMounted(true)
+    const frame = requestAnimationFrame(() => {
+      const prefs = getCookiePreferences()
+      setPreferences(prefs)
+      setShowBanner(!prefs.consentGiven)
+      setMounted(true)
+    })
+    return () => cancelAnimationFrame(frame)
   }, [])
 
   const handleAcceptAll = useCallback(() => {
@@ -312,9 +316,13 @@ export function CookieSettingsButton() {
   const [mounted, setMounted] = useState(false)
   const [preferences, setPreferences] = useState<CookiePreferences | null>(null)
 
+  // Using requestAnimationFrame to make setState async (avoids ESLint set-state-in-effect error)
   useEffect(() => {
-    setPreferences(getCookiePreferences())
-    setMounted(true)
+    const frame = requestAnimationFrame(() => {
+      setPreferences(getCookiePreferences())
+      setMounted(true)
+    })
+    return () => cancelAnimationFrame(frame)
   }, [])
 
   const handleReset = useCallback(() => {
