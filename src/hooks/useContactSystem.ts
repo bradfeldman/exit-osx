@@ -66,40 +66,39 @@ interface FetchState<T> {
 
 function useFetch<T>(url: string | null): FetchState<T> & { refresh: () => void } {
   const [data, setData] = useState<T | null>(null)
-  const [isLoading, setIsLoading] = useState(!!url)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const [refreshCount, setRefreshCount] = useState(0)
 
   useEffect(() => {
+    // Skip fetching when no URL - return values handled below
     if (!url) {
-      setData(null)
-      setIsLoading(false)
-      setError(null)
       return
     }
 
     let cancelled = false
-    setIsLoading(true)
-    setError(null)
 
-    fetch(url)
-      .then(res => {
+    const doFetch = async () => {
+      try {
+        const res = await fetch(url)
         if (!res.ok) throw new Error('Fetch failed')
-        return res.json()
-      })
-      .then(fetchedData => {
+        const fetchedData = await res.json()
         if (!cancelled) {
           setData(fetchedData)
           setIsLoading(false)
         }
-      })
-      .catch(fetchError => {
+      } catch (fetchError) {
         if (!cancelled) {
           setData(null)
           setIsLoading(false)
-          setError(fetchError)
+          setError(fetchError as Error)
         }
-      })
+      }
+    }
+
+    setIsLoading(true)
+    setError(null)
+    doFetch()
 
     return () => {
       cancelled = true
@@ -109,6 +108,11 @@ function useFetch<T>(url: string | null): FetchState<T> & { refresh: () => void 
   const refresh = useCallback(() => {
     setRefreshCount(prev => prev + 1)
   }, [])
+
+  // Return empty state when no URL (avoids setState in effect)
+  if (!url) {
+    return { data: null, isLoading: false, error: null, refresh }
+  }
 
   return { data, isLoading, error, refresh }
 }
