@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from '@/lib/motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useCompany } from '@/contexts/CompanyContext'
-import { FocusedOnboardingWizard } from '@/components/onboarding/FocusedOnboardingWizard'
+import { GuidedOnboardingFlow } from '@/components/onboarding/GuidedOnboardingFlow'
 import { HeroMetrics } from './HeroMetrics'
 import { ValueDrivers } from './ValueDrivers'
 import { RiskBreakdown } from './RiskBreakdown'
@@ -116,6 +116,9 @@ export function DashboardContent({ userName }: DashboardContentProps) {
 
   // State for returning user welcome banner
   const [isReturningUser, setIsReturningUser] = useState(false)
+
+  // State for skipped onboarding banner
+  const [showSkippedBanner, setShowSkippedBanner] = useState(false)
   const [lastVisitData, setLastVisitData] = useState<{
     lastBriScore: number | null
     lastValuation: number | null
@@ -261,6 +264,14 @@ export function DashboardContent({ userName }: DashboardContentProps) {
 
     loadData()
   }, [selectedCompanyId, companies, companyLoading, setSelectedCompanyId])
+
+  // Check if onboarding was skipped
+  useEffect(() => {
+    const skipped = localStorage.getItem('onboardingSkipped')
+    if (skipped === 'true' && dashboardData && !dashboardData.hasAssessment) {
+      setShowSkippedBanner(true)
+    }
+  }, [dashboardData])
 
   // Track dashboard first view
   useEffect(() => {
@@ -487,7 +498,7 @@ export function DashboardContent({ userName }: DashboardContentProps) {
   // Early check: if we know there are no companies, show onboarding immediately
   // This prevents the "flash" of dashboard skeleton before redirect
   if (!companyLoading && companies.length === 0) {
-    return <FocusedOnboardingWizard userName={userName} />
+    return <GuidedOnboardingFlow userName={userName} />
   }
 
   // Show minimal loading while checking company status
@@ -585,7 +596,7 @@ export function DashboardContent({ userName }: DashboardContentProps) {
 
   // No company selected - show unified focused onboarding wizard (Dan + Alex style)
   if (noCompany || !dashboardData) {
-    return <FocusedOnboardingWizard userName={userName} />
+    return <GuidedOnboardingFlow userName={userName} />
   }
 
   const { tier1, tier2, tier3, hasAssessment } = dashboardData
@@ -726,6 +737,56 @@ export function DashboardContent({ userName }: DashboardContentProps) {
               >
                 Dismiss
               </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Skipped Onboarding Banner */}
+      <AnimatePresence>
+        {showSkippedBanner && !hasAssessment && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-6 p-4 bg-gradient-to-r from-amber-500/10 to-primary/10 rounded-xl border border-amber-500/20"
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-amber-500/20">
+                  <svg className="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">
+                    Complete Your Risk Assessment
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Your valuation is based on industry averages. Complete the assessment to see your personalized number.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowSkippedBanner(false)
+                    localStorage.removeItem('onboardingSkipped')
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Dismiss
+                </Button>
+                <Button
+                  onClick={() => router.push('/dashboard/assessment/risk')}
+                  size="sm"
+                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                >
+                  Complete Assessment
+                </Button>
+              </div>
             </div>
           </motion.div>
         )}
