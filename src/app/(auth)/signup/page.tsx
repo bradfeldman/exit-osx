@@ -8,10 +8,10 @@ import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Eye, EyeOff, AlertTriangle, Loader2, Sparkles } from 'lucide-react'
+import { Eye, EyeOff, AlertTriangle, Loader2 } from 'lucide-react'
 import { secureSignup } from '@/app/actions/auth'
 import { getRedirectUrl, buildUrlWithRedirect, isInviteRedirect } from '@/lib/utils/redirect'
-import { PRICING_PLANS, type PlanTier } from '@/lib/pricing'
+import { type PlanTier } from '@/lib/pricing'
 import { analytics } from '@/lib/analytics'
 import { useFormTracking, useScrollDepthTracking, useExitIntent } from '@/lib/analytics/hooks'
 
@@ -50,13 +50,11 @@ function SignupPageContent() {
   const redirectUrl = getRedirectUrl(searchParams)
   const isFromInvite = isInviteRedirect(redirectUrl)
   const selectedPlanId = searchParams.get('plan') as PlanTier | null
-  const selectedPlan = selectedPlanId ? PRICING_PLANS.find(p => p.id === selectedPlanId) : null
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
+  const [companyName, setCompanyName] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [warning, setWarning] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -71,7 +69,6 @@ function SignupPageContent() {
     handleFieldBlur,
     handleFieldError,
     markSubmitted,
-    getFormStartTime,
   } = useFormTracking({ formId: 'signup' })
 
   // Analytics: Track scroll depth
@@ -88,7 +85,6 @@ function SignupPageContent() {
       isFromInvite,
     })
 
-    // Start timer for time-to-submit tracking
     analytics.startTimer('signup_page')
   }, [selectedPlanId, isFromInvite])
 
@@ -100,7 +96,6 @@ function SignupPageContent() {
         method: 'email',
       })
 
-      // Track time from page load to successful signup
       analytics.track('signup_submit', {
         success: true,
         timeToSubmit,
@@ -109,7 +104,7 @@ function SignupPageContent() {
   }, [success])
 
   // Analytics: Track errors
-  const trackError = useCallback((errorMessage: string, fieldName?: string) => {
+  const _trackError = useCallback((errorMessage: string, fieldName?: string) => {
     if (fieldName) {
       handleFieldError(fieldName, 'validation', errorMessage)
     }
@@ -127,17 +122,7 @@ function SignupPageContent() {
     setWarning(null)
     setLoading(true)
 
-    // Mark form as submitted for analytics
     markSubmitted()
-
-    // Validate passwords match
-    if (password !== confirmPassword) {
-      const errorMsg = 'Passwords do not match'
-      setError(errorMsg)
-      trackError(errorMsg, 'confirmPassword')
-      setLoading(false)
-      return
-    }
 
     try {
       const result = await secureSignup(name, email, password, redirectUrl, selectedPlanId || undefined)
@@ -146,7 +131,6 @@ function SignupPageContent() {
         const errorMsg = result.error || 'Unable to create account'
         setError(errorMsg)
 
-        // Track failed signup
         analytics.track('signup_submit', {
           success: false,
           timeToSubmit: Date.now() - pageLoadTime.current,
@@ -173,215 +157,16 @@ function SignupPageContent() {
     }
   }
 
+  // SUCCESS STATE - Dan + Alex blended: calm reassurance + completion urgency
   if (success) {
     return (
-      <div className="min-h-screen flex">
-        {/* Left side - Branding */}
-        <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
-          {/* Decorative elements */}
-          <div className="absolute top-20 right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-20 left-10 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
-          <motion.div
-            className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <Link href="/" className="flex items-center gap-3">
-              <Image
-                src="/logo-icon.png"
-                alt="Exit OSx"
-                width={40}
-                height={40}
-                className="h-10 w-10"
-              />
-              <Image
-                src="/wordmark.svg"
-                alt="Exit OSx"
-                width={120}
-                height={34}
-                className="h-8 w-auto brightness-0 invert"
-              />
-            </Link>
-
-            <div className="space-y-6">
-              <h1 className="text-4xl font-bold font-display leading-tight tracking-tight">
-                You&apos;re Almost There
-              </h1>
-              <p className="text-lg opacity-90 max-w-md">
-                Just one more step to start your exit planning journey.
-              </p>
-            </div>
-
-            <p className="text-sm opacity-70">
-              A Pasadena Private Financial Group Company
-            </p>
-          </motion.div>
-        </div>
-
-        {/* Right side - Success Message */}
-        <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-background">
-          <motion.div
-            className="w-full max-w-md space-y-8 text-center"
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-          >
-            {/* Mobile logo */}
-            <motion.div variants={fadeInUp} className="lg:hidden">
-              <Link href="/" className="inline-flex items-center gap-2">
-                <Image
-                  src="/logo-icon.png"
-                  alt="Exit OSx"
-                  width={32}
-                  height={32}
-                  className="h-8 w-8"
-                />
-                <Image
-                  src="/wordmark.svg"
-                  alt="Exit OSx"
-                  width={100}
-                  height={28}
-                  className="h-6 w-auto"
-                />
-              </Link>
-            </motion.div>
-
-            <motion.div
-              variants={fadeInUp}
-              className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto"
-            >
-              <MailIcon className="w-8 h-8 text-green-600" />
-            </motion.div>
-
-            <motion.div variants={fadeInUp}>
-              <h2 className="text-3xl font-bold font-display text-foreground tracking-tight">Check your email</h2>
-              <p className="mt-4 text-muted-foreground">
-                We&apos;ve sent a confirmation link to
-              </p>
-              <p className="font-medium text-foreground mt-1">{email}</p>
-            </motion.div>
-
-            <motion.p variants={fadeInUp} className="text-sm text-muted-foreground">
-              Click the link in the email to verify your account and complete signup.
-              Don&apos;t see it? Check your spam folder.
-            </motion.p>
-
-            {isFromInvite && (
-              <motion.div variants={fadeInUp} className="p-4 text-sm text-primary bg-primary/5 border border-primary/20 rounded-lg">
-                <p className="font-medium">After verifying your email, you&apos;ll be redirected to accept your team invite.</p>
-              </motion.div>
-            )}
-
-            {warning && (
-              <motion.div variants={fadeInUp} className="p-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium">Security Recommendation</p>
-                  <p className="mt-1 text-amber-600">{warning}</p>
-                  <p className="mt-2 text-xs">Consider changing your password after verifying your account.</p>
-                </div>
-              </motion.div>
-            )}
-
-            <motion.div variants={fadeInUp}>
-              <Link href="/login">
-                <Button variant="outline" className="w-full h-12 transition-all duration-200 hover:scale-[1.02] hover:shadow-md">
-                  Back to Sign In
-                </Button>
-              </Link>
-            </motion.div>
-          </motion.div>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="min-h-screen flex">
-      {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
-        {/* Decorative elements */}
-        <div className="absolute top-20 right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-10 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
-        <motion.div
-          className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <Link href="/" className="flex items-center gap-3">
-            <Image
-              src="/logo-icon.png"
-              alt="Exit OSx"
-              width={40}
-              height={40}
-              className="h-10 w-10"
-            />
-            <Image
-              src="/wordmark.svg"
-              alt="Exit OSx"
-              width={120}
-              height={34}
-              className="h-8 w-auto brightness-0 invert"
-            />
-          </Link>
-
-          <div className="space-y-6">
-            <h1 className="text-4xl font-bold font-display leading-tight tracking-tight">
-              Start Building Your<br />Exit Strategy Today
-            </h1>
-            <p className="text-lg opacity-90 max-w-md">
-              Join business owners who are taking control of their exit outcomes with data-driven insights and actionable playbooks.
-            </p>
-            <motion.div
-              className="space-y-4 pt-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-            >
-              {[
-                'Free to start, no credit card required',
-                '14-day free trial on paid features',
-                'Cancel or downgrade anytime'
-              ].map((text, i) => (
-                <motion.div
-                  key={text}
-                  className="flex items-center gap-3"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 + i * 0.1 }}
-                >
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                    <CheckIcon className="w-4 h-4" />
-                  </div>
-                  <span>{text}</span>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-
-          <p className="text-sm opacity-70">
-            A Pasadena Private Financial Group Company
-          </p>
-        </motion.div>
-      </div>
-
-      {/* Right side - Signup Form */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-background">
-        <motion.div
-          className="w-full max-w-md space-y-8"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Mobile logo */}
-          <motion.div variants={fadeInUp} className="lg:hidden text-center">
+      <div className="min-h-screen bg-background">
+        {/* Minimal Header */}
+        <header className="border-b border-border">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <Link href="/" className="inline-flex items-center gap-2">
               <Image
-                src="/logo-icon.png"
+                src="/logo.webp"
                 alt="Exit OSx"
                 width={32}
                 height={32}
@@ -395,183 +180,462 @@ function SignupPageContent() {
                 className="h-6 w-auto"
               />
             </Link>
-          </motion.div>
+          </div>
+        </header>
 
-          <motion.div variants={fadeInUp} className="text-center">
-            <h2 className="text-3xl font-bold font-display text-foreground tracking-tight">
-              {isFromInvite ? 'Create an account to join' : 'Create your account'}
-            </h2>
-            <p className="mt-2 text-muted-foreground">
-              {isFromInvite
-                ? 'Sign up to accept your team invitation'
-                : 'Get started with Exit OSx in minutes'}
-            </p>
-          </motion.div>
-
-          {/* Selected Plan Banner */}
-          {selectedPlan && !isFromInvite && (
-            <motion.div
-              variants={fadeInUp}
-              className="flex items-center gap-3 p-4 rounded-lg bg-primary/5 border border-primary/20"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                <Sparkles className="h-5 w-5 text-primary" />
+        <main className="flex items-center justify-center px-4 py-12 md:py-20">
+          <motion.div
+            className="w-full max-w-lg space-y-8"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+          >
+            {/* Progress Indicator - Humans finish what they start */}
+            <motion.div variants={fadeInUp} className="flex items-center justify-center gap-2">
+              <div className="flex items-center gap-1">
+                <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-sm font-medium">
+                  <CheckIcon className="w-4 h-4" />
+                </div>
+                <span className="text-xs text-muted-foreground ml-1">Create</span>
               </div>
-              <div className="flex-1">
-                <p className="font-medium text-foreground">
-                  {selectedPlan.name} Plan
-                  {selectedPlan.monthlyPrice > 0 && (
-                    <span className="ml-2 text-xs font-normal text-muted-foreground">
-                      14-day free trial
-                    </span>
-                  )}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {selectedPlan.monthlyPrice === 0
-                    ? 'Free forever'
-                    : `Then $${selectedPlan.annualPrice}/mo billed annually`}
-                </p>
+              <div className="w-8 h-0.5 bg-primary"></div>
+              <div className="flex items-center gap-1">
+                <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium animate-pulse">
+                  2
+                </div>
+                <span className="text-xs text-foreground font-medium ml-1">Confirm</span>
               </div>
-              <Link
-                href="/pricing"
-                className="text-sm text-primary hover:underline"
-              >
-                Change
-              </Link>
+              <div className="w-8 h-0.5 bg-border"></div>
+              <div className="flex items-center gap-1">
+                <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
+                  3
+                </div>
+                <span className="text-xs text-muted-foreground ml-1">See Score</span>
+              </div>
             </motion.div>
-          )}
 
-          <motion.form variants={fadeInUp} onSubmit={handleSignup} className="space-y-5">
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg"
+            {/* Main Message */}
+            <motion.div variants={fadeInUp} className="text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                <MailIcon className="w-8 h-8 text-primary" />
+              </div>
+
+              <h1 className="text-3xl md:text-4xl font-bold font-display text-foreground tracking-tight">
+                You&apos;re One Click Away From Your Exit Readiness Score
+              </h1>
+
+              <p className="text-muted-foreground">
+                We&apos;ve sent a confirmation link to
+              </p>
+              <p className="text-lg font-semibold text-foreground">{email}</p>
+              <p className="text-foreground">
+                Confirm your email to unlock your results.
+              </p>
+            </motion.div>
+
+            {/* Value Reinforcement - Short, strong */}
+            <motion.div variants={fadeInUp} className="bg-muted/50 rounded-xl p-6 space-y-3">
+              <p className="font-medium text-foreground text-sm">
+                Founders who complete this step typically uncover:
+              </p>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                  <span>Hidden buyer risks</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                  <span>Valuation blind spots</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                  <span>Clear opportunities to increase exit leverage</span>
+                </li>
+              </ul>
+            </motion.div>
+
+            {/* Primary CTA - Do NOT send them away */}
+            <motion.div variants={fadeInUp} className="space-y-4">
+              <a
+                href={`https://mail.google.com/mail/u/0/#search/from%3Aexitosx+in%3Aanywhere`}
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                {error}
+                <Button className="w-full h-12 text-base font-medium">
+                  <MailIcon className="w-5 h-5 mr-2" />
+                  Open Email & See My Results
+                </Button>
+              </a>
+
+              {/* Secondary Action */}
+              <div className="text-center text-sm text-muted-foreground">
+                <span>Didn&apos;t receive it? </span>
+                <button
+                  type="button"
+                  className="text-primary hover:underline font-medium"
+                  onClick={() => {
+                    // In a real implementation, this would trigger resend
+                    alert('Check your spam folder. If still missing, try signing up again.')
+                  }}
+                >
+                  Resend email
+                </button>
+                <span> · </span>
+                <span>Check spam</span>
+              </div>
+            </motion.div>
+
+            {isFromInvite && (
+              <motion.div variants={fadeInUp} className="p-4 text-sm text-primary bg-primary/5 border border-primary/20 rounded-lg text-center">
+                <p className="font-medium">After verifying, you&apos;ll be redirected to accept your team invite.</p>
               </motion.div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="John Smith"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onFocus={() => handleFieldFocus('name')}
-                onBlur={() => handleFieldBlur('name')}
-                required
-                disabled={loading}
-                className="h-12 transition-all duration-200 focus:scale-[1.01]"
-              />
-            </div>
+            {warning && (
+              <motion.div variants={fadeInUp} className="p-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3 text-left">
+                <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium">Security Recommendation</p>
+                  <p className="mt-1 text-amber-600">{warning}</p>
+                </div>
+              </motion.div>
+            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email address</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onFocus={() => handleFieldFocus('email')}
-                onBlur={() => handleFieldBlur('email')}
-                required
-                disabled={loading}
-                className="h-12 transition-all duration-200 focus:scale-[1.01]"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Create a password (min 8 characters)"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => handleFieldFocus('password')}
-                  onBlur={() => handleFieldBlur('password')}
-                  required
-                  disabled={loading}
-                  className="h-12 pr-12 transition-all duration-200 focus:scale-[1.01]"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  placeholder="Confirm your password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  onFocus={() => handleFieldFocus('confirmPassword')}
-                  onBlur={() => handleFieldBlur('confirmPassword')}
-                  required
-                  disabled={loading}
-                  className="h-12 pr-12 transition-all duration-200 focus:scale-[1.01]"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  tabIndex={-1}
-                >
-                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full h-12 text-base transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/25"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating account...
-                </>
-              ) : (
-                'Create Account'
-              )}
-            </Button>
-
-            <p className="text-xs text-center text-muted-foreground">
-              By creating an account, you agree to our{' '}
-              <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>
-              {' '}and{' '}
-              <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
-            </p>
-          </motion.form>
-
-          <motion.div variants={fadeInUp} className="text-center space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Already have an account?{' '}
-              <Link href={buildUrlWithRedirect('/login', redirectUrl)} className="font-medium text-primary hover:underline">
-                Sign in
-              </Link>
-            </p>
-            <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-block">
-              &larr; Back to home
-            </Link>
+            {/* Trust Footer - No "Back to Sign In" */}
+            <motion.div variants={fadeInUp} className="text-center space-y-1 pt-4 border-t border-border">
+              <p className="text-sm text-muted-foreground">No sales calls. No obligation.</p>
+              <p className="text-sm text-muted-foreground">Just clarity.</p>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </main>
       </div>
+    )
+  }
+
+  // SIGNUP FORM - High conversion layout
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Minimal Header */}
+      <header className="border-b border-border">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <Link href="/" className="inline-flex items-center gap-2">
+            <Image
+              src="/logo.webp"
+              alt="Exit OSx"
+              width={32}
+              height={32}
+              className="h-8 w-8"
+            />
+            <Image
+              src="/wordmark.svg"
+              alt="Exit OSx"
+              width={100}
+              height={28}
+              className="h-6 w-auto"
+            />
+          </Link>
+          <Link
+            href={buildUrlWithRedirect('/login', redirectUrl)}
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
+            Already have an account? <span className="text-primary font-medium">Log in</span>
+          </Link>
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+          {/* Left Column - Value Proposition */}
+          <motion.div
+            className="space-y-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            {/* Headline */}
+            <div className="space-y-4">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-display text-foreground tracking-tight leading-tight">
+                See How Buyers Would Price Your Business Today
+              </h1>
+              <p className="text-lg text-muted-foreground">
+                Most founders don&apos;t lose money at exit because of revenue.
+                <br />
+                They lose it because of <span className="text-foreground font-medium">hidden risk</span>.
+              </p>
+              <p className="text-foreground">
+                Exit OSx shows you where buyers will discount your company—and what to do about it—in minutes.
+              </p>
+            </div>
+
+            {/* Value Anchor - The money math */}
+            <div className="bg-primary/5 border border-primary/20 rounded-xl p-6">
+              <p className="text-lg text-foreground">
+                Even a <span className="font-semibold">0.3× multiple swing</span> on a $3M EBITDA business
+              </p>
+              <p className="text-2xl font-bold text-primary mt-1">= $900,000</p>
+              <p className="text-muted-foreground mt-2">This assessment costs $0.</p>
+            </div>
+
+            {/* What You'll See - Below fold on mobile, visible on desktop */}
+            <div className="hidden lg:block space-y-4">
+              <h2 className="font-semibold text-foreground">What You&apos;ll See After Signup</h2>
+              <p className="text-muted-foreground">Within minutes, you&apos;ll get:</p>
+              <ul className="space-y-2 text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+                  <span>Your Exit Readiness Score</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+                  <span>A breakdown of buyer risk categories</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+                  <span>Where your valuation is most exposed</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+                  <span>What matters now vs later</span>
+                </li>
+              </ul>
+              <p className="text-sm text-muted-foreground">
+                No guessing. No jargon. No pressure to upgrade.
+              </p>
+            </div>
+
+            {/* Objection Handling - Desktop only */}
+            <div className="hidden lg:block space-y-4 pt-4 border-t border-border">
+              <div className="space-y-3">
+                <div>
+                  <p className="font-medium text-foreground">&quot;I&apos;m not selling yet.&quot;</p>
+                  <p className="text-sm text-muted-foreground">Perfect. This is when leverage is built.</p>
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">&quot;I already have an advisor.&quot;</p>
+                  <p className="text-sm text-muted-foreground">Great. This helps you focus them where it counts.</p>
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">&quot;I&apos;ll do this later.&quot;</p>
+                  <p className="text-sm text-muted-foreground">Later is when buyers decide for you.</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Right Column - Signup Form */}
+          <motion.div
+            className="lg:sticky lg:top-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <div className="bg-card border border-border rounded-2xl p-6 md:p-8 shadow-sm">
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-semibold text-foreground">
+                  {isFromInvite ? 'Create Account to Join Team' : 'Create Your Free Account'}
+                </h2>
+              </div>
+
+              <form onSubmit={handleSignup} className="space-y-4">
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg"
+                  >
+                    {error}
+                  </motion.div>
+                )}
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="John Smith"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    onFocus={() => handleFieldFocus('name')}
+                    onBlur={() => handleFieldBlur('name')}
+                    required
+                    disabled={loading}
+                    className="h-11"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@company.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onFocus={() => handleFieldFocus('email')}
+                    onBlur={() => handleFieldBlur('email')}
+                    required
+                    disabled={loading}
+                    className="h-11"
+                  />
+                  <p className="text-xs text-muted-foreground">We&apos;ll send your results here.</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="password">Create Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Min 8 characters"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => handleFieldFocus('password')}
+                      onBlur={() => handleFieldBlur('password')}
+                      required
+                      disabled={loading}
+                      className="h-11 pr-11"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Secure. You&apos;re in control.</p>
+                </div>
+
+                {!isFromInvite && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="companyName">
+                      Company Name <span className="text-muted-foreground font-normal">(optional)</span>
+                    </Label>
+                    <Input
+                      id="companyName"
+                      type="text"
+                      placeholder="Your company name"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      onFocus={() => handleFieldFocus('companyName')}
+                      onBlur={() => handleFieldBlur('companyName')}
+                      disabled={loading}
+                      className="h-11"
+                    />
+                    <p className="text-xs text-muted-foreground">Used only to personalize your results.</p>
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  className="w-full h-12 text-base font-medium mt-2"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating account...
+                    </>
+                  ) : (
+                    'Reveal My Exit Risk Profile'
+                  )}
+                </Button>
+
+                {/* Trust Microcopy - Critical for conversion */}
+                <div className="space-y-2 pt-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
+                    <span>Free plan. No credit card required.</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
+                    <span>No sales calls. Ever.</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
+                    <span>Your data is private and never shared.</span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-center text-muted-foreground pt-2">
+                  By creating an account, you agree to our{' '}
+                  <Link href="/terms" className="text-primary hover:underline">Terms</Link>
+                  {' '}and{' '}
+                  <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+                </p>
+              </form>
+            </div>
+
+            {/* Social Proof - Light, under form */}
+            <div className="mt-6 text-center space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Built for founders of $1M–$100M businesses
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Designed using real buyer diligence logic
+              </p>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Mobile: What You'll See section */}
+        <motion.div
+          className="lg:hidden mt-12 space-y-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          <h2 className="font-semibold text-foreground text-lg">What You&apos;ll See After Signup</h2>
+          <p className="text-muted-foreground">Within minutes, you&apos;ll get:</p>
+          <ul className="space-y-3 text-muted-foreground">
+            <li className="flex items-start gap-3">
+              <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+              <span>Your Exit Readiness Score</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+              <span>A breakdown of buyer risk categories</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+              <span>Where your valuation is most exposed</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+              <span>What matters now vs later</span>
+            </li>
+          </ul>
+
+          {/* Mobile Objection Handling */}
+          <div className="space-y-4 pt-6 border-t border-border">
+            <div>
+              <p className="font-medium text-foreground">&quot;I&apos;m not selling yet.&quot;</p>
+              <p className="text-sm text-muted-foreground">Perfect. This is when leverage is built.</p>
+            </div>
+            <div>
+              <p className="font-medium text-foreground">&quot;I already have an advisor.&quot;</p>
+              <p className="text-sm text-muted-foreground">Great. This helps you focus them where it counts.</p>
+            </div>
+            <div>
+              <p className="font-medium text-foreground">&quot;I&apos;ll do this later.&quot;</p>
+              <p className="text-sm text-muted-foreground">Later is when buyers decide for you.</p>
+            </div>
+          </div>
+        </motion.div>
+      </main>
+
+      {/* Footer Microcopy */}
+      <footer className="border-t border-border py-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            Exit OSx is an operating system for exit readiness—not a sales funnel.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Start free. Upgrade only when it makes sense.
+          </p>
+        </div>
+      </footer>
     </div>
   )
 }
