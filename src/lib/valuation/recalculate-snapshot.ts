@@ -205,15 +205,9 @@ export async function recalculateSnapshotForCompany(
     let coreScore = 0.5 // Default if no core factors
 
     if (coreFactors) {
+      // Core Score is based on business model quality factors only
+      // Revenue size is NOT included - it already affects valuation through revenue × multiple
       const factorScores: Record<string, Record<string, number>> = {
-        revenueSizeCategory: {
-          UNDER_500K: 0.2,
-          FROM_500K_TO_1M: 0.4,
-          FROM_1M_TO_3M: 0.6,
-          FROM_3M_TO_10M: 0.8,
-          FROM_10M_TO_25M: 0.9,
-          OVER_25M: 1.0,
-        },
         revenueModel: {
           PROJECT_BASED: 0.25,
           TRANSACTIONAL: 0.5,
@@ -247,7 +241,6 @@ export async function recalculateSnapshotForCompany(
       }
 
       const scores = [
-        factorScores.revenueSizeCategory[coreFactors.revenueSizeCategory] || 0.5,
         factorScores.revenueModel[coreFactors.revenueModel] || 0.5,
         factorScores.grossMarginProxy[coreFactors.grossMarginProxy] || 0.5,
         factorScores.laborIntensity[coreFactors.laborIntensity] || 0.5,
