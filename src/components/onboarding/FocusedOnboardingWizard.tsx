@@ -85,6 +85,8 @@ export function FocusedOnboardingWizard({ userName }: FocusedOnboardingWizardPro
   const [error, setError] = useState<string | null>(null)
   const [showCelebration, setShowCelebration] = useState(false)
   const [newCompanyId, setNewCompanyId] = useState<string | null>(null)
+  const [estimatedValuation, setEstimatedValuation] = useState<number | null>(null)
+  const [industryPath, setIndustryPath] = useState<string>('')
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -288,6 +290,21 @@ export function FocusedOnboardingWizard({ userName }: FocusedOnboardingWizardPro
         stepsRevisited: stepsVisited.current.size > steps.length ? stepsVisited.current.size - steps.length : 0,
       })
 
+      // Fetch the dashboard data to get estimated valuation
+      try {
+        const dashboardResponse = await fetch(`/api/companies/${company.id}/dashboard`)
+        if (dashboardResponse.ok) {
+          const dashboardData = await dashboardResponse.json()
+          // Get estimated value from tier1 or tier2
+          const estimatedValue = dashboardData.tier1?.currentValue || dashboardData.tier2?.estimatedValue || null
+          setEstimatedValuation(estimatedValue)
+          setIndustryPath(dashboardData.tier2?.industry || '')
+        }
+      } catch {
+        // Valuation fetch failed - celebration will show without number
+        console.error('Failed to fetch valuation for celebration')
+      }
+
       setNewCompanyId(company.id)
       setShowCelebration(true)
     } catch (err) {
@@ -349,93 +366,117 @@ export function FocusedOnboardingWizard({ userName }: FocusedOnboardingWizardPro
     }
   }
 
-  // Celebration screen
+  // Format valuation for display
+  const formatValuation = (value: number): string => {
+    if (value >= 1000000000) {
+      return `$${(value / 1000000000).toFixed(1)}B`
+    } else if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(1)}M`
+    } else if (value >= 1000) {
+      return `$${(value / 1000).toFixed(0)}K`
+    }
+    return `$${value.toLocaleString()}`
+  }
+
+  // Celebration screen - THE BIG REVEAL (Dan Martell + Alex Hormozi style)
   if (showCelebration) {
     return (
       <div className="fixed inset-0 z-50 bg-background overflow-auto">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-emerald-500/5 pointer-events-none" />
+        {/* Dark gradient background for drama */}
+        <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-zinc-950 to-black" />
+
+        {/* Subtle gold accent glow */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent pointer-events-none" />
 
         <div className="relative min-h-screen flex flex-col items-center justify-center px-6 py-12">
           <motion.div
-            className="text-center max-w-lg"
+            className="text-center max-w-2xl"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
           >
-            {/* Success animation */}
-            <motion.div
-              className="relative mb-10 mx-auto"
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 150, damping: 15 }}
-            >
-              <motion.div
-                className="absolute inset-[-20px] bg-primary/10 rounded-full blur-3xl"
-                animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <div className="relative w-28 h-28 bg-gradient-to-br from-primary via-primary/90 to-amber-500 rounded-full flex items-center justify-center shadow-2xl shadow-primary/30 mx-auto">
-                <motion.svg
-                  className="w-14 h-14 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 1 }}
-                  transition={{ delay: 0.6, duration: 0.6, ease: "easeOut" }}
-                >
-                  <motion.path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4.5 12.75l6 6 9-13.5"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ delay: 0.6, duration: 0.6, ease: "easeOut" }}
-                  />
-                </motion.svg>
-              </div>
-            </motion.div>
-
-            <motion.h1
-              className="text-3xl md:text-4xl font-bold text-foreground mb-3 font-display"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
-            >
-              Your Preview is Ready
-            </motion.h1>
-
+            {/* Small label */}
             <motion.p
-              className="text-lg text-muted-foreground mb-2"
+              className="text-sm uppercase tracking-widest text-primary/80 mb-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.5 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
             >
-              <span className="font-semibold text-foreground">{formData.name}</span> has been added.
+              Based on {industryPath || 'your industry'} averages
             </motion.p>
 
+            {/* The headline */}
+            <motion.h2
+              className="text-xl md:text-2xl text-zinc-400 mb-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+            >
+              Businesses like yours sell for approximately
+            </motion.h2>
+
+            {/* THE BIG NUMBER */}
+            {estimatedValuation ? (
+              <motion.div
+                className="mb-6"
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.8, duration: 0.8, type: "spring", stiffness: 100 }}
+              >
+                <span className="text-6xl md:text-8xl lg:text-9xl font-bold bg-gradient-to-r from-primary via-amber-400 to-primary bg-clip-text text-transparent font-display">
+                  {formatValuation(estimatedValuation)}
+                </span>
+              </motion.div>
+            ) : (
+              <motion.div
+                className="mb-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+              >
+                <span className="text-4xl md:text-5xl font-bold text-white">
+                  Calculating...
+                </span>
+              </motion.div>
+            )}
+
+            {/* Value anchor line */}
             <motion.p
-              className="text-base text-muted-foreground max-w-md mx-auto mb-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8, duration: 0.5 }}
+              className="text-lg md:text-xl text-zinc-300 mb-8 max-w-md mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.2, duration: 0.5 }}
             >
-              We&apos;ve calculated a valuation preview based on your industry and revenue.
-              Complete the Risk Assessment to see your full Exit Readiness Score.
+              But your number could be <span className="text-emerald-400 font-semibold">20-40% higher</span> with the right preparation.
             </motion.p>
 
+            {/* Curiosity hook */}
+            <motion.div
+              className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-6 mb-10 max-w-lg mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.5, duration: 0.5 }}
+            >
+              <p className="text-zinc-300 text-base">
+                <span className="text-white font-semibold">{formData.name}</span> has hidden value that buyers will discount — unless you fix it first.
+              </p>
+              <p className="text-primary text-sm mt-2 font-medium">
+                Your Exit Readiness Score reveals exactly where.
+              </p>
+            </motion.div>
+
+            {/* CTA Button */}
             <motion.div
               initial={{ opacity: 0, y: 30, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: 1, duration: 0.5, type: "spring" }}
+              transition={{ delay: 1.8, duration: 0.5, type: "spring" }}
             >
               <Button
                 size="lg"
                 onClick={handleContinueToDashboard}
-                className="text-lg px-10 py-7 shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/30 hover:-translate-y-1 transition-all font-semibold"
+                className="text-lg px-10 py-7 shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 hover:-translate-y-1 transition-all font-semibold bg-gradient-to-r from-primary to-amber-600 hover:from-primary/90 hover:to-amber-500"
               >
-                <span>See My Valuation Preview</span>
+                <span>See Where Buyers Will Discount You</span>
                 <motion.svg
                   className="ml-3 h-6 w-6"
                   fill="none"
@@ -443,7 +484,7 @@ export function FocusedOnboardingWizard({ userName }: FocusedOnboardingWizardPro
                   strokeWidth={2.5}
                   stroke="currentColor"
                   animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity, delay: 1.5 }}
+                  transition={{ duration: 1.5, repeat: Infinity, delay: 2.5 }}
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                 </motion.svg>
