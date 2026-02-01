@@ -77,6 +77,19 @@ const SENSITIVE_RATE_LIMITED_ROUTES = [
   '/api/admin/users',
 ]
 
+// Marketing domain routes (served on exitosx.com)
+const MARKETING_ROUTES = ['/', '/pricing', '/privacy', '/terms']
+
+// Check if hostname is the marketing domain
+function isMarketingDomain(hostname: string): boolean {
+  return hostname === 'exitosx.com' || hostname === 'www.exitosx.com'
+}
+
+// Check if hostname is the app domain
+function isAppDomain(hostname: string): boolean {
+  return hostname === 'app.exitosx.com' || hostname.includes('localhost')
+}
+
 export async function middleware(request: NextRequest) {
   // SECURITY: Check staging authentication first
   const stagingAuthResponse = checkStagingAuth(request)
@@ -86,6 +99,32 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
   const hostname = request.headers.get('host') || ''
+
+  // === DOMAIN-BASED ROUTING ===
+
+  // Marketing domain (exitosx.com): Only serve marketing routes, redirect others to app
+  if (isMarketingDomain(hostname)) {
+    const isMarketingRoute = MARKETING_ROUTES.includes(pathname)
+
+    if (!isMarketingRoute) {
+      // Redirect non-marketing routes to app subdomain
+      const url = new URL(request.url)
+      url.hostname = 'app.exitosx.com'
+      url.port = ''
+      return NextResponse.redirect(url)
+    }
+    // Continue processing for marketing routes (serve landing, pricing, etc.)
+  }
+
+  // App domain (app.exitosx.com): Redirect marketing routes to marketing domain
+  if (isAppDomain(hostname) && !hostname.includes('localhost')) {
+    // Redirect pricing to marketing domain
+    if (pathname === '/pricing') {
+      return NextResponse.redirect('https://exitosx.com/pricing')
+    }
+    // Note: We don't redirect / here because it's handled by the existing logic
+    // (logged in users go to dashboard, logged out users see focused onboarding)
+  }
 
   // SECURITY: Apply rate limiting before any other processing
   const isAuthApiRoute = AUTH_API_RATE_LIMITED_ROUTES.some(route => pathname.startsWith(route))
@@ -225,11 +264,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // If user is logged in and on home page, redirect to dashboard
+  // If user is logged in and on home page
   if (user && pathname === '/') {
+    // On marketing domain: stay on landing page (don't redirect)
+    if (isMarketingDomain(hostname)) {
+      // Continue to serve the landing page
+      return supabaseResponse
+    }
+    // On app domain or admin: redirect to dashboard
     const url = request.nextUrl.clone()
     url.pathname = isAdminSubdomain ? '/admin' : '/dashboard'
     return NextResponse.redirect(url)
+  }
+
+  // If user is NOT logged in and on app domain home page, redirect to marketing
+  if (!user && pathname === '/' && isAppDomain(hostname) && !hostname.includes('localhost')) {
+    return NextResponse.redirect('https://exitosx.com')
   }
 
   return supabaseResponse
