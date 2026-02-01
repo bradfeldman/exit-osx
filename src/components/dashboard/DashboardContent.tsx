@@ -484,6 +484,24 @@ export function DashboardContent({ userName }: DashboardContentProps) {
     }
   }, [dashboardData, scrollDepthReached])
 
+  // Early check: if we know there are no companies, show onboarding immediately
+  // This prevents the "flash" of dashboard skeleton before redirect
+  if (!companyLoading && companies.length === 0) {
+    return <FocusedOnboardingWizard userName={userName} />
+  }
+
+  // Show minimal loading while checking company status
+  if (companyLoading) {
+    return (
+      <div className="max-w-5xl mx-auto flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground text-sm">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto">

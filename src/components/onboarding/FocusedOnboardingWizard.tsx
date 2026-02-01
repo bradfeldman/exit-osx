@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { BasicInfoStep } from '@/components/company/steps/BasicInfoStep'
 import { RevenueStep } from '@/components/company/steps/RevenueStep'
-import { BusinessProfileStep } from '@/components/company/steps/BusinessProfileStep'
 import { useCompany } from '@/contexts/CompanyContext'
 import { analytics } from '@/lib/analytics'
 import { createClient } from '@/lib/supabase/client'
@@ -55,11 +54,10 @@ const initialFormData: CompanyFormData = {
   adjustments: [],
 }
 
-// Unified steps that match the promise
+// Simplified 2-step onboarding (Business Profile removed - defaults to industry averages)
 const steps = [
   { id: 1, title: 'Your Business', description: 'Name & industry' },
   { id: 2, title: 'Revenue', description: 'Annual revenue' },
-  { id: 3, title: 'Profile', description: 'How it operates' },
 ]
 
 function getRevenueSizeCategory(revenue: number): string {
@@ -100,7 +98,16 @@ export function FocusedOnboardingWizard({ userName }: FocusedOnboardingWizardPro
   const stepsVisited = useRef<Set<number>>(new Set([1]))
   const hasTrackedStart = useRef(false)
 
-  const stepNames: Array<'basic_info' | 'revenue' | 'business_profile'> = ['basic_info', 'revenue', 'business_profile']
+  const stepNames: Array<'basic_info' | 'revenue'> = ['basic_info', 'revenue']
+
+  // Load company name from localStorage (set during signup)
+  useEffect(() => {
+    const pendingCompanyName = localStorage.getItem('pendingCompanyName')
+    if (pendingCompanyName) {
+      setFormData(prev => ({ ...prev, name: pendingCompanyName }))
+      localStorage.removeItem('pendingCompanyName') // Clean up
+    }
+  }, [])
 
   useEffect(() => {
     if (!hasTrackedStart.current) {
@@ -263,12 +270,15 @@ export function FocusedOnboardingWizard({ userName }: FocusedOnboardingWizardPro
 
       const { company } = await companyResponse.json()
 
+      // Default core factors to highest values (Core Score = 1.0)
+      // Risk Assessment will later adjust based on actual business risks
       const coreFactorsPayload: Record<string, string> = {
         revenueSizeCategory,
-        revenueModel: formData.revenueModel,
-        laborIntensity: formData.laborIntensity,
-        assetIntensity: formData.assetIntensity,
-        ownerInvolvement: formData.ownerInvolvement,
+        revenueModel: 'SUBSCRIPTION_SAAS',      // Default to best (will be refined by Risk Assessment)
+        laborIntensity: 'LOW',                   // Default to best
+        assetIntensity: 'ASSET_LIGHT',           // Default to best
+        ownerInvolvement: 'MINIMAL',             // Default to best
+        grossMarginProxy: 'EXCELLENT',           // Default to best
       }
 
       const coreFactorsResponse = await fetch(`/api/companies/${company.id}/core-factors`, {
@@ -332,8 +342,6 @@ export function FocusedOnboardingWizard({ userName }: FocusedOnboardingWizardPro
         return <BasicInfoStep formData={formData} updateFormData={updateFormData} />
       case 2:
         return <RevenueStep formData={formData} updateFormData={updateFormData} />
-      case 3:
-        return <BusinessProfileStep formData={formData} updateFormData={updateFormData} />
       default:
         return null
     }
@@ -345,8 +353,6 @@ export function FocusedOnboardingWizard({ userName }: FocusedOnboardingWizardPro
         return formData.name && formData.icbIndustry && formData.icbSuperSector && formData.icbSector && formData.icbSubSector
       case 2:
         return formData.annualRevenue > 0
-      case 3:
-        return formData.revenueModel && formData.laborIntensity && formData.assetIntensity && formData.ownerInvolvement
       default:
         return false
     }

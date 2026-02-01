@@ -143,6 +143,11 @@ function SignupPageContent() {
         setWarning(result.passwordWarning)
       }
 
+      // Store company name for onboarding wizard to use
+      if (companyName.trim()) {
+        localStorage.setItem('pendingCompanyName', companyName.trim())
+      }
+
       setSuccess(true)
     } catch {
       const errorMsg = 'An unexpected error occurred'

@@ -30,7 +30,6 @@ interface NavLink {
 }
 
 const assessmentLinks: NavLink[] = [
-  { name: 'Baseline Assessment', href: '/dashboard/assessment/company', icon: BriefcaseIcon, requiredPlan: 'growth', featureKey: 'company-assessment' },
   { name: 'Risk Assessment', href: '/dashboard/assessment/risk', icon: ShieldIcon, requiredPlan: 'growth', featureKey: 'risk-assessment' },
 ]
 
