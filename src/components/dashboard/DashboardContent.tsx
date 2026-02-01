@@ -565,120 +565,161 @@ export function DashboardContent({ userName }: DashboardContentProps) {
     )
   }
 
-  // No company selected - show onboarding
+  // No company selected - show focused onboarding (Dan + Alex style)
   if (noCompany || !dashboardData) {
     return (
-      <motion.div
-        className="space-y-8"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <h1 className="text-4xl font-bold text-foreground font-display tracking-tight">Welcome to Exit OSx</h1>
-          <p className="text-lg text-muted-foreground mt-2">
-            {userName ? `Hi ${userName}! ` : ''}Let&apos;s get started by setting up your company.
-          </p>
-        </motion.div>
+      <div className="fixed inset-0 z-50 bg-background overflow-auto">
+        {/* Subtle gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-emerald-500/5 pointer-events-none" />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 shadow-xl">
-            <CardHeader>
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center">
-                  <svg className="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
+        <div className="relative min-h-screen flex flex-col items-center justify-center px-6 py-12">
+          {/* Progress Indicator - Dan Martell Style */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-12"
+          >
+            <div className="flex items-center gap-3 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm">
+                  1
                 </div>
-                <div>
-                  <CardTitle className="text-2xl font-display">Set Up Your Company</CardTitle>
-                  <CardDescription className="text-base">
-                    Add your company details to get your valuation and buyer readiness score.
-                  </CardDescription>
+                <span className="font-medium text-foreground">Company Setup</span>
+              </div>
+              <div className="w-8 h-px bg-border" />
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-semibold text-sm">
+                  2
                 </div>
+                <span className="text-muted-foreground">Assessment</span>
               </div>
-            </CardHeader>
-            <CardContent>
-              <Link href="/dashboard/company/setup">
-                <Button size="lg" className="h-14 px-8 text-lg bg-primary hover:bg-primary/90 gap-3">
-                  Get Started
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-xl font-display">What You&apos;ll Get</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-6 md:grid-cols-3">
-                <motion.div
-                  className="p-6 rounded-2xl bg-muted/50 border border-border hover:border-primary/30 hover:bg-muted transition-all"
-                  whileHover={{ y: -4 }}
-                >
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                    <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <h3 className="font-semibold text-foreground text-lg">Enterprise Valuation</h3>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    See your business value based on industry multiples and your financial performance.
-                  </p>
-                </motion.div>
-
-                <motion.div
-                  className="p-6 rounded-2xl bg-muted/50 border border-border hover:border-emerald-500/30 hover:bg-muted transition-all"
-                  whileHover={{ y: -4 }}
-                >
-                  <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mb-4">
-                    <svg className="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <h3 className="font-semibold text-foreground text-lg">Buyer Readiness Index</h3>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Understand how ready your business is for acquisition across 6 key categories.
-                  </p>
-                </motion.div>
-
-                <motion.div
-                  className="p-6 rounded-2xl bg-muted/50 border border-border hover:border-violet-500/30 hover:bg-muted transition-all"
-                  whileHover={{ y: -4 }}
-                >
-                  <div className="w-12 h-12 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center mb-4">
-                    <svg className="w-6 h-6 text-violet-600 dark:text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <h3 className="font-semibold text-foreground text-lg">Action Playbook</h3>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Get prioritized tasks with dollar-value attribution to close your value gap.
-                  </p>
-                </motion.div>
+              <div className="w-8 h-px bg-border" />
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-semibold text-sm">
+                  3
+                </div>
+                <span className="text-muted-foreground">See Score</span>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Main Content Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="w-full max-w-2xl"
+          >
+            <Card className="border-0 shadow-2xl shadow-black/10 bg-card">
+              <CardContent className="p-8 md:p-12">
+                {/* Headline - Specific Outcome */}
+                <div className="text-center mb-8">
+                  <h1 className="text-3xl md:text-4xl font-bold text-foreground font-display tracking-tight mb-4">
+                    You&apos;re 10 Minutes Away From Your Exit Readiness Score
+                  </h1>
+                  <p className="text-lg text-muted-foreground">
+                    {userName ? `${userName}, discover` : 'Discover'} exactly what buyers would pay for your business—and the gaps that could cost you six figures at closing.
+                  </p>
+                </div>
+
+                {/* The Math - Alex Hormozi Value Anchor */}
+                <div className="bg-gradient-to-r from-amber-500/10 to-red-500/10 border border-amber-500/20 rounded-xl p-6 mb-8">
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-amber-700 dark:text-amber-400 mb-2">
+                      THE MATH MOST OWNERS MISS
+                    </p>
+                    <p className="text-2xl font-bold text-foreground">
+                      A 0.5× multiple swing on $1M EBITDA = <span className="text-red-600 dark:text-red-400">$500,000</span> left on the table
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      We&apos;ll show you exactly where your multiple is leaking—and how to plug the holes.
+                    </p>
+                  </div>
+                </div>
+
+                {/* What You'll See - Quick Value Preview */}
+                <div className="grid grid-cols-3 gap-4 mb-8">
+                  <div className="text-center p-4 bg-muted/50 rounded-xl">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                      <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-semibold text-foreground">Current Value</p>
+                    <p className="text-xs text-muted-foreground">What buyers would pay today</p>
+                  </div>
+                  <div className="text-center p-4 bg-muted/50 rounded-xl">
+                    <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-2">
+                      <svg className="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-semibold text-foreground">Value Gap</p>
+                    <p className="text-xs text-muted-foreground">Money you&apos;re leaving behind</p>
+                  </div>
+                  <div className="text-center p-4 bg-muted/50 rounded-xl">
+                    <div className="w-10 h-10 rounded-full bg-violet-500/10 flex items-center justify-center mx-auto mb-2">
+                      <svg className="w-5 h-5 text-violet-600 dark:text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-semibold text-foreground">Action Plan</p>
+                    <p className="text-xs text-muted-foreground">Tasks with dollar values</p>
+                  </div>
+                </div>
+
+                {/* Single CTA - No distractions */}
+                <Link href="/dashboard/company/setup" className="block">
+                  <Button
+                    size="lg"
+                    className="w-full h-14 text-lg bg-primary hover:bg-primary/90 gap-3 font-semibold shadow-lg shadow-primary/20"
+                  >
+                    See My Exit Readiness Score
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </Button>
+                </Link>
+
+                {/* Trust Footer - Calm Reassurance */}
+                <div className="mt-6 flex items-center justify-center gap-6 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <span>Bank-level security</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>10 minutes to complete</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Free to start</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Bottom Reassurance - Who This Is For */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="mt-8 text-center max-w-xl"
+          >
+            <p className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">Built for serious business owners</span> planning an exit in the next 1-5 years.
+              If you&apos;re just browsing, this isn&apos;t for you.
+            </p>
+          </motion.div>
+        </div>
+      </div>
     )
   }
 
