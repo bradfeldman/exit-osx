@@ -404,7 +404,7 @@ export function DuplicateReviewQueue() {
               {actionType === 'merge' ? 'Merge Duplicates' : 'Mark as Not Duplicate'}
             </DialogTitle>
             <DialogDescription>
-              {actionType === 'merge' ? (
+              {actionType === 'merge' && selectedCandidate ? (
                 <>
                   This will merge <strong>{getEntityName(getEntityA(selectedCandidate))}</strong> into{' '}
                   <strong>{getEntityName(getEntityB(selectedCandidate))}</strong>. All related records will be updated.
