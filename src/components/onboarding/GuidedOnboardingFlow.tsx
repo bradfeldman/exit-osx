@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from '@/lib/motion'
 import { BasicInfoStep } from '@/components/company/steps/BasicInfoStep'
 import { RevenueStep } from '@/components/company/steps/RevenueStep'
+import type { CompanyFormData } from '@/components/company/CompanySetupWizard'
 import { IndustryPreviewStep } from './steps/IndustryPreviewStep'
 import { RiskAssessmentStep } from './steps/RiskAssessmentStep'
 import { ValuationRevealStep } from './steps/ValuationRevealStep'
@@ -21,15 +22,6 @@ const STEPS = [
   { id: 5, key: 'reveal', title: 'Your Valuation' },
 ]
 
-interface CompanyFormData {
-  name: string
-  icbIndustry: string
-  icbSuperSector: string
-  icbSector: string
-  icbSubSector: string
-  annualRevenue: number
-}
-
 const initialFormData: CompanyFormData = {
   name: '',
   icbIndustry: '',
@@ -37,6 +29,15 @@ const initialFormData: CompanyFormData = {
   icbSector: '',
   icbSubSector: '',
   annualRevenue: 0,
+  annualEbitda: 0,
+  revenueSizeCategory: '',
+  ownerCompensation: 0,
+  revenueModel: 'SUBSCRIPTION_SAAS',
+  grossMarginProxy: 'EXCELLENT',
+  laborIntensity: 'LOW',
+  assetIntensity: 'ASSET_LIGHT',
+  ownerInvolvement: 'MINIMAL',
+  adjustments: [],
 }
 
 // Calculate revenue size category from actual revenue
@@ -77,6 +78,7 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
     valueGap: number
     topRisks: Array<{ category: string; score: number; label: string }>
     tasksCreated: number
+    topTask: { id: string; title: string; description: string; category: string; estimatedValue: number } | null
   } | null>(null)
 
   // Load company name from localStorage (set during signup)
@@ -247,6 +249,7 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
     valueGap: number
     categoryScores: Array<{ category: string; score: number }>
     tasksCreated: number
+    topTask: { id: string; title: string; description: string; category: string; estimatedValue: number } | null
   }) => {
     // Transform category scores to top risks
     const CATEGORY_LABELS: Record<string, string> = {
@@ -274,6 +277,7 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
       valueGap: data.valueGap,
       topRisks,
       tasksCreated: data.tasksCreated,
+      topTask: data.topTask,
     })
     setAssessmentComplete(true)
     setCurrentStep(5)
@@ -354,6 +358,7 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
             valueGap={revealData.valueGap}
             topRisks={revealData.topRisks}
             tasksCreated={revealData.tasksCreated}
+            topTask={revealData.topTask}
             onComplete={handleComplete}
           />
         ) : null

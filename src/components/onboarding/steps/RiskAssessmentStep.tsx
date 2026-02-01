@@ -52,6 +52,7 @@ interface RiskAssessmentStepProps {
     valueGap: number
     categoryScores: Array<{ category: string; score: number }>
     tasksCreated: number
+    topTask: { id: string; title: string; description: string; category: string; estimatedValue: number } | null
   }) => void
   onSkip: () => void
 }
@@ -302,13 +303,26 @@ export function RiskAssessmentStep({
       const dashboardData = await dashboardRes.json()
       const tier1 = dashboardData.tier1 || {}
 
-      // Fetch task count
+      // Fetch tasks and find the #1 priority
       let tasksCreated = 0
+      let topTask: { id: string; title: string; description: string; category: string; estimatedValue: number } | null = null
       try {
         const tasksRes = await fetch(`/api/tasks?companyId=${companyId}&status=PENDING`)
         if (tasksRes.ok) {
           const tasksData = await tasksRes.json()
           tasksCreated = tasksData.stats?.pending || tasksData.tasks?.length || 0
+
+          // Get the #1 priority task (first one, sorted by priority)
+          if (tasksData.tasks && tasksData.tasks.length > 0) {
+            const firstTask = tasksData.tasks[0]
+            topTask = {
+              id: firstTask.id,
+              title: firstTask.title,
+              description: firstTask.description || '',
+              category: firstTask.briCategory || 'OPERATIONAL',
+              estimatedValue: firstTask.estimatedValueImpact || 0,
+            }
+          }
         }
       } catch {
         // Ignore task fetch errors
@@ -334,6 +348,7 @@ export function RiskAssessmentStep({
         valueGap: tier1.valueGap || 0,
         categoryScores,
         tasksCreated,
+        topTask,
       })
 
     } catch (err) {

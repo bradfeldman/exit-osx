@@ -10,6 +10,8 @@ import {
   AlertTriangle,
   CheckCircle,
   Sparkles,
+  Target,
+  DollarSign,
 } from 'lucide-react'
 
 interface ValuationRevealStepProps {
@@ -20,7 +22,17 @@ interface ValuationRevealStepProps {
   valueGap: number
   topRisks: Array<{ category: string; score: number; label: string }>
   tasksCreated: number
+  topTask: { id: string; title: string; description: string; category: string; estimatedValue: number } | null
   onComplete: () => void
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  FINANCIAL: 'Financial Health',
+  TRANSFERABILITY: 'Transferability',
+  OPERATIONAL: 'Operations',
+  MARKET: 'Market Position',
+  LEGAL_TAX: 'Legal & Tax',
+  PERSONAL: 'Personal Readiness',
 }
 
 function formatCurrency(value: number): string {
@@ -41,6 +53,7 @@ export function ValuationRevealStep({
   valueGap,
   topRisks,
   tasksCreated,
+  topTask,
   onComplete,
 }: ValuationRevealStepProps) {
   const [revealStage, setRevealStage] = useState(0)
@@ -265,51 +278,132 @@ export function ValuationRevealStep({
         )}
       </AnimatePresence>
 
-      {/* Stage 4: Action Plan CTA */}
+      {/* Stage 4: #1 Priority Task */}
       <AnimatePresence>
         {revealStage >= 4 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="text-center"
           >
-            {/* Tasks created badge */}
-            {tasksCreated > 0 && (
+            {topTask ? (
               <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: 'spring', delay: 0.2 }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-6"
+                className="bg-gradient-to-br from-primary/5 via-card to-card rounded-2xl border-2 border-primary/20 p-6 mb-4"
               >
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-primary">
-                  {tasksCreated} personalized actions ready
-                </span>
+                {/* Priority badge */}
+                <div className="flex items-center gap-2 mb-4">
+                  <motion.div
+                    className="flex items-center gap-2 px-3 py-1 bg-primary rounded-full"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', delay: 0.3 }}
+                  >
+                    <Target className="w-3.5 h-3.5 text-white" />
+                    <span className="text-xs font-bold text-white uppercase tracking-wide">
+                      Your #1 Priority
+                    </span>
+                  </motion.div>
+                  <span className="text-xs text-muted-foreground px-2 py-1 bg-muted rounded-full">
+                    {CATEGORY_LABELS[topTask.category] || topTask.category}
+                  </span>
+                </div>
+
+                {/* Task title */}
+                <h3 className="text-lg font-bold text-foreground font-display mb-2">
+                  {topTask.title}
+                </h3>
+
+                {/* Task description */}
+                {topTask.description && (
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                    {topTask.description}
+                  </p>
+                )}
+
+                {/* Value impact */}
+                {topTask.estimatedValue > 0 && (
+                  <motion.div
+                    className="flex items-center gap-2 mb-5 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <span className="text-sm text-emerald-700 dark:text-emerald-300">
+                      Completing this could add{' '}
+                      <span className="font-bold">{formatCurrency(topTask.estimatedValue)}</span>{' '}
+                      to your valuation
+                    </span>
+                  </motion.div>
+                )}
+
+                {/* Start button */}
+                <Button
+                  size="lg"
+                  onClick={onComplete}
+                  className="w-full py-6 text-lg shadow-xl shadow-primary/25 hover:shadow-2xl transition-all"
+                >
+                  Start This Task
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
               </motion.div>
+            ) : (
+              <div className="text-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', delay: 0.2 }}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-6"
+                >
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-primary">
+                    {tasksCreated} personalized actions ready
+                  </span>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <h3 className="text-xl font-bold text-foreground font-display mb-2">
+                    Ready to Close the Gap?
+                  </h3>
+                  <p className="text-muted-foreground mb-6">
+                    We&apos;ve built a prioritized action plan to address your biggest risks.
+                  </p>
+
+                  <Button
+                    size="lg"
+                    onClick={onComplete}
+                    className="w-full sm:w-auto px-8 py-6 text-lg shadow-xl shadow-primary/25 hover:shadow-2xl transition-all"
+                  >
+                    See Your Action Plan
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                  </Button>
+                </motion.div>
+              </div>
             )}
 
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              <h3 className="text-xl font-bold text-foreground font-display mb-2">
-                Ready to Close the Gap?
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                We&apos;ve built a prioritized action plan to address your biggest risks.
-              </p>
-
-              <Button
-                size="lg"
-                onClick={onComplete}
-                className="w-full sm:w-auto px-8 py-6 text-lg shadow-xl shadow-primary/25 hover:shadow-2xl transition-all"
+            {/* See all tasks link */}
+            {topTask && tasksCreated > 1 && (
+              <motion.div
+                className="text-center mt-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
               >
-                See Your Action Plan
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </motion.div>
+                <button
+                  onClick={onComplete}
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  or see all {tasksCreated} tasks →
+                </button>
+              </motion.div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
