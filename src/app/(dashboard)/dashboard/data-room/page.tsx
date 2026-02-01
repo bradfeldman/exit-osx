@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from '@/lib/motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useCompany } from '@/contexts/CompanyContext'
@@ -748,9 +748,8 @@ export default function DataRoomPage() {
           {selectedCompanyId && (
             <NotificationBell
               companyId={selectedCompanyId}
-              onNotificationClick={(notification) => {
-                // If notification is about a document, could navigate to it
-                console.log('Notification clicked:', notification)
+              onNotificationClick={(_notification) => {
+                // TODO: If notification is about a document, navigate to it
               }}
             />
           )}

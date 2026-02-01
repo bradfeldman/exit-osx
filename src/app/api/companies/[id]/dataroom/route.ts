@@ -16,19 +16,14 @@ export async function GET(
   if (isAuthError(result)) return result.error
 
   try {
-    console.log('[DataRoom API] Fetching data room for company:', companyId)
     const dataRoom = await getOrCreateDataRoom(companyId)
 
     if (!dataRoom) {
-      console.error('[DataRoom API] Failed to create/get data room')
       return NextResponse.json({ error: 'Failed to create data room' }, { status: 500 })
     }
 
-    console.log('[DataRoom API] Got data room:', dataRoom.id, 'folders:', dataRoom.folders?.length || 0)
-
     // Calculate readiness score
     const readiness = await calculateReadinessScore(dataRoom.id)
-    console.log('[DataRoom API] Calculated readiness:', readiness.score)
 
     // Get document counts per folder
     // First get all folder IDs for this data room

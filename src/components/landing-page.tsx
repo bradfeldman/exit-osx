@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
+import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { AnimatedSection, AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
 

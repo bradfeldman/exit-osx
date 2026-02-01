@@ -61,19 +61,6 @@ export async function GET(request: Request) {
       }
     }
 
-    // DEBUG: Log permission resolution details
-    console.log('[DEBUG] Permission resolution:', {
-      userId: context.userId,
-      organizationUserId: context.organizationUserId,
-      isOwnerRole,
-      isExitReadyOrComped,
-      hasActiveSubscription,
-      planTier: orgUser?.organization.planTier,
-      'personal.retirement:view': resolved.permissions['personal.retirement:view'],
-      'personal.net_worth:view': resolved.permissions['personal.net_worth:view'],
-      templateSlug: resolved.templateSlug,
-    })
-
     // Build permission list with details
     const permissions = Object.entries(GRANULAR_PERMISSIONS).map(([key, description]) => {
       const permission = key as GranularPermission

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from '@/lib/motion'
 import { DealStage, ApprovalStatus } from '@prisma/client'
 import { DealBuyerCard } from './DealBuyerCard'
 import { StageChangeModal } from '../deal-tracker/StageChangeModal'

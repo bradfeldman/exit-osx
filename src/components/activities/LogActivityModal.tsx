@@ -143,7 +143,6 @@ export function LogActivityModal({
           metadata: selectedContactId
             ? { contactId: selectedContactId }
             : {},
-          userId: 'current-user', // TODO: Get from auth context
         }),
       })
 

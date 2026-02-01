@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { ApprovalQueue } from '@/components/approvals'
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react'

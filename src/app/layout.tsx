@@ -5,6 +5,7 @@ import { CookieConsent } from "@/components/gdpr/CookieConsent";
 import { Toaster } from "@/components/ui/toaster";
 import { GoogleTagManager, GoogleTagManagerBody } from "@/components/analytics";
 import { AnalyticsProvider } from "@/lib/analytics/provider";
+import { MotionProvider } from "@/lib/motion";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -69,7 +70,9 @@ export default function RootLayout({
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         {gtmId && <GoogleTagManagerBody gtmId={gtmId} />}
         <AnalyticsProvider>
-          {children}
+          <MotionProvider>
+            {children}
+          </MotionProvider>
           <CookieConsent />
           <Toaster />
         </AnalyticsProvider>

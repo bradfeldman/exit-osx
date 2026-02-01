@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from '@/lib/motion'
 import confetti from 'canvas-confetti'
 import { Button } from '@/components/ui/button'
 import { StepIndicator } from './StepIndicator'

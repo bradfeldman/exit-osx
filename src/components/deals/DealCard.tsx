@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion } from '@/lib/motion'
 import { DealStatus } from '@prisma/client'
 import { cn } from '@/lib/utils'
 import { Calendar, Users, Building2, ChevronRight } from 'lucide-react'

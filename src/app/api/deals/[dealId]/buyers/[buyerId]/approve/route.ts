@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { ApprovalStatus, ActivityType } from '@prisma/client'
+import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 
 type RouteParams = Promise<{ dealId: string; buyerId: string }>
 
@@ -11,7 +12,6 @@ type RouteParams = Promise<{ dealId: string; buyerId: string }>
  * Body:
  * - status: 'APPROVED' | 'DENIED' | 'HOLD' | 'PENDING'
  * - note?: string (required for DENIED)
- * - userId: string (who is making the change)
  */
 export async function POST(
   request: NextRequest,
@@ -19,8 +19,24 @@ export async function POST(
 ) {
   try {
     const { dealId, buyerId } = await params
+
+    // Get the deal to find its company
+    const deal = await prisma.deal.findUnique({
+      where: { id: dealId },
+      select: { companyId: true }
+    })
+
+    if (!deal) {
+      return NextResponse.json({ error: 'Deal not found' }, { status: 404 })
+    }
+
+    // Authenticate and verify user has access to this company
+    const result = await checkPermission('COMPANY_VIEW', deal.companyId)
+    if (isAuthError(result)) return result.error
+    const userId = result.auth.user.id
+
     const body = await request.json()
-    const { status, note, userId } = body
+    const { status, note } = body
 
     // Validate status
     if (!status || !Object.values(ApprovalStatus).includes(status)) {

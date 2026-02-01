@@ -2,7 +2,7 @@
 
 import { useState, useSyncExternalStore } from 'react'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from '@/lib/motion'
 import { useCountUpCurrency, useCountUpScore } from '@/hooks/useCountUp'
 
 // Hook to detect if we're on the client

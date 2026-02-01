@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion } from '@/lib/motion'
 import { MultipleRange } from '@/components/ui/multiple-range'
 
 interface ValueDriversProps {

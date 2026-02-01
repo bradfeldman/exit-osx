@@ -223,10 +223,10 @@ async function main() {
   for (const filePath of moduleFiles) {
     try {
       const content = fs.readFileSync(filePath, 'utf-8')
-      const module: TaskModule = JSON.parse(content)
+      const taskModule: TaskModule = JSON.parse(content)
 
-      const q = module.question
-      const meta = module.moduleMetadata
+      const q = taskModule.question
+      const meta = taskModule.moduleMetadata
 
       // Map category
       let briCategory = categoryMap[q.briCategory]

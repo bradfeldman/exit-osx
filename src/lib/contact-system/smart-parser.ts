@@ -128,11 +128,25 @@ function isLikelyName(str: string): boolean {
 function isLikelyCompanyName(str: string): boolean {
   const cleaned = cleanString(str)
 
-  // Check for company suffix
+  // If it looks like a job title, it's probably not a company name
+  // Common patterns: "Senior Partner", "Managing Director", etc.
+  const titlePrefixes = /^(Senior|Junior|Associate|Managing|Executive|General|Limited|Chief|Head|Lead|Principal)\s+/i
+  if (titlePrefixes.test(cleaned) && PATTERNS.title.test(cleaned)) {
+    return false
+  }
+
+  // Check for company suffix (Inc, LLC, Corp, etc.)
   if (PATTERNS.companySuffix.test(cleaned)) return true
 
-  // Check for common patterns
-  if (/\b(Capital|Ventures?|Partners?|Holdings?|Group)\b/i.test(cleaned)) return true
+  // Check for common company patterns - but not if it's just a title word
+  const companyPatterns = /\b(Capital|Ventures?|Holdings?|Group)\b/i
+  const standalonePartner = /^Partners?$/i
+  if (companyPatterns.test(cleaned) && !standalonePartner.test(cleaned)) return true
+
+  // "Partners" only counts as company if it's part of a longer name (e.g., "Smith Partners")
+  if (/\bPartners?\b/i.test(cleaned) && cleaned.split(/\s+/).length > 1 && !titlePrefixes.test(cleaned)) {
+    return true
+  }
 
   return false
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -180,11 +180,7 @@ export function ApprovalQueue({ dealId, dealName, onApprovalChange }: ApprovalQu
         const res = await fetch(`/api/deals/${dealId}/buyers/${buyerIds[0]}/approve`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            status,
-            note,
-            userId: 'current-user', // TODO: Get from auth context
-          }),
+          body: JSON.stringify({ status, note }),
         })
         if (!res.ok) throw new Error('Failed to update approval')
       } else {
@@ -192,12 +188,7 @@ export function ApprovalQueue({ dealId, dealName, onApprovalChange }: ApprovalQu
         const res = await fetch(`/api/deals/${dealId}/buyers/bulk-approve`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            buyerIds,
-            status,
-            note,
-            userId: 'current-user', // TODO: Get from auth context
-          }),
+          body: JSON.stringify({ buyerIds, status, note }),
         })
         if (!res.ok) throw new Error('Failed to update approvals')
       }

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion } from '@/lib/motion'
 import { DealStage, ApprovalStatus } from '@prisma/client'
 import { Button } from '@/components/ui/button'
 import {

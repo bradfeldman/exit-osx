@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from '@/lib/motion'
 import { Check, ChevronDown, ChevronRight, Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {

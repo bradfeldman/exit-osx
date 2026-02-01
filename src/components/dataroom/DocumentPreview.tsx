@@ -68,16 +68,12 @@ export function DocumentPreview({
 
       if (isPdfFile || isImageFile) {
         // Fetch the actual file content
-        console.log('[Preview] Fetching file from:', data.url)
         const fileRes = await fetch(data.url)
-        console.log('[Preview] File fetch status:', fileRes.status)
         if (!fileRes.ok) {
           throw new Error('Failed to fetch file')
         }
         const blob = await fileRes.blob()
-        console.log('[Preview] Blob size:', blob.size, 'type:', blob.type)
         const blobUrl = URL.createObjectURL(blob)
-        console.log('[Preview] Created blob URL:', blobUrl)
         setPreviewUrl(blobUrl)
       } else {
         setPreviewUrl(data.url)

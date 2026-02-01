@@ -133,7 +133,7 @@ export function useDealBuyers(dealId: string) {
     const res = await fetch(`/api/deals/${dealId}/buyers/${buyerId}/approve`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status, note, userId: 'current-user' }),
+      body: JSON.stringify({ status, note }),
     })
 
     if (!res.ok) throw new Error('Failed to update approval status')
@@ -146,7 +146,7 @@ export function useDealBuyers(dealId: string) {
     const res = await fetch(`/api/deals/${dealId}/buyers/bulk-approve`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ buyerIds, status, note, userId: 'current-user' }),
+      body: JSON.stringify({ buyerIds, status, note }),
     })
 
     if (!res.ok) throw new Error('Failed to bulk approve')
@@ -159,7 +159,7 @@ export function useDealBuyers(dealId: string) {
     const res = await fetch(`/api/deals/${dealId}/buyers/${buyerId}/stage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toStage, note, userId: 'current-user' }),
+      body: JSON.stringify({ toStage, note }),
     })
 
     if (!res.ok) throw new Error('Failed to update stage')

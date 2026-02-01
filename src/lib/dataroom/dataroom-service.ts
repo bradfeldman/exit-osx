@@ -8,18 +8,13 @@ export type NotificationType = 'DOCUMENT_UPLOADED' | 'QUESTION_ASKED' | 'QUESTIO
  * Get or create a data room for a company
  */
 export async function getOrCreateDataRoom(companyId: string) {
-  console.log('[DataRoom Service] getOrCreateDataRoom called for:', companyId)
-
   try {
     // Check if data room exists
     let dataRoom = await prisma.dataRoom.findUnique({
       where: { companyId },
     })
 
-    console.log('[DataRoom Service] Existing dataRoom:', dataRoom?.id || 'none')
-
     if (!dataRoom) {
-      console.log('[DataRoom Service] Creating new data room...')
       // Create data room
       dataRoom = await prisma.dataRoom.create({
         data: {
@@ -29,11 +24,8 @@ export async function getOrCreateDataRoom(companyId: string) {
         },
       })
 
-      console.log('[DataRoom Service] Data room created:', dataRoom.id)
-
       // Initialize default folders
       await initializeDefaultFolders(dataRoom.id)
-      console.log('[DataRoom Service] Folders initialized')
     }
 
     // Fetch folders separately for cleaner query
@@ -67,8 +59,6 @@ export async function getOrCreateDataRoom(companyId: string) {
       children: childrenByParent.get(folder.id) || [],
     }))
 
-    console.log('[DataRoom Service] Returning dataRoom with', foldersWithChildren.length, 'folders')
-
     return {
       ...dataRoom,
       folders: foldersWithChildren,
@@ -83,7 +73,6 @@ export async function getOrCreateDataRoom(companyId: string) {
  * Initialize default folder structure for a data room
  */
 export async function initializeDefaultFolders(dataRoomId: string) {
-  console.log('[DataRoom Service] initializeDefaultFolders for:', dataRoomId)
   const createdFolders: { category: DataRoomCategory; folderId: string }[] = []
 
   try {
@@ -116,7 +105,6 @@ export async function initializeDefaultFolders(dataRoomId: string) {
       }
     }
 
-    console.log('[DataRoom Service] Created', createdFolders.length, 'folders')
     return createdFolders
   } catch (error) {
     console.error('[DataRoom Service] Error in initializeDefaultFolders:', error)
@@ -314,8 +302,6 @@ export async function calculateReadinessScore(dataRoomId: string): Promise<{
   byCategory: Record<DataRoomCategory, { uploaded: number; expected: number; percentage: number }>
   missingCritical: string[]
 }> {
-  console.log('[DataRoom Service] calculateReadinessScore for:', dataRoomId)
-
   try {
     const folders = await prisma.dataRoomFolder.findMany({
       where: { dataRoomId, parentId: null },
@@ -344,8 +330,6 @@ export async function calculateReadinessScore(dataRoomId: string): Promise<{
         },
       },
     })
-
-    console.log('[DataRoom Service] Found', folders.length, 'folders')
 
     // Expected documents per category (based on template)
     const expectedCounts: Record<DataRoomCategory, number> = {} as Record<DataRoomCategory, number>

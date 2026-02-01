@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from '@/lib/motion'
 import { useCompany } from '@/contexts/CompanyContext'
 import { analytics } from '@/lib/analytics'
 import { Button } from '@/components/ui/button'

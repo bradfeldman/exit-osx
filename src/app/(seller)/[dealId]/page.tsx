@@ -1,7 +1,7 @@
 'use client'
 
 import { use } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from '@/lib/motion'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { SellerDashboard, SellerBuyerList } from '@/components/seller'
 import { LayoutDashboard, Users } from 'lucide-react'
