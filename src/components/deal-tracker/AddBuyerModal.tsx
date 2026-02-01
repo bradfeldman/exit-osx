@@ -26,7 +26,7 @@ import { BUYER_TYPE_LABELS, BUYER_TIER_LABELS, PROSPECT_STATUS_COLORS } from '@/
 import { BuyerType, BuyerTier, ProspectApprovalStatus } from '@prisma/client'
 
 interface AddBuyerModalProps {
-  companyId: string
+  dealId: string
   isOpen: boolean
   onClose: () => void
   onCreated: () => void
@@ -60,7 +60,7 @@ interface ContactForm {
 type ModalState = 'search' | 'select_prospect' | 'form' | 'no_match' | 'not_approved'
 
 export function AddBuyerModal({
-  companyId,
+  dealId,
   isOpen,
   onClose,
   onCreated,
@@ -139,13 +139,29 @@ export function AddBuyerModal({
 
     try {
       const params = new URLSearchParams({ email: searchEmail.trim() })
-      const res = await fetch(`/api/companies/${companyId}/prospects/match?${params}`)
+      // Use new contact system search endpoint
+      const res = await fetch(`/api/contact-system/search?q=${encodeURIComponent(searchEmail.trim())}`)
 
       if (res.ok) {
         const data = await res.json()
-        setMatches(data.matches || [])
+        // Transform search results to match format
+        const companyMatches = (data.companies || []).map((company: { id: string; name: string; companyType: string; website: string | null }) => ({
+          prospect: {
+            id: company.id,
+            name: company.name,
+            buyerType: company.companyType as BuyerType || 'STRATEGIC',
+            approvalStatus: 'APPROVED' as ProspectApprovalStatus,
+            relevanceDescription: null,
+            website: company.website,
+            headquartersLocation: null,
+          },
+          confidence: 'high' as const,
+          matchedOn: 'domain' as const,
+        }))
 
-        if (data.matches && data.matches.length > 0) {
+        setMatches(companyMatches)
+
+        if (companyMatches.length > 0) {
           setState('select_prospect')
         } else {
           setState('no_match')
@@ -157,7 +173,7 @@ export function AddBuyerModal({
     } finally {
       setIsSearching(false)
     }
-  }, [companyId, searchEmail])
+  }, [searchEmail])
 
   const handleSelectProspect = (prospect: BuyerProspect) => {
     if (prospect.approvalStatus !== 'APPROVED') {
@@ -194,23 +210,14 @@ export function AddBuyerModal({
     setError(null)
 
     try {
-      const validContacts = contacts.filter(
-        c => c.email.trim() && c.firstName.trim() && c.lastName.trim()
-      )
-
-      const res = await fetch(`/api/companies/${companyId}/deal-tracker`, {
+      // Use new contact system API endpoint
+      const res = await fetch(`/api/deals/${dealId}/buyers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          prospectId: selectedProspect.id,
-          name: name.trim() || selectedProspect.name,
-          buyerType,
-          tier,
-          website: website.trim() || null,
-          industry: industry.trim() || null,
-          location: location.trim() || null,
-          description: description.trim() || null,
-          contacts: validContacts,
+          canonicalCompanyId: selectedProspect.id,
+          initialStage: 'IDENTIFIED',
+          notes: description.trim() || null,
         }),
       })
 

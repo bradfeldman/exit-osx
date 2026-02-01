@@ -81,7 +81,7 @@ interface Metrics {
 }
 
 interface PipelineMetricsProps {
-  companyId: string
+  dealId: string
 }
 
 // Animated number component
@@ -130,28 +130,90 @@ function AnimatedNumber({ value, format = 'number' }: { value: number; format?: 
   return <>{Math.round(displayValue)}</>
 }
 
-export function PipelineMetrics({ companyId }: PipelineMetricsProps) {
+export function PipelineMetrics({ dealId }: PipelineMetricsProps) {
   const [summary, setSummary] = useState<PipelineSummary | null>(null)
   const [metrics, setMetrics] = useState<Metrics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const fetchAnalytics = useCallback(async () => {
-    if (!companyId) return
+    if (!dealId) return
 
     setIsLoading(true)
     try {
-      const res = await fetch(`/api/companies/${companyId}/deal-tracker/analytics`)
+      // Use new contact system analytics endpoint
+      const res = await fetch(`/api/deals/${dealId}/analytics/funnel`)
       if (res.ok) {
         const data = await res.json()
-        setSummary(data.summary)
-        setMetrics(data.metrics)
+        // Transform funnel data to expected format
+        const stageMapping: Record<string, keyof PipelineSummary['pipeline']> = {
+          'Identified': 'identification',
+          'Approved': 'identification',
+          'Teaser Sent': 'marketing',
+          'NDA Executed': 'nda',
+          'CIM Access': 'diligence',
+          'Management Meeting Completed': 'diligence',
+          'IOI Received': 'ioi',
+          'LOI Received': 'loi',
+          'Due Diligence': 'close',
+          'Closed': 'close',
+        }
+
+        const pipeline: PipelineSummary['pipeline'] = {
+          identification: 0,
+          marketing: 0,
+          nda: 0,
+          diligence: 0,
+          ioi: 0,
+          loi: 0,
+          close: 0,
+        }
+
+        // Map stages from funnel data
+        if (data.stages) {
+          for (const stage of data.stages) {
+            const key = stageMapping[stage.stage]
+            if (key) {
+              pipeline[key] = Math.max(pipeline[key], stage.count)
+            }
+          }
+        }
+
+        setSummary({
+          pipeline,
+          totalActive: data.totalBuyers || 0,
+          upcomingDeadlines: [],
+          staleBuyers: [],
+        })
+
+        setMetrics({
+          totalBuyers: data.totalBuyers || 0,
+          activeBuyers: data.totalBuyers || 0,
+          terminatedBuyers: 0,
+          closedDeals: pipeline.close,
+          conversionRates: {
+            teaserToInterested: 0,
+            interestedToNda: 0,
+            ndaToIoi: 0,
+            ioiToLoi: 0,
+            loiToClose: 0,
+            overallClose: data.totalBuyers > 0 ? (pipeline.close / data.totalBuyers) * 100 : 0,
+          },
+          ioiLoiValues: {
+            totalIoiValue: 0,
+            avgIoiValue: 0,
+            totalLoiValue: 0,
+            avgLoiValue: 0,
+            highestIoi: 0,
+            highestLoi: 0,
+          },
+        })
       }
     } catch (error) {
       console.error('Error fetching analytics:', error)
     } finally {
       setIsLoading(false)
     }
-  }, [companyId])
+  }, [dealId])
 
   useEffect(() => {
     fetchAnalytics()

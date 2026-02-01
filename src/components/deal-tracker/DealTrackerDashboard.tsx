@@ -26,6 +26,7 @@ import {
 } from '@/lib/deal-tracker/constants'
 import { DealStage, BuyerType, BuyerTier, ProspectApprovalStatus } from '@prisma/client'
 import { Loader2 } from 'lucide-react'
+import { useDealBuyers, type DealBuyer } from '@/hooks/useContactSystem'
 
 // Animation variants
 const containerVariants = {
@@ -45,29 +46,29 @@ const itemVariants = {
   }
 }
 
-interface ProspectiveBuyer {
-  id: string
-  name: string
-  buyerType: BuyerType
+// Extended buyer type that includes contacts and other fields from the API
+export interface DealBuyerWithContacts extends DealBuyer {
   tier: BuyerTier
-  currentStage: DealStage
-  website: string | null
-  industry: string | null
-  location: string | null
   stageUpdatedAt: string
   ioiAmount: number | null
   loiAmount: number | null
+  industry: string | null
+  location: string | null
   contacts: Array<{
     id: string
-    email: string
-    firstName: string
-    lastName: string
     isPrimary: boolean
+    canonicalPerson: {
+      id: string
+      firstName: string
+      lastName: string
+      email: string | null
+      currentTitle: string | null
+    }
   }>
   _count: {
-    documents: number
-    meetings: number
     activities: number
+    stageHistory: number
+    contacts: number
   }
 }
 
@@ -82,10 +83,11 @@ interface BuyerProspect {
 }
 
 export function DealTrackerDashboard() {
-  const { selectedCompanyId } = useCompany()
-  const [buyers, setBuyers] = useState<ProspectiveBuyer[]>([])
-  const [stageCounts, setStageCounts] = useState<Record<string, number>>({})
-  const [isLoading, setIsLoading] = useState(true)
+  const { selectedCompanyId, selectedCompany } = useCompany()
+  const [dealId, setDealId] = useState<string | null>(null)
+  const [isDealLoading, setIsDealLoading] = useState(true)
+  const [dealError, setDealError] = useState<string | null>(null)
+  const [isCreatingDeal, setIsCreatingDeal] = useState(false)
   const [showAddBuyer, setShowAddBuyer] = useState(false)
   const [selectedProspectForBuyer, setSelectedProspectForBuyer] = useState<BuyerProspect | null>(null)
   const [mainTab, setMainTab] = useState<'pipeline' | 'prospects'>('pipeline')
@@ -97,6 +99,95 @@ export function DealTrackerDashboard() {
 
   const hasTrackedFirstVisit = useRef(false)
 
+  // Fetch deal ID for the selected company
+  const fetchDeal = useCallback(async () => {
+    if (!selectedCompanyId) {
+      setDealId(null)
+      setIsDealLoading(false)
+      return
+    }
+
+    setIsDealLoading(true)
+    setDealError(null)
+    try {
+      const res = await fetch(`/api/deals?companyId=${selectedCompanyId}`)
+      if (res.ok) {
+        const data = await res.json()
+        // Get the first active deal for this company
+        const activeDeal = data.deals?.find((d: { status: string }) => d.status === 'ACTIVE')
+        if (activeDeal) {
+          setDealId(activeDeal.id)
+        } else if (data.deals?.length > 0) {
+          setDealId(data.deals[0].id)
+        } else {
+          setDealError('No deal found for this company')
+          setDealId(null)
+        }
+      } else {
+        setDealError('Failed to fetch deal')
+        setDealId(null)
+      }
+    } catch (error) {
+      console.error('Error fetching deal:', error)
+      setDealError('Failed to fetch deal')
+      setDealId(null)
+    } finally {
+      setIsDealLoading(false)
+    }
+  }, [selectedCompanyId])
+
+  useEffect(() => {
+    fetchDeal()
+  }, [fetchDeal])
+
+  // Create a deal for the company
+  const createDeal = async () => {
+    if (!selectedCompanyId || !selectedCompany) return
+
+    setIsCreatingDeal(true)
+    try {
+      const codeName = `Project ${selectedCompany.name}`
+      const res = await fetch('/api/deals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyId: selectedCompanyId,
+          codeName,
+          description: `M&A deal process for ${selectedCompany.name}`,
+          requireSellerApproval: true,
+        }),
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setDealId(data.deal.id)
+        setDealError(null)
+      } else {
+        const error = await res.json()
+        console.error('Error creating deal:', error)
+      }
+    } catch (error) {
+      console.error('Error creating deal:', error)
+    } finally {
+      setIsCreatingDeal(false)
+    }
+  }
+
+  // Use the new contact system hook for buyers
+  const { buyers: rawBuyers, isLoading: isBuyersLoading, refresh: refreshBuyers } = useDealBuyers(dealId || '')
+
+  // Transform raw buyers to include the expected fields
+  const buyers: DealBuyerWithContacts[] = (rawBuyers as unknown as DealBuyerWithContacts[]) || []
+
+  // Calculate stage counts from buyers
+  const stageCounts = buyers.reduce((acc, buyer) => {
+    const stage = buyer.currentStage
+    acc[stage] = (acc[stage] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+
+  const isLoading = isDealLoading || isBuyersLoading
+
   // Track first visit to deal tracker
   useEffect(() => {
     if (hasTrackedFirstVisit.current || isLoading || !selectedCompanyId) return
@@ -107,44 +198,14 @@ export function DealTrackerDashboard() {
     })
   }, [isLoading, selectedCompanyId])
 
-  const fetchBuyers = useCallback(async () => {
-    if (!selectedCompanyId) return
-
-    setIsLoading(true)
-    try {
-      const params = new URLSearchParams()
-      if (search) params.set('search', search)
-      if (filterStage !== 'all') params.set('stage', filterStage)
-      if (filterType !== 'all') params.set('type', filterType)
-      if (filterTier !== 'all') params.set('tier', filterTier)
-
-      const res = await fetch(
-        `/api/companies/${selectedCompanyId}/deal-tracker?${params.toString()}`
-      )
-      if (res.ok) {
-        const data = await res.json()
-        setBuyers(data.buyers || [])
-        setStageCounts(data.stageCounts || {})
-      }
-    } catch (error) {
-      console.error('Error fetching buyers:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [selectedCompanyId, search, filterStage, filterType, filterTier])
-
-  useEffect(() => {
-    fetchBuyers()
-  }, [fetchBuyers])
-
   const handleBuyerCreated = () => {
     setShowAddBuyer(false)
     setSelectedProspectForBuyer(null)
-    fetchBuyers()
+    refreshBuyers()
   }
 
   const handleBuyerUpdated = () => {
-    fetchBuyers()
+    refreshBuyers()
   }
 
   const handleAddToPipeline = (prospect: BuyerProspect) => {
@@ -164,6 +225,41 @@ export function DealTrackerDashboard() {
             <UsersIcon className="h-8 w-8 text-muted-foreground" />
           </div>
           <p className="text-muted-foreground">Please select a company to view the deal tracker.</p>
+        </div>
+      </motion.div>
+    )
+  }
+
+  if (dealError && !isDealLoading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex items-center justify-center h-64"
+      >
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
+            <UsersIcon className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <p className="text-muted-foreground">{dealError}</p>
+          <p className="text-sm text-muted-foreground mt-2">Create a deal for this company to start tracking buyers.</p>
+          <Button
+            onClick={createDeal}
+            disabled={isCreatingDeal}
+            className="mt-4"
+          >
+            {isCreatingDeal ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              <>
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Create Deal
+              </>
+            )}
+          </Button>
         </div>
       </motion.div>
     )
@@ -220,7 +316,7 @@ export function DealTrackerDashboard() {
       {mainTab === 'pipeline' && (
         <>
           {/* Metrics */}
-          <PipelineMetrics companyId={selectedCompanyId} />
+          <PipelineMetrics dealId={dealId!} />
 
           {/* Filters and View Toggle */}
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
@@ -329,13 +425,13 @@ export function DealTrackerDashboard() {
           ) : view === 'pipeline' ? (
             <BuyerPipeline
               buyers={buyers}
-              companyId={selectedCompanyId}
+              dealId={dealId!}
               onBuyerUpdated={handleBuyerUpdated}
             />
           ) : (
             <BuyerList
               buyers={buyers}
-              companyId={selectedCompanyId}
+              dealId={dealId!}
               onBuyerUpdated={handleBuyerUpdated}
             />
           )}
@@ -343,16 +439,18 @@ export function DealTrackerDashboard() {
       )}
 
       {/* Add Buyer Modal */}
-      <AddBuyerModal
-        companyId={selectedCompanyId}
-        isOpen={showAddBuyer}
-        onClose={() => {
-          setShowAddBuyer(false)
-          setSelectedProspectForBuyer(null)
-        }}
-        onCreated={handleBuyerCreated}
-        preselectedProspect={selectedProspectForBuyer}
-      />
+      {dealId && (
+        <AddBuyerModal
+          dealId={dealId}
+          isOpen={showAddBuyer}
+          onClose={() => {
+            setShowAddBuyer(false)
+            setSelectedProspectForBuyer(null)
+          }}
+          onCreated={handleBuyerCreated}
+          preselectedProspect={selectedProspectForBuyer}
+        />
+      )}
     </motion.div>
   )
 }

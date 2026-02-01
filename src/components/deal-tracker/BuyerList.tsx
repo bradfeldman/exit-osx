@@ -30,41 +30,16 @@ import {
   VALID_STAGE_TRANSITIONS,
 } from '@/lib/deal-tracker/constants'
 import { cn } from '@/lib/utils'
-
-interface ProspectiveBuyer {
-  id: string
-  name: string
-  buyerType: BuyerType
-  tier: BuyerTier
-  currentStage: DealStage
-  website: string | null
-  industry: string | null
-  location: string | null
-  stageUpdatedAt: string
-  ioiAmount: number | null
-  loiAmount: number | null
-  contacts: Array<{
-    id: string
-    email: string
-    firstName: string
-    lastName: string
-    isPrimary: boolean
-  }>
-  _count: {
-    documents: number
-    meetings: number
-    activities: number
-  }
-}
+import type { DealBuyerWithContacts } from './DealTrackerDashboard'
 
 interface BuyerListProps {
-  buyers: ProspectiveBuyer[]
-  companyId: string
+  buyers: DealBuyerWithContacts[]
+  dealId: string
   onBuyerUpdated: () => void
 }
 
-export function BuyerList({ buyers, companyId, onBuyerUpdated }: BuyerListProps) {
-  const [selectedBuyer, setSelectedBuyer] = useState<ProspectiveBuyer | null>(null)
+export function BuyerList({ buyers, dealId, onBuyerUpdated }: BuyerListProps) {
+  const [selectedBuyer, setSelectedBuyer] = useState<DealBuyerWithContacts | null>(null)
   const [targetStage, setTargetStage] = useState<DealStage | null>(null)
 
   const formatCurrency = (amount: number) => {
@@ -102,20 +77,23 @@ export function BuyerList({ buyers, companyId, onBuyerUpdated }: BuyerListProps)
           </TableHeader>
           <TableBody>
             {buyers.map((buyer) => {
-              const stageColors = STAGE_COLORS[buyer.currentStage]
-              const typeColors = BUYER_TYPE_COLORS[buyer.buyerType]
-              const tierColors = BUYER_TIER_COLORS[buyer.tier]
-              const primaryContact = buyer.contacts.find(c => c.isPrimary) || buyer.contacts[0]
-              const validTransitions = VALID_STAGE_TRANSITIONS[buyer.currentStage] || []
+              const currentStage = buyer.currentStage as DealStage
+              const buyerType = buyer.companyType as BuyerType
+              const stageColors = STAGE_COLORS[currentStage] || { bg: 'bg-gray-100', text: 'text-gray-800' }
+              const typeColors = BUYER_TYPE_COLORS[buyerType] || { bg: 'bg-gray-100', text: 'text-gray-800' }
+              const tierColors = BUYER_TIER_COLORS[buyer.tier] || { bg: 'bg-gray-100', text: 'text-gray-800' }
+              const primaryContact = buyer.contacts?.find(c => c.isPrimary) || buyer.contacts?.[0]
+              const validTransitions = VALID_STAGE_TRANSITIONS[currentStage] || []
+              const buyerName = buyer.canonicalCompany?.name || buyer.companyName
 
               return (
                 <TableRow key={buyer.id}>
                   <TableCell>
                     <Link
-                      href={`/dashboard/deal-tracker/${buyer.id}`}
+                      href={`/dashboard/deals/${dealId}/buyers/${buyer.id}`}
                       className="font-medium hover:text-primary transition-colors"
                     >
-                      {buyer.name}
+                      {buyerName}
                     </Link>
                     {buyer.industry && (
                       <p className="text-xs text-muted-foreground">{buyer.industry}</p>
@@ -127,7 +105,7 @@ export function BuyerList({ buyers, companyId, onBuyerUpdated }: BuyerListProps)
                       typeColors.bg,
                       typeColors.text
                     )}>
-                      {BUYER_TYPE_LABELS[buyer.buyerType]}
+                      {BUYER_TYPE_LABELS[buyerType] || buyerType}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -136,7 +114,7 @@ export function BuyerList({ buyers, companyId, onBuyerUpdated }: BuyerListProps)
                       tierColors.bg,
                       tierColors.text
                     )}>
-                      {BUYER_TIER_LABELS[buyer.tier]}
+                      {BUYER_TIER_LABELS[buyer.tier] || buyer.tier}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -145,16 +123,16 @@ export function BuyerList({ buyers, companyId, onBuyerUpdated }: BuyerListProps)
                       stageColors.bg,
                       stageColors.text
                     )}>
-                      {STAGE_LABELS[buyer.currentStage]}
+                      {STAGE_LABELS[currentStage] || currentStage}
                     </span>
                   </TableCell>
                   <TableCell>
                     {primaryContact ? (
                       <div>
                         <p className="text-sm">
-                          {primaryContact.firstName} {primaryContact.lastName}
+                          {primaryContact.canonicalPerson.firstName} {primaryContact.canonicalPerson.lastName}
                         </p>
-                        <p className="text-xs text-muted-foreground">{primaryContact.email}</p>
+                        <p className="text-xs text-muted-foreground">{primaryContact.canonicalPerson.email}</p>
                       </div>
                     ) : (
                       <span className="text-muted-foreground text-sm">No contacts</span>
@@ -177,7 +155,7 @@ export function BuyerList({ buyers, companyId, onBuyerUpdated }: BuyerListProps)
                   </TableCell>
                   <TableCell>
                     <span className="text-sm text-muted-foreground">
-                      {formatDate(buyer.stageUpdatedAt)}
+                      {buyer.stageUpdatedAt ? formatDate(buyer.stageUpdatedAt) : '-'}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -189,7 +167,7 @@ export function BuyerList({ buyers, companyId, onBuyerUpdated }: BuyerListProps)
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
                         <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/deal-tracker/${buyer.id}`}>
+                          <Link href={`/dashboard/deals/${dealId}/buyers/${buyer.id}`}>
                             View Details
                           </Link>
                         </DropdownMenuItem>
@@ -229,9 +207,14 @@ export function BuyerList({ buyers, companyId, onBuyerUpdated }: BuyerListProps)
       {/* Stage Change Modal */}
       {selectedBuyer && targetStage && (
         <StageChangeModal
-          buyer={selectedBuyer}
+          buyer={{
+            id: selectedBuyer.id,
+            name: selectedBuyer.canonicalCompany?.name || selectedBuyer.companyName,
+            currentStage: selectedBuyer.currentStage as DealStage,
+          }}
           targetStage={targetStage}
-          companyId={companyId}
+          companyId={dealId}
+          apiPath={`/api/deals/${dealId}/buyers/${selectedBuyer.id}/stage`}
           isOpen={true}
           onClose={() => {
             setSelectedBuyer(null)

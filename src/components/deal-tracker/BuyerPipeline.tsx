@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { DealStage, BuyerType, BuyerTier } from '@prisma/client'
+import { DealStage } from '@prisma/client'
 import { BuyerCard } from './BuyerCard'
 import { StageChangeModal } from './StageChangeModal'
 import {
@@ -12,6 +12,7 @@ import {
 } from '@/lib/deal-tracker/constants'
 import { cn } from '@/lib/utils'
 import { Users, ArrowRight } from 'lucide-react'
+import type { DealBuyerWithContacts } from './DealTrackerDashboard'
 
 // Animation variants
 const columnVariants = {
@@ -36,46 +37,20 @@ const cardContainerVariants = {
   }
 }
 
-interface ProspectiveBuyer {
-  id: string
-  name: string
-  buyerType: BuyerType
-  tier: BuyerTier
-  currentStage: DealStage
-  website: string | null
-  industry: string | null
-  location: string | null
-  stageUpdatedAt: string
-  ioiAmount: number | null
-  loiAmount: number | null
-  contacts: Array<{
-    id: string
-    email: string
-    firstName: string
-    lastName: string
-    isPrimary: boolean
-  }>
-  _count: {
-    documents: number
-    meetings: number
-    activities: number
-  }
-}
-
 interface BuyerPipelineProps {
-  buyers: ProspectiveBuyer[]
-  companyId: string
+  buyers: DealBuyerWithContacts[]
+  dealId: string
   onBuyerUpdated: () => void
 }
 
-export function BuyerPipeline({ buyers, companyId, onBuyerUpdated }: BuyerPipelineProps) {
-  const [selectedBuyer, setSelectedBuyer] = useState<ProspectiveBuyer | null>(null)
+export function BuyerPipeline({ buyers, dealId, onBuyerUpdated }: BuyerPipelineProps) {
+  const [selectedBuyer, setSelectedBuyer] = useState<DealBuyerWithContacts | null>(null)
   const [targetStage, setTargetStage] = useState<DealStage | null>(null)
 
   // Group buyers by pipeline stage
   const buyersByStage = PIPELINE_STAGES.reduce((acc, stage) => {
     // For pipeline view, group some stages together
-    const stageMatches = (buyerStage: DealStage) => {
+    const stageMatches = (buyerStage: string) => {
       if (stage === DealStage.IDENTIFIED) {
         return ['IDENTIFIED', 'SELLER_REVIEWING', 'APPROVED'].includes(buyerStage)
       }
@@ -105,9 +80,9 @@ export function BuyerPipeline({ buyers, companyId, onBuyerUpdated }: BuyerPipeli
 
     acc[stage] = buyers.filter(b => stageMatches(b.currentStage))
     return acc
-  }, {} as Record<DealStage, ProspectiveBuyer[]>)
+  }, {} as Record<DealStage, DealBuyerWithContacts[]>)
 
-  const handleStageChange = (buyer: ProspectiveBuyer, stage: DealStage) => {
+  const handleStageChange = (buyer: DealBuyerWithContacts, stage: DealStage) => {
     setSelectedBuyer(buyer)
     setTargetStage(stage)
   }
@@ -218,9 +193,9 @@ export function BuyerPipeline({ buyers, companyId, onBuyerUpdated }: BuyerPipeli
                         <BuyerCard
                           key={buyer.id}
                           buyer={buyer}
-                          _companyId={companyId}
+                          dealId={dealId}
                           onStageChange={(newStage) => handleStageChange(buyer, newStage)}
-                          _onUpdated={onBuyerUpdated}
+                          onUpdated={onBuyerUpdated}
                         />
                       ))}
                     </AnimatePresence>
@@ -251,9 +226,14 @@ export function BuyerPipeline({ buyers, companyId, onBuyerUpdated }: BuyerPipeli
       {/* Stage Change Modal */}
       {selectedBuyer && targetStage && (
         <StageChangeModal
-          buyer={selectedBuyer}
+          buyer={{
+            id: selectedBuyer.id,
+            name: selectedBuyer.canonicalCompany?.name || selectedBuyer.companyName,
+            currentStage: selectedBuyer.currentStage as DealStage,
+          }}
           targetStage={targetStage}
-          companyId={companyId}
+          companyId={dealId}
+          apiPath={`/api/deals/${dealId}/buyers/${selectedBuyer.id}/stage`}
           isOpen={true}
           onClose={() => {
             setSelectedBuyer(null)

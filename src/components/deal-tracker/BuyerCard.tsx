@@ -33,47 +33,25 @@ import {
   ExternalLink,
   ArrowRight,
 } from 'lucide-react'
-
-interface ProspectiveBuyer {
-  id: string
-  name: string
-  buyerType: BuyerType
-  tier: BuyerTier
-  currentStage: DealStage
-  website: string | null
-  industry: string | null
-  location: string | null
-  stageUpdatedAt: string
-  ioiAmount: number | null
-  loiAmount: number | null
-  contacts: Array<{
-    id: string
-    email: string
-    firstName: string
-    lastName: string
-    isPrimary: boolean
-  }>
-  _count: {
-    documents: number
-    meetings: number
-    activities: number
-  }
-}
+import type { DealBuyerWithContacts } from './DealTrackerDashboard'
 
 interface BuyerCardProps {
-  buyer: ProspectiveBuyer
-  _companyId: string
+  buyer: DealBuyerWithContacts
+  dealId: string
   onStageChange: (stage: DealStage) => void
-  _onUpdated: () => void
+  onUpdated: () => void
 }
 
-export function BuyerCard({ buyer, _companyId, onStageChange, _onUpdated }: BuyerCardProps) {
+export function BuyerCard({ buyer, dealId, onStageChange }: BuyerCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const stageColors = STAGE_COLORS[buyer.currentStage]
-  const typeColors = BUYER_TYPE_COLORS[buyer.buyerType]
-  const tierColors = BUYER_TIER_COLORS[buyer.tier]
-  const primaryContact = buyer.contacts.find(c => c.isPrimary) || buyer.contacts[0]
-  const validTransitions = VALID_STAGE_TRANSITIONS[buyer.currentStage] || []
+  const currentStage = buyer.currentStage as DealStage
+  const buyerType = buyer.companyType as BuyerType
+  const stageColors = STAGE_COLORS[currentStage] || { bg: 'bg-gray-100', text: 'text-gray-800' }
+  const typeColors = BUYER_TYPE_COLORS[buyerType] || { bg: 'bg-gray-100', text: 'text-gray-800' }
+  const tierColors = BUYER_TIER_COLORS[buyer.tier] || { bg: 'bg-gray-100', text: 'text-gray-800' }
+  const primaryContact = buyer.contacts?.find(c => c.isPrimary) || buyer.contacts?.[0]
+  const validTransitions = VALID_STAGE_TRANSITIONS[currentStage] || []
+  const buyerName = buyer.canonicalCompany?.name || buyer.companyName
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -85,6 +63,7 @@ export function BuyerCard({ buyer, _companyId, onStageChange, _onUpdated }: Buye
   }
 
   const daysSinceUpdate = useMemo(() => {
+    if (!buyer.stageUpdatedAt) return 0
     const now = new Date()
     const updated = new Date(buyer.stageUpdatedAt)
     return Math.floor((now.getTime() - updated.getTime()) / (1000 * 60 * 60 * 24))
@@ -110,10 +89,10 @@ export function BuyerCard({ buyer, _companyId, onStageChange, _onUpdated }: Buye
       <div className="p-3 pb-2">
         <div className="flex items-start justify-between gap-2">
           <Link
-            href={`/dashboard/deal-tracker/${buyer.id}`}
+            href={`/dashboard/deals/${dealId}/buyers/${buyer.id}`}
             className="font-medium text-sm hover:text-primary transition-colors line-clamp-1 group-hover:text-primary flex-1"
           >
-            {buyer.name}
+            {buyerName}
           </Link>
           <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <DropdownMenuTrigger asChild>
@@ -127,7 +106,7 @@ export function BuyerCard({ buyer, _companyId, onStageChange, _onUpdated }: Buye
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem asChild>
-                <Link href={`/dashboard/deal-tracker/${buyer.id}`} className="flex items-center">
+                <Link href={`/dashboard/deals/${dealId}/buyers/${buyer.id}`} className="flex items-center">
                   <ExternalLink className="h-4 w-4 mr-2" />
                   View Details
                 </Link>
@@ -168,21 +147,21 @@ export function BuyerCard({ buyer, _companyId, onStageChange, _onUpdated }: Buye
             typeColors.bg,
             typeColors.text
           )}>
-            {BUYER_TYPE_LABELS[buyer.buyerType]}
+            {BUYER_TYPE_LABELS[buyerType] || buyerType}
           </span>
           <span className={cn(
             'text-[10px] px-2 py-0.5 rounded-full font-medium',
             tierColors.bg,
             tierColors.text
           )}>
-            {BUYER_TIER_LABELS[buyer.tier]}
+            {BUYER_TIER_LABELS[buyer.tier] || buyer.tier}
           </span>
           <span className={cn(
             'text-[10px] px-2 py-0.5 rounded-full font-medium',
             stageColors.bg,
             stageColors.text
           )}>
-            {STAGE_LABELS[buyer.currentStage]}
+            {STAGE_LABELS[currentStage] || currentStage}
           </span>
         </div>
       </div>
@@ -194,7 +173,7 @@ export function BuyerCard({ buyer, _companyId, onStageChange, _onUpdated }: Buye
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <User className="h-3 w-3 flex-shrink-0" />
             <span className="truncate">
-              {primaryContact.firstName} {primaryContact.lastName}
+              {primaryContact.canonicalPerson.firstName} {primaryContact.canonicalPerson.lastName}
             </span>
           </div>
         )}
@@ -226,11 +205,11 @@ export function BuyerCard({ buyer, _companyId, onStageChange, _onUpdated }: Buye
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
               <Users className="h-3 w-3" />
-              {buyer.contacts.length}
+              {buyer.contacts?.length || 0}
             </span>
             <span className="flex items-center gap-1">
               <FileText className="h-3 w-3" />
-              {buyer._count.documents}
+              {buyer._count?.activities || 0}
             </span>
           </div>
           <span className={cn(
