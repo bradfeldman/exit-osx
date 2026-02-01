@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button'
 import { StepIndicator } from './StepIndicator'
 import { BasicInfoStep } from './steps/BasicInfoStep'
 import { RevenueStep } from './steps/RevenueStep'
-import { BusinessProfileStep } from './steps/BusinessProfileStep'
 import { useCompany } from '@/contexts/CompanyContext'
 import { cn } from '@/lib/utils'
 import { analytics } from '@/lib/analytics'
@@ -59,10 +58,10 @@ const initialFormData: CompanyFormData = {
   adjustments: [],
 }
 
+// Simplified 2-step flow (Business Profile removed - defaults to industry averages)
 const steps = [
   { id: 1, title: 'Company Info', description: 'Name & industry' },
   { id: 2, title: 'Revenue', description: 'Annual revenue' },
-  { id: 3, title: 'Business Profile', description: 'Core factors' },
 ]
 
 // Calculate revenue size category from actual revenue
@@ -92,7 +91,7 @@ export function CompanySetupWizard() {
   const hasTrackedStart = useRef(false)
 
   // Analytics: Step names for tracking (matches SetupStepViewedParams type)
-  const stepNames: Array<'basic_info' | 'revenue' | 'business_profile'> = ['basic_info', 'revenue', 'business_profile']
+  const stepNames: Array<'basic_info' | 'revenue'> = ['basic_info', 'revenue']
 
   // Analytics: Track wizard started on mount
   useEffect(() => {
@@ -156,14 +155,6 @@ export function CompanySetupWizard() {
         inputsProvided = {
           revenueRange: getRevenueSizeCategory(formData.annualRevenue),
           hasRevenue: formData.annualRevenue > 0,
-        }
-        break
-      case 3:
-        inputsProvided = {
-          revenueModel: formData.revenueModel,
-          laborIntensity: formData.laborIntensity,
-          assetIntensity: formData.assetIntensity,
-          ownerInvolvement: formData.ownerInvolvement,
         }
         break
     }
@@ -325,17 +316,15 @@ export function CompanySetupWizard() {
 
       const { company } = await companyResponse.json()
 
-      // Save core factors (grossMarginProxy is set later in Baseline Assessment)
+      // Default core factors to highest values (Core Score = 1.0)
+      // This gives users a favorable starting point - Risk Assessment will adjust
       const coreFactorsPayload: Record<string, string> = {
         revenueSizeCategory,
-        revenueModel: formData.revenueModel,
-        laborIntensity: formData.laborIntensity,
-        assetIntensity: formData.assetIntensity,
-        ownerInvolvement: formData.ownerInvolvement,
-      }
-      // Only include grossMarginProxy if it was set (for backwards compatibility)
-      if (formData.grossMarginProxy) {
-        coreFactorsPayload.grossMarginProxy = formData.grossMarginProxy
+        revenueModel: 'SUBSCRIPTION_SAAS',
+        laborIntensity: 'LOW',
+        assetIntensity: 'ASSET_LIGHT',
+        ownerInvolvement: 'MINIMAL',
+        grossMarginProxy: 'EXCELLENT',
       }
 
       const coreFactorsResponse = await fetch(`/api/companies/${company.id}/core-factors`, {
@@ -398,8 +387,6 @@ export function CompanySetupWizard() {
         return <BasicInfoStep formData={formData} updateFormData={updateFormData} />
       case 2:
         return <RevenueStep formData={formData} updateFormData={updateFormData} />
-      case 3:
-        return <BusinessProfileStep formData={formData} updateFormData={updateFormData} />
       default:
         return null
     }
@@ -411,8 +398,6 @@ export function CompanySetupWizard() {
         return formData.name && formData.icbIndustry && formData.icbSuperSector && formData.icbSector && formData.icbSubSector
       case 2:
         return formData.annualRevenue > 0
-      case 3:
-        return formData.revenueModel && formData.laborIntensity && formData.assetIntensity && formData.ownerInvolvement
       default:
         return false
     }
