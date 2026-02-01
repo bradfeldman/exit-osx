@@ -11,6 +11,7 @@ import { RevenueStep } from '@/components/company/steps/RevenueStep'
 import { BusinessProfileStep } from '@/components/company/steps/BusinessProfileStep'
 import { useCompany } from '@/contexts/CompanyContext'
 import { analytics } from '@/lib/analytics'
+import { createClient } from '@/lib/supabase/client'
 
 interface Adjustment {
   description: string
@@ -76,6 +77,7 @@ interface FocusedOnboardingWizardProps {
 
 export function FocusedOnboardingWizard({ userName }: FocusedOnboardingWizardProps) {
   const router = useRouter()
+  const supabase = createClient()
   const { refreshCompanies, setSelectedCompanyId } = useCompany()
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<CompanyFormData>(initialFormData)
@@ -83,6 +85,12 @@ export function FocusedOnboardingWizard({ userName }: FocusedOnboardingWizardPro
   const [error, setError] = useState<string | null>(null)
   const [showCelebration, setShowCelebration] = useState(false)
   const [newCompanyId, setNewCompanyId] = useState<string | null>(null)
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+    router.refresh()
+  }
 
   // Analytics refs
   const wizardStartTime = useRef(Date.now())
@@ -603,7 +611,7 @@ export function FocusedOnboardingWizard({ userName }: FocusedOnboardingWizardPro
             <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-            <span>Bank-level security</span>
+            <span>Enterprise-grade security</span>
           </div>
           <div className="flex items-center gap-1.5">
             <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -611,6 +619,15 @@ export function FocusedOnboardingWizard({ userName }: FocusedOnboardingWizardPro
             </svg>
             <span>Step {currentStep} of {steps.length}</span>
           </div>
+          <button
+            onClick={handleSignOut}
+            className="flex items-center gap-1.5 hover:text-foreground transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>Log out</span>
+          </button>
         </motion.div>
       </div>
     </div>
