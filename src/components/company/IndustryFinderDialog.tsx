@@ -22,6 +22,7 @@ interface IndustryMatch {
   subSectorLabel: string
   confidence: string
   reasoning: string
+  source: 'ai' | 'keyword' | 'default'
 }
 
 interface IndustryFinderDialogProps {
@@ -60,7 +61,7 @@ export function IndustryFinderDialog({ onSelect }: IndustryFinderDialogProps) {
       }
 
       const data = await response.json()
-      setResult(data.match)
+      setResult({ ...data.match, source: data.source })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -180,7 +181,9 @@ export function IndustryFinderDialog({ onSelect }: IndustryFinderDialogProps) {
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-green-900">Recommended Classification</p>
+                    <p className="text-sm font-medium text-green-900">
+                      {result.source === 'ai' ? 'Recommended Classification' : 'Keyword Classification'}
+                    </p>
                     <p className="text-lg font-semibold text-green-800 mt-1">{result.subSectorLabel}</p>
                     <p className="text-xs text-green-700 mt-1">
                       {result.industryLabel} &rarr; {result.superSectorLabel} &rarr; {result.sectorLabel}

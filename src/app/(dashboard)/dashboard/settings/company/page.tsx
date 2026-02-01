@@ -88,6 +88,7 @@ export default function CompanySettingsPage() {
     icbSubSector: string
     subSectorLabel: string
     reasoning: string
+    source: 'ai' | 'keyword' | 'default'
   } | null>(null)
 
   useEffect(() => {
@@ -177,6 +178,7 @@ export default function CompanySettingsPage() {
         icbSubSector: match.icbSubSector,
         subSectorLabel: match.subSectorLabel,
         reasoning: match.reasoning,
+        source: data.source,
       })
     } catch (err) {
       setIndustryMatchError(err instanceof Error ? err.message : 'An error occurred')
@@ -439,7 +441,9 @@ export default function CompanySettingsPage() {
                         </svg>
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-amber-900">Recommended Classification</p>
+                        <p className="text-sm font-semibold text-amber-900">
+                          {industryMatchResult.source === 'ai' ? 'Recommended Classification' : 'Keyword Classification'}
+                        </p>
                         <p className="text-base font-bold text-amber-800 mt-1">{industryMatchResult.subSectorLabel}</p>
                         <p className="text-xs text-amber-700 mt-1">{industryMatchResult.reasoning}</p>
                       </div>
