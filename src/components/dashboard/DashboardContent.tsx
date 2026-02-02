@@ -264,6 +264,14 @@ export function DashboardContent({ userName }: DashboardContentProps) {
     loadData()
   }, [selectedCompanyId, companies, companyLoading, setSelectedCompanyId])
 
+  // Redirect to onboarding if no companies exist
+  // This handles the case where a company is deleted while user is on dashboard
+  useEffect(() => {
+    if (noCompany && !companyLoading) {
+      router.push('/onboarding')
+    }
+  }, [noCompany, companyLoading, router])
+
   // Check if onboarding was skipped
   useEffect(() => {
     const skipped = localStorage.getItem('onboardingSkipped')
@@ -587,14 +595,13 @@ export function DashboardContent({ userName }: DashboardContentProps) {
     )
   }
 
-  // No company selected or no data - this shouldn't happen as layout redirects to onboarding
-  // But show loading state just in case
+  // Show loading while redirecting or waiting for data
   if (noCompany || !dashboardData) {
     return (
       <div className="max-w-5xl mx-auto flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground text-sm">Loading...</p>
+          <p className="text-muted-foreground text-sm">{noCompany ? 'Redirecting...' : 'Loading...'}</p>
         </div>
       </div>
     )
