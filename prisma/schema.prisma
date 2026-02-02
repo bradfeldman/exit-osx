@@ -148,48 +148,56 @@ model OrganizationInvite {
 }
 
 model Company {
-  id                 String                    @id @default(cuid())
-  organizationId     String                    @map("organization_id")
-  name               String
-  icbIndustry        String                    @map("icb_industry")
-  icbSuperSector     String                    @map("icb_super_sector")
-  icbSector          String                    @map("icb_sector")
-  icbSubSector       String                    @map("icb_sub_sector")
-  annualRevenue      Decimal                   @map("annual_revenue") @db.Decimal(15, 2)
-  annualEbitda       Decimal                   @map("annual_ebitda") @db.Decimal(15, 2)
-  ownerCompensation  Decimal                   @default(0) @map("owner_compensation") @db.Decimal(15, 2)
-  briWeights         Json?                     @map("bri_weights")
-  createdAt          DateTime                  @default(now()) @map("created_at")
-  updatedAt          DateTime                  @updatedAt @map("updated_at")
-  deletedAt          DateTime?                 @map("deleted_at")
-  deleteReason       String?                   @map("delete_reason")
-  fiscalYearEndDay   Int                       @default(31) @map("fiscal_year_end_day")
-  fiscalYearEndMonth Int                       @default(12) @map("fiscal_year_end_month")
-  assessments        Assessment[]
-  buyerProspects     BuyerProspect[]
-  organization       Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  questionPriorities CompanyQuestionPriority[]
-  coreFactors        CoreFactors?
-  dataRoomDocuments  DataRoomDocument[]
-  dataRoomTags       DataRoomTag[]
-  dataRoom           DataRoom?
-  dcfAssumptions     DCFAssumptions?
-  ebitdaAdjustments  EbitdaAdjustment[]
-  financialPeriods   FinancialPeriod[]
-  integrations       Integration[]
-  projectAssessments ProjectAssessment[]
-  prospectImports    ProspectImportBatch[]
-  prospectiveBuyers  ProspectiveBuyer[]
-  sprints            Sprint[]
-  tasks              Task[]
-  valuationSnapshots ValuationSnapshot[]
+  id                       String                       @id @default(cuid())
+  organizationId           String                       @map("organization_id")
+  name                     String
+  icbIndustry              String                       @map("icb_industry")
+  icbSuperSector           String                       @map("icb_super_sector")
+  icbSector                String                       @map("icb_sector")
+  icbSubSector             String                       @map("icb_sub_sector")
+  annualRevenue            Decimal                      @map("annual_revenue") @db.Decimal(15, 2)
+  annualEbitda             Decimal                      @map("annual_ebitda") @db.Decimal(15, 2)
+  ownerCompensation        Decimal                      @default(0) @map("owner_compensation") @db.Decimal(15, 2)
+  briWeights               Json?                        @map("bri_weights")
+  createdAt                DateTime                     @default(now()) @map("created_at")
+  updatedAt                DateTime                     @updatedAt @map("updated_at")
+  deletedAt                DateTime?                    @map("deleted_at")
+  deleteReason             String?                      @map("delete_reason")
+  fiscalYearEndDay         Int                          @default(31) @map("fiscal_year_end_day")
+  fiscalYearEndMonth       Int                          @default(12) @map("fiscal_year_end_month")
+  businessDescription      String?                      @map("business_description")
+  businessProfile          Json?                        @map("business_profile")
+  profileQuestionsAnswered Json?                        @map("profile_questions_answered")
+  assessments              Assessment[]
+  buyerProspects           BuyerProspect[]
+  organization             Organization                 @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  questionPriorities       CompanyQuestionPriority[]
+  coreFactors              CoreFactors?
+  dataRoomDocuments        DataRoomDocument[]
+  dataRoomTags             DataRoomTag[]
+  dataRoom                 DataRoom?
+  dcfAssumptions           DCFAssumptions?
+  ebitdaAdjustments        EbitdaAdjustment[]
+  financialPeriods         FinancialPeriod[]
+  integrations             Integration[]
+  projectAssessments       ProjectAssessment[]
+  prospectImports          ProspectImportBatch[]
+  prospectiveBuyers        ProspectiveBuyer[]
+  sprints                  Sprint[]
+  tasks                    Task[]
+  valuationSnapshots       ValuationSnapshot[]
   // Company ownership & access relations
-  ownerships         CompanyOwnership[]
-  staffAccess        CompanyStaffAccess[]
-  accessRequests     AccessRequest[]
-  companyInvites     CompanyInvite[]
+  ownerships               CompanyOwnership[]
+  staffAccess              CompanyStaffAccess[]
+  accessRequests           AccessRequest[]
+  companyInvites           CompanyInvite[]
   // Contact System - deals where this company is the seller
-  deals              Deal[]
+  deals                    Deal[]
+  // Operations Diagnosis - AI-generated diagnostics and tasks
+  diagnosticQuestions      CompanyDiagnosticQuestions[]
+  diagnosticResponses      CompanyDiagnosticResponses[]
+  operationsTasks          CompanyOperationsTask[]
+  weeklyProgress           CompanyWeeklyProgress[]
 
   @@map("companies")
 }
@@ -2715,4 +2723,143 @@ enum EmailStatus {
   REPLIED
   BOUNCED
   FAILED
+}
+
+// ===========================================
+// Operations Diagnosis Models
+// ===========================================
+
+enum DiagnosisSubcategory {
+  SCALABILITY
+  TECHNOLOGY
+  VENDOR
+  RETENTION
+}
+
+enum WeeklyProgressStatus {
+  DIAGNOSTIC
+  TASKS
+  REASSESSMENT
+  COMPLETED
+  SKIPPED
+}
+
+enum OperationsTaskStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  NOT_APPLICABLE
+}
+
+model CompanyDiagnosticQuestions {
+  id          String                       @id @default(cuid())
+  companyId   String                       @map("company_id")
+  subcategory DiagnosisSubcategory
+  questions   Json // Array of generated questions
+  createdAt   DateTime                     @default(now()) @map("created_at")
+  company     Company                      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  responses   CompanyDiagnosticResponses[]
+
+  @@unique([companyId, subcategory])
+  @@index([companyId])
+  @@map("company_diagnostic_questions")
+}
+
+model CompanyDiagnosticResponses {
+  id                String                     @id @default(cuid())
+  companyId         String                     @map("company_id")
+  questionSetId     String                     @map("question_set_id")
+  subcategory       DiagnosisSubcategory
+  responses         Json // Array of {question_id, selected_option_id, drivers[], severity}
+  identifiedDrivers Json?                      @map("identified_drivers") // Aggregated drivers with severity
+  scoreBefore       Int?                       @map("score_before")
+  scoreAfter        Int?                       @map("score_after")
+  isReassessment    Boolean                    @default(false) @map("is_reassessment")
+  createdAt         DateTime                   @default(now()) @map("created_at")
+  company           Company                    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  questionSet       CompanyDiagnosticQuestions @relation(fields: [questionSetId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([questionSetId])
+  @@map("company_diagnostic_responses")
+}
+
+model CompanyOperationsTask {
+  id          String               @id @default(cuid())
+  companyId   String               @map("company_id")
+  subcategory DiagnosisSubcategory
+  weekNumber  Int                  @map("week_number")
+
+  // AI-generated content
+  title           String
+  description     String
+  doneDefinition  String   @map("done_definition")
+  benchmarkTarget String?  @map("benchmark_target")
+  delegateTo      String?  @map("delegate_to")
+  estimatedEffort String?  @map("estimated_effort")
+  whyThisMatters  String?  @map("why_this_matters")
+  improvesDrivers String[] @map("improves_drivers")
+
+  // Status tracking
+  status          OperationsTaskStatus @default(NOT_STARTED)
+  completedAt     DateTime?            @map("completed_at")
+  completionNotes String?              @map("completion_notes")
+  hitBenchmark    Boolean?             @map("hit_benchmark")
+  naReason        String?              @map("na_reason")
+
+  // Metadata
+  displayOrder Int      @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, weekNumber])
+  @@index([companyId, subcategory])
+  @@map("company_operations_tasks")
+}
+
+model CompanyWeeklyProgress {
+  id          String               @id @default(cuid())
+  companyId   String               @map("company_id")
+  weekNumber  Int                  @map("week_number")
+  subcategory DiagnosisSubcategory
+
+  // Timestamps
+  diagnosticStartedAt     DateTime? @map("diagnostic_started_at")
+  diagnosticCompletedAt   DateTime? @map("diagnostic_completed_at")
+  tasksGeneratedAt        DateTime? @map("tasks_generated_at")
+  tasksCompletedAt        DateTime? @map("tasks_completed_at")
+  reassessmentCompletedAt DateTime? @map("reassessment_completed_at")
+
+  // Scores
+  scoreBefore   Int?     @map("score_before")
+  scoreAfter    Int?     @map("score_after")
+  valueUnlocked Decimal? @map("value_unlocked") @db.Decimal(10, 2)
+
+  // Status
+  status    WeeklyProgressStatus @default(DIAGNOSTIC)
+  createdAt DateTime             @default(now()) @map("created_at")
+  company   Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, weekNumber])
+  @@index([companyId])
+  @@map("company_weekly_progress")
+}
+
+model AIGenerationLog {
+  id             String   @id @default(cuid())
+  companyId      String?  @map("company_id")
+  generationType String   @map("generation_type") // 'clarifying_questions', 'profile', 'diagnostic_questions', 'tasks'
+  inputData      Json?    @map("input_data")
+  outputData     Json?    @map("output_data")
+  modelUsed      String?  @map("model_used")
+  inputTokens    Int?     @map("input_tokens")
+  outputTokens   Int?     @map("output_tokens")
+  latencyMs      Int?     @map("latency_ms")
+  errorMessage   String?  @map("error_message")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([companyId])
+  @@index([generationType])
+  @@map("ai_generation_logs")
 }

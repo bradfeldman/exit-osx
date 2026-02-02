@@ -103,7 +103,10 @@ export async function POST(request: Request) {
       icbSubSector,
       annualRevenue,
       annualEbitda,
-      ownerCompensation = 0
+      ownerCompensation = 0,
+      businessDescription,
+      businessProfile,
+      profileQuestionsAnswered,
     } = body
 
     // Validate required fields
@@ -182,7 +185,10 @@ export async function POST(request: Request) {
         icbSubSector,
         annualRevenue,
         annualEbitda,
-        ownerCompensation
+        ownerCompensation,
+        businessDescription,
+        businessProfile,
+        profileQuestionsAnswered,
       },
       include: {
         coreFactors: true,
