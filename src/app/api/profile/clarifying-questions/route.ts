@@ -46,8 +46,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ questions: data.questions })
   } catch (error) {
     console.error('Error generating clarifying questions:', error)
+    const message = error instanceof Error ? error.message : 'Failed to generate questions'
+    // Check for specific error types
+    if (message.includes('ANTHROPIC_API_KEY')) {
+      return NextResponse.json(
+        { error: 'AI service not configured. Please contact support.' },
+        { status: 503 }
+      )
+    }
     return NextResponse.json(
-      { error: 'Failed to generate questions' },
+      { error: message },
       { status: 500 }
     )
   }

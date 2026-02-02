@@ -1,9 +1,18 @@
 import Anthropic from '@anthropic-ai/sdk'
 
-// Initialize Anthropic client
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
+// Lazy initialize Anthropic client to handle missing API key gracefully
+let anthropicClient: Anthropic | null = null
+
+function getAnthropicClient(): Anthropic {
+  if (!anthropicClient) {
+    const apiKey = process.env.ANTHROPIC_API_KEY
+    if (!apiKey) {
+      throw new Error('ANTHROPIC_API_KEY environment variable is not set')
+    }
+    anthropicClient = new Anthropic({ apiKey })
+  }
+  return anthropicClient
+}
 
 export type AIModel = 'claude-sonnet' | 'claude-haiku'
 
@@ -40,7 +49,8 @@ export async function generateJSON<T>(
     temperature = 0.7,
   } = options
 
-  const response = await anthropic.messages.create({
+  const client = getAnthropicClient()
+  const response = await client.messages.create({
     model: MODEL_IDS[model],
     max_tokens: maxTokens,
     temperature,
@@ -90,7 +100,8 @@ export async function generateText(
     temperature = 0.7,
   } = options
 
-  const response = await anthropic.messages.create({
+  const client = getAnthropicClient()
+  const response = await client.messages.create({
     model: MODEL_IDS[model],
     max_tokens: maxTokens,
     temperature,
@@ -117,4 +128,4 @@ export async function generateText(
   }
 }
 
-export { anthropic }
+export { getAnthropicClient }
