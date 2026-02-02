@@ -284,6 +284,25 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
   }
 
   const handleComplete = async () => {
+    // Send the onboarding complete email (non-blocking)
+    if (createdCompanyId && revealData) {
+      fetch('/api/email/onboarding-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyId: createdCompanyId,
+          currentValue: revealData.currentValue,
+          potentialValue: revealData.potentialValue,
+          valueGap: revealData.valueGap,
+          briScore: revealData.briScore,
+          topRisks: revealData.topRisks,
+          topTask: revealData.topTask,
+        }),
+      }).catch(err => {
+        console.error('Failed to send onboarding email:', err)
+      })
+    }
+
     // Clear onboarding state
     localStorage.removeItem('onboardingState')
     localStorage.removeItem('onboardingSkipped')

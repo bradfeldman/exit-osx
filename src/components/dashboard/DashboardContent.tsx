@@ -495,10 +495,35 @@ export function DashboardContent({ userName }: DashboardContentProps) {
     }
   }, [dashboardData, scrollDepthReached])
 
-  // Early check: if we know there are no companies, show onboarding immediately
-  // This prevents the "flash" of dashboard skeleton before redirect
-  if (!companyLoading && companies.length === 0) {
-    return <GuidedOnboardingFlow userName={userName} />
+  // Check if guided onboarding is in progress (persists across company creation)
+  const [onboardingInProgress, setOnboardingInProgress] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const savedState = localStorage.getItem('onboardingState')
+    if (savedState) {
+      try {
+        const state = JSON.parse(savedState)
+        // If we're past step 2 (company created), onboarding is still in progress
+        return state.step && state.step >= 1
+      } catch {
+        return false
+      }
+    }
+    return false
+  })
+
+  // Early check: show onboarding if no companies OR if onboarding is in progress
+  // This prevents being dumped on dashboard mid-flow after company creation
+  if (!companyLoading && (companies.length === 0 || onboardingInProgress)) {
+    return (
+      <GuidedOnboardingFlow
+        userName={userName}
+        onComplete={() => {
+          setOnboardingInProgress(false)
+          // Force a re-render to show dashboard
+          window.location.reload()
+        }}
+      />
+    )
   }
 
   // Show minimal loading while checking company status
@@ -596,7 +621,15 @@ export function DashboardContent({ userName }: DashboardContentProps) {
 
   // No company selected - show unified focused onboarding wizard (Dan + Alex style)
   if (noCompany || !dashboardData) {
-    return <GuidedOnboardingFlow userName={userName} />
+    return (
+      <GuidedOnboardingFlow
+        userName={userName}
+        onComplete={() => {
+          setOnboardingInProgress(false)
+          window.location.reload()
+        }}
+      />
+    )
   }
 
   const { tier1, tier2, tier3, hasAssessment } = dashboardData
