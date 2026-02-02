@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { OnboardingProviders } from '@/components/onboarding/OnboardingProviders'
 
 export default async function OnboardingLayout({
   children,
@@ -14,8 +15,10 @@ export default async function OnboardingLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      {children}
-    </div>
+    <OnboardingProviders>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+        {children}
+      </div>
+    </OnboardingProviders>
   )
 }
