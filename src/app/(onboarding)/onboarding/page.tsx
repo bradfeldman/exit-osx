@@ -2,11 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow'
 
-interface OnboardingPageProps {
-  searchParams: Promise<{ step?: string }>
-}
-
-export default async function OnboardingPage({ searchParams }: OnboardingPageProps) {
+export default async function OnboardingPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -14,20 +10,9 @@ export default async function OnboardingPage({ searchParams }: OnboardingPagePro
     redirect('/login?next=/onboarding')
   }
 
-  const params = await searchParams
-  const step = params.step ? parseInt(params.step, 10) : 1
-
-  // If user has companies AND is on step 1, send to dashboard
-  // Steps 2+ mean they're in the middle of onboarding flow
-  if (step === 1) {
-    const { count } = await supabase
-      .from('companies')
-      .select('id', { count: 'exact', head: true })
-
-    if (count && count > 0) {
-      redirect('/dashboard')
-    }
-  }
+  // Note: We don't redirect users with companies to dashboard here.
+  // The OnboardingFlow component handles that case by showing appropriate UI.
+  // This prevents redirect loops between dashboard and onboarding.
 
   return <OnboardingFlow userName={user?.user_metadata?.name} />
 }
