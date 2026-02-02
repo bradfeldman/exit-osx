@@ -5,7 +5,6 @@ import type {
   TaskGenerationResult,
   IdentifiedDriver,
   Subcategory,
-  SUBCATEGORY_DRIVERS,
 } from './types'
 
 const DIAGNOSTIC_QUESTIONS_SYSTEM = `You are creating diagnostic questions for a specific business to understand WHY they have operational weaknesses.

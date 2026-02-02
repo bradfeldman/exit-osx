@@ -61,6 +61,13 @@ export function ClarifyingQuestionsStep({
     fetchQuestions()
   }, [businessDescription, industry, revenueRange])
 
+  // Auto-proceed if no questions needed (must be before early returns)
+  useEffect(() => {
+    if (!isLoading && questions.length === 0 && !error) {
+      onComplete({}, [])
+    }
+  }, [isLoading, questions.length, error, onComplete])
+
   const handleOptionSelect = (questionId: string, optionId: string) => {
     setAnswers((prev) => ({ ...prev, [questionId]: optionId }))
   }
@@ -120,13 +127,6 @@ export function ClarifyingQuestionsStep({
       </div>
     )
   }
-
-  // Auto-proceed if no questions needed
-  useEffect(() => {
-    if (!isLoading && questions.length === 0 && !error) {
-      onComplete({}, [])
-    }
-  }, [isLoading, questions.length, error, onComplete])
 
   if (questions.length === 0 && !isLoading && !error) {
     return (

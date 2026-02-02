@@ -47,7 +47,7 @@ const SUBCATEGORIES: { id: Subcategory; name: string; description: string }[] = 
   { id: 'RETENTION', name: 'Employee Retention', description: 'Staff stability and turnover risk' },
 ]
 
-export function ActionPlanContent({ userName }: ActionPlanContentProps) {
+export function ActionPlanContent({ userName: _userName }: ActionPlanContentProps) {
   const { selectedCompany } = useCompany()
   const [loading, setLoading] = useState(true)
   const [currentWeek, setCurrentWeek] = useState<WeekProgress | null>(null)
@@ -77,6 +77,7 @@ export function ActionPlanContent({ userName }: ActionPlanContentProps) {
 
   useEffect(() => {
     fetchData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCompany?.id])
 
   const handleStartDiagnostic = (subcategory: Subcategory) => {

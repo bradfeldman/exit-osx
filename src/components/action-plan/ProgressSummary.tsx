@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from '@/lib/motion'
-import { CheckCircle2, Circle, TrendingUp } from 'lucide-react'
+import { CheckCircle2, TrendingUp } from 'lucide-react'
 import type { Subcategory } from '@/lib/ai/types'
 
 interface DiagnosticResponse {
@@ -39,12 +39,6 @@ export function ProgressSummary({
   const completedWeeks = previousWeeks.filter(w => w.status === 'COMPLETED').length
   const diagnosedCount = diagnostics.length
   const totalSubcategories = subcategories.length
-
-  // Calculate overall progress
-  const overallProgress = Math.round(
-    ((diagnosedCount / totalSubcategories) * 50) +
-    ((completedWeeks / Math.max(1, previousWeeks.length)) * 50)
-  )
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
