@@ -371,9 +371,9 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
   const showNavigation = currentStep <= 2
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="fixed inset-0 z-[100] bg-gradient-to-br from-background via-background to-muted/20 overflow-y-auto">
       {/* Minimal header */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50">
+      <div className="fixed top-0 left-0 right-0 z-[101] bg-background/80 backdrop-blur-sm border-b border-border/50">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-xl font-bold font-display text-foreground">
