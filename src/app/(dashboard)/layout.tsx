@@ -14,14 +14,8 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
-  // Check if user has companies - redirect to onboarding if not
-  const { count } = await supabase
-    .from('companies')
-    .select('id', { count: 'exact', head: true })
-
-  if (!count || count === 0) {
-    redirect('/onboarding')
-  }
+  // Note: Company check moved to DashboardContent (client-side)
+  // to avoid redirect loops between dashboard and onboarding layouts
 
   return <DashboardShell user={user}>{children}</DashboardShell>
 }
