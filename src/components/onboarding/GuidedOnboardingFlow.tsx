@@ -81,17 +81,9 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
     topTask: { id: string; title: string; description: string; category: string; estimatedValue: number } | null
   } | null>(null)
 
-  // Load company name from localStorage (set during signup)
+  // Check for existing onboarding state AND pending company name (from signup)
   useEffect(() => {
-    const pendingCompanyName = localStorage.getItem('pendingCompanyName')
-    if (pendingCompanyName) {
-      setFormData(prev => ({ ...prev, name: pendingCompanyName }))
-      localStorage.removeItem('pendingCompanyName')
-    }
-  }, [])
-
-  // Check for existing onboarding state
-  useEffect(() => {
+    // First, restore any saved state
     const savedState = localStorage.getItem('onboardingState')
     if (savedState) {
       try {
@@ -103,6 +95,13 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
       } catch (e) {
         console.error('Failed to restore onboarding state:', e)
       }
+    }
+
+    // Then, check for pending company name from signup (takes priority)
+    const pendingCompanyName = localStorage.getItem('pendingCompanyName')
+    if (pendingCompanyName) {
+      setFormData(prev => ({ ...prev, name: pendingCompanyName }))
+      localStorage.removeItem('pendingCompanyName')
     }
   }, [])
 
@@ -126,7 +125,11 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
   }
 
   // Create company after step 2
-  const createCompany = async () => {
+  // Returns both companyId and industryPreviewData to avoid race conditions with state
+  const createCompany = async (): Promise<{
+    companyId: string
+    previewData: typeof industryPreviewData
+  } | null> => {
     setIsSubmitting(true)
     setError(null)
 
@@ -180,6 +183,7 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
       })
 
       // Fetch industry preview data
+      let previewData: typeof industryPreviewData = null
       const dashboardResponse = await fetch(`/api/companies/${company.id}/dashboard`)
       if (dashboardResponse.ok) {
         const dashboardData = await dashboardResponse.json()
@@ -192,22 +196,22 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
 
         const valuationLow = estimatedEbitda * multipleLow
         const valuationHigh = estimatedEbitda * multipleHigh
-        const midPoint = (valuationLow + valuationHigh) / 2
         const potentialGap = Math.round(valuationHigh * 0.35) // ~35% gap potential
 
-        setIndustryPreviewData({
+        previewData = {
           valuationLow: Math.round(valuationLow),
           valuationHigh: Math.round(valuationHigh),
           potentialGap,
           industryName: formData.icbSubSector.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()),
-        })
+        }
+        setIndustryPreviewData(previewData)
       }
 
       // Set company as selected
       setSelectedCompanyId(company.id)
       await refreshCompanies()
 
-      return company.id
+      return { companyId: company.id, previewData }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
       return null
@@ -220,8 +224,19 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
   const handleNext = async () => {
     if (currentStep === 2) {
       // Create company before moving to step 3
-      const companyId = await createCompany()
-      if (companyId) {
+      const result = await createCompany()
+      if (result) {
+        // CRITICAL: Save step 3 to localStorage SYNCHRONOUSLY before React re-renders
+        // This prevents a race condition where refreshCompanies() triggers parent re-render
+        // before the new step is persisted
+        // We use the returned previewData directly since state updates are async
+        const newState = {
+          step: 3,
+          formData,
+          companyId: result.companyId,
+          industryPreviewData: result.previewData,
+        }
+        localStorage.setItem('onboardingState', JSON.stringify(newState))
         setCurrentStep(3)
       }
     } else if (currentStep < STEPS.length) {
