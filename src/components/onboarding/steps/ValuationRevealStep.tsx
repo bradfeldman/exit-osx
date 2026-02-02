@@ -12,6 +12,7 @@ import {
   Sparkles,
   Target,
   DollarSign,
+  Award,
 } from 'lucide-react'
 
 interface ValuationRevealStepProps {
@@ -404,6 +405,26 @@ export function ValuationRevealStep({
                 </button>
               </motion.div>
             )}
+
+            {/* Social Proof - Why this matters */}
+            <motion.div
+              className="mt-6 p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl border border-emerald-200 dark:border-emerald-800/30"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+            >
+              <div className="flex items-start gap-3">
+                <Award className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm text-emerald-800 dark:text-emerald-200">
+                    <span className="font-semibold">Buyers pay premium valuations</span> for businesses that clear their readiness bar on day one.
+                  </p>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
+                    Exit Planning Institute, 2025
+                  </p>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
