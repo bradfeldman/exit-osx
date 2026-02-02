@@ -11,6 +11,7 @@ import { RiskAssessmentStep } from './steps/RiskAssessmentStep'
 import { ValuationRevealStep } from './steps/ValuationRevealStep'
 import { useCompany } from '@/contexts/CompanyContext'
 import { Button } from '@/components/ui/button'
+import { DEFAULT_BRI_WEIGHTS } from '@/lib/bri-weights'
 import { LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -91,9 +92,13 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     currentValue: number
     potentialValue: number
     valueGap: number
-    topRisks: Array<{ category: string; score: number; label: string }>
-    tasksCreated: number
-    topTask: { id: string; title: string; description: string; category: string; estimatedValue: number } | null
+    categoryGapBreakdown: Array<{
+      category: string
+      label: string
+      score: number
+      gapAmount: number
+      gapPercent: number
+    }>
   } | null>(null)
 
   // Persist companyId to sessionStorage when it changes
@@ -290,7 +295,6 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     tasksCreated: number
     topTask: { id: string; title: string; description: string; category: string; estimatedValue: number } | null
   }) => {
-    // Transform category scores to top risks
     const CATEGORY_LABELS: Record<string, string> = {
       FINANCIAL: 'Financial Health',
       TRANSFERABILITY: 'Transferability',
@@ -300,23 +304,44 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
       PERSONAL: 'Personal Readiness',
     }
 
-    const topRisks = data.categoryScores
-      .map(cs => ({
+    // Calculate value gap attribution by category
+    // Formula: weight × (100 - score) / 100 for each category
+    // Then normalize to actual value gap
+    const categoryGapContributions = data.categoryScores.map(cs => {
+      const weight = DEFAULT_BRI_WEIGHTS[cs.category as keyof typeof DEFAULT_BRI_WEIGHTS] || 0
+      const roomForImprovement = (100 - cs.score) / 100
+      return {
         category: cs.category,
-        score: cs.score,
         label: CATEGORY_LABELS[cs.category] || cs.category,
-      }))
-      .sort((a, b) => a.score - b.score)
-      .slice(0, 3)
+        score: cs.score,
+        weightedGap: weight * roomForImprovement,
+      }
+    })
+
+    // Sum of all weighted gaps
+    const totalWeightedGap = categoryGapContributions.reduce((sum, c) => sum + c.weightedGap, 0)
+
+    // Calculate each category's share of the actual value gap
+    const categoryGapBreakdown = categoryGapContributions.map(c => ({
+      category: c.category,
+      label: c.label,
+      score: c.score,
+      gapAmount: totalWeightedGap > 0
+        ? Math.round((c.weightedGap / totalWeightedGap) * data.valueGap)
+        : 0,
+      gapPercent: totalWeightedGap > 0
+        ? Math.round((c.weightedGap / totalWeightedGap) * 100)
+        : 0,
+    }))
+    // Sort by gap amount descending (biggest impact first)
+    .sort((a, b) => b.gapAmount - a.gapAmount)
 
     setRevealData({
       briScore: data.briScore,
       currentValue: data.currentValue,
       potentialValue: data.potentialValue,
       valueGap: data.valueGap,
-      topRisks,
-      tasksCreated: data.tasksCreated,
-      topTask: data.topTask,
+      categoryGapBreakdown,
     })
     setAssessmentComplete(true)
     goToStep(5)
@@ -334,8 +359,7 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
           potentialValue: revealData.potentialValue,
           valueGap: revealData.valueGap,
           briScore: revealData.briScore,
-          topRisks: revealData.topRisks,
-          topTask: revealData.topTask,
+          categoryGapBreakdown: revealData.categoryGapBreakdown,
         }),
       }).catch(err => {
         console.error('Failed to send onboarding email:', err)
@@ -414,9 +438,7 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
             currentValue={revealData.currentValue}
             potentialValue={revealData.potentialValue}
             valueGap={revealData.valueGap}
-            topRisks={revealData.topRisks}
-            tasksCreated={revealData.tasksCreated}
-            topTask={revealData.topTask}
+            categoryGapBreakdown={revealData.categoryGapBreakdown}
             onComplete={handleComplete}
           />
         ) : null

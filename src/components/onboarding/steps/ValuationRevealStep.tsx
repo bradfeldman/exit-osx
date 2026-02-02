@@ -7,13 +7,22 @@ import { Button } from '@/components/ui/button'
 import {
   ArrowRight,
   TrendingUp,
-  AlertTriangle,
   CheckCircle,
-  Sparkles,
-  Target,
   DollarSign,
-  Award,
+  Users,
+  Settings,
+  Target,
+  Scale,
+  User,
 } from 'lucide-react'
+
+interface CategoryGapItem {
+  category: string
+  label: string
+  score: number
+  gapAmount: number
+  gapPercent: number
+}
 
 interface ValuationRevealStepProps {
   companyName: string
@@ -21,19 +30,17 @@ interface ValuationRevealStepProps {
   currentValue: number
   potentialValue: number
   valueGap: number
-  topRisks: Array<{ category: string; score: number; label: string }>
-  tasksCreated: number
-  topTask: { id: string; title: string; description: string; category: string; estimatedValue: number } | null
+  categoryGapBreakdown: CategoryGapItem[]
   onComplete: () => void
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  FINANCIAL: 'Financial Health',
-  TRANSFERABILITY: 'Transferability',
-  OPERATIONAL: 'Operations',
-  MARKET: 'Market Position',
-  LEGAL_TAX: 'Legal & Tax',
-  PERSONAL: 'Personal Readiness',
+const CATEGORY_ICONS: Record<string, React.ElementType> = {
+  FINANCIAL: DollarSign,
+  TRANSFERABILITY: Users,
+  OPERATIONAL: Settings,
+  MARKET: Target,
+  LEGAL_TAX: Scale,
+  PERSONAL: User,
 }
 
 function formatCurrency(value: number): string {
@@ -52,9 +59,7 @@ export function ValuationRevealStep({
   currentValue,
   potentialValue,
   valueGap,
-  topRisks,
-  tasksCreated,
-  topTask,
+  categoryGapBreakdown,
   onComplete,
 }: ValuationRevealStepProps) {
   const [revealStage, setRevealStage] = useState(0)
@@ -64,8 +69,8 @@ export function ValuationRevealStep({
     const timers = [
       setTimeout(() => setRevealStage(1), 500),   // Show valuation
       setTimeout(() => setRevealStage(2), 2500),  // Show BRI
-      setTimeout(() => setRevealStage(3), 4000),  // Show risks
-      setTimeout(() => setRevealStage(4), 5500),  // Show action plan
+      setTimeout(() => setRevealStage(3), 4000),  // Show gap breakdown
+      setTimeout(() => setRevealStage(4), 5500),  // Show CTA
     ]
     return () => timers.forEach(clearTimeout)
   }, [])
@@ -82,8 +87,10 @@ export function ValuationRevealStep({
     }
   }, [revealStage])
 
-  // briScore is already an integer percentage (0-100) from the API
   const roundedBRI = Math.round(briScore)
+
+  // Filter to only show categories that have a gap (gapAmount > 0)
+  const categoriesWithGap = categoryGapBreakdown.filter(c => c.gapAmount > 0)
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -190,7 +197,6 @@ export function ValuationRevealStep({
                 transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
                 className="relative"
               >
-                {/* Score circle */}
                 <div className="relative w-24 h-24">
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                     <circle
@@ -224,9 +230,9 @@ export function ValuationRevealStep({
         )}
       </AnimatePresence>
 
-      {/* Stage 3: Top Risks */}
+      {/* Stage 3: Value Gap Breakdown by Category */}
       <AnimatePresence>
-        {revealStage >= 3 && topRisks.length > 0 && (
+        {revealStage >= 3 && categoriesWithGap.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -234,53 +240,87 @@ export function ValuationRevealStep({
             className="bg-card rounded-2xl border border-border p-6 mb-6"
           >
             <div className="flex items-center gap-2 mb-4">
-              <AlertTriangle className="w-5 h-5 text-amber-500" />
-              <h3 className="font-semibold text-foreground">Your Top Risk Areas</h3>
+              <DollarSign className="w-5 h-5 text-primary" />
+              <h3 className="font-semibold text-foreground">Where Your Value Gap Comes From</h3>
             </div>
 
-            <div className="space-y-3">
-              {topRisks.map((risk, index) => (
-                <motion.div
-                  key={risk.category}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center justify-between"
-                >
-                  <span className="text-sm text-foreground">{risk.label}</span>
-                  <div className="flex items-center gap-3">
-                    <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
+            <p className="text-sm text-muted-foreground mb-4">
+              Here&apos;s how much each area is costing you:
+            </p>
+
+            <div className="space-y-4">
+              {categoriesWithGap.map((item, index) => {
+                const Icon = CATEGORY_ICONS[item.category] || Settings
+                return (
+                  <motion.div
+                    key={item.category}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="relative"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                          item.gapPercent >= 25 ? 'bg-red-100 dark:bg-red-900/30' :
+                          item.gapPercent >= 15 ? 'bg-amber-100 dark:bg-amber-900/30' :
+                          'bg-emerald-100 dark:bg-emerald-900/30'
+                        }`}>
+                          <Icon className={`w-4 h-4 ${
+                            item.gapPercent >= 25 ? 'text-red-600 dark:text-red-400' :
+                            item.gapPercent >= 15 ? 'text-amber-600 dark:text-amber-400' :
+                            'text-emerald-600 dark:text-emerald-400'
+                          }`} />
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-foreground">{item.label}</span>
+                          <span className="text-xs text-muted-foreground ml-2">
+                            Score: {item.score}/100
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className={`text-lg font-bold ${
+                          item.gapPercent >= 25 ? 'text-red-600 dark:text-red-400' :
+                          item.gapPercent >= 15 ? 'text-amber-600 dark:text-amber-400' :
+                          'text-emerald-600 dark:text-emerald-400'
+                        }`}>
+                          {formatCurrency(item.gapAmount)}
+                        </span>
+                        <span className="text-xs text-muted-foreground block">
+                          {item.gapPercent}% of gap
+                        </span>
+                      </div>
+                    </div>
+                    {/* Progress bar showing contribution to gap */}
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
                       <motion.div
                         className={`h-full rounded-full ${
-                          risk.score >= 70 ? 'bg-emerald-500' :
-                          risk.score >= 50 ? 'bg-amber-500' :
-                          'bg-red-500'
+                          item.gapPercent >= 25 ? 'bg-red-500' :
+                          item.gapPercent >= 15 ? 'bg-amber-500' :
+                          'bg-emerald-500'
                         }`}
                         initial={{ width: 0 }}
-                        animate={{ width: `${risk.score}%` }}
+                        animate={{ width: `${item.gapPercent}%` }}
                         transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
                       />
                     </div>
-                    <span className={`text-sm font-medium w-8 ${
-                      risk.score >= 70 ? 'text-emerald-600' :
-                      risk.score >= 50 ? 'text-amber-600' :
-                      'text-red-600'
-                    }`}>
-                      {risk.score}
-                    </span>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                )
+              })}
             </div>
 
-            <p className="text-sm text-muted-foreground mt-4">
-              Lower scores indicate areas where buyers would see risk — and discount your value.
-            </p>
+            <div className="mt-6 pt-4 border-t border-border">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-muted-foreground">Total Value Gap</span>
+                <span className="text-xl font-bold text-foreground">{formatCurrency(valueGap)}</span>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Stage 4: #1 Priority Task */}
+      {/* Stage 4: CTA */}
       <AnimatePresence>
         {revealStage >= 4 && (
           <motion.div
@@ -288,144 +328,29 @@ export function ValuationRevealStep({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            {topTask ? (
+            <div className="text-center">
               <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', delay: 0.2 }}
-                className="bg-gradient-to-br from-primary/5 via-card to-card rounded-2xl border-2 border-primary/20 p-6 mb-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
               >
-                {/* Priority badge */}
-                <div className="flex items-center gap-2 mb-4">
-                  <motion.div
-                    className="flex items-center gap-2 px-3 py-1 bg-primary rounded-full"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: 'spring', delay: 0.3 }}
-                  >
-                    <Target className="w-3.5 h-3.5 text-white" />
-                    <span className="text-xs font-bold text-white uppercase tracking-wide">
-                      Your #1 Priority
-                    </span>
-                  </motion.div>
-                  <span className="text-xs text-muted-foreground px-2 py-1 bg-muted rounded-full">
-                    {CATEGORY_LABELS[topTask.category] || topTask.category}
-                  </span>
-                </div>
-
-                {/* Task title */}
-                <h3 className="text-lg font-bold text-foreground font-display mb-2">
-                  {topTask.title}
+                <h3 className="text-xl font-bold text-foreground font-display mb-2">
+                  Ready to Close the Gap?
                 </h3>
+                <p className="text-muted-foreground mb-6">
+                  Your personalized action plan is ready. We&apos;ll help you tackle the biggest opportunities first.
+                </p>
 
-                {/* Task description */}
-                {topTask.description && (
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                    {topTask.description}
-                  </p>
-                )}
-
-                {/* Value impact */}
-                {topTask.estimatedValue > 0 && (
-                  <motion.div
-                    className="flex items-center gap-2 mb-5 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <span className="text-sm text-emerald-700 dark:text-emerald-300">
-                      Completing this could add{' '}
-                      <span className="font-bold">{formatCurrency(topTask.estimatedValue)}</span>{' '}
-                      to your valuation
-                    </span>
-                  </motion.div>
-                )}
-
-                {/* Start button */}
                 <Button
                   size="lg"
                   onClick={onComplete}
-                  className="w-full py-6 text-lg shadow-xl shadow-primary/25 hover:shadow-2xl transition-all"
+                  className="w-full sm:w-auto px-8 py-6 text-lg shadow-xl shadow-primary/25 hover:shadow-2xl transition-all"
                 >
-                  Start This Task
+                  See Your Action Plan
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </motion.div>
-            ) : (
-              <div className="text-center">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', delay: 0.2 }}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-6"
-                >
-                  <Sparkles className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium text-primary">
-                    {tasksCreated} personalized actions ready
-                  </span>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <h3 className="text-xl font-bold text-foreground font-display mb-2">
-                    Ready to Close the Gap?
-                  </h3>
-                  <p className="text-muted-foreground mb-6">
-                    We&apos;ve built a prioritized action plan to address your biggest risks.
-                  </p>
-
-                  <Button
-                    size="lg"
-                    onClick={onComplete}
-                    className="w-full sm:w-auto px-8 py-6 text-lg shadow-xl shadow-primary/25 hover:shadow-2xl transition-all"
-                  >
-                    See Your Action Plan
-                    <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button>
-                </motion.div>
-              </div>
-            )}
-
-            {/* See all tasks link */}
-            {topTask && tasksCreated > 1 && (
-              <motion.div
-                className="text-center mt-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
-                <button
-                  onClick={onComplete}
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  or see all {tasksCreated} tasks →
-                </button>
-              </motion.div>
-            )}
-
-            {/* Social Proof - Why this matters */}
-            <motion.div
-              className="mt-6 p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl border border-emerald-200 dark:border-emerald-800/30"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-            >
-              <div className="flex items-start gap-3">
-                <Award className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm text-emerald-800 dark:text-emerald-200">
-                    <span className="font-semibold">Buyers pay premium valuations</span> for businesses that clear their readiness bar on day one.
-                  </p>
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
-                    Exit Planning Institute, 2025
-                  </p>
-                </div>
-              </div>
-            </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
