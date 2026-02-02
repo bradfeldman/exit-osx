@@ -12,6 +12,7 @@ import { ValuationRevealStep } from './steps/ValuationRevealStep'
 import { useCompany } from '@/contexts/CompanyContext'
 import { Button } from '@/components/ui/button'
 import { LogOut } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 // Onboarding step definitions
 const STEPS = [
@@ -267,6 +268,7 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
     topTask: { id: string; title: string; description: string; category: string; estimatedValue: number } | null
   }) => {
     // Transform category scores to top risks
+    // Scores are already integers (0-100) from the API
     const CATEGORY_LABELS: Record<string, string> = {
       FINANCIAL: 'Financial Health',
       TRANSFERABILITY: 'Transferability',
@@ -279,7 +281,7 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
     const topRisks = data.categoryScores
       .map(cs => ({
         category: cs.category,
-        score: Math.round(cs.score * 100),
+        score: cs.score, // Already 0-100
         label: CATEGORY_LABELS[cs.category] || cs.category,
       }))
       .sort((a, b) => a.score - b.score)
@@ -348,8 +350,10 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
+      const supabase = createClient()
+      await supabase.auth.signOut()
       router.push('/login')
+      router.refresh()
     } catch {
       router.push('/login')
     }

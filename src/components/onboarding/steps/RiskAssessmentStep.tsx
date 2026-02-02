@@ -328,15 +328,21 @@ export function RiskAssessmentStep({
         // Ignore task fetch errors
       }
 
-      // Build category scores
-      const categoryScores = [
-        { category: 'FINANCIAL', score: tier1.briFinancial || 0 },
-        { category: 'TRANSFERABILITY', score: tier1.briTransferability || 0 },
-        { category: 'OPERATIONAL', score: tier1.briOperational || 0 },
-        { category: 'MARKET', score: tier1.briMarket || 0 },
-        { category: 'LEGAL_TAX', score: tier1.briLegalTax || 0 },
-        { category: 'PERSONAL', score: tier1.briPersonal || 0 },
-      ]
+      // Build category scores from tier3.categories (already integer percentages 0-100)
+      const tier3 = dashboardData.tier3 || {}
+      const categoryScores = tier3.categories
+        ? tier3.categories.map((c: { key: string; score: number }) => ({
+            category: c.key,
+            score: c.score, // Already 0-100 from API
+          }))
+        : [
+            { category: 'FINANCIAL', score: 50 },
+            { category: 'TRANSFERABILITY', score: 50 },
+            { category: 'OPERATIONAL', score: 50 },
+            { category: 'MARKET', score: 50 },
+            { category: 'LEGAL_TAX', score: 50 },
+            { category: 'PERSONAL', score: 50 },
+          ]
 
       // Wait for completion animation to finish
       await new Promise(resolve => setTimeout(resolve, COMPLETION_STEPS.reduce((acc, s) => acc + s.duration, 0)))

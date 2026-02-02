@@ -82,7 +82,8 @@ export function ValuationRevealStep({
     }
   }, [revealStage])
 
-  const roundedBRI = Math.round(briScore * 100)
+  // briScore is already an integer percentage (0-100) from the API
+  const roundedBRI = Math.round(briScore)
 
   return (
     <div className="max-w-2xl mx-auto">
