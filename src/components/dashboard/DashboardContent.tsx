@@ -97,6 +97,7 @@ export function DashboardContent({ userName }: DashboardContentProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [previewMultiple, setPreviewMultiple] = useState<number | null>(null)
+  const isRedirecting = useRef(false)
 
   // Analytics tracking state
   const dashboardLoadTime = useRef(Date.now())
@@ -266,11 +267,13 @@ export function DashboardContent({ userName }: DashboardContentProps) {
 
   // Redirect to onboarding if no companies exist
   // This handles the case where a company is deleted while user is on dashboard
+  // Use hard navigation to ensure fresh server-side check
   useEffect(() => {
-    if (noCompany && !companyLoading) {
-      router.push('/onboarding')
+    if (noCompany && !companyLoading && !isRedirecting.current) {
+      isRedirecting.current = true
+      window.location.href = '/onboarding'
     }
-  }, [noCompany, companyLoading, router])
+  }, [noCompany, companyLoading])
 
   // Check if onboarding was skipped
   useEffect(() => {
