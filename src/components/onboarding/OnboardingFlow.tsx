@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from '@/lib/motion'
 import { BasicInfoStep } from '@/components/company/steps/BasicInfoStep'
 import { RevenueStep } from '@/components/company/steps/RevenueStep'
@@ -51,26 +51,40 @@ function getRevenueSizeCategory(revenue: number): string {
   return 'OVER_25M'
 }
 
-interface GuidedOnboardingFlowProps {
+interface OnboardingFlowProps {
   userName?: string
-  onComplete?: () => void
 }
 
-export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingFlowProps) {
+export function OnboardingFlow({ userName }: OnboardingFlowProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { refreshCompanies, setSelectedCompanyId } = useCompany()
 
-  const [currentStep, setCurrentStep] = useState(1)
+  // Get step from URL, default to 1
+  const urlStep = searchParams.get('step')
+  const currentStep = urlStep ? parseInt(urlStep, 10) : 1
+
   const [formData, setFormData] = useState<CompanyFormData>(initialFormData)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [createdCompanyId, setCreatedCompanyId] = useState<string | null>(null)
+
+  // Store companyId in state + sessionStorage for tab refresh resilience
+  const [createdCompanyId, setCreatedCompanyId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null
+    return sessionStorage.getItem('onboarding_companyId')
+  })
+
   const [industryPreviewData, setIndustryPreviewData] = useState<{
     valuationLow: number
     valuationHigh: number
     potentialGap: number
     industryName: string
-  } | null>(null)
+  } | null>(() => {
+    if (typeof window === 'undefined') return null
+    const stored = sessionStorage.getItem('onboarding_previewData')
+    return stored ? JSON.parse(stored) : null
+  })
+
   const [assessmentComplete, setAssessmentComplete] = useState(false)
   const [revealData, setRevealData] = useState<{
     briScore: number
@@ -82,23 +96,22 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
     topTask: { id: string; title: string; description: string; category: string; estimatedValue: number } | null
   } | null>(null)
 
-  // Check for existing onboarding state AND pending company name (from signup)
+  // Persist companyId to sessionStorage when it changes
   useEffect(() => {
-    // First, restore any saved state
-    const savedState = localStorage.getItem('onboardingState')
-    if (savedState) {
-      try {
-        const state = JSON.parse(savedState)
-        if (state.step) setCurrentStep(state.step)
-        if (state.formData) setFormData(state.formData)
-        if (state.companyId) setCreatedCompanyId(state.companyId)
-        if (state.industryPreviewData) setIndustryPreviewData(state.industryPreviewData)
-      } catch (e) {
-        console.error('Failed to restore onboarding state:', e)
-      }
+    if (createdCompanyId) {
+      sessionStorage.setItem('onboarding_companyId', createdCompanyId)
     }
+  }, [createdCompanyId])
 
-    // Then, check for pending company name from signup (takes priority)
+  // Persist previewData to sessionStorage when it changes
+  useEffect(() => {
+    if (industryPreviewData) {
+      sessionStorage.setItem('onboarding_previewData', JSON.stringify(industryPreviewData))
+    }
+  }, [industryPreviewData])
+
+  // Check for pending company name from signup (localStorage)
+  useEffect(() => {
     const pendingCompanyName = localStorage.getItem('pendingCompanyName')
     if (pendingCompanyName) {
       setFormData(prev => ({ ...prev, name: pendingCompanyName }))
@@ -106,27 +119,45 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
     }
   }, [])
 
-  // Save onboarding state
-  const saveState = useCallback(() => {
-    const state = {
-      step: currentStep,
-      formData,
-      companyId: createdCompanyId,
-      industryPreviewData,
-    }
-    localStorage.setItem('onboardingState', JSON.stringify(state))
-  }, [currentStep, formData, createdCompanyId, industryPreviewData])
-
+  // Restore form data from sessionStorage on mount
   useEffect(() => {
-    saveState()
-  }, [saveState])
+    const storedFormData = sessionStorage.getItem('onboarding_formData')
+    if (storedFormData) {
+      try {
+        const parsed = JSON.parse(storedFormData)
+        setFormData(prev => ({ ...prev, ...parsed }))
+      } catch {
+        // Ignore parse errors
+      }
+    }
+  }, [])
+
+  // Save form data to sessionStorage when it changes
+  useEffect(() => {
+    sessionStorage.setItem('onboarding_formData', JSON.stringify(formData))
+  }, [formData])
+
+  // Validate step access - redirect to step 1 if trying to access step 3+ without companyId
+  useEffect(() => {
+    if (currentStep >= 3 && !createdCompanyId) {
+      router.replace('/onboarding')
+    }
+  }, [currentStep, createdCompanyId, router])
 
   const updateFormData = (updates: Partial<CompanyFormData>) => {
     setFormData(prev => ({ ...prev, ...updates }))
   }
 
+  // Navigate to a specific step using URL
+  const goToStep = useCallback((step: number) => {
+    if (step === 1) {
+      router.replace('/onboarding')
+    } else {
+      router.replace(`/onboarding?step=${step}`)
+    }
+  }, [router])
+
   // Create company after step 2
-  // Returns both companyId and industryPreviewData to avoid race conditions with state
   const createCompany = async (): Promise<{
     companyId: string
     previewData: typeof industryPreviewData
@@ -227,34 +258,26 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
       // Create company before moving to step 3
       const result = await createCompany()
       if (result) {
-        // CRITICAL: Save step 3 to localStorage SYNCHRONOUSLY before React re-renders
-        // This prevents a race condition where refreshCompanies() triggers parent re-render
-        // before the new step is persisted
-        // We use the returned previewData directly since state updates are async
-        const newState = {
-          step: 3,
-          formData,
-          companyId: result.companyId,
-          industryPreviewData: result.previewData,
-        }
-        localStorage.setItem('onboardingState', JSON.stringify(newState))
-        setCurrentStep(3)
+        goToStep(3)
       }
     } else if (currentStep < STEPS.length) {
-      setCurrentStep(prev => prev + 1)
+      goToStep(currentStep + 1)
     }
   }
 
   const handleBack = () => {
     if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1)
+      goToStep(currentStep - 1)
     }
   }
 
   const handleSkip = () => {
     // Skip to dashboard with incomplete state
     localStorage.setItem('onboardingSkipped', 'true')
-    localStorage.removeItem('onboardingState')
+    // Clear session storage
+    sessionStorage.removeItem('onboarding_companyId')
+    sessionStorage.removeItem('onboarding_previewData')
+    sessionStorage.removeItem('onboarding_formData')
     router.push('/dashboard')
   }
 
@@ -268,7 +291,6 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
     topTask: { id: string; title: string; description: string; category: string; estimatedValue: number } | null
   }) => {
     // Transform category scores to top risks
-    // Scores are already integers (0-100) from the API
     const CATEGORY_LABELS: Record<string, string> = {
       FINANCIAL: 'Financial Health',
       TRANSFERABILITY: 'Transferability',
@@ -281,7 +303,7 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
     const topRisks = data.categoryScores
       .map(cs => ({
         category: cs.category,
-        score: cs.score, // Already 0-100
+        score: cs.score,
         label: CATEGORY_LABELS[cs.category] || cs.category,
       }))
       .sort((a, b) => a.score - b.score)
@@ -297,7 +319,7 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
       topTask: data.topTask,
     })
     setAssessmentComplete(true)
-    setCurrentStep(5)
+    goToStep(5)
   }
 
   const handleComplete = async () => {
@@ -321,14 +343,12 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
     }
 
     // Clear onboarding state
-    localStorage.removeItem('onboardingState')
     localStorage.removeItem('onboardingSkipped')
+    sessionStorage.removeItem('onboarding_companyId')
+    sessionStorage.removeItem('onboarding_previewData')
+    sessionStorage.removeItem('onboarding_formData')
 
-    if (onComplete) {
-      onComplete()
-    } else {
-      router.push('/dashboard')
-    }
+    router.push('/dashboard')
   }
 
   const canProceed = () => {
@@ -373,7 +393,7 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
             valuationLow={industryPreviewData.valuationLow}
             valuationHigh={industryPreviewData.valuationHigh}
             potentialGap={industryPreviewData.potentialGap}
-            onContinue={() => setCurrentStep(4)}
+            onContinue={() => goToStep(4)}
             onSkip={handleSkip}
           />
         ) : null
@@ -409,9 +429,9 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
   const showNavigation = currentStep <= 2
 
   return (
-    <div className="fixed inset-0 z-[100] bg-gradient-to-br from-background via-background to-muted/20 overflow-y-auto">
+    <div className="min-h-screen overflow-y-auto">
       {/* Minimal header */}
-      <div className="fixed top-0 left-0 right-0 z-[101] bg-background/80 backdrop-blur-sm border-b border-border/50">
+      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-xl font-bold font-display text-foreground">
@@ -450,7 +470,7 @@ export function GuidedOnboardingFlow({ userName, onComplete }: GuidedOnboardingF
       </div>
 
       {/* Main content */}
-      <div className="pt-20 pb-12 px-4">
+      <div className="pt-8 pb-12 px-4">
         <div className="max-w-2xl mx-auto">
           {/* Welcome message for step 1 */}
           {currentStep === 1 && userName && (
