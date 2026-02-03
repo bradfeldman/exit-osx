@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exit OSx - Progression-Driven Navigation Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+      --sidebar-width: 260px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--gray-100);
+      color: var(--gray-800);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Demo Controls */
+    .demo-controls {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gray-900);
+      color: white;
+      padding: 16px 24px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 1000;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+
+    .demo-controls label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .stage-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .stage-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 2px solid var(--gray-600);
+      background: transparent;
+      color: var(--gray-400);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .stage-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .stage-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    /* Callout */
+    .callout {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 320px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      z-index: 999;
+      overflow: hidden;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .callout-header {
+      background: var(--primary);
+      color: white;
+      padding: 12px 16px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .callout-body {
+      padding: 16px;
+    }
+
+    .callout-quote {
+      font-style: italic;
+      color: var(--gray-600);
+      border-left: 3px solid var(--primary);
+      padding-left: 12px;
+      margin-top: 12px;
+    }
+
+    .callout-quote cite {
+      display: block;
+      margin-top: 8px;
+      font-style: normal;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+
+    /* Layout */
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: white;
+      border-right: 1px solid var(--gray-200);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      height: 100vh;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar.hidden {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .logo span:first-child { color: var(--gray-800); }
+    .logo span:nth-child(2) { color: var(--primary); }
+    .logo span:last-child { color: var(--gray-400); font-weight: 400; }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 16px 12px;
+      overflow-y: auto;
+    }
+
+    .nav-section {
+      margin-bottom: 8px;
+    }
+
+    .nav-divider {
+      height: 1px;
+      background: var(--gray-200);
+      margin: 16px 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      color: var(--gray-600);
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .nav-item:hover {
+      background: var(--gray-100);
+      color: var(--gray-800);
+    }
+
+    .nav-item.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .nav-item.locked {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .nav-item.locked:hover {
+      background: transparent;
+      color: var(--gray-600);
+    }
+
+    .nav-item .lock-icon {
+      margin-left: auto;
+      font-size: 12px;
+    }
+
+    .nav-item.highlight {
+      background: rgba(37, 99, 235, 0.1);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .nav-item.highlight::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 24px;
+      background: var(--primary);
+      border-radius: 0 2px 2px 0;
+    }
+
+    .nav-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      margin-left: var(--sidebar-width);
+      padding: 32px;
+      transition: all 0.3s ease;
+    }
+
+    .main-content.full-width {
+      margin-left: 0;
+    }
+
+    .content-card {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      border: 1px solid var(--gray-200);
+      overflow: hidden;
+    }
+
+    /* Stage 0 - Entry */
+    .entry-screen {
+      text-align: center;
+      padding: 80px 40px;
+    }
+
+    .entry-screen h1 {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 16px;
+    }
+
+    .entry-screen p {
+      color: var(--gray-600);
+      font-size: 18px;
+      margin-bottom: 40px;
+    }
+
+    .entry-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 32px;
+      background: var(--primary);
+      color: white;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 18px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .entry-cta:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    /* Value Builder */
+    .page-header {
+      padding: 24px 32px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .page-header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+
+    .page-header p {
+      color: var(--gray-500);
+      margin-top: 4px;
+    }
+
+    .page-body {
+      padding: 32px;
+    }
+
+    /* Value Gap Bar */
+    .value-gap-section {
+      margin-bottom: 32px;
+    }
+
+    .value-gap-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .value-gap-label {
+      font-size: 14px;
+      color: var(--gray-500);
+    }
+
+    .value-gap-label strong {
+      color: var(--gray-900);
+    }
+
+    .value-gap-bar {
+      height: 32px;
+      background: var(--gray-100);
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .value-gap-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #60a5fa);
+      border-radius: 16px;
+      transition: width 0.5s ease;
+    }
+
+    .value-gap-amount {
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    .value-gap-amount .amount {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--danger);
+    }
+
+    .value-gap-amount .label {
+      font-size: 14px;
+      color: var(--gray-500);
+    }
+
+    /* Task Card */
+    .task-section {
+      margin-top: 32px;
+    }
+
+    .task-intro {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .task-intro h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+
+    .task-intro p {
+      font-size: 14px;
+      color: var(--gray-500);
+      margin-top: 4px;
+    }
+
+    .task-card {
+      background: var(--gray-50);
+      border: 2px solid var(--primary);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .task-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--gray-900);
+      margin-bottom: 16px;
+    }
+
+    .task-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .task-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--gray-600);
+    }
+
+    .task-meta-item.value {
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .task-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .task-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    /* Buyer View */
+    .concern-list {
+      margin-top: 24px;
+    }
+
+    .concern-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px;
+      background: var(--gray-50);
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+
+    .concern-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--warning);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .concern-text {
+      font-weight: 500;
+      color: var(--gray-800);
+    }
+
+    /* Progress */
+    .progress-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--gray-50);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+
+    .stat-value.success {
+      color: var(--success);
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--gray-500);
+      margin-top: 4px;
+    }
+
+    /* Data Entry */
+    .data-entry-section {
+      background: linear-gradient(135deg, var(--primary), #3b82f6);
+      border-radius: 16px;
+      padding: 32px;
+      color: white;
+      margin-bottom: 24px;
+    }
+
+    .data-entry-section h3 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .data-entry-section p {
+      opacity: 0.9;
+      margin-bottom: 24px;
+    }
+
+    .data-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .data-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .data-option:hover {
+      background: rgba(255,255,255,0.25);
+    }
+
+    .data-progress {
+      margin-top: 20px;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+    /* Value Modeling */
+    .section-tabs {
+      display: flex;
+      gap: 8px;
+      padding: 16px 32px;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .section-tab {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      color: var(--gray-600);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .section-tab:hover {
+      background: white;
+      color: var(--gray-800);
+    }
+
+    .section-tab.active {
+      background: white;
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .section-tab.locked {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Unlock Banner */
+    .unlock-banner {
+      background: linear-gradient(135deg, var(--success), #22c55e);
+      color: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .unlock-banner .icon {
+      width: 32px;
+      height: 32px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Exit Tools */
+    .exit-tools-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .exit-tool-card {
+      background: var(--gray-50);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .exit-tool-card:hover {
+      background: var(--gray-100);
+      transform: translateY(-2px);
+    }
+
+    .exit-tool-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--primary);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      margin: 0 auto 12px;
+    }
+
+    .exit-tool-title {
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+
+    .exit-tool-desc {
+      font-size: 13px;
+      color: var(--gray-500);
+      margin-top: 4px;
+    }
+
+    /* Hidden */
+    .hidden {
+      display: none !important;
+    }
+
+    /* Animations */
+    .fade-in {
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span>Exit</span><span>OS</span><span>x</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav" id="sidebarNav">
+        <!-- Nav items will be populated by JS based on stage -->
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+      <!-- Content will be populated by JS based on stage -->
+    </main>
+  </div>
+
+  <!-- Callout -->
+  <div class="callout" id="callout">
+    <div class="callout-header" id="calloutHeader">Stage 0 — Entry</div>
+    <div class="callout-body" id="calloutBody">
+      <p>Nothing exists until value is revealed.</p>
+      <div class="callout-quote">
+        "They haven't earned complexity yet."
+        <cite>— Dan Martell</cite>
+      </div>
+    </div>
+  </div>
+
+  <!-- Demo Controls -->
+  <div class="demo-controls">
+    <label>Navigation Stage:</label>
+    <div class="stage-buttons">
+      <button class="stage-btn active" data-stage="0">0</button>
+      <button class="stage-btn" data-stage="1">1</button>
+      <button class="stage-btn" data-stage="2">2</button>
+      <button class="stage-btn" data-stage="3">3</button>
+      <button class="stage-btn" data-stage="4">4</button>
+      <button class="stage-btn" data-stage="5">5</button>
+      <button class="stage-btn" data-stage="6">6</button>
+      <button class="stage-btn" data-stage="7">7</button>
+    </div>
+  </div>
+
+  <script>
+    // Stage definitions
+    const stages = {
+      0: {
+        name: 'Entry',
+        calloutTitle: 'Stage 0 — Entry',
+        calloutBody: `
+          <p>Only one option exists: <strong>Start Here</strong></p>
+          <p style="margin-top: 12px; font-size: 14px; color: #6b7280;">No dashboard. No nav exploration. No sense of "setup".</p>
+          <div class="callout-quote">
+            "They haven't earned complexity yet."
+            <cite>— Dan Martell</cite>
+          </div>
+        `,
+        showSidebar: false,
+        nav: [],
+        content: 'entry'
+      },
+      1: {
+        name: 'Value Discovered',
+        calloutTitle: 'Stage 1 — Value Discovered',
+        calloutBody: `
+          <p>After Quick Scan, the nav expands to show <strong>Value Builder</strong>.</p>
+          <p style="margin-top: 12px; font-size: 14px; color: #6b7280;">Buyer View and Progress are visible but locked.</p>
+          <div class="callout-quote">
+            "The system enforces focus."
+            <cite>— Design Principle</cite>
+          </div>
+        `,
+        showSidebar: true,
+        nav: [
+          { id: 'value-builder', label: 'Value Builder', icon: '📈', active: true, highlight: true },
+          { id: 'buyer-view', label: 'Buyer View', icon: '👁', locked: true },
+          { id: 'progress', label: 'Progress', icon: '📊', locked: true },
+        ],
+        content: 'value-builder'
+      },
+      2: {
+        name: 'First Data Entry',
+        calloutTitle: 'Stage 2 — Data Entry',
+        calloutBody: `
+          <p>When a task requires financials, the system reframes data entry as <strong>value activation</strong>.</p>
+          <p style="margin-top: 12px; font-size: 14px; color: #6b7280;">They're not filling out forms. They're unlocking leverage.</p>
+          <div class="callout-quote">
+            "Tell me what to do. Tell me what I get. Don't negotiate."
+            <cite>— Alex Hormozi</cite>
+          </div>
+        `,
+        showSidebar: true,
+        nav: [
+          { id: 'value-builder', label: 'Value Builder', icon: '📈', active: true, highlight: true },
+          { id: 'buyer-view', label: 'Buyer View', icon: '👁', locked: true },
+          { id: 'progress', label: 'Progress', icon: '📊', locked: true },
+        ],
+        content: 'data-entry'
+      },
+      3: {
+        name: 'First Win',
+        calloutTitle: 'Stage 3 — First Win',
+        calloutBody: `
+          <p>After completing Task #1:</p>
+          <ul style="margin-top: 8px; margin-left: 16px; font-size: 14px; color: #6b7280;">
+            <li><strong>Buyer View</strong> unlocks</li>
+            <li><strong>Progress</strong> appears</li>
+          </ul>
+          <div class="callout-quote">
+            "Action unlocks insight."
+            <cite>— Design Principle</cite>
+          </div>
+        `,
+        showSidebar: true,
+        nav: [
+          { id: 'value-builder', label: 'Value Builder', icon: '📈', highlight: true },
+          { id: 'buyer-view', label: 'Buyer View', icon: '👁', active: true },
+          { id: 'progress', label: 'Progress', icon: '📊' },
+        ],
+        content: 'buyer-view'
+      },
+      4: {
+        name: 'Financial Depth',
+        calloutTitle: 'Stage 4 — Financial Depth',
+        calloutBody: `
+          <p>Once Business Financials are uploaded:</p>
+          <ul style="margin-top: 8px; margin-left: 16px; font-size: 14px; color: #6b7280;">
+            <li><strong>Value Modeling</strong> appears</li>
+            <li>DCF unlocks inside</li>
+          </ul>
+          <div class="callout-quote">
+            "Accuracy follows evidence."
+            <cite>— Design Principle</cite>
+          </div>
+        `,
+        showSidebar: true,
+        nav: [
+          { id: 'value-builder', label: 'Value Builder', icon: '📈', highlight: true },
+          { id: 'buyer-view', label: 'Buyer View', icon: '👁' },
+          { id: 'progress', label: 'Progress', icon: '📊' },
+          { divider: true },
+          { id: 'value-modeling', label: 'Value Modeling', icon: '🔢', active: true, unlocked: true },
+        ],
+        content: 'value-modeling'
+      },
+      5: {
+        name: 'Personal + Future',
+        calloutTitle: 'Stage 5 — Personal + Future',
+        calloutBody: `
+          <p>When Business Financials + DCF + Personal Financial Statement are complete:</p>
+          <ul style="margin-top: 8px; margin-left: 16px; font-size: 14px; color: #6b7280;">
+            <li>Retirement Calculator unlocks inside Value Modeling</li>
+          </ul>
+          <div class="callout-quote">
+            "Now see what your exit actually funds."
+            <cite>— Unlock Copy</cite>
+          </div>
+        `,
+        showSidebar: true,
+        nav: [
+          { id: 'value-builder', label: 'Value Builder', icon: '📈', highlight: true },
+          { id: 'buyer-view', label: 'Buyer View', icon: '👁' },
+          { id: 'progress', label: 'Progress', icon: '📊' },
+          { divider: true },
+          { id: 'value-modeling', label: 'Value Modeling', icon: '🔢', active: true },
+        ],
+        content: 'retirement-unlock'
+      },
+      6: {
+        name: 'Capital Options',
+        calloutTitle: 'Stage 6 — Capital Options',
+        calloutBody: `
+          <p>When Business Financials + Personal Financial Statement are complete:</p>
+          <ul style="margin-top: 8px; margin-left: 16px; font-size: 14px; color: #6b7280;">
+            <li><strong>Capital Options</strong> appears</li>
+          </ul>
+          <div class="callout-quote">
+            "Capital is a consequence, not a starting point."
+            <cite>— Alex Hormozi</cite>
+          </div>
+        `,
+        showSidebar: true,
+        nav: [
+          { id: 'value-builder', label: 'Value Builder', icon: '📈', highlight: true },
+          { id: 'buyer-view', label: 'Buyer View', icon: '👁' },
+          { id: 'progress', label: 'Progress', icon: '📊' },
+          { divider: true },
+          { id: 'value-modeling', label: 'Value Modeling', icon: '🔢' },
+          { id: 'capital-options', label: 'Capital Options', icon: '💰', active: true, unlocked: true },
+        ],
+        content: 'capital-options'
+      },
+      7: {
+        name: 'Exit Tools',
+        calloutTitle: 'Stage 7 — Exit Tools (Endgame)',
+        calloutBody: `
+          <p>Triggered by Exit-Ready status or Advisor-led workflow.</p>
+          <p style="margin-top: 12px; font-size: 14px; color: #6b7280;">Everything you've done flows forward into deal execution.</p>
+          <div class="callout-quote">
+            "You don't show the cockpit until they're cleared for takeoff."
+            <cite>— Dan Martell</cite>
+          </div>
+        `,
+        showSidebar: true,
+        nav: [
+          { id: 'value-builder', label: 'Value Builder', icon: '📈', highlight: true },
+          { id: 'buyer-view', label: 'Buyer View', icon: '👁' },
+          { id: 'progress', label: 'Progress', icon: '📊' },
+          { divider: true },
+          { id: 'value-modeling', label: 'Value Modeling', icon: '🔢' },
+          { id: 'capital-options', label: 'Capital Options', icon: '💰' },
+          { id: 'exit-tools', label: 'Exit Tools', icon: '🚀', active: true, unlocked: true },
+          { divider: true },
+          { id: 'settings', label: 'Settings', icon: '⚙️' },
+        ],
+        content: 'exit-tools'
+      }
+    };
+
+    // Content templates
+    const contentTemplates = {
+      entry: `
+        <div class="content-card">
+          <div class="entry-screen">
+            <h1>See how buyers value your business</h1>
+            <p>— before they ever make an offer.<br>About 7 minutes. No spreadsheets required.</p>
+            <a href="#" class="entry-cta" onclick="setStage(1); return false;">
+              Start Here
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      `,
+      'value-builder': `
+        <div class="content-card">
+          <div class="page-header">
+            <h1>Value Builder</h1>
+            <p>Your fastest path to higher buyer confidence</p>
+          </div>
+          <div class="page-body">
+            <div class="value-gap-section">
+              <div class="value-gap-header">
+                <span class="value-gap-label">Current: <strong>$3.2M</strong></span>
+                <span class="value-gap-label">Potential: <strong>$4.8M</strong></span>
+              </div>
+              <div class="value-gap-bar">
+                <div class="value-gap-fill" style="width: 67%"></div>
+              </div>
+              <div class="value-gap-amount">
+                <div class="amount">$1.6M</div>
+                <div class="label">Value gap to close</div>
+              </div>
+            </div>
+
+            <div class="task-section">
+              <div class="task-intro">
+                <h3>If you do nothing else, do this.</h3>
+                <p>Buyers discount businesses for this reason first.</p>
+              </div>
+              <div class="task-card">
+                <div class="task-title">Document revenue recognition assumptions</div>
+                <div class="task-meta">
+                  <div class="task-meta-item">
+                    <span>🎯</span>
+                    <span>Buyer risk removed: Financial opacity</span>
+                  </div>
+                  <div class="task-meta-item value">
+                    <span>📈</span>
+                    <span>Estimated value impact: +$450k</span>
+                  </div>
+                  <div class="task-meta-item">
+                    <span>⏱️</span>
+                    <span>Time: ~90 minutes</span>
+                  </div>
+                </div>
+                <button class="task-btn" onclick="setStage(2)">Start This Task</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `,
+      'data-entry': `
+        <div class="content-card">
+          <div class="page-header">
+            <h1>Value Builder</h1>
+            <p>Your fastest path to higher buyer confidence</p>
+          </div>
+          <div class="page-body">
+            <div class="data-entry-section">
+              <h3>This unlocks buyer-grade valuation and capital options.</h3>
+              <p>Buyers won't trust projections without this.</p>
+              <div class="data-options">
+                <div class="data-option" onclick="setStage(3)">
+                  <span>📄</span>
+                  <span>Upload financials</span>
+                </div>
+                <div class="data-option" onclick="setStage(3)">
+                  <span>🔗</span>
+                  <span>Connect QuickBooks</span>
+                </div>
+                <div class="data-option" onclick="setStage(3)">
+                  <span>✏️</span>
+                  <span>Enter manually</span>
+                </div>
+              </div>
+              <div class="data-progress">Step 1 of 3 toward buyer-grade valuation</div>
+            </div>
+
+            <p style="font-size: 13px; color: #6b7280; text-align: center;">
+              📁 Saved for future diligence.
+            </p>
+          </div>
+        </div>
+      `,
+      'buyer-view': `
+        <div class="content-card">
+          <div class="page-header">
+            <h1>Buyer View</h1>
+            <p>How buyers currently see your business</p>
+          </div>
+          <div class="page-body">
+            <div class="value-gap-section">
+              <div class="value-gap-header">
+                <span class="value-gap-label">Buyer Readiness Score: <strong>68 / 100</strong></span>
+              </div>
+              <div class="value-gap-bar">
+                <div class="value-gap-fill" style="width: 68%; background: linear-gradient(90deg, #f59e0b, #22c55e);"></div>
+              </div>
+            </div>
+
+            <h3 style="margin-top: 32px; font-size: 16px; color: #374151;">Buyers still hesitate due to:</h3>
+            <div class="concern-list">
+              <div class="concern-item">
+                <div class="concern-icon">⚠️</div>
+                <div class="concern-text">Founder dependency — key relationships aren't documented</div>
+              </div>
+              <div class="concern-item">
+                <div class="concern-icon">⚠️</div>
+                <div class="concern-text">Customer concentration — top 3 customers = 45% revenue</div>
+              </div>
+            </div>
+
+            <p style="margin-top: 24px; font-size: 14px; color: #6b7280; font-style: italic;">
+              This view updates as you complete tasks. No editing — just reality.
+            </p>
+          </div>
+        </div>
+      `,
+      'value-modeling': `
+        <div class="content-card">
+          <div class="page-header">
+            <h1>Value Modeling</h1>
+            <p>This is how professionals value businesses.</p>
+          </div>
+          <div class="section-tabs">
+            <div class="section-tab active">Business Financials</div>
+            <div class="section-tab" onclick="setStage(5)">DCF Valuation</div>
+            <div class="section-tab locked">Retirement Calculator 🔒</div>
+          </div>
+          <div class="page-body">
+            <div class="unlock-banner">
+              <div class="icon">🔓</div>
+              <div>
+                <strong>Value Modeling unlocked</strong>
+                <div style="font-size: 13px; opacity: 0.9;">Multiples are shortcuts. This is the real math.</div>
+              </div>
+            </div>
+
+            <p style="color: #6b7280;">
+              Your financial statements are now connected. DCF valuation reflects how sophisticated buyers actually price risk and cash flow.
+            </p>
+          </div>
+        </div>
+      `,
+      'retirement-unlock': `
+        <div class="content-card">
+          <div class="page-header">
+            <h1>Value Modeling</h1>
+            <p>This is how professionals value businesses.</p>
+          </div>
+          <div class="section-tabs">
+            <div class="section-tab">Business Financials</div>
+            <div class="section-tab">DCF Valuation</div>
+            <div class="section-tab active">Retirement Calculator</div>
+          </div>
+          <div class="page-body">
+            <div class="unlock-banner">
+              <div class="icon">🎯</div>
+              <div>
+                <strong>Now see what your exit actually funds.</strong>
+                <div style="font-size: 13px; opacity: 0.9;">Your personal financial picture is complete.</div>
+              </div>
+            </div>
+
+            <p style="color: #6b7280;">
+              Based on your exit proceeds, current assets, and lifestyle needs — here's what financial freedom looks like for you.
+            </p>
+          </div>
+        </div>
+      `,
+      'capital-options': `
+        <div class="content-card">
+          <div class="page-header">
+            <h1>Capital Options</h1>
+            <p>Here's what you qualify for — based on verified numbers.</p>
+          </div>
+          <div class="page-body">
+            <div class="unlock-banner">
+              <div class="icon">💰</div>
+              <div>
+                <strong>Capital Options unlocked</strong>
+                <div style="font-size: 13px; opacity: 0.9;">Your financials and PFS are verified.</div>
+              </div>
+            </div>
+
+            <div class="progress-stats" style="margin-top: 24px;">
+              <div class="stat-card">
+                <div class="stat-value success">$2.1M</div>
+                <div class="stat-label">SBA Loan Eligible</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">$800K</div>
+                <div class="stat-label">Working Capital Line</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">$500K</div>
+                <div class="stat-label">Equipment Financing</div>
+              </div>
+            </div>
+
+            <p style="font-size: 14px; color: #6b7280; font-style: italic; text-align: center;">
+              These options are based on your actual verified financials — not projections.
+            </p>
+          </div>
+        </div>
+      `,
+      'exit-tools': `
+        <div class="content-card">
+          <div class="page-header">
+            <h1>Exit Tools</h1>
+            <p>Prepare for diligence and deal execution.</p>
+          </div>
+          <div class="page-body">
+            <div class="unlock-banner">
+              <div class="icon">🚀</div>
+              <div>
+                <strong>Exit Tools unlocked</strong>
+                <div style="font-size: 13px; opacity: 0.9;">You've reached Exit-Ready status.</div>
+              </div>
+            </div>
+
+            <div class="exit-tools-grid">
+              <div class="exit-tool-card">
+                <div class="exit-tool-icon">📁</div>
+                <div class="exit-tool-title">Data Room</div>
+                <div class="exit-tool-desc">23 documents ready</div>
+              </div>
+              <div class="exit-tool-card">
+                <div class="exit-tool-icon">📊</div>
+                <div class="exit-tool-title">Deal Tracker</div>
+                <div class="exit-tool-desc">Manage buyer pipeline</div>
+              </div>
+              <div class="exit-tool-card">
+                <div class="exit-tool-icon">👥</div>
+                <div class="exit-tool-title">Contacts</div>
+                <div class="exit-tool-desc">Advisors & buyers</div>
+              </div>
+            </div>
+
+            <p style="margin-top: 24px; font-size: 14px; color: #6b7280; text-align: center;">
+              Everything you've done flows forward into deal execution.
+            </p>
+          </div>
+        </div>
+      `
+    };
+
+    // State
+    let currentStage = 0;
+
+    // DOM elements
+    const sidebar = document.getElementById('sidebar');
+    const sidebarNav = document.getElementById('sidebarNav');
+    const mainContent = document.getElementById('mainContent');
+    const calloutHeader = document.getElementById('calloutHeader');
+    const calloutBody = document.getElementById('calloutBody');
+    const stageButtons = document.querySelectorAll('.stage-btn');
+
+    // Set stage
+    function setStage(stage) {
+      currentStage = stage;
+      renderStage();
+    }
+
+    // Render stage
+    function renderStage() {
+      const stage = stages[currentStage];
+
+      // Update callout
+      calloutHeader.textContent = stage.calloutTitle;
+      calloutBody.innerHTML = stage.calloutBody;
+
+      // Update sidebar visibility
+      if (stage.showSidebar) {
+        sidebar.classList.remove('hidden');
+        mainContent.classList.remove('full-width');
+      } else {
+        sidebar.classList.add('hidden');
+        mainContent.classList.add('full-width');
+      }
+
+      // Render nav
+      renderNav(stage.nav);
+
+      // Render content
+      mainContent.innerHTML = contentTemplates[stage.content];
+
+      // Update stage buttons
+      stageButtons.forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.stage) === currentStage);
+      });
+    }
+
+    // Render nav
+    function renderNav(navItems) {
+      sidebarNav.innerHTML = navItems.map(item => {
+        if (item.divider) {
+          return '<div class="nav-divider"></div>';
+        }
+
+        let classes = ['nav-item'];
+        if (item.active) classes.push('active');
+        if (item.locked) classes.push('locked');
+        if (item.highlight && !item.active) classes.push('highlight');
+
+        let lockIcon = item.locked ? '<span class="lock-icon">🔒</span>' : '';
+        let unlockIcon = item.unlocked ? '<span class="lock-icon">🔓</span>' : '';
+
+        return `
+          <a class="${classes.join(' ')}" href="#" onclick="return false;">
+            <span class="nav-icon">${item.icon}</span>
+            <span>${item.label}</span>
+            ${lockIcon}${unlockIcon}
+          </a>
+        `;
+      }).join('');
+    }
+
+    // Event listeners
+    stageButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        setStage(parseInt(btn.dataset.stage));
+      });
+    });
+
+    // Initial render
+    renderStage();
+  </script>
+</body>
+</html>
