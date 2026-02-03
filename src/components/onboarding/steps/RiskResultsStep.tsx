@@ -254,7 +254,7 @@ export function RiskResultsStep({
             then create a targeted action plan.
           </p>
           <Button onClick={onContinue} className="w-full gap-2">
-            Continue to Risk Deep-Dive
+            Show Me How to Close It
             <ArrowRight className="w-4 h-4" />
           </Button>
         </motion.div>

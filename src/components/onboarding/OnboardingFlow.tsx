@@ -9,7 +9,7 @@ import type { CompanyFormData } from '@/components/company/CompanySetupWizard'
 import { IndustryPreviewStep } from './steps/IndustryPreviewStep'
 import { QuickScanStep, type QuickScanResults } from './steps/QuickScanStep'
 import { RiskResultsStep } from './steps/RiskResultsStep'
-import { TaskAssignmentStep } from './steps/TaskAssignmentStep'
+import { FirstMoveStep } from './steps/FirstMoveStep'
 import { useCompany } from '@/contexts/CompanyContext'
 import { Button } from '@/components/ui/button'
 import { DEFAULT_BRI_WEIGHTS } from '@/lib/bri-weights'
@@ -482,11 +482,10 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
         ) : null
       case 6:
         return createdCompanyId && riskResults ? (
-          <TaskAssignmentStep
+          <FirstMoveStep
             companyId={createdCompanyId}
             companyName={formData.name}
             riskResults={riskResults}
-            riskQuestionAnswers={{}}
             onComplete={handleComplete}
           />
         ) : null

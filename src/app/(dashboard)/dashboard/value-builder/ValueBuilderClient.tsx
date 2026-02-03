@@ -72,18 +72,28 @@ interface ValueBuilderClientProps {
 
 export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
   const router = useRouter()
-  const { selectedCompanyId } = useCompany()
-  const [isLoading, setIsLoading] = useState(true)
+  const { selectedCompanyId, isLoading: isContextLoading, companies } = useCompany()
+  const [isDataLoading, setIsDataLoading] = useState(true)
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
   const [isStarting, setIsStarting] = useState(false)
 
+  // Redirect to onboarding if no companies exist
+  useEffect(() => {
+    if (!isContextLoading && companies.length === 0) {
+      router.replace('/onboarding')
+    }
+  }, [isContextLoading, companies, router])
+
   // Fetch dashboard data
   useEffect(() => {
-    if (!selectedCompanyId) return
+    if (!selectedCompanyId) {
+      setIsDataLoading(false)
+      return
+    }
 
     const fetchData = async () => {
-      setIsLoading(true)
+      setIsDataLoading(true)
       try {
         const [dashboardRes, tasksRes] = await Promise.all([
           fetch(`/api/companies/${selectedCompanyId}/dashboard`),
@@ -102,17 +112,32 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
       } catch (error) {
         console.error('Failed to fetch data:', error)
       } finally {
-        setIsLoading(false)
+        setIsDataLoading(false)
       }
     }
 
     fetchData()
   }, [selectedCompanyId])
 
-  if (isLoading || !dashboardData) {
+  // Show loading while context or data is loading
+  if (isContextLoading || isDataLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  // Handle case where no company is selected
+  if (!selectedCompanyId || !dashboardData) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground mb-4">No company selected</p>
+          <Button onClick={() => router.push('/onboarding')}>
+            Set up your company
+          </Button>
+        </div>
       </div>
     )
   }

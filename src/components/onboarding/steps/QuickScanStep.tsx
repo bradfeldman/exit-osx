@@ -99,6 +99,7 @@ export function QuickScanStep({
 }: QuickScanStepProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, boolean>>({})
+  const [canGoBack, setCanGoBack] = useState(false)
 
   const currentQuestion = QUICK_SCAN_QUESTIONS[currentIndex]
   const progress = (Object.keys(answers).length / QUICK_SCAN_QUESTIONS.length) * 100
@@ -109,6 +110,7 @@ export function QuickScanStep({
       ...prev,
       [currentQuestion.id]: isYes,
     }))
+    setCanGoBack(true)
 
     // Move to next question after a brief delay
     setTimeout(() => {
@@ -116,6 +118,12 @@ export function QuickScanStep({
         setCurrentIndex(currentIndex + 1)
       }
     }, 300)
+  }
+
+  const handleBack = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1)
+    }
   }
 
   const handleComplete = () => {
@@ -232,6 +240,19 @@ export function QuickScanStep({
                 No
               </Button>
             </div>
+
+            {/* Back button when not on first question */}
+            {currentIndex > 0 && (
+              <div className="mt-4 text-center">
+                <Button
+                  variant="ghost"
+                  onClick={handleBack}
+                  className="text-muted-foreground"
+                >
+                  Back
+                </Button>
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
       ) : (
@@ -250,14 +271,23 @@ export function QuickScanStep({
           <p className="text-muted-foreground mb-6">
             We&apos;ve identified where buyers will focus during diligence.
           </p>
-          <Button
-            size="lg"
-            onClick={handleComplete}
-            className="px-8"
-          >
-            See Your Results
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
+          <div className="flex items-center justify-center gap-4">
+            <Button
+              variant="ghost"
+              size="lg"
+              onClick={() => setCurrentIndex(QUICK_SCAN_QUESTIONS.length - 1)}
+            >
+              Back
+            </Button>
+            <Button
+              size="lg"
+              onClick={handleComplete}
+              className="px-8"
+            >
+              See My Results
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+          </div>
         </motion.div>
       )}
 
