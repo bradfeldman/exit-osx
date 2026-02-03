@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { generateNextLevelTasks, renormalizeTaskValues } from '@/lib/playbook/generate-tasks'
 import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snapshot'
+import { improveSnapshotForOnboardingTask } from '@/lib/valuation/improve-snapshot-for-task'
 import { checkAssessmentTriggers } from '@/lib/assessment/assessment-triggers'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 
@@ -280,40 +281,41 @@ export async function PATCH(
       },
     })
 
-    // Handle Answer Upgrade System when task is completed
+    // Handle task completion - two paths based on whether task is linked to assessment
     if (status === 'COMPLETED') {
-      // 1. Upgrade the effective answer if task has upgrade mapping
-      if (existingTask.upgradesToOptionId && existingTask.linkedQuestionId) {
-        // Find the latest assessment response for this question
-        const response = await prisma.assessmentResponse.findFirst({
-          where: {
-            questionId: existingTask.linkedQuestionId,
-            assessment: {
-              companyId: existingTask.companyId,
-              completedAt: { not: null }
-            }
-          },
-          orderBy: { assessment: { completedAt: 'desc' } }
-        })
-
-        if (response) {
-          // Upgrade the effective answer
-          await prisma.assessmentResponse.update({
-            where: { id: response.id },
-            data: { effectiveOptionId: existingTask.upgradesToOptionId }
-          })
-          console.log(`[TASK_ENGINE] Upgraded effective answer for question ${existingTask.linkedQuestionId}`)
-        }
-      }
-
-      // 2. Recalculate valuation with new effective answers
-      await recalculateSnapshotForCompany(
-        existingTask.companyId,
-        `Task completed: ${existingTask.title}`
-      )
-
-      // 3. Generate next-level tasks if available
       if (existingTask.linkedQuestionId) {
+        // PATH A: Assessment-linked task - use Answer Upgrade System
+        // 1. Upgrade the effective answer if task has upgrade mapping
+        if (existingTask.upgradesToOptionId) {
+          // Find the latest assessment response for this question
+          const response = await prisma.assessmentResponse.findFirst({
+            where: {
+              questionId: existingTask.linkedQuestionId,
+              assessment: {
+                companyId: existingTask.companyId,
+                completedAt: { not: null }
+              }
+            },
+            orderBy: { assessment: { completedAt: 'desc' } }
+          })
+
+          if (response) {
+            // Upgrade the effective answer
+            await prisma.assessmentResponse.update({
+              where: { id: response.id },
+              data: { effectiveOptionId: existingTask.upgradesToOptionId }
+            })
+            console.log(`[TASK_ENGINE] Upgraded effective answer for question ${existingTask.linkedQuestionId}`)
+          }
+        }
+
+        // 2. Recalculate valuation with new effective answers
+        await recalculateSnapshotForCompany(
+          existingTask.companyId,
+          `Task completed: ${existingTask.title}`
+        )
+
+        // 3. Generate next-level tasks if available
         const nextLevel = await generateNextLevelTasks(
           existingTask.companyId,
           existingTask.linkedQuestionId
@@ -321,9 +323,25 @@ export async function PATCH(
         if (nextLevel.created > 0) {
           console.log(`[TASK_ENGINE] Generated ${nextLevel.created} next-level task(s)`)
         }
+      } else {
+        // PATH B: Onboarding task (no linkedQuestionId) - directly improve BRI score
+        // This handles tasks from the quick scan that aren't tied to assessment questions
+        const result = await improveSnapshotForOnboardingTask({
+          id: existingTask.id,
+          companyId: existingTask.companyId,
+          briCategory: existingTask.briCategory,
+          rawImpact: existingTask.rawImpact,
+          title: existingTask.title,
+        })
+
+        if (result.success) {
+          console.log(`[ONBOARDING_TASK] Snapshot updated: BRI ${result.previousBriScore?.toFixed(3)} → ${result.newBriScore?.toFixed(3)}`)
+        } else {
+          console.error(`[ONBOARDING_TASK] Failed to improve snapshot: ${result.error}`)
+        }
       }
 
-      // 4. Check if assessment trigger threshold is reached
+      // Check if assessment trigger threshold is reached (for both paths)
       const triggerResult = await checkAssessmentTriggers(existingTask.companyId)
       if (triggerResult.shouldCreate && triggerResult.reason === 'ACTION_PLAN_THRESHOLD') {
         console.log(`[ASSESSMENT_TRIGGER] Threshold reached for company ${existingTask.companyId}: ${triggerResult.message}`)
