@@ -15,6 +15,8 @@ import {
   Upload,
   Link2,
   PenLine,
+  CheckCircle2,
+  Sparkles,
 } from 'lucide-react'
 
 interface DashboardData {
@@ -29,7 +31,7 @@ interface DashboardData {
     briScore: number | null
   }
   tier2?: {
-    hasBusinessFinancials?: boolean
+    adjustedEbitda?: number
   }
   tier4: {
     taskStats: {
@@ -80,11 +82,12 @@ interface ValueBuilderClientProps {
 export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
   const router = useRouter()
   const { selectedCompanyId, isLoading: isContextLoading, companies } = useCompany()
-  const { stage, progressionData } = useProgression()
+  const { stage, progressionData, refetch: refetchProgression } = useProgression()
   const [isDataLoading, setIsDataLoading] = useState(true)
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
   const [isStarting, setIsStarting] = useState(false)
+  const [hasFinancials, setHasFinancials] = useState(false)
 
   // Redirect to onboarding if no companies exist
   useEffect(() => {
@@ -93,7 +96,7 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
     }
   }, [isContextLoading, companies, router])
 
-  // Fetch dashboard data
+  // Fetch dashboard data and refresh progression on mount
   useEffect(() => {
     if (!selectedCompanyId) {
       setIsDataLoading(false)
@@ -102,6 +105,10 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
 
     const fetchData = async () => {
       setIsDataLoading(true)
+
+      // Refresh progression data to get latest state
+      await refetchProgression()
+
       try {
         const [dashboardRes, tasksRes] = await Promise.all([
           fetch(`/api/companies/${selectedCompanyId}/dashboard`),
@@ -111,6 +118,9 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
         if (dashboardRes.ok) {
           const data = await dashboardRes.json()
           setDashboardData(data)
+          // Check if financials exist based on EBITDA being calculated
+          // If tier2.adjustedEbitda > 0, they've entered real financials
+          setHasFinancials(data.tier2?.adjustedEbitda > 0)
         }
 
         if (tasksRes.ok) {
@@ -131,7 +141,7 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
     }
 
     fetchData()
-  }, [selectedCompanyId])
+  }, [selectedCompanyId, refetchProgression])
 
   // Show loading while context or data is loading
   if (isContextLoading || isDataLoading) {
@@ -166,8 +176,9 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
   // Get next task (first pending task)
   const nextTask = tasks[0]
 
-  // Check if user needs to upload financials (Stage 2 scenario)
-  const needsFinancials = !progressionData?.hasBusinessFinancials && stage <= 2
+  // Check if user needs to upload financials
+  // Use both progression data AND local check based on dashboard EBITDA
+  const needsFinancials = !progressionData?.hasBusinessFinancials && !hasFinancials && stage <= 3
 
   const handleStartTask = () => {
     if (!nextTask) return
@@ -193,8 +204,14 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
         <div className="mb-8">
           <div className="flex justify-between text-sm text-muted-foreground mb-2">
             <span>Current: <strong className="text-foreground">{formatCurrency(currentValue)}</strong></span>
+            <span>Potential: <strong className="text-foreground">{formatCurrency(potentialValue)}</strong></span>
           </div>
-          <div className="h-6 bg-primary rounded-full" style={{ width: `${Math.max(progressPercent, 10)}%` }} />
+          <div className="h-6 bg-muted rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-500"
+              style={{ width: `${Math.max(progressPercent, 5)}%` }}
+            />
+          </div>
         </div>
 
         {/* Value Gap - Large and Red like demo */}
@@ -210,8 +227,8 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
           <p className="text-muted-foreground">Value gap to close</p>
         </motion.div>
 
-        {/* Stage 1: Show task if available */}
-        {nextTask && !needsFinancials && (
+        {/* Case 1: Has task to work on */}
+        {nextTask && (
           <>
             {/* Headline - matching demo */}
             <div className="text-center mb-6">
@@ -266,8 +283,8 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
           </>
         )}
 
-        {/* Stage 2: Need financials - matching demo blue card */}
-        {needsFinancials && (
+        {/* Case 2: No task, needs financials */}
+        {!nextTask && needsFinancials && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -311,28 +328,46 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
           </motion.div>
         )}
 
-        {/* No tasks and no financials needed - show assessment prompt */}
+        {/* Case 3: Has financials, no tasks - next step is assessment */}
         {!nextTask && !needsFinancials && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-center py-8"
+            className="text-center"
           >
-            <TrendingUp className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-foreground mb-2">All caught up!</h3>
-            <p className="text-muted-foreground mb-6">
-              Complete an assessment to generate more improvement tasks.
+            {/* Financials complete checkmark */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full text-sm font-medium mb-6">
+              <CheckCircle2 className="w-4 h-4" />
+              Financials connected
+            </div>
+
+            <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-6 border border-primary/20">
+              <Sparkles className="w-10 h-10 text-primary mx-auto mb-4" />
+              <h3 className="text-lg font-bold text-foreground mb-2">
+                Ready to identify your value gaps
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                Complete a quick assessment to generate personalized improvement tasks based on your business profile.
+              </p>
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={() => router.push('/dashboard/assessment/risk')}
+              >
+                Start Risk Assessment
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+
+            <p className="text-xs text-muted-foreground mt-4">
+              This takes about 10 minutes and generates your personalized action plan.
             </p>
-            <Button onClick={() => router.push('/dashboard/assessment')}>
-              Start Assessment
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
           </motion.div>
         )}
 
         {/* Footer note - matching demo */}
-        {needsFinancials && (
+        {needsFinancials && !nextTask && (
           <p className="text-xs text-muted-foreground text-center mt-6">
             Saved for future diligence.
           </p>
