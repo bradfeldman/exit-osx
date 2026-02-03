@@ -74,8 +74,9 @@ export async function GET() {
     return NextResponse.json({ companies })
   } catch (error) {
     console.error('Error fetching companies:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Failed to fetch companies' },
+      { error: 'Failed to fetch companies', details: message },
       { status: 500 }
     )
   }
@@ -224,8 +225,9 @@ export async function POST(request: Request) {
     }, { status: 201 })
   } catch (error) {
     console.error('Error creating company:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Failed to create company' },
+      { error: 'Failed to create company', details: message },
       { status: 500 }
     )
   }

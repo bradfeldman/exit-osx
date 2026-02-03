@@ -10,10 +10,11 @@ import { analytics } from '@/lib/analytics'
 interface BasicInfoStepProps {
   formData: CompanyFormData
   updateFormData: (updates: Partial<CompanyFormData>) => void
+  businessDescription: string
+  onBusinessDescriptionChange: (description: string) => void
 }
 
-export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) {
-  const [businessDescription, setBusinessDescription] = useState('')
+export function BasicInfoStep({ formData, updateFormData, businessDescription, onBusinessDescriptionChange }: BasicInfoStepProps) {
   const [matchingIndustry, setMatchingIndustry] = useState(false)
   const [industryMatchError, setIndustryMatchError] = useState<string | null>(null)
   const [showIndustryList, setShowIndustryList] = useState(false)
@@ -39,9 +40,8 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
       icbSector: selection.icbSector,
       icbSubSector: selection.icbSubSector,
     })
-    // Clear AI match result when manually selecting
+    // Clear AI match result when manually selecting (keep description for later use)
     setIndustryMatchResult(null)
-    setBusinessDescription('')
     setShowIndustryList(false)
   }
 
@@ -54,7 +54,7 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
         icbSubSector: industryMatchResult.icbSubSector,
       })
       setIndustryMatchResult(null)
-      setBusinessDescription('')
+      // Keep businessDescription for later use in risk-focused AI questions
     }
   }
 
@@ -218,7 +218,7 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
                     icbSector: '',
                     icbSubSector: '',
                   })
-                  setBusinessDescription('')
+                  onBusinessDescriptionChange('')
                   setIndustryMatchResult(null)
                 }}
                 className="p-1.5 hover:bg-red-100 rounded-full transition-colors group"
@@ -240,7 +240,7 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
               <textarea
                 id="business-description"
                 value={businessDescription}
-                onChange={(e) => setBusinessDescription(e.target.value.slice(0, 250))}
+                onChange={(e) => onBusinessDescriptionChange(e.target.value.slice(0, 250))}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey && businessDescription.trim()) {
                     e.preventDefault()
@@ -331,7 +331,7 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
                       size="sm"
                       onClick={() => {
                         setIndustryMatchResult(null)
-                        setBusinessDescription('')
+                        onBusinessDescriptionChange('')
                       }}
                     >
                       Clear
@@ -344,11 +344,52 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
         )}
       </motion.div>
 
+      {/* Business Description - shown after industry is selected */}
+      {isIndustrySelected && (
+        <motion.div
+          className="space-y-3"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+        >
+          <div className="flex items-center justify-between">
+            <label htmlFor="business-description-full" className="text-sm font-semibold text-foreground">
+              Tell us more about your business
+            </label>
+            {businessDescription.length >= 20 && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                className="w-6 h-6 bg-gradient-to-br from-primary to-amber-600 rounded-full flex items-center justify-center shadow-lg shadow-primary/30"
+              >
+                <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                </svg>
+              </motion.div>
+            )}
+          </div>
+          <textarea
+            id="business-description-full"
+            value={businessDescription}
+            onChange={(e) => onBusinessDescriptionChange(e.target.value.slice(0, 500))}
+            placeholder="Describe what your business does, how many employees you have, your key services or products, and what makes your business unique..."
+            rows={4}
+            maxLength={500}
+            className="w-full px-4 py-3 border-2 border-border rounded-xl focus:border-primary focus:ring-0 outline-none transition-all text-sm resize-none placeholder:text-muted-foreground/40"
+          />
+          <div className="flex justify-between items-center text-xs text-muted-foreground">
+            <span>Minimum 20 characters</span>
+            <span>{businessDescription.length}/500</span>
+          </div>
+        </motion.div>
+      )}
+
       {/* Info Box */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.3 }}
+        transition={{ duration: 0.4, delay: isIndustrySelected ? 0.4 : 0.3 }}
         className="flex items-start gap-4 p-5 bg-gradient-to-r from-muted/80 to-muted/40 rounded-2xl border border-border/50"
       >
         <div className="w-10 h-10 bg-gradient-to-br from-muted-foreground/20 to-muted-foreground/10 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -357,10 +398,13 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
           </svg>
         </div>
         <div>
-          <h3 className="text-sm font-semibold text-foreground">Why industry matters</h3>
+          <h3 className="text-sm font-semibold text-foreground">
+            {isIndustrySelected ? 'Why description matters' : 'Why industry matters'}
+          </h3>
           <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-            Your industry classification determines the baseline valuation multiples
-            used to estimate your company&apos;s market value.
+            {isIndustrySelected
+              ? 'Your business description helps us generate personalized questions and improvement recommendations tailored to your specific situation.'
+              : 'Your industry classification determines the baseline valuation multiples used to estimate your company\'s market value.'}
           </p>
         </div>
       </motion.div>

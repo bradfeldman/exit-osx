@@ -8,25 +8,24 @@ import { RevenueStep } from '@/components/company/steps/RevenueStep'
 import type { CompanyFormData } from '@/components/company/CompanySetupWizard'
 import { IndustryPreviewStep } from './steps/IndustryPreviewStep'
 import { RiskAssessmentStep } from './steps/RiskAssessmentStep'
-import { ValuationRevealStep } from './steps/ValuationRevealStep'
-import { BusinessDescriptionStep } from './steps/BusinessDescriptionStep'
-import { ClarifyingQuestionsStep } from './steps/ClarifyingQuestionsStep'
-import type { ClarifyingQuestion, BusinessProfile } from '@/lib/ai/types'
+import { RiskResultsStep } from './steps/RiskResultsStep'
+import { RiskQuestionsStep } from './steps/RiskQuestionsStep'
+import { TaskAssignmentStep } from './steps/TaskAssignmentStep'
 import { useCompany } from '@/contexts/CompanyContext'
 import { Button } from '@/components/ui/button'
 import { DEFAULT_BRI_WEIGHTS } from '@/lib/bri-weights'
 import { LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
-// Onboarding step definitions
+// Onboarding step definitions - New restructured flow
 const STEPS = [
-  { id: 1, key: 'company', title: 'Your Business' },
-  { id: 2, key: 'description', title: 'About Your Business' },
-  { id: 3, key: 'clarifying', title: 'Quick Questions' },
-  { id: 4, key: 'revenue', title: 'Revenue' },
-  { id: 5, key: 'preview', title: 'Industry Preview' },
-  { id: 6, key: 'assessment', title: 'Risk Discovery' },
-  { id: 7, key: 'reveal', title: 'Your Valuation' },
+  { id: 1, key: 'company', title: 'Your Business' },        // Company name + description + industry
+  { id: 2, key: 'revenue', title: 'Revenue' },              // Annual revenue input
+  { id: 3, key: 'preview', title: 'Value Range' },          // Valuation preview (creates company)
+  { id: 4, key: 'assessment', title: 'Risk Discovery' },    // BRI assessment questions
+  { id: 5, key: 'results', title: 'Risk Results' },         // Show diagnosed risks with value impact
+  { id: 6, key: 'questions', title: 'Risk Deep-Dive' },     // AI questions about specific risks
+  { id: 7, key: 'tasks', title: 'Your Action Plan' },       // Task assignment with value impact
 ]
 
 const initialFormData: CompanyFormData = {
@@ -74,14 +73,30 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Business profile state for AI-powered diagnosis
+  // Business description state (used for industry matching + risk-focused AI questions)
   const [businessDescription, setBusinessDescription] = useState<string>(() => {
     if (typeof window === 'undefined') return ''
     return sessionStorage.getItem('onboarding_businessDescription') || ''
   })
-  const [clarifyingAnswers, setClarifyingAnswers] = useState<Record<string, string>>({})
-  const [clarifyingQuestions, setClarifyingQuestions] = useState<ClarifyingQuestion[]>([])
-  const [businessProfile, setBusinessProfile] = useState<BusinessProfile | null>(null)
+
+  // Risk assessment results for new steps
+  const [riskResults, setRiskResults] = useState<{
+    briScore: number
+    categoryScores: Record<string, number>
+    valueGapByCategory: Record<string, number>
+    currentValue: number
+    potentialValue: number
+    valueGap: number
+  } | null>(null)
+  const [riskQuestionAnswers, setRiskQuestionAnswers] = useState<Record<string, string>>({})
+  const [generatedTasks, setGeneratedTasks] = useState<Array<{
+    id: string
+    title: string
+    description: string
+    category: string
+    estimatedValue: number
+  }>>([])
+  const [assessmentId, setAssessmentId] = useState<string | null>(null)
 
   // Store companyId in state + sessionStorage for tab refresh resilience
   const [createdCompanyId, setCreatedCompanyId] = useState<string | null>(() => {
@@ -101,19 +116,6 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
   })
 
   const [assessmentComplete, setAssessmentComplete] = useState(false)
-  const [revealData, setRevealData] = useState<{
-    briScore: number
-    currentValue: number
-    potentialValue: number
-    valueGap: number
-    categoryGapBreakdown: Array<{
-      category: string
-      label: string
-      score: number
-      gapAmount: number
-      gapPercent: number
-    }>
-  } | null>(null)
 
   // Persist companyId to sessionStorage when it changes
   useEffect(() => {
@@ -163,9 +165,9 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     sessionStorage.setItem('onboarding_formData', JSON.stringify(formData))
   }, [formData])
 
-  // Validate step access - redirect to step 1 if trying to access step 5+ without companyId
+  // Validate step access - redirect to step 1 if trying to access step 4+ without companyId
   useEffect(() => {
-    if (currentStep >= 5 && !createdCompanyId) {
+    if (currentStep >= 4 && !createdCompanyId) {
       router.replace('/onboarding')
     }
   }, [currentStep, createdCompanyId, router])
@@ -204,7 +206,7 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
 
       const revenueSizeCategory = getRevenueSizeCategory(formData.annualRevenue)
 
-      // Create the company with business profile data
+      // Create the company with business description (profile generated later from risk diagnosis)
       const companyResponse = await fetch('/api/companies', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -218,10 +220,6 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
           annualEbitda: 0,
           ownerCompensation: 0,
           businessDescription: businessDescription || null,
-          businessProfile: businessProfile || null,
-          profileQuestionsAnswered: clarifyingAnswers && Object.keys(clarifyingAnswers).length > 0
-            ? { answers: clarifyingAnswers, questions: clarifyingQuestions }
-            : null,
         })
       })
 
@@ -289,50 +287,15 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
 
   // Handle next step
   const handleNext = async () => {
-    if (currentStep === 4) {
-      // Create company before moving to step 5 (preview)
+    if (currentStep === 2) {
+      // Create company before moving to step 3 (value preview)
       const result = await createCompany()
       if (result) {
-        goToStep(5)
+        goToStep(3)
       }
     } else if (currentStep < STEPS.length) {
       goToStep(currentStep + 1)
     }
-  }
-
-  // Handle clarifying questions completion - generate profile
-  const handleClarifyingComplete = async (
-    answers: Record<string, string>,
-    questions: ClarifyingQuestion[]
-  ) => {
-    setClarifyingAnswers(answers)
-    setClarifyingQuestions(questions)
-
-    // Generate business profile if we have answers
-    if (Object.keys(answers).length > 0) {
-      try {
-        const response = await fetch('/api/profile/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            businessDescription,
-            industry: formData.icbSubSector,
-            revenueRange: getRevenueSizeCategory(formData.annualRevenue || 500000),
-            clarifyingAnswers: answers,
-            clarifyingQuestions: questions,
-          }),
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          setBusinessProfile(data.profile)
-        }
-      } catch (err) {
-        console.error('Failed to generate profile:', err)
-      }
-    }
-
-    goToStep(4) // Move to revenue step
   }
 
   const handleBack = () => {
@@ -360,72 +323,57 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     categoryScores: Array<{ category: string; score: number }>
     tasksCreated: number
     topTask: { id: string; title: string; description: string; category: string; estimatedValue: number } | null
+    assessmentId?: string
   }) => {
-    const CATEGORY_LABELS: Record<string, string> = {
-      FINANCIAL: 'Financial Health',
-      TRANSFERABILITY: 'Transferability',
-      OPERATIONAL: 'Operations',
-      MARKET: 'Market Position',
-      LEGAL_TAX: 'Legal & Tax',
-      PERSONAL: 'Personal Readiness',
-    }
+    // Convert category scores array to object for easier access
+    const categoryScoresObj: Record<string, number> = {}
+    const valueGapByCategory: Record<string, number> = {}
 
     // Calculate value gap attribution by category
-    // Formula: weight × (100 - score) / 100 for each category
-    // Then normalize to actual value gap
-    const categoryGapContributions = data.categoryScores.map(cs => {
+    const totalWeightedGap = data.categoryScores.reduce((sum, cs) => {
+      const weight = DEFAULT_BRI_WEIGHTS[cs.category as keyof typeof DEFAULT_BRI_WEIGHTS] || 0
+      return sum + weight * ((100 - cs.score) / 100)
+    }, 0)
+
+    data.categoryScores.forEach(cs => {
+      categoryScoresObj[cs.category] = cs.score
       const weight = DEFAULT_BRI_WEIGHTS[cs.category as keyof typeof DEFAULT_BRI_WEIGHTS] || 0
       const roomForImprovement = (100 - cs.score) / 100
-      return {
-        category: cs.category,
-        label: CATEGORY_LABELS[cs.category] || cs.category,
-        score: cs.score,
-        weightedGap: weight * roomForImprovement,
-      }
+      valueGapByCategory[cs.category] = totalWeightedGap > 0
+        ? Math.round((weight * roomForImprovement / totalWeightedGap) * data.valueGap)
+        : 0
     })
 
-    // Sum of all weighted gaps
-    const totalWeightedGap = categoryGapContributions.reduce((sum, c) => sum + c.weightedGap, 0)
-
-    // Calculate each category's share of the actual value gap
-    const categoryGapBreakdown = categoryGapContributions.map(c => ({
-      category: c.category,
-      label: c.label,
-      score: c.score,
-      gapAmount: totalWeightedGap > 0
-        ? Math.round((c.weightedGap / totalWeightedGap) * data.valueGap)
-        : 0,
-      gapPercent: totalWeightedGap > 0
-        ? Math.round((c.weightedGap / totalWeightedGap) * 100)
-        : 0,
-    }))
-    // Sort by gap amount descending (biggest impact first)
-    .sort((a, b) => b.gapAmount - a.gapAmount)
-
-    setRevealData({
+    setRiskResults({
       briScore: data.briScore,
+      categoryScores: categoryScoresObj,
+      valueGapByCategory,
       currentValue: data.currentValue,
       potentialValue: data.potentialValue,
       valueGap: data.valueGap,
-      categoryGapBreakdown,
     })
+
+    if (data.assessmentId) {
+      setAssessmentId(data.assessmentId)
+    }
+
     setAssessmentComplete(true)
-    goToStep(5)
+    goToStep(5) // Go to Risk Results step
   }
 
   const handleComplete = async () => {
     // Send the onboarding complete email (non-blocking)
-    if (createdCompanyId && revealData) {
+    if (createdCompanyId && riskResults) {
       fetch('/api/email/onboarding-complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           companyId: createdCompanyId,
-          currentValue: revealData.currentValue,
-          potentialValue: revealData.potentialValue,
-          valueGap: revealData.valueGap,
-          briScore: revealData.briScore,
-          categoryGapBreakdown: revealData.categoryGapBreakdown,
+          currentValue: riskResults.currentValue,
+          potentialValue: riskResults.potentialValue,
+          valueGap: riskResults.valueGap,
+          briScore: riskResults.briScore,
+          categoryScores: riskResults.categoryScores,
         }),
       }).catch(err => {
         console.error('Failed to send onboarding email:', err)
@@ -446,19 +394,25 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        return formData.name && formData.icbIndustry && formData.icbSuperSector && formData.icbSector && formData.icbSubSector
+        // Company name + industry + business description (min 20 chars)
+        return formData.name &&
+               formData.icbIndustry &&
+               formData.icbSuperSector &&
+               formData.icbSector &&
+               formData.icbSubSector &&
+               businessDescription.length >= 20
       case 2:
-        return businessDescription.length >= 20 // Minimum 20 chars for description
-      case 3:
-        return true // Clarifying questions handle their own validation
-      case 4:
         return formData.annualRevenue > 0
-      case 5:
-        return true // Can always proceed from preview
-      case 6:
+      case 3:
+        return true // Can always proceed from value preview
+      case 4:
         return assessmentComplete
+      case 5:
+        return !!riskResults // Need risk results to proceed
+      case 6:
+        return Object.keys(riskQuestionAnswers).length > 0 // Need answers to risk questions
       case 7:
-        return true
+        return true // Can complete from task assignment
       default:
         return false
     }
@@ -478,29 +432,17 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <BasicInfoStep formData={formData} updateFormData={updateFormData} />
+        return (
+          <BasicInfoStep
+            formData={formData}
+            updateFormData={updateFormData}
+            businessDescription={businessDescription}
+            onBusinessDescriptionChange={setBusinessDescription}
+          />
+        )
       case 2:
-        return (
-          <BusinessDescriptionStep
-            companyName={formData.name}
-            businessDescription={businessDescription}
-            onDescriptionChange={setBusinessDescription}
-          />
-        )
-      case 3:
-        return (
-          <ClarifyingQuestionsStep
-            companyName={formData.name}
-            businessDescription={businessDescription}
-            industry={formData.icbSubSector}
-            revenueRange={getRevenueSizeCategory(formData.annualRevenue || 500000)}
-            onComplete={handleClarifyingComplete}
-            onSkip={() => goToStep(4)}
-          />
-        )
-      case 4:
         return <RevenueStep formData={formData} updateFormData={updateFormData} />
-      case 5:
+      case 3:
         return industryPreviewData ? (
           <IndustryPreviewStep
             companyName={formData.name}
@@ -508,11 +450,11 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
             valuationLow={industryPreviewData.valuationLow}
             valuationHigh={industryPreviewData.valuationHigh}
             potentialGap={industryPreviewData.potentialGap}
-            onContinue={() => goToStep(6)}
+            onContinue={() => goToStep(4)}
             onSkip={handleSkip}
           />
         ) : null
-      case 6:
+      case 4:
         return createdCompanyId ? (
           <RiskAssessmentStep
             companyId={createdCompanyId}
@@ -521,15 +463,35 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
             onSkip={handleSkip}
           />
         ) : null
-      case 7:
-        return revealData ? (
-          <ValuationRevealStep
+      case 5:
+        return riskResults ? (
+          <RiskResultsStep
             companyName={formData.name}
-            briScore={revealData.briScore}
-            currentValue={revealData.currentValue}
-            potentialValue={revealData.potentialValue}
-            valueGap={revealData.valueGap}
-            categoryGapBreakdown={revealData.categoryGapBreakdown}
+            riskResults={riskResults}
+            onContinue={() => goToStep(6)}
+          />
+        ) : null
+      case 6:
+        return createdCompanyId && riskResults ? (
+          <RiskQuestionsStep
+            companyId={createdCompanyId}
+            companyName={formData.name}
+            businessDescription={businessDescription}
+            riskResults={riskResults}
+            onComplete={(answers) => {
+              setRiskQuestionAnswers(answers)
+              goToStep(7)
+            }}
+            onSkip={() => goToStep(7)}
+          />
+        ) : null
+      case 7:
+        return createdCompanyId && riskResults ? (
+          <TaskAssignmentStep
+            companyId={createdCompanyId}
+            companyName={formData.name}
+            riskResults={riskResults}
+            riskQuestionAnswers={riskQuestionAnswers}
             onComplete={handleComplete}
           />
         ) : null
@@ -538,8 +500,8 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     }
   }
 
-  // Steps 3 (clarifying) and 5-7 handle their own navigation
-  const showNavigation = currentStep === 1 || currentStep === 2 || currentStep === 4
+  // Steps 3-7 handle their own navigation (preview, assessment, results, questions, tasks)
+  const showNavigation = currentStep === 1 || currentStep === 2
 
   return (
     <div className="min-h-screen overflow-y-auto">
@@ -552,10 +514,10 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
             </span>
           </div>
 
-          {/* Progress indicator for steps 1-4 */}
-          {currentStep <= 4 && (
+          {/* Progress indicator for steps 1-3 (before assessment) */}
+          {currentStep <= 3 && (
             <div className="flex items-center gap-2">
-              {STEPS.slice(0, 4).map((step) => (
+              {STEPS.slice(0, 3).map((step) => (
                 <div
                   key={step.id}
                   className={`w-2 h-2 rounded-full transition-all ${
@@ -621,7 +583,7 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
             >
-              {(currentStep <= 4) ? (
+              {(currentStep <= 2) ? (
                 <div className="bg-card rounded-2xl border border-border shadow-xl p-6 sm:p-8">
                   {renderStep()}
                 </div>

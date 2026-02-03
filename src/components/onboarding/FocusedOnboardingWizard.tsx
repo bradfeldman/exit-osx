@@ -79,6 +79,7 @@ export function FocusedOnboardingWizard({ userName }: FocusedOnboardingWizardPro
   const { refreshCompanies, setSelectedCompanyId } = useCompany()
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<CompanyFormData>(initialFormData)
+  const [businessDescription, setBusinessDescription] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showCelebration, setShowCelebration] = useState(false)
@@ -339,7 +340,14 @@ export function FocusedOnboardingWizard({ userName }: FocusedOnboardingWizardPro
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <BasicInfoStep formData={formData} updateFormData={updateFormData} />
+        return (
+          <BasicInfoStep
+            formData={formData}
+            updateFormData={updateFormData}
+            businessDescription={businessDescription}
+            onBusinessDescriptionChange={setBusinessDescription}
+          />
+        )
       case 2:
         return <RevenueStep formData={formData} updateFormData={updateFormData} />
       default:

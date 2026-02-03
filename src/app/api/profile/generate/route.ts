@@ -46,8 +46,8 @@ export async function POST(request: Request) {
       questions
     )
 
-    // Log AI usage
-    await prisma.aIGenerationLog.create({
+    // Log AI usage (non-blocking)
+    prisma.aIGenerationLog.create({
       data: {
         generationType: 'business_profile',
         inputTokens: usage.inputTokens,
@@ -56,13 +56,14 @@ export async function POST(request: Request) {
         inputData: { businessDescription: businessDescription.substring(0, 500), industry, revenueRange },
         outputData: JSON.parse(JSON.stringify(data)),
       }
-    })
+    }).catch(err => console.error('Failed to log AI usage:', err))
 
     return NextResponse.json({ profile: data })
   } catch (error) {
     console.error('Error generating business profile:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Failed to generate profile' },
+      { error: 'Failed to generate profile', details: message },
       { status: 500 }
     )
   }
