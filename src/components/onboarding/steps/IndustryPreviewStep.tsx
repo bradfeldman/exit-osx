@@ -88,7 +88,7 @@ export function IndustryPreviewStep({
             transition={{ delay: 0.7 }}
             className="text-white/60 text-sm"
           >
-            Typical selling range for similar businesses
+            What buyers typically pay for similar businesses — before diligence
           </motion.p>
         </div>
 
@@ -103,11 +103,11 @@ export function IndustryPreviewStep({
             <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-amber-100 font-medium text-sm">
-                But most owners leave 30-50% on the table
+                The spread isn&apos;t about revenue — it&apos;s about buyer confidence
               </p>
               <p className="text-amber-200/70 text-sm mt-1">
-                Hidden risks that buyers see — but sellers don&apos;t — often cost{' '}
-                <span className="text-amber-100 font-semibold">{formatCurrency(potentialGap)}+</span> in lost value.
+                Risks that buyers perceive during diligence typically reduce offers by{' '}
+                <span className="text-amber-100 font-semibold">{formatCurrency(potentialGap)}+</span>.
               </p>
             </div>
           </div>

@@ -163,8 +163,9 @@ export function RiskResultsStep({
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          This is the difference between your current value ({formatCurrency(riskResults.currentValue)})
-          and your potential value ({formatCurrency(riskResults.potentialValue)}) based on your risk profile.
+          This is the difference between your estimated current value ({formatCurrency(riskResults.currentValue)})
+          and potential value ({formatCurrency(riskResults.potentialValue)}) based on how buyers typically
+          discount similar risk profiles in comparable transactions.
         </p>
       </motion.div>
 

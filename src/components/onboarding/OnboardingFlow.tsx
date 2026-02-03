@@ -7,9 +7,8 @@ import { BasicInfoStep } from '@/components/company/steps/BasicInfoStep'
 import { RevenueStep } from '@/components/company/steps/RevenueStep'
 import type { CompanyFormData } from '@/components/company/CompanySetupWizard'
 import { IndustryPreviewStep } from './steps/IndustryPreviewStep'
-import { RiskAssessmentStep } from './steps/RiskAssessmentStep'
+import { QuickScanStep, type QuickScanResults } from './steps/QuickScanStep'
 import { RiskResultsStep } from './steps/RiskResultsStep'
-import { RiskQuestionsStep } from './steps/RiskQuestionsStep'
 import { TaskAssignmentStep } from './steps/TaskAssignmentStep'
 import { useCompany } from '@/contexts/CompanyContext'
 import { Button } from '@/components/ui/button'
@@ -17,15 +16,14 @@ import { DEFAULT_BRI_WEIGHTS } from '@/lib/bri-weights'
 import { LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
-// Onboarding step definitions - New restructured flow
+// Onboarding step definitions - Streamlined Dan/Alex flow
 const STEPS = [
   { id: 1, key: 'company', title: 'Your Business' },        // Company name + description + industry
   { id: 2, key: 'revenue', title: 'Revenue' },              // Annual revenue input
   { id: 3, key: 'preview', title: 'Value Range' },          // Valuation preview (creates company)
-  { id: 4, key: 'assessment', title: 'Risk Discovery' },    // BRI assessment questions
-  { id: 5, key: 'results', title: 'Risk Results' },         // Show diagnosed risks with value impact
-  { id: 6, key: 'questions', title: 'Risk Deep-Dive' },     // AI questions about specific risks
-  { id: 7, key: 'tasks', title: 'Your Action Plan' },       // Task assignment with value impact
+  { id: 4, key: 'quickscan', title: 'Buyer Scan' },         // 8 binary buyer-neutral questions
+  { id: 5, key: 'results', title: 'Risk Results' },         // Show value gap + breakdown
+  { id: 6, key: 'firstmove', title: 'First Move' },         // Single highest-ROI task
 ]
 
 const initialFormData: CompanyFormData = {
@@ -115,7 +113,7 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     return stored ? JSON.parse(stored) : null
   })
 
-  const [assessmentComplete, setAssessmentComplete] = useState(false)
+  const [quickScanComplete, setQuickScanComplete] = useState(false)
 
   // Persist companyId to sessionStorage when it changes
   useEffect(() => {
@@ -322,49 +320,55 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     router.push('/dashboard')
   }
 
-  const handleAssessmentComplete = async (data: {
-    briScore: number
-    currentValue: number
-    potentialValue: number
-    valueGap: number
-    categoryScores: Array<{ category: string; score: number }>
-    tasksCreated: number
-    topTask: { id: string; title: string; description: string; category: string; estimatedValue: number } | null
-    assessmentId?: string
-  }) => {
-    // Convert category scores array to object for easier access
-    const categoryScoresObj: Record<string, number> = {}
-    const valueGapByCategory: Record<string, number> = {}
+  const handleQuickScanComplete = (scanResults: QuickScanResults) => {
+    // Calculate category scores based on quick scan risks
+    const categoryScoresObj: Record<string, number> = {
+      FINANCIAL: 70,
+      TRANSFERABILITY: 70,
+      OPERATIONAL: 70,
+      MARKET: 70,
+      LEGAL_TAX: 70,
+      PERSONAL: 70,
+    }
+
+    // Reduce scores for identified risks
+    scanResults.risksIdentified.forEach(risk => {
+      if (categoryScoresObj[risk.category] !== undefined) {
+        categoryScoresObj[risk.category] = Math.max(30, categoryScoresObj[risk.category] - 25)
+      }
+    })
+
+    // Calculate value gap based on BRI score
+    const potentialValue = industryPreviewData?.valuationHigh || formData.annualRevenue * 2.5
+    const briRatio = scanResults.briScore / 100
+    const currentValue = Math.round(potentialValue * briRatio)
+    const valueGap = potentialValue - currentValue
 
     // Calculate value gap attribution by category
-    const totalWeightedGap = data.categoryScores.reduce((sum, cs) => {
-      const weight = DEFAULT_BRI_WEIGHTS[cs.category as keyof typeof DEFAULT_BRI_WEIGHTS] || 0
-      return sum + weight * ((100 - cs.score) / 100)
+    const valueGapByCategory: Record<string, number> = {}
+    const totalWeightedGap = Object.entries(categoryScoresObj).reduce((sum, [category, score]) => {
+      const weight = DEFAULT_BRI_WEIGHTS[category as keyof typeof DEFAULT_BRI_WEIGHTS] || 0
+      return sum + weight * ((100 - score) / 100)
     }, 0)
 
-    data.categoryScores.forEach(cs => {
-      categoryScoresObj[cs.category] = cs.score
-      const weight = DEFAULT_BRI_WEIGHTS[cs.category as keyof typeof DEFAULT_BRI_WEIGHTS] || 0
-      const roomForImprovement = (100 - cs.score) / 100
-      valueGapByCategory[cs.category] = totalWeightedGap > 0
-        ? Math.round((weight * roomForImprovement / totalWeightedGap) * data.valueGap)
+    Object.entries(categoryScoresObj).forEach(([category, score]) => {
+      const weight = DEFAULT_BRI_WEIGHTS[category as keyof typeof DEFAULT_BRI_WEIGHTS] || 0
+      const roomForImprovement = (100 - score) / 100
+      valueGapByCategory[category] = totalWeightedGap > 0
+        ? Math.round((weight * roomForImprovement / totalWeightedGap) * valueGap)
         : 0
     })
 
     setRiskResults({
-      briScore: data.briScore,
+      briScore: scanResults.briScore,
       categoryScores: categoryScoresObj,
       valueGapByCategory,
-      currentValue: data.currentValue,
-      potentialValue: data.potentialValue,
-      valueGap: data.valueGap,
+      currentValue,
+      potentialValue,
+      valueGap,
     })
 
-    if (data.assessmentId) {
-      setAssessmentId(data.assessmentId)
-    }
-
-    setAssessmentComplete(true)
+    setQuickScanComplete(true)
     goToStep(5) // Go to Risk Results step
   }
 
@@ -394,8 +398,8 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     sessionStorage.removeItem('onboarding_formData')
     sessionStorage.removeItem('onboarding_businessDescription')
 
-    // Go to action plan to start the improvement journey
-    router.push('/dashboard/action-plan')
+    // Go to Value Builder to start the improvement journey
+    router.push('/dashboard/value-builder')
   }
 
   const canProceed = () => {
@@ -413,13 +417,11 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
       case 3:
         return true // Can always proceed from value preview
       case 4:
-        return assessmentComplete
+        return quickScanComplete // Quick scan completed
       case 5:
         return !!riskResults // Need risk results to proceed
       case 6:
-        return Object.keys(riskQuestionAnswers).length > 0 // Need answers to risk questions
-      case 7:
-        return true // Can complete from task assignment
+        return true // Can complete from first move
       default:
         return false
     }
@@ -463,10 +465,10 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
         ) : null
       case 4:
         return createdCompanyId ? (
-          <RiskAssessmentStep
+          <QuickScanStep
             companyId={createdCompanyId}
             companyName={formData.name}
-            onComplete={handleAssessmentComplete}
+            onComplete={handleQuickScanComplete}
             onSkip={handleSkip}
           />
         ) : null
@@ -480,25 +482,11 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
         ) : null
       case 6:
         return createdCompanyId && riskResults ? (
-          <RiskQuestionsStep
-            companyId={createdCompanyId}
-            companyName={formData.name}
-            businessDescription={businessDescription}
-            riskResults={riskResults}
-            onComplete={(answers) => {
-              setRiskQuestionAnswers(answers)
-              goToStep(7)
-            }}
-            onSkip={() => goToStep(7)}
-          />
-        ) : null
-      case 7:
-        return createdCompanyId && riskResults ? (
           <TaskAssignmentStep
             companyId={createdCompanyId}
             companyName={formData.name}
             riskResults={riskResults}
-            riskQuestionAnswers={riskQuestionAnswers}
+            riskQuestionAnswers={{}}
             onComplete={handleComplete}
           />
         ) : null

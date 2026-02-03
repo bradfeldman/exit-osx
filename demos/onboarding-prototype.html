@@ -1,0 +1,2060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exit OSx - Onboarding Prototype</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --accent: #f59e0b;
+      --danger: #dc2626;
+      --success: #16a34a;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: white;
+      border-bottom: 1px solid var(--gray-200);
+      padding: 1rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .logo span:first-child { color: var(--gray-800); }
+    .logo span:nth-child(2) { color: var(--primary); }
+    .logo span:last-child { color: var(--gray-400); font-weight: 400; }
+
+    .progress-dots {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .progress-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gray-300);
+      transition: all 0.3s ease;
+    }
+
+    .progress-dot.active {
+      width: 24px;
+      border-radius: 4px;
+      background: var(--primary);
+    }
+
+    .progress-dot.completed {
+      background: var(--primary);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* Phase Screens */
+    .phase {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .phase.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards */
+    .card {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid var(--gray-200);
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+
+    /* Typography */
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 0.5rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 0.5rem;
+    }
+
+    h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      margin-bottom: 0.25rem;
+    }
+
+    .subtitle {
+      color: var(--gray-500);
+      margin-bottom: 2rem;
+    }
+
+    .small-text {
+      font-size: 0.875rem;
+      color: var(--gray-500);
+    }
+
+    /* Form Elements */
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--gray-700);
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      border: 1px solid var(--gray-300);
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: all 0.2s;
+      background: white;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.875rem 1.5rem;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-primary:disabled {
+      background: var(--gray-300);
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: var(--gray-100);
+      color: var(--gray-700);
+    }
+
+    .btn-secondary:hover {
+      background: var(--gray-200);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--gray-500);
+    }
+
+    .btn-ghost:hover {
+      color: var(--gray-700);
+    }
+
+    .btn-full {
+      width: 100%;
+    }
+
+    /* Navigation */
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+    }
+
+    /* Phase 1: Orientation */
+    .orientation-promise {
+      background: var(--gray-50);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .orientation-promise h3 {
+      margin-bottom: 1rem;
+    }
+
+    .promise-list {
+      list-style: none;
+    }
+
+    .promise-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+      color: var(--gray-600);
+    }
+
+    .promise-list li::before {
+      content: "→";
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .time-estimate {
+      text-align: center;
+      padding: 1rem;
+      background: linear-gradient(135deg, var(--primary), #3b82f6);
+      color: white;
+      border-radius: 10px;
+      margin-bottom: 2rem;
+    }
+
+    .time-estimate strong {
+      font-size: 1.25rem;
+    }
+
+    /* Phase 3: Valuation Range */
+    .valuation-reveal {
+      text-align: center;
+      padding: 2rem 0;
+    }
+
+    .valuation-range {
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .valuation-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+
+    .valuation-separator {
+      font-size: 1.5rem;
+      color: var(--gray-400);
+    }
+
+    .valuation-bar {
+      background: var(--gray-100);
+      border-radius: 8px;
+      height: 12px;
+      margin: 1.5rem 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .valuation-bar-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--gray-400), var(--primary));
+      border-radius: 8px;
+      transition: width 1s ease;
+    }
+
+    .valuation-context {
+      background: var(--gray-50);
+      border-left: 3px solid var(--accent);
+      padding: 1rem 1.25rem;
+      margin: 1.5rem 0;
+      text-align: left;
+    }
+
+    .valuation-context p {
+      color: var(--gray-600);
+      font-size: 0.95rem;
+    }
+
+    /* Phase 4: Quick Scan */
+    .question-card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .question-category {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--primary);
+      background: rgba(37, 99, 235, 0.1);
+      padding: 0.25rem 0.75rem;
+      border-radius: 100px;
+    }
+
+    .question-number {
+      font-size: 0.875rem;
+      color: var(--gray-400);
+    }
+
+    .question-text {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      margin-bottom: 0.5rem;
+    }
+
+    .question-rationale {
+      font-size: 0.875rem;
+      color: var(--gray-500);
+      font-style: italic;
+      margin-bottom: 1rem;
+    }
+
+    .answer-options {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .answer-option {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem 1.5rem;
+      border: 2px solid var(--gray-200);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .answer-option:hover {
+      border-color: var(--primary);
+      background: rgba(37, 99, 235, 0.02);
+    }
+
+    .answer-option.selected {
+      border-color: var(--primary);
+      background: rgba(37, 99, 235, 0.08);
+      color: var(--primary);
+    }
+
+    .answer-option input {
+      display: none;
+    }
+
+    .scan-progress {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .scan-progress-bar {
+      flex: 1;
+      height: 6px;
+      background: var(--gray-200);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .scan-progress-fill {
+      height: 100%;
+      background: var(--primary);
+      transition: width 0.3s ease;
+    }
+
+    .scan-progress-text {
+      font-size: 0.875rem;
+      color: var(--gray-500);
+      white-space: nowrap;
+    }
+
+    .scan-disclaimer {
+      background: var(--gray-50);
+      border-left: 3px solid var(--accent);
+      padding: 0.875rem 1rem;
+      margin-bottom: 1.5rem;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .scan-disclaimer p {
+      font-size: 0.875rem;
+      color: var(--gray-600);
+      margin: 0;
+    }
+
+    /* Phase 5: Value Gap Reveal */
+    .value-gap-hero {
+      text-align: center;
+      padding: 1rem 0 2rem;
+    }
+
+    .bri-score {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .bri-score-number {
+      font-size: 4rem;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+
+    .bri-score-max {
+      font-size: 1.5rem;
+      color: var(--gray-400);
+    }
+
+    .bri-label {
+      font-size: 0.875rem;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .value-gap-amount {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--danger);
+      margin: 1.5rem 0 0.5rem;
+    }
+
+    .value-gap-label {
+      color: var(--gray-600);
+      margin-bottom: 2rem;
+    }
+
+    /* Value Gap Bar */
+    .gap-bar-container {
+      margin: 2rem 0;
+    }
+
+    .gap-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .gap-bar-label {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .gap-bar {
+      height: 32px;
+      background: var(--gray-100);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gap-bar-current {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #60a5fa);
+      border-radius: 8px 0 0 8px;
+      transition: width 1s ease;
+    }
+
+    .gap-bar-potential {
+      position: absolute;
+      right: 0;
+      top: 0;
+      height: 100%;
+      background: repeating-linear-gradient(
+        -45deg,
+        var(--gray-200),
+        var(--gray-200) 4px,
+        var(--gray-100) 4px,
+        var(--gray-100) 8px
+      );
+      border-radius: 0 8px 8px 0;
+    }
+
+    .gap-bar-marker {
+      position: absolute;
+      top: -8px;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .gap-bar-marker::before {
+      content: "▼";
+      color: var(--gray-600);
+      font-size: 0.75rem;
+    }
+
+    .gap-bar-values {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.5rem;
+    }
+
+    .gap-bar-value {
+      font-weight: 600;
+      color: var(--gray-700);
+    }
+
+    /* Risk Breakdown */
+    .risk-breakdown {
+      margin-top: 2rem;
+    }
+
+    .risk-breakdown h3 {
+      margin-bottom: 1rem;
+    }
+
+    .risk-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--gray-100);
+    }
+
+    .risk-item:last-child {
+      border-bottom: none;
+    }
+
+    .risk-bar-container {
+      flex: 1;
+    }
+
+    .risk-name {
+      font-size: 0.875rem;
+      color: var(--gray-600);
+      margin-bottom: 0.25rem;
+    }
+
+    .risk-bar {
+      height: 8px;
+      background: var(--gray-100);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .risk-bar-fill {
+      height: 100%;
+      background: var(--danger);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    .risk-value {
+      font-weight: 600;
+      color: var(--gray-800);
+      min-width: 80px;
+      text-align: right;
+    }
+
+    .insight-callout {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-top: 1.5rem;
+    }
+
+    .insight-callout p {
+      color: var(--gray-800);
+      font-weight: 500;
+    }
+
+    /* Phase 6: First Move */
+    .first-move-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .task-card {
+      background: white;
+      border: 2px solid var(--primary);
+      border-radius: 16px;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .task-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--primary);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 1rem;
+      border-radius: 100px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .task-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin: 1rem 0 0.5rem;
+    }
+
+    .task-description {
+      color: var(--gray-600);
+      margin-bottom: 1.5rem;
+    }
+
+    .task-meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--gray-100);
+    }
+
+    .task-meta-item {
+      text-align: center;
+    }
+
+    .task-meta-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+
+    .task-meta-value.highlight {
+      color: var(--success);
+    }
+
+    .task-meta-label {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .unlock-note {
+      text-align: center;
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: var(--gray-50);
+      border-radius: 8px;
+    }
+
+    .unlock-note p {
+      font-size: 0.875rem;
+      color: var(--gray-500);
+    }
+
+    /* Phase 7: Task Completion */
+    .completion-celebration {
+      text-align: center;
+      padding: 2rem 0;
+    }
+
+    .completion-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--success), #22c55e);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      animation: popIn 0.5s ease;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .completion-icon svg {
+      width: 40px;
+      height: 40px;
+      color: white;
+    }
+
+    .momentum-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 2rem 0;
+      padding: 1.5rem;
+      background: var(--gray-50);
+      border-radius: 12px;
+    }
+
+    .momentum-stat {
+      text-align: center;
+    }
+
+    .momentum-stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+
+    .momentum-stat-value.success {
+      color: var(--success);
+    }
+
+    .momentum-stat-label {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .next-task-preview {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-top: 1.5rem;
+    }
+
+    .next-task-preview h4 {
+      font-size: 0.875rem;
+      color: var(--gray-500);
+      margin-bottom: 0.5rem;
+    }
+
+    .next-task-preview p {
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+
+    /* Animations */
+    .animate-in {
+      animation: slideIn 0.5s ease forwards;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .delay-2 { animation-delay: 0.2s; opacity: 0; }
+    .delay-3 { animation-delay: 0.3s; opacity: 0; }
+    .delay-4 { animation-delay: 0.4s; opacity: 0; }
+
+    /* Revenue Input Special */
+    .revenue-input-wrapper {
+      position: relative;
+    }
+
+    .revenue-input-wrapper::before {
+      content: "$";
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gray-400);
+      font-size: 1.25rem;
+    }
+
+    .revenue-input-wrapper input {
+      padding-left: 2rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    /* Phase 8: Value Builder */
+    .momentum-header {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      padding: 1.5rem;
+      background: white;
+      border-radius: 16px;
+      border: 1px solid var(--gray-200);
+      margin-bottom: 1.5rem;
+    }
+
+    .momentum-score-ring {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      flex-shrink: 0;
+    }
+
+    .score-ring-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .score-ring-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .score-ring-number {
+      display: block;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      line-height: 1;
+    }
+
+    .score-ring-label {
+      font-size: 0.7rem;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .momentum-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      flex: 1;
+    }
+
+    .momentum-summary-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .momentum-summary-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+
+    .momentum-summary-value.success {
+      color: var(--success);
+    }
+
+    .momentum-summary-label {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+    }
+
+    /* Momentum Progress */
+    .momentum-progress-section {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--gray-200);
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .momentum-progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.875rem;
+      color: var(--gray-600);
+      margin-bottom: 0.75rem;
+    }
+
+    .momentum-progress-bar {
+      height: 24px;
+      background: var(--gray-100);
+      border-radius: 12px;
+      position: relative;
+      overflow: visible;
+    }
+
+    .momentum-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #60a5fa);
+      border-radius: 12px;
+      transition: width 0.5s ease;
+    }
+
+    .momentum-progress-marker {
+      position: absolute;
+      top: -24px;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: left 0.5s ease;
+    }
+
+    .marker-arrow {
+      color: var(--primary);
+      font-size: 0.875rem;
+      line-height: 1;
+    }
+
+    .marker-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--primary);
+      text-transform: uppercase;
+    }
+
+    /* Next Task Card */
+    .next-task-card {
+      background: white;
+      border: 2px solid var(--primary);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .next-task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .next-task-badge {
+      background: var(--primary);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.25rem 0.75rem;
+      border-radius: 100px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .next-task-time {
+      font-size: 0.875rem;
+      color: var(--gray-500);
+    }
+
+    .next-task-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 0.5rem;
+    }
+
+    .next-task-description {
+      color: var(--gray-600);
+      font-size: 0.95rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .next-task-impact {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      padding: 1rem 0;
+      border-top: 1px solid var(--gray-100);
+      border-bottom: 1px solid var(--gray-100);
+      margin-bottom: 1.25rem;
+    }
+
+    .impact-item {
+      text-align: center;
+    }
+
+    .impact-value {
+      display: block;
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+
+    .impact-value.success {
+      color: var(--success);
+    }
+
+    .impact-label {
+      font-size: 0.7rem;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Other Tasks Section */
+    .other-tasks-section {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--gray-200);
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .other-tasks-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .other-tasks-header h4 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--gray-700);
+    }
+
+    .btn-small {
+      font-size: 0.8rem;
+      padding: 0.25rem 0.5rem;
+    }
+
+    .other-tasks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .other-task-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem;
+      background: var(--gray-50);
+      border-radius: 8px;
+    }
+
+    .other-task-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+    }
+
+    .other-task-title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--gray-800);
+    }
+
+    .other-task-meta {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+    }
+
+    .other-task-value {
+      font-weight: 600;
+      color: var(--success);
+      font-size: 0.875rem;
+    }
+
+    /* Dashboard Teaser */
+    .dashboard-teaser {
+      text-align: center;
+      padding: 1.5rem;
+      background: linear-gradient(135deg, var(--gray-50), var(--gray-100));
+      border-radius: 12px;
+      border: 1px dashed var(--gray-300);
+    }
+
+    .dashboard-teaser p {
+      color: var(--gray-600);
+      margin-bottom: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .container {
+        padding: 1.5rem 1rem 3rem;
+      }
+
+      .card {
+        padding: 1.5rem;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .valuation-number {
+        font-size: 2rem;
+      }
+
+      .bri-score-number {
+        font-size: 3rem;
+      }
+
+      .value-gap-amount {
+        font-size: 2rem;
+      }
+
+      .task-meta {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+
+      .momentum-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .momentum-header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .momentum-summary {
+        justify-content: center;
+      }
+
+      .next-task-impact {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <div class="logo">
+        <span>Exit</span><span>OS</span><span>x</span>
+      </div>
+      <div class="progress-dots" id="progressDots">
+        <div class="progress-dot active"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Phase 1: Immediate Orientation -->
+    <section class="phase active" id="phase1">
+      <div class="time-estimate">
+        <strong>About 7 minutes</strong> to see what buyers see
+      </div>
+
+      <div class="card">
+        <h1>Let's look at your business through a buyer's eyes</h1>
+        <p class="subtitle">This is not a survey. This is a diagnostic.</p>
+
+        <div class="orientation-promise">
+          <h3>In the next few minutes, you'll see:</h3>
+          <ul class="promise-list">
+            <li>What buyers see when they evaluate your business</li>
+            <li>Where value is leaking today (in dollars)</li>
+            <li>The fastest path to closing that gap</li>
+          </ul>
+        </div>
+
+        <div class="form-group">
+          <label for="companyName">Company Name</label>
+          <input type="text" id="companyName" placeholder="Acme Industries" />
+        </div>
+
+        <div class="form-group">
+          <label for="industry">Industry</label>
+          <select id="industry">
+            <option value="">Select your industry...</option>
+            <option value="saas">Software / SaaS</option>
+            <option value="services">Professional Services</option>
+            <option value="manufacturing">Manufacturing</option>
+            <option value="retail">Retail / E-commerce</option>
+            <option value="healthcare">Healthcare</option>
+            <option value="construction">Construction</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Brief description <span class="small-text">(optional)</span></label>
+          <textarea id="description" placeholder="What does your business do? Who do you serve?"></textarea>
+        </div>
+
+        <button class="btn btn-primary btn-full" id="phase1Next" disabled>Continue</button>
+      </div>
+    </section>
+
+    <!-- Phase 2: Revenue -->
+    <section class="phase" id="phase2">
+      <div class="card">
+        <h1>What's your annual revenue?</h1>
+        <p class="subtitle">This anchors your valuation range.</p>
+
+        <div class="form-group">
+          <label for="revenue">Annual Revenue</label>
+          <div class="revenue-input-wrapper">
+            <input type="text" id="revenue" placeholder="5,000,000" />
+          </div>
+        </div>
+
+        <p class="small-text" style="margin-bottom: 2rem;">
+          Don't worry about precision. We'll refine this as we go.
+        </p>
+
+        <div class="nav-buttons">
+          <button class="btn btn-ghost" onclick="goToPhase(1)">Back</button>
+          <button class="btn btn-primary" id="phase2Next" disabled>See My Valuation Range</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Phase 3: Valuation Range Reveal -->
+    <section class="phase" id="phase3">
+      <div class="card">
+        <div class="valuation-reveal">
+          <p class="small-text" style="margin-bottom: 0.5rem;">Based on <span id="industryDisplay">your industry</span></p>
+          <h2>Your estimated valuation range</h2>
+
+          <div class="valuation-range">
+            <span class="valuation-number" id="valLow">$0</span>
+            <span class="valuation-separator">to</span>
+            <span class="valuation-number" id="valHigh">$0</span>
+          </div>
+
+          <div class="valuation-bar">
+            <div class="valuation-bar-fill" id="valBarFill" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="valuation-context">
+          <p><strong>This range reflects what buyers typically pay for businesses like yours—before diligence.</strong></p>
+          <p style="margin-top: 0.5rem;">The spread isn't about revenue. It's about how much risk a buyer perceives. Let's find out where you fall.</p>
+        </div>
+
+        <p style="text-align: center; color: var(--gray-600); margin: 1.5rem 0;">
+          Let's find out where you fall in that range.
+        </p>
+
+        <div class="nav-buttons">
+          <button class="btn btn-ghost" onclick="goToPhase(2)">Back</button>
+          <button class="btn btn-primary" onclick="goToPhase(4)">Start Buyer Assessment</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Phase 4: Quick Scan -->
+    <section class="phase" id="phase4">
+      <h2 style="margin-bottom: 0.5rem;">Buyer Confidence Scan</h2>
+      <p class="subtitle">8 questions. Each one reflects how buyers actually evaluate businesses.</p>
+
+      <div class="scan-disclaimer">
+        <p><strong>Note:</strong> Most strong businesses answer "No" to more than half of these. That's normal—and exactly why value gaps exist.</p>
+      </div>
+
+      <div class="scan-progress">
+        <div class="scan-progress-bar">
+          <div class="scan-progress-fill" id="scanProgressFill" style="width: 0%"></div>
+        </div>
+        <span class="scan-progress-text"><span id="questionCount">0</span> of 8</span>
+      </div>
+
+      <div id="questionsContainer"></div>
+
+      <div class="nav-buttons" id="scanNav" style="display: none;">
+        <button class="btn btn-ghost" onclick="goToPhase(3)">Back</button>
+        <button class="btn btn-primary" id="phase4Next" onclick="goToPhase(5)">See My Results</button>
+      </div>
+    </section>
+
+    <!-- Phase 5: Value Gap Reveal -->
+    <section class="phase" id="phase5">
+      <div class="card">
+        <div class="value-gap-hero animate-in">
+          <div class="bri-label">Buyer Readiness Score</div>
+          <div class="bri-score">
+            <span class="bri-score-number" id="briScore">0</span>
+            <span class="bri-score-max">/ 100</span>
+          </div>
+        </div>
+
+        <div class="animate-in delay-1">
+          <div class="value-gap-amount" id="valueGapAmount">$0</div>
+          <div class="value-gap-label">Estimated value gap</div>
+        </div>
+
+        <div class="gap-bar-container animate-in delay-2">
+          <div class="gap-bar-labels">
+            <span class="gap-bar-label">Buyer Discounted</span>
+            <span class="gap-bar-label">Buyer Ready</span>
+          </div>
+          <div class="gap-bar">
+            <div class="gap-bar-current" id="gapBarCurrent" style="width: 0%"></div>
+          </div>
+          <div class="gap-bar-values">
+            <span class="gap-bar-value" id="currentValDisplay">$0</span>
+            <span class="gap-bar-value" id="potentialValDisplay">$0</span>
+          </div>
+        </div>
+
+        <div class="risk-breakdown animate-in delay-3">
+          <h3>Where the gap comes from</h3>
+          <div id="riskBreakdown"></div>
+        </div>
+
+        <div class="insight-callout animate-in delay-4">
+          <p><strong><span id="recoverablePercent">0</span>% of this gap is addressable without changing revenue.</strong></p>
+          <p style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.8;">Based on how buyers typically discount similar risk profiles in comparable transactions.</p>
+        </div>
+
+        <button class="btn btn-primary btn-full" onclick="goToPhase(6)" style="margin-top: 2rem;">
+          Show Me How to Close It
+        </button>
+      </div>
+    </section>
+
+    <!-- Phase 6: First Move -->
+    <section class="phase" id="phase6">
+      <div class="first-move-header">
+        <h1>Your First Move</h1>
+        <p class="subtitle">If you do nothing else, do this.</p>
+      </div>
+
+      <div class="task-card">
+        <div class="task-badge">Highest Impact</div>
+        <h3 class="task-title" id="taskTitle">List your top 10 customers with revenue percentages</h3>
+        <p class="task-description" id="taskDescription">
+          Create a simple spreadsheet showing your top 10 customers, their annual revenue, and percentage of total.
+          This is the first thing buyers ask for—having it ready signals professionalism.
+        </p>
+
+        <div class="task-meta">
+          <div class="task-meta-item">
+            <div class="task-meta-value highlight" id="taskValue">+$380k</div>
+            <div class="task-meta-label">Value Impact</div>
+          </div>
+          <div class="task-meta-item">
+            <div class="task-meta-value" id="taskTime">45 min</div>
+            <div class="task-meta-label">Est. Time</div>
+          </div>
+          <div class="task-meta-item">
+            <div class="task-meta-value" id="taskRisk">Concentration</div>
+            <div class="task-meta-label">Risk Addressed</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="unlock-note">
+        <p>Completing this unlocks the next highest-impact task.</p>
+      </div>
+
+      <button class="btn btn-primary btn-full" onclick="completeTask()" style="margin-top: 1.5rem;">
+        Mark Complete (Demo)
+      </button>
+
+      <button class="btn btn-secondary btn-full" onclick="goToPhase(5)" style="margin-top: 0.75rem;">
+        Back to Results
+      </button>
+    </section>
+
+    <!-- Phase 7: Task Completion Celebration (Brief) -->
+    <section class="phase" id="phase7">
+      <div class="card" style="text-align: center; padding: 3rem 2rem;">
+        <div class="completion-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <h2 style="margin-top: 1.5rem;">Buyer concern removed</h2>
+        <p class="subtitle" style="margin-bottom: 0;">You just recovered <strong id="justRecovered" style="color: var(--success);">$450k</strong> in potential value.</p>
+
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--gray-100);">
+          <p class="small-text" style="margin-bottom: 1rem;">Keep the momentum going?</p>
+          <button class="btn btn-primary" onclick="goToPhase(8)" style="margin-right: 0.5rem;">
+            Yes, show me what's next
+          </button>
+          <button class="btn btn-secondary" onclick="goToPhase(8)">
+            I'll come back later
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Phase 8: Value Builder -->
+    <section class="phase" id="phase8">
+      <div style="text-align: center; margin-bottom: 1rem;">
+        <span style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-500);">Value Builder</span>
+      </div>
+      <!-- Score & Stats Header -->
+      <div class="momentum-header">
+        <div class="momentum-score-ring">
+          <svg viewBox="0 0 120 120" class="score-ring-svg">
+            <circle cx="60" cy="60" r="54" fill="none" stroke="var(--gray-200)" stroke-width="8"/>
+            <circle cx="60" cy="60" r="54" fill="none" stroke="var(--primary)" stroke-width="8"
+              stroke-dasharray="339.292" stroke-dashoffset="135" stroke-linecap="round"
+              transform="rotate(-90 60 60)" id="scoreRing"/>
+          </svg>
+          <div class="score-ring-content">
+            <span class="score-ring-number" id="momentumBriScore">62</span>
+            <span class="score-ring-label">BRI</span>
+          </div>
+        </div>
+        <div class="momentum-summary">
+          <div class="momentum-summary-item">
+            <span class="momentum-summary-value success" id="totalRecovered">$450k</span>
+            <span class="momentum-summary-label">Value Recovered</span>
+          </div>
+          <div class="momentum-summary-item">
+            <span class="momentum-summary-value" id="remainingGapHome">$2.0M</span>
+            <span class="momentum-summary-label">Gap Remaining</span>
+          </div>
+          <div class="momentum-summary-item">
+            <span class="momentum-summary-value" id="tasksCompleted">1 of 8</span>
+            <span class="momentum-summary-label">Tasks Done</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="momentum-progress-section">
+        <div class="momentum-progress-labels">
+          <span>Current: <strong id="momentumCurrentVal">$5.1M</strong></span>
+          <span>Potential: <strong id="momentumPotentialVal">$7.1M</strong></span>
+        </div>
+        <div class="momentum-progress-bar">
+          <div class="momentum-progress-fill" id="momentumProgressFill" style="width: 72%;"></div>
+          <div class="momentum-progress-marker" id="momentumMarker" style="left: 72%;">
+            <span class="marker-arrow">▼</span>
+            <span class="marker-label">You</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Next Task Card -->
+      <div class="next-task-card">
+        <div class="next-task-header">
+          <span class="next-task-badge">Highest ROI</span>
+          <span class="next-task-time">~30 min</span>
+        </div>
+        <h3 class="next-task-title">Identify your #2 person and document their responsibilities</h3>
+        <p class="next-task-description">
+          Write down who handles operations when you're unavailable, and what decisions they can make.
+          This is the clearest signal to buyers that the business isn't dependent on you.
+        </p>
+        <div class="next-task-impact">
+          <div class="impact-item">
+            <span class="impact-value success">+$520k</span>
+            <span class="impact-label">Value Impact</span>
+          </div>
+          <div class="impact-item">
+            <span class="impact-value">Transferability</span>
+            <span class="impact-label">Risk Category</span>
+          </div>
+          <div class="impact-item">
+            <span class="impact-value">66 → 74</span>
+            <span class="impact-label">BRI Change</span>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="startNextTask()">
+          Start This Task
+        </button>
+      </div>
+
+      <!-- Other Tasks Preview -->
+      <div class="other-tasks-section">
+        <div class="other-tasks-header">
+          <h4>Coming Up</h4>
+          <button class="btn btn-ghost btn-small" onclick="showAllTasks()">See all 7 remaining →</button>
+        </div>
+        <div class="other-tasks-list">
+          <div class="other-task-item">
+            <div class="other-task-info">
+              <span class="other-task-title">List your 5 most critical vendor relationships</span>
+              <span class="other-task-meta">Legal • 20 min</span>
+            </div>
+            <span class="other-task-value">+$290k</span>
+          </div>
+          <div class="other-task-item">
+            <div class="other-task-info">
+              <span class="other-task-title">Write down how a new hire would handle your #1 daily task</span>
+              <span class="other-task-meta">Operations • 30 min</span>
+            </div>
+            <span class="other-task-value">+$250k</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Graduate to Dashboard (shown after 3 tasks OR $1M recovered) -->
+      <div class="dashboard-teaser" id="dashboardTeaser" style="display: none;">
+        <p>You've recovered <strong id="graduationValue">$1.1M</strong> in potential value. Ready to see the full picture?</p>
+        <button class="btn btn-secondary" onclick="goToDashboard()">
+          See Full Dashboard →
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // State
+    let currentPhase = 1;
+    let formData = {
+      companyName: '',
+      industry: '',
+      description: '',
+      revenue: 0,
+      answers: {}
+    };
+
+    // Questions for Quick Scan - Binary (Yes/No) - BUYER-NEUTRAL framing
+    const questions = [
+      {
+        id: 1,
+        category: 'Financial',
+        question: 'Would a buyer receive third-party-verified financials without asking for them?',
+        rationale: 'Buyers expect CPA-reviewed or audited statements. Without them, due diligence stalls and discounts follow.',
+        options: ['Yes', 'No'],
+        riskOnNo: true
+      },
+      {
+        id: 2,
+        category: 'Financial',
+        question: 'Would a buyer see that any single customer represents more than 10% of revenue?',
+        rationale: 'Concentrated revenue is the first thing buyers flag. It directly reduces the multiple they\'ll pay.',
+        options: ['Yes', 'No'],
+        riskOnNo: false // Risk is on YES
+      },
+      {
+        id: 3,
+        category: 'Transferability',
+        question: 'Could you show a buyer that the business has run profitably without you for 30+ days?',
+        rationale: 'Buyers need proof, not promises. If it hasn\'t been tested, they assume it can\'t be done.',
+        options: ['Yes', 'No'],
+        riskOnNo: true
+      },
+      {
+        id: 4,
+        category: 'Transferability',
+        question: 'Would a buyer meet someone who could step into your role within 90 days?',
+        rationale: 'No clear successor means earnouts, lower offers, or no deal at all.',
+        options: ['Yes', 'No'],
+        riskOnNo: true
+      },
+      {
+        id: 5,
+        category: 'Operational',
+        question: 'Could a buyer\'s new hire learn your core operations from written documentation alone?',
+        rationale: 'Tribal knowledge doesn\'t transfer. Buyers discount what they can\'t systematize.',
+        options: ['Yes', 'No'],
+        riskOnNo: true
+      },
+      {
+        id: 6,
+        category: 'Legal',
+        question: 'Would a buyer find signed contracts governing all key customer and vendor relationships?',
+        rationale: 'Handshake deals create legal risk. Buyers see gaps as hidden liabilities that reduce price.',
+        options: ['Yes', 'No'],
+        riskOnNo: true
+      },
+      {
+        id: 7,
+        category: 'Market',
+        question: 'Would a buyer see that more than half your revenue is recurring or contracted for 12+ months?',
+        rationale: 'Predictable revenue commands premium multiples. Project-based revenue resets to zero each year.',
+        options: ['Yes', 'No'],
+        riskOnNo: true
+      },
+      {
+        id: 8,
+        category: 'Personal',
+        question: 'If a buyer asked, could you credibly commit to exiting within 6 months?',
+        rationale: 'Hesitation kills deals. Buyers need confident, committed sellers to close.',
+        options: ['Yes', 'No'],
+        riskOnNo: true
+      }
+    ];
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      setupPhase1();
+      setupPhase2();
+      renderQuestions();
+    });
+
+    function setupPhase1() {
+      const nameInput = document.getElementById('companyName');
+      const industrySelect = document.getElementById('industry');
+      const nextBtn = document.getElementById('phase1Next');
+
+      function checkPhase1() {
+        const valid = nameInput.value.trim() && industrySelect.value;
+        nextBtn.disabled = !valid;
+      }
+
+      nameInput.addEventListener('input', checkPhase1);
+      industrySelect.addEventListener('change', checkPhase1);
+
+      nextBtn.addEventListener('click', () => {
+        formData.companyName = nameInput.value.trim();
+        formData.industry = industrySelect.value;
+        formData.description = document.getElementById('description').value;
+        goToPhase(2);
+      });
+    }
+
+    function setupPhase2() {
+      const revenueInput = document.getElementById('revenue');
+      const nextBtn = document.getElementById('phase2Next');
+
+      function formatNumber(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      }
+
+      function parseNumber(str) {
+        return parseInt(str.replace(/,/g, ''), 10) || 0;
+      }
+
+      revenueInput.addEventListener('input', (e) => {
+        const num = parseNumber(e.target.value);
+        if (num > 0) {
+          e.target.value = formatNumber(num);
+        }
+        formData.revenue = num;
+        nextBtn.disabled = num < 100000;
+      });
+
+      nextBtn.addEventListener('click', () => {
+        calculateValuation();
+        goToPhase(3);
+      });
+    }
+
+    function calculateValuation() {
+      const revenue = formData.revenue;
+
+      // Industry multipliers (simplified)
+      const multipliers = {
+        saas: { low: 3.0, high: 8.0 },
+        services: { low: 2.0, high: 5.0 },
+        manufacturing: { low: 3.0, high: 6.0 },
+        retail: { low: 1.5, high: 4.0 },
+        healthcare: { low: 2.5, high: 6.0 },
+        construction: { low: 2.0, high: 4.0 },
+        other: { low: 2.0, high: 5.0 }
+      };
+
+      const mult = multipliers[formData.industry] || multipliers.other;
+
+      // Estimate EBITDA margin based on industry
+      const ebitdaMargins = {
+        saas: 0.25,
+        services: 0.20,
+        manufacturing: 0.12,
+        retail: 0.08,
+        healthcare: 0.18,
+        construction: 0.10,
+        other: 0.15
+      };
+
+      const margin = ebitdaMargins[formData.industry] || 0.15;
+      const ebitda = revenue * margin;
+
+      formData.valLow = Math.round(ebitda * mult.low);
+      formData.valHigh = Math.round(ebitda * mult.high);
+
+      // Display
+      document.getElementById('valLow').textContent = formatCurrency(formData.valLow);
+      document.getElementById('valHigh').textContent = formatCurrency(formData.valHigh);
+      document.getElementById('industryDisplay').textContent = getIndustryName(formData.industry);
+
+      // Animate bar
+      setTimeout(() => {
+        document.getElementById('valBarFill').style.width = '100%';
+      }, 300);
+    }
+
+    function renderQuestions() {
+      const container = document.getElementById('questionsContainer');
+      container.innerHTML = '';
+
+      questions.forEach((q, index) => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.id = `question-${q.id}`;
+        card.style.display = index === 0 ? 'block' : 'none';
+
+        card.innerHTML = `
+          <div class="question-header">
+            <span class="question-category">${q.category}</span>
+            <span class="question-number">${index + 1} of ${questions.length}</span>
+          </div>
+          <div class="question-text">${q.question}</div>
+          <div class="question-rationale">${q.rationale}</div>
+          <div class="answer-options">
+            ${q.options.map((opt, i) => `
+              <label class="answer-option" data-question="${q.id}" data-value="${i}">
+                <input type="radio" name="q${q.id}" value="${i}" />
+                <span>${opt}</span>
+              </label>
+            `).join('')}
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+
+      // Answer click handlers
+      container.querySelectorAll('.answer-option').forEach(opt => {
+        opt.addEventListener('click', (e) => {
+          const qId = opt.dataset.question;
+          const value = opt.dataset.value;
+
+          // Mark selected
+          opt.closest('.answer-options').querySelectorAll('.answer-option').forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+
+          formData.answers[qId] = parseInt(value);
+
+          // Progress to next question
+          setTimeout(() => {
+            showNextQuestion(parseInt(qId));
+          }, 300);
+        });
+      });
+    }
+
+    function showNextQuestion(currentId) {
+      const currentIndex = questions.findIndex(q => q.id === currentId);
+      const answeredCount = Object.keys(formData.answers).length;
+
+      // Update progress
+      document.getElementById('scanProgressFill').style.width = `${(answeredCount / questions.length) * 100}%`;
+      document.getElementById('questionCount').textContent = answeredCount;
+
+      if (currentIndex < questions.length - 1) {
+        // Show next question
+        document.getElementById(`question-${currentId}`).style.display = 'none';
+        document.getElementById(`question-${questions[currentIndex + 1].id}`).style.display = 'block';
+      } else {
+        // All done
+        document.getElementById('scanNav').style.display = 'flex';
+        calculateResults();
+      }
+    }
+
+    function calculateResults() {
+      // Calculate risk flags from binary answers
+      let riskCount = 0;
+      const risksIdentified = [];
+
+      questions.forEach(q => {
+        const answer = formData.answers[q.id]; // 0 = Yes, 1 = No
+        const isYes = answer === 0;
+        const hasRisk = q.riskOnNo ? !isYes : isYes;
+
+        if (hasRisk) {
+          riskCount++;
+          risksIdentified.push({
+            category: q.category,
+            question: q.question,
+            rationale: q.rationale
+          });
+        }
+      });
+
+      // BRI score: each risk flag reduces score
+      // 0 risks = 100, 8 risks = ~35
+      const briScore = Math.round(100 - (riskCount * 8.5));
+
+      // Calculate value position
+      const range = formData.valHigh - formData.valLow;
+      const currentValue = formData.valLow + (range * (briScore / 100));
+      const valueGap = formData.valHigh - currentValue;
+
+      formData.briScore = Math.max(35, briScore);
+      formData.currentValue = Math.round(currentValue);
+      formData.valueGap = Math.round(valueGap);
+      formData.risksIdentified = risksIdentified;
+
+      // Risk breakdown based on identified risks, grouped by category
+      const categoryRisks = {
+        'Transferability': { name: 'Founder Dependency', weight: 0.35 },
+        'Financial': { name: 'Financial Risk', weight: 0.25 },
+        'Operational': { name: 'Operational Gaps', weight: 0.18 },
+        'Legal': { name: 'Legal Exposure', weight: 0.12 },
+        'Market': { name: 'Revenue Predictability', weight: 0.07 },
+        'Personal': { name: 'Transition Readiness', weight: 0.03 }
+      };
+
+      // Build breakdown from actual identified risks
+      const riskBreakdown = [];
+      const seenCategories = new Set();
+
+      risksIdentified.forEach(risk => {
+        if (!seenCategories.has(risk.category)) {
+          seenCategories.add(risk.category);
+          const catInfo = categoryRisks[risk.category];
+          if (catInfo) {
+            riskBreakdown.push({
+              name: catInfo.name,
+              percent: catInfo.weight,
+              value: Math.round(valueGap * catInfo.weight)
+            });
+          }
+        }
+      });
+
+      // Sort by value descending
+      riskBreakdown.sort((a, b) => b.value - a.value);
+
+      formData.riskBreakdown = riskBreakdown;
+    }
+
+    function goToPhase(phase) {
+      // Hide all phases
+      document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
+
+      // Show target phase
+      document.getElementById(`phase${phase}`).classList.add('active');
+
+      // Update progress dots
+      document.querySelectorAll('.progress-dot').forEach((dot, i) => {
+        dot.classList.remove('active', 'completed');
+        if (i + 1 === phase) {
+          dot.classList.add('active');
+        } else if (i + 1 < phase) {
+          dot.classList.add('completed');
+        }
+      });
+
+      currentPhase = phase;
+
+      // Phase-specific updates
+      if (phase === 5) {
+        animateResults();
+      }
+      if (phase === 8) {
+        updateMomentumHome();
+      }
+
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function animateResults() {
+      // Animate BRI score
+      animateNumber('briScore', 0, formData.briScore, 1000);
+
+      // Animate value gap
+      setTimeout(() => {
+        document.getElementById('valueGapAmount').textContent = formatCurrency(formData.valueGap);
+      }, 500);
+
+      // Animate gap bar
+      setTimeout(() => {
+        const percent = (formData.currentValue / formData.valHigh) * 100;
+        document.getElementById('gapBarCurrent').style.width = `${percent}%`;
+      }, 800);
+
+      // Display values
+      document.getElementById('currentValDisplay').textContent = formatCurrency(formData.currentValue);
+      document.getElementById('potentialValDisplay').textContent = formatCurrency(formData.valHigh);
+
+      // Render risk breakdown
+      const breakdownContainer = document.getElementById('riskBreakdown');
+      breakdownContainer.innerHTML = formData.riskBreakdown.map(r => `
+        <div class="risk-item">
+          <div class="risk-bar-container">
+            <div class="risk-name">${r.name}</div>
+            <div class="risk-bar">
+              <div class="risk-bar-fill" style="width: ${r.percent * 100}%"></div>
+            </div>
+          </div>
+          <div class="risk-value">${formatCurrency(r.value)}</div>
+        </div>
+      `).join('');
+
+      // Recoverable percent
+      document.getElementById('recoverablePercent').textContent = '78';
+
+      // Set first task values
+      const topRisk = formData.riskBreakdown[0];
+      document.getElementById('taskValue').textContent = '+' + formatCurrency(Math.round(topRisk.value * 0.5));
+    }
+
+    function completeTask() {
+      // Calculate recovered value
+      const recovered = Math.round(formData.riskBreakdown[0]?.value * 0.5) || 450000;
+      formData.totalRecovered = recovered;
+      formData.tasksCompleted = 1;
+
+      // Update celebration screen
+      document.getElementById('justRecovered').textContent = formatCurrency(recovered);
+
+      goToPhase(7);
+    }
+
+    function startNextTask() {
+      // In a real app, this would load the task detail view
+      // For demo, simulate completing another task
+      formData.tasksCompleted = (formData.tasksCompleted || 1) + 1;
+      formData.totalRecovered = (formData.totalRecovered || 450000) + 380000;
+
+      // Update momentum home values
+      updateMomentumHome();
+
+      // Show dashboard teaser after 3 tasks OR $1M recovered
+      if (formData.tasksCompleted >= 3 || formData.totalRecovered >= 1000000) {
+        document.getElementById('dashboardTeaser').style.display = 'block';
+        document.getElementById('graduationValue').textContent = formatCurrency(formData.totalRecovered);
+      }
+
+      alert('Demo: Task started! In the real app, this opens a guided task flow.');
+    }
+
+    function updateMomentumHome() {
+      const recovered = formData.totalRecovered || 450000;
+      const briScore = Math.min(100, (formData.briScore || 62) + (formData.tasksCompleted || 1) * 6);
+      const currentVal = (formData.currentValue || 5100000) + recovered;
+      const potentialVal = formData.valHigh || 7100000;
+      const remainingGap = Math.max(0, potentialVal - currentVal);
+      const progressPercent = (currentVal / potentialVal) * 100;
+
+      document.getElementById('momentumBriScore').textContent = briScore;
+      document.getElementById('totalRecovered').textContent = formatCurrency(recovered);
+      document.getElementById('remainingGapHome').textContent = formatCurrency(remainingGap);
+      document.getElementById('tasksCompleted').textContent = `${formData.tasksCompleted || 1} of 8`;
+      document.getElementById('momentumCurrentVal').textContent = formatCurrency(currentVal);
+      document.getElementById('momentumPotentialVal').textContent = formatCurrency(potentialVal);
+      document.getElementById('momentumProgressFill').style.width = `${progressPercent}%`;
+      document.getElementById('momentumMarker').style.left = `${progressPercent}%`;
+
+      // Update score ring
+      const circumference = 339.292;
+      const offset = circumference - (briScore / 100) * circumference;
+      document.getElementById('scoreRing').style.strokeDashoffset = offset;
+    }
+
+    function showAllTasks() {
+      alert('Demo: This would show all remaining tasks sorted by ROI.');
+    }
+
+    function goToDashboard() {
+      alert('Demo: This would navigate to the full Exit OSx dashboard.');
+    }
+
+    // Utilities
+    function formatCurrency(num) {
+      if (num >= 1000000) {
+        return '$' + (num / 1000000).toFixed(1) + 'M';
+      } else if (num >= 1000) {
+        return '$' + Math.round(num / 1000) + 'k';
+      }
+      return '$' + num;
+    }
+
+    function getIndustryName(key) {
+      const names = {
+        saas: 'Software / SaaS',
+        services: 'Professional Services',
+        manufacturing: 'Manufacturing',
+        retail: 'Retail / E-commerce',
+        healthcare: 'Healthcare',
+        construction: 'Construction',
+        other: 'your industry'
+      };
+      return names[key] || 'your industry';
+    }
+
+    function animateNumber(elementId, start, end, duration) {
+      const element = document.getElementById(elementId);
+      const startTime = performance.now();
+
+      function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const value = Math.round(start + (end - start) * easeOut(progress));
+        element.textContent = value;
+
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        }
+      }
+
+      requestAnimationFrame(update);
+    }
+
+    function easeOut(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+  </script>
+</body>
+</html>
