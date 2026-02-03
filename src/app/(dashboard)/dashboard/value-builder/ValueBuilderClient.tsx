@@ -5,13 +5,16 @@ import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
+import { useProgression } from '@/contexts/ProgressionContext'
 import {
   ArrowRight,
   TrendingUp,
   Clock,
-  ChevronRight,
-  LayoutDashboard,
+  Target,
   Loader2,
+  Upload,
+  Link2,
+  PenLine,
 } from 'lucide-react'
 
 interface DashboardData {
@@ -24,6 +27,9 @@ interface DashboardData {
     potentialValue: number
     valueGap: number
     briScore: number | null
+  }
+  tier2?: {
+    hasBusinessFinancials?: boolean
   }
   tier4: {
     taskStats: {
@@ -42,6 +48,7 @@ interface Task {
   briCategory: string
   rawImpact: string
   estimatedHours: number | null
+  status?: string
 }
 
 function formatCurrency(value: number): string {
@@ -54,14 +61,14 @@ function formatCurrency(value: number): string {
   return `$${value.toLocaleString()}`
 }
 
-function formatCategory(category: string): string {
+function formatRiskLabel(category: string): string {
   const labels: Record<string, string> = {
-    FINANCIAL: 'Financial',
-    TRANSFERABILITY: 'Transferability',
-    OPERATIONAL: 'Operations',
-    MARKET: 'Market',
-    LEGAL_TAX: 'Legal',
-    PERSONAL: 'Personal',
+    FINANCIAL: 'Financial opacity',
+    TRANSFERABILITY: 'Founder dependency',
+    OPERATIONAL: 'Operational gaps',
+    MARKET: 'Market position',
+    LEGAL_TAX: 'Legal exposure',
+    PERSONAL: 'Transition readiness',
   }
   return labels[category] || category
 }
@@ -73,6 +80,7 @@ interface ValueBuilderClientProps {
 export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
   const router = useRouter()
   const { selectedCompanyId, isLoading: isContextLoading, companies } = useCompany()
+  const { stage, progressionData } = useProgression()
   const [isDataLoading, setIsDataLoading] = useState(true)
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
@@ -97,7 +105,7 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
       try {
         const [dashboardRes, tasksRes] = await Promise.all([
           fetch(`/api/companies/${selectedCompanyId}/dashboard`),
-          fetch(`/api/companies/${selectedCompanyId}/tasks?status=PENDING,IN_PROGRESS&limit=5`),
+          fetch(`/api/tasks?companyId=${selectedCompanyId}&includeQueue=true`),
         ])
 
         if (dashboardRes.ok) {
@@ -107,7 +115,13 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
 
         if (tasksRes.ok) {
           const data = await tasksRes.json()
-          setTasks(data.tasks || [])
+          // Filter to pending/in-progress tasks and limit to top 5
+          const activeTasks = (data.tasks || [])
+            .filter((t: Task) =>
+              t.status === 'PENDING' || t.status === 'IN_PROGRESS' || !t.status
+            )
+            .slice(0, 5)
+          setTasks(activeTasks)
         }
       } catch (error) {
         console.error('Failed to fetch data:', error)
@@ -122,7 +136,7 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
   // Show loading while context or data is loading
   if (isContextLoading || isDataLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="flex items-center justify-center py-24">
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     )
@@ -131,7 +145,7 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
   // Handle case where no company is selected
   if (!selectedCompanyId || !dashboardData) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="flex items-center justify-center py-24">
         <div className="text-center">
           <p className="text-muted-foreground mb-4">No company selected</p>
           <Button onClick={() => router.push('/onboarding')}>
@@ -142,27 +156,18 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
     )
   }
 
-  const { tier1, tier4 } = dashboardData
-  const briScore = tier1.briScore || 50
+  const { tier1 } = dashboardData
   const currentValue = tier1.currentValue || 0
   const potentialValue = tier1.potentialValue || 0
   const valueGap = tier1.valueGap || 0
-  const totalRecovered = tier4.taskStats.completedValue || 0
-  const tasksCompleted = tier4.taskStats.completed || 0
-  const totalTasks = tier4.taskStats.total || 0
 
   const progressPercent = potentialValue > 0 ? (currentValue / potentialValue) * 100 : 0
 
-  // Calculate circumference for SVG ring
-  const circumference = 2 * Math.PI * 54
-  const strokeDashoffset = circumference - (briScore / 100) * circumference
-
-  // Show dashboard teaser after $1M recovered OR 3 tasks
-  const showDashboardTeaser = totalRecovered >= 1000000 || tasksCompleted >= 3
-
   // Get next task (first pending task)
   const nextTask = tasks[0]
-  const upcomingTasks = tasks.slice(1, 4)
+
+  // Check if user needs to upload financials (Stage 2 scenario)
+  const needsFinancials = !progressionData?.hasBusinessFinancials && stage <= 2
 
   const handleStartTask = () => {
     if (!nextTask) return
@@ -170,208 +175,149 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
     router.push(`/dashboard/action-plan?task=${nextTask.id}`)
   }
 
-  const handleViewAllTasks = () => {
-    router.push('/dashboard/action-plan')
-  }
-
-  const handleGoToDashboard = () => {
-    router.push('/dashboard')
-  }
-
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b border-border bg-card">
-        <div className="max-w-3xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Value Builder
-              </span>
-              {userName && (
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  Welcome back, {userName.split(' ')[0]}
-                </p>
-              )}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleGoToDashboard}
-              className="text-muted-foreground"
-            >
-              <LayoutDashboard className="w-4 h-4 mr-2" />
-              Dashboard
-            </Button>
-          </div>
+    <div className="max-w-2xl mx-auto px-4 py-8">
+      {/* Card Container - matching demo */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-card rounded-2xl border border-border p-8 shadow-lg"
+      >
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-foreground">Value Builder</h1>
+          <p className="text-muted-foreground">Your fastest path to higher buyer confidence</p>
         </div>
-      </div>
 
-      <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-        {/* Score & Stats Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-card rounded-2xl border border-border p-6"
-        >
-          <div className="flex items-center gap-6">
-            {/* BRI Score Ring */}
-            <div className="relative w-24 h-24 flex-shrink-0">
-              <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
-                <circle
-                  cx="60"
-                  cy="60"
-                  r="54"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="8"
-                  className="text-muted"
-                />
-                <motion.circle
-                  cx="60"
-                  cy="60"
-                  r="54"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  className="text-primary"
-                  strokeDasharray={circumference}
-                  initial={{ strokeDashoffset: circumference }}
-                  animate={{ strokeDashoffset }}
-                  transition={{ duration: 1, delay: 0.2 }}
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-bold text-foreground">{briScore}</span>
-                <span className="text-xs text-muted-foreground uppercase tracking-wide">BRI</span>
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="flex-1 grid grid-cols-3 gap-4">
-              <div>
-                <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
-                  {formatCurrency(totalRecovered)}
-                </p>
-                <p className="text-xs text-muted-foreground">Value Recovered</p>
-              </div>
-              <div>
-                <p className="text-xl font-bold text-foreground">
-                  {formatCurrency(valueGap)}
-                </p>
-                <p className="text-xs text-muted-foreground">Gap Remaining</p>
-              </div>
-              <div>
-                <p className="text-xl font-bold text-foreground">
-                  {tasksCompleted} of {totalTasks}
-                </p>
-                <p className="text-xs text-muted-foreground">Tasks Done</p>
-              </div>
-            </div>
+        {/* Progress Bar - matching demo */}
+        <div className="mb-8">
+          <div className="flex justify-between text-sm text-muted-foreground mb-2">
+            <span>Current: <strong className="text-foreground">{formatCurrency(currentValue)}</strong></span>
           </div>
+          <div className="h-6 bg-primary rounded-full" style={{ width: `${Math.max(progressPercent, 10)}%` }} />
+        </div>
+
+        {/* Value Gap - Large and Red like demo */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-center mb-8"
+        >
+          <p className="text-4xl font-bold text-red-600 dark:text-red-500">
+            {formatCurrency(valueGap)}
+          </p>
+          <p className="text-muted-foreground">Value gap to close</p>
         </motion.div>
 
-        {/* Progress Bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-card rounded-xl border border-border p-4"
-        >
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-muted-foreground">
-              Current: <strong className="text-foreground">{formatCurrency(currentValue)}</strong>
-            </span>
-            <span className="text-muted-foreground">
-              Potential: <strong className="text-foreground">{formatCurrency(potentialValue)}</strong>
-            </span>
-          </div>
-          <div className="relative h-6 bg-muted rounded-full overflow-visible">
+        {/* Stage 1: Show task if available */}
+        {nextTask && !needsFinancials && (
+          <>
+            {/* Headline - matching demo */}
+            <div className="text-center mb-6">
+              <h2 className="text-lg font-bold text-foreground">
+                If you do nothing else, do this.
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Buyers discount businesses for this reason first.
+              </p>
+            </div>
+
+            {/* Task Card - matching demo design */}
             <motion.div
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-primary/70 rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercent}%` }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-            />
-            <motion.div
-              className="absolute -top-6 flex flex-col items-center"
-              initial={{ left: 0, opacity: 0 }}
-              animate={{ left: `${progressPercent}%`, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              style={{ transform: 'translateX(-50%)' }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="border-2 border-primary rounded-xl p-6"
             >
-              <span className="text-xs font-semibold text-primary">You</span>
-              <span className="text-primary">▼</span>
-            </motion.div>
-          </div>
-        </motion.div>
+              <h3 className="text-lg font-bold text-foreground mb-4">
+                {nextTask.title}
+              </h3>
 
-        {/* Next Task Card */}
-        {nextTask && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-card rounded-2xl border-2 border-primary p-6"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary text-primary-foreground">
-                Highest ROI
-              </span>
-              <span className="text-sm text-muted-foreground flex items-center gap-1">
+              {/* Task details row - matching demo */}
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm mb-4">
+                <span className="flex items-center gap-1.5">
+                  <Target className="w-4 h-4 text-primary" />
+                  <span className="text-muted-foreground">Buyer risk removed:</span>
+                  <span className="font-medium text-foreground">{formatRiskLabel(nextTask.briCategory)}</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <TrendingUp className="w-4 h-4 text-emerald-500" />
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                    Estimated value impact: +{formatCurrency(Number(nextTask.rawImpact))}
+                  </span>
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-6">
                 <Clock className="w-4 h-4" />
-                ~{(nextTask.estimatedHours || 1) * 60} min
-              </span>
-            </div>
+                <span>Time: ~{(nextTask.estimatedHours || 1.5) * 60} minutes</span>
+              </div>
 
-            <h3 className="text-xl font-bold text-foreground mb-2">
-              {nextTask.title}
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={handleStartTask}
+                disabled={isStarting}
+              >
+                {isStarting ? 'Loading...' : 'Start This Task'}
+              </Button>
+            </motion.div>
+          </>
+        )}
+
+        {/* Stage 2: Need financials - matching demo blue card */}
+        {needsFinancials && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-primary rounded-xl p-6 text-primary-foreground"
+          >
+            <h3 className="text-lg font-bold mb-2">
+              This unlocks buyer-grade valuation and capital options.
             </h3>
-            <p className="text-muted-foreground mb-6 line-clamp-2">
-              {nextTask.description}
+            <p className="text-primary-foreground/80 mb-6">
+              Buyers won&apos;t trust projections without this.
             </p>
 
-            <div className="grid grid-cols-3 gap-4 py-4 border-y border-border mb-6">
-              <div className="text-center">
-                <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                  +{formatCurrency(Number(nextTask.rawImpact))}
-                </p>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Value Impact</p>
-              </div>
-              <div className="text-center">
-                <p className="text-lg font-bold text-foreground">
-                  {formatCategory(nextTask.briCategory)}
-                </p>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Risk Category</p>
-              </div>
-              <div className="text-center">
-                <p className="text-lg font-bold text-foreground">
-                  {briScore} → {Math.min(100, briScore + 6)}
-                </p>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">BRI Change</p>
-              </div>
+            <div className="space-y-3">
+              <button
+                onClick={() => router.push('/dashboard/financials')}
+                className="w-full flex items-center gap-3 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-lg p-4 transition-colors text-left"
+              >
+                <Upload className="w-5 h-5" />
+                <span className="font-medium">Upload financials</span>
+              </button>
+              <button
+                onClick={() => router.push('/dashboard/financials?connect=quickbooks')}
+                className="w-full flex items-center gap-3 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-lg p-4 transition-colors text-left"
+              >
+                <Link2 className="w-5 h-5" />
+                <span className="font-medium">Connect QuickBooks</span>
+              </button>
+              <button
+                onClick={() => router.push('/dashboard/financials/statements')}
+                className="w-full flex items-center gap-3 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-lg p-4 transition-colors text-left"
+              >
+                <PenLine className="w-5 h-5" />
+                <span className="font-medium">Enter manually</span>
+              </button>
             </div>
 
-            <Button
-              size="lg"
-              className="w-full"
-              onClick={handleStartTask}
-              disabled={isStarting}
-            >
-              {isStarting ? 'Loading...' : 'Start This Task'}
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
+            <p className="text-xs text-primary-foreground/60 text-center mt-4">
+              Step 1 of 3 toward buyer-grade valuation
+            </p>
           </motion.div>
         )}
 
-        {/* No tasks message */}
-        {!nextTask && (
+        {/* No tasks and no financials needed - show assessment prompt */}
+        {!nextTask && !needsFinancials && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-card rounded-2xl border border-border p-8 text-center"
+            transition={{ delay: 0.3 }}
+            className="text-center py-8"
           >
             <TrendingUp className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-foreground mb-2">All caught up!</h3>
@@ -380,74 +326,18 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
             </p>
             <Button onClick={() => router.push('/dashboard/assessment')}>
               Start Assessment
-            </Button>
-          </motion.div>
-        )}
-
-        {/* Upcoming Tasks */}
-        {upcomingTasks.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-card rounded-xl border border-border p-4"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="font-semibold text-foreground">Coming Up</h4>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleViewAllTasks}
-                className="text-sm text-muted-foreground hover:text-foreground"
-              >
-                See all {totalTasks - tasksCompleted} remaining
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            </div>
-
-            <div className="space-y-3">
-              {upcomingTasks.map(task => (
-                <div
-                  key={task.id}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                >
-                  <div>
-                    <p className="font-medium text-foreground text-sm">{task.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatCategory(task.briCategory)} • {(task.estimatedHours || 1) * 60} min
-                    </p>
-                  </div>
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400 text-sm">
-                    +{formatCurrency(Number(task.rawImpact))}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Dashboard Teaser */}
-        {showDashboardTeaser && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-gradient-to-br from-muted/50 to-muted rounded-xl border border-dashed border-border p-6 text-center"
-          >
-            <TrendingUp className="w-8 h-8 text-primary mx-auto mb-3" />
-            <p className="text-foreground mb-1">
-              You&apos;ve recovered <strong className="text-emerald-600 dark:text-emerald-400">{formatCurrency(totalRecovered)}</strong> in potential value.
-            </p>
-            <p className="text-sm text-muted-foreground mb-4">
-              Ready to see the full picture?
-            </p>
-            <Button variant="outline" onClick={handleGoToDashboard}>
-              See Full Dashboard
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </motion.div>
         )}
-      </div>
+
+        {/* Footer note - matching demo */}
+        {needsFinancials && (
+          <p className="text-xs text-muted-foreground text-center mt-6">
+            Saved for future diligence.
+          </p>
+        )}
+      </motion.div>
     </div>
   )
 }

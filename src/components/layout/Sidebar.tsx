@@ -8,7 +8,6 @@ import { useCompany } from '@/contexts/CompanyContext'
 import { useUserRole } from '@/contexts/UserRoleContext'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { useProgression } from '@/contexts/ProgressionContext'
-import { useAssessmentStatus } from '@/hooks/useAssessmentStatus'
 import { UpgradeModal } from '@/components/subscription/UpgradeModal'
 import { AccessRequestModal } from '@/components/access/AccessRequestModal'
 import { ProgressionLockedItem } from '@/components/ui/ProgressionLockedItem'
@@ -32,20 +31,11 @@ interface NavLink {
   progressionKey?: string // Key for progression-based locking
 }
 
-// CORE section links (Stages 1+)
+// CORE section links (Stages 1+) - matching demo structure
 const coreLinks: NavLink[] = [
-  { name: 'Exit OSx Scorecard', href: '/dashboard', icon: DollarIcon },
-]
-
-// Assessment links
-const assessmentLinks: NavLink[] = [
-  { name: 'Risk Assessment', href: '/dashboard/assessment/risk', icon: ShieldIcon, requiredPlan: 'growth', featureKey: 'risk-assessment' },
-]
-
-// Buyer View and Progress (Stage 3+)
-const buyerProgressLinks: NavLink[] = [
+  { name: 'Value Builder', href: '/dashboard/value-builder', icon: TrendingIcon },
   { name: 'Buyer View', href: '/dashboard/buyer-view', icon: EyeIcon, progressionKey: 'buyerView' },
-  { name: 'Action Plan', href: '/dashboard/playbook', icon: ListIcon, progressionKey: 'progress' },
+  { name: 'Progress', href: '/dashboard/playbook', icon: ChartIcon, progressionKey: 'progress' },
 ]
 
 // VALUE MODELING section (Stage 4+)
@@ -83,7 +73,6 @@ export function Sidebar() {
   const { isSuperAdmin } = useUserRole()
   const subscription = useSubscription()
   const progression = useProgression()
-  const { hasInitialAssessment, hasPendingAssessment } = useAssessmentStatus()
   const [developerExpanded, setDeveloperExpanded] = useState(false)
   const [globalExpanded, setGlobalExpanded] = useState(false)
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
@@ -321,27 +310,10 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex flex-1 flex-col">
-          {/* CORE Section - Always visible for stages 1+ */}
+          {/* CORE Section - matching demo structure */}
           <div className="mb-4">
-            <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
-              Core
-            </p>
-            <ul role="list" className="mt-1 space-y-1">
-              {/* Scorecard - always visible */}
+            <ul role="list" className="space-y-1">
               {coreLinks.map((link) => renderNavLink(link))}
-
-              {/* Assessments section */}
-              {assessmentLinks.map((link) => {
-                const needsInitial = link.name === 'Risk Assessment' && !hasInitialAssessment
-                const hasPending = link.name === 'Risk Assessment' && hasInitialAssessment && hasPendingAssessment
-                return renderNavLink(link, {
-                  showBadge: needsInitial || hasPending,
-                  badgeType: needsInitial ? 'warning' : 'alert',
-                })
-              })}
-
-              {/* Buyer View and Progress - Stage 3+ or show as locked */}
-              {buyerProgressLinks.map((link) => renderNavLink(link))}
             </ul>
           </div>
 
@@ -786,6 +758,22 @@ function EyeIcon({ className }: { className?: string }) {
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+    </svg>
+  )
+}
+
+function TrendingIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+    </svg>
+  )
+}
+
+function ChartIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
     </svg>
   )
 }

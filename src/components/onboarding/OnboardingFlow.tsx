@@ -373,8 +373,30 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
   }
 
   const handleComplete = async () => {
-    // Send the onboarding complete email (non-blocking)
+    // Save the onboarding results as a ValuationSnapshot (so dashboard can display them)
     if (createdCompanyId && riskResults) {
+      try {
+        const snapshotResponse = await fetch(`/api/companies/${createdCompanyId}/onboarding-snapshot`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            briScore: riskResults.briScore,
+            categoryScores: riskResults.categoryScores,
+            valueGapByCategory: riskResults.valueGapByCategory,
+            currentValue: riskResults.currentValue,
+            potentialValue: riskResults.potentialValue,
+            valueGap: riskResults.valueGap,
+          }),
+        })
+
+        if (!snapshotResponse.ok) {
+          console.error('Failed to save onboarding snapshot:', await snapshotResponse.text())
+        }
+      } catch (err) {
+        console.error('Failed to save onboarding snapshot:', err)
+      }
+
+      // Send the onboarding complete email (non-blocking)
       fetch('/api/email/onboarding-complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
