@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useCompany } from '@/contexts/CompanyContext'
+import { useSubscription } from '@/contexts/SubscriptionContext'
+import { useProgression } from '@/contexts/ProgressionContext'
 import {
   Select,
   SelectContent,
@@ -18,17 +20,20 @@ interface MobileNavProps {
   onClose: () => void
 }
 
-const assessmentLinks = [
-  { name: 'Baseline Assessment', href: '/dashboard/assessment/company', icon: BriefcaseIcon },
-  { name: 'Risk Assessment', href: '/dashboard/assessment/risk', icon: ShieldIcon },
-  { name: 'Financials', href: '/dashboard/financials', icon: FinancialsIcon },
-]
-
 export function MobileNav({ isOpen, onClose }: MobileNavProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { companies, selectedCompanyId, setSelectedCompanyId, isLoading } = useCompany()
+  const subscription = useSubscription()
+  const progression = useProgression()
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const { stage, isProgressionLocked, getUnlockHint } = progression
+
+  // Defensive: if subscription is still loading, allow all features
+  const canAccessFeature = subscription.isLoading
+    ? () => true
+    : subscription.canAccessFeature
 
   // Delayed close to prevent accidental closes when hovering near edge or using dropdowns
   const handleMouseLeave = useCallback(() => {
@@ -64,7 +69,8 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
     onClose()
   }
 
-  if (!isOpen) return null
+  // Stage 0: Don't show mobile nav
+  if (!isOpen || stage === 0) return null
 
   return (
     <Fragment>
@@ -187,7 +193,12 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
 
           {/* Navigation */}
           <nav className="flex-1 space-y-1">
-            {/* Value Snapshot */}
+            {/* CORE Section */}
+            <p className="px-3 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
+              Core
+            </p>
+
+            {/* Scorecard - always visible */}
             <Link
               href="/dashboard"
               onClick={handleLinkClick}
@@ -199,90 +210,338 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
               )}
             >
               <DollarIcon className="h-5 w-5" />
-              Value Snapshot
+              Exit OSx Scorecard
             </Link>
 
-            {/* Assessment Links */}
-            {assessmentLinks.map((link) => {
-              const IconComponent = link.icon
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={handleLinkClick}
-                  className={cn(
-                    'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                    pathname === link.href || pathname.startsWith(link.href + '/')
-                      ? 'bg-sidebar-accent text-sidebar-primary'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                  )}
-                >
-                  <IconComponent className="h-5 w-5" />
-                  {link.name}
-                </Link>
-              )
-            })}
-
-            {/* Playbook */}
-            <Link
-              href="/dashboard/playbook"
-              onClick={handleLinkClick}
-              className={cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                pathname.startsWith('/dashboard/playbook')
-                  ? 'bg-sidebar-accent text-sidebar-primary'
-                  : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-              )}
-            >
-              <ListIcon className="h-5 w-5" />
-              Playbook
-            </Link>
-
-            {/* Data Room */}
-            <Link
-              href="/dashboard/data-room"
-              onClick={handleLinkClick}
-              className={cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                pathname.startsWith('/dashboard/data-room')
-                  ? 'bg-sidebar-accent text-sidebar-primary'
-                  : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-              )}
-            >
-              <FolderIcon className="h-5 w-5" />
-              Data Room
-            </Link>
-
-            {/* Retirement Calculator */}
-            <Link
-              href="/dashboard/financials/retirement"
-              onClick={handleLinkClick}
-              className={cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                pathname === '/dashboard/financials/retirement'
-                  ? 'bg-sidebar-accent text-sidebar-primary'
-                  : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-              )}
-            >
-              <CalculatorIcon className="h-5 w-5" />
-              Retirement Calculator
-            </Link>
-
-            {/* Settings */}
-            <div className="pt-4 border-t border-sidebar-border mt-4 space-y-1">
+            {/* Risk Assessment */}
+            {canAccessFeature('risk-assessment') ? (
               <Link
-                href="/dashboard/settings/organization"
+                href="/dashboard/assessment/risk"
                 onClick={handleLinkClick}
                 className={cn(
                   'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                  pathname.startsWith('/dashboard/settings/organization')
+                  pathname.startsWith('/dashboard/assessment/risk')
                     ? 'bg-sidebar-accent text-sidebar-primary'
                     : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                 )}
               >
-                <UsersIcon className="h-5 w-5" />
-                Team Settings
+                <ShieldIcon className="h-5 w-5" />
+                Risk Assessment
               </Link>
+            ) : (
+              <button
+                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"
+                disabled
+              >
+                <ShieldIcon className="h-5 w-5" />
+                Risk Assessment
+                <LockIcon className="h-4 w-4 ml-auto" />
+              </button>
+            )}
+
+            {/* Buyer View - Stage 3+ */}
+            {isProgressionLocked('buyerView') ? (
+              <button
+                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"
+                disabled
+              >
+                <EyeIcon className="h-5 w-5" />
+                Buyer View
+                <ClockIcon className="h-4 w-4 ml-auto" />
+              </button>
+            ) : (
+              <Link
+                href="/dashboard/buyer-view"
+                onClick={handleLinkClick}
+                className={cn(
+                  'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                  pathname.startsWith('/dashboard/buyer-view')
+                    ? 'bg-sidebar-accent text-sidebar-primary'
+                    : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                )}
+              >
+                <EyeIcon className="h-5 w-5" />
+                Buyer View
+              </Link>
+            )}
+
+            {/* Action Plan - Stage 3+ */}
+            {isProgressionLocked('progress') ? (
+              <button
+                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"
+                disabled
+              >
+                <ListIcon className="h-5 w-5" />
+                Action Plan
+                <ClockIcon className="h-4 w-4 ml-auto" />
+              </button>
+            ) : (
+              <Link
+                href="/dashboard/playbook"
+                onClick={handleLinkClick}
+                className={cn(
+                  'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                  pathname.startsWith('/dashboard/playbook')
+                    ? 'bg-sidebar-accent text-sidebar-primary'
+                    : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                )}
+              >
+                <ListIcon className="h-5 w-5" />
+                Action Plan
+              </Link>
+            )}
+
+            {/* VALUE MODELING Section - Stage 4+ */}
+            {stage >= 4 && (
+              <>
+                <div className="pt-4 border-t border-sidebar-border mt-4">
+                  <p className="px-3 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
+                    Value Modeling
+                  </p>
+                </div>
+
+                {/* Business Financials */}
+                {canAccessFeature('business-financials') ? (
+                  <Link
+                    href="/dashboard/financials"
+                    onClick={handleLinkClick}
+                    className={cn(
+                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                      pathname === '/dashboard/financials' || pathname.startsWith('/dashboard/financials/statements')
+                        ? 'bg-sidebar-accent text-sidebar-primary'
+                        : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                    )}
+                  >
+                    <FinancialsIcon className="h-5 w-5" />
+                    Business Financials
+                  </Link>
+                ) : (
+                  <button
+                    className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"
+                    disabled
+                  >
+                    <FinancialsIcon className="h-5 w-5" />
+                    Business Financials
+                    <LockIcon className="h-4 w-4 ml-auto" />
+                  </button>
+                )}
+
+                {/* DCF Valuation */}
+                {canAccessFeature('dcf-valuation') ? (
+                  <Link
+                    href="/dashboard/valuation"
+                    onClick={handleLinkClick}
+                    className={cn(
+                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                      pathname.startsWith('/dashboard/valuation')
+                        ? 'bg-sidebar-accent text-sidebar-primary'
+                        : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                    )}
+                  >
+                    <ChartBarIcon className="h-5 w-5" />
+                    DCF Valuation
+                  </Link>
+                ) : (
+                  <button
+                    className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"
+                    disabled
+                  >
+                    <ChartBarIcon className="h-5 w-5" />
+                    DCF Valuation
+                    <LockIcon className="h-4 w-4 ml-auto" />
+                  </button>
+                )}
+
+                {/* Retirement Calculator - Stage 5+ */}
+                {isProgressionLocked('retirementCalculator') ? (
+                  <button
+                    className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"
+                    disabled
+                  >
+                    <CalculatorIcon className="h-5 w-5" />
+                    Retirement Calculator
+                    <ClockIcon className="h-4 w-4 ml-auto" />
+                  </button>
+                ) : canAccessFeature('retirement-calculator') ? (
+                  <Link
+                    href="/dashboard/financials/retirement"
+                    onClick={handleLinkClick}
+                    className={cn(
+                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                      pathname === '/dashboard/financials/retirement'
+                        ? 'bg-sidebar-accent text-sidebar-primary'
+                        : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                    )}
+                  >
+                    <CalculatorIcon className="h-5 w-5" />
+                    Retirement Calculator
+                  </Link>
+                ) : (
+                  <button
+                    className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"
+                    disabled
+                  >
+                    <CalculatorIcon className="h-5 w-5" />
+                    Retirement Calculator
+                    <LockIcon className="h-4 w-4 ml-auto" />
+                  </button>
+                )}
+
+                {/* Personal Financial Statement */}
+                {canAccessFeature('personal-financials') ? (
+                  <Link
+                    href="/dashboard/financials/personal"
+                    onClick={handleLinkClick}
+                    className={cn(
+                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                      pathname === '/dashboard/financials/personal'
+                        ? 'bg-sidebar-accent text-sidebar-primary'
+                        : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                    )}
+                  >
+                    <WalletIcon className="h-5 w-5" />
+                    Personal Financials
+                  </Link>
+                ) : (
+                  <button
+                    className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"
+                    disabled
+                  >
+                    <WalletIcon className="h-5 w-5" />
+                    Personal Financials
+                    <LockIcon className="h-4 w-4 ml-auto" />
+                  </button>
+                )}
+              </>
+            )}
+
+            {/* CAPITAL Section - Stage 6+ */}
+            {stage >= 6 && (
+              <>
+                <div className="pt-4 border-t border-sidebar-border mt-4">
+                  <p className="px-3 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
+                    Capital
+                  </p>
+                </div>
+
+                {canAccessFeature('business-loans') ? (
+                  <Link
+                    href="/dashboard/loans/business"
+                    onClick={handleLinkClick}
+                    className={cn(
+                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                      pathname.startsWith('/dashboard/loans')
+                        ? 'bg-sidebar-accent text-sidebar-primary'
+                        : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                    )}
+                  >
+                    <BankIcon className="h-5 w-5" />
+                    Business Loans
+                  </Link>
+                ) : (
+                  <button
+                    className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"
+                    disabled
+                  >
+                    <BankIcon className="h-5 w-5" />
+                    Business Loans
+                    <LockIcon className="h-4 w-4 ml-auto" />
+                  </button>
+                )}
+              </>
+            )}
+
+            {/* EXIT TOOLS Section - Stage 7 */}
+            {stage >= 7 && (
+              <>
+                <div className="pt-4 border-t border-sidebar-border mt-4">
+                  <p className="px-3 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
+                    Exit Tools
+                  </p>
+                </div>
+
+                {canAccessFeature('data-room') ? (
+                  <Link
+                    href="/dashboard/data-room"
+                    onClick={handleLinkClick}
+                    className={cn(
+                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                      pathname.startsWith('/dashboard/data-room')
+                        ? 'bg-sidebar-accent text-sidebar-primary'
+                        : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                    )}
+                  >
+                    <FolderIcon className="h-5 w-5" />
+                    Data Room
+                  </Link>
+                ) : (
+                  <button
+                    className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"
+                    disabled
+                  >
+                    <FolderIcon className="h-5 w-5" />
+                    Data Room
+                    <LockIcon className="h-4 w-4 ml-auto" />
+                  </button>
+                )}
+
+                {canAccessFeature('deal-tracker') ? (
+                  <>
+                    <Link
+                      href="/dashboard/deal-tracker"
+                      onClick={handleLinkClick}
+                      className={cn(
+                        'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                        pathname.startsWith('/dashboard/deal-tracker')
+                          ? 'bg-sidebar-accent text-sidebar-primary'
+                          : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                      )}
+                    >
+                      <TargetIcon className="h-5 w-5" />
+                      Deal Tracker
+                    </Link>
+                    <Link
+                      href="/dashboard/contacts"
+                      onClick={handleLinkClick}
+                      className={cn(
+                        'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                        pathname.startsWith('/dashboard/contacts')
+                          ? 'bg-sidebar-accent text-sidebar-primary'
+                          : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                      )}
+                    >
+                      <ContactsIcon className="h-5 w-5" />
+                      Contacts
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"
+                      disabled
+                    >
+                      <TargetIcon className="h-5 w-5" />
+                      Deal Tracker
+                      <LockIcon className="h-4 w-4 ml-auto" />
+                    </button>
+                    <button
+                      className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"
+                      disabled
+                    >
+                      <ContactsIcon className="h-5 w-5" />
+                      Contacts
+                      <LockIcon className="h-4 w-4 ml-auto" />
+                    </button>
+                  </>
+                )}
+              </>
+            )}
+
+            {/* Settings */}
+            <div className="pt-4 border-t border-sidebar-border mt-4 space-y-1">
+              <p className="px-3 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
+                Admin
+              </p>
               <Link
                 href="/dashboard/settings/company"
                 onClick={handleLinkClick}
@@ -294,7 +553,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                 )}
               >
                 <SettingsIcon className="h-5 w-5" />
-                Company Settings
+                Settings
               </Link>
             </div>
           </nav>
@@ -309,14 +568,6 @@ function DollarIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-    </svg>
-  )
-}
-
-function _ClipboardIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z" />
     </svg>
   )
 }
@@ -370,26 +621,76 @@ function CalculatorIcon({ className }: { className?: string }) {
   )
 }
 
-function UsersIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-    </svg>
-  )
-}
-
-function BriefcaseIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z" />
-    </svg>
-  )
-}
-
 function ShieldIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
+    </svg>
+  )
+}
+
+function LockIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+    </svg>
+  )
+}
+
+function ClockIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+    </svg>
+  )
+}
+
+function EyeIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+    </svg>
+  )
+}
+
+function WalletIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a2.25 2.25 0 0 0-2.25-2.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 0 3 12m18 0v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 9m18 0V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v3" />
+    </svg>
+  )
+}
+
+function BankIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" />
+    </svg>
+  )
+}
+
+function ChartBarIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+    </svg>
+  )
+}
+
+function TargetIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+    </svg>
+  )
+}
+
+function ContactsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z" />
     </svg>
   )
 }

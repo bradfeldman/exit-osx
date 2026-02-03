@@ -7,9 +7,11 @@ import { cn } from '@/lib/utils'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useUserRole } from '@/contexts/UserRoleContext'
 import { useSubscription } from '@/contexts/SubscriptionContext'
+import { useProgression } from '@/contexts/ProgressionContext'
 import { useAssessmentStatus } from '@/hooks/useAssessmentStatus'
 import { UpgradeModal } from '@/components/subscription/UpgradeModal'
 import { AccessRequestModal } from '@/components/access/AccessRequestModal'
+import { ProgressionLockedItem } from '@/components/ui/ProgressionLockedItem'
 import { PlanTier } from '@/lib/pricing'
 import packageJson from '../../../package.json'
 import {
@@ -27,24 +29,48 @@ interface NavLink {
   icon: React.ComponentType<{ className?: string }>
   requiredPlan?: PlanTier
   featureKey?: string
+  progressionKey?: string // Key for progression-based locking
 }
 
+// CORE section links (Stages 1+)
+const coreLinks: NavLink[] = [
+  { name: 'Exit OSx Scorecard', href: '/dashboard', icon: DollarIcon },
+]
+
+// Assessment links
 const assessmentLinks: NavLink[] = [
   { name: 'Risk Assessment', href: '/dashboard/assessment/risk', icon: ShieldIcon, requiredPlan: 'growth', featureKey: 'risk-assessment' },
 ]
 
-const financialsLinks: NavLink[] = [
-  { name: 'Business Financials', href: '/dashboard/financials', icon: FinancialsIcon, requiredPlan: 'growth', featureKey: 'business-financials' },
-  { name: 'DCF Valuation', href: '/dashboard/valuation', icon: ChartBarIcon, requiredPlan: 'exit-ready', featureKey: 'dcf-valuation' },
-  { name: 'Personal Financial Statement', href: '/dashboard/financials/personal', icon: WalletIcon, requiredPlan: 'growth', featureKey: 'personal-financials' },
-  { name: 'Retirement Calculator', href: '/dashboard/financials/retirement', icon: CalculatorIcon, requiredPlan: 'growth', featureKey: 'retirement-calculator' },
+// Buyer View and Progress (Stage 3+)
+const buyerProgressLinks: NavLink[] = [
+  { name: 'Buyer View', href: '/dashboard/buyer-view', icon: EyeIcon, progressionKey: 'buyerView' },
+  { name: 'Action Plan', href: '/dashboard/playbook', icon: ListIcon, progressionKey: 'progress' },
 ]
 
-const loanCenterLinks: NavLink[] = [
+// VALUE MODELING section (Stage 4+)
+const valueModelingLinks: NavLink[] = [
+  { name: 'Business Financials', href: '/dashboard/financials', icon: FinancialsIcon, requiredPlan: 'growth', featureKey: 'business-financials' },
+  { name: 'DCF Valuation', href: '/dashboard/valuation', icon: ChartBarIcon, requiredPlan: 'exit-ready', featureKey: 'dcf-valuation' },
+  { name: 'Retirement Calculator', href: '/dashboard/financials/retirement', icon: CalculatorIcon, requiredPlan: 'growth', featureKey: 'retirement-calculator', progressionKey: 'retirementCalculator' },
+]
+
+// Personal financials (always in financials section when unlocked)
+const personalFinancialsLink: NavLink = {
+  name: 'Personal Financial Statement',
+  href: '/dashboard/financials/personal',
+  icon: WalletIcon,
+  requiredPlan: 'growth',
+  featureKey: 'personal-financials',
+}
+
+// CAPITAL section (Stage 6+)
+const capitalLinks: NavLink[] = [
   { name: 'Business Loans', href: '/dashboard/loans/business', icon: BankIcon, requiredPlan: 'growth', featureKey: 'business-loans' },
 ]
 
-const dealRoomLinks: NavLink[] = [
+// EXIT TOOLS section (Stage 7)
+const exitToolsLinks: NavLink[] = [
   { name: 'Data Room', href: '/dashboard/data-room', icon: FolderIcon, requiredPlan: 'exit-ready', featureKey: 'data-room' },
   { name: 'Deal Tracker', href: '/dashboard/deal-tracker', icon: TargetIcon, requiredPlan: 'exit-ready', featureKey: 'deal-tracker' },
   { name: 'Contacts', href: '/dashboard/contacts', icon: ContactsIcon, requiredPlan: 'exit-ready', featureKey: 'deal-tracker' },
@@ -56,6 +82,7 @@ export function Sidebar() {
   const { companies, selectedCompanyId, setSelectedCompanyId, isLoading, isSelectedCompanySubscribingOwner } = useCompany()
   const { isSuperAdmin } = useUserRole()
   const subscription = useSubscription()
+  const progression = useProgression()
   const { hasInitialAssessment, hasPendingAssessment } = useAssessmentStatus()
   const [developerExpanded, setDeveloperExpanded] = useState(false)
   const [globalExpanded, setGlobalExpanded] = useState(false)
@@ -72,6 +99,9 @@ export function Sidebar() {
   const shouldShowRequestAccess = subscription.isLoading
     ? () => false
     : subscription.shouldShowRequestAccess
+
+  // Progression unlocks
+  const { stage, unlocks, getUnlockHint, isProgressionLocked } = progression
 
   const handleLockedClick = (featureKey: string, featureName: string) => {
     // Check if this is a personal feature that staff can request access to
@@ -103,6 +133,82 @@ export function Sidebar() {
 
   // Check if we're on the company setup page (adding a new company)
   const isOnSetupPage = pathname === '/dashboard/company/setup'
+
+  // Helper to render a nav link with both subscription and progression locking
+  const renderNavLink = (link: NavLink, options?: { showBadge?: boolean; badgeType?: 'warning' | 'alert' }) => {
+    const isActive = pathname === link.href || pathname.startsWith(link.href + '/')
+    const IconComponent = link.icon
+
+    // Check subscription lock first
+    const isSubscriptionLocked = link.featureKey && !canAccessFeature(link.featureKey)
+
+    // Check progression lock
+    const progressionLocked = link.progressionKey && isProgressionLocked(link.progressionKey)
+    const unlockHint = link.progressionKey ? getUnlockHint(link.progressionKey) : null
+
+    // If progression locked (and not subscription locked), show progression locked item
+    if (progressionLocked && !isSubscriptionLocked && unlockHint) {
+      return (
+        <li key={link.href}>
+          <ProgressionLockedItem
+            name={link.name}
+            icon={IconComponent}
+            unlockHint={unlockHint}
+          />
+        </li>
+      )
+    }
+
+    // If subscription locked, show subscription locked button
+    if (isSubscriptionLocked) {
+      return (
+        <li key={link.href}>
+          <button
+            onClick={() => handleLockedClick(link.featureKey!, link.name)}
+            className="group flex w-full gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors text-sidebar-foreground/50 hover:bg-sidebar-accent/50"
+          >
+            <IconComponent className="h-5 w-5 shrink-0 text-sidebar-foreground/40" />
+            <span className="flex-1 text-left">{link.name}</span>
+            <LockIcon className="h-4 w-4 text-sidebar-foreground/40" />
+          </button>
+        </li>
+      )
+    }
+
+    // Normal unlocked link
+    return (
+      <li key={link.href}>
+        <Link
+          href={link.href}
+          className={cn(
+            'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
+            isActive
+              ? 'bg-sidebar-accent text-sidebar-primary'
+              : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+          )}
+        >
+          <IconComponent
+            className={cn(
+              'h-5 w-5 shrink-0',
+              isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
+            )}
+          />
+          <span className="flex-1">{link.name}</span>
+          {options?.showBadge && options.badgeType === 'warning' && (
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-medium text-white">
+              !
+            </span>
+          )}
+          {options?.showBadge && options.badgeType === 'alert' && (
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+            </span>
+          )}
+        </Link>
+      </li>
+    )
+  }
 
   return (
     <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
@@ -215,280 +321,100 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex flex-1 flex-col">
-          {/* SCORECARD Section */}
+          {/* CORE Section - Always visible for stages 1+ */}
           <div className="mb-4">
             <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
-              Scorecard
+              Core
             </p>
             <ul role="list" className="mt-1 space-y-1">
-              {/* Scorecard */}
-              <li>
-                <Link
-                  href="/dashboard"
-                  className={cn(
-                    'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                    pathname === '/dashboard'
-                      ? 'bg-sidebar-accent text-sidebar-primary'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                  )}
-                >
-                  <DollarIcon
-                    className={cn(
-                      'h-5 w-5 shrink-0',
-                      pathname === '/dashboard' ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                    )}
-                  />
-                  Exit OSx Scorecard
-                </Link>
-              </li>
+              {/* Scorecard - always visible */}
+              {coreLinks.map((link) => renderNavLink(link))}
 
-            </ul>
-          </div>
-
-          {/* ASSESSMENTS Section */}
-          <div className="mb-4 pt-4 border-t border-sidebar-border/50">
-            <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
-              Assessments
-            </p>
-            <ul role="list" className="mt-1 space-y-1">
+              {/* Assessments section */}
               {assessmentLinks.map((link) => {
-                const isActive = pathname === link.href || pathname.startsWith(link.href + '/')
-                const IconComponent = link.icon
-                const isLocked = link.featureKey && !canAccessFeature(link.featureKey)
-                // Show badge on Risk link when:
-                // 1. Initial assessment is not complete (amber !)
-                // 2. There's an open assessment waiting (red dot)
-                // 3. A new assessment is available (red dot)
-                const needsInitialAssessment = link.name === 'Risk Assessment' && !hasInitialAssessment
-                const hasPendingRiskAssessment = link.name === 'Risk Assessment' && hasInitialAssessment && hasPendingAssessment
-
-                if (isLocked) {
-                  return (
-                    <li key={link.href}>
-                      <button
-                        onClick={() => handleLockedClick(link.featureKey!, link.name)}
-                        className="group flex w-full gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors text-sidebar-foreground/50 hover:bg-sidebar-accent/50"
-                      >
-                        <IconComponent className="h-5 w-5 shrink-0 text-sidebar-foreground/40" />
-                        <span className="flex-1 text-left">{link.name}</span>
-                        <LockIcon className="h-4 w-4 text-sidebar-foreground/40" />
-                      </button>
-                    </li>
-                  )
-                }
-
-                return (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className={cn(
-                        'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                        isActive
-                          ? 'bg-sidebar-accent text-sidebar-primary'
-                          : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                      )}
-                    >
-                      <IconComponent
-                        className={cn(
-                          'h-5 w-5 shrink-0',
-                          isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                        )}
-                      />
-                      <span className="flex-1">{link.name}</span>
-                      {needsInitialAssessment && (
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-medium text-white">
-                          !
-                        </span>
-                      )}
-                      {hasPendingRiskAssessment && (
-                        <span className="relative flex h-3 w-3">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                        </span>
-                      )}
-                    </Link>
-                  </li>
-                )
+                const needsInitial = link.name === 'Risk Assessment' && !hasInitialAssessment
+                const hasPending = link.name === 'Risk Assessment' && hasInitialAssessment && hasPendingAssessment
+                return renderNavLink(link, {
+                  showBadge: needsInitial || hasPending,
+                  badgeType: needsInitial ? 'warning' : 'alert',
+                })
               })}
 
-              {/* Action Plan */}
-              <li>
-                <Link
-                  href="/dashboard/playbook"
-                  className={cn(
-                    'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                    pathname.startsWith('/dashboard/playbook')
-                      ? 'bg-sidebar-accent text-sidebar-primary'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                  )}
-                >
-                  <ListIcon
-                    className={cn(
-                      'h-5 w-5 shrink-0',
-                      pathname.startsWith('/dashboard/playbook') ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                    )}
+              {/* Buyer View and Progress - Stage 3+ or show as locked */}
+              {buyerProgressLinks.map((link) => renderNavLink(link))}
+            </ul>
+          </div>
+
+          {/* VALUE MODELING Section - Stage 4+ */}
+          {stage >= 4 && (
+            <div className="mb-4 pt-4 border-t border-sidebar-border/50">
+              <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider flex items-center gap-2">
+                Value Modeling
+                {stage === 4 && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary font-normal normal-case">
+                    New
+                  </span>
+                )}
+              </p>
+              <ul role="list" className="mt-1 space-y-1">
+                {valueModelingLinks.map((link) => renderNavLink(link))}
+                {/* Personal Financial Statement */}
+                {renderNavLink(personalFinancialsLink)}
+              </ul>
+            </div>
+          )}
+
+          {/* Show locked Value Modeling preview for stages 1-3 */}
+          {stage >= 1 && stage < 4 && (
+            <div className="mb-4 pt-4 border-t border-sidebar-border/50">
+              <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/30 uppercase tracking-wider">
+                Value Modeling
+              </p>
+              <ul role="list" className="mt-1 space-y-1">
+                <li>
+                  <ProgressionLockedItem
+                    name="Business Financials"
+                    icon={FinancialsIcon}
+                    unlockHint="Upload business financials to unlock"
                   />
-                  Action Plan
-                </Link>
-              </li>
-            </ul>
-          </div>
+                </li>
+              </ul>
+            </div>
+          )}
 
-          {/* FINANCIALS Section */}
-          <div className="mb-4 pt-4 border-t border-sidebar-border/50">
-            <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
-              Financials
-            </p>
-            <ul role="list" className="mt-1 space-y-1">
-              {financialsLinks.map((link) => {
-                // Special handling for Business Financials - only active for main page and statements subpages
-                const isActive = link.href === '/dashboard/financials'
-                  ? pathname === link.href || pathname.startsWith('/dashboard/financials/statements')
-                  : pathname === link.href || pathname.startsWith(link.href + '/')
-                const IconComponent = link.icon
-                const isLocked = link.featureKey && !canAccessFeature(link.featureKey)
+          {/* CAPITAL Section - Stage 6+ */}
+          {stage >= 6 && (
+            <div className="mb-4 pt-4 border-t border-sidebar-border/50">
+              <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider flex items-center gap-2">
+                Capital
+                {stage === 6 && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary font-normal normal-case">
+                    New
+                  </span>
+                )}
+              </p>
+              <ul role="list" className="mt-1 space-y-1">
+                {capitalLinks.map((link) => renderNavLink(link))}
+              </ul>
+            </div>
+          )}
 
-                if (isLocked) {
-                  return (
-                    <li key={link.href}>
-                      <button
-                        onClick={() => handleLockedClick(link.featureKey!, link.name)}
-                        className="group flex w-full gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors text-sidebar-foreground/50 hover:bg-sidebar-accent/50"
-                      >
-                        <IconComponent className="h-5 w-5 shrink-0 text-sidebar-foreground/40" />
-                        <span className="flex-1 text-left">{link.name}</span>
-                        <LockIcon className="h-4 w-4 text-sidebar-foreground/40" />
-                      </button>
-                    </li>
-                  )
-                }
-
-                return (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className={cn(
-                        'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                        isActive
-                          ? 'bg-sidebar-accent text-sidebar-primary'
-                          : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                      )}
-                    >
-                      <IconComponent
-                        className={cn(
-                          'h-5 w-5 shrink-0',
-                          isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                        )}
-                      />
-                      {link.name}
-                    </Link>
-                  </li>
-                )
-              })}
-            </ul>
-          </div>
-
-          {/* LOAN CENTER Section */}
-          <div className="mb-4 pt-4 border-t border-sidebar-border/50">
-            <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
-              Capital
-            </p>
-            <ul role="list" className="mt-1 space-y-1">
-              {loanCenterLinks.map((link) => {
-                const isActive = pathname === link.href || pathname.startsWith(link.href + '/')
-                const IconComponent = link.icon
-                const isLocked = link.featureKey && !canAccessFeature(link.featureKey)
-
-                if (isLocked) {
-                  return (
-                    <li key={link.href}>
-                      <button
-                        onClick={() => handleLockedClick(link.featureKey!, link.name)}
-                        className="group flex w-full gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors text-sidebar-foreground/50 hover:bg-sidebar-accent/50"
-                      >
-                        <IconComponent className="h-5 w-5 shrink-0 text-sidebar-foreground/40" />
-                        <span className="flex-1 text-left">{link.name}</span>
-                        <LockIcon className="h-4 w-4 text-sidebar-foreground/40" />
-                      </button>
-                    </li>
-                  )
-                }
-
-                return (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className={cn(
-                        'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                        isActive
-                          ? 'bg-sidebar-accent text-sidebar-primary'
-                          : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                      )}
-                    >
-                      <IconComponent
-                        className={cn(
-                          'h-5 w-5 shrink-0',
-                          isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                        )}
-                      />
-                      {link.name}
-                    </Link>
-                  </li>
-                )
-              })}
-            </ul>
-          </div>
-
-          {/* DEAL ROOM Section */}
-          <div className="mb-4 pt-4 border-t border-sidebar-border/50">
-            <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
-              Deal Room
-            </p>
-            <ul role="list" className="mt-1 space-y-1">
-              {dealRoomLinks.map((link) => {
-                const isActive = pathname.startsWith(link.href)
-                const IconComponent = link.icon
-                const isLocked = link.featureKey && !canAccessFeature(link.featureKey)
-
-                if (isLocked) {
-                  return (
-                    <li key={link.href}>
-                      <button
-                        onClick={() => handleLockedClick(link.featureKey!, link.name)}
-                        className="group flex w-full gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors text-sidebar-foreground/50 hover:bg-sidebar-accent/50"
-                      >
-                        <IconComponent className="h-5 w-5 shrink-0 text-sidebar-foreground/40" />
-                        <span className="flex-1 text-left">{link.name}</span>
-                        <LockIcon className="h-4 w-4 text-sidebar-foreground/40" />
-                      </button>
-                    </li>
-                  )
-                }
-
-                return (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className={cn(
-                        'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                        isActive
-                          ? 'bg-sidebar-accent text-sidebar-primary'
-                          : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                      )}
-                    >
-                      <IconComponent
-                        className={cn(
-                          'h-5 w-5 shrink-0',
-                          isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
-                        )}
-                      />
-                      {link.name}
-                    </Link>
-                  </li>
-                )
-              })}
-            </ul>
-          </div>
+          {/* EXIT TOOLS Section - Stage 7 */}
+          {stage >= 7 && (
+            <div className="mb-4 pt-4 border-t border-sidebar-border/50">
+              <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider flex items-center gap-2">
+                Exit Tools
+                {stage === 7 && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary font-normal normal-case">
+                    New
+                  </span>
+                )}
+              </p>
+              <ul role="list" className="mt-1 space-y-1">
+                {exitToolsLinks.map((link) => renderNavLink(link))}
+              </ul>
+            </div>
+          )}
 
           {/* ADMIN Section */}
           <div className="flex-1 pt-4 border-t border-sidebar-border/50">
@@ -717,14 +643,6 @@ function DollarIcon({ className }: { className?: string }) {
   )
 }
 
-function _ClipboardIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z" />
-    </svg>
-  )
-}
-
 function ListIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -742,43 +660,10 @@ function SettingsIcon({ className }: { className?: string }) {
   )
 }
 
-function UsersIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-    </svg>
-  )
-}
-
 function CodeIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
-    </svg>
-  )
-}
-
-function _ScaleIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0 0 12 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 0 1-2.031.352 5.988 5.988 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971Zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 0 1-2.031.352 5.989 5.989 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971Z" />
-    </svg>
-  )
-}
-
-function _CameraIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
-    </svg>
-  )
-}
-
-function _ChartIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
     </svg>
   )
 }
@@ -815,22 +700,6 @@ function ChevronIcon({ className }: { className?: string }) {
   )
 }
 
-function _QuestionIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
-    </svg>
-  )
-}
-
-function _TaskIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-    </svg>
-  )
-}
-
 function FolderIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -847,26 +716,10 @@ function CalculatorIcon({ className }: { className?: string }) {
   )
 }
 
-function BriefcaseIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z" />
-    </svg>
-  )
-}
-
 function ShieldIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
-    </svg>
-  )
-}
-
-function _UserIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
     </svg>
   )
 }
@@ -924,6 +777,15 @@ function ContactsIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z" />
+    </svg>
+  )
+}
+
+function EyeIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
     </svg>
   )
 }
