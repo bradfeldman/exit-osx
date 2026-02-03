@@ -109,18 +109,42 @@ export function BasicInfoStep({ formData, updateFormData, businessDescription, o
 
   return (
     <div className="space-y-8">
-      {/* Header */}
+      {/* Header - Matching prototype */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <h2 className="text-2xl sm:text-3xl font-bold font-display bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
-          Company Information
+        <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
+          Let&apos;s look at your business through a buyer&apos;s eyes
         </h2>
-        <p className="text-sm text-muted-foreground mt-2">
-          Let&apos;s start with the basics about your business
+        <p className="text-muted-foreground mt-2">
+          This is not a survey. This is a diagnostic.
         </p>
+      </motion.div>
+
+      {/* Promise Box - Matching prototype */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.05 }}
+        className="bg-muted/50 rounded-xl p-5 border border-border"
+      >
+        <h3 className="font-semibold text-foreground mb-3">In the next few minutes, you&apos;ll see:</h3>
+        <ul className="space-y-2">
+          <li className="flex items-start gap-3 text-muted-foreground">
+            <span className="text-primary font-semibold">→</span>
+            <span>What buyers see when they evaluate your business</span>
+          </li>
+          <li className="flex items-start gap-3 text-muted-foreground">
+            <span className="text-primary font-semibold">→</span>
+            <span>Where value is leaking today (in dollars)</span>
+          </li>
+          <li className="flex items-start gap-3 text-muted-foreground">
+            <span className="text-primary font-semibold">→</span>
+            <span>The fastest path to closing that gap</span>
+          </li>
+        </ul>
       </motion.div>
 
       {/* Company Name */}

@@ -17,17 +17,17 @@ function parseCurrency(value: string): number {
 export function RevenueStep({ formData, updateFormData }: RevenueStepProps) {
   return (
     <div className="space-y-8">
-      {/* Header */}
+      {/* Header - Matching prototype */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <h2 className="text-2xl sm:text-3xl font-bold font-display bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
-          Annual Revenue
+        <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
+          What&apos;s your annual revenue?
         </h2>
-        <p className="text-sm text-muted-foreground mt-2">
-          Enter your company&apos;s estimated annual revenue
+        <p className="text-muted-foreground mt-2">
+          This anchors your valuation range.
         </p>
       </motion.div>
 
@@ -56,25 +56,15 @@ export function RevenueStep({ formData, updateFormData }: RevenueStepProps) {
         </div>
       </motion.div>
 
-      {/* Why it matters */}
+      {/* Note - Matching prototype */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
-        className="flex items-start gap-4 p-5 bg-gradient-to-r from-muted/80 to-muted/40 rounded-2xl border border-border/50"
       >
-        <div className="w-10 h-10 bg-gradient-to-br from-muted-foreground/20 to-muted-foreground/10 rounded-xl flex items-center justify-center flex-shrink-0">
-          <svg className="w-5 h-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
-          </svg>
-        </div>
-        <div>
-          <h3 className="text-sm font-semibold text-foreground">Why revenue size matters</h3>
-          <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-            Larger companies typically command higher valuation multiples due to reduced risk
-            and more established operations.
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Don&apos;t worry about precision. We&apos;ll refine this as we go.
+        </p>
       </motion.div>
     </div>
   )

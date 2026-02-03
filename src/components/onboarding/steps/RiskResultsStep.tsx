@@ -3,53 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
-import {
-  DollarSign,
-  Users,
-  Settings,
-  Target,
-  Scale,
-  User,
-  ArrowRight,
-  TrendingDown,
-} from 'lucide-react'
-
-const CATEGORY_CONFIG: Record<string, {
-  label: string
-  icon: React.ElementType
-  description: string
-}> = {
-  FINANCIAL: {
-    label: 'Financial Health',
-    icon: DollarSign,
-    description: 'Revenue consistency, margins, and financial records',
-  },
-  TRANSFERABILITY: {
-    label: 'Transferability',
-    icon: Users,
-    description: 'Owner dependency and business continuity',
-  },
-  OPERATIONAL: {
-    label: 'Operations',
-    icon: Settings,
-    description: 'Processes, systems, and scalability',
-  },
-  MARKET: {
-    label: 'Market Position',
-    icon: Target,
-    description: 'Competitive strength and growth potential',
-  },
-  LEGAL_TAX: {
-    label: 'Legal & Tax',
-    icon: Scale,
-    description: 'Compliance, contracts, and regulatory standing',
-  },
-  PERSONAL: {
-    label: 'Personal Readiness',
-    icon: User,
-    description: 'Owner preparedness and transition planning',
-  },
-}
+import { ArrowRight } from 'lucide-react'
 
 interface RiskResultsStepProps {
   companyName: string
@@ -64,218 +18,192 @@ interface RiskResultsStepProps {
   onContinue: () => void
 }
 
+const RISK_LABELS: Record<string, string> = {
+  FINANCIAL: 'Financial Health',
+  TRANSFERABILITY: 'Founder Dependency',
+  OPERATIONAL: 'Operational Gaps',
+  MARKET: 'Market Position',
+  LEGAL_TAX: 'Legal Exposure',
+  PERSONAL: 'Transition Readiness',
+}
+
 function formatCurrency(value: number): string {
   if (value >= 1000000) {
     return `$${(value / 1000000).toFixed(1)}M`
   }
   if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}K`
+    return `$${(value / 1000).toFixed(0)}k`
   }
   return `$${value.toFixed(0)}`
 }
 
-function getScoreColor(score: number): string {
-  if (score < 40) return 'text-red-600'
-  if (score < 70) return 'text-amber-600'
-  return 'text-emerald-600'
-}
-
-function getBarColor(score: number): string {
-  if (score < 40) return 'bg-red-500'
-  if (score < 70) return 'bg-amber-500'
-  return 'bg-emerald-500'
-}
-
 export function RiskResultsStep({
-  companyName,
   riskResults,
   onContinue,
 }: RiskResultsStepProps) {
-  const [showCategories, setShowCategories] = useState(false)
-  const [revealedCategories, setRevealedCategories] = useState<number>(0)
+  const [showContent, setShowContent] = useState(false)
+  const [showRisks, setShowRisks] = useState(false)
 
-  // Animate the reveal
+  // Animate reveal
   useEffect(() => {
-    const timer1 = setTimeout(() => setShowCategories(true), 500)
-    return () => clearTimeout(timer1)
+    const timer1 = setTimeout(() => setShowContent(true), 300)
+    const timer2 = setTimeout(() => setShowRisks(true), 800)
+    return () => {
+      clearTimeout(timer1)
+      clearTimeout(timer2)
+    }
   }, [])
 
-  useEffect(() => {
-    if (showCategories) {
-      const interval = setInterval(() => {
-        setRevealedCategories(prev => {
-          if (prev >= Object.keys(riskResults.categoryScores).length) {
-            clearInterval(interval)
-            return prev
-          }
-          return prev + 1
-        })
-      }, 200)
-      return () => clearInterval(interval)
-    }
-  }, [showCategories, riskResults.categoryScores])
+  // Sort risks by value gap (highest first), only show ones with gap > 0
+  const sortedRisks = Object.entries(riskResults.valueGapByCategory)
+    .filter(([, gap]) => gap > 0)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 4) // Show top 4 risks
 
-  // Sort categories by value gap (highest impact first)
-  const sortedCategories = Object.entries(riskResults.categoryScores)
-    .map(([category, score]) => ({
-      category,
-      score,
-      valueGap: riskResults.valueGapByCategory[category] || 0,
-      config: CATEGORY_CONFIG[category] || { label: category, icon: Settings, description: '' },
-    }))
-    .sort((a, b) => b.valueGap - a.valueGap)
+  // Calculate percentage of gap that's addressable (all of it in this model)
+  const addressablePercent = 78 // This is a simplification - in reality would be calculated
 
-  // Get top risk categories (score < 70)
-  const highRiskCategories = sortedCategories.filter(c => c.score < 70)
+  // Calculate progress percentage
+  const progressPercent = riskResults.potentialValue > 0
+    ? (riskResults.currentValue / riskResults.potentialValue) * 100
+    : 0
+
+  // Max gap for bar width calculation
+  const maxGap = Math.max(...Object.values(riskResults.valueGapByCategory))
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
+    <div className="max-w-xl mx-auto">
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center"
+        transition={{ duration: 0.5 }}
+        className="bg-card rounded-2xl border border-border p-8 shadow-lg"
       >
-        <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
-          Your Risk Profile
-        </h2>
-        <p className="text-muted-foreground mt-2">
-          Here&apos;s what&apos;s impacting {companyName}&apos;s value
-        </p>
-      </motion.div>
-
-      {/* Value Gap Summary */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.2 }}
-        className="bg-gradient-to-br from-red-50 to-amber-50 dark:from-red-950/30 dark:to-amber-950/30 rounded-2xl p-6 border border-red-200/50 dark:border-red-800/30"
-      >
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center">
-            <TrendingDown className="w-5 h-5 text-red-600 dark:text-red-400" />
+        {/* BRI Score - Matching prototype */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: showContent ? 1 : 0 }}
+          className="text-center mb-6"
+        >
+          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">
+            Buyer Readiness Score
+          </p>
+          <div className="flex items-baseline justify-center gap-1">
+            <motion.span
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3, type: 'spring' }}
+              className="text-6xl font-bold text-foreground"
+            >
+              {riskResults.briScore}
+            </motion.span>
+            <span className="text-2xl text-muted-foreground">/ 100</span>
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Value Gap</p>
-            <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-              {formatCurrency(riskResults.valueGap)}
-            </p>
+        </motion.div>
+
+        {/* Value Gap Amount - Matching prototype */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: showContent ? 1 : 0, y: showContent ? 0 : 10 }}
+          transition={{ delay: 0.4 }}
+          className="text-center mb-6"
+        >
+          <p className="text-4xl font-bold text-red-600 dark:text-red-500 mb-1">
+            {formatCurrency(riskResults.valueGap)}
+          </p>
+          <p className="text-muted-foreground">Estimated value gap</p>
+        </motion.div>
+
+        {/* Gap Bar - Matching prototype */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: showContent ? 1 : 0 }}
+          transition={{ delay: 0.6 }}
+          className="mb-8"
+        >
+          <div className="flex justify-between text-xs text-muted-foreground uppercase tracking-wider mb-2">
+            <span>Buyer Discounted</span>
+            <span>Buyer Ready</span>
           </div>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          This is the difference between your estimated current value ({formatCurrency(riskResults.currentValue)})
-          and potential value ({formatCurrency(riskResults.potentialValue)}) based on how buyers typically
-          discount similar risk profiles in comparable transactions.
-        </p>
-      </motion.div>
+          <div className="relative h-8 bg-muted rounded-lg overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progressPercent}%` }}
+              transition={{ delay: 0.8, duration: 1 }}
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-blue-400 rounded-lg"
+            />
+          </div>
+          <div className="flex justify-between text-sm font-semibold text-foreground mt-2">
+            <span>{formatCurrency(riskResults.currentValue)}</span>
+            <span>{formatCurrency(riskResults.potentialValue)}</span>
+          </div>
+        </motion.div>
 
-      {/* Category Breakdown */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: showCategories ? 1 : 0 }}
-        transition={{ delay: 0.4 }}
-        className="space-y-4"
-      >
-        <h3 className="text-lg font-semibold text-foreground">Risk by Category</h3>
-
-        <div className="space-y-3">
-          {sortedCategories.map((item, index) => {
-            const Icon = item.config.icon
-            const isRevealed = index < revealedCategories
-
-            return (
+        {/* Risk Breakdown - Matching prototype */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: showRisks ? 1 : 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-6"
+        >
+          <h3 className="font-semibold text-foreground mb-4">Where the gap comes from</h3>
+          <div className="space-y-4">
+            {sortedRisks.map(([category, gap], index) => (
               <motion.div
-                key={item.category}
+                key={category}
                 initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: isRevealed ? 1 : 0, x: isRevealed ? 0 : -20 }}
-                transition={{ duration: 0.3 }}
-                className={`p-4 rounded-xl border ${
-                  item.score < 40
-                    ? 'bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-800/30'
-                    : item.score < 70
-                      ? 'bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800/30'
-                      : 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800/30'
-                }`}
+                animate={{ opacity: showRisks ? 1 : 0, x: showRisks ? 0 : -20 }}
+                transition={{ delay: 0.1 * index }}
+                className="flex items-center gap-4"
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      item.score < 40
-                        ? 'bg-red-100 dark:bg-red-900/50'
-                        : item.score < 70
-                          ? 'bg-amber-100 dark:bg-amber-900/50'
-                          : 'bg-emerald-100 dark:bg-emerald-900/50'
-                    }`}>
-                      <Icon className={`w-4 h-4 ${getScoreColor(item.score)}`} />
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">{item.config.label}</p>
-                      <p className="text-xs text-muted-foreground">{item.config.description}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className={`text-lg font-bold ${getScoreColor(item.score)}`}>
-                      {Math.round(item.score)}
-                    </p>
-                    {item.valueGap > 0 && (
-                      <p className="text-xs text-red-600 dark:text-red-400">
-                        -{formatCurrency(item.valueGap)}
-                      </p>
-                    )}
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground mb-1">
+                    {RISK_LABELS[category] || category}
+                  </p>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(gap / maxGap) * 100}%` }}
+                      transition={{ delay: 0.3 + 0.1 * index, duration: 0.5 }}
+                      className="h-full bg-red-500 rounded-full"
+                    />
                   </div>
                 </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: isRevealed ? `${item.score}%` : 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    className={`h-full ${getBarColor(item.score)}`}
-                  />
-                </div>
+                <span className="font-semibold text-foreground min-w-[80px] text-right">
+                  {formatCurrency(gap)}
+                </span>
               </motion.div>
-            )
-          })}
-        </div>
-      </motion.div>
+            ))}
+          </div>
+        </motion.div>
 
-      {/* Call to Action */}
-      {highRiskCategories.length > 0 && (
+        {/* Insight Callout - Matching prototype */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: showRisks ? 1 : 0, y: showRisks ? 0 : 10 }}
+          transition={{ delay: 0.8 }}
+          className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 rounded-xl p-4 mb-6"
+        >
+          <p className="text-foreground font-medium">
+            <span className="font-bold">{addressablePercent}%</span> of this gap is addressable without changing revenue.
+          </p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Based on how buyers typically discount similar risk profiles in comparable transactions.
+          </p>
+        </motion.div>
+
+        {/* CTA Button - Matching prototype */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: revealedCategories >= sortedCategories.length ? 1 : 0, y: revealedCategories >= sortedCategories.length ? 0 : 20 }}
-          transition={{ delay: 0.3 }}
-          className="bg-card rounded-2xl border border-border p-6"
+          animate={{ opacity: showRisks ? 1 : 0, y: showRisks ? 0 : 20 }}
+          transition={{ delay: 1 }}
         >
-          <h3 className="font-semibold text-foreground mb-2">
-            {highRiskCategories.length} {highRiskCategories.length === 1 ? 'area needs' : 'areas need'} attention
-          </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            We&apos;ll ask a few quick questions to understand how these risks specifically affect {companyName},
-            then create a targeted action plan.
-          </p>
-          <Button onClick={onContinue} className="w-full gap-2">
+          <Button onClick={onContinue} className="w-full gap-2" size="lg">
             Show Me How to Close It
             <ArrowRight className="w-4 h-4" />
           </Button>
         </motion.div>
-      )}
-
-      {/* If no high risk categories, still allow continuing */}
-      {highRiskCategories.length === 0 && revealedCategories >= sortedCategories.length && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-        >
-          <p className="text-sm text-emerald-600 dark:text-emerald-400 mb-4">
-            Great news! Your risk profile is relatively healthy.
-          </p>
-          <Button onClick={onContinue} className="gap-2">
-            Continue
-            <ArrowRight className="w-4 h-4" />
-          </Button>
-        </motion.div>
-      )}
+      </motion.div>
     </div>
   )
 }

@@ -2,7 +2,6 @@
 
 import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
-import { AlertTriangle, ArrowRight, TrendingUp, Users, TrendingDown } from 'lucide-react'
 
 interface IndustryPreviewStepProps {
   companyName: string
@@ -25,148 +24,112 @@ function formatCurrency(value: number): string {
 }
 
 export function IndustryPreviewStep({
-  companyName,
   industryName,
   valuationLow,
   valuationHigh,
-  potentialGap,
   onContinue,
-  onSkip,
 }: IndustryPreviewStepProps) {
   return (
     <div className="max-w-xl mx-auto">
-      {/* Main valuation card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-8 text-white shadow-2xl mb-6"
+        className="bg-card rounded-2xl border border-border p-8 shadow-lg"
       >
+        {/* Valuation Reveal - Matching prototype */}
         <div className="text-center mb-8">
-          <motion.div
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-sm text-white/80 mb-4"
+            className="text-sm text-muted-foreground mb-2"
           >
-            <TrendingUp className="w-4 h-4" />
-            Industry Preview
-          </motion.div>
+            Based on {industryName}
+          </motion.p>
 
           <motion.h2
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-lg text-white/70 mb-2"
+            className="text-xl font-semibold text-foreground mb-6"
           >
-            Businesses like <span className="text-white font-medium">{companyName}</span> in
+            Your estimated valuation range
           </motion.h2>
-
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="text-white/60 text-sm mb-6"
-          >
-            {industryName}
-          </motion.p>
 
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.5, type: 'spring', stiffness: 100 }}
-            className="mb-2"
+            transition={{ delay: 0.4, type: 'spring', stiffness: 100 }}
+            className="flex items-baseline justify-center gap-4 mb-4"
           >
-            <span className="text-5xl md:text-6xl font-bold font-display">
-              {formatCurrency(valuationLow)} - {formatCurrency(valuationHigh)}
+            <span className="text-4xl md:text-5xl font-bold text-foreground">
+              {formatCurrency(valuationLow)}
+            </span>
+            <span className="text-xl text-muted-foreground">to</span>
+            <span className="text-4xl md:text-5xl font-bold text-foreground">
+              {formatCurrency(valuationHigh)}
             </span>
           </motion.div>
 
-          <motion.p
+          {/* Valuation bar */}
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-            className="text-white/60 text-sm"
+            transition={{ delay: 0.6 }}
+            className="h-3 bg-muted rounded-full overflow-hidden mb-6"
           >
-            What buyers typically pay for similar businesses — before diligence
-          </motion.p>
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: '100%' }}
+              transition={{ delay: 0.8, duration: 1 }}
+              className="h-full bg-gradient-to-r from-muted-foreground/50 to-primary rounded-full"
+            />
+          </motion.div>
         </div>
 
-        {/* Warning banner */}
+        {/* Context box - Matching prototype with amber left border */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
-          className="bg-amber-500/20 border border-amber-500/30 rounded-xl p-4"
+          transition={{ delay: 1 }}
+          className="bg-muted/50 border-l-4 border-amber-500 rounded-r-lg p-4 mb-6"
         >
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-amber-100 font-medium text-sm">
-                The spread isn&apos;t about revenue — it&apos;s about buyer confidence
-              </p>
-              <p className="text-amber-200/70 text-sm mt-1">
-                Risks that buyers perceive during diligence typically reduce offers by{' '}
-                <span className="text-amber-100 font-semibold">{formatCurrency(potentialGap)}+</span>.
-              </p>
-            </div>
-          </div>
+          <p className="text-foreground font-medium text-sm mb-2">
+            This range reflects what buyers typically pay for businesses like yours—before diligence.
+          </p>
+          <p className="text-muted-foreground text-sm">
+            The spread isn&apos;t about revenue. It&apos;s about how much risk a buyer perceives. Let&apos;s find out where you fall.
+          </p>
         </motion.div>
-      </motion.div>
 
-      {/* Market Reality - Social Proof */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.1 }}
-        className="bg-card rounded-2xl border border-border p-5 mb-6"
-      >
-        <div className="flex items-start gap-4">
-          <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-            <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-400" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-foreground mb-1">
-              The harsh reality
-            </p>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              <span className="text-foreground font-medium">80% of businesses that go to market fail to sell.</span>{' '}
-              Not because they lack value—but because owners discover critical gaps too late.
-            </p>
-            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-              <Users className="w-3 h-3" />
-              Source: Exit Planning Institute, 2025
-            </p>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* CTA Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.3 }}
-        className="text-center"
-      >
-        <p className="text-muted-foreground mb-6">
-          Let&apos;s find <span className="text-foreground font-medium">your</span> specific risks in about 5 minutes.
-        </p>
-
-        <Button
-          size="lg"
-          onClick={onContinue}
-          className="w-full sm:w-auto px-8 py-6 text-lg shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/30 transition-all"
+        {/* CTA text */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2 }}
+          className="text-center text-muted-foreground mb-6"
         >
-          Discover What You&apos;re Leaving Behind
-          <ArrowRight className="ml-2 w-5 h-5" />
-        </Button>
+          Let&apos;s find out where you fall in that range.
+        </motion.p>
 
-        <button
-          onClick={onSkip}
-          className="block mx-auto mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        {/* Navigation - Matching prototype */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.4 }}
+          className="flex items-center justify-between"
         >
-          Skip for now
-        </button>
+          <Button
+            variant="ghost"
+            onClick={() => window.history.back()}
+          >
+            Back
+          </Button>
+          <Button onClick={onContinue}>
+            Start Buyer Assessment
+          </Button>
+        </motion.div>
       </motion.div>
     </div>
   )
