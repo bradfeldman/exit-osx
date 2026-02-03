@@ -31,8 +31,8 @@ export async function POST(request: Request) {
       revenueRange || ''
     )
 
-    // Log AI usage
-    await prisma.aIGenerationLog.create({
+    // Log AI usage (non-blocking)
+    prisma.aIGenerationLog.create({
       data: {
         generationType: 'clarifying_questions',
         inputTokens: usage.inputTokens,
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
         inputData: { businessDescription: businessDescription.substring(0, 500), industry, revenueRange },
         outputData: JSON.parse(JSON.stringify(data)),
       }
-    })
+    }).catch(err => console.error('Failed to log AI usage:', err))
 
     return NextResponse.json({ questions: data.questions })
   } catch (error) {
