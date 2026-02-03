@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from '@/lib/motion'
+import { motion, AnimatePresence } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useProgression } from '@/contexts/ProgressionContext'
 import {
@@ -17,6 +17,8 @@ import {
   PenLine,
   CheckCircle2,
   Sparkles,
+  Trophy,
+  ChevronRight,
 } from 'lucide-react'
 
 interface DashboardData {
@@ -32,6 +34,7 @@ interface DashboardData {
   }
   tier2?: {
     adjustedEbitda?: number
+    isEbitdaFromFinancials?: boolean
   }
   tier4: {
     taskStats: {
@@ -51,6 +54,13 @@ interface Task {
   rawImpact: string
   estimatedHours: number | null
   status?: string
+}
+
+interface TaskStats {
+  total: number
+  completed: number
+  totalValue: number
+  completedValue: number
 }
 
 function formatCurrency(value: number): string {
@@ -81,13 +91,46 @@ interface ValueBuilderClientProps {
 
 export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { selectedCompanyId, isLoading: isContextLoading, companies } = useCompany()
   const { stage, progressionData } = useProgression()
   const [isDataLoading, setIsDataLoading] = useState(true)
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
+  const [taskStats, setTaskStats] = useState<TaskStats | null>(null)
   const [isStarting, setIsStarting] = useState(false)
   const [hasFinancials, setHasFinancials] = useState(false)
+  const [showCelebration, setShowCelebration] = useState(false)
+  const [lastCompletedValue, setLastCompletedValue] = useState<number | null>(null)
+
+  // Check for completion celebration
+  useEffect(() => {
+    const completed = searchParams.get('completed')
+    const value = searchParams.get('value')
+
+    if (completed === 'true') {
+      setShowCelebration(true)
+      if (value) {
+        setLastCompletedValue(Number(value))
+      }
+      // Clear the URL params after showing celebration
+      const timer = setTimeout(() => {
+        router.replace('/dashboard/value-builder', { scroll: false })
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [searchParams, router])
+
+  // Auto-hide celebration after delay
+  useEffect(() => {
+    if (showCelebration) {
+      const timer = setTimeout(() => {
+        setShowCelebration(false)
+        setLastCompletedValue(null)
+      }, 4000)
+      return () => clearTimeout(timer)
+    }
+  }, [showCelebration])
 
   // Redirect to onboarding if no companies exist
   useEffect(() => {
@@ -121,12 +164,22 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
 
         if (tasksRes.ok) {
           const data = await tasksRes.json()
-          // Filter to pending/in-progress tasks and limit to top 5
+
+          // Store stats
+          if (data.stats) {
+            setTaskStats({
+              total: data.stats.total,
+              completed: data.stats.completed,
+              totalValue: data.stats.totalValue,
+              completedValue: data.stats.completedValue,
+            })
+          }
+
+          // Filter to pending/in-progress tasks
           const activeTasks = (data.tasks || [])
             .filter((t: Task) =>
               t.status === 'PENDING' || t.status === 'IN_PROGRESS' || !t.status
             )
-            .slice(0, 5)
           setTasks(activeTasks)
         }
       } catch (error) {
@@ -171,10 +224,18 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
 
   // Get next task (first pending task)
   const nextTask = tasks[0]
+  // Get upcoming tasks (next 2 after current)
+  const upcomingTasks = tasks.slice(1, 3)
 
   // Check if user needs to upload financials
-  // Use both progression data AND local check based on dashboard EBITDA
   const needsFinancials = !progressionData?.hasBusinessFinancials && !hasFinancials && stage <= 3
+
+  // Calculate task progress
+  const completedCount = taskStats?.completed || 0
+  const totalCount = taskStats?.total || 0
+  const completedValue = taskStats?.completedValue || 0
+  const totalValue = taskStats?.totalValue || 0
+  const taskProgressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0
 
   const handleStartTask = () => {
     if (!nextTask) return
@@ -184,19 +245,102 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      {/* Card Container - matching demo */}
+      {/* Celebration Overlay */}
+      <AnimatePresence>
+        {showCelebration && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+            onClick={() => setShowCelebration(false)}
+          >
+            <motion.div
+              initial={{ y: 20 }}
+              animate={{ y: 0 }}
+              className="bg-card rounded-2xl border border-border p-8 shadow-2xl text-center max-w-md mx-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+                className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-6"
+              >
+                <Trophy className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">
+                  +{formatCurrency(lastCompletedValue || completedValue)}
+                </p>
+                <p className="text-lg font-semibold text-foreground mb-2">
+                  Value recovered!
+                </p>
+                <p className="text-muted-foreground mb-6">
+                  Task {completedCount} of {totalCount} complete.
+                  {taskProgressPercent >= 100
+                    ? " You've completed all tasks!"
+                    : ` You're ${Math.round(taskProgressPercent)}% there.`}
+                </p>
+                <Button onClick={() => setShowCelebration(false)} size="lg">
+                  Continue
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Card Container */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="bg-card rounded-2xl border border-border p-8 shadow-lg"
       >
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-2xl font-bold text-foreground">Value Builder</h1>
           <p className="text-muted-foreground">Your fastest path to higher buyer confidence</p>
         </div>
 
-        {/* Progress Bar - matching demo */}
+        {/* Task Progress Indicator - Dan/Alex style */}
+        {totalCount > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mb-6 p-4 bg-muted/50 rounded-xl"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-foreground">
+                {completedCount} of {totalCount} tasks complete
+              </span>
+              <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                {formatCurrency(completedValue)} recovered
+              </span>
+            </div>
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${taskProgressPercent}%` }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+                className="h-full bg-emerald-500 rounded-full"
+              />
+            </div>
+            {totalValue > completedValue && (
+              <p className="text-xs text-muted-foreground mt-2">
+                {formatCurrency(totalValue - completedValue)} remaining to unlock
+              </p>
+            )}
+          </motion.div>
+        )}
+
+        {/* Value Progress Bar */}
         <div className="mb-8">
           <div className="flex justify-between text-sm text-muted-foreground mb-2">
             <span>Current: <strong className="text-foreground">{formatCurrency(currentValue)}</strong></span>
@@ -210,7 +354,7 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
           </div>
         </div>
 
-        {/* Value Gap - Large and Red like demo */}
+        {/* Value Gap */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -241,7 +385,7 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
         {/* Case 1: Has task to work on */}
         {nextTask && (
           <>
-            {/* Headline - matching demo */}
+            {/* Headline */}
             <div className="text-center mb-6">
               <h2 className="text-lg font-bold text-foreground">
                 If you do nothing else, do this.
@@ -251,18 +395,17 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
               </p>
             </div>
 
-            {/* Task Card - matching demo design */}
+            {/* Current Task Card */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="border-2 border-primary rounded-xl p-6"
+              className="border-2 border-primary rounded-xl p-6 mb-6"
             >
               <h3 className="text-lg font-bold text-foreground mb-4">
                 {nextTask.title}
               </h3>
 
-              {/* Task details row - matching demo */}
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm mb-4">
                 <span className="flex items-center gap-1.5">
                   <Target className="w-4 h-4 text-primary" />
@@ -272,14 +415,14 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
                 <span className="flex items-center gap-1.5">
                   <TrendingUp className="w-4 h-4 text-emerald-500" />
                   <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                    Estimated value impact: +{formatCurrency(Number(nextTask.rawImpact))}
+                    +{formatCurrency(Number(nextTask.rawImpact))}
                   </span>
                 </span>
               </div>
 
               <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-6">
                 <Clock className="w-4 h-4" />
-                <span>Time: ~{(nextTask.estimatedHours || 1.5) * 60} minutes</span>
+                <span>~{Math.round((nextTask.estimatedHours || 1) * 60)} minutes</span>
               </div>
 
               <Button
@@ -291,6 +434,31 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
                 {isStarting ? 'Loading...' : 'Start This Task'}
               </Button>
             </motion.div>
+
+            {/* Coming Up Preview - just a peek */}
+            {upcomingTasks.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="text-sm"
+              >
+                <p className="text-muted-foreground mb-3 font-medium">Coming up:</p>
+                <div className="space-y-2">
+                  {upcomingTasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className="flex items-center justify-between py-2 px-3 bg-muted/30 rounded-lg"
+                    >
+                      <span className="text-foreground truncate pr-4">{task.title}</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-medium whitespace-nowrap">
+                        +{formatCurrency(Number(task.rawImpact))}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
           </>
         )}
 
@@ -339,15 +507,44 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
           </motion.div>
         )}
 
-        {/* Case 3: Has financials, no tasks - next step is assessment */}
-        {!nextTask && !needsFinancials && (
+        {/* Case 3: All tasks complete */}
+        {!nextTask && !needsFinancials && totalCount > 0 && completedCount === totalCount && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className="text-center"
           >
-            {/* Financials complete checkmark */}
+            <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-6">
+              <Trophy className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground mb-2">
+              All tasks complete!
+            </h3>
+            <p className="text-muted-foreground mb-2">
+              You&apos;ve recovered {formatCurrency(completedValue)} in potential value.
+            </p>
+            <p className="text-sm text-muted-foreground mb-6">
+              Your business is now more attractive to buyers.
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => router.push('/dashboard/buyer-view')}
+            >
+              See Buyer View
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </motion.div>
+        )}
+
+        {/* Case 4: Has financials, no tasks - next step is assessment */}
+        {!nextTask && !needsFinancials && (totalCount === 0 || completedCount < totalCount) && totalCount === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-center"
+          >
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full text-sm font-medium mb-6">
               <CheckCircle2 className="w-4 h-4" />
               Financials connected
@@ -375,13 +572,6 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
               This takes about 10 minutes and generates your personalized action plan.
             </p>
           </motion.div>
-        )}
-
-        {/* Footer note - matching demo */}
-        {needsFinancials && !nextTask && (
-          <p className="text-xs text-muted-foreground text-center mt-6">
-            Saved for future diligence.
-          </p>
         )}
       </motion.div>
     </div>

@@ -115,8 +115,9 @@ export function TaskExecutionClient({ taskId }: TaskExecutionClientProps) {
       // Refresh progression to reflect completed task
       await refetchProgression()
 
-      // Navigate back to Value Builder with success indication
-      router.push('/dashboard/value-builder?completed=true')
+      // Navigate back to Value Builder with success indication and value
+      const taskValue = task.rawImpact ? Math.round(Number(task.rawImpact)) : 0
+      router.push(`/dashboard/value-builder?completed=true&value=${taskValue}`)
     } catch (err) {
       console.error('Error completing task:', err)
       setError('Failed to complete task')
