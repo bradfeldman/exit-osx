@@ -231,15 +231,32 @@ async function handleOnboardingTaskGeneration(body: {
       (now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / 604800000
     )
 
+    // Map AI-generated category names to valid BriCategory enum values
+    const normalizeBriCategory = (category: string): BriCategory => {
+      const mapping: Record<string, BriCategory> = {
+        'FINANCIAL': 'FINANCIAL',
+        'TRANSFERABILITY': 'TRANSFERABILITY',
+        'OPERATIONAL': 'OPERATIONAL',
+        'OPERATIONS': 'OPERATIONAL', // AI sometimes returns this variant
+        'MARKET': 'MARKET',
+        'LEGAL_TAX': 'LEGAL_TAX',
+        'LEGAL': 'LEGAL_TAX',
+        'TAX': 'LEGAL_TAX',
+        'PERSONAL': 'PERSONAL',
+      }
+      return mapping[category.toUpperCase()] || 'OPERATIONAL'
+    }
+
     // Create task records in the database
     const tasksWithIds = await Promise.all(
       data.tasks.map(async (task, index) => {
         // Create as a general task (not tied to a specific diagnosis subcategory)
         const estimatedValue = task.estimatedValue ? Math.round(task.estimatedValue) : 0
+        const briCategory = normalizeBriCategory(task.category)
         const createdTask = await prisma.task.create({
           data: {
             companyId,
-            briCategory: task.category as BriCategory,
+            briCategory,
             title: task.title,
             description: task.description,
             actionType: 'TYPE_III_OPERATIONAL',

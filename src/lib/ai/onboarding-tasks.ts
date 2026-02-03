@@ -63,7 +63,8 @@ Rules:
 - Each task should take 1-3 hours
 - Value impact should be realistic (5-20% of the category's value gap)
 - Titles should start with action verbs: Document, Create, Review, Update, Implement, etc.
-- Order tasks by potential value impact (highest first)`
+- Order tasks by potential value impact (highest first)
+- IMPORTANT: category MUST be exactly one of: FINANCIAL, TRANSFERABILITY, OPERATIONAL, MARKET, LEGAL_TAX, PERSONAL`
 
 export async function generateOnboardingTasks(
   businessDescription: string,
