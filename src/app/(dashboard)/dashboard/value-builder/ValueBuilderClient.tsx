@@ -107,6 +107,7 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
       setIsDataLoading(true)
 
       // Refresh progression data to get latest state
+      // Note: refetchProgression is intentionally not in deps to prevent infinite loop
       await refetchProgression()
 
       try {
@@ -141,7 +142,8 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
     }
 
     fetchData()
-  }, [selectedCompanyId, refetchProgression])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCompanyId])
 
   // Show loading while context or data is loading
   if (isContextLoading || isDataLoading) {
