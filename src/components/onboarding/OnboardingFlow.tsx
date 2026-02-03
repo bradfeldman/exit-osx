@@ -247,26 +247,33 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
         body: JSON.stringify(coreFactorsPayload)
       })
 
-      // Fetch industry preview data
+      // Fetch industry preview data - use dashboard's calculated values directly
+      // The dashboard API calculates EBITDA using industry-specific revenue/EBITDA conversion
       let previewData: typeof industryPreviewData = null
       const dashboardResponse = await fetch(`/api/companies/${company.id}/dashboard`)
       if (dashboardResponse.ok) {
         const dashboardData = await dashboardResponse.json()
         const tier1 = dashboardData.tier1 || {}
+        const tier2 = dashboardData.tier2 || {}
 
-        // Calculate valuation range based on industry multiples
-        const multipleLow = tier1.industryMultipleLow || 3.0
-        const multipleHigh = tier1.industryMultipleHigh || 6.0
-        const estimatedEbitda = tier1.adjustedEbitda || (formData.annualRevenue * 0.1) // 10% margin estimate
+        // Use the dashboard's calculated values directly
+        // tier1.currentValue uses the sophisticated EBITDA calculation
+        // tier1.potentialValue is EBITDA × high multiple
+        const currentValue = tier1.currentValue || 0
+        const potentialValue = tier1.potentialValue || 0
+        const adjustedEbitda = tier2.adjustedEbitda || 0
+        const multipleLow = tier1.multipleRange?.low || 3.0
+        const multipleHigh = tier1.multipleRange?.high || 6.0
 
-        const valuationLow = estimatedEbitda * multipleLow
-        const valuationHigh = estimatedEbitda * multipleHigh
-        const potentialGap = Math.round(valuationHigh * 0.35) // ~35% gap potential
+        // Calculate low/high range using the dashboard's EBITDA
+        const valuationLow = adjustedEbitda * multipleLow
+        const valuationHigh = adjustedEbitda * multipleHigh
+        const potentialGap = Math.round(valuationHigh - currentValue)
 
         previewData = {
           valuationLow: Math.round(valuationLow),
           valuationHigh: Math.round(valuationHigh),
-          potentialGap,
+          potentialGap: Math.max(0, potentialGap),
           industryName: formData.icbSubSector.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()),
         }
         setIndustryPreviewData(previewData)
