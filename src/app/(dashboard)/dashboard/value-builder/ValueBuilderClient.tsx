@@ -115,9 +115,8 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
         if (dashboardRes.ok) {
           const data = await dashboardRes.json()
           setDashboardData(data)
-          // Check if financials exist based on EBITDA being calculated
-          // If tier2.adjustedEbitda > 0, they've entered real financials
-          setHasFinancials(data.tier2?.adjustedEbitda > 0)
+          // Check if actual financials were uploaded (not just estimated from revenue)
+          setHasFinancials(data.tier2?.isEbitdaFromFinancials === true)
         }
 
         if (tasksRes.ok) {
@@ -180,7 +179,7 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
   const handleStartTask = () => {
     if (!nextTask) return
     setIsStarting(true)
-    router.push(`/dashboard/action-plan?task=${nextTask.id}`)
+    router.push(`/dashboard/tasks/${nextTask.id}`)
   }
 
   return (

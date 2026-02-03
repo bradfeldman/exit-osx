@@ -320,8 +320,9 @@ export async function GET(
 
     // Calculate Adjusted EBITDA with priority:
     // 1. Financials (appropriate FY's income statement EBITDA + period adjustments)
-    // 2. Revenue to EBITDA conversion (using industry multiples)
-    // 3. Company Assessment (annualEbitda from company setup)
+    // 2. Snapshot EBITDA (from onboarding or previous assessment - maintains consistency)
+    // 3. Revenue to EBITDA conversion (using industry multiples)
+    // 4. Company Assessment (annualEbitda from company setup)
 
     const companyRevenue = Number(company.annualRevenue)
     const companyEbitda = Number(company.annualEbitda)
@@ -397,7 +398,14 @@ export async function GET(
         })
       }
     }
-    // Priority 2: Revenue to EBITDA conversion using industry multiples
+    // Priority 2: Use snapshot's EBITDA if available (maintains consistency with onboarding)
+    // This prevents value jumps when user hasn't uploaded financials yet
+    else if (latestSnapshot && Number(latestSnapshot.adjustedEbitda) > 0) {
+      adjustedEbitda = Number(latestSnapshot.adjustedEbitda)
+      isEbitdaEstimated = true // Still considered estimated since not from actual financials
+    }
+    // Priority 3 (was 2): Revenue to EBITDA conversion using industry multiples
+    // Only used when no snapshot exists (e.g., first-time calculation)
     else if (companyRevenue > 0 && industryMultiple) {
       // Calculate implied EBITDA using industry multiples
       // EV = Revenue × RevMultiple = EBITDA × EbitdaMultiple
@@ -414,7 +422,7 @@ export async function GET(
       adjustedEbitda = roundToHundredThousand((impliedEbitdaLow + impliedEbitdaHigh) / 2)
       isEbitdaEstimated = true
     }
-    // Priority 3: Company Assessment (annualEbitda + company-level adjustments)
+    // Priority 4: Company Assessment (annualEbitda + company-level adjustments)
     else if (companyEbitda > 0) {
       // Use company's stated EBITDA plus any company-level adjustments
       const companyAdjustmentTotal = company.ebitdaAdjustments.reduce((sum, adj) => {
@@ -425,7 +433,7 @@ export async function GET(
 
       adjustedEbitda = companyEbitda + companyAdjustmentTotal
     }
-    // Fallback: Use revenue with 10% margin estimate, or low multiple estimate
+    // Priority 5 (Fallback): Use revenue with 10% margin estimate
     else if (companyRevenue > 0) {
       // No industry multiples available, use 10% margin as rough estimate
       adjustedEbitda = roundToHundredThousand(companyRevenue * 0.10)
