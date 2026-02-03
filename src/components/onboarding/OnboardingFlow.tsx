@@ -192,10 +192,14 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     setError(null)
 
     try {
-      // First sync the user
-      const syncResponse = await fetch('/api/user/sync', { method: 'POST' })
-      if (!syncResponse.ok) {
-        throw new Error('Failed to sync user')
+      // Try to sync the user (non-fatal if it fails)
+      try {
+        const syncResponse = await fetch('/api/user/sync', { method: 'POST' })
+        if (!syncResponse.ok) {
+          console.warn('User sync failed, continuing with company creation')
+        }
+      } catch (syncErr) {
+        console.warn('User sync error:', syncErr)
       }
 
       const revenueSizeCategory = getRevenueSizeCategory(formData.annualRevenue)
