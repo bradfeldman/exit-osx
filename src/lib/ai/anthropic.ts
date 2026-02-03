@@ -18,7 +18,7 @@ export type AIModel = 'claude-sonnet' | 'claude-haiku'
 
 const MODEL_IDS: Record<AIModel, string> = {
   'claude-sonnet': 'claude-sonnet-4-20250514',
-  'claude-haiku': 'claude-3-5-haiku-20241022',
+  'claude-haiku': 'claude-3-5-haiku-latest',
 }
 
 interface GenerateOptions {
