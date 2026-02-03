@@ -82,7 +82,7 @@ interface ValueBuilderClientProps {
 export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
   const router = useRouter()
   const { selectedCompanyId, isLoading: isContextLoading, companies } = useCompany()
-  const { stage, progressionData, refetch: refetchProgression } = useProgression()
+  const { stage, progressionData } = useProgression()
   const [isDataLoading, setIsDataLoading] = useState(true)
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
@@ -96,7 +96,7 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
     }
   }, [isContextLoading, companies, router])
 
-  // Fetch dashboard data and refresh progression on mount
+  // Fetch dashboard data on mount
   useEffect(() => {
     if (!selectedCompanyId) {
       setIsDataLoading(false)
@@ -105,10 +105,6 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
 
     const fetchData = async () => {
       setIsDataLoading(true)
-
-      // Refresh progression data to get latest state
-      // Note: refetchProgression is intentionally not in deps to prevent infinite loop
-      await refetchProgression()
 
       try {
         const [dashboardRes, tasksRes] = await Promise.all([
@@ -142,7 +138,6 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
     }
 
     fetchData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCompanyId])
 
   // Show loading while context or data is loading
