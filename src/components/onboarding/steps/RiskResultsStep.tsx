@@ -27,6 +27,15 @@ const RISK_LABELS: Record<string, string> = {
   PERSONAL: 'Transition Readiness',
 }
 
+// Categories that can be addressed without changing revenue
+// (vs FINANCIAL and MARKET which typically require revenue/growth changes)
+const ADDRESSABLE_WITHOUT_REVENUE = [
+  'TRANSFERABILITY', // Founder Dependency - process/documentation
+  'OPERATIONAL',     // Operational Gaps - systems/processes
+  'LEGAL_TAX',       // Legal Exposure - compliance/structure
+  'PERSONAL',        // Transition Readiness - planning/preparation
+]
+
 function formatCurrency(value: number): string {
   if (value >= 1000000) {
     return `$${(value / 1000000).toFixed(1)}M`
@@ -60,8 +69,14 @@ export function RiskResultsStep({
     .sort(([, a], [, b]) => b - a)
     .slice(0, 4) // Show top 4 risks
 
-  // Calculate percentage of gap that's addressable (all of it in this model)
-  const addressablePercent = 78 // This is a simplification - in reality would be calculated
+  // Calculate percentage of gap that's addressable without revenue changes
+  const addressableGap = Object.entries(riskResults.valueGapByCategory)
+    .filter(([category]) => ADDRESSABLE_WITHOUT_REVENUE.includes(category))
+    .reduce((sum, [, gap]) => sum + gap, 0)
+
+  const addressablePercent = riskResults.valueGap > 0
+    ? Math.round((addressableGap / riskResults.valueGap) * 100)
+    : 0
 
   // Calculate progress percentage
   const progressPercent = riskResults.potentialValue > 0
@@ -114,7 +129,20 @@ export function RiskResultsStep({
           <p className="text-muted-foreground">Estimated value gap</p>
         </motion.div>
 
-        {/* Gap Bar - Matching prototype */}
+        {/* Current Company Value - Clear label */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: showContent ? 1 : 0, y: showContent ? 0 : 10 }}
+          transition={{ delay: 0.5 }}
+          className="text-center mb-4"
+        >
+          <p className="text-sm text-muted-foreground mb-1">Your company value today</p>
+          <p className="text-2xl font-bold text-foreground">
+            {formatCurrency(riskResults.currentValue)}
+          </p>
+        </motion.div>
+
+        {/* Gap Bar */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: showContent ? 1 : 0 }}
@@ -122,8 +150,8 @@ export function RiskResultsStep({
           className="mb-8"
         >
           <div className="flex justify-between text-xs text-muted-foreground uppercase tracking-wider mb-2">
-            <span>Buyer Discounted</span>
-            <span>Buyer Ready</span>
+            <span>Current Value</span>
+            <span>Potential Value</span>
           </div>
           <div className="relative h-8 bg-muted rounded-lg overflow-hidden">
             <motion.div
