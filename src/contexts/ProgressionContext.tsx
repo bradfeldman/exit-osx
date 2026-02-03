@@ -74,14 +74,26 @@ interface ProgressionContextType {
 const ProgressionContext = createContext<ProgressionContextType | undefined>(undefined)
 
 function computeStage(data: ProgressionData): number {
+  // Stage 0: No company - show entry screen
   if (!data.hasCompany) return 0
-  if (!data.hasAssessment) return 0
+
+  // Stage 7: Exit-Ready (BRI >= 80)
   if (data.isExitReady) return 7
+
+  // Stage 6: Both business and personal financials complete
   if (data.hasBusinessFinancials && data.hasPersonalFinancials) return 6
+
+  // Stage 5: DCF valuation and personal financials complete
   if (data.hasDcfValuation && data.hasPersonalFinancials) return 5
+
+  // Stage 4: Business financials uploaded
   if (data.hasBusinessFinancials) return 4
+
+  // Stage 3: First task completed
   if (data.completedTaskCount >= 1) return 3
-  // Stages 1 and 2 are the same nav-wise, just different content states
+
+  // Stage 1-2: Has company (assessment may or may not be complete)
+  // Users see the dashboard with some locked items
   return 1
 }
 
