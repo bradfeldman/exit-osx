@@ -462,8 +462,55 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
           </>
         )}
 
-        {/* Case 2: No task, needs financials */}
-        {!nextTask && needsFinancials && (
+        {/* Case 2: All tasks complete - celebrate first, then suggest next step */}
+        {!nextTask && totalCount > 0 && completedCount === totalCount && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-center"
+          >
+            <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-6">
+              <Trophy className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground mb-2">
+              All tasks complete!
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              You&apos;ve addressed {formatCurrency(completedValue)} worth of buyer concerns.
+            </p>
+
+            {/* Next step: financials or buyer view */}
+            {needsFinancials ? (
+              <div className="bg-muted/50 rounded-xl p-6 text-left">
+                <p className="font-semibold text-foreground mb-2">
+                  Next: Unlock buyer-grade valuation
+                </p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Add your financials to get a valuation based on real numbers, not estimates.
+                </p>
+                <Button
+                  className="w-full"
+                  onClick={() => router.push('/dashboard/financials')}
+                >
+                  Add Financials
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => router.push('/dashboard/buyer-view')}
+              >
+                See Buyer View
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            )}
+          </motion.div>
+        )}
+
+        {/* Case 3: No task, needs financials (and tasks not all complete) */}
+        {!nextTask && needsFinancials && !(totalCount > 0 && completedCount === totalCount) && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -507,38 +554,8 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
           </motion.div>
         )}
 
-        {/* Case 3: All tasks complete */}
-        {!nextTask && !needsFinancials && totalCount > 0 && completedCount === totalCount && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-center"
-          >
-            <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-6">
-              <Trophy className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">
-              All tasks complete!
-            </h3>
-            <p className="text-muted-foreground mb-2">
-              You&apos;ve recovered {formatCurrency(completedValue)} in potential value.
-            </p>
-            <p className="text-sm text-muted-foreground mb-6">
-              Your business is now more attractive to buyers.
-            </p>
-            <Button
-              variant="outline"
-              onClick={() => router.push('/dashboard/buyer-view')}
-            >
-              See Buyer View
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </motion.div>
-        )}
-
         {/* Case 4: Has financials, no tasks - next step is assessment */}
-        {!nextTask && !needsFinancials && (totalCount === 0 || completedCount < totalCount) && totalCount === 0 && (
+        {!nextTask && !needsFinancials && totalCount === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
