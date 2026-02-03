@@ -216,9 +216,56 @@ export async function PUT(
       })
     }
 
-    // Trigger valuation snapshot recalculation
+    // Get previous snapshot value before recalculation (for impact display)
+    let previousValue: number | null = null
+    let previousEbitda: number | null = null
     try {
-      await recalculateSnapshotForCompany(companyId, 'P&L data updated')
+      const previousSnapshot = await prisma.valuationSnapshot.findFirst({
+        where: { companyId },
+        orderBy: { createdAt: 'desc' },
+        select: { currentValue: true, adjustedEbitda: true },
+      })
+      if (previousSnapshot) {
+        previousValue = Number(previousSnapshot.currentValue)
+        previousEbitda = Number(previousSnapshot.adjustedEbitda)
+      }
+    } catch (e) {
+      console.error('Failed to get previous snapshot:', e)
+    }
+
+    // Trigger valuation snapshot recalculation
+    let valuationImpact: {
+      previousValue: number | null
+      newValue: number | null
+      change: number | null
+      previousEbitda: number | null
+      newEbitda: number | null
+      isFirstFinancials: boolean
+    } | null = null
+
+    try {
+      const result = await recalculateSnapshotForCompany(companyId, 'P&L data updated')
+
+      if (result.success && result.snapshotId) {
+        // Get the new snapshot values
+        const newSnapshot = await prisma.valuationSnapshot.findUnique({
+          where: { id: result.snapshotId },
+          select: { currentValue: true, adjustedEbitda: true },
+        })
+
+        if (newSnapshot) {
+          const newValue = Number(newSnapshot.currentValue)
+          const newEbitda = Number(newSnapshot.adjustedEbitda)
+          valuationImpact = {
+            previousValue,
+            newValue,
+            change: previousValue ? newValue - previousValue : null,
+            previousEbitda,
+            newEbitda,
+            isFirstFinancials: previousEbitda === 0 || previousEbitda === null,
+          }
+        }
+      }
     } catch (recalcError) {
       // Log but don't fail the request if recalculation fails
       console.error('Failed to recalculate valuation snapshot:', recalcError)
@@ -241,7 +288,8 @@ export async function PUT(
         taxExpense: stmt.taxExpense ? Number(stmt.taxExpense) : null,
         createdAt: stmt.createdAt.toISOString(),
         updatedAt: stmt.updatedAt.toISOString(),
-      }
+      },
+      valuationImpact,
     })
   } catch (error) {
     console.error('Error saving income statement:', error)

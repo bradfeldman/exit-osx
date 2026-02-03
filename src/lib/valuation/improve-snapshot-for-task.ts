@@ -6,6 +6,7 @@
  */
 
 import { prisma } from '@/lib/prisma'
+import { BriCategory } from '@prisma/client'
 import { getIndustryMultiples } from './industry-multiples'
 
 // Alpha constant for non-linear discount calculation (matches recalculate-snapshot.ts)
@@ -103,7 +104,7 @@ export async function improveSnapshotForOnboardingTask(
       where: {
         companyId: task.companyId,
         status: { in: ['PENDING', 'IN_PROGRESS', 'COMPLETED'] },
-        briCategory: task.briCategory,
+        briCategory: task.briCategory as BriCategory,
       },
       select: { rawImpact: true, status: true },
     })

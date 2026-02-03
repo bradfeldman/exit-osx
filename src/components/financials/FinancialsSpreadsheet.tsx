@@ -8,7 +8,8 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import { fetchWithRetry } from '@/lib/fetch-with-retry'
 import { analytics } from '@/lib/analytics'
-import { Plus, Save, Check, Loader2, TrendingUp, TrendingDown, Minus, AlertCircle, Trash2, PlusCircle, MinusCircle, ChevronDown, ChevronRight } from 'lucide-react'
+import { Plus, Save, Check, Loader2, TrendingUp, TrendingDown, Minus, AlertCircle, Trash2, PlusCircle, MinusCircle, ChevronDown, ChevronRight, ArrowRight, X } from 'lucide-react'
+import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -18,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { AddPeriodDialog } from './AddPeriodDialog'
+import { ValuationImpactCelebration } from './ValuationImpactCelebration'
 import {
   Dialog,
   DialogContent,
@@ -639,6 +641,12 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
   const [showAddAdjustment, setShowAddAdjustment] = useState(false)
   const [showCommonAddBacks, setShowCommonAddBacks] = useState(false)
   const [newAdjustment, setNewAdjustment] = useState({ description: '', type: 'ADD_BACK' as 'ADD_BACK' | 'DEDUCTION' })
+  const [valuationCelebration, setValuationCelebration] = useState<{
+    previousValue: number | null
+    newValue: number
+    isFirstFinancials: boolean
+  } | null>(null)
+  const [showValuationBanner, setShowValuationBanner] = useState(false)
   const saveTimeoutRef = useRef<NodeJS.Timeout>(undefined)
   const pendingChangesRef = useRef<Map<string, { periodId: string; field: string; value: number }>>(new Map())
   const pendingAdjustmentChangesRef = useRef<Map<string, { adjustmentId: string; periodId: string; amount: number }>>(new Map())
@@ -791,6 +799,13 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
         changesByPeriod.get(change.periodId)!.set(change.field, change.value)
       })
 
+      // Track valuation impact from the last P&L save
+      let lastValuationImpact: {
+        previousValue: number | null
+        newValue: number | null
+        isFirstFinancials: boolean
+      } | null = null
+
       // Save each period's changes
       for (const [periodId, fields] of changesByPeriod) {
         const periodData = data[periodId] || {}
@@ -813,11 +828,23 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
             taxExpense: fields.get('taxExpense') ?? periodData.taxExpense ?? 0,
           }
 
-          await fetchWithRetry(`/api/companies/${companyId}/financial-periods/${periodId}/income-statement`, {
+          const response = await fetchWithRetry(`/api/companies/${companyId}/financial-periods/${periodId}/income-statement`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(pnlData),
           })
+
+          // Check for valuation impact in response
+          if (response.ok) {
+            try {
+              const responseData = await response.json()
+              if (responseData.valuationImpact) {
+                lastValuationImpact = responseData.valuationImpact
+              }
+            } catch (e) {
+              // Ignore parsing errors
+            }
+          }
         }
 
         if (hasBsChanges) {
@@ -861,6 +888,34 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
 
       // Note: We no longer reload data after save to avoid disrupting user input
       // Derived values are calculated locally in handleCellChange
+
+      // Show valuation impact celebration if there's a meaningful change
+      if (lastValuationImpact?.newValue) {
+        const { previousValue, newValue, isFirstFinancials } = lastValuationImpact
+        const percentChange = previousValue && previousValue > 0
+          ? Math.abs((newValue - previousValue) / previousValue) * 100
+          : 0
+
+        // Show celebration for first financials OR significant changes (>5%)
+        if (isFirstFinancials || percentChange > 5) {
+          setValuationCelebration({
+            previousValue,
+            newValue,
+            isFirstFinancials: isFirstFinancials || false,
+          })
+        } else {
+          // For smaller changes, show the banner instead
+          setShowValuationBanner(true)
+        }
+      } else {
+        // Always show banner after successful save with P&L data
+        const hasPnlData = Array.from(pendingChangesRef.current.values()).some(c =>
+          ['grossRevenue', 'cogs', 'operatingExpenses'].includes(c.field)
+        )
+        if (hasPnlData) {
+          setShowValuationBanner(true)
+        }
+      }
 
       // Reset status after a delay
       setTimeout(() => setSaveStatus('idle'), 2000)
@@ -1369,6 +1424,48 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
         </div>
       </div>
 
+      {/* Valuation Updated Banner */}
+      <AnimatePresence>
+        {showValuationBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-100 dark:bg-emerald-900/40 rounded-full">
+                  <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div>
+                  <p className="font-medium text-emerald-800 dark:text-emerald-200">
+                    Your valuation has been updated
+                  </p>
+                  <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                    See how your financials impact your company&apos;s market value.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link href="/dashboard/value-builder">
+                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                    View Impact
+                    <ArrowRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </Link>
+                <button
+                  onClick={() => setShowValuationBanner(false)}
+                  className="p-1.5 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as StatementType)}>
         <TabsList>
@@ -1833,6 +1930,16 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Valuation Impact Celebration */}
+      {valuationCelebration && (
+        <ValuationImpactCelebration
+          previousValue={valuationCelebration.previousValue}
+          newValue={valuationCelebration.newValue}
+          isFirstFinancials={valuationCelebration.isFirstFinancials}
+          onDismiss={() => setValuationCelebration(null)}
+        />
+      )}
     </div>
   )
 }
