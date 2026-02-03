@@ -227,6 +227,21 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
           <p className="text-muted-foreground">Value gap to close</p>
         </motion.div>
 
+        {/* Context note when financials are connected */}
+        {hasFinancials && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="bg-muted/50 rounded-lg p-4 mb-8 text-sm"
+          >
+            <p className="text-muted-foreground">
+              <strong className="text-foreground">Updated with your actual financials.</strong>{' '}
+              This valuation is based on your real EBITDA and industry multiples, replacing the earlier estimate from onboarding which used industry-average margins.
+            </p>
+          </motion.div>
+        )}
+
         {/* Case 1: Has task to work on */}
         {nextTask && (
           <>
