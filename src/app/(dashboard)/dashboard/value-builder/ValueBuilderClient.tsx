@@ -500,7 +500,7 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
             ) : (
               <Button
                 variant="outline"
-                onClick={() => router.push('/dashboard/buyer-view')}
+                onClick={() => router.push('/dashboard/assessment/risk')}
               >
                 See Buyer View
                 <ArrowRight className="w-4 h-4 ml-2" />

@@ -13,13 +13,7 @@ import { AccessRequestModal } from '@/components/access/AccessRequestModal'
 import { ProgressionLockedItem } from '@/components/ui/ProgressionLockedItem'
 import { PlanTier } from '@/lib/pricing'
 import packageJson from '../../../package.json'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+// Select imports removed - company selector is no longer a dropdown
 import { isPersonalFeature } from '@/lib/pricing'
 
 interface NavLink {
@@ -34,7 +28,7 @@ interface NavLink {
 // CORE section links (Stages 1+) - matching demo structure
 const coreLinks: NavLink[] = [
   { name: 'Value Builder', href: '/dashboard/value-builder', icon: TrendingIcon },
-  { name: 'Buyer View', href: '/dashboard/buyer-view', icon: EyeIcon, progressionKey: 'buyerView' },
+  { name: 'Buyer View', href: '/dashboard/assessment/risk', icon: EyeIcon, progressionKey: 'buyerView' },
   { name: 'Progress', href: '/dashboard/playbook', icon: ChartIcon, progressionKey: 'progress' },
 ]
 
@@ -103,25 +97,7 @@ export function Sidebar() {
     }
   }
 
-  const handleCompanyChange = (companyId: string) => {
-    if (companyId === '___add_new___') {
-      router.push('/dashboard/company/setup')
-      return
-    }
-    setSelectedCompanyId(companyId)
-
-    // Redirect to dashboard if not already there
-    if (pathname !== '/dashboard') {
-      router.push('/dashboard')
-    } else {
-      router.refresh()
-    }
-  }
-
   const selectedCompany = companies.find(c => c.id === selectedCompanyId)
-
-  // Check if we're on the company setup page (adding a new company)
-  const isOnSetupPage = pathname === '/dashboard/company/setup'
 
   // Helper to render a nav link with both subscription and progression locking
   const renderNavLink = (link: NavLink, options?: { showBadge?: boolean; badgeType?: 'warning' | 'alert' }) => {
@@ -252,59 +228,15 @@ export function Sidebar() {
               Add Company
             </button>
           )}
-          {!isLoading && companies.length > 0 && (
-            <Select
-              value={isOnSetupPage ? '___add_new___' : (selectedCompanyId || undefined)}
-              onValueChange={handleCompanyChange}
-            >
-              <SelectTrigger className="w-full bg-sidebar-accent/50 border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent focus:ring-sidebar-primary focus:ring-offset-sidebar">
-                <div className="flex items-center gap-2 truncate">
-                  {isOnSetupPage ? (
-                    <>
-                      <svg className="h-4 w-4 shrink-0 text-primary" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                      </svg>
-                      <span className="text-primary">New Company</span>
-                    </>
-                  ) : (
-                    <>
-                      {isSelectedCompanySubscribingOwner ? (
-                        <CrownIcon className="h-4 w-4 shrink-0 text-amber-500" />
-                      ) : (
-                        <BuildingIcon className="h-4 w-4 shrink-0 text-sidebar-foreground/60" />
-                      )}
-                      <SelectValue placeholder="Select company">
-                        {selectedCompany?.name || 'Select company'}
-                      </SelectValue>
-                    </>
-                  )}
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                {companies.map((company) => (
-                  <SelectItem key={company.id} value={company.id}>
-                    <span className="flex items-center gap-2">
-                      {company.isSubscribingOwner && (
-                        <CrownIcon className="h-3.5 w-3.5 text-amber-500" />
-                      )}
-                      {company.name}
-                      {company.role === 'staff' && (
-                        <span className="text-xs text-muted-foreground">(Staff)</span>
-                      )}
-                    </span>
-                  </SelectItem>
-                ))}
-                <div className="border-t border-border my-1" />
-                <SelectItem value="___add_new___" className="text-primary">
-                  <span className="flex items-center gap-2">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    Add Company
-                  </span>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+          {!isLoading && companies.length > 0 && selectedCompany && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-sidebar-accent/50 border border-sidebar-border rounded-md text-sidebar-foreground">
+              {isSelectedCompanySubscribingOwner ? (
+                <CrownIcon className="h-4 w-4 shrink-0 text-amber-500" />
+              ) : (
+                <BuildingIcon className="h-4 w-4 shrink-0 text-sidebar-foreground/60" />
+              )}
+              <span className="truncate font-medium">{selectedCompany.name}</span>
+            </div>
           )}
         </div>
 
