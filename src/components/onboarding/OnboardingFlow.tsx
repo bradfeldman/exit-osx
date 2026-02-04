@@ -373,8 +373,17 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
   }
 
   const handleComplete = async () => {
+    console.log('[ONBOARDING] handleComplete called, createdCompanyId:', createdCompanyId, 'riskResults:', riskResults)
+
     // Save the onboarding results as a ValuationSnapshot (so dashboard can display them)
     if (createdCompanyId && riskResults) {
+      console.log('[ONBOARDING] Creating snapshot with values:', {
+        briScore: riskResults.briScore,
+        currentValue: riskResults.currentValue,
+        potentialValue: riskResults.potentialValue,
+        valueGap: riskResults.valueGap,
+      })
+
       try {
         const snapshotResponse = await fetch(`/api/companies/${createdCompanyId}/onboarding-snapshot`, {
           method: 'POST',
@@ -389,12 +398,24 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
           }),
         })
 
+        console.log('[ONBOARDING] Snapshot response status:', snapshotResponse.status)
+
         if (!snapshotResponse.ok) {
-          console.error('Failed to save onboarding snapshot:', await snapshotResponse.text())
+          const errorText = await snapshotResponse.text()
+          console.error('Failed to save onboarding snapshot:', errorText)
+        } else {
+          const result = await snapshotResponse.json()
+          console.log('[ONBOARDING] Snapshot created successfully:', result)
         }
       } catch (err) {
         console.error('Failed to save onboarding snapshot:', err)
       }
+    } else {
+      console.warn('[ONBOARDING] Skipping snapshot creation - missing data:', {
+        hasCompanyId: !!createdCompanyId,
+        hasRiskResults: !!riskResults,
+      })
+    }
 
       // Send the onboarding complete email (non-blocking)
       fetch('/api/email/onboarding-complete', {
