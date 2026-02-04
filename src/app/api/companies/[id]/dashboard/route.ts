@@ -503,6 +503,8 @@ export async function GET(
             const valueGap = Number(latestSnapshot.valueGap)
             const marketPremium = Math.max(0, currentValue - potentialValue)
 
+            console.log(`[DASHBOARD] Company ${companyId}: Using snapshot values - currentValue: ${currentValue}, potentialValue: ${potentialValue}, valueGap: ${valueGap}, isEbitdaFromFinancials: ${isEbitdaFromFinancials}, useDCF: ${useDCF}, hasMultipleOverride: ${hasMultipleOverride}`)
+
             return {
               currentValue,
               potentialValue,
@@ -523,6 +525,7 @@ export async function GET(
           }
 
           // Recalculate values when financials, DCF, or custom multiples are used
+          console.log(`[DASHBOARD] Company ${companyId}: RECALCULATING values - isEbitdaFromFinancials: ${isEbitdaFromFinancials}, useDCF: ${useDCF}, hasMultipleOverride: ${hasMultipleOverride}, adjustedEbitda: ${adjustedEbitda}`)
           const ALPHA = 1.4
 
           // Recalculate base and final multiples using the (possibly overridden) range

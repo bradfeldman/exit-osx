@@ -131,6 +131,8 @@ export async function POST(
     const potentialValue = body.potentialValue
     const valueGap = body.valueGap
 
+    console.log(`[ONBOARDING_SNAPSHOT] Company ${companyId}: Storing UI values - currentValue: ${currentValue}, potentialValue: ${potentialValue}, valueGap: ${valueGap}, briScore: ${body.briScore}`)
+
     // Convert category scores from 0-100 to 0-1 scale
     const getCategoryScoreNormalized = (category: string): number => {
       const score = body.categoryScores[category]
