@@ -397,14 +397,38 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
       categoryScoresPercent[category] = Math.round(score * 100)
     }
 
-    setRiskResults({
+    const riskResultsData = {
       briScore: Math.round(briScore * 100), // Convert to percentage for display
       categoryScores: categoryScoresPercent,
       valueGapByCategory,
       currentValue,
       potentialValue,
       valueGap,
-    })
+    }
+
+    setRiskResults(riskResultsData)
+
+    // Create snapshot IMMEDIATELY so it exists when tasks are generated in FirstMoveStep
+    // This is critical for accurate task value calculations
+    if (createdCompanyId) {
+      try {
+        await fetch(`/api/companies/${createdCompanyId}/onboarding-snapshot`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            briScore: riskResultsData.briScore,
+            categoryScores: riskResultsData.categoryScores,
+            valueGapByCategory: riskResultsData.valueGapByCategory,
+            currentValue: riskResultsData.currentValue,
+            potentialValue: riskResultsData.potentialValue,
+            valueGap: riskResultsData.valueGap,
+          }),
+        })
+        console.log('[ONBOARDING] Snapshot created after quick scan for task value calculation')
+      } catch (err) {
+        console.error('[ONBOARDING] Failed to create snapshot after quick scan:', err)
+      }
+    }
 
     setQuickScanComplete(true)
     goToStep(5) // Go to Risk Results step
@@ -413,41 +437,15 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
   const handleComplete = async () => {
     console.log('[ONBOARDING] handleComplete called, createdCompanyId:', createdCompanyId, 'riskResults:', riskResults)
 
-    // Save the onboarding results as a ValuationSnapshot (so dashboard can display them)
+    // Note: Snapshot was already created in handleQuickScanComplete for task value calculation
+    // We just need to send the completion email here
     if (createdCompanyId && riskResults) {
-      console.log('[ONBOARDING] Creating snapshot with values:', {
+      console.log('[ONBOARDING] Completing onboarding with values:', {
         briScore: riskResults.briScore,
         currentValue: riskResults.currentValue,
         potentialValue: riskResults.potentialValue,
         valueGap: riskResults.valueGap,
       })
-
-      try {
-        const snapshotResponse = await fetch(`/api/companies/${createdCompanyId}/onboarding-snapshot`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            briScore: riskResults.briScore,
-            categoryScores: riskResults.categoryScores,
-            valueGapByCategory: riskResults.valueGapByCategory,
-            currentValue: riskResults.currentValue,
-            potentialValue: riskResults.potentialValue,
-            valueGap: riskResults.valueGap,
-          }),
-        })
-
-        console.log('[ONBOARDING] Snapshot response status:', snapshotResponse.status)
-
-        if (!snapshotResponse.ok) {
-          const errorText = await snapshotResponse.text()
-          console.error('Failed to save onboarding snapshot:', errorText)
-        } else {
-          const result = await snapshotResponse.json()
-          console.log('[ONBOARDING] Snapshot created successfully:', result)
-        }
-      } catch (err) {
-        console.error('Failed to save onboarding snapshot:', err)
-      }
       // Send the onboarding complete email (non-blocking)
       fetch('/api/email/onboarding-complete', {
         method: 'POST',
