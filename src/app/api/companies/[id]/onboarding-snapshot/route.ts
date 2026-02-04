@@ -125,10 +125,11 @@ export async function POST(
     // Final multiple with floor guarantee
     const finalMultiple = industryMultipleLow + (baseMultiple - industryMultipleLow) * (1 - discountFraction)
 
-    // Calculate valuations properly
-    const currentValue = adjustedEbitda * finalMultiple
-    const potentialValue = adjustedEbitda * baseMultiple
-    const valueGap = potentialValue - currentValue
+    // USE THE VALUES FROM THE UI - this is what the user saw during onboarding
+    // Don't recalculate - the onboarding flow showed these values and we need consistency
+    const currentValue = body.currentValue
+    const potentialValue = body.potentialValue
+    const valueGap = body.valueGap
 
     // Convert category scores from 0-100 to 0-1 scale
     const getCategoryScoreNormalized = (category: string): number => {
