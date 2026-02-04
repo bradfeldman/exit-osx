@@ -329,7 +329,7 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     router.push('/dashboard')
   }
 
-  const handleQuickScanComplete = (scanResults: QuickScanResults) => {
+  const handleQuickScanComplete = async (scanResults: QuickScanResults) => {
     // Calculate category scores based on quick scan risks (as decimals 0-1)
     const categoryScoresObj: Record<string, number> = {
       FINANCIAL: 0.70,
