@@ -7,7 +7,6 @@
 
 import { prisma } from '@/lib/prisma'
 import { BriCategory } from '@prisma/client'
-import { getIndustryMultiples } from './industry-multiples'
 
 // Alpha constant for non-linear discount calculation (matches recalculate-snapshot.ts)
 const ALPHA = 1.4
@@ -140,19 +139,12 @@ export async function improveSnapshotForOnboardingTask(
       newBriScore += score * weight
     }
 
-    // Get industry multiples for valuation recalculation
-    const multiples = await getIndustryMultiples(
-      company.icbSubSector,
-      company.icbSector,
-      company.icbSuperSector,
-      company.icbIndustry
-    )
-
-    // Recalculate valuation with new BRI score
+    // Use the SAME industry multiples from the existing snapshot
+    // This ensures valuation changes only due to BRI improvement, not different multiples
     const adjustedEbitda = Number(latestSnapshot.adjustedEbitda)
     const coreScore = Number(latestSnapshot.coreScore)
-    const industryMultipleLow = multiples.ebitdaMultipleLow
-    const industryMultipleHigh = multiples.ebitdaMultipleHigh
+    const industryMultipleLow = Number(latestSnapshot.industryMultipleLow)
+    const industryMultipleHigh = Number(latestSnapshot.industryMultipleHigh)
 
     // Step 1: Core Score positions within industry range
     const baseMultiple = industryMultipleLow + coreScore * (industryMultipleHigh - industryMultipleLow)
