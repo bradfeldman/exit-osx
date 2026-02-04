@@ -5,6 +5,17 @@ import { generateOnboardingTasks } from '@/lib/ai/onboarding-tasks'
 import { prisma } from '@/lib/prisma'
 import type { BusinessProfile, Subcategory, IdentifiedDriver } from '@/lib/ai/types'
 import { DiagnosisSubcategory, BriCategory } from '@prisma/client'
+import { calculateValuation } from '@/lib/valuation/calculate-valuation'
+
+// Default category weights for BRI calculation (must match improve-snapshot-for-task.ts)
+const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
+  FINANCIAL: 0.25,
+  TRANSFERABILITY: 0.20,
+  OPERATIONAL: 0.20,
+  MARKET: 0.15,
+  LEGAL_TAX: 0.10,
+  PERSONAL: 0.10,
+}
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -184,15 +195,21 @@ async function handleOnboardingTaskGeneration(body: {
   }
 
   try {
-    // Get company details
-    const company = await prisma.company.findUnique({
-      where: { id: companyId },
-      select: {
-        businessDescription: true,
-        icbSubSector: true,
-        annualRevenue: true,
-      }
-    })
+    // Get company details and latest snapshot for accurate value calculation
+    const [company, latestSnapshot] = await Promise.all([
+      prisma.company.findUnique({
+        where: { id: companyId },
+        select: {
+          businessDescription: true,
+          icbSubSector: true,
+          annualRevenue: true,
+        }
+      }),
+      prisma.valuationSnapshot.findFirst({
+        where: { companyId },
+        orderBy: { createdAt: 'desc' },
+      })
+    ])
 
     if (!company) {
       return NextResponse.json(
@@ -247,12 +264,106 @@ async function handleOnboardingTaskGeneration(body: {
       return mapping[category.toUpperCase()] || 'OPERATIONAL'
     }
 
+    // Calculate expected value impact using the actual valuation formula
+    // This replaces the AI's guess with the real expected dollar impact
+    function calculateExpectedValueImpact(
+      briCategory: string,
+      taskCount: number,
+      totalTasksInCategory: number
+    ): number {
+      if (!latestSnapshot) return 0
+
+      // Get current category score from snapshot
+      const categoryFieldMap: Record<string, string> = {
+        FINANCIAL: 'briFinancial',
+        TRANSFERABILITY: 'briTransferability',
+        OPERATIONAL: 'briOperational',
+        MARKET: 'briMarket',
+        LEGAL_TAX: 'briLegalTax',
+        PERSONAL: 'briPersonal',
+      }
+      const categoryField = categoryFieldMap[briCategory]
+      if (!categoryField) return 0
+
+      const currentCategoryScore = Number(latestSnapshot[categoryField as keyof typeof latestSnapshot]) || 0
+      const gapToClose = 1.0 - currentCategoryScore
+
+      // Calculate improvement ratio (same logic as improve-snapshot-for-task.ts)
+      // Assume equal distribution among tasks in this category
+      let improvementRatio = totalTasksInCategory > 0 ? 1 / totalTasksInCategory : 0.1
+      improvementRatio = Math.max(0.05, Math.min(0.25, improvementRatio))
+
+      const improvement = gapToClose * improvementRatio
+      const newCategoryScore = Math.min(1.0, currentCategoryScore + improvement)
+
+      // Calculate new BRI with improved category
+      const categoryScores: Record<string, number> = {
+        FINANCIAL: Number(latestSnapshot.briFinancial),
+        TRANSFERABILITY: Number(latestSnapshot.briTransferability),
+        OPERATIONAL: Number(latestSnapshot.briOperational),
+        MARKET: Number(latestSnapshot.briMarket),
+        LEGAL_TAX: Number(latestSnapshot.briLegalTax),
+        PERSONAL: Number(latestSnapshot.briPersonal),
+      }
+      categoryScores[briCategory] = newCategoryScore
+
+      let newBriScore = 0
+      for (const [category, score] of Object.entries(categoryScores)) {
+        const weight = DEFAULT_CATEGORY_WEIGHTS[category] || 0
+        newBriScore += score * weight
+      }
+
+      // Calculate new valuation
+      const adjustedEbitda = Number(latestSnapshot.adjustedEbitda)
+      const coreScore = Number(latestSnapshot.coreScore)
+      const industryMultipleLow = Number(latestSnapshot.industryMultipleLow)
+      const industryMultipleHigh = Number(latestSnapshot.industryMultipleHigh)
+      const currentBriScore = Number(latestSnapshot.briScore)
+
+      const currentValuation = calculateValuation({
+        adjustedEbitda,
+        industryMultipleLow,
+        industryMultipleHigh,
+        coreScore,
+        briScore: currentBriScore,
+      })
+
+      const newValuation = calculateValuation({
+        adjustedEbitda,
+        industryMultipleLow,
+        industryMultipleHigh,
+        coreScore,
+        briScore: newBriScore,
+      })
+
+      // Return the actual expected value increase
+      return Math.round(newValuation.currentValue - currentValuation.currentValue)
+    }
+
+    // Count tasks per category for accurate impact calculation
+    const tasksByCategory: Record<string, number> = {}
+    for (const task of data.tasks) {
+      const category = normalizeBriCategory(task.category)
+      tasksByCategory[category] = (tasksByCategory[category] || 0) + 1
+    }
+
     // Create task records in the database
     const tasksWithIds = await Promise.all(
       data.tasks.map(async (task, index) => {
         // Create as a general task (not tied to a specific diagnosis subcategory)
-        const estimatedValue = task.estimatedValue ? Math.round(task.estimatedValue) : 0
         const briCategory = normalizeBriCategory(task.category)
+
+        // Calculate the actual expected value impact using the valuation formula
+        // This replaces the AI's guess with the real dollar impact
+        const calculatedValue = calculateExpectedValueImpact(
+          briCategory,
+          1, // This task
+          tasksByCategory[briCategory] || 1
+        )
+
+        // Use calculated value if we have snapshot data, otherwise fall back to AI estimate
+        const estimatedValue = calculatedValue > 0 ? calculatedValue : (task.estimatedValue ? Math.round(task.estimatedValue) : 0)
+
         const createdTask = await prisma.task.create({
           data: {
             companyId,
@@ -276,7 +387,7 @@ async function handleOnboardingTaskGeneration(body: {
           title: task.title,
           description: task.description,
           category: task.category,
-          estimatedValue: task.estimatedValue || 0,
+          estimatedValue,
           estimatedHours: task.estimatedHours || 2,
         }
       })
