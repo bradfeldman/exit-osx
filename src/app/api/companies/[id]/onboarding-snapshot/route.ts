@@ -36,13 +36,23 @@ export async function POST(
   console.log(`[ONBOARDING_SNAPSHOT] Body received - briScore: ${body.briScore}, currentValue: ${body.currentValue}, potentialValue: ${body.potentialValue}, valueGap: ${body.valueGap}`)
 
   try {
+    // Look up the Prisma User by auth ID
+    const prismaUser = await prisma.user.findUnique({
+      where: { authId: user.id },
+    })
+
+    if (!prismaUser) {
+      console.log('[ONBOARDING_SNAPSHOT] Prisma user not found for authId:', user.id)
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
     // Verify company belongs to user
     const company = await prisma.company.findFirst({
       where: {
         id: companyId,
         organization: {
           users: {
-            some: { id: user.id }
+            some: { id: prismaUser.id }
           }
         }
       },
@@ -52,6 +62,7 @@ export async function POST(
     })
 
     if (!company) {
+      console.log('[ONBOARDING_SNAPSHOT] Company not found or user not in org:', companyId)
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
@@ -149,7 +160,7 @@ export async function POST(
     const snapshot = await prisma.valuationSnapshot.create({
       data: {
         companyId,
-        createdByUserId: user.id,
+        createdByUserId: prismaUser.id,
         adjustedEbitda,
         industryMultipleLow,
         industryMultipleHigh,
