@@ -476,9 +476,8 @@ export async function GET(
         adjustedEbitda,
       },
       // Tier 1: Core KPIs
-      // Always recalculate valuations using the fresh adjustedEbitda
-      // Use snapshot for BRI score, Core Score, and multiples - but recalculate dollar values
-      // UNLESS useDCFValue is enabled - then use DCF enterprise value
+      // When no financials have been uploaded, use snapshot's stored values directly
+      // When financials are uploaded OR using DCF OR custom multiples, recalculate
       tier1: (() => {
         if (latestSnapshot) {
           // Use override multiples if set, otherwise use snapshot's original industry multiples
@@ -489,9 +488,41 @@ export async function GET(
             ? multipleHigh
             : Number(latestSnapshot.industryMultipleHigh)
 
-          // Recalculate the final multiple using the effective range and the snapshot's scores
           const snapshotCoreScore = Number(latestSnapshot.coreScore)
           const snapshotBriScore = Number(latestSnapshot.briScore)
+
+          // Determine if we should use snapshot values directly or recalculate
+          // Use snapshot values when: no financials, no DCF, no custom multiples
+          // This prevents valuation jumps after onboarding
+          const shouldUseSnapshotValues = !isEbitdaFromFinancials && !useDCF && !hasMultipleOverride
+
+          if (shouldUseSnapshotValues) {
+            // Use snapshot's stored values directly - these were calculated consistently during onboarding/task completion
+            const currentValue = Number(latestSnapshot.currentValue)
+            const potentialValue = Number(latestSnapshot.potentialValue)
+            const valueGap = Number(latestSnapshot.valueGap)
+            const marketPremium = Math.max(0, currentValue - potentialValue)
+
+            return {
+              currentValue,
+              potentialValue,
+              valueGap,
+              marketPremium,
+              briScore: Math.round(snapshotBriScore * 100),
+              coreScore: Math.round(snapshotCoreScore * 100),
+              finalMultiple: Number(latestSnapshot.finalMultiple),
+              multipleRange: {
+                low: effectiveMultipleLow,
+                high: effectiveMultipleHigh,
+              },
+              industryName: buildIndustryPath(company),
+              isEstimated: false,
+              useDCFValue: false,
+              hasCustomMultiples: false,
+            }
+          }
+
+          // Recalculate values when financials, DCF, or custom multiples are used
           const ALPHA = 1.4
 
           // Recalculate base and final multiples using the (possibly overridden) range
