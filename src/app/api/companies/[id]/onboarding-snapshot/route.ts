@@ -19,15 +19,21 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  console.log('[ONBOARDING_SNAPSHOT] POST request received')
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
+    console.log('[ONBOARDING_SNAPSHOT] Unauthorized - no user')
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const { id: companyId } = await params
+  console.log(`[ONBOARDING_SNAPSHOT] Company ${companyId} - User ${user.id}`)
+
   const body: OnboardingSnapshotRequest = await request.json()
+  console.log(`[ONBOARDING_SNAPSHOT] Body received - briScore: ${body.briScore}, currentValue: ${body.currentValue}, potentialValue: ${body.potentialValue}, valueGap: ${body.valueGap}`)
 
   try {
     // Verify company belongs to user
