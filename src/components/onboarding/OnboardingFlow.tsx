@@ -330,22 +330,30 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
   }
 
   const handleQuickScanComplete = (scanResults: QuickScanResults) => {
-    // Calculate category scores based on quick scan risks
+    // Calculate category scores based on quick scan risks (as decimals 0-1)
     const categoryScoresObj: Record<string, number> = {
-      FINANCIAL: 70,
-      TRANSFERABILITY: 70,
-      OPERATIONAL: 70,
-      MARKET: 70,
-      LEGAL_TAX: 70,
-      PERSONAL: 70,
+      FINANCIAL: 0.70,
+      TRANSFERABILITY: 0.70,
+      OPERATIONAL: 0.70,
+      MARKET: 0.70,
+      LEGAL_TAX: 0.70,
+      PERSONAL: 0.70,
     }
 
-    // Reduce scores for identified risks
+    // Reduce scores for identified risks (reduce by 0.25, min 0.30)
     scanResults.risksIdentified.forEach(risk => {
       if (categoryScoresObj[risk.category] !== undefined) {
-        categoryScoresObj[risk.category] = Math.max(30, categoryScoresObj[risk.category] - 25)
+        categoryScoresObj[risk.category] = Math.max(0.30, categoryScoresObj[risk.category] - 0.25)
       }
     })
+
+    // Calculate BRI from weighted category scores (MUST match improve-snapshot-for-task.ts)
+    // This ensures consistency between onboarding and task completion recalculations
+    let briScore = 0
+    for (const [category, score] of Object.entries(categoryScoresObj)) {
+      const weight = DEFAULT_BRI_WEIGHTS[category as keyof typeof DEFAULT_BRI_WEIGHTS] || 0
+      briScore += score * weight
+    }
 
     // Use the canonical non-linear valuation formula
     // Core Score is 1.0 for onboarding (all optimal defaults)
@@ -355,36 +363,43 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     const multipleHigh = industryPreviewData?.multipleHigh || 6.0
 
     // Calculate valuation using the shared utility (non-linear formula)
+    // briScore is now a decimal 0-1, so multiply by 100 for the percentage version
     const valuation = calculateValuationFromPercentages({
       adjustedEbitda,
       industryMultipleLow: multipleLow,
       industryMultipleHigh: multipleHigh,
       coreScore,
-      briScorePercent: scanResults.briScore,
+      briScorePercent: briScore * 100,
     })
 
     const currentValue = Math.round(valuation.currentValue)
     const potentialValue = Math.round(valuation.potentialValue)
     const valueGap = Math.round(valuation.valueGap)
 
-    // Calculate value gap attribution by category
+    // Calculate value gap attribution by category (categoryScoresObj is already 0-1 decimals)
     const valueGapByCategory: Record<string, number> = {}
     const totalWeightedGap = Object.entries(categoryScoresObj).reduce((sum, [category, score]) => {
       const weight = DEFAULT_BRI_WEIGHTS[category as keyof typeof DEFAULT_BRI_WEIGHTS] || 0
-      return sum + weight * ((100 - score) / 100)
+      return sum + weight * (1 - score)
     }, 0)
 
     Object.entries(categoryScoresObj).forEach(([category, score]) => {
       const weight = DEFAULT_BRI_WEIGHTS[category as keyof typeof DEFAULT_BRI_WEIGHTS] || 0
-      const roomForImprovement = (100 - score) / 100
+      const roomForImprovement = 1 - score
       valueGapByCategory[category] = totalWeightedGap > 0
         ? Math.round((weight * roomForImprovement / totalWeightedGap) * valueGap)
         : 0
     })
 
+    // Convert category scores to percentages for display (0-100 scale)
+    const categoryScoresPercent: Record<string, number> = {}
+    for (const [category, score] of Object.entries(categoryScoresObj)) {
+      categoryScoresPercent[category] = Math.round(score * 100)
+    }
+
     setRiskResults({
-      briScore: scanResults.briScore,
-      categoryScores: categoryScoresObj,
+      briScore: Math.round(briScore * 100), // Convert to percentage for display
+      categoryScores: categoryScoresPercent,
       valueGapByCategory,
       currentValue,
       potentialValue,
