@@ -46,6 +46,7 @@ export interface ImproveSnapshotResult {
   categoryImproved?: string
   categoryPreviousScore?: number
   categoryNewScore?: number
+  actualValueIncrease?: number
 }
 
 /**
@@ -155,6 +156,10 @@ export async function improveSnapshotForOnboardingTask(
 
     const { baseMultiple, finalMultiple, discountFraction, currentValue, potentialValue, valueGap } = valuation
 
+    // Calculate the ACTUAL dollar increase from this task completion
+    const previousCurrentValue = Number(latestSnapshot.currentValue)
+    const actualValueIncrease = Math.round(currentValue - previousCurrentValue)
+
     // Create new snapshot with improved scores
     const newSnapshot = await prisma.valuationSnapshot.create({
       data: {
@@ -181,7 +186,19 @@ export async function improveSnapshotForOnboardingTask(
       },
     })
 
-    console.log(`[ONBOARDING_TASK] Improved ${task.briCategory} score: ${currentCategoryScore.toFixed(3)} → ${newCategoryScore.toFixed(3)} (BRI: ${Number(latestSnapshot.briScore).toFixed(3)} → ${newBriScore.toFixed(3)})`)
+    // Update the task's rawImpact to reflect the ACTUAL value increase
+    // This ensures "recovered" counters match the real currentValue change
+    if (actualValueIncrease > 0) {
+      await prisma.task.update({
+        where: { id: task.id },
+        data: {
+          rawImpact: actualValueIncrease,
+          normalizedValue: actualValueIncrease,
+        },
+      })
+    }
+
+    console.log(`[ONBOARDING_TASK] Improved ${task.briCategory} score: ${currentCategoryScore.toFixed(3)} → ${newCategoryScore.toFixed(3)} (BRI: ${Number(latestSnapshot.briScore).toFixed(3)} → ${newBriScore.toFixed(3)}, Value: $${previousCurrentValue.toFixed(0)} → $${currentValue.toFixed(0)}, actual +$${actualValueIncrease})`)
 
     return {
       success: true,
@@ -191,6 +208,7 @@ export async function improveSnapshotForOnboardingTask(
       categoryImproved: task.briCategory,
       categoryPreviousScore: currentCategoryScore,
       categoryNewScore: newCategoryScore,
+      actualValueIncrease,
     }
   } catch (error) {
     console.error('Error improving snapshot for onboarding task:', error)
