@@ -7,9 +7,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { BriCategory } from '@prisma/client'
-
-// Alpha constant for non-linear discount calculation (matches recalculate-snapshot.ts)
-const ALPHA = 1.4
+import { ALPHA, calculateValuation } from './calculate-valuation'
 
 // BRI category field mapping
 const BRI_CATEGORY_FIELDS: Record<string, string> = {
@@ -146,19 +144,16 @@ export async function improveSnapshotForOnboardingTask(
     const industryMultipleLow = Number(latestSnapshot.industryMultipleLow)
     const industryMultipleHigh = Number(latestSnapshot.industryMultipleHigh)
 
-    // Step 1: Core Score positions within industry range
-    const baseMultiple = industryMultipleLow + coreScore * (industryMultipleHigh - industryMultipleLow)
+    // Use shared utility for consistent valuation calculation
+    const valuation = calculateValuation({
+      adjustedEbitda,
+      industryMultipleLow,
+      industryMultipleHigh,
+      coreScore,
+      briScore: newBriScore,
+    })
 
-    // Step 2: Non-linear discount based on NEW BRI
-    const discountFraction = Math.pow(1 - newBriScore, ALPHA)
-
-    // Step 3: Final multiple with floor guarantee
-    const finalMultiple = industryMultipleLow + (baseMultiple - industryMultipleLow) * (1 - discountFraction)
-
-    // Calculate new valuations
-    const currentValue = adjustedEbitda * finalMultiple
-    const potentialValue = adjustedEbitda * baseMultiple
-    const valueGap = Math.max(0, potentialValue - currentValue)
+    const { baseMultiple, finalMultiple, discountFraction, currentValue, potentialValue, valueGap } = valuation
 
     // Create new snapshot with improved scores
     const newSnapshot = await prisma.valuationSnapshot.create({

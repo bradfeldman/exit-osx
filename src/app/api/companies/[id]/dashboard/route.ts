@@ -26,6 +26,10 @@ function buildIndustryPath(company: {
 }
 
 // Calculate Core Score from core factors (0-1 scale)
+// NOTE: revenueSizeCategory is intentionally EXCLUDED because revenue already
+// affects valuation through the EBITDA × multiple calculation.
+// Including it would double-count revenue impact.
+// This matches the calculation in calculate-valuation.ts and recalculate-snapshot.ts
 function calculateCoreScore(coreFactors: {
   revenueSizeCategory: string
   revenueModel: string
@@ -37,14 +41,6 @@ function calculateCoreScore(coreFactors: {
   if (!coreFactors) return null
 
   const factorScores: Record<string, Record<string, number>> = {
-    revenueSizeCategory: {
-      UNDER_500K: 0.2,
-      FROM_500K_TO_1M: 0.4,
-      FROM_1M_TO_3M: 0.6,
-      FROM_3M_TO_10M: 0.8,
-      FROM_10M_TO_25M: 0.9,
-      OVER_25M: 1.0,
-    },
     revenueModel: {
       PROJECT_BASED: 0.25,
       TRANSACTIONAL: 0.5,
@@ -78,7 +74,6 @@ function calculateCoreScore(coreFactors: {
   }
 
   const scores = [
-    factorScores.revenueSizeCategory[coreFactors.revenueSizeCategory] ?? 0.5,
     factorScores.revenueModel[coreFactors.revenueModel] ?? 0.5,
     factorScores.grossMarginProxy[coreFactors.grossMarginProxy] ?? 0.5,
     factorScores.laborIntensity[coreFactors.laborIntensity] ?? 0.5,

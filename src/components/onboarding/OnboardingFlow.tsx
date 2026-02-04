@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { DEFAULT_BRI_WEIGHTS } from '@/lib/bri-weights'
 import { LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { calculateValuationFromPercentages } from '@/lib/valuation/calculate-valuation'
 
 // Onboarding step definitions - Streamlined Dan/Alex flow
 const STEPS = [
@@ -107,6 +108,10 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     valuationHigh: number
     potentialGap: number
     industryName: string
+    // Additional fields for correct valuation calculation
+    adjustedEbitda: number
+    multipleLow: number
+    multipleHigh: number
   } | null>(() => {
     if (typeof window === 'undefined') return null
     const stored = sessionStorage.getItem('onboarding_previewData')
@@ -273,6 +278,10 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
           valuationHigh: Math.round(valuationHigh),
           potentialGap: Math.max(0, potentialGap),
           industryName: formData.icbSubSector.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()),
+          // Store values needed for correct valuation calculation
+          adjustedEbitda,
+          multipleLow,
+          multipleHigh,
         }
         setIndustryPreviewData(previewData)
       }
@@ -338,11 +347,25 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
       }
     })
 
-    // Calculate value gap based on BRI score
-    const potentialValue = industryPreviewData?.valuationHigh || formData.annualRevenue * 2.5
-    const briRatio = scanResults.briScore / 100
-    const currentValue = Math.round(potentialValue * briRatio)
-    const valueGap = potentialValue - currentValue
+    // Use the canonical non-linear valuation formula
+    // Core Score is 1.0 for onboarding (all optimal defaults)
+    const coreScore = 1.0
+    const adjustedEbitda = industryPreviewData?.adjustedEbitda || formData.annualRevenue * 0.15
+    const multipleLow = industryPreviewData?.multipleLow || 3.0
+    const multipleHigh = industryPreviewData?.multipleHigh || 6.0
+
+    // Calculate valuation using the shared utility (non-linear formula)
+    const valuation = calculateValuationFromPercentages({
+      adjustedEbitda,
+      industryMultipleLow: multipleLow,
+      industryMultipleHigh: multipleHigh,
+      coreScore,
+      briScorePercent: scanResults.briScore,
+    })
+
+    const currentValue = Math.round(valuation.currentValue)
+    const potentialValue = Math.round(valuation.potentialValue)
+    const valueGap = Math.round(valuation.valueGap)
 
     // Calculate value gap attribution by category
     const valueGapByCategory: Record<string, number> = {}

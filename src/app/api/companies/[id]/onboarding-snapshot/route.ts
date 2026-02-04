@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { getIndustryMultiples, estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
-
-// Alpha constant for non-linear discount calculation (matches recalculate-snapshot.ts)
-const ALPHA = 1.4
+import {
+  ALPHA,
+  calculateCoreScore,
+  calculateValuation,
+  type CoreFactors,
+} from '@/lib/valuation/calculate-valuation'
 
 interface OnboardingSnapshotRequest {
   briScore: number
@@ -79,54 +82,9 @@ export async function POST(
     const revenue = Number(company.annualRevenue)
     const adjustedEbitda = estimateEbitdaFromRevenue(revenue, multiples)
 
-    // Calculate Core Score from company factors (should be 1.0 for onboarding defaults)
+    // Calculate Core Score using shared utility (should be 1.0 for onboarding defaults)
     const coreFactors = company.coreFactors
-    let coreScore = 1.0 // Default for onboarding (all optimal settings)
-
-    if (coreFactors) {
-      const factorScores: Record<string, Record<string, number>> = {
-        revenueModel: {
-          PROJECT_BASED: 0.25,
-          TRANSACTIONAL: 0.5,
-          RECURRING_CONTRACTS: 0.75,
-          SUBSCRIPTION_SAAS: 1.0,
-        },
-        grossMarginProxy: {
-          LOW: 0.25,
-          MODERATE: 0.5,
-          GOOD: 0.75,
-          EXCELLENT: 1.0,
-        },
-        laborIntensity: {
-          VERY_HIGH: 0.25,
-          HIGH: 0.5,
-          MODERATE: 0.75,
-          LOW: 1.0,
-        },
-        assetIntensity: {
-          ASSET_HEAVY: 0.33,
-          MODERATE: 0.67,
-          ASSET_LIGHT: 1.0,
-        },
-        ownerInvolvement: {
-          CRITICAL: 0.0,
-          HIGH: 0.25,
-          MODERATE: 0.5,
-          LOW: 0.75,
-          MINIMAL: 1.0,
-        },
-      }
-
-      const scores = [
-        factorScores.revenueModel[coreFactors.revenueModel] || 0.5,
-        factorScores.grossMarginProxy[coreFactors.grossMarginProxy] || 0.5,
-        factorScores.laborIntensity[coreFactors.laborIntensity] || 0.5,
-        factorScores.assetIntensity[coreFactors.assetIntensity] || 0.5,
-        factorScores.ownerInvolvement[coreFactors.ownerInvolvement] || 0.5,
-      ]
-
-      coreScore = scores.reduce((a, b) => a + b, 0) / scores.length
-    }
+    const coreScore = calculateCoreScore(coreFactors as CoreFactors | null)
 
     const industryMultipleLow = multiples.ebitdaMultipleLow
     const industryMultipleHigh = multiples.ebitdaMultipleHigh
@@ -134,20 +92,23 @@ export async function POST(
     // Convert BRI score from 0-100 to 0-1 scale
     const briScoreNormalized = body.briScore / 100
 
-    // Calculate base multiple (positioned by core score within industry range)
-    const baseMultiple = industryMultipleLow + coreScore * (industryMultipleHigh - industryMultipleLow)
+    // Calculate valuation using shared utility for consistency
+    // This ensures server-side calculation matches what UI showed
+    const valuation = calculateValuation({
+      adjustedEbitda,
+      industryMultipleLow,
+      industryMultipleHigh,
+      coreScore,
+      briScore: briScoreNormalized,
+    })
 
-    // Non-linear discount based on BRI
-    const discountFraction = Math.pow(1 - briScoreNormalized, ALPHA)
+    const { baseMultiple, finalMultiple, discountFraction } = valuation
 
-    // Final multiple with floor guarantee
-    const finalMultiple = industryMultipleLow + (baseMultiple - industryMultipleLow) * (1 - discountFraction)
-
-    // USE THE VALUES FROM THE UI - this is what the user saw during onboarding
-    // Don't recalculate - the onboarding flow showed these values and we need consistency
-    const currentValue = body.currentValue
-    const potentialValue = body.potentialValue
-    const valueGap = body.valueGap
+    // Use server-calculated values for consistency
+    // The UI should now use the same formula, so these should match
+    const currentValue = Math.round(valuation.currentValue)
+    const potentialValue = Math.round(valuation.potentialValue)
+    const valueGap = Math.round(valuation.valueGap)
 
     console.log(`[ONBOARDING_SNAPSHOT] Company ${companyId}: Storing UI values - currentValue: ${currentValue}, potentialValue: ${potentialValue}, valueGap: ${valueGap}, briScore: ${body.briScore}`)
 

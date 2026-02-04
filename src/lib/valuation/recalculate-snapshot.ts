@@ -3,6 +3,11 @@
 
 import { prisma } from '@/lib/prisma'
 import { getIndustryMultiples, estimateEbitdaFromRevenue } from './industry-multiples'
+import {
+  ALPHA,
+  CORE_FACTOR_SCORES,
+  calculateValuation,
+} from './calculate-valuation'
 
 // Default category weights for BRI calculation
 const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
@@ -13,9 +18,6 @@ const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
   LEGAL_TAX: 0.10,
   PERSONAL: 0.10,
 }
-
-// Alpha constant for non-linear discount calculation
-const ALPHA = 1.4
 
 // Market salary benchmarks by revenue size category
 // Based on industry compensation studies for owner/CEO roles
@@ -200,52 +202,20 @@ export async function recalculateSnapshotForCompany(
       briScore += cs.score * weight
     }
 
-    // Calculate Core Score from company factors
+    // Calculate Core Score from company factors using shared utility
     const coreFactors = company.coreFactors
     let coreScore = 0.5 // Default if no core factors
 
     if (coreFactors) {
       // Core Score is based on business model quality factors only
       // Revenue size is NOT included - it already affects valuation through revenue × multiple
-      const factorScores: Record<string, Record<string, number>> = {
-        revenueModel: {
-          PROJECT_BASED: 0.25,
-          TRANSACTIONAL: 0.5,
-          RECURRING_CONTRACTS: 0.75,
-          SUBSCRIPTION_SAAS: 1.0,
-        },
-        grossMarginProxy: {
-          LOW: 0.25,
-          MODERATE: 0.5,
-          GOOD: 0.75,
-          EXCELLENT: 1.0,
-        },
-        laborIntensity: {
-          VERY_HIGH: 0.25,
-          HIGH: 0.5,
-          MODERATE: 0.75,
-          LOW: 1.0,
-        },
-        assetIntensity: {
-          ASSET_HEAVY: 0.33,
-          MODERATE: 0.67,
-          ASSET_LIGHT: 1.0,
-        },
-        ownerInvolvement: {
-          CRITICAL: 0.0,
-          HIGH: 0.25,
-          MODERATE: 0.5,
-          LOW: 0.75,
-          MINIMAL: 1.0,
-        },
-      }
-
+      // Uses shared CORE_FACTOR_SCORES from calculate-valuation.ts
       const scores = [
-        factorScores.revenueModel[coreFactors.revenueModel] || 0.5,
-        factorScores.grossMarginProxy[coreFactors.grossMarginProxy] || 0.5,
-        factorScores.laborIntensity[coreFactors.laborIntensity] || 0.5,
-        factorScores.assetIntensity[coreFactors.assetIntensity] || 0.5,
-        factorScores.ownerInvolvement[coreFactors.ownerInvolvement] || 0.5,
+        CORE_FACTOR_SCORES.revenueModel[coreFactors.revenueModel] ?? 0.5,
+        CORE_FACTOR_SCORES.grossMarginProxy[coreFactors.grossMarginProxy] ?? 0.5,
+        CORE_FACTOR_SCORES.laborIntensity[coreFactors.laborIntensity] ?? 0.5,
+        CORE_FACTOR_SCORES.assetIntensity[coreFactors.assetIntensity] ?? 0.5,
+        CORE_FACTOR_SCORES.ownerInvolvement[coreFactors.ownerInvolvement] ?? 0.5,
       ]
 
       coreScore = scores.reduce((a, b) => a + b, 0) / scores.length
@@ -291,23 +261,26 @@ export async function recalculateSnapshotForCompany(
     const industryMultipleLow = multiples.ebitdaMultipleLow
     const industryMultipleHigh = multiples.ebitdaMultipleHigh
 
-    // Step 1: Core Score positions within industry range
-    const baseMultiple = industryMultipleLow + coreScore * (industryMultipleHigh - industryMultipleLow)
+    // Use shared utility for consistent valuation calculation
+    const valuation = calculateValuation({
+      adjustedEbitda,
+      industryMultipleLow,
+      industryMultipleHigh,
+      coreScore,
+      briScore,
+    })
 
-    // Step 2: Non-linear discount based on BRI
-    const discountFraction = Math.pow(1 - briScore, ALPHA)
-
-    // Step 3: Final multiple with floor guarantee
-    const finalMultiple = industryMultipleLow + (baseMultiple - industryMultipleLow) * (1 - discountFraction)
+    const { baseMultiple, finalMultiple, discountFraction } = valuation
 
     // VAL-003 FIX: Calculate potential EBITDA improvement from addressing BRI gaps
     const ebitdaImprovementMultiplier = calculateEbitdaImprovementMultiplier(categoryScores, categoryWeights)
     const potentialEbitda = adjustedEbitda * ebitdaImprovementMultiplier
 
     // Calculate valuations
-    // Current value uses current EBITDA with BRI-discounted multiple
-    const currentValue = adjustedEbitda * finalMultiple
+    // Current value uses current EBITDA with BRI-discounted multiple (from shared utility)
+    const currentValue = valuation.currentValue
     // Potential value uses improved EBITDA with full base multiple (no BRI discount)
+    // This differs from the basic formula because it considers EBITDA improvement potential
     const potentialValue = potentialEbitda * baseMultiple
     const valueGap = potentialValue - currentValue
 
