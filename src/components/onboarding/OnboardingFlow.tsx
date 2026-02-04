@@ -410,13 +410,6 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
       } catch (err) {
         console.error('Failed to save onboarding snapshot:', err)
       }
-    } else {
-      console.warn('[ONBOARDING] Skipping snapshot creation - missing data:', {
-        hasCompanyId: !!createdCompanyId,
-        hasRiskResults: !!riskResults,
-      })
-    }
-
       // Send the onboarding complete email (non-blocking)
       fetch('/api/email/onboarding-complete', {
         method: 'POST',
@@ -431,6 +424,11 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
         }),
       }).catch(err => {
         console.error('Failed to send onboarding email:', err)
+      })
+    } else {
+      console.warn('[ONBOARDING] Skipping snapshot creation - missing data:', {
+        hasCompanyId: !!createdCompanyId,
+        hasRiskResults: !!riskResults,
       })
     }
 
