@@ -47,12 +47,13 @@ export async function POST(
     }
 
     // Verify company belongs to user
+    // organization.users is OrganizationUser[], so we need to match on userId, not id
     const company = await prisma.company.findFirst({
       where: {
         id: companyId,
         organization: {
           users: {
-            some: { id: prismaUser.id }
+            some: { userId: prismaUser.id }
           }
         }
       },
