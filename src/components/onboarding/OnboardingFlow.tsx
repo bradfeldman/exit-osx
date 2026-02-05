@@ -141,6 +141,17 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     }
   }, [businessDescription])
 
+  // Clear stale sessionStorage when landing on step 1 (fresh start)
+  useEffect(() => {
+    if (currentStep === 1 && !createdCompanyId) {
+      // User is on step 1 without a company - clear any stale onboarding data
+      sessionStorage.removeItem('onboarding_companyId')
+      sessionStorage.removeItem('onboarding_previewData')
+      sessionStorage.removeItem('onboarding_formData')
+      sessionStorage.removeItem('onboarding_businessDescription')
+    }
+  }, [currentStep, createdCompanyId])
+
   // Check for pending company name from signup (localStorage)
   useEffect(() => {
     const pendingCompanyName = localStorage.getItem('pendingCompanyName')
