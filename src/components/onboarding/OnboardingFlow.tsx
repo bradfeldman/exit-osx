@@ -186,35 +186,22 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     }
   }, [currentStep, createdCompanyId, router])
 
-  // Recovery: re-fetch dashboard data if step 3 is reached without previewData
+  // Recovery: re-fetch valuation data if step 3 is reached without previewData
   useEffect(() => {
     if (currentStep === 3 && !industryPreviewData && createdCompanyId) {
       const fetchPreviewData = async () => {
         try {
-          const dashboardResponse = await fetch(`/api/companies/${createdCompanyId}/dashboard`)
-          if (dashboardResponse.ok) {
-            const dashboardData = await dashboardResponse.json()
-            const tier1 = dashboardData.tier1 || {}
-            const tier2 = dashboardData.tier2 || {}
-
-            const currentValue = tier1.currentValue || 0
-            const potentialValue = tier1.potentialValue || 0
-            const adjustedEbitda = tier2.adjustedEbitda || 0
-            const multipleLow = tier1.multipleRange?.low || 3.0
-            const multipleHigh = tier1.multipleRange?.high || 6.0
-
-            const valuationLow = adjustedEbitda * multipleLow
-            const valuationHigh = adjustedEbitda * multipleHigh
-            const potentialGap = Math.round(valuationHigh - currentValue)
-
+          const valuationResponse = await fetch(`/api/companies/${createdCompanyId}/initial-valuation`)
+          if (valuationResponse.ok) {
+            const valuationData = await valuationResponse.json()
             setIndustryPreviewData({
-              valuationLow: Math.round(valuationLow),
-              valuationHigh: Math.round(valuationHigh),
-              potentialGap: Math.max(0, potentialGap),
-              industryName: formData.icbSubSector.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()),
-              adjustedEbitda,
-              multipleLow,
-              multipleHigh,
+              valuationLow: valuationData.valuationLow,
+              valuationHigh: valuationData.valuationHigh,
+              potentialGap: 0,
+              industryName: valuationData.industryName,
+              adjustedEbitda: valuationData.adjustedEbitda,
+              multipleLow: valuationData.multipleLow,
+              multipleHigh: valuationData.multipleHigh,
             })
           }
         } catch (err) {
@@ -223,7 +210,7 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
       }
       fetchPreviewData()
     }
-  }, [currentStep, industryPreviewData, createdCompanyId, formData.icbSubSector])
+  }, [currentStep, industryPreviewData, createdCompanyId])
 
   const updateFormData = (updates: Partial<CompanyFormData>) => {
     setFormData(prev => ({ ...prev, ...updates }))
@@ -300,64 +287,46 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
         body: JSON.stringify(coreFactorsPayload)
       })
 
-      // Fetch industry preview data - use dashboard's calculated values directly
-      // The dashboard API calculates EBITDA using industry-specific revenue/EBITDA conversion
+      // Fetch initial valuation from industry multiples table
+      // Uses lightweight endpoint that doesn't require complex permission checks
       let previewData: typeof industryPreviewData = null
       try {
-        const dashboardResponse = await fetch(`/api/companies/${company.id}/dashboard`)
-        if (dashboardResponse.ok) {
-          const dashboardData = await dashboardResponse.json()
-          const tier1 = dashboardData.tier1 || {}
-          const tier2 = dashboardData.tier2 || {}
-
-          // Use the dashboard's calculated values directly
-          // tier1.currentValue uses the sophisticated EBITDA calculation
-          // tier1.potentialValue is EBITDA × high multiple
-          const currentValue = tier1.currentValue || 0
-          const potentialValue = tier1.potentialValue || 0
-          const adjustedEbitda = tier2.adjustedEbitda || 0
-          const multipleLow = tier1.multipleRange?.low || 3.0
-          const multipleHigh = tier1.multipleRange?.high || 6.0
-
-          // Calculate low/high range using the dashboard's EBITDA
-          const valuationLow = adjustedEbitda * multipleLow
-          const valuationHigh = adjustedEbitda * multipleHigh
-          const potentialGap = Math.round(valuationHigh - currentValue)
+        const valuationResponse = await fetch(`/api/companies/${company.id}/initial-valuation`)
+        if (valuationResponse.ok) {
+          const valuationData = await valuationResponse.json()
 
           previewData = {
-            valuationLow: Math.round(valuationLow),
-            valuationHigh: Math.round(valuationHigh),
-            potentialGap: Math.max(0, potentialGap),
-            industryName: formData.icbSubSector.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()),
-            // Store values needed for correct valuation calculation
-            adjustedEbitda,
-            multipleLow,
-            multipleHigh,
+            valuationLow: valuationData.valuationLow,
+            valuationHigh: valuationData.valuationHigh,
+            potentialGap: 0, // No gap calculation at this stage
+            industryName: valuationData.industryName,
+            adjustedEbitda: valuationData.adjustedEbitda,
+            multipleLow: valuationData.multipleLow,
+            multipleHigh: valuationData.multipleHigh,
           }
           setIndustryPreviewData(previewData)
         } else {
-          console.error('[ONBOARDING] Dashboard API failed:', dashboardResponse.status)
+          const errorData = await valuationResponse.json().catch(() => ({}))
+          console.error('[ONBOARDING] Initial valuation API failed:', valuationResponse.status, errorData)
         }
-      } catch (dashErr) {
-        console.error('[ONBOARDING] Dashboard fetch error:', dashErr)
+      } catch (err) {
+        console.error('[ONBOARDING] Initial valuation fetch error:', err)
       }
 
-      // Fallback: if dashboard failed, use simple estimate so step 3 can render
+      // This should not happen if API is working, but provide fallback for resilience
       if (!previewData) {
-        const estimatedEbitda = formData.annualRevenue * 0.10 // 10% margin estimate
-        const fallbackMultipleLow = 3.5
-        const fallbackMultipleHigh = 5.5
+        console.error('[ONBOARDING] Failed to get valuation data - using emergency fallback')
+        const estimatedEbitda = formData.annualRevenue * 0.10
         previewData = {
-          valuationLow: Math.round(estimatedEbitda * fallbackMultipleLow),
-          valuationHigh: Math.round(estimatedEbitda * fallbackMultipleHigh),
+          valuationLow: Math.round(estimatedEbitda * 3.5),
+          valuationHigh: Math.round(estimatedEbitda * 5.5),
           potentialGap: 0,
           industryName: formData.icbSubSector.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()),
           adjustedEbitda: estimatedEbitda,
-          multipleLow: fallbackMultipleLow,
-          multipleHigh: fallbackMultipleHigh,
+          multipleLow: 3.5,
+          multipleHigh: 5.5,
         }
         setIndustryPreviewData(previewData)
-        console.log('[ONBOARDING] Using fallback valuation estimate')
       }
 
       // Set company as selected
