@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useCompany } from '@/contexts/CompanyContext'
 import { ActivityItem } from './ActivityItem'
 import { Button } from '@/components/ui/button'
 

@@ -1,4 +1,4 @@
-import { EVIDENCE_CATEGORIES, type EvidenceCategory, EVIDENCE_CATEGORY_MAP } from './evidence-categories'
+import { EVIDENCE_CATEGORIES, type EvidenceCategory } from './evidence-categories'
 import { getScoringDocsByCategory } from './expected-documents'
 
 interface CategoryScore {

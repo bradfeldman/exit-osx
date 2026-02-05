@@ -36,7 +36,7 @@ export function HeroMetricsBar({
   potentialValue,
   valueGap,
   valueGapDelta,
-  isEstimated = false,
+  isEstimated: _isEstimated = false,
   hasAssessment = false,
   isEbitdaFromFinancials = false,
 }: HeroMetricsBarProps) {

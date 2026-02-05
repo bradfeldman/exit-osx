@@ -7,7 +7,6 @@ import {
   getVisualStage,
   getStageLabel,
   calculateEngagementLevel,
-  type VisualStage,
 } from '@/lib/deal-room/visual-stages'
 import { calculateEvidenceScore } from '@/lib/evidence/score-calculator'
 import { mapDataRoomCategoryToEvidence, mapBriCategoryToEvidence } from '@/lib/evidence/category-mapper'
@@ -142,8 +141,8 @@ export async function GET(
       select: { id: true, stage: true },
     })
 
-    let recentViewsByEmail: Map<string, number> = new Map()
-    let lastActivityByEmail: Map<string, Date> = new Map()
+    const recentViewsByEmail: Map<string, number> = new Map()
+    const lastActivityByEmail: Map<string, Date> = new Map()
 
     if (dataRoom && allContactEmails.length > 0) {
       const recentViews = await prisma.dataRoomActivity.groupBy({
@@ -204,7 +203,6 @@ export async function GET(
             ? Math.floor((now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24))
             : null
 
-          const hasOffer = b.ioiAmount || b.loiAmount
           const offerType = b.loiAmount ? 'LOI' as const : b.ioiAmount ? 'IOI' as const : null
           const offerDeadline = b.loiDeadline ?? b.ioiDeadline
 

@@ -24,8 +24,6 @@ export function TaskDetailsCollapsible({
 }: TaskDetailsCollapsibleProps) {
   const [isOpen, setIsOpen] = useState(false)
 
-  const hasDetails = successCriteria || outputFormat
-
   return (
     <div className="mt-4 border border-border/30 rounded-lg">
       <button

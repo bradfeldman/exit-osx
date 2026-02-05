@@ -40,7 +40,7 @@ function formatDate(date: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
 }
 
-function AnnotationTooltipContent({ annotation }: { annotation: TimelineAnnotation }) {
+function _AnnotationTooltipContent({ annotation }: { annotation: TimelineAnnotation }) {
   return (
     <div className="bg-card border border-border rounded-lg shadow-lg p-3">
       <div className="font-semibold text-sm">{annotation.label}</div>

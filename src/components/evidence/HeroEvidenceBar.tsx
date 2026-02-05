@@ -19,7 +19,6 @@ function getBarColor(percentage: number): string {
 export function HeroEvidenceBar({
   percentage,
   documentsUploaded,
-  documentsExpected,
   lastUploadAt,
 }: HeroEvidenceBarProps) {
   const { value: animatedScore } = useCountUpScore(percentage)
