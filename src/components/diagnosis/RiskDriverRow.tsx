@@ -102,7 +102,7 @@ export function RiskDriverRow({
                 </Button>
               ) : (
                 <Button size="sm" variant="outline" onClick={() => {
-                  router.push('/dashboard/assessment/risk')
+                  router.push('/dashboard/assessment')
                 }}>
                   Review & Update
                 </Button>

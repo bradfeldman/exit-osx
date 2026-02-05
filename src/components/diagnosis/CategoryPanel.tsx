@@ -66,12 +66,14 @@ export function CategoryPanel({
   const showSecondary = confidence.questionsAnswered > 0 && confidence.questionsAnswered < confidence.questionsTotal
 
   const handlePrimaryClick = () => {
-    // MVP: Navigate to existing assessment flow
-    router.push(`/dashboard/assessment/risk?category=${category}`)
+    // MVP: Navigate to baseline assessment wizard
+    // The baseline assessment shows all questions and allows answering/reviewing
+    router.push('/dashboard/assessment')
   }
 
   const handleSecondaryClick = () => {
-    router.push(`/dashboard/assessment/risk?category=${category}&mode=review`)
+    // Same as primary for MVP - baseline assessment allows reviewing all answers
+    router.push('/dashboard/assessment')
   }
 
   const ctaLabel = getCtaLabel()
