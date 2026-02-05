@@ -303,37 +303,61 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
       // Fetch industry preview data - use dashboard's calculated values directly
       // The dashboard API calculates EBITDA using industry-specific revenue/EBITDA conversion
       let previewData: typeof industryPreviewData = null
-      const dashboardResponse = await fetch(`/api/companies/${company.id}/dashboard`)
-      if (dashboardResponse.ok) {
-        const dashboardData = await dashboardResponse.json()
-        const tier1 = dashboardData.tier1 || {}
-        const tier2 = dashboardData.tier2 || {}
+      try {
+        const dashboardResponse = await fetch(`/api/companies/${company.id}/dashboard`)
+        if (dashboardResponse.ok) {
+          const dashboardData = await dashboardResponse.json()
+          const tier1 = dashboardData.tier1 || {}
+          const tier2 = dashboardData.tier2 || {}
 
-        // Use the dashboard's calculated values directly
-        // tier1.currentValue uses the sophisticated EBITDA calculation
-        // tier1.potentialValue is EBITDA × high multiple
-        const currentValue = tier1.currentValue || 0
-        const potentialValue = tier1.potentialValue || 0
-        const adjustedEbitda = tier2.adjustedEbitda || 0
-        const multipleLow = tier1.multipleRange?.low || 3.0
-        const multipleHigh = tier1.multipleRange?.high || 6.0
+          // Use the dashboard's calculated values directly
+          // tier1.currentValue uses the sophisticated EBITDA calculation
+          // tier1.potentialValue is EBITDA × high multiple
+          const currentValue = tier1.currentValue || 0
+          const potentialValue = tier1.potentialValue || 0
+          const adjustedEbitda = tier2.adjustedEbitda || 0
+          const multipleLow = tier1.multipleRange?.low || 3.0
+          const multipleHigh = tier1.multipleRange?.high || 6.0
 
-        // Calculate low/high range using the dashboard's EBITDA
-        const valuationLow = adjustedEbitda * multipleLow
-        const valuationHigh = adjustedEbitda * multipleHigh
-        const potentialGap = Math.round(valuationHigh - currentValue)
+          // Calculate low/high range using the dashboard's EBITDA
+          const valuationLow = adjustedEbitda * multipleLow
+          const valuationHigh = adjustedEbitda * multipleHigh
+          const potentialGap = Math.round(valuationHigh - currentValue)
 
+          previewData = {
+            valuationLow: Math.round(valuationLow),
+            valuationHigh: Math.round(valuationHigh),
+            potentialGap: Math.max(0, potentialGap),
+            industryName: formData.icbSubSector.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()),
+            // Store values needed for correct valuation calculation
+            adjustedEbitda,
+            multipleLow,
+            multipleHigh,
+          }
+          setIndustryPreviewData(previewData)
+        } else {
+          console.error('[ONBOARDING] Dashboard API failed:', dashboardResponse.status)
+        }
+      } catch (dashErr) {
+        console.error('[ONBOARDING] Dashboard fetch error:', dashErr)
+      }
+
+      // Fallback: if dashboard failed, use simple estimate so step 3 can render
+      if (!previewData) {
+        const estimatedEbitda = formData.annualRevenue * 0.10 // 10% margin estimate
+        const fallbackMultipleLow = 3.5
+        const fallbackMultipleHigh = 5.5
         previewData = {
-          valuationLow: Math.round(valuationLow),
-          valuationHigh: Math.round(valuationHigh),
-          potentialGap: Math.max(0, potentialGap),
+          valuationLow: Math.round(estimatedEbitda * fallbackMultipleLow),
+          valuationHigh: Math.round(estimatedEbitda * fallbackMultipleHigh),
+          potentialGap: 0,
           industryName: formData.icbSubSector.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()),
-          // Store values needed for correct valuation calculation
-          adjustedEbitda,
-          multipleLow,
-          multipleHigh,
+          adjustedEbitda: estimatedEbitda,
+          multipleLow: fallbackMultipleLow,
+          multipleHigh: fallbackMultipleHigh,
         }
         setIndustryPreviewData(previewData)
+        console.log('[ONBOARDING] Using fallback valuation estimate')
       }
 
       // Set company as selected
