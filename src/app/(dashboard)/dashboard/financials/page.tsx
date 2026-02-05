@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { useCompany } from '@/contexts/CompanyContext'
 import { AddPeriodDialog } from '@/components/financials/AddPeriodDialog'
 import { FinancialsSpreadsheet } from '@/components/financials/FinancialsSpreadsheet'
-import { Plus, Pencil, Loader2, CheckCircle, Link2, AlertCircle, X } from 'lucide-react'
+import { Plus, Pencil, Loader2, CheckCircle, Link2, AlertCircle, X, TrendingUp } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { fetchWithRetry } from '@/lib/fetch-with-retry'
 import { analytics } from '@/lib/analytics'
@@ -41,6 +41,16 @@ function QuickBooksLogo({ className = "w-8 h-8" }: { className?: string }) {
   )
 }
 
+function formatCurrencyCompact(value: number): string {
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(1)}M`
+  }
+  if (value >= 1000) {
+    return `$${Math.round(value / 1000)}k`
+  }
+  return `$${value.toLocaleString()}`
+}
+
 // Get conditional headline based on assessment status
 function getFinancialsHeadline(hasAssessment: boolean, hasBriScore: boolean) {
   if (hasBriScore) {
@@ -70,6 +80,8 @@ function FinancialsEmptyState({
   isConnecting,
   hasAssessment = false,
   hasBriScore = false,
+  completedTaskCount = 0,
+  completedTaskValue = 0,
 }: {
   companyId: string
   integrationData: IntegrationData
@@ -78,6 +90,8 @@ function FinancialsEmptyState({
   isConnecting: boolean
   hasAssessment?: boolean
   hasBriScore?: boolean
+  completedTaskCount?: number
+  completedTaskValue?: number
 }) {
   const headline = getFinancialsHeadline(hasAssessment, hasBriScore)
   const currentYear = new Date().getFullYear()
@@ -142,6 +156,44 @@ function FinancialsEmptyState({
           </motion.p>
         )}
       </motion.div>
+
+      {/* Task Value Context */}
+      {completedTaskCount > 0 && completedTaskValue > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="max-w-3xl mx-auto"
+        >
+          <div className="flex items-center gap-3 px-4 py-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg">
+            <div className="p-1.5 bg-emerald-100 dark:bg-emerald-900/40 rounded-full">
+              <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <p className="text-sm text-emerald-700 dark:text-emerald-300">
+              You&apos;ve already improved your value by <span className="font-semibold">{formatCurrencyCompact(completedTaskValue)}</span> through {completedTaskCount} completed task{completedTaskCount !== 1 ? 's' : ''}.
+              Add your financials to see your total valuation.
+            </p>
+          </div>
+        </motion.div>
+      )}
+
+      {hasBriScore && completedTaskCount === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="max-w-3xl mx-auto"
+        >
+          <div className="flex items-center gap-3 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <div className="p-1.5 bg-blue-100 dark:bg-blue-900/40 rounded-full">
+              <CheckCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </div>
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              Your risk profile is assessed. Now add financials to see what buyers would actually pay.
+            </p>
+          </div>
+        </motion.div>
+      )}
 
       {/* Timeline Visual */}
       <motion.div
@@ -339,6 +391,10 @@ function FinancialsContent() {
   const [hasAssessment, setHasAssessment] = useState(false)
   const [hasBriScore, setHasBriScore] = useState(false)
 
+  // Task stats for motivational context
+  const [completedTaskCount, setCompletedTaskCount] = useState(0)
+  const [completedTaskValue, setCompletedTaskValue] = useState(0)
+
   // Analytics tracking
   const hasTrackedPageView = useRef(false)
 
@@ -393,15 +449,33 @@ function FinancialsContent() {
     }
   }, [selectedCompanyId])
 
+  // Load task stats for motivational context
+  const loadTaskStats = useCallback(async () => {
+    if (!selectedCompanyId) return
+
+    try {
+      const response = await fetchWithRetry(`/api/tasks?companyId=${selectedCompanyId}`)
+      if (response.ok) {
+        const data = await response.json()
+        if (data.stats) {
+          setCompletedTaskCount(data.stats.completed || 0)
+          setCompletedTaskValue(data.stats.completedValue || 0)
+        }
+      }
+    } catch (err) {
+      console.error('Error loading task stats:', err)
+    }
+  }, [selectedCompanyId])
+
   // Initial load
   useEffect(() => {
     async function load() {
       setIsLoading(true)
-      await Promise.all([loadPeriods(), loadIntegrationData(), loadAssessmentStatus()])
+      await Promise.all([loadPeriods(), loadIntegrationData(), loadAssessmentStatus(), loadTaskStats()])
       setIsLoading(false)
     }
     load()
-  }, [loadPeriods, loadIntegrationData, loadAssessmentStatus])
+  }, [loadPeriods, loadIntegrationData, loadAssessmentStatus, loadTaskStats])
 
   // Track page view after loading
   useEffect(() => {
@@ -549,6 +623,8 @@ function FinancialsContent() {
           isConnecting={isConnecting}
           hasAssessment={hasAssessment}
           hasBriScore={hasBriScore}
+          completedTaskCount={completedTaskCount}
+          completedTaskValue={completedTaskValue}
         />
       ) : (
         <FinancialsSpreadsheet companyId={selectedCompanyId} />

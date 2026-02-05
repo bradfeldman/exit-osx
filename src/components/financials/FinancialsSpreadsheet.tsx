@@ -8,7 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import { fetchWithRetry } from '@/lib/fetch-with-retry'
 import { analytics } from '@/lib/analytics'
-import { Plus, Save, Check, Loader2, TrendingUp, TrendingDown, Minus, AlertCircle, Trash2, PlusCircle, MinusCircle, ChevronDown, ChevronRight, ArrowRight, X } from 'lucide-react'
+import { Plus, Save, Check, Loader2, TrendingUp, TrendingDown, Minus, AlertCircle, Trash2, PlusCircle, MinusCircle, ChevronDown, ChevronRight, ArrowRight, X, DollarSign, Sparkles, Lightbulb } from 'lucide-react'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import {
@@ -249,6 +249,16 @@ function formatValue(value: number | null | undefined, format: 'currency' | 'per
   if (format === 'currency') return formatCurrency(value)
   if (format === 'percent') return formatPercent(value)
   return value?.toLocaleString() ?? '-'
+}
+
+function formatCurrencyCompact(value: number): string {
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(1)}M`
+  }
+  if (value >= 1000) {
+    return `$${(value / 1000).toFixed(0)}k`
+  }
+  return `$${value.toLocaleString()}`
 }
 
 function parseInputValue(input: string): number {
@@ -647,6 +657,17 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
     isFirstFinancials: boolean
   } | null>(null)
   const [showValuationBanner, setShowValuationBanner] = useState(false)
+  const [currentValuation, setCurrentValuation] = useState<number | null>(null)
+  const [sessionStartValuation, setSessionStartValuation] = useState<number | null>(null)
+  const [lastValuationChange, setLastValuationChange] = useState<{
+    previousValue: number | null
+    newValue: number
+    change: number
+    percentChange: number | null
+    isFirstFinancials: boolean
+  } | null>(null)
+  const [showNextSteps, setShowNextSteps] = useState(false)
+  const nextStepsTimeoutRef = useRef<NodeJS.Timeout>(undefined)
   const saveTimeoutRef = useRef<NodeJS.Timeout>(undefined)
   const pendingChangesRef = useRef<Map<string, { periodId: string; field: string; value: number }>>(new Map())
   const pendingAdjustmentChangesRef = useRef<Map<string, { adjustmentId: string; periodId: string; amount: number }>>(new Map())
@@ -892,12 +913,24 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
       // Show valuation impact celebration if there's a meaningful change
       if (lastValuationImpact?.newValue) {
         const { previousValue, newValue, isFirstFinancials } = lastValuationImpact
+        const change = previousValue ? newValue - previousValue : newValue
         const percentChange = previousValue && previousValue > 0
-          ? Math.abs((newValue - previousValue) / previousValue) * 100
-          : 0
+          ? ((newValue - previousValue) / previousValue) * 100
+          : null
+
+        // Update valuation tracking state
+        setCurrentValuation(newValue)
+        setSessionStartValuation(prev => prev === null ? (previousValue ?? newValue) : prev)
+        setLastValuationChange({
+          previousValue,
+          newValue,
+          change,
+          percentChange,
+          isFirstFinancials: isFirstFinancials || false,
+        })
 
         // Show celebration for first financials OR significant changes (>5%)
-        if (isFirstFinancials || percentChange > 5) {
+        if (isFirstFinancials || (percentChange !== null && Math.abs(percentChange) > 5)) {
           setValuationCelebration({
             previousValue,
             newValue,
@@ -907,6 +940,14 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
           // For smaller changes, show the banner instead
           setShowValuationBanner(true)
         }
+
+        // Show next steps prompt after a delay
+        if (nextStepsTimeoutRef.current) {
+          clearTimeout(nextStepsTimeoutRef.current)
+        }
+        nextStepsTimeoutRef.current = setTimeout(() => {
+          setShowNextSteps(true)
+        }, 3000)
       } else {
         // Always show banner after successful save with P&L data
         const hasPnlData = Array.from(pendingChangesRef.current.values()).some(c =>
@@ -1391,6 +1432,35 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
           <p className="text-muted-foreground">Enter and compare financial data across periods</p>
         </div>
         <div className="flex items-center gap-3">
+          {/* Live Valuation Ticker */}
+          <AnimatePresence mode="wait">
+            {currentValuation !== null && (
+              <motion.div
+                key={currentValuation}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg"
+              >
+                <DollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+                  {formatCurrencyCompact(currentValuation)}
+                </span>
+                {sessionStartValuation !== null && currentValuation !== sessionStartValuation && (
+                  <span className={cn(
+                    'text-xs font-medium',
+                    currentValuation > sessionStartValuation
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-red-600 dark:text-red-400'
+                  )}>
+                    {currentValuation > sessionStartValuation ? '+' : ''}
+                    {formatCurrencyCompact(currentValuation - sessionStartValuation)} this session
+                  </span>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Save status indicator */}
           <AnimatePresence mode="wait">
             {saveStatus !== 'idle' && (
@@ -1426,7 +1496,7 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
 
       {/* Valuation Updated Banner */}
       <AnimatePresence>
-        {showValuationBanner && (
+        {showValuationBanner && lastValuationChange && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1436,15 +1506,45 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-emerald-100 dark:bg-emerald-900/40 rounded-full">
-                  <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  {lastValuationChange.isFirstFinancials
+                    ? <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    : <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  }
                 </div>
                 <div>
-                  <p className="font-medium text-emerald-800 dark:text-emerald-200">
-                    Your valuation has been updated
-                  </p>
-                  <p className="text-sm text-emerald-600 dark:text-emerald-400">
-                    See how your financials impact your company&apos;s market value.
-                  </p>
+                  {lastValuationChange.isFirstFinancials ? (
+                    <>
+                      <p className="font-medium text-emerald-800 dark:text-emerald-200">
+                        Your valuation is live! {formatCurrency(lastValuationChange.newValue)}
+                      </p>
+                      <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                        Your financials are now powering a more accurate valuation.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-medium text-emerald-800 dark:text-emerald-200">
+                        {lastValuationChange.previousValue
+                          ? `${formatCurrency(lastValuationChange.previousValue)} → ${formatCurrency(lastValuationChange.newValue)}`
+                          : formatCurrency(lastValuationChange.newValue)
+                        }
+                        {lastValuationChange.change !== 0 && (
+                          <span className={cn(
+                            'ml-2 text-sm',
+                            lastValuationChange.change > 0 ? 'text-emerald-600' : 'text-red-600'
+                          )}>
+                            ({lastValuationChange.change > 0 ? '+' : ''}{formatCurrencyCompact(lastValuationChange.change)}
+                            {lastValuationChange.percentChange !== null &&
+                              ` / ${lastValuationChange.change > 0 ? '+' : ''}${lastValuationChange.percentChange.toFixed(1)}%`
+                            })
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                        Your valuation has been updated based on your financial data.
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -1459,6 +1559,82 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
                   className="p-1.5 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400"
                 >
                   <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Next Steps Prompt */}
+      <AnimatePresence>
+        {showNextSteps && !showValuationBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-full">
+                  <Lightbulb className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  {sortedPeriods.length === 1 ? (
+                    <>
+                      <p className="font-medium text-blue-800 dark:text-blue-200">
+                        Great start! Buyers want to see 3 years of trends.
+                      </p>
+                      <p className="text-sm text-blue-600 dark:text-blue-400">
+                        Add another year to strengthen your profile and improve accuracy.
+                      </p>
+                    </>
+                  ) : adjustments.length === 0 ? (
+                    <>
+                      <p className="font-medium text-blue-800 dark:text-blue-200">
+                        Consider adding owner add-backs
+                      </p>
+                      <p className="text-sm text-blue-600 dark:text-blue-400">
+                        Add-backs increase your adjusted EBITDA and can significantly raise your valuation.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-medium text-blue-800 dark:text-blue-200">
+                        Your financial profile is looking strong
+                      </p>
+                      <p className="text-sm text-blue-600 dark:text-blue-400">
+                        See how your value compares and find more ways to improve.
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {sortedPeriods.length === 1 ? (
+                  <Button size="sm" variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-100" onClick={() => { setShowAddDialog(true); setShowNextSteps(false) }}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Year
+                  </Button>
+                ) : adjustments.length === 0 ? (
+                  <Button size="sm" variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-100" onClick={() => { setActiveTab('add-backs'); setShowNextSteps(false) }}>
+                    Add-Backs
+                    <ArrowRight className="h-4 w-4 ml-1" />
+                  </Button>
+                ) : (
+                  <Link href="/dashboard/value-builder">
+                    <Button size="sm" variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-100">
+                      Value Builder
+                      <ArrowRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </Link>
+                )}
+                <button
+                  onClick={() => setShowNextSteps(false)}
+                  className="p-1.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-sm"
+                >
+                  Later
                 </button>
               </div>
             </div>
