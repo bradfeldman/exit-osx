@@ -76,8 +76,8 @@ export function NextMoveCard({ task, comingUp, isFreeUser = false, onUpgrade }: 
         <p className="text-sm text-muted-foreground mt-2">
           Your next assessment will generate new recommendations based on your updated profile.
         </p>
-        <Button className="mt-5" onClick={() => router.push('/dashboard/assessment/risk')}>
-          Start Re-Assessment →
+        <Button className="mt-5" onClick={() => router.push('/dashboard/diagnosis')}>
+          Review Diagnosis →
         </Button>
       </div>
     )
