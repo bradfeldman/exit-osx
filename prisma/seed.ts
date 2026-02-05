@@ -72,6 +72,8 @@ async function main() {
         revenueMultipleHigh: multiple.revenueMultipleHigh,
         ebitdaMultipleLow: multiple.ebitdaMultipleLow,
         ebitdaMultipleHigh: multiple.ebitdaMultipleHigh,
+        ebitdaMarginLow: multiple.ebitdaMarginLow,
+        ebitdaMarginHigh: multiple.ebitdaMarginHigh,
         effectiveDate: multiple.effectiveDate,
         source: multiple.source,
       },

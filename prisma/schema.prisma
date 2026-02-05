@@ -505,6 +505,8 @@ model IndustryMultiple {
   revenueMultipleHigh Decimal  @map("revenue_multiple_high") @db.Decimal(4, 2)
   ebitdaMultipleLow   Decimal  @map("ebitda_multiple_low") @db.Decimal(4, 2)
   ebitdaMultipleHigh  Decimal  @map("ebitda_multiple_high") @db.Decimal(4, 2)
+  ebitdaMarginLow     Decimal? @map("ebitda_margin_low") @db.Decimal(5, 2)
+  ebitdaMarginHigh    Decimal? @map("ebitda_margin_high") @db.Decimal(5, 2)
   effectiveDate       DateTime @map("effective_date")
   source              String?
 

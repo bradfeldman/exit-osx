@@ -63,30 +63,44 @@ export async function GET(
       })
     }
 
-    // Calculate valuation using industry multiples
+    // Calculate valuation using industry multiples and EBITDA margin ranges
     let adjustedEbitda: number
     let multipleLow: number
     let multipleHigh: number
+    let ebitdaMarginUsed: number
 
     if (industryMultiple && revenue > 0) {
-      // Calculate implied EBITDA from revenue using industry multiples
-      // EV = Revenue × RevMultiple = EBITDA × EbitdaMultiple
-      // Therefore: EBITDA = Revenue × (RevMultiple / EbitdaMultiple)
-      const revMultipleLow = Number(industryMultiple.revenueMultipleLow)
-      const revMultipleHigh = Number(industryMultiple.revenueMultipleHigh)
       const ebitdaMultipleLow = Number(industryMultiple.ebitdaMultipleLow)
       const ebitdaMultipleHigh = Number(industryMultiple.ebitdaMultipleHigh)
 
-      const impliedEbitdaLow = revenue * (revMultipleLow / ebitdaMultipleLow)
-      const impliedEbitdaHigh = revenue * (revMultipleHigh / ebitdaMultipleHigh)
+      // Use stored EBITDA margin ranges if available, otherwise fallback to derived
+      const marginLow = industryMultiple.ebitdaMarginLow
+        ? Number(industryMultiple.ebitdaMarginLow) / 100
+        : null
+      const marginHigh = industryMultiple.ebitdaMarginHigh
+        ? Number(industryMultiple.ebitdaMarginHigh) / 100
+        : null
 
-      // Use midpoint, rounded to nearest $100,000
-      adjustedEbitda = Math.round(((impliedEbitdaLow + impliedEbitdaHigh) / 2) / 100000) * 100000
+      if (marginLow !== null && marginHigh !== null) {
+        // Use stored industry-specific EBITDA margin (midpoint of range)
+        ebitdaMarginUsed = (marginLow + marginHigh) / 2
+        adjustedEbitda = Math.round((revenue * ebitdaMarginUsed) / 100000) * 100000
+      } else {
+        // Fallback: derive from revenue/EBITDA multiple ratio
+        const revMultipleLow = Number(industryMultiple.revenueMultipleLow)
+        const revMultipleHigh = Number(industryMultiple.revenueMultipleHigh)
+        const impliedEbitdaLow = revenue * (revMultipleLow / ebitdaMultipleLow)
+        const impliedEbitdaHigh = revenue * (revMultipleHigh / ebitdaMultipleHigh)
+        adjustedEbitda = Math.round(((impliedEbitdaLow + impliedEbitdaHigh) / 2) / 100000) * 100000
+        ebitdaMarginUsed = adjustedEbitda / revenue
+      }
+
       multipleLow = ebitdaMultipleLow
       multipleHigh = ebitdaMultipleHigh
     } else {
       // Fallback: 10% margin estimate with default multiples
-      adjustedEbitda = Math.round((revenue * 0.10) / 100000) * 100000
+      ebitdaMarginUsed = 0.10
+      adjustedEbitda = Math.round((revenue * ebitdaMarginUsed) / 100000) * 100000
       multipleLow = 3.5
       multipleHigh = 5.5
     }
@@ -103,6 +117,7 @@ export async function GET(
       valuationLow: Math.round(valuationLow),
       valuationHigh: Math.round(valuationHigh),
       adjustedEbitda,
+      ebitdaMarginPercent: Math.round(ebitdaMarginUsed * 1000) / 10, // e.g., 7.5%
       multipleLow,
       multipleHigh,
       industryName,
