@@ -1,4 +1,5 @@
 -- Mode 3 (Actions): Add task tracking fields to tasks table
+ALTER TABLE "tasks" ADD COLUMN IF NOT EXISTS "buyer_consequence" TEXT;
 ALTER TABLE "tasks" ADD COLUMN IF NOT EXISTS "task_progress" JSONB;
 ALTER TABLE "tasks" ADD COLUMN IF NOT EXISTS "completed_value" DECIMAL(15, 2);
 ALTER TABLE "tasks" ADD COLUMN IF NOT EXISTS "started_at" TIMESTAMP(3);
