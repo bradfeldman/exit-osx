@@ -1,0 +1,291 @@
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+import { useCompany } from '@/contexts/CompanyContext'
+import { AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
+import { HeroSummaryBar } from './HeroSummaryBar'
+import { ActiveTaskCard } from './ActiveTaskCard'
+import { UpNextQueue } from './UpNextQueue'
+import { CompletedThisMonth } from './CompletedThisMonth'
+import { WaitingOnOthers } from './WaitingOnOthers'
+import { EmptyState } from './EmptyState'
+import { ActionsLoading } from './ActionsLoading'
+import { ActionsError } from './ActionsError'
+import { TaskCompletionDialog } from './TaskCompletionDialog'
+
+interface SubStep {
+  id: string
+  title: string
+  completed: boolean
+}
+
+interface ActiveTask {
+  id: string
+  title: string
+  description: string
+  briCategory: string
+  categoryLabel: string
+  normalizedValue: number
+  estimatedMinutes: number | null
+  effortLevel: string
+  status: string
+  startedAt: string | null
+  daysInProgress: number | null
+  priorityRank: number
+  buyerConsequence: string | null
+  buyerRisk: {
+    mainQuestion: string
+    consequences: string[]
+    conclusion: string
+  } | null
+  subSteps: SubStep[]
+  subStepProgress: {
+    completed: number
+    total: number
+  }
+  successCriteria: {
+    overview: string
+    outcomes: string[]
+  } | null
+  outputFormat: {
+    description: string
+    formats: string[]
+    guidance: string
+  } | null
+  assignee: {
+    id: string
+    name: string
+    email: string
+    role: string | null
+  } | null
+  isAssignedToCurrentUser: boolean
+  proofDocuments: { id: string; name: string; uploadedAt: string }[]
+}
+
+interface UpNextTask {
+  id: string
+  title: string
+  briCategory: string
+  categoryLabel: string
+  normalizedValue: number
+  estimatedMinutes: number | null
+  effortLevel: string
+  priorityRank: number
+  prerequisiteHint: string | null
+  outputHint: string | null
+  assignee: { name: string; role: string | null } | null
+}
+
+interface CompletedTask {
+  id: string
+  title: string
+  completedValue: number
+  completedAt: string
+  briCategory: string
+  completionNotes: string | null
+  hasEvidence: boolean
+}
+
+interface WaitingTask {
+  id: string
+  title: string
+  briCategory: string
+  normalizedValue: number
+  assignee: { name: string; email: string; role: string | null }
+  assignedAt: string
+  lastUpdated: string | null
+}
+
+interface ActionsData {
+  summary: {
+    totalTasks: number
+    activeTasks: number
+    deferredTasks: number
+    completedThisMonth: number
+    valueRecoveredThisMonth: number
+  }
+  activeTasks: ActiveTask[]
+  upNext: UpNextTask[]
+  completedThisMonth: CompletedTask[]
+  waitingOnOthers: WaitingTask[]
+  hasMoreInQueue: boolean
+  totalQueueSize: number
+}
+
+export function ActionsPage() {
+  const { selectedCompanyId } = useCompany()
+  const [data, setData] = useState<ActionsData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [completingTask, setCompletingTask] = useState<ActiveTask | null>(null)
+
+  const fetchData = useCallback(async () => {
+    if (!selectedCompanyId) return
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch(`/api/companies/${selectedCompanyId}/actions`)
+      if (!response.ok) throw new Error('Failed to fetch actions data')
+      const json = await response.json()
+      setData(json)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [selectedCompanyId])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  const handleSubStepToggle = async (taskId: string, stepId: string, completed: boolean) => {
+    if (!data) return
+
+    // Optimistic update
+    setData(prev => {
+      if (!prev) return prev
+      return {
+        ...prev,
+        activeTasks: prev.activeTasks.map(task => {
+          if (task.id !== taskId) return task
+          const newSubSteps = task.subSteps.map(s =>
+            s.id === stepId ? { ...s, completed } : s
+          )
+          const completedCount = newSubSteps.filter(s => s.completed).length
+          return {
+            ...task,
+            subSteps: newSubSteps,
+            subStepProgress: { completed: completedCount, total: newSubSteps.length },
+          }
+        }),
+      }
+    })
+
+    // Persist to server
+    try {
+      await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subStepProgress: { [stepId]: completed } }),
+      })
+    } catch {
+      // Revert on error
+      fetchData()
+    }
+  }
+
+  const handleStartTask = async (taskId: string) => {
+    try {
+      await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'IN_PROGRESS' }),
+      })
+      fetchData()
+    } catch {
+      // Silently fail, user can retry
+    }
+  }
+
+  const handleCompleteTask = (task: ActiveTask) => {
+    setCompletingTask(task)
+  }
+
+  const handleCompletionConfirm = async (taskId: string, notes: string) => {
+    try {
+      await fetch(`/api/tasks/${taskId}/complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completionNotes: notes }),
+      })
+      setCompletingTask(null)
+      fetchData()
+    } catch {
+      // Keep dialog open on error
+    }
+  }
+
+  const handleBlockTask = async (taskId: string, reason: string) => {
+    try {
+      await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'BLOCKED', blockedReason: reason }),
+      })
+      fetchData()
+    } catch {
+      // Silently fail
+    }
+  }
+
+  if (isLoading) return <ActionsLoading />
+  if (error || !data) return <ActionsError onRetry={fetchData} />
+
+  const hasNoTasks = data.summary.totalTasks === 0 && data.completedThisMonth.length === 0
+
+  if (hasNoTasks) return <EmptyState />
+
+  return (
+    <div className="max-w-[800px] mx-auto px-6 py-8">
+      <AnimatedStagger className="space-y-6" staggerDelay={0.1}>
+        <AnimatedItem>
+          <HeroSummaryBar
+            totalTasks={data.summary.totalTasks}
+            activeTasks={data.summary.activeTasks}
+            deferredTasks={data.summary.deferredTasks}
+            completedThisMonth={data.summary.completedThisMonth}
+            valueRecoveredThisMonth={data.summary.valueRecoveredThisMonth}
+          />
+        </AnimatedItem>
+
+        {data.activeTasks.map(task => (
+          <AnimatedItem key={task.id}>
+            <ActiveTaskCard
+              task={task}
+              onSubStepToggle={handleSubStepToggle}
+              onComplete={() => handleCompleteTask(task)}
+              onBlock={handleBlockTask}
+            />
+          </AnimatedItem>
+        ))}
+
+        {data.upNext.length > 0 && (
+          <AnimatedItem>
+            <UpNextQueue
+              tasks={data.upNext}
+              hasMore={data.hasMoreInQueue}
+              totalQueueSize={data.totalQueueSize}
+              onStartTask={handleStartTask}
+            />
+          </AnimatedItem>
+        )}
+
+        {data.waitingOnOthers.length > 0 && (
+          <AnimatedItem>
+            <WaitingOnOthers tasks={data.waitingOnOthers} />
+          </AnimatedItem>
+        )}
+
+        {data.completedThisMonth.length > 0 && (
+          <AnimatedItem>
+            <CompletedThisMonth
+              tasks={data.completedThisMonth}
+              totalValue={data.summary.valueRecoveredThisMonth}
+            />
+          </AnimatedItem>
+        )}
+      </AnimatedStagger>
+
+      {completingTask && (
+        <TaskCompletionDialog
+          task={completingTask}
+          onConfirm={handleCompletionConfirm}
+          onCancel={() => setCompletingTask(null)}
+        />
+      )}
+    </div>
+  )
+}

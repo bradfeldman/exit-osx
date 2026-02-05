@@ -105,7 +105,7 @@ export async function PATCH(
 
   try {
     const body = await request.json()
-    const { status, deferredUntil, deferralReason, blockedReason, dueDate, primaryAssigneeId, assigneeIds, completionNotes } = body
+    const { status, deferredUntil, deferralReason, blockedReason, dueDate, primaryAssigneeId, assigneeIds, completionNotes, subStepProgress } = body
 
     // Fetch task to get companyId for permission check
     const existingTask = await prisma.task.findUnique({
@@ -141,6 +141,7 @@ export async function PATCH(
       updateData.status = status
       if (status === 'COMPLETED') {
         updateData.completedAt = new Date()
+        updateData.completedValue = existingTask.normalizedValue
         // Clear blocked state when completed
         updateData.blockedAt = null
         updateData.blockedReason = null
@@ -153,13 +154,32 @@ export async function PATCH(
       } else if (status === 'BLOCKED') {
         updateData.blockedAt = new Date()
         updateData.blockedReason = blockedReason || 'No reason provided'
-      } else if (status === 'IN_PROGRESS' || status === 'PENDING') {
+      } else if (status === 'IN_PROGRESS') {
+        // Set startedAt when first moving to IN_PROGRESS
+        if (existingTask.status !== 'IN_PROGRESS') {
+          updateData.startedAt = new Date()
+        }
+        // Clear blocked state when resuming work
+        updateData.blockedAt = null
+        updateData.blockedReason = null
+      } else if (status === 'PENDING') {
         // Clear blocked state when resuming work
         updateData.blockedAt = null
         updateData.blockedReason = null
       } else if (status === 'NOT_APPLICABLE') {
         // Remove from action plan when marked as not applicable
         updateData.inActionPlan = false
+      }
+    }
+
+    // Handle sub-step progress update
+    if (subStepProgress && typeof subStepProgress === 'object') {
+      const currentProgress = (existingTask.taskProgress as { steps?: Record<string, boolean> } | null) ?? { steps: {} }
+      updateData.taskProgress = {
+        steps: {
+          ...(currentProgress.steps ?? {}),
+          ...subStepProgress,
+        },
       }
     }
 

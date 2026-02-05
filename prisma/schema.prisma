@@ -193,6 +193,8 @@ model Company {
   companyInvites           CompanyInvite[]
   // Contact System - deals where this company is the seller
   deals                    Deal[]
+  // Deal Room
+  dealRoomActivatedAt      DateTime?                    @map("deal_room_activated_at")
   // Operations Diagnosis - AI-generated diagnostics and tasks
   diagnosticQuestions      CompanyDiagnosticQuestions[]
   diagnosticResponses      CompanyDiagnosticResponses[]
@@ -300,6 +302,7 @@ model Question {
   displayOrder    Int                  @map("display_order")
   maxImpactPoints Decimal              @map("max_impact_points") @db.Decimal(5, 2)
   isActive        Boolean              @default(true) @map("is_active")
+  riskDriverName  String?              @map("risk_driver_name")
   responses       AssessmentResponse[]
   options         QuestionOption[]
 
@@ -421,6 +424,11 @@ model Task {
   impactLevel          ImpactLevel        @default(MEDIUM) @map("impact_level")
   inActionPlan         Boolean            @default(false) @map("in_action_plan")
   priorityRank         Int                @default(10) @map("priority_rank")
+  buyerConsequence     String?            @map("buyer_consequence")
+  taskProgress         Json?              @map("task_progress")
+  completedValue       Decimal?           @map("completed_value") @db.Decimal(15, 2)
+  startedAt            DateTime?          @map("started_at")
+  assigneeRole         String?            @map("assignee_role")
   proofDocuments       DataRoomDocument[] @relation("TaskProofDocuments")
   assignments          TaskAssignment[]
   invites              TaskInvite[]
@@ -570,6 +578,9 @@ model DataRoomDocument {
   isConfidential    Boolean                   @default(false) @map("is_confidential")
   previousVersionId String?                   @map("previous_version_id")
   version           Int                       @default(1)
+  evidenceCategory  String?                   @map("evidence_category")
+  expectedDocumentId String?                  @map("expected_document_id")
+  evidenceSource    String?                   @map("evidence_source")
   tags              DataRoomDocumentTag[]
   versions          DataRoomDocumentVersion[]
   views             DataRoomDocumentView[]

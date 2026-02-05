@@ -2,6 +2,77 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 
+// --- Buyer explanations for Valuation Bridge ---
+const BUYER_EXPLANATIONS: Record<string, string> = {
+  FINANCIAL: 'Buyers pay less when financial records lack depth or consistency.',
+  TRANSFERABILITY: "Buyers discount businesses that can't run without the owner.",
+  OPERATIONAL: 'Buyers see risk in businesses without documented, repeatable processes.',
+  MARKET: 'Buyers pay premiums for defensible market positions and diverse revenue.',
+  LEGAL_TAX: 'Buyers walk away from unresolved legal exposure and compliance gaps.',
+}
+
+// --- Buyer consequence templates (fallback when AI not available) ---
+const BUYER_CONSEQUENCE_TEMPLATES: Record<string, string> = {
+  FINANCIAL: 'Buyers pay less when they can\'t verify the numbers. Documenting this strengthens financial credibility.',
+  TRANSFERABILITY: 'Buyers discount businesses that depend on the owner. This proves the business runs without you.',
+  OPERATIONAL: 'Buyers see risk in ad-hoc processes. Documenting this shows the business is scalable.',
+  MARKET: 'Buyers pay premiums for market defensibility. This strengthens your competitive position.',
+  LEGAL_TAX: 'Buyers walk away from unresolved compliance gaps. This removes a deal-breaker.',
+  PERSONAL: 'Exit readiness signals commitment to the process. This shows you\'re serious.',
+}
+
+// --- BRI weights for bridge calculation ---
+const BRI_WEIGHTS: Record<string, number> = {
+  FINANCIAL: 0.25,
+  TRANSFERABILITY: 0.25,
+  OPERATIONAL: 0.20,
+  MARKET: 0.15,
+  LEGAL_TAX: 0.15,
+}
+
+// --- Timeline annotation helpers ---
+function getAnnotationLabel(reason: string | null): string | null {
+  if (!reason) return null
+  const labels: Record<string, string> = {
+    onboarding_complete: 'Initial valuation',
+    assessment_complete: 'Assessment completed',
+    financials_connected: 'Financials connected',
+    task_completed: 'Task completed',
+    reassessment_complete: 'Re-assessment completed',
+    dcf_calculated: 'DCF valuation added',
+    manual_recalculation: 'Valuation updated',
+    financial_period_added: 'New financial period',
+  }
+  return labels[reason] ?? null
+}
+
+function getAnnotationDetail(reason: string | null, valueDelta: number, briDelta: number): string {
+  if (!reason) return ''
+  const details: Record<string, string> = {
+    onboarding_complete: 'Your exit journey begins with this baseline valuation.',
+    assessment_complete: `BRI assessment reveals your buyer readiness profile.${briDelta ? ` BRI moved ${briDelta > 0 ? '+' : ''}${Math.round(briDelta)} points.` : ''}`,
+    financials_connected: 'Valuation accuracy improved with real financials.',
+    task_completed: `Action completed.${valueDelta ? ` Value impact: ${valueDelta > 0 ? '+' : ''}$${Math.abs(Math.round(valueDelta / 1000))}K.` : ''}`,
+    reassessment_complete: `Updated assessment reflects your progress.${briDelta ? ` BRI moved ${briDelta > 0 ? '+' : ''}${Math.round(briDelta)} points.` : ''}`,
+    dcf_calculated: 'DCF model provides an independent valuation perspective.',
+    manual_recalculation: 'Valuation recalculated with updated inputs.',
+    financial_period_added: 'New financial data incorporated into valuation.',
+  }
+  return details[reason] ?? ''
+}
+
+function formatImpact(valueDelta: number, briDelta: number): string {
+  const parts: string[] = []
+  if (valueDelta) {
+    const sign = valueDelta > 0 ? '+' : '-'
+    parts.push(`${sign}$${Math.abs(Math.round(valueDelta / 1000))}K`)
+  }
+  if (briDelta) {
+    parts.push(`${briDelta > 0 ? '+' : ''}${Math.round(briDelta)} BRI points`)
+  }
+  return parts.join(', ') || 'Baseline'
+}
+
 // Helper to format ICB code to readable name
 function formatIcbName(code: string | null): string | null {
   if (!code) return null
@@ -463,6 +534,155 @@ export async function GET(
       ? dcfEnterpriseValue / adjustedEbitda
       : null
 
+    // --- NEW: Value Gap Delta (30-day comparison) ---
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+    const previousSnapshot = company.valuationSnapshots.length > 1
+      ? await prisma.valuationSnapshot.findFirst({
+          where: {
+            companyId,
+            createdAt: { lte: thirtyDaysAgo },
+          },
+          orderBy: { createdAt: 'desc' },
+        })
+      : null
+
+    const currentValueGap = latestSnapshot ? Number(latestSnapshot.valueGap) : 0
+    const valueGapDelta = previousSnapshot
+      ? currentValueGap - Number(previousSnapshot.valueGap)
+      : null
+
+    // --- NEW: Valuation Bridge Categories ---
+    const bridgeCategories = (() => {
+      if (!latestSnapshot) return []
+      const valueGap = Number(latestSnapshot.valueGap)
+      if (valueGap <= 0) return []
+
+      const categories = [
+        { key: 'FINANCIAL', score: Number(latestSnapshot.briFinancial), label: 'Financial Health' },
+        { key: 'TRANSFERABILITY', score: Number(latestSnapshot.briTransferability), label: 'Transferability' },
+        { key: 'OPERATIONAL', score: Number(latestSnapshot.briOperational), label: 'Operations' },
+        { key: 'MARKET', score: Number(latestSnapshot.briMarket), label: 'Market Position' },
+        { key: 'LEGAL_TAX', score: Number(latestSnapshot.briLegalTax), label: 'Legal & Tax' },
+      ]
+
+      const rawGaps = categories.map(c => ({
+        ...c,
+        weight: BRI_WEIGHTS[c.key] || 0,
+        rawGap: (1 - c.score) * (BRI_WEIGHTS[c.key] || 0),
+      }))
+
+      const totalRawGap = rawGaps.reduce((sum, c) => sum + c.rawGap, 0)
+
+      return rawGaps
+        .map(c => ({
+          category: c.key,
+          label: c.label,
+          score: Math.round(c.score * 100),
+          dollarImpact: totalRawGap > 0
+            ? Math.round((c.rawGap / totalRawGap) * valueGap)
+            : 0,
+          weight: c.weight,
+          buyerExplanation: BUYER_EXPLANATIONS[c.key] || '',
+        }))
+        .sort((a, b) => b.dollarImpact - a.dollarImpact)
+    })()
+
+    // --- NEW: Next Move Task ---
+    const inProgressTask = await prisma.task.findFirst({
+      where: { companyId, status: 'IN_PROGRESS' },
+      orderBy: { updatedAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        briCategory: true,
+        estimatedHours: true,
+        rawImpact: true,
+        status: true,
+        buyerConsequence: true,
+        effortLevel: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    })
+
+    const nextPendingTask = inProgressTask || await prisma.task.findFirst({
+      where: {
+        companyId,
+        status: 'PENDING',
+        inActionPlan: true,
+      },
+      orderBy: [
+        { priorityRank: 'asc' },
+        { estimatedHours: 'asc' },
+        { createdAt: 'asc' },
+      ],
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        briCategory: true,
+        estimatedHours: true,
+        rawImpact: true,
+        status: true,
+        buyerConsequence: true,
+        effortLevel: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    })
+
+    const comingUpTasks = nextPendingTask ? await prisma.task.findMany({
+      where: {
+        companyId,
+        status: 'PENDING',
+        inActionPlan: true,
+        id: { not: nextPendingTask.id },
+      },
+      orderBy: [
+        { priorityRank: 'asc' },
+        { estimatedHours: 'asc' },
+      ],
+      take: 2,
+      select: {
+        id: true,
+        title: true,
+        estimatedHours: true,
+        rawImpact: true,
+        briCategory: true,
+      },
+    }) : []
+
+    // --- NEW: Timeline Annotations ---
+    const allSnapshots = await prisma.valuationSnapshot.findMany({
+      where: { companyId },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    })
+
+    const annotations = allSnapshots
+      .map((snapshot, index) => {
+        const prev = allSnapshots[index + 1]
+        const valueDelta = prev
+          ? Number(snapshot.currentValue) - Number(prev.currentValue)
+          : 0
+        const briDelta = prev
+          ? (Number(snapshot.briScore) - Number(prev.briScore)) * 100
+          : 0
+
+        const label = getAnnotationLabel(snapshot.snapshotReason)
+        if (!label) return null
+
+        return {
+          date: snapshot.createdAt.toISOString(),
+          label,
+          detail: getAnnotationDetail(snapshot.snapshotReason, valueDelta, briDelta),
+          impact: formatImpact(valueDelta, briDelta),
+          type: valueDelta > 0 ? 'positive' as const : valueDelta < 0 ? 'negative' as const : 'neutral' as const,
+        }
+      })
+      .filter((a): a is NonNullable<typeof a> => a !== null)
+
     return NextResponse.json({
       company: {
         id: company.id,
@@ -648,6 +868,38 @@ export async function GET(
         valueTrend,
         briTrend,
         exitWindow,
+        annotations,
+      },
+      // Value Home: Bridge data
+      bridgeCategories,
+      // Value Home: Value gap delta
+      valueGapDelta,
+      previousValueGap: previousSnapshot ? Number(previousSnapshot.valueGap) : null,
+      // Value Home: Next Move
+      nextMove: {
+        task: nextPendingTask ? {
+          id: nextPendingTask.id,
+          title: nextPendingTask.title,
+          description: nextPendingTask.description,
+          briCategory: nextPendingTask.briCategory,
+          estimatedHours: nextPendingTask.estimatedHours,
+          rawImpact: Number(nextPendingTask.rawImpact),
+          status: nextPendingTask.status,
+          buyerConsequence: nextPendingTask.buyerConsequence
+            || BUYER_CONSEQUENCE_TEMPLATES[nextPendingTask.briCategory]
+            || null,
+          effortLevel: nextPendingTask.effortLevel,
+          startedAt: nextPendingTask.status === 'IN_PROGRESS'
+            ? nextPendingTask.updatedAt.toISOString()
+            : null,
+        } : null,
+        comingUp: comingUpTasks.map(t => ({
+          id: t.id,
+          title: t.title,
+          estimatedHours: t.estimatedHours,
+          rawImpact: Number(t.rawImpact),
+          briCategory: t.briCategory,
+        })),
       },
       hasAssessment: !!latestSnapshot,
       // Re-assessment trigger data
