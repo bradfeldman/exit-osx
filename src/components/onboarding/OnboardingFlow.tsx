@@ -175,6 +175,45 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     }
   }, [currentStep, createdCompanyId, router])
 
+  // Recovery: re-fetch dashboard data if step 3 is reached without previewData
+  useEffect(() => {
+    if (currentStep === 3 && !industryPreviewData && createdCompanyId) {
+      const fetchPreviewData = async () => {
+        try {
+          const dashboardResponse = await fetch(`/api/companies/${createdCompanyId}/dashboard`)
+          if (dashboardResponse.ok) {
+            const dashboardData = await dashboardResponse.json()
+            const tier1 = dashboardData.tier1 || {}
+            const tier2 = dashboardData.tier2 || {}
+
+            const currentValue = tier1.currentValue || 0
+            const potentialValue = tier1.potentialValue || 0
+            const adjustedEbitda = tier2.adjustedEbitda || 0
+            const multipleLow = tier1.multipleRange?.low || 3.0
+            const multipleHigh = tier1.multipleRange?.high || 6.0
+
+            const valuationLow = adjustedEbitda * multipleLow
+            const valuationHigh = adjustedEbitda * multipleHigh
+            const potentialGap = Math.round(valuationHigh - currentValue)
+
+            setIndustryPreviewData({
+              valuationLow: Math.round(valuationLow),
+              valuationHigh: Math.round(valuationHigh),
+              potentialGap: Math.max(0, potentialGap),
+              industryName: formData.icbSubSector.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()),
+              adjustedEbitda,
+              multipleLow,
+              multipleHigh,
+            })
+          }
+        } catch (err) {
+          console.error('[ONBOARDING] Failed to recover preview data:', err)
+        }
+      }
+      fetchPreviewData()
+    }
+  }, [currentStep, industryPreviewData, createdCompanyId, formData.icbSubSector])
+
   const updateFormData = (updates: Partial<CompanyFormData>) => {
     setFormData(prev => ({ ...prev, ...updates }))
   }
@@ -539,7 +578,11 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
             onContinue={() => goToStep(4)}
             onSkip={handleSkip}
           />
-        ) : null
+        ) : (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+          </div>
+        )
       case 4:
         return createdCompanyId ? (
           <QuickScanStep
