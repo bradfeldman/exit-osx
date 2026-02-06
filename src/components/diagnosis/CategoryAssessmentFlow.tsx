@@ -215,10 +215,16 @@ export function CategoryAssessmentFlow({
   const handleDone = async () => {
     setSaving(true)
     try {
-      // Trigger BRI recalculation by fetching updated diagnosis
-      await fetch(`/api/companies/${companyId}/diagnosis`)
+      // Trigger BRI recalculation by calling the recalculate endpoint
+      const res = await fetch(`/api/companies/${companyId}/recalculate-bri`, {
+        method: 'POST',
+      })
+      if (!res.ok) {
+        console.error('Failed to recalculate BRI:', await res.text())
+      }
       onComplete()
-    } catch {
+    } catch (err) {
+      console.error('Error recalculating BRI:', err)
       onComplete() // Still close even if recalc fails
     } finally {
       setSaving(false)
