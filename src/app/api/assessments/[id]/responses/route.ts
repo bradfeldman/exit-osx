@@ -66,12 +66,8 @@ export async function POST(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    if (assessment.completedAt) {
-      return NextResponse.json(
-        { error: 'Assessment already completed' },
-        { status: 400 }
-      )
-    }
+    // Allow updating responses on completed assessments for category re-assessment
+    // The inline assessment flow in Diagnosis mode needs this to work
 
     // Upsert the response (update if exists, create if not)
     // Initialize effectiveOptionId = selectedOptionId for Answer Upgrade System

@@ -280,10 +280,31 @@ export function CategoryAssessmentFlow({
             Question {currentQuestionIndex + 1} of {questions.length}
           </p>
         </div>
-        <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClose}
+          className="h-8 w-8 p-0 hover:bg-muted"
+          aria-label="Close assessment"
+        >
           <X className="h-4 w-4" />
         </Button>
       </div>
+
+      {/* Inline error message */}
+      {error && (
+        <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+          <p className="text-sm text-destructive">{error}</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setError(null)}
+            className="mt-2"
+          >
+            Dismiss
+          </Button>
+        </div>
+      )}
 
       {/* Progress bar */}
       <div className="mb-4">
@@ -420,30 +441,33 @@ export function CategoryAssessmentFlow({
           Back
         </Button>
 
-        {allAnswered ? (
-          <Button size="sm" onClick={handleDone} disabled={saving}>
-            {saving ? (
-              <>
-                <Loader2 className="w-3 h-3 animate-spin mr-1" />
-                Saving...
-              </>
-            ) : (
-              <>
-                Done
-                <Check className="w-3 h-3 ml-1" />
-              </>
-            )}
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            onClick={() => setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))}
-            disabled={currentQuestionIndex >= questions.length - 1}
-          >
-            Next
-            <ChevronRight className="w-4 h-4 ml-1" />
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {/* Always show Done on last question if we have any answer selected visually */}
+          {(allAnswered || (currentQuestionIndex === questions.length - 1 && (currentResponse || recentlySelected))) ? (
+            <Button size="sm" onClick={handleDone} disabled={saving}>
+              {saving ? (
+                <>
+                  <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  Done
+                  <Check className="w-3 h-3 ml-1" />
+                </>
+              )}
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              onClick={() => setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))}
+              disabled={currentQuestionIndex >= questions.length - 1}
+            >
+              Next
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          )}
+        </div>
       </div>
     </motion.div>
   )
