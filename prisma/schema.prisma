@@ -200,6 +200,10 @@ model Company {
   diagnosticResponses      CompanyDiagnosticResponses[]
   operationsTasks          CompanyOperationsTask[]
   weeklyProgress           CompanyWeeklyProgress[]
+  // Signal Architecture & Value Ledger
+  signals                  Signal[]
+  valueLedgerEntries       ValueLedgerEntry[]
+  disclosurePromptSets     DisclosurePromptSet[]
 
   @@map("companies")
 }
@@ -437,6 +441,7 @@ model Task {
   sprint               Sprint?            @relation(fields: [sprintId], references: [id])
   upgradesFromOption   QuestionOption?    @relation("TaskUpgradeFrom", fields: [upgradesFromOptionId], references: [id])
   upgradesToOption     QuestionOption?    @relation("TaskUpgradeTo", fields: [upgradesToOptionId], references: [id])
+  valueLedgerEntries   ValueLedgerEntry[]
 
   @@index([companyId, status])
   @@index([sprintId])
@@ -2875,4 +2880,142 @@ model AIGenerationLog {
   @@index([companyId])
   @@index([generationType])
   @@map("ai_generation_logs")
+}
+
+// ─── Signal Architecture & Value Ledger ─────────────────────────────
+
+enum SignalChannel {
+  PROMPTED_DISCLOSURE
+  TASK_GENERATED
+  TIME_DECAY
+  EXTERNAL
+  ADVISOR
+}
+
+enum SignalSeverity {
+  INFO
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum SignalResolutionStatus {
+  OPEN
+  ACKNOWLEDGED
+  IN_PROGRESS
+  RESOLVED
+  DISMISSED
+  EXPIRED
+}
+
+enum LedgerEventType {
+  TASK_COMPLETED
+  REGRESSION_DETECTED
+  BENCHMARK_SHIFT
+  NEW_DATA_CONNECTED
+  SIGNAL_CONFIRMED
+  DRIFT_DETECTED
+  ASSESSMENT_COMPLETED
+  SNAPSHOT_CREATED
+}
+
+model Signal {
+  id                  String                 @id @default(cuid())
+  companyId           String                 @map("company_id")
+  channel             SignalChannel
+  category            BriCategory?
+  eventType           String                 @map("event_type")
+  severity            SignalSeverity         @default(MEDIUM)
+  confidence          ConfidenceLevel        @default(UNCERTAIN)
+  title               String
+  description         String?
+  rawData             Json?                  @map("raw_data")
+  userConfirmed       Boolean                @default(false) @map("user_confirmed")
+  confirmedAt         DateTime?              @map("confirmed_at")
+  confirmedByUserId   String?                @map("confirmed_by_user_id")
+  resolutionStatus    SignalResolutionStatus @default(OPEN) @map("resolution_status")
+  resolvedAt          DateTime?              @map("resolved_at")
+  resolvedByUserId    String?                @map("resolved_by_user_id")
+  resolutionNotes     String?                @map("resolution_notes")
+  estimatedValueImpact Decimal?             @map("estimated_value_impact") @db.Decimal(15, 2)
+  estimatedBriImpact  Decimal?              @map("estimated_bri_impact") @db.Decimal(5, 4)
+  sourceType          String?                @map("source_type")
+  sourceId            String?                @map("source_id")
+  createdAt           DateTime               @default(now()) @map("created_at")
+  updatedAt           DateTime               @updatedAt @map("updated_at")
+  expiresAt           DateTime?              @map("expires_at")
+  company             Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  ledgerEntries       ValueLedgerEntry[]
+
+  @@index([companyId, createdAt])
+  @@index([companyId, resolutionStatus])
+  @@index([companyId, channel])
+  @@index([companyId, severity])
+  @@map("signals")
+}
+
+model ValueLedgerEntry {
+  id                  String          @id @default(cuid())
+  companyId           String          @map("company_id")
+  eventType           LedgerEventType @map("event_type")
+  category            BriCategory?
+  deltaValueRecovered Decimal         @default(0) @map("delta_value_recovered") @db.Decimal(15, 2)
+  deltaValueAtRisk    Decimal         @default(0) @map("delta_value_at_risk") @db.Decimal(15, 2)
+  deltaBri            Decimal?        @map("delta_bri") @db.Decimal(5, 4)
+  briScoreBefore      Decimal?        @map("bri_score_before") @db.Decimal(5, 4)
+  briScoreAfter       Decimal?        @map("bri_score_after") @db.Decimal(5, 4)
+  valuationBefore     Decimal?        @map("valuation_before") @db.Decimal(15, 2)
+  valuationAfter      Decimal?        @map("valuation_after") @db.Decimal(15, 2)
+  confidenceLevel     ConfidenceLevel @default(SOMEWHAT_CONFIDENT) @map("confidence_level")
+  narrativeSummary    String          @map("narrative_summary")
+  signalId            String?         @map("signal_id")
+  taskId              String?         @map("task_id")
+  snapshotId          String?         @map("snapshot_id")
+  metadata            Json?
+  occurredAt          DateTime        @default(now()) @map("occurred_at")
+  createdAt           DateTime        @default(now()) @map("created_at")
+  company             Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  signal              Signal?         @relation(fields: [signalId], references: [id], onDelete: SetNull)
+  task                Task?           @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([companyId, occurredAt])
+  @@index([companyId, eventType])
+  @@index([signalId])
+  @@index([taskId])
+  @@map("value_ledger_entries")
+}
+
+model DisclosurePromptSet {
+  id           String               @id @default(cuid())
+  companyId    String               @map("company_id")
+  scheduledFor DateTime             @map("scheduled_for")
+  expiresAt    DateTime             @map("expires_at")
+  questions    Json
+  completedAt  DateTime?            @map("completed_at")
+  skippedAt    DateTime?            @map("skipped_at")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  company      Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  responses    DisclosureResponse[]
+
+  @@index([companyId, scheduledFor])
+  @@map("disclosure_prompt_sets")
+}
+
+model DisclosureResponse {
+  id              String              @id @default(cuid())
+  promptSetId     String              @map("prompt_set_id")
+  companyId       String              @map("company_id")
+  questionKey     String              @map("question_key")
+  questionText    String              @map("question_text")
+  briCategory     BriCategory         @map("bri_category")
+  answer          Boolean
+  followUpAnswer  String?             @map("follow_up_answer")
+  respondedAt     DateTime            @default(now()) @map("responded_at")
+  signalCreated   Boolean             @default(false) @map("signal_created")
+  promptSet       DisclosurePromptSet @relation(fields: [promptSetId], references: [id], onDelete: Cascade)
+
+  @@index([promptSetId])
+  @@index([companyId])
+  @@map("disclosure_responses")
 }

@@ -7,6 +7,7 @@ import { checkAssessmentTriggers } from '@/lib/assessment/assessment-triggers'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { onTaskStatusChange } from '@/lib/tasks/action-plan'
 import { BRI_CATEGORY_LABELS, type BRICategory } from '@/lib/constants/bri-categories'
+import { createLedgerEntryForTaskCompletion } from '@/lib/value-ledger/create-entry'
 
 export async function POST(
   request: Request,
@@ -65,6 +66,8 @@ export async function POST(
 
     // Handle BRI update based on task type
     let briImpact: { previousScore: number; newScore: number; categoryChanged: string } | null = null
+    let preSnapshot: { briScore: unknown; currentValue: unknown } | null = null
+    let postSnapshot: { briScore: unknown; currentValue: unknown } | null = null
 
     if (existingTask.linkedQuestionId) {
       // Assessment-linked task - use Answer Upgrade System
@@ -88,10 +91,10 @@ export async function POST(
         }
       }
 
-      const preSnapshot = await prisma.valuationSnapshot.findFirst({
+      preSnapshot = await prisma.valuationSnapshot.findFirst({
         where: { companyId: existingTask.companyId },
         orderBy: { createdAt: 'desc' },
-        select: { briScore: true },
+        select: { briScore: true, currentValue: true },
       })
 
       await recalculateSnapshotForCompany(
@@ -99,10 +102,10 @@ export async function POST(
         `Task completed: ${existingTask.title}`
       )
 
-      const postSnapshot = await prisma.valuationSnapshot.findFirst({
+      postSnapshot = await prisma.valuationSnapshot.findFirst({
         where: { companyId: existingTask.companyId },
         orderBy: { createdAt: 'desc' },
-        select: { briScore: true },
+        select: { briScore: true, currentValue: true },
       })
 
       if (preSnapshot && postSnapshot) {
@@ -116,10 +119,10 @@ export async function POST(
       await generateNextLevelTasks(existingTask.companyId, existingTask.linkedQuestionId)
     } else {
       // Onboarding task
-      const preSnapshot = await prisma.valuationSnapshot.findFirst({
+      preSnapshot = await prisma.valuationSnapshot.findFirst({
         where: { companyId: existingTask.companyId },
         orderBy: { createdAt: 'desc' },
-        select: { briScore: true },
+        select: { briScore: true, currentValue: true },
       })
 
       await improveSnapshotForOnboardingTask({
@@ -130,10 +133,10 @@ export async function POST(
         title: existingTask.title,
       })
 
-      const postSnapshot = await prisma.valuationSnapshot.findFirst({
+      postSnapshot = await prisma.valuationSnapshot.findFirst({
         where: { companyId: existingTask.companyId },
         orderBy: { createdAt: 'desc' },
-        select: { briScore: true },
+        select: { briScore: true, currentValue: true },
       })
 
       if (preSnapshot && postSnapshot) {
@@ -143,6 +146,22 @@ export async function POST(
           categoryChanged: existingTask.briCategory,
         }
       }
+    }
+
+    // Create Value Ledger entry (non-blocking)
+    try {
+      await createLedgerEntryForTaskCompletion({
+        companyId: existingTask.companyId,
+        taskId: id,
+        taskTitle: existingTask.title,
+        briCategory: existingTask.briCategory,
+        completedValue: Number(completedValue),
+        briImpact,
+        valueBefore: preSnapshot ? Number(preSnapshot.currentValue) : null,
+        valueAfter: postSnapshot ? Number(postSnapshot.currentValue) : null,
+      })
+    } catch (err) {
+      console.error('[ValueLedger] Failed to create entry (non-blocking):', err)
     }
 
     await checkAssessmentTriggers(existingTask.companyId)

@@ -10,6 +10,8 @@ import { NextMoveCard } from './NextMoveCard'
 import { ValueTimeline } from './ValueTimeline'
 import { ValueHomeLoading } from './ValueHomeLoading'
 import { ValueHomeError } from './ValueHomeError'
+import { ValueLedgerSection } from '@/components/value-ledger/ValueLedgerSection'
+import { DisclosureTrigger } from '@/components/disclosures/DisclosureTrigger'
 
 interface DashboardData {
   company: {
@@ -125,6 +127,11 @@ export function ValueHome() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
       <AnimatedStagger className="space-y-8" staggerDelay={0.15}>
+        {/* Monthly Disclosure Check-in (shows only when pending) */}
+        <AnimatedItem>
+          <DisclosureTrigger />
+        </AnimatedItem>
+
         {/* Hero Metrics Bar */}
         <AnimatedItem>
           <HeroMetricsBar
@@ -144,10 +151,11 @@ export function ValueHome() {
             bridgeCategories={data.bridgeCategories}
             hasAssessment={data.hasAssessment}
             onCategoryClick={(category) => {
-              router.push(`/dashboard/assessment/risk?category=${category}`)
+              // Navigate to diagnosis page and expand that category's inline assessment
+              router.push(`/dashboard/diagnosis?expand=${category}`)
             }}
             onAssessmentStart={() => {
-              router.push('/dashboard/assessment/risk')
+              router.push('/dashboard/diagnosis')
             }}
           />
         </AnimatedItem>
@@ -158,6 +166,11 @@ export function ValueHome() {
             task={data.nextMove.task}
             comingUp={data.nextMove.comingUp}
           />
+        </AnimatedItem>
+
+        {/* Value Ledger Summary */}
+        <AnimatedItem>
+          <ValueLedgerSection />
         </AnimatedItem>
 
         {/* Value Timeline */}

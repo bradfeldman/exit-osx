@@ -1,0 +1,118 @@
+import { prisma } from '@/lib/prisma'
+import { NextResponse, type NextRequest } from 'next/server'
+import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { createSignal } from '@/lib/signals/create-signal'
+import type { SignalChannel, SignalResolutionStatus, SignalSeverity, BriCategory } from '@prisma/client'
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id: companyId } = await params
+
+  const result = await checkPermission('COMPANY_VIEW', companyId)
+  if (isAuthError(result)) return result.error
+
+  const searchParams = request.nextUrl.searchParams
+  const status = searchParams.get('status') as SignalResolutionStatus | null
+  const channel = searchParams.get('channel') as SignalChannel | null
+  const severity = searchParams.get('severity') as SignalSeverity | null
+  const limit = Math.min(parseInt(searchParams.get('limit') ?? '20', 10), 50)
+  const cursor = searchParams.get('cursor')
+
+  const where: Record<string, unknown> = { companyId }
+  if (status) where.resolutionStatus = status
+  if (channel) where.channel = channel
+  if (severity) where.severity = severity
+
+  try {
+    const signals = await prisma.signal.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: limit + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      select: {
+        id: true,
+        channel: true,
+        category: true,
+        eventType: true,
+        severity: true,
+        title: true,
+        description: true,
+        resolutionStatus: true,
+        estimatedValueImpact: true,
+        userConfirmed: true,
+        createdAt: true,
+        expiresAt: true,
+      },
+    })
+
+    const hasMore = signals.length > limit
+    const trimmed = hasMore ? signals.slice(0, limit) : signals
+    const nextCursor = hasMore ? trimmed[trimmed.length - 1].id : null
+
+    return NextResponse.json({
+      signals: trimmed.map((s) => ({
+        ...s,
+        estimatedValueImpact: s.estimatedValueImpact
+          ? Number(s.estimatedValueImpact)
+          : null,
+      })),
+      nextCursor,
+    })
+  } catch (error) {
+    console.error('[Signals] Error fetching signals:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch signals' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id: companyId } = await params
+
+  const result = await checkPermission('TASK_UPDATE', companyId)
+  if (isAuthError(result)) return result.error
+
+  try {
+    const body = await request.json()
+    const { channel, title, description, category, estimatedValueImpact, metadata } = body as {
+      channel: SignalChannel
+      title: string
+      description?: string
+      category?: BriCategory
+      estimatedValueImpact?: number
+      metadata?: Record<string, unknown>
+    }
+
+    if (!channel || !title) {
+      return NextResponse.json(
+        { error: 'channel and title are required' },
+        { status: 400 }
+      )
+    }
+
+    const signal = await createSignal({
+      companyId,
+      channel,
+      title,
+      description,
+      category,
+      estimatedValueImpact,
+      rawData: metadata,
+      eventType: `manual_${channel.toLowerCase()}`,
+    })
+
+    return NextResponse.json({ signal }, { status: 201 })
+  } catch (error) {
+    console.error('[Signals] Error creating signal:', error)
+    return NextResponse.json(
+      { error: 'Failed to create signal' },
+      { status: 500 }
+    )
+  }
+}
