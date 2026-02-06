@@ -136,14 +136,12 @@ export async function recalculateSnapshotForCompany(
       }
     }
 
-    // Get the latest completed assessment for this company
+    // Get the latest assessment for this company (completed or in-progress)
+    // This allows inline category assessments to trigger recalculation
     // Include both selectedOption and effectiveOption for Answer Upgrade System
     const latestAssessment = await prisma.assessment.findFirst({
-      where: {
-        companyId,
-        completedAt: { not: null },
-      },
-      orderBy: { completedAt: 'desc' },
+      where: { companyId },
+      orderBy: { createdAt: 'desc' },
       include: {
         responses: {
           include: {
@@ -158,7 +156,17 @@ export async function recalculateSnapshotForCompany(
     if (!latestAssessment) {
       return {
         success: false,
-        error: 'No completed assessment found',
+        error: 'No assessment found',
+        companyId,
+        companyName: company.name,
+      }
+    }
+
+    // Need at least some responses to calculate scores
+    if (latestAssessment.responses.length === 0) {
+      return {
+        success: false,
+        error: 'No responses found in assessment',
         companyId,
         companyName: company.name,
       }
