@@ -8,6 +8,7 @@ import { AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
 import { HeroMetricsBar } from './HeroMetricsBar'
 import { ValuationBridge } from './ValuationBridge'
 import { NextMoveCard } from './NextMoveCard'
+import { ProgressContext } from './ProgressContext'
 import { ValueTimeline } from './ValueTimeline'
 import { ValueHomeLoading } from './ValueHomeLoading'
 import { ValueHomeError } from './ValueHomeError'
@@ -68,6 +69,14 @@ interface DashboardData {
   }>
   valueGapDelta: number | null
   previousValueGap: number | null
+  progressContext: {
+    valueRecoveredLifetime: number
+    valueAtRiskCurrent: number
+    openSignalCount: number
+    valueRecoveredThisMonth: number
+    valueAtRiskThisMonth: number
+    ledgerEventsThisMonth: number
+  }
   nextMove: {
     task: {
       id: string
@@ -170,6 +179,19 @@ export function ValueHome() {
             task={data.nextMove.task}
             comingUp={data.nextMove.comingUp}
             isFreeUser={isFreeUser}
+          />
+        </AnimatedItem>
+
+        {/* Progress Context: Recovered / At Risk / Gap */}
+        <AnimatedItem>
+          <ProgressContext
+            valueRecoveredLifetime={data.progressContext.valueRecoveredLifetime}
+            valueAtRiskCurrent={data.progressContext.valueAtRiskCurrent}
+            openSignalCount={data.progressContext.openSignalCount}
+            valueRecoveredThisMonth={data.progressContext.valueRecoveredThisMonth}
+            valueAtRiskThisMonth={data.progressContext.valueAtRiskThisMonth}
+            valueGap={tier1?.valueGap ?? 0}
+            valueGapDelta={data.valueGapDelta}
           />
         </AnimatedItem>
 

@@ -500,6 +500,39 @@ export async function GET(
       ? dcfEnterpriseValue / adjustedEbitda
       : null
 
+    // --- Value-at-risk aggregation ---
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
+
+    const [lifetimeRecovered, openSignalRisk, monthlyLedger] = await Promise.all([
+      // Lifetime recovered from ledger
+      prisma.valueLedgerEntry.aggregate({
+        where: { companyId },
+        _sum: { deltaValueRecovered: true },
+      }),
+      // Current at-risk from OPEN signals
+      prisma.signal.aggregate({
+        where: {
+          companyId,
+          resolutionStatus: 'OPEN',
+          estimatedValueImpact: { not: null },
+        },
+        _sum: { estimatedValueImpact: true },
+        _count: true,
+      }),
+      // This month's ledger activity
+      prisma.valueLedgerEntry.aggregate({
+        where: {
+          companyId,
+          occurredAt: { gte: monthStart },
+        },
+        _sum: {
+          deltaValueRecovered: true,
+          deltaValueAtRisk: true,
+        },
+        _count: true,
+      }),
+    ])
+
     // --- NEW: Value Gap Delta (30-day comparison) ---
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     const previousSnapshot = company.valuationSnapshots.length > 1
@@ -853,6 +886,15 @@ export async function GET(
       // Value Home: Value gap delta
       valueGapDelta,
       previousValueGap: previousSnapshot ? Number(previousSnapshot.valueGap) : null,
+      // Value Home: Progress Context
+      progressContext: {
+        valueRecoveredLifetime: Number(lifetimeRecovered._sum.deltaValueRecovered ?? 0),
+        valueAtRiskCurrent: Number(openSignalRisk._sum.estimatedValueImpact ?? 0),
+        openSignalCount: openSignalRisk._count,
+        valueRecoveredThisMonth: Number(monthlyLedger._sum.deltaValueRecovered ?? 0),
+        valueAtRiskThisMonth: Number(monthlyLedger._sum.deltaValueAtRisk ?? 0),
+        ledgerEventsThisMonth: monthlyLedger._count,
+      },
       // Value Home: Next Move
       nextMove: {
         task: nextPendingTask ? {
