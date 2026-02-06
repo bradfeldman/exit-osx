@@ -327,6 +327,9 @@ export async function GET(
     const briScore = latestSnapshot ? Math.round(Number(latestSnapshot.briScore) * 100) : null
     const briScoreDecimal = latestSnapshot ? Number(latestSnapshot.briScore) : 0
 
+    // hasAssessment is true if we have any responses (not just if formally completed)
+    const hasResponses = (latestAssessment?.responses?.length ?? 0) > 0
+
     return NextResponse.json({
       briScore,
       briScoreDecimal,
@@ -334,8 +337,8 @@ export async function GET(
       categories,
       riskDrivers,
       assessmentId: latestAssessment?.id ?? null,
-      hasAssessment: !!latestAssessment?.completedAt,
-      lastAssessmentDate: latestAssessment?.completedAt?.toISOString() ?? null,
+      hasAssessment: hasResponses,
+      lastAssessmentDate: latestAssessment?.completedAt?.toISOString() ?? latestAssessment?.updatedAt?.toISOString() ?? null,
       questionCounts,
     })
   } catch (error) {
