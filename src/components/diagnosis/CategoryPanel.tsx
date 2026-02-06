@@ -1,10 +1,12 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { ConfidenceDots } from './ConfidenceDots'
+import { CategoryAssessmentFlow } from './CategoryAssessmentFlow'
+import { AnimatePresence } from '@/lib/motion'
 
 const CATEGORY_DOT_COLORS: Record<string, string> = {
   FINANCIAL: 'bg-blue-500',
@@ -43,6 +45,9 @@ interface CategoryPanelProps {
     isStale: boolean
   }
   isLowestConfidence: boolean
+  assessmentId: string | null
+  companyId: string | null
+  onAssessmentComplete: () => void
 }
 
 export function CategoryPanel({
@@ -52,13 +57,16 @@ export function CategoryPanel({
   dollarImpact,
   confidence,
   isLowestConfidence,
+  assessmentId,
+  companyId,
+  onAssessmentComplete,
 }: CategoryPanelProps) {
-  const router = useRouter()
+  const [isExpanded, setIsExpanded] = useState(false)
 
   const getCtaLabel = (): string => {
-    if (confidence.questionsAnswered === 0) return 'Start Assessment →'
-    if (confidence.isStale) return 'Review & Refresh →'
-    if (confidence.questionsAnswered < confidence.questionsTotal) return 'Continue →'
+    if (confidence.questionsAnswered === 0) return 'Start Assessment'
+    if (confidence.isStale) return 'Review & Refresh'
+    if (confidence.questionsAnswered < confidence.questionsTotal) return 'Continue'
     if (score >= 80 && confidence.questionsAnswered === confidence.questionsTotal) return 'Maintaining'
     return 'Review Answers'
   }
@@ -66,14 +74,24 @@ export function CategoryPanel({
   const showSecondary = confidence.questionsAnswered > 0 && confidence.questionsAnswered < confidence.questionsTotal
 
   const handlePrimaryClick = () => {
-    // MVP: Navigate to baseline assessment wizard
-    // The baseline assessment shows all questions and allows answering/reviewing
-    router.push('/dashboard/assessment')
+    if (assessmentId && companyId) {
+      setIsExpanded(true)
+    }
   }
 
   const handleSecondaryClick = () => {
-    // Same as primary for MVP - baseline assessment allows reviewing all answers
-    router.push('/dashboard/assessment')
+    if (assessmentId && companyId) {
+      setIsExpanded(true)
+    }
+  }
+
+  const handleClose = () => {
+    setIsExpanded(false)
+  }
+
+  const handleComplete = () => {
+    setIsExpanded(false)
+    onAssessmentComplete()
   }
 
   const ctaLabel = getCtaLabel()
@@ -83,7 +101,8 @@ export function CategoryPanel({
     <div className={cn(
       'bg-card border border-border rounded-xl p-5 transition-all',
       'hover:border-primary/20 hover:shadow-sm',
-      isLowestConfidence && 'border-amber-300/50'
+      isLowestConfidence && 'border-amber-300/50',
+      isExpanded && 'border-primary/40 shadow-md'
     )}>
       {/* Header: Dot + Label + Score */}
       <div className="flex items-center justify-between">
@@ -133,22 +152,38 @@ export function CategoryPanel({
         </div>
       )}
 
-      {/* CTAs */}
-      <div className="flex items-center gap-2 mt-3">
-        <Button
-          size="sm"
-          variant={isMaintaining ? 'ghost' : 'default'}
-          disabled={isMaintaining}
-          onClick={handlePrimaryClick}
-        >
-          {ctaLabel}
-        </Button>
-        {showSecondary && (
-          <Button variant="ghost" size="sm" onClick={handleSecondaryClick}>
-            Review Answers
+      {/* CTAs - hidden when expanded */}
+      {!isExpanded && (
+        <div className="flex items-center gap-2 mt-3">
+          <Button
+            size="sm"
+            variant={isMaintaining ? 'ghost' : 'default'}
+            disabled={isMaintaining || !assessmentId || !companyId}
+            onClick={handlePrimaryClick}
+          >
+            {ctaLabel} {!isMaintaining && '→'}
           </Button>
+          {showSecondary && (
+            <Button variant="ghost" size="sm" onClick={handleSecondaryClick}>
+              Review Answers
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Inline Assessment Flow */}
+      <AnimatePresence>
+        {isExpanded && assessmentId && companyId && (
+          <CategoryAssessmentFlow
+            category={category}
+            categoryLabel={label}
+            assessmentId={assessmentId}
+            companyId={companyId}
+            onClose={handleClose}
+            onComplete={handleComplete}
+          />
         )}
-      </div>
+      </AnimatePresence>
     </div>
   )
 }

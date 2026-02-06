@@ -85,6 +85,11 @@ export function DiagnosisPage() {
     fetchData()
   }, [fetchData])
 
+  // Callback for when an inline assessment completes - refetch all data
+  const handleAssessmentComplete = useCallback(() => {
+    fetchData()
+  }, [fetchData])
+
   if (isLoading) return <DiagnosisLoading />
   if (error || !data) return <DiagnosisError onRetry={fetchData} />
 
@@ -111,6 +116,9 @@ export function DiagnosisPage() {
                 dollarImpact={cat.dollarImpact}
                 confidence={cat.confidence}
                 isLowestConfidence={cat.isLowestConfidence}
+                assessmentId={data.assessmentId}
+                companyId={selectedCompanyId}
+                onAssessmentComplete={handleAssessmentComplete}
               />
             ))}
           </div>
