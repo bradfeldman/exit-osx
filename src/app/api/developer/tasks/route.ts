@@ -15,7 +15,6 @@ interface CanonicalTaskTemplate {
   secondaryCategories: string[]
   effortLevel: string
   timeEstimate: string
-  sprintCategory: string
   buyerConfidenceElasticity: number
   acceptanceCriteria: string
   evidenceType: string
@@ -91,7 +90,6 @@ export async function POST(request: NextRequest) {
       secondaryCategories = [],
       effortLevel,
       timeEstimate,
-      sprintCategory,
       buyerConfidenceElasticity,
       acceptanceCriteria,
       evidenceType,
@@ -134,7 +132,6 @@ export async function POST(request: NextRequest) {
       secondaryCategories,
       effortLevel: EFFORT_LEVEL_MAP[effortLevel] || 'MODERATE',
       timeEstimate,
-      sprintCategory,
       buyerConfidenceElasticity: parseFloat(buyerConfidenceElasticity),
       acceptanceCriteria,
       evidenceType,
@@ -152,7 +149,6 @@ export async function POST(request: NextRequest) {
       actionType,
       primaryCategory,
       effortLevel,
-      sprintCategory,
       buyerConfidenceElasticity,
     })
 
@@ -167,7 +163,6 @@ export async function POST(request: NextRequest) {
         actionType: canonicalTask.actionType,
         primaryCategory,
         effortLevel: canonicalTask.effortLevel,
-        sprintCategory,
       },
       message: 'Canonical task created successfully. Note: Full database integration pending.',
     })

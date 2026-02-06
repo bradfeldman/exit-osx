@@ -216,7 +216,7 @@ export function FinancialSettingsModal({
                     </>
                   )}
                 </div>
-                <Link href="/dashboard/settings/company">
+                <Link href="/dashboard/settings">
                   <Button variant="outline" size="sm">
                     Manage
                     <ExternalLink className="ml-2 h-3 w-3" />

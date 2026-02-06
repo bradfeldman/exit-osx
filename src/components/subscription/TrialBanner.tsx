@@ -73,7 +73,7 @@ export function TrialBanner() {
     analytics.track('trial_banner_clicked', {
       daysRemaining: trialDaysRemaining,
       isExpired: showExpiredBanner,
-      destination: '/dashboard/settings/billing',
+      destination: '/dashboard/settings?tab=billing',
     })
   }
 
@@ -155,7 +155,7 @@ export function TrialBanner() {
             variant={showExpiredBanner || isUrgent ? 'default' : 'outline'}
             onClick={handleUpgradeClick}
           >
-            <Link href="/dashboard/settings/billing">
+            <Link href="/dashboard/settings?tab=billing">
               Upgrade Now
               <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
             </Link>

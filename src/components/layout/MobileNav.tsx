@@ -389,11 +389,11 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                 Admin
               </p>
               <Link
-                href="/dashboard/settings/company"
+                href="/dashboard/settings"
                 onClick={handleLinkClick}
                 className={cn(
                   'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                  pathname === '/dashboard/settings/company'
+                  pathname?.startsWith('/dashboard/settings')
                     ? 'bg-sidebar-accent text-sidebar-primary'
                     : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                 )}

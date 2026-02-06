@@ -171,7 +171,7 @@ export default function PrivacyPage() {
               </ul>
               <p className="text-muted-foreground mb-4">
                 To exercise these rights, visit your{' '}
-                <Link href="/dashboard/settings/user" className="text-primary hover:underline">
+                <Link href="/dashboard/settings?tab=account" className="text-primary hover:underline">
                   account settings
                 </Link>{' '}
                 or contact us at{' '}

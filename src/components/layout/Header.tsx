@@ -137,7 +137,7 @@ export function Header({ user }: HeaderProps) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push('/dashboard/settings/user')}>
+              <DropdownMenuItem onClick={() => router.push('/dashboard/settings?tab=account')}>
                 User Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />

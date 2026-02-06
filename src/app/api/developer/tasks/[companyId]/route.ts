@@ -41,11 +41,6 @@ export async function GET(
     const tasks = await prisma.task.findMany({
       where,
       include: {
-        sprint: {
-          select: {
-            name: true
-          }
-        },
         upgradesFromOption: {
           select: {
             id: true,
@@ -183,7 +178,6 @@ export async function GET(
             score: Number(t.upgradesToOption.scoreValue)
           }
         } : null,
-        sprintName: t.sprint?.name || null,
         createdAt: t.createdAt,
         updatedAt: t.updatedAt
       })),

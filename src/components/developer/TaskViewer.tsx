@@ -52,7 +52,6 @@ interface Task {
   linkedQuestionId: string | null
   linkedQuestionDetails: LinkedQuestionDetails | null
   upgradePath: UpgradePath | null
-  sprintName: string | null
   createdAt: string
   updatedAt: string
 }
@@ -486,12 +485,6 @@ export function TaskViewer({ onBack }: TaskViewerProps) {
                               <div>
                                 <span className="text-muted-foreground">Est. Hours:</span>{' '}
                                 <span className="font-medium">{task.estimatedHours}h</span>
-                              </div>
-                            )}
-                            {task.sprintName && (
-                              <div>
-                                <span className="text-muted-foreground">Sprint:</span>{' '}
-                                <span className="font-medium">{task.sprintName}</span>
                               </div>
                             )}
                             {task.deferredUntil && (

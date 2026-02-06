@@ -183,7 +183,7 @@ export async function createAccessRequestAlert(
     type: 'ACCESS_REQUEST',
     title: 'Access Request',
     message: `${requesterName} has requested access to ${featureName} for ${companyName}`,
-    actionUrl: `/dashboard/settings/company?tab=access-requests`,
+    actionUrl: `/dashboard/settings?tab=team`,
     metadata: { requestId, featureKey, requesterName, companyName },
   })
 }
@@ -285,7 +285,7 @@ export async function createTrialEndingAlert(
     type: 'TRIAL_ENDING',
     title: 'Trial Ending Soon',
     message: `Your trial ends in ${daysRemaining} day${daysRemaining === 1 ? '' : 's'}. Subscribe to keep your Exit-Ready features.`,
-    actionUrl: `/dashboard/settings/organization?tab=billing`,
+    actionUrl: `/dashboard/settings?tab=billing`,
     metadata: { daysRemaining },
   })
 }
@@ -299,6 +299,6 @@ export async function createTrialExpiredAlert(userId: string): Promise<AlertWith
     type: 'TRIAL_EXPIRED',
     title: 'Trial Expired',
     message: 'Your trial has ended. Subscribe to regain access to premium features.',
-    actionUrl: `/dashboard/settings/organization?tab=billing`,
+    actionUrl: `/dashboard/settings?tab=billing`,
   })
 }

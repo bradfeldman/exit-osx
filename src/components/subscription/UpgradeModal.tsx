@@ -220,7 +220,7 @@ export function UpgradeModal({
 
         <DialogFooter className="flex-col gap-2 sm:flex-col">
           <Button asChild className="w-full" onClick={handleUpgradeClick}>
-            <Link href={`/dashboard/settings/billing?upgrade=${targetPlan}`}>
+            <Link href={`/dashboard/settings?tab=billing&upgrade=${targetPlan}`}>
               {getCtaText()}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>

@@ -87,7 +87,7 @@ export function ActivationGate({ activation, onActivate, isActivating }: Activat
           </Button>
         ) : !activation.tierReady ? (
           <Button asChild className="bg-[var(--burnt-orange)] hover:bg-[var(--burnt-orange)]/90 text-white">
-            <Link href="/settings/billing">Upgrade to Exit-Ready</Link>
+            <Link href="/dashboard/settings?tab=billing">Upgrade to Exit-Ready</Link>
           </Button>
         ) : !activation.evidenceReady ? (
           <Button asChild variant="outline">

@@ -376,7 +376,6 @@ async function handleOnboardingTaskGeneration(body: {
             effortLevel: task.estimatedHours && task.estimatedHours <= 1 ? 'MINIMAL' : task.estimatedHours && task.estimatedHours <= 2 ? 'LOW' : 'MODERATE',
             complexity: 'SIMPLE',
             estimatedHours: task.estimatedHours || 2,
-            sprintPriority: index === 0 ? 'BIG_ROCK' : index < 3 ? 'SAND' : 'WATER',
             inActionPlan: true, // Show in action plan immediately after onboarding
             priorityRank: index + 1, // Priority based on generation order (first = highest)
           }

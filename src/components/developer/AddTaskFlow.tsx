@@ -31,7 +31,6 @@ interface TaskData {
   secondaryCategories: string[]
   effortLevel: string
   timeEstimate: string
-  sprintCategory: string
   buyerConfidenceElasticity: string
   acceptanceCriteria: string
   evidenceType: string
@@ -79,12 +78,6 @@ const TIME_ESTIMATES = [
   { value: 'ONE_YEAR', label: '1 Year' },
 ]
 
-const SPRINT_CATEGORIES = [
-  { value: 'BIG_ROCK', label: 'Big Rock', description: 'Deal-critical, must complete before exit' },
-  { value: 'SAND', label: 'Sand', description: 'Material but non-blocking' },
-  { value: 'WATER', label: 'Water', description: 'Quick wins with outsized impact' },
-]
-
 const FORBIDDEN_PATTERNS = ['improve', 'optimize', 'enhance', 'support', 'assist']
 
 export function AddTaskFlow({ onBack }: AddTaskFlowProps) {
@@ -98,7 +91,6 @@ export function AddTaskFlow({ onBack }: AddTaskFlowProps) {
     secondaryCategories: [],
     effortLevel: 'MEDIUM',
     timeEstimate: 'ONE_WEEK',
-    sprintCategory: 'SAND',
     buyerConfidenceElasticity: '0.5',
     acceptanceCriteria: '',
     evidenceType: 'UPLOAD',
@@ -352,27 +344,6 @@ export function AddTaskFlow({ onBack }: AddTaskFlowProps) {
                     {BRI_CATEGORIES.map((cat) => (
                       <SelectItem key={cat.value} value={cat.value}>
                         {cat.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="sprintCategory">Sprint Category</Label>
-                <Select
-                  value={taskData.sprintCategory}
-                  onValueChange={(value) => setTaskData({ ...taskData, sprintCategory: value })}
-                >
-                  <SelectTrigger id="sprintCategory">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SPRINT_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        <div>
-                          <span className="font-medium">{cat.label}</span>
-                          <span className="text-muted-foreground ml-2 text-xs">- {cat.description}</span>
-                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -633,10 +604,6 @@ export function AddTaskFlow({ onBack }: AddTaskFlowProps) {
                   <div>
                     <dt className="text-muted-foreground">Primary Category</dt>
                     <dd className="font-medium">{BRI_CATEGORIES.find(c => c.value === taskData.primaryCategory)?.label}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-muted-foreground">Sprint Category</dt>
-                    <dd className="font-medium">{SPRINT_CATEGORIES.find(c => c.value === taskData.sprintCategory)?.label}</dd>
                   </div>
                 </dl>
               </div>

@@ -13,6 +13,7 @@ import { ValueHomeLoading } from './ValueHomeLoading'
 import { ValueHomeError } from './ValueHomeError'
 import { ValueLedgerSection } from '@/components/value-ledger/ValueLedgerSection'
 import { DisclosureTrigger } from '@/components/disclosures/DisclosureTrigger'
+import { DriftReportBanner } from '@/components/drift-report/DriftReportBanner'
 
 interface DashboardData {
   company: {
@@ -175,6 +176,11 @@ export function ValueHome() {
         {/* Value Ledger Summary */}
         <AnimatedItem>
           <ValueLedgerSection />
+        </AnimatedItem>
+
+        {/* Drift Report Banner */}
+        <AnimatedItem>
+          <DriftReportBanner />
         </AnimatedItem>
 
         {/* Value Timeline */}

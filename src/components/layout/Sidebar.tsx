@@ -308,17 +308,17 @@ export function Sidebar() {
               {/* Company Settings */}
               <li>
                 <Link
-                  href="/dashboard/settings/company"
+                  href="/dashboard/settings"
                   className={cn(
                     'group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors',
-                    pathname === '/dashboard/settings/company'
+                    pathname?.startsWith('/dashboard/settings')
                       ? 'bg-sidebar-accent text-sidebar-primary'
                       : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                   )}
                 >
                   <SettingsIcon className={cn(
                     'h-5 w-5 shrink-0',
-                    pathname === '/dashboard/settings/company'
+                    pathname?.startsWith('/dashboard/settings')
                       ? 'text-sidebar-primary'
                       : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
                   )} />

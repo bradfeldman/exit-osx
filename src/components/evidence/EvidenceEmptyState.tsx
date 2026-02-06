@@ -78,7 +78,7 @@ export function EvidenceEmptyState({ onCategoryClick }: EvidenceEmptyStateProps)
       onCategoryClick(categoryId)
     } else {
       // For now, scroll to show that they need to upload - will be enhanced with upload modal
-      // This is the MVP behavior; sprint 2 adds actual upload modals
+      // This is the MVP behavior; a future iteration adds actual upload modals
       router.push(`/dashboard/evidence?category=${categoryId}`)
     }
   }

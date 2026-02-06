@@ -183,7 +183,6 @@ model Company {
   projectAssessments       ProjectAssessment[]
   prospectImports          ProspectImportBatch[]
   prospectiveBuyers        ProspectiveBuyer[]
-  sprints                  Sprint[]
   tasks                    Task[]
   valuationSnapshots       ValuationSnapshot[]
   // Company ownership & access relations
@@ -204,6 +203,7 @@ model Company {
   signals                  Signal[]
   valueLedgerEntries       ValueLedgerEntry[]
   disclosurePromptSets     DisclosurePromptSet[]
+  driftReports             DriftReport[]
 
   @@map("companies")
 }
@@ -394,6 +394,30 @@ model ValuationSnapshot {
   @@map("valuation_snapshots")
 }
 
+model DriftReport {
+  id                  String    @id @default(cuid())
+  companyId           String    @map("company_id")
+  periodStart         DateTime  @map("period_start")
+  periodEnd           DateTime  @map("period_end")
+  briScoreStart       Decimal   @map("bri_score_start") @db.Decimal(5, 4)
+  briScoreEnd         Decimal   @map("bri_score_end") @db.Decimal(5, 4)
+  valuationStart      Decimal   @map("valuation_start") @db.Decimal(15, 2)
+  valuationEnd        Decimal   @map("valuation_end") @db.Decimal(15, 2)
+  signalsCount        Int       @map("signals_count")
+  tasksCompletedCount Int       @map("tasks_completed_count")
+  tasksAddedCount     Int       @map("tasks_added_count")
+  driftCategories     Json      @map("drift_categories")
+  topSignals          Json      @map("top_signals")
+  summary             String
+  emailSentAt         DateTime? @map("email_sent_at")
+  viewedAt            DateTime? @map("viewed_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  company             Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, periodEnd])
+  @@map("drift_reports")
+}
+
 model Task {
   id                   String             @id @default(cuid())
   companyId            String             @map("company_id")
@@ -416,8 +440,6 @@ model Task {
   blockedReason        String?            @map("blocked_reason")
   completedAt          DateTime?          @map("completed_at")
   completionNotes      String?            @map("completion_notes")
-  sprintId             String?            @map("sprint_id")
-  sprintPriority       SprintPriority?    @map("sprint_priority")
   dueDate              DateTime?          @map("due_date")
   primaryAssigneeId    String?            @map("primary_assignee_id")
   upgradesFromOptionId String?            @map("upgrades_from_option_id")
@@ -438,13 +460,11 @@ model Task {
   invites              TaskInvite[]
   company              Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   primaryAssignee      User?              @relation("TaskPrimaryAssignee", fields: [primaryAssigneeId], references: [id])
-  sprint               Sprint?            @relation(fields: [sprintId], references: [id])
   upgradesFromOption   QuestionOption?    @relation("TaskUpgradeFrom", fields: [upgradesFromOptionId], references: [id])
   upgradesToOption     QuestionOption?    @relation("TaskUpgradeTo", fields: [upgradesToOptionId], references: [id])
   valueLedgerEntries   ValueLedgerEntry[]
 
   @@index([companyId, status])
-  @@index([sprintId])
   @@index([primaryAssigneeId])
   @@index([primaryAssigneeId, status])
   @@map("tasks")
@@ -480,24 +500,6 @@ model TaskInvite {
   @@index([token])
   @@index([email])
   @@map("task_invites")
-}
-
-model Sprint {
-  id                  String       @id @default(cuid())
-  companyId           String       @map("company_id")
-  name                String
-  startDate           DateTime     @map("start_date")
-  endDate             DateTime     @map("end_date")
-  targetValueIncrease Decimal      @map("target_value_increase") @db.Decimal(15, 2)
-  actualValueIncrease Decimal?     @map("actual_value_increase") @db.Decimal(15, 2)
-  status              SprintStatus @default(PLANNING)
-  createdAt           DateTime     @default(now()) @map("created_at")
-  updatedAt           DateTime     @updatedAt @map("updated_at")
-  company             Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  tasks               Task[]
-
-  @@index([companyId, status])
-  @@map("sprints")
 }
 
 model IndustryMultiple {
@@ -1698,19 +1700,6 @@ enum TaskStatus {
   DEFERRED
   CANCELLED
   NOT_APPLICABLE
-}
-
-enum SprintPriority {
-  BIG_ROCK
-  SAND
-  WATER
-}
-
-enum SprintStatus {
-  PLANNING
-  ACTIVE
-  COMPLETED
-  CANCELLED
 }
 
 enum AssessmentType {

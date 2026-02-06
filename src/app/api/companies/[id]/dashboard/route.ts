@@ -301,40 +301,6 @@ export async function GET(
       ).length,
     }
 
-    // Fetch current sprint
-    const currentSprint = await prisma.sprint.findFirst({
-      where: {
-        companyId,
-        status: 'ACTIVE',
-      },
-      include: {
-        tasks: {
-          select: {
-            id: true,
-            status: true,
-            rawImpact: true,
-          },
-        },
-      },
-    })
-
-    // Calculate sprint progress
-    let sprintProgress = null
-    if (currentSprint) {
-      const sprintTasks = currentSprint.tasks
-      sprintProgress = {
-        id: currentSprint.id,
-        name: currentSprint.name,
-        totalTasks: sprintTasks.length,
-        completedTasks: sprintTasks.filter(t => t.status === 'COMPLETED').length,
-        recoverableValue: sprintTasks
-          .filter(t => t.status !== 'COMPLETED')
-          .reduce((sum, t) => sum + Number(t.rawImpact), 0),
-        startDate: currentSprint.startDate,
-        endDate: currentSprint.endDate,
-      }
-    }
-
     // Calculate top 3 constraints from lowest BRI scores
     const constraints: { category: string; score: number; label: string }[] = []
     if (latestSnapshot) {
@@ -874,7 +840,6 @@ export async function GET(
       // Tier 4: Execution & Momentum
       tier4: {
         taskStats,
-        sprintProgress,
       },
       // Tier 5: Trends
       tier5: {
