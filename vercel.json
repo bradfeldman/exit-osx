@@ -25,6 +25,14 @@
     {
       "path": "/api/cron/monthly-drift-report",
       "schedule": "0 9 1 * *"
+    },
+    {
+      "path": "/api/cron/weekly-digest",
+      "schedule": "0 9 * * 1"
+    },
+    {
+      "path": "/api/cron/task-reminder",
+      "schedule": "0 10 * * *"
     }
   ]
 }
