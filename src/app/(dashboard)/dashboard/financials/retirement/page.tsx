@@ -11,7 +11,6 @@ import {
   GrowthPanel,
   ResultsPanel,
   ProjectionChart,
-  MonteCarloPanel,
   SensitivityTable,
 } from '@/components/retirement'
 import {
@@ -413,7 +412,7 @@ export default function RetirementCalculatorPage() {
                   <div>
                     <p className="text-sm font-medium text-gray-900">Want more control?</p>
                     <p className="text-xs text-gray-600 mt-0.5">
-                      Pro mode includes Monte Carlo simulation, sensitivity analysis, and tax settings
+                      Pro mode includes sensitivity analysis and tax settings
                     </p>
                   </div>
                   <Button size="sm" variant="outline" onClick={() => setMode('pro')}>
@@ -584,7 +583,6 @@ export default function RetirementCalculatorPage() {
 
             <SensitivityTable assets={assets} assumptions={assumptions} />
 
-            <MonteCarloPanel assets={assets} assumptions={assumptions} />
           </div>
         </div>
       )}

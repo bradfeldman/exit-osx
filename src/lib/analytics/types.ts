@@ -578,13 +578,6 @@ export interface FinancialDataSavedParams extends BaseEventParams {
   hasEbitda: boolean
 }
 
-export interface MonteCarloRunParams extends BaseEventParams {
-  iterations: number
-  resultMedian: number
-  resultP10: number
-  resultP90: number
-}
-
 export interface SensitivityTableViewedParams extends BaseEventParams {
   centerWacc: number
   centerGrowth: number
@@ -875,7 +868,6 @@ export interface AnalyticsEventMap {
   'ebitda_adjustment_made': EbitdaAdjustmentMadeParams
   'financial_period_created': FinancialPeriodCreatedParams
   'financial_data_saved': FinancialDataSavedParams
-  'monte_carlo_run': MonteCarloRunParams
   'sensitivity_table_viewed': SensitivityTableViewedParams
 
   // Phase 6: Personal Planning

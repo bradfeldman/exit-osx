@@ -13,7 +13,6 @@ import {
   GrowthAssumptions,
   TerminalValuePanel,
   ValuationResults,
-  MonteCarloPanel,
   SensitivityTable,
   type WACCInputs,
 } from '@/components/valuation'
@@ -371,8 +370,8 @@ export default function ValuationPage() {
   const effectiveEbitdaMultipleLow = assumptions.ebitdaMultipleLowOverride ?? industryData.ebitdaMultipleLow
   const effectiveEbitdaMultipleHigh = assumptions.ebitdaMultipleHighOverride ?? industryData.ebitdaMultipleHigh
 
-  // DCF inputs for Monte Carlo
-  const dcfInputsForMonteCarlo: DCFInputs = useMemo(
+  // DCF inputs for sensitivity table
+  const dcfInputsForSensitivity: DCFInputs = useMemo(
     () => ({
       baseFCF,
       growthRates: [
@@ -422,7 +421,7 @@ export default function ValuationPage() {
         <div>
           <h1 className="text-3xl font-bold font-display text-foreground tracking-tight">DCF Valuation</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Interactive discounted cash flow analysis with Monte Carlo simulation
+            Interactive discounted cash flow analysis with sensitivity tables
           </p>
         </div>
         <Button onClick={handleSave} disabled={saving || !hasChanges} className="shadow-lg shadow-primary/20">
@@ -544,13 +543,12 @@ export default function ValuationPage() {
           </Card>
 
           <SensitivityTable
-            baseInputs={dcfInputsForMonteCarlo}
+            baseInputs={dcfInputsForSensitivity}
             centerWACC={calculatedWACC}
             centerTerminalGrowth={assumptions.perpetualGrowthRate}
             finalEBITDA={ebitda}
           />
 
-          <MonteCarloPanel baseInputs={dcfInputsForMonteCarlo} finalEBITDA={ebitda} />
         </div>
       </div>
     </div>
