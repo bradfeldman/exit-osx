@@ -14,7 +14,7 @@ interface DashboardContentProps {
 }
 
 export function DashboardContent({ children, user }: DashboardContentProps) {
-  const { stage, isLoading } = useProgression()
+  const { hasCompany, isLoading } = useProgression()
 
   // While loading, show a minimal loading state
   if (isLoading) {
@@ -28,12 +28,12 @@ export function DashboardContent({ children, user }: DashboardContentProps) {
     )
   }
 
-  // Stage 0: Show entry screen with no sidebar
-  if (stage === 0) {
+  // No company: Show entry screen with no sidebar
+  if (!hasCompany) {
     return <EntryScreen />
   }
 
-  // Normal dashboard layout for stages 1+
+  // Normal dashboard layout
   return (
     <div className="min-h-screen bg-background">
       <TrialBanner />

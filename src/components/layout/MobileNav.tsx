@@ -28,7 +28,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
   const progression = useProgression()
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const { stage, isProgressionLocked, getUnlockHint } = progression
+  const { progressionData, isProgressionLocked, getUnlockHint } = progression
 
   // Defensive: if subscription is still loading, allow all features
   const canAccessFeature = subscription.isLoading
@@ -69,8 +69,8 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
     onClose()
   }
 
-  // Stage 0: Don't show mobile nav
-  if (!isOpen || stage === 0) return null
+  // No company: Don't show mobile nav
+  if (!isOpen || !progressionData?.hasCompany) return null
 
   return (
     <Fragment>
@@ -223,8 +223,8 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
               )
             })}
 
-            {/* VALUE MODELING Section - Stage 4+ */}
-            {stage >= 4 && (
+            {/* VALUE MODELING Section - visible when business financials uploaded */}
+            {progressionData?.hasBusinessFinancials && (
               <>
                 <div className="pt-4 border-t border-sidebar-border mt-4">
                   <p className="px-3 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
@@ -347,8 +347,8 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
               </>
             )}
 
-            {/* CAPITAL Section - Stage 6+ */}
-            {stage >= 6 && (
+            {/* CAPITAL Section - visible when both business + personal financials complete */}
+            {progressionData?.hasBusinessFinancials && progressionData?.hasPersonalFinancials && (
               <>
                 <div className="pt-4 border-t border-sidebar-border mt-4">
                   <p className="px-3 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">

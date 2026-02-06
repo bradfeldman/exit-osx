@@ -93,7 +93,7 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { selectedCompanyId, isLoading: isContextLoading, companies } = useCompany()
-  const { stage, progressionData } = useProgression()
+  const { progressionData } = useProgression()
   const [isDataLoading, setIsDataLoading] = useState(true)
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
@@ -228,7 +228,7 @@ export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
   const upcomingTasks = tasks.slice(1, 3)
 
   // Check if user needs to upload financials
-  const needsFinancials = !progressionData?.hasBusinessFinancials && !hasFinancials && stage <= 3
+  const needsFinancials = !progressionData?.hasBusinessFinancials && !hasFinancials
 
   // Calculate task progress
   const completedCount = taskStats?.completed || 0

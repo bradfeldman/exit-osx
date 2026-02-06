@@ -77,7 +77,7 @@ export function Sidebar() {
     : subscription.shouldShowRequestAccess
 
   // Progression unlocks
-  const { stage, unlocks, getUnlockHint, isProgressionLocked } = progression
+  const { progressionData, getUnlockHint, isProgressionLocked } = progression
 
   const handleLockedClick = (featureKey: string, featureName: string) => {
     // Check if this is a personal feature that staff can request access to
@@ -245,16 +245,11 @@ export function Sidebar() {
             </ul>
           </div>
 
-          {/* VALUE MODELING Section - Stage 4+ */}
-          {stage >= 4 && (
+          {/* VALUE MODELING Section - visible when business financials uploaded */}
+          {progressionData?.hasBusinessFinancials && (
             <div className="mb-4 pt-4 border-t border-sidebar-border/50">
-              <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider flex items-center gap-2">
+              <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
                 Value Modeling
-                {stage === 4 && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary font-normal normal-case">
-                    New
-                  </span>
-                )}
               </p>
               <ul role="list" className="mt-1 space-y-1">
                 {valueModelingLinks.map((link) => renderNavLink(link))}
@@ -264,8 +259,8 @@ export function Sidebar() {
             </div>
           )}
 
-          {/* Show locked Value Modeling preview for stages 1-3 */}
-          {stage >= 1 && stage < 4 && (
+          {/* Show locked Value Modeling preview when company exists but no financials */}
+          {progressionData && !progressionData.hasBusinessFinancials && (
             <div className="mb-4 pt-4 border-t border-sidebar-border/50">
               <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/30 uppercase tracking-wider">
                 Value Modeling
@@ -282,16 +277,11 @@ export function Sidebar() {
             </div>
           )}
 
-          {/* CAPITAL Section - Stage 6+ */}
-          {stage >= 6 && (
+          {/* CAPITAL Section - visible when both business + personal financials complete */}
+          {progressionData?.hasBusinessFinancials && progressionData?.hasPersonalFinancials && (
             <div className="mb-4 pt-4 border-t border-sidebar-border/50">
-              <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider flex items-center gap-2">
+              <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
                 Capital
-                {stage === 6 && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary font-normal normal-case">
-                    New
-                  </span>
-                )}
               </p>
               <ul role="list" className="mt-1 space-y-1">
                 {capitalLinks.map((link) => renderNavLink(link))}
