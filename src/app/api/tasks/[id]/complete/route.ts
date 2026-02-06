@@ -8,6 +8,15 @@ import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { onTaskStatusChange } from '@/lib/tasks/action-plan'
 import { BRI_CATEGORY_LABELS, type BRICategory } from '@/lib/constants/bri-categories'
 import { createLedgerEntryForTaskCompletion } from '@/lib/value-ledger/create-entry'
+import { createSignal } from '@/lib/signals/create-signal'
+import type { BriCategory } from '@prisma/client'
+import type { TaskGeneratedData } from '@/lib/signals/types'
+
+function formatCurrency(value: number): string {
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
+  if (value >= 1_000) return `$${Math.round(value / 1_000)}K`
+  return `$${value.toLocaleString()}`
+}
 
 export async function POST(
   request: Request,
@@ -162,6 +171,37 @@ export async function POST(
       })
     } catch (err) {
       console.error('[ValueLedger] Failed to create entry (non-blocking):', err)
+    }
+
+    // Create TASK_GENERATED signal (non-blocking)
+    try {
+      const signalData: TaskGeneratedData = {
+        taskId: id,
+        taskTitle: existingTask.title,
+        previousStatus: 'PENDING',
+        newStatus: 'COMPLETED',
+        completedValue: Number(completedValue),
+      }
+
+      await createSignal({
+        companyId: existingTask.companyId,
+        channel: 'TASK_GENERATED',
+        category: existingTask.briCategory as BriCategory,
+        eventType: 'task_completed',
+        severity: 'LOW',
+        confidence: 'CONFIDENT',
+        title: `Task completed: ${existingTask.title}`,
+        description: briImpact
+          ? `BRI improved from ${(briImpact.previousScore * 100).toFixed(1)} to ${(briImpact.newScore * 100).toFixed(1)}`
+          : `Completed with ~${formatCurrency(Number(completedValue))} value recovered`,
+        rawData: signalData as unknown as Record<string, unknown>,
+        sourceType: 'task',
+        sourceId: id,
+        estimatedValueImpact: Number(completedValue),
+        estimatedBriImpact: briImpact ? briImpact.newScore - briImpact.previousScore : null,
+      })
+    } catch (err) {
+      console.error('[Signal] Failed to create task signal (non-blocking):', err)
     }
 
     await checkAssessmentTriggers(existingTask.companyId)
