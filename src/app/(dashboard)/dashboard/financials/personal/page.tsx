@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from '@/lib/motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useCompany } from '@/contexts/CompanyContext'
+import { useProgression } from '@/contexts/ProgressionContext'
 import { usePermissions } from '@/hooks/usePermissions'
 import {
   Lock,
@@ -191,6 +192,7 @@ function CollapsibleSection({
 
 export default function PersonalFinancialStatementPage() {
   const { selectedCompanyId } = useCompany()
+  const { refetch: refetchProgression } = useProgression()
   const { hasPermission, isLoading: permissionsLoading } = usePermissions({ companyId: selectedCompanyId || undefined })
   const [_companies, setCompanies] = useState<Company[]>([])
   const [businessAssets, setBusinessAssets] = useState<BusinessAsset[]>([])
@@ -200,6 +202,7 @@ export default function PersonalFinancialStatementPage() {
   const [saving, setSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [savedSuccessfully, setSavedSuccessfully] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   // Track original state for dirty checking
   const [originalState, setOriginalState] = useState<{
@@ -261,6 +264,7 @@ export default function PersonalFinancialStatementPage() {
 
     setSaving(true)
     setSavedSuccessfully(false)
+    setSaveError(null)
     try {
       // Save ownership percentages to localStorage
       const ownership: Record<string, number> = {}
@@ -269,7 +273,7 @@ export default function PersonalFinancialStatementPage() {
       })
       localStorage.setItem('pfs_businessOwnership', JSON.stringify(ownership))
 
-      await fetch(`/api/companies/${selectedCompanyId}/personal-financials`, {
+      const response = await fetch(`/api/companies/${selectedCompanyId}/personal-financials`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -282,6 +286,12 @@ export default function PersonalFinancialStatementPage() {
         }),
       })
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        console.error('Failed to save personal financials:', response.status, errorData)
+        throw new Error(errorData.error || `Save failed with status ${response.status}`)
+      }
+
       // Update original state to current state
       setOriginalState({
         personalAssets: JSON.parse(JSON.stringify(personalAssets)),
@@ -292,8 +302,12 @@ export default function PersonalFinancialStatementPage() {
       setLastSaved(new Date())
       setSavedSuccessfully(true)
       setTimeout(() => setSavedSuccessfully(false), 3000)
+
+      // Refetch progression data to unlock features (e.g., Retirement Calculator)
+      refetchProgression()
     } catch (error) {
       console.error('Failed to save personal financials:', error)
+      setSaveError(error instanceof Error ? error.message : 'Failed to save. Please try again.')
     } finally {
       setSaving(false)
     }
@@ -578,6 +592,17 @@ export default function PersonalFinancialStatementPage() {
         </div>
         {canEditPersonal && (
           <div className="flex items-center gap-3">
+            {saveError && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center gap-1 text-sm text-red-600 max-w-xs"
+              >
+                <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate">{saveError}</span>
+              </motion.div>
+            )}
             {savedSuccessfully && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
@@ -589,7 +614,7 @@ export default function PersonalFinancialStatementPage() {
                 Saved
               </motion.div>
             )}
-            {lastSaved && !savedSuccessfully && (
+            {lastSaved && !savedSuccessfully && !saveError && (
               <span className="text-xs text-muted-foreground">
                 Last saved: {lastSaved.toLocaleTimeString()}
               </span>

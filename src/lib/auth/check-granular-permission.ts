@@ -54,14 +54,14 @@ export async function resolveUserPermissions(
     const templateDefaults = orgUser.roleTemplate.defaultPermissions as Record<string, boolean>
     permissions = { ...templateDefaults } as Record<GranularPermission, boolean>
   } else if (orgUser.roleTemplateId === null) {
-    // SECURITY: Only SUPER_ADMIN gets full owner permissions without explicit template
-    // ADMIN and other roles must have an explicit role template assigned
-    // This prevents privilege escalation if an admin's template is accidentally cleared
-    if (orgUser.role === 'SUPER_ADMIN') {
+    // ADMIN and SUPER_ADMIN roles get full owner permissions without explicit template
+    // These are typically the account owner who created the organization
+    // MEMBER roles must have an explicit role template assigned
+    if (orgUser.role === 'SUPER_ADMIN' || orgUser.role === 'ADMIN') {
       const ownerTemplate = ROLE_TEMPLATES.owner
       permissions = { ...ownerTemplate.defaultPermissions }
     }
-    // ADMINs without templates get NO granular permissions by default
+    // MEMBER roles without templates get NO granular permissions by default
     // They must be assigned an explicit role template
   }
 

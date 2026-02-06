@@ -448,8 +448,19 @@ export function CategoryAssessmentFlow({
         </Button>
 
         <div className="flex items-center gap-2">
-          {/* Always show Done on last question if we have any answer selected visually */}
-          {(allAnswered || (currentQuestionIndex === questions.length - 1 && (currentResponse || recentlySelected))) ? (
+          {/* Show Next button if not on last question */}
+          {currentQuestionIndex < questions.length - 1 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setCurrentQuestionIndex(currentQuestionIndex + 1)}
+            >
+              Next
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          )}
+          {/* Show Done button when all answered OR on last question with an answer */}
+          {(allAnswered || (currentQuestionIndex === questions.length - 1 && (currentResponse || recentlySelected))) && (
             <Button size="sm" onClick={handleDone} disabled={saving}>
               {saving ? (
                 <>
@@ -462,15 +473,6 @@ export function CategoryAssessmentFlow({
                   <Check className="w-3 h-3 ml-1" />
                 </>
               )}
-            </Button>
-          ) : (
-            <Button
-              size="sm"
-              onClick={() => setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))}
-              disabled={currentQuestionIndex >= questions.length - 1}
-            >
-              Next
-              <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           )}
         </div>

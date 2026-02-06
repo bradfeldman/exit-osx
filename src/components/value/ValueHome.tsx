@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
+import { useSubscription } from '@/contexts/SubscriptionContext'
 import { AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
 import { HeroMetricsBar } from './HeroMetricsBar'
 import { ValuationBridge } from './ValuationBridge'
@@ -92,7 +93,9 @@ interface DashboardData {
 
 export function ValueHome() {
   const { selectedCompanyId } = useCompany()
+  const { planTier } = useSubscription()
   const router = useRouter()
+  const isFreeUser = planTier === 'foundation'
   const [data, setData] = useState<DashboardData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -165,6 +168,7 @@ export function ValueHome() {
           <NextMoveCard
             task={data.nextMove.task}
             comingUp={data.nextMove.comingUp}
+            isFreeUser={isFreeUser}
           />
         </AnimatedItem>
 

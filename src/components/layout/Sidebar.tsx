@@ -27,7 +27,7 @@ interface NavLink {
 
 // CORE section links - 5 Mode Navigation (Dan/Alex design)
 const coreLinks: NavLink[] = [
-  { name: 'Home', href: '/dashboard', icon: HomeIcon },
+  { name: 'Value', href: '/dashboard', icon: HomeIcon },
   { name: 'Diagnosis', href: '/dashboard/diagnosis', icon: DiagnosisIcon },
   { name: 'Actions', href: '/dashboard/actions', icon: ActionsIcon },
   { name: 'Evidence', href: '/dashboard/evidence', icon: EvidenceIcon },
@@ -103,7 +103,7 @@ export function Sidebar() {
 
   // Helper to render a nav link with both subscription and progression locking
   const renderNavLink = (link: NavLink, options?: { showBadge?: boolean; badgeType?: 'warning' | 'alert' }) => {
-    // Special case for Home (/dashboard) - only match exact path
+    // Special case for Value (/dashboard) - only match exact path
     const isActive = link.href === '/dashboard'
       ? pathname === '/dashboard'
       : pathname === link.href || pathname.startsWith(link.href + '/')

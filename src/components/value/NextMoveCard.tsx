@@ -59,7 +59,7 @@ export function NextMoveCard({ task, comingUp, isFreeUser = false, onUpgrade }: 
       return
     }
     if (task) {
-      router.push(`/dashboard/playbook?taskId=${task.id}`)
+      router.push(`/dashboard/actions?taskId=${task.id}`)
     }
   }
 

@@ -78,6 +78,9 @@ export async function GET(request: NextRequest) {
     // Determine if user has personal financials
     const hasPersonalFinancials = personalFinancialsExists?.organization?.personalFinancials !== null
 
+    // Debug logging for progression unlock issues
+    console.log(`[PROGRESSION] Company ${companyId}: hasBusinessFinancials=${financialPeriodCount > 0}, hasDcfValuation=${hasDcfValuation}, hasPersonalFinancials=${hasPersonalFinancials}, personalFinancialsData=`, JSON.stringify(personalFinancialsExists))
+
     // Determine if Exit-Ready (BRI score above threshold)
     const briScore = latestSnapshot?.briScore ? Number(latestSnapshot.briScore) : null
     const isExitReady = briScore !== null && briScore >= EXIT_READY_BRI_THRESHOLD

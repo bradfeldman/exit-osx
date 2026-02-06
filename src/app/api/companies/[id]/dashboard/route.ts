@@ -753,11 +753,18 @@ export async function GET(
           // Otherwise, use EBITDA × recalculated multiple
           const currentValue = dcfEnterpriseValue ?? (adjustedEbitda * recalculatedFinalMultiple)
           const impliedMultiple = dcfImpliedMultiple ?? recalculatedFinalMultiple
-          const potentialValue = adjustedEbitda * effectiveMultipleHigh
+          const industryBasedPotential = adjustedEbitda * effectiveMultipleHigh
+
+          // When DCF value exceeds industry-based potential, show DCF as both current and potential
+          // This prevents the confusing situation where "potential" < "current"
+          const potentialValue = useDCF && currentValue > industryBasedPotential
+            ? currentValue
+            : industryBasedPotential
+
           // Value gap: positive when below potential, zero when at or above
           const valueGap = Math.max(0, potentialValue - currentValue)
-          // Market premium: positive when above potential (DCF exceeds industry max)
-          const marketPremium = Math.max(0, currentValue - potentialValue)
+          // Market premium: positive when DCF exceeds industry max (indicates premium valuation)
+          const marketPremium = useDCF ? Math.max(0, currentValue - industryBasedPotential) : 0
 
           return {
             currentValue,
@@ -781,11 +788,17 @@ export async function GET(
           // Still respect DCF value if enabled
           const currentValue = dcfEnterpriseValue ?? (adjustedEbitda * estimatedMultiple)
           const impliedMultiple = dcfImpliedMultiple ?? estimatedMultiple
-          const potentialValue = adjustedEbitda * multipleHigh
+          const industryBasedPotential = adjustedEbitda * multipleHigh
+
+          // When DCF value exceeds industry-based potential, show DCF as both current and potential
+          const potentialValue = useDCF && currentValue > industryBasedPotential
+            ? currentValue
+            : industryBasedPotential
+
           // Value gap: positive when below potential, zero when at or above
           const valueGap = Math.max(0, potentialValue - currentValue)
-          // Market premium: positive when above potential (DCF exceeds industry max)
-          const marketPremium = Math.max(0, currentValue - potentialValue)
+          // Market premium: positive when DCF exceeds industry max (indicates premium valuation)
+          const marketPremium = useDCF ? Math.max(0, currentValue - industryBasedPotential) : 0
 
           return {
             currentValue,

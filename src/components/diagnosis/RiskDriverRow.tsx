@@ -18,6 +18,7 @@ interface RiskDriverRowProps {
   linkedTaskStatus: string | null
   isFreeUser?: boolean
   onUpgrade?: () => void
+  onExpandCategory?: (category: string) => void
 }
 
 function formatCurrency(value: number): string {
@@ -29,6 +30,7 @@ function formatCurrency(value: number): string {
 export function RiskDriverRow({
   rank,
   name,
+  category,
   categoryLabel,
   dollarImpact,
   optionPosition,
@@ -40,6 +42,7 @@ export function RiskDriverRow({
   linkedTaskStatus,
   isFreeUser = false,
   onUpgrade,
+  onExpandCategory,
 }: RiskDriverRowProps) {
   const router = useRouter()
 
@@ -102,7 +105,13 @@ export function RiskDriverRow({
                 </Button>
               ) : (
                 <Button size="sm" variant="outline" onClick={() => {
-                  router.push('/dashboard/assessment')
+                  if (onExpandCategory) {
+                    // Scroll to top and expand the category's inline assessment
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                    onExpandCategory(category)
+                  } else {
+                    router.push('/dashboard/assessment')
+                  }
                 }}>
                   Review & Update
                 </Button>

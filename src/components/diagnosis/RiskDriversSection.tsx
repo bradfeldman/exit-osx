@@ -26,6 +26,7 @@ interface RiskDriversSectionProps {
   hasAssessment: boolean
   isFreeUser?: boolean
   onUpgrade?: () => void
+  onExpandCategory?: (category: string) => void
 }
 
 export function RiskDriversSection({
@@ -33,6 +34,7 @@ export function RiskDriversSection({
   hasAssessment,
   isFreeUser = false,
   onUpgrade,
+  onExpandCategory,
 }: RiskDriversSectionProps) {
   const [showAll, setShowAll] = useState(false)
 
@@ -99,6 +101,7 @@ export function RiskDriversSection({
                 linkedTaskStatus={driver.linkedTaskStatus}
                 isFreeUser={isFreeUser}
                 onUpgrade={onUpgrade}
+                onExpandCategory={onExpandCategory}
               />
               {index < visibleDrivers.length - 1 && (
                 <div className="border-t border-border" />

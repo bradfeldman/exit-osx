@@ -48,6 +48,9 @@ interface CategoryPanelProps {
   assessmentId: string | null
   companyId: string | null
   onAssessmentComplete: () => void
+  isExpanded?: boolean
+  onExpand?: () => void
+  onCollapse?: () => void
 }
 
 export function CategoryPanel({
@@ -60,8 +63,16 @@ export function CategoryPanel({
   assessmentId,
   companyId,
   onAssessmentComplete,
+  isExpanded: controlledIsExpanded,
+  onExpand,
+  onCollapse,
 }: CategoryPanelProps) {
-  const [isExpanded, setIsExpanded] = useState(false)
+  // Fully controlled mode when parent provides onExpand/onCollapse
+  const isControlled = onExpand !== undefined && onCollapse !== undefined
+  const [localIsExpanded, setLocalIsExpanded] = useState(false)
+
+  // In controlled mode, always use parent state; otherwise use local state
+  const isExpanded = isControlled ? (controlledIsExpanded ?? false) : localIsExpanded
 
   const getCtaLabel = (): string => {
     if (confidence.questionsAnswered === 0) return 'Start Assessment'
@@ -75,22 +86,34 @@ export function CategoryPanel({
 
   const handlePrimaryClick = () => {
     if (assessmentId && companyId) {
-      setIsExpanded(true)
+      if (onExpand) {
+        onExpand()
+      } else {
+        setLocalIsExpanded(true)
+      }
     }
   }
 
   const handleSecondaryClick = () => {
     if (assessmentId && companyId) {
-      setIsExpanded(true)
+      if (onExpand) {
+        onExpand()
+      } else {
+        setLocalIsExpanded(true)
+      }
     }
   }
 
   const handleClose = () => {
-    setIsExpanded(false)
+    if (onCollapse) {
+      onCollapse()
+    } else {
+      setLocalIsExpanded(false)
+    }
   }
 
   const handleComplete = () => {
-    setIsExpanded(false)
+    // onAssessmentComplete will handle collapsing and refetch
     onAssessmentComplete()
   }
 

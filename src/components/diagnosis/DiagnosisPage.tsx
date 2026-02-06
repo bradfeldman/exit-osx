@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
 import { AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
 import { DiagnosisHeader } from './DiagnosisHeader'
@@ -59,9 +60,12 @@ interface DiagnosisData {
 
 export function DiagnosisPage() {
   const { selectedCompanyId } = useCompany()
+  const searchParams = useSearchParams()
   const [data, setData] = useState<DiagnosisData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
+  const [hasInitializedExpand, setHasInitializedExpand] = useState(false)
 
   const fetchData = useCallback(async () => {
     if (!selectedCompanyId) return
@@ -85,10 +89,31 @@ export function DiagnosisPage() {
     fetchData()
   }, [fetchData])
 
+  // Auto-expand category from URL query param (e.g., /dashboard/diagnosis?expand=FINANCIAL)
+  useEffect(() => {
+    if (!hasInitializedExpand && data && !isLoading) {
+      const expandParam = searchParams.get('expand')
+      if (expandParam) {
+        // Validate it's a real category
+        const validCategory = data.categories.find(c => c.category === expandParam)
+        if (validCategory) {
+          setExpandedCategory(expandParam)
+        }
+      }
+      setHasInitializedExpand(true)
+    }
+  }, [searchParams, data, isLoading, hasInitializedExpand])
+
   // Callback for when an inline assessment completes - refetch all data
   const handleAssessmentComplete = useCallback(() => {
+    setExpandedCategory(null)
     fetchData()
   }, [fetchData])
+
+  // Callback to expand a specific category (used by risk driver "Review & Update" buttons)
+  const handleExpandCategory = useCallback((category: string) => {
+    setExpandedCategory(category)
+  }, [])
 
   if (isLoading) return <DiagnosisLoading />
   if (error || !data) return <DiagnosisError onRetry={fetchData} />
@@ -119,6 +144,9 @@ export function DiagnosisPage() {
                 assessmentId={data.assessmentId}
                 companyId={selectedCompanyId}
                 onAssessmentComplete={handleAssessmentComplete}
+                isExpanded={expandedCategory === cat.category}
+                onExpand={() => setExpandedCategory(cat.category)}
+                onCollapse={() => setExpandedCategory(null)}
               />
             ))}
           </div>
@@ -129,6 +157,7 @@ export function DiagnosisPage() {
           <RiskDriversSection
             riskDrivers={data.riskDrivers}
             hasAssessment={data.hasAssessment}
+            onExpandCategory={handleExpandCategory}
           />
         </AnimatedItem>
       </AnimatedStagger>
