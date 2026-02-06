@@ -47,7 +47,7 @@ export function DealRoomTeaser({
           {canActivate && (
             <Button
               className="mt-4"
-              onClick={() => router.push('/dashboard/data-room')}
+              onClick={() => router.push('/dashboard/deal-room')}
             >
               Activate Deal Room
             </Button>

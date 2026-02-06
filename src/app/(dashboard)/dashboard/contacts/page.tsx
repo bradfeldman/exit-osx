@@ -1,7 +1,5 @@
-'use client'
-
-import { ContactsManager } from '@/components/contacts/ContactsManager'
+import { redirect } from 'next/navigation'
 
 export default function ContactsPage() {
-  return <ContactsManager />
+  redirect('/dashboard/deal-room')
 }

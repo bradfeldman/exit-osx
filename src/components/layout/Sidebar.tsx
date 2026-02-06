@@ -54,12 +54,7 @@ const capitalLinks: NavLink[] = [
   { name: 'Business Loans', href: '/dashboard/loans/business', icon: BankIcon, requiredPlan: 'growth', featureKey: 'business-loans' },
 ]
 
-// EXIT TOOLS section (Stage 7)
-const exitToolsLinks: NavLink[] = [
-  { name: 'Data Room', href: '/dashboard/data-room', icon: FolderIcon, requiredPlan: 'exit-ready', featureKey: 'data-room' },
-  { name: 'Deal Tracker', href: '/dashboard/deal-tracker', icon: TargetIcon, requiredPlan: 'exit-ready', featureKey: 'deal-tracker' },
-  { name: 'Contacts', href: '/dashboard/contacts', icon: ContactsIcon, requiredPlan: 'exit-ready', featureKey: 'deal-tracker' },
-]
+// EXIT TOOLS section removed -- consolidated into Mode 5 (Deal Room) at /dashboard/deal-room
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -300,23 +295,6 @@ export function Sidebar() {
               </p>
               <ul role="list" className="mt-1 space-y-1">
                 {capitalLinks.map((link) => renderNavLink(link))}
-              </ul>
-            </div>
-          )}
-
-          {/* EXIT TOOLS Section - Stage 7 */}
-          {stage >= 7 && (
-            <div className="mb-4 pt-4 border-t border-sidebar-border/50">
-              <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider flex items-center gap-2">
-                Exit Tools
-                {stage === 7 && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary font-normal normal-case">
-                    New
-                  </span>
-                )}
-              </p>
-              <ul role="list" className="mt-1 space-y-1">
-                {exitToolsLinks.map((link) => renderNavLink(link))}
               </ul>
             </div>
           )}

@@ -1,11 +1,5 @@
-'use client'
-
-import { DealTrackerDashboard } from '@/components/deal-tracker'
+import { redirect } from 'next/navigation'
 
 export default function DealTrackerPage() {
-  return (
-    <div className="p-6">
-      <DealTrackerDashboard />
-    </div>
-  )
+  redirect('/dashboard/deal-room')
 }
