@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useCompany } from '@/contexts/CompanyContext'
-import { useUserRole } from '@/contexts/UserRoleContext'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { useProgression } from '@/contexts/ProgressionContext'
 import { UpgradeModal } from '@/components/subscription/UpgradeModal'
@@ -66,11 +65,8 @@ export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const { companies, selectedCompanyId, setSelectedCompanyId, isLoading, isSelectedCompanySubscribingOwner } = useCompany()
-  const { isSuperAdmin } = useUserRole()
   const subscription = useSubscription()
   const progression = useProgression()
-  const [developerExpanded, setDeveloperExpanded] = useState(false)
-  const [globalExpanded, setGlobalExpanded] = useState(false)
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
   const [lockedFeature, setLockedFeature] = useState<{ key: string; name: string } | null>(null)
   const [requestAccessModalOpen, setRequestAccessModalOpen] = useState(false)
@@ -352,161 +348,6 @@ export function Sidebar() {
                 </Link>
               </li>
 
-              {/* Developer section - Super Admin only */}
-              {isSuperAdmin && (
-                <li>
-                  <button
-                    onClick={() => setDeveloperExpanded(!developerExpanded)}
-                    className="flex items-center justify-between w-full gap-x-3 p-2 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent rounded-md transition-colors"
-                  >
-                    <div className="flex items-center gap-x-3">
-                      <CodeIcon className="h-5 w-5 shrink-0 text-sidebar-foreground/60" />
-                      Developer
-                    </div>
-                    <ChevronIcon
-                      className={cn(
-                        'h-4 w-4 transition-transform text-sidebar-foreground/60',
-                        developerExpanded ? 'rotate-180' : ''
-                      )}
-                    />
-                  </button>
-                  <ul className={cn(
-                    'ml-7 space-y-1 overflow-hidden transition-all duration-200',
-                    developerExpanded ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'
-                  )}>
-                    <li>
-                      <Link
-                        href="/dashboard/developer/multiple-adjustment"
-                        className={cn(
-                          'block rounded-md px-2 py-1.5 text-sm transition-colors',
-                          pathname.startsWith('/dashboard/developer/multiple-adjustment')
-                            ? 'bg-sidebar-accent text-sidebar-primary font-medium'
-                            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                        )}
-                      >
-                        Multiple Adjustment
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/dashboard/company/bri-weights"
-                        className={cn(
-                          'block rounded-md px-2 py-1.5 text-sm transition-colors',
-                          pathname === '/dashboard/company/bri-weights'
-                            ? 'bg-sidebar-accent text-sidebar-primary font-medium'
-                            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                        )}
-                      >
-                        BRI Weights
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/dashboard/developer/snapshot"
-                        className={cn(
-                          'block rounded-md px-2 py-1.5 text-sm transition-colors',
-                          pathname.startsWith('/dashboard/developer/snapshot')
-                            ? 'bg-sidebar-accent text-sidebar-primary font-medium'
-                            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                        )}
-                      >
-                        Snapshot
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/dashboard/developer/industry-multiples"
-                        className={cn(
-                          'block rounded-md px-2 py-1.5 text-sm transition-colors',
-                          pathname.startsWith('/dashboard/developer/industry-multiples')
-                            ? 'bg-sidebar-accent text-sidebar-primary font-medium'
-                            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                        )}
-                      >
-                        Industry Multiples
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/dashboard/developer/task-viewer"
-                        className={cn(
-                          'block rounded-md px-2 py-1.5 text-sm transition-colors',
-                          pathname.startsWith('/dashboard/developer/task-viewer')
-                            ? 'bg-sidebar-accent text-sidebar-primary font-medium'
-                            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                        )}
-                      >
-                        Task Viewer
-                      </Link>
-                    </li>
-                  </ul>
-                </li>
-              )}
-
-              {/* Global section - Super Admin only */}
-              {isSuperAdmin && (
-                <li>
-                  <button
-                    onClick={() => setGlobalExpanded(!globalExpanded)}
-                    className="flex items-center justify-between w-full gap-x-3 p-2 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent rounded-md transition-colors"
-                  >
-                    <div className="flex items-center gap-x-3">
-                      <GearIcon className="h-5 w-5 shrink-0 text-sidebar-foreground/60" />
-                      Global
-                    </div>
-                    <ChevronIcon
-                      className={cn(
-                        'h-4 w-4 transition-transform text-sidebar-foreground/60',
-                        globalExpanded ? 'rotate-180' : ''
-                      )}
-                    />
-                  </button>
-                  <ul className={cn(
-                    'ml-7 space-y-1 overflow-hidden transition-all duration-200',
-                    globalExpanded ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'
-                  )}>
-                    <li>
-                      <Link
-                        href="/dashboard/developer/bri-weighting"
-                        className={cn(
-                          'block rounded-md px-2 py-1.5 text-sm transition-colors',
-                          pathname.startsWith('/dashboard/developer/bri-weighting')
-                            ? 'bg-sidebar-accent text-sidebar-primary font-medium'
-                            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                        )}
-                      >
-                        BRI Weighting
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/dashboard/global/add-question"
-                        className={cn(
-                          'block rounded-md px-2 py-1.5 text-sm transition-colors',
-                          pathname.startsWith('/dashboard/global/add-question')
-                            ? 'bg-sidebar-accent text-sidebar-primary font-medium'
-                            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                        )}
-                      >
-                        Add Question
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/dashboard/global/add-task"
-                        className={cn(
-                          'block rounded-md px-2 py-1.5 text-sm transition-colors',
-                          pathname.startsWith('/dashboard/global/add-task')
-                            ? 'bg-sidebar-accent text-sidebar-primary font-medium'
-                            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                        )}
-                      >
-                        Add Task
-                      </Link>
-                    </li>
-                  </ul>
-                </li>
-              )}
             </ul>
           </div>
         </nav>
