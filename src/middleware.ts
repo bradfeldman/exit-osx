@@ -112,6 +112,14 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const hostname = request.headers.get('host') || ''
 
+  // TEMPORARY DIAGNOSTIC LOGGING — remove after iPhone debugging
+  const isDiagTarget = pathname === '/login' || pathname === '/' || pathname === '/test'
+  if (isDiagTarget) {
+    const ua = request.headers.get('user-agent') || 'unknown'
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(ua)
+    console.log(`[DIAG] ${request.method} ${hostname}${pathname} | mobile=${isMobile} | ua=${ua.substring(0, 80)} | cookies=${request.cookies.getAll().map(c => c.name).join(',')}`)
+  }
+
   // === DOMAIN-BASED ROUTING ===
 
   // Marketing domain (exitosx.com): Only serve marketing routes, redirect others to app
@@ -123,6 +131,7 @@ export async function middleware(request: NextRequest) {
       const url = new URL(request.url)
       url.hostname = 'app.exitosx.com'
       url.port = ''
+      if (isDiagTarget) console.log(`[DIAG] REDIRECT: ${hostname}${pathname} → ${url.toString()} (marketing domain, non-marketing route)`)
       return NextResponse.redirect(url)
     }
     // Continue processing for marketing routes (serve landing, pricing, etc.)
@@ -206,7 +215,7 @@ export async function middleware(request: NextRequest) {
   const isAdminSubdomain = hostname.startsWith('admin.')
 
   // Public routes that don't require auth
-  const publicRoutes = ['/login', '/signup', '/auth/callback', '/auth/confirm', '/pricing', '/terms', '/privacy', '/invite', '/api/invites', '/api/cron', '/api/health', '/api/industries', '/forgot-password', '/reset-password']
+  const publicRoutes = ['/login', '/signup', '/auth/callback', '/auth/confirm', '/pricing', '/terms', '/privacy', '/invite', '/api/invites', '/api/cron', '/api/health', '/api/diag', '/api/industries', '/forgot-password', '/reset-password', '/test']
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
 
   // Admin public routes (login/forgot-password on admin subdomain)
@@ -273,6 +282,7 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
     // If on admin subdomain or trying to access admin login, redirect to admin dashboard
     url.pathname = (isAdminSubdomain || pathname === '/admin/login') ? '/admin' : '/dashboard'
+    if (isDiagTarget) console.log(`[DIAG] REDIRECT: ${pathname} → ${url.pathname} (user logged in, redirecting away from auth page)`)
     return createRedirect(url, supabaseResponse)
   }
 
@@ -293,9 +303,11 @@ export async function middleware(request: NextRequest) {
   if (!user && pathname === '/' && isAppDomain(hostname) && !hostname.includes('localhost')) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
+    if (isDiagTarget) console.log(`[DIAG] REDIRECT: / → /login (unauthenticated on app domain)`)
     return createRedirect(url, supabaseResponse)
   }
 
+  if (isDiagTarget) console.log(`[DIAG] PASSTHROUGH: ${pathname} | user=${user ? 'yes' : 'no'} | isPublic=${isPublicRoute} | setCookies=${supabaseResponse.cookies.getAll().map(c => c.name).join(',')}`)
   return supabaseResponse
 }
 
