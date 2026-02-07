@@ -1,0 +1,117 @@
+'use client'
+
+import { useMemo } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Lock } from 'lucide-react'
+
+interface BenchmarkComparisonProps {
+  industryName: string
+  industryMultipleLow: number
+  industryMultipleHigh: number
+  currentMultiple: number
+  hasAssessment: boolean
+}
+
+export function BenchmarkComparison({
+  industryName,
+  industryMultipleLow,
+  industryMultipleHigh,
+  currentMultiple,
+  hasAssessment,
+}: BenchmarkComparisonProps) {
+  const { percentile, topQuartileThreshold, quartile, message } = useMemo(() => {
+    const range = industryMultipleHigh - industryMultipleLow
+    if (range <= 0) {
+      return { percentile: 50, topQuartileThreshold: industryMultipleHigh, quartile: 'middle' as const, message: '' }
+    }
+
+    const pct = Math.min(100, Math.max(0, ((currentMultiple - industryMultipleLow) / range) * 100))
+    const tqt = industryMultipleLow + range * 0.75
+
+    let q: 'bottom' | 'middle' | 'top'
+    let msg: string
+    if (pct <= 25) {
+      q = 'bottom'
+      msg = `You're in the bottom quartile. The median starts at ${(industryMultipleLow + range * 0.5).toFixed(1)}x.`
+    } else if (pct >= 75) {
+      q = 'top'
+      msg = `You're in the top quartile — outperforming most peers in your industry.`
+    } else {
+      q = 'middle'
+      msg = `You're in the middle range. Top quartile starts at ${tqt.toFixed(1)}x.`
+    }
+
+    return { percentile: pct, topQuartileThreshold: tqt, quartile: q, message: msg }
+  }, [currentMultiple, industryMultipleLow, industryMultipleHigh])
+
+  if (!hasAssessment) {
+    return (
+      <Card className="border-dashed border-muted-foreground/30">
+        <CardContent className="flex flex-col items-center justify-center py-10">
+          <Lock className="h-8 w-8 text-muted-foreground/40 mb-3" />
+          <p className="text-sm font-medium text-muted-foreground mb-1">
+            Complete your assessment to see industry benchmarks
+          </p>
+          <p className="text-xs text-muted-foreground/60">
+            Compare your EBITDA multiple against industry peers
+          </p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-4">
+        <CardTitle className="text-base font-semibold">
+          Industry Benchmark
+        </CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Your multiple vs. {industryName}
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Gauge Bar */}
+        <div className="space-y-2">
+          <div className="relative h-3 rounded-full overflow-hidden bg-zinc-100">
+            {/* Bottom quartile zone */}
+            <div
+              className="absolute inset-y-0 left-0 bg-amber-200/70"
+              style={{ width: '25%' }}
+            />
+            {/* Middle zone */}
+            <div
+              className="absolute inset-y-0 bg-zinc-200/70"
+              style={{ left: '25%', width: '50%' }}
+            />
+            {/* Top quartile zone */}
+            <div
+              className="absolute inset-y-0 bg-emerald-200/70"
+              style={{ left: '75%', width: '25%' }}
+            />
+            {/* Current position marker */}
+            <div
+              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-5 w-5 rounded-full border-2 border-white shadow-md z-10"
+              style={{
+                left: `${Math.min(100, Math.max(0, percentile))}%`,
+                backgroundColor: quartile === 'top' ? '#059669' : quartile === 'bottom' ? '#d97706' : '#71717a',
+              }}
+            />
+          </div>
+
+          {/* Labels */}
+          <div className="flex justify-between text-[11px] text-muted-foreground">
+            <span>{industryMultipleLow.toFixed(1)}x</span>
+            <span className="font-medium text-foreground">
+              You: {currentMultiple.toFixed(1)}x
+            </span>
+            <span>{industryMultipleHigh.toFixed(1)}x</span>
+          </div>
+        </div>
+
+        {/* Contextual message */}
+        <p className="text-xs text-muted-foreground">{message}</p>
+      </CardContent>
+    </Card>
+  )
+}

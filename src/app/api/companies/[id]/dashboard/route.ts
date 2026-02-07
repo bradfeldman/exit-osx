@@ -921,6 +921,13 @@ export async function GET(
           briCategory: t.briCategory,
         })),
       },
+      coreFactors: company.coreFactors ? {
+        revenueModel: company.coreFactors.revenueModel,
+        grossMarginProxy: company.coreFactors.grossMarginProxy,
+        laborIntensity: company.coreFactors.laborIntensity,
+        assetIntensity: company.coreFactors.assetIntensity,
+        ownerInvolvement: company.coreFactors.ownerInvolvement,
+      } : null,
       hasAssessment: !!latestSnapshot,
       // Re-assessment trigger data
       lastAssessmentDate,

@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { NotificationBell } from './NotificationBell'
+import { ExitCoachButton } from '@/components/ai-coach/ExitCoachButton'
 import { MobileNav } from './MobileNav'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import type { User } from '@supabase/supabase-js'
@@ -114,6 +115,7 @@ export function Header({ user }: HeaderProps) {
               </span>
             </div>
           )}
+          <ExitCoachButton />
           <NotificationBell />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

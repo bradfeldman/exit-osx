@@ -15,6 +15,10 @@ import { ValueHomeError } from './ValueHomeError'
 import { ValueLedgerSection } from '@/components/value-ledger/ValueLedgerSection'
 import { DisclosureTrigger } from '@/components/disclosures/DisclosureTrigger'
 import { DriftReportBanner } from '@/components/drift-report/DriftReportBanner'
+import { WeeklyCheckInTrigger } from '@/components/weekly-check-in/WeeklyCheckInTrigger'
+import { BenchmarkComparison } from './BenchmarkComparison'
+import { WhatIfScenarios } from './WhatIfScenarios'
+import type { CoreFactors } from '@/lib/valuation/calculate-valuation'
 
 interface DashboardData {
   company: {
@@ -98,6 +102,7 @@ interface DashboardData {
       briCategory: string
     }>
   }
+  coreFactors: CoreFactors | null
   hasAssessment: boolean
 }
 
@@ -140,6 +145,11 @@ export function ValueHome() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
       <AnimatedStagger className="space-y-8" staggerDelay={0.15}>
+        {/* Weekly Check-In (shows only when pending) */}
+        <AnimatedItem>
+          <WeeklyCheckInTrigger />
+        </AnimatedItem>
+
         {/* Monthly Disclosure Check-in (shows only when pending) */}
         <AnimatedItem>
           <DisclosureTrigger />
@@ -158,6 +168,17 @@ export function ValueHome() {
           />
         </AnimatedItem>
 
+        {/* Benchmark Comparison */}
+        <AnimatedItem>
+          <BenchmarkComparison
+            industryName={tier1?.industryName ?? 'Your Industry'}
+            industryMultipleLow={tier1?.multipleRange?.low ?? 3}
+            industryMultipleHigh={tier1?.multipleRange?.high ?? 6}
+            currentMultiple={tier1?.finalMultiple ?? 0}
+            hasAssessment={data.hasAssessment}
+          />
+        </AnimatedItem>
+
         {/* Valuation Bridge */}
         <AnimatedItem>
           <ValuationBridge
@@ -170,6 +191,20 @@ export function ValueHome() {
             onAssessmentStart={() => {
               router.push('/dashboard/diagnosis')
             }}
+          />
+        </AnimatedItem>
+
+        {/* What-If Scenarios */}
+        <AnimatedItem>
+          <WhatIfScenarios
+            coreFactors={data.coreFactors}
+            adjustedEbitda={data.tier2?.adjustedEbitda ?? 0}
+            industryMultipleLow={tier1?.multipleRange?.low ?? 3}
+            industryMultipleHigh={tier1?.multipleRange?.high ?? 6}
+            currentValue={tier1?.currentValue ?? 0}
+            briScore={tier1?.briScore ?? 50}
+            currentMultiple={tier1?.finalMultiple ?? 0}
+            hasAssessment={data.hasAssessment}
           />
         </AnimatedItem>
 

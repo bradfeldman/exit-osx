@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateDriftReport } from '@/lib/drift-report/generate-report'
 import { sendDriftReportEmail } from '@/lib/email/send-drift-report-email'
+import { sendPartnerMonthlySummaryEmail } from '@/lib/email/send-partner-monthly-summary-email'
 
 const CRON_SECRET = process.env.CRON_SECRET
 
@@ -96,6 +97,45 @@ export async function GET(request: Request) {
               data: { emailSentAt: new Date() },
             })
           }
+        }
+
+        // Send partner monthly summary if active partner exists
+        try {
+          const partner = await prisma.accountabilityPartner.findUnique({
+            where: { companyId: company.id },
+          })
+          if (partner?.isActive && partner.acceptedAt) {
+            const briStart = Number(report.briScoreStart)
+            const briEnd = Number(report.briScoreEnd)
+            const briDelta = briEnd - briStart
+            const taskCounts = await prisma.task.groupBy({
+              by: ['status'],
+              where: { companyId: company.id },
+              _count: true,
+            })
+            const tasksRemaining = (taskCounts.find(t => t.status === 'PENDING')?._count ?? 0)
+              + (taskCounts.find(t => t.status === 'IN_PROGRESS')?._count ?? 0)
+
+            await sendPartnerMonthlySummaryEmail({
+              email: partner.email,
+              partnerName: partner.name || undefined,
+              ownerName: owner?.name || 'The owner',
+              companyName: company.name,
+              monthYear,
+              briDirection: briDelta > 0 ? 'up' : briDelta < 0 ? 'down' : 'stable',
+              briChangePoints: Math.abs(Math.round(briDelta * 100)),
+              tasksCompleted: report.tasksCompletedCount,
+              tasksRemaining,
+              accessToken: partner.accessToken,
+            })
+
+            await prisma.accountabilityPartner.update({
+              where: { id: partner.id },
+              data: { lastEmailSentAt: new Date() },
+            })
+          }
+        } catch (partnerErr) {
+          console.error(`[DriftReport] Error sending partner summary for company ${company.id}:`, partnerErr)
         }
 
         generated++

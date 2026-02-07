@@ -18,6 +18,7 @@ import {
   BarChart3,
   Lock,
   ExternalLink,
+  Shield,
 } from 'lucide-react'
 
 interface CompanyData {
@@ -191,6 +192,14 @@ export default function AdvisorClientPage() {
       icon: TrendingUp,
       href: `/dashboard/playbook?company=${companyId}`,
       enabled: hasPermission('playbook.tasks:view'),
+    },
+    {
+      key: 'signals',
+      title: 'Signal Review',
+      description: 'Review and confirm client signals',
+      icon: Shield,
+      href: `/advisor/${companyId}/signals`,
+      enabled: true, // Always available to advisors
     },
   ]
 
