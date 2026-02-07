@@ -13,6 +13,7 @@ import {
   Upload,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { EvidenceUploadDialog } from './EvidenceUploadDialog'
 
 const CATEGORY_CARDS = [
   {
@@ -67,18 +68,21 @@ const IMPACT_COLORS = {
 
 interface EvidenceEmptyStateProps {
   onCategoryClick?: (categoryId: string) => void
+  onUploadSuccess?: () => void
 }
 
-export function EvidenceEmptyState({ onCategoryClick }: EvidenceEmptyStateProps) {
+export function EvidenceEmptyState({ onCategoryClick, onUploadSuccess }: EvidenceEmptyStateProps) {
   const router = useRouter()
   const [hoveredCard, setHoveredCard] = useState<string | null>(null)
+  const [uploadCategory, setUploadCategory] = useState<typeof CATEGORY_CARDS[number] | null>(null)
 
   const handleCardClick = (categoryId: string) => {
-    if (onCategoryClick) {
+    const card = CATEGORY_CARDS.find(c => c.id === categoryId)
+    if (card) {
+      setUploadCategory(card)
+    } else if (onCategoryClick) {
       onCategoryClick(categoryId)
     } else {
-      // For now, scroll to show that they need to upload - will be enhanced with upload modal
-      // This is the MVP behavior; a future iteration adds actual upload modals
       router.push(`/dashboard/evidence?category=${categoryId}`)
     }
   }
@@ -153,6 +157,16 @@ export function EvidenceEmptyState({ onCategoryClick }: EvidenceEmptyStateProps)
         Start with Financial documents — buyers request these in 100% of deals.
         Tax returns and financial statements are the most impactful.
       </p>
+
+      {/* Upload Dialog */}
+      {uploadCategory && (
+        <EvidenceUploadDialog
+          documentName={`${uploadCategory.label} Document`}
+          evidenceCategory={uploadCategory.id}
+          onSuccess={() => onUploadSuccess?.()}
+          onClose={() => setUploadCategory(null)}
+        />
+      )}
     </div>
   )
 }

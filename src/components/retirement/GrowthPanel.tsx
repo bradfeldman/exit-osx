@@ -114,8 +114,7 @@ export function GrowthPanel({ assumptions, onAssumptionChange, simplified = fals
         <div className="p-3 bg-blue-50 rounded-lg">
           <p className="text-xs text-blue-700">
             <span className="font-medium">Note:</span> This is the expected average annual return.
-            Actual returns will vary year to year. Use the Monte Carlo simulation for probability
-            analysis.
+            Actual returns will vary year to year based on market conditions and asset allocation.
           </p>
         </div>
 

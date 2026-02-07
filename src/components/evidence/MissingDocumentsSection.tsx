@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { AlertTriangle, Upload } from 'lucide-react'
+import { EvidenceUploadDialog } from './EvidenceUploadDialog'
 
 interface MissingDoc {
   id: string
@@ -15,10 +16,12 @@ interface MissingDoc {
 interface MissingDocumentsSectionProps {
   documents: MissingDoc[]
   totalMissing: number
+  onUploadSuccess?: () => void
 }
 
-export function MissingDocumentsSection({ documents, totalMissing }: MissingDocumentsSectionProps) {
+export function MissingDocumentsSection({ documents, totalMissing, onUploadSuccess }: MissingDocumentsSectionProps) {
   const [showAll, setShowAll] = useState(false)
+  const [uploadingDoc, setUploadingDoc] = useState<MissingDoc | null>(null)
   const visible = showAll ? documents : documents.slice(0, 4)
 
   return (
@@ -49,6 +52,7 @@ export function MissingDocumentsSection({ documents, totalMissing }: MissingDocu
             <div className="mt-3 pl-6">
               <button
                 type="button"
+                onClick={() => setUploadingDoc(doc)}
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--burnt-orange)] hover:underline"
               >
                 <Upload className="w-3.5 h-3.5" />
@@ -68,6 +72,17 @@ export function MissingDocumentsSection({ documents, totalMissing }: MissingDocu
         >
           Showing {visible.length} of {totalMissing} missing · View all missing documents
         </button>
+      )}
+
+      {/* Upload Dialog */}
+      {uploadingDoc && (
+        <EvidenceUploadDialog
+          documentName={uploadingDoc.name}
+          evidenceCategory={uploadingDoc.category}
+          expectedDocumentId={uploadingDoc.id}
+          onSuccess={() => onUploadSuccess?.()}
+          onClose={() => setUploadingDoc(null)}
+        />
       )}
     </div>
   )

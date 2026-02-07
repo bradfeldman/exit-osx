@@ -133,7 +133,7 @@ export function EvidencePage() {
 
         {isEmpty ? (
           <AnimatedItem>
-            <EvidenceEmptyState />
+            <EvidenceEmptyState onUploadSuccess={fetchData} />
           </AnimatedItem>
         ) : (
           <>
@@ -146,6 +146,7 @@ export function EvidencePage() {
                 <MissingDocumentsSection
                   documents={data.topMissing}
                   totalMissing={data.totalMissing}
+                  onUploadSuccess={fetchData}
                 />
               </AnimatedItem>
             )}

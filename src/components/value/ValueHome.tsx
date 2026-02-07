@@ -162,6 +162,7 @@ export function ValueHome() {
             potentialValue={tier1?.potentialValue ?? 0}
             valueGap={tier1?.valueGap ?? 0}
             valueGapDelta={data.valueGapDelta}
+            briScore={tier1?.briScore ?? null}
             isEstimated={tier1?.isEstimated ?? true}
             hasAssessment={data.hasAssessment}
             isEbitdaFromFinancials={data.tier2?.isEbitdaFromFinancials ?? false}
@@ -176,6 +177,7 @@ export function ValueHome() {
             industryMultipleHigh={tier1?.multipleRange?.high ?? 6}
             currentMultiple={tier1?.finalMultiple ?? 0}
             hasAssessment={data.hasAssessment}
+            isFreeUser={isFreeUser}
           />
         </AnimatedItem>
 
@@ -205,6 +207,7 @@ export function ValueHome() {
             briScore={tier1?.briScore ?? 50}
             currentMultiple={tier1?.finalMultiple ?? 0}
             hasAssessment={data.hasAssessment}
+            isFreeUser={isFreeUser}
           />
         </AnimatedItem>
 

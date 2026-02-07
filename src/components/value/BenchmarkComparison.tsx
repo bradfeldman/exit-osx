@@ -10,6 +10,7 @@ interface BenchmarkComparisonProps {
   industryMultipleHigh: number
   currentMultiple: number
   hasAssessment: boolean
+  isFreeUser?: boolean
 }
 
 export function BenchmarkComparison({
@@ -18,6 +19,7 @@ export function BenchmarkComparison({
   industryMultipleHigh,
   currentMultiple,
   hasAssessment,
+  isFreeUser = false,
 }: BenchmarkComparisonProps) {
   const { percentile, topQuartileThreshold, quartile, message } = useMemo(() => {
     const range = industryMultipleHigh - industryMultipleLow
@@ -50,7 +52,9 @@ export function BenchmarkComparison({
         <CardContent className="flex flex-col items-center justify-center py-10">
           <Lock className="h-8 w-8 text-muted-foreground/40 mb-3" />
           <p className="text-sm font-medium text-muted-foreground mb-1">
-            Complete your assessment to see industry benchmarks
+            {isFreeUser
+              ? 'Upgrade to see industry benchmarks'
+              : 'Complete your assessment to see industry benchmarks'}
           </p>
           <p className="text-xs text-muted-foreground/60">
             Compare your EBITDA multiple against industry peers

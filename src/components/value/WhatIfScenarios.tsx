@@ -28,6 +28,7 @@ interface WhatIfScenariosProps {
   briScore: number // 0-100 scale
   currentMultiple: number
   hasAssessment: boolean
+  isFreeUser?: boolean
 }
 
 const FACTOR_CONFIG: Record<
@@ -105,6 +106,7 @@ export function WhatIfScenarios({
   briScore,
   currentMultiple,
   hasAssessment,
+  isFreeUser = false,
 }: WhatIfScenariosProps) {
   const [selectedFactor, setSelectedFactor] = useState<FactorKey | null>(null)
   const [hypotheticalValue, setHypotheticalValue] = useState<string | null>(null)
@@ -148,7 +150,9 @@ export function WhatIfScenarios({
         <CardContent className="flex flex-col items-center justify-center py-10">
           <Lock className="h-8 w-8 text-muted-foreground/40 mb-3" />
           <p className="text-sm font-medium text-muted-foreground mb-1">
-            Complete your assessment to unlock What-If Scenarios
+            {isFreeUser
+              ? 'Upgrade to unlock What-If Scenarios'
+              : 'Complete your assessment to unlock What-If Scenarios'}
           </p>
           <p className="text-xs text-muted-foreground/60">
             See how improving specific business factors could change your valuation

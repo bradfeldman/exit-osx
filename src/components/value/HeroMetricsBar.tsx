@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from 'react'
 import { motion } from '@/lib/motion'
-import { useCountUpCurrency } from '@/hooks/useCountUp'
+import { useCountUpCurrency, useCountUpScore } from '@/hooks/useCountUp'
 import { Badge } from '@/components/ui/badge'
 
 const emptySubscribe = () => () => {}
@@ -26,6 +26,7 @@ interface HeroMetricsBarProps {
   potentialValue: number
   valueGap: number
   valueGapDelta: number | null
+  briScore?: number | null
   isEstimated?: boolean
   hasAssessment?: boolean
   isEbitdaFromFinancials?: boolean
@@ -36,6 +37,7 @@ export function HeroMetricsBar({
   potentialValue,
   valueGap,
   valueGapDelta,
+  briScore,
   isEstimated: _isEstimated = false,
   hasAssessment = false,
   isEbitdaFromFinancials = false,
@@ -65,14 +67,44 @@ export function HeroMetricsBar({
 
   const delta = getDeltaDisplay()
 
+  const briPercent = briScore != null ? Math.round(briScore * 100) : null
+  const { value: animatedBri } = useCountUpScore(briPercent ?? 0, { delay: 500, duration: 1800 })
+
+  const getBriColor = () => {
+    if (briPercent == null) return 'text-muted-foreground'
+    if (briPercent >= 75) return 'text-emerald-600'
+    if (briPercent >= 50) return 'text-foreground'
+    return 'text-amber-600'
+  }
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {/* Current Value */}
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* BRI Score */}
       <motion.div
         className="bg-card border border-border rounded-xl p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
+      >
+        <p className="text-sm font-medium text-muted-foreground">BRI Score</p>
+        <p className={`text-3xl font-bold mt-1 ${getBriColor()}`}>
+          {briPercent != null
+            ? isClient ? animatedBri : `${briPercent}`
+            : '—'}
+        </p>
+        {briPercent != null ? (
+          <p className="text-xs text-muted-foreground mt-2">Buyer Readiness Index</p>
+        ) : (
+          <Badge variant="secondary" className="mt-2">Not assessed</Badge>
+        )}
+      </motion.div>
+
+      {/* Current Value */}
+      <motion.div
+        className="bg-card border border-border rounded-xl p-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.05 }}
       >
         <p className="text-sm font-medium text-muted-foreground">Current Value</p>
         <p className="text-3xl font-bold text-foreground mt-1">
@@ -91,7 +123,7 @@ export function HeroMetricsBar({
         className="bg-card border border-border rounded-xl p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.05 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
       >
         <p className="text-sm font-medium text-muted-foreground">Potential Value</p>
         <p className="text-3xl font-bold text-foreground mt-1">
@@ -105,7 +137,7 @@ export function HeroMetricsBar({
         className="bg-card border border-border rounded-xl p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
+        transition={{ duration: 0.5, delay: 0.15 }}
       >
         <p className="text-sm font-medium text-muted-foreground">Value Gap</p>
         <p className="text-3xl font-bold text-primary mt-1">
