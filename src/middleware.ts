@@ -94,6 +94,19 @@ function isAppDomain(hostname: string): boolean {
 // when the browser is fully closed, preventing persistent sessions.
 const sessionCookieOptions = { path: '/', sameSite: 'lax' as const }
 
+// Helper: create a redirect that preserves Supabase session cookies.
+// When Supabase refreshes tokens in middleware, the new cookies are set on
+// `supabaseResponse`. Returning a raw NextResponse.redirect() loses them,
+// causing redirect loops — especially on mobile Safari which is aggressive
+// about clearing session cookies.
+function redirectWithCookies(url: string | URL, supabaseResponse: NextResponse): NextResponse {
+  const redirect = NextResponse.redirect(url)
+  supabaseResponse.cookies.getAll().forEach(cookie => {
+    redirect.cookies.set(cookie.name, cookie.value, { ...sessionCookieOptions })
+  })
+  return redirect
+}
+
 export async function middleware(request: NextRequest) {
   // SECURITY: Check staging authentication first
   const stagingAuthResponse = checkStagingAuth(request)
@@ -250,7 +263,7 @@ export async function middleware(request: NextRequest) {
     if (pathname !== '/admin') {
       url.searchParams.set('next', pathname)
     }
-    return NextResponse.redirect(url)
+    return redirectWithCookies(url, supabaseResponse)
   }
 
   // If user is not logged in and trying to access protected route
@@ -258,7 +271,7 @@ export async function middleware(request: NextRequest) {
   if (!user && !isPublicRoute && !isAdminPublicRoute && pathname !== '/') {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    return NextResponse.redirect(url)
+    return redirectWithCookies(url, supabaseResponse)
   }
 
   // If user is logged in and trying to access auth pages, redirect to dashboard
@@ -266,7 +279,7 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
     // If on admin subdomain or trying to access admin login, redirect to admin dashboard
     url.pathname = (isAdminSubdomain || pathname === '/admin/login') ? '/admin' : '/dashboard'
-    return NextResponse.redirect(url)
+    return redirectWithCookies(url, supabaseResponse)
   }
 
   // If user is logged in and on home page
@@ -279,12 +292,12 @@ export async function middleware(request: NextRequest) {
     // On app domain or admin: redirect to dashboard
     const url = request.nextUrl.clone()
     url.pathname = isAdminSubdomain ? '/admin' : '/dashboard'
-    return NextResponse.redirect(url)
+    return redirectWithCookies(url, supabaseResponse)
   }
 
   // If user is NOT logged in and on app domain home page, redirect to marketing
   if (!user && pathname === '/' && isAppDomain(hostname) && !hostname.includes('localhost')) {
-    return NextResponse.redirect('https://exitosx.com')
+    return redirectWithCookies('https://exitosx.com', supabaseResponse)
   }
 
   return supabaseResponse
