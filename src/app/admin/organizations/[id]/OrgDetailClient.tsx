@@ -17,12 +17,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ArrowLeft, Users, Building2, Save } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { ArrowLeft, Users, Building2, Save, CreditCard } from 'lucide-react'
 
 interface OrgDetailClientProps {
   organization: {
     id: string
     name: string
+    planTier: string
+    subscriptionStatus: string
+    trialEndsAt: string | null
     createdAt: string
     updatedAt: string
     users: Array<{
@@ -49,7 +53,10 @@ interface OrgDetailClientProps {
 export function OrgDetailClient({ organization }: OrgDetailClientProps) {
   const router = useRouter()
   const [name, setName] = useState(organization.name)
+  const [planTier, setPlanTier] = useState(organization.planTier)
+  const [subscriptionStatus, setSubscriptionStatus] = useState(organization.subscriptionStatus)
   const [isSaving, setIsSaving] = useState(false)
+  const [isSavingPlan, setIsSavingPlan] = useState(false)
 
   const handleSave = async () => {
     setIsSaving(true)
@@ -70,7 +77,37 @@ export function OrgDetailClient({ organization }: OrgDetailClientProps) {
     }
   }
 
+  const handleSavePlan = async () => {
+    setIsSavingPlan(true)
+    try {
+      const payload: Record<string, unknown> = {}
+      if (planTier !== organization.planTier) payload.planTier = planTier
+      if (subscriptionStatus !== organization.subscriptionStatus) payload.subscriptionStatus = subscriptionStatus
+      // When downgrading to FOUNDATION, clear trial and set ACTIVE
+      if (planTier === 'FOUNDATION' && organization.planTier !== 'FOUNDATION') {
+        payload.trialEndsAt = null
+        payload.subscriptionStatus = 'ACTIVE'
+        setSubscriptionStatus('ACTIVE')
+      }
+
+      const response = await fetch(`/api/admin/organizations/${organization.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (response.ok) {
+        router.refresh()
+      }
+    } catch (error) {
+      console.error('Failed to save plan:', error)
+    } finally {
+      setIsSavingPlan(false)
+    }
+  }
+
   const hasChanges = name !== organization.name
+  const hasPlanChanges = planTier !== organization.planTier || subscriptionStatus !== organization.subscriptionStatus
 
   const formatCurrency = (value: string) => {
     return new Intl.NumberFormat('en-US', {
@@ -130,6 +167,64 @@ export function OrgDetailClient({ organization }: OrgDetailClientProps) {
                 <Button onClick={handleSave} disabled={!hasChanges || isSaving}>
                   <Save className="mr-2 h-4 w-4" />
                   {isSaving ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Subscription Management
+              </CardTitle>
+              <CardDescription>
+                Change plan tier and subscription status
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Plan Tier</Label>
+                  <Select value={planTier} onValueChange={setPlanTier}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="FOUNDATION">Foundation (Free)</SelectItem>
+                      <SelectItem value="GROWTH">Growth ($149/mo)</SelectItem>
+                      <SelectItem value="EXIT_READY">Exit-Ready ($379/mo)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Subscription Status</Label>
+                  <Select value={subscriptionStatus} onValueChange={setSubscriptionStatus}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ACTIVE">Active</SelectItem>
+                      <SelectItem value="TRIALING">Trialing</SelectItem>
+                      <SelectItem value="PAST_DUE">Past Due</SelectItem>
+                      <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                      <SelectItem value="EXPIRED">Expired</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {organization.trialEndsAt && (
+                <div className="text-sm text-muted-foreground">
+                  Trial ends: {new Date(organization.trialEndsAt).toLocaleString()}
+                </div>
+              )}
+
+              <div className="flex justify-end">
+                <Button onClick={handleSavePlan} disabled={!hasPlanChanges || isSavingPlan}>
+                  <Save className="mr-2 h-4 w-4" />
+                  {isSavingPlan ? 'Saving...' : 'Update Plan'}
                 </Button>
               </div>
             </CardContent>

@@ -51,6 +51,7 @@ export default async function OrgDetailPage({
     ...organization,
     createdAt: organization.createdAt.toISOString(),
     updatedAt: organization.updatedAt.toISOString(),
+    trialEndsAt: organization.trialEndsAt?.toISOString() ?? null,
     users: organization.users.map(ou => ({
       ...ou,
       joinedAt: ou.joinedAt.toISOString(),
