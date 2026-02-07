@@ -13,14 +13,14 @@ test.describe('Dashboard', () => {
     expect(hasCompanyUI).toBeTruthy()
   })
 
-  test('can navigate to playbook', async ({ page }) => {
+  test('can navigate to actions', async ({ page }) => {
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
 
-    // Click on playbook link in sidebar
-    await page.locator('a[href="/dashboard/playbook"]').click()
+    // Click on actions link in sidebar
+    await page.locator('a[href="/dashboard/actions"]').click()
 
-    await expect(page).toHaveURL(/playbook/)
+    await expect(page).toHaveURL(/actions/)
   })
 
   test('can navigate to data room', async ({ page }) => {
@@ -50,7 +50,7 @@ test.describe('Dashboard', () => {
 
     // Check main navigation items exist in sidebar
     await expect(page.locator('a[href="/dashboard"]').filter({ hasText: 'Value Snapshot' })).toBeVisible({ timeout: 10000 })
-    await expect(page.locator('a[href="/dashboard/playbook"]')).toBeVisible()
+    await expect(page.locator('a[href="/dashboard/actions"]')).toBeVisible()
     await expect(page.locator('a[href="/dashboard/data-room"]')).toBeVisible()
   })
 })

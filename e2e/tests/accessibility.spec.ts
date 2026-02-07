@@ -45,7 +45,7 @@ test.describe('Accessibility - WCAG 2.1 AA Compliance', () => {
     })
 
     test('playbook page should be accessible', async ({ page }) => {
-      await page.goto('/dashboard/playbook')
+      await page.goto('/dashboard/actions')
       await page.waitForLoadState('networkidle')
 
       const results = await checkAccessibility(page, 'Playbook')
@@ -397,7 +397,7 @@ test.describe('Accessibility - Full Scan Report', () => {
   test('generate full accessibility report for all pages @smoke', async ({ page }) => {
     const pages = [
       { url: '/dashboard', name: 'Dashboard' },
-      { url: '/dashboard/playbook', name: 'Playbook' },
+      { url: '/dashboard/actions', name: 'Playbook' },
       { url: '/dashboard/data-room', name: 'Data Room' },
       { url: '/dashboard/assessment', name: 'Assessment' },
       { url: '/dashboard/financials/pnl', name: 'Financials' },

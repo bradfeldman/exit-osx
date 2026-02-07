@@ -37,7 +37,7 @@ test.describe('Visual Regression - Dashboard Pages', () => {
   })
 
   test('playbook page', async ({ page }) => {
-    await page.goto('/dashboard/playbook')
+    await page.goto('/dashboard/actions')
     await page.waitForLoadState('networkidle')
     await page.waitForTimeout(500)
 
@@ -127,7 +127,7 @@ test.describe('Visual Regression - Responsive Views', () => {
 
   test('playbook - mobile view', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 })
-    await page.goto('/dashboard/playbook')
+    await page.goto('/dashboard/actions')
     await page.waitForLoadState('networkidle')
     await page.waitForTimeout(500)
 
@@ -212,7 +212,7 @@ test.describe('Visual Regression - Interactive States', () => {
   })
 
   test('card hover states', async ({ page }) => {
-    await page.goto('/dashboard/playbook')
+    await page.goto('/dashboard/actions')
     await page.waitForLoadState('networkidle')
 
     const card = page.locator('[class*="Card"], [data-slot="card"]').first()
@@ -266,7 +266,7 @@ test.describe('Visual Regression - Auth Pages', () => {
 
 test.describe('Visual Regression - Empty States', () => {
   test('empty playbook state', async ({ page }) => {
-    await page.goto('/dashboard/playbook')
+    await page.goto('/dashboard/actions')
     await page.waitForLoadState('networkidle')
     await page.waitForTimeout(500)
 

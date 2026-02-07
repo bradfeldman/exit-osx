@@ -33,7 +33,7 @@ const coreLinks: NavLink[] = [
   { name: 'Deal Room', href: '/dashboard/deal-room', icon: DealRoomIcon },
 ]
 
-// VALUE MODELING section (Stage 4+)
+// VALUE MODELING section
 const valueModelingLinks: NavLink[] = [
   { name: 'Business Financials', href: '/dashboard/financials', icon: FinancialsIcon, requiredPlan: 'growth', featureKey: 'business-financials' },
   { name: 'DCF Valuation', href: '/dashboard/valuation', icon: ChartBarIcon, requiredPlan: 'exit-ready', featureKey: 'dcf-valuation' },
@@ -49,7 +49,7 @@ const personalFinancialsLink: NavLink = {
   featureKey: 'personal-financials',
 }
 
-// CAPITAL section (Stage 6+)
+// CAPITAL section
 const capitalLinks: NavLink[] = [
   { name: 'Business Loans', href: '/dashboard/loans/business', icon: BankIcon, requiredPlan: 'growth', featureKey: 'business-loans' },
 ]

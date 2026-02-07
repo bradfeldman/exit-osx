@@ -25,7 +25,7 @@ test.describe('File Upload Features', () => {
   })
 
   test('should upload file via click in task upload dialog', async ({ page }) => {
-    await page.goto('/dashboard/playbook')
+    await page.goto('/dashboard/actions')
     await page.waitForLoadState('networkidle')
 
     // Find and expand a task
@@ -65,7 +65,7 @@ test.describe('File Upload Features', () => {
   })
 
   test('should upload file via drag and drop', async ({ page }) => {
-    await page.goto('/dashboard/playbook')
+    await page.goto('/dashboard/actions')
     await page.waitForLoadState('networkidle')
 
     // Find and click upload button on a task
@@ -105,7 +105,7 @@ test.describe('File Upload Features', () => {
   })
 
   test('should show upload progress indicator', async ({ page }) => {
-    await page.goto('/dashboard/playbook')
+    await page.goto('/dashboard/actions')
     await page.waitForLoadState('networkidle')
 
     const uploadButton = page.locator('button:has-text("Upload")').first()
@@ -137,7 +137,7 @@ test.describe('File Upload Features', () => {
   })
 
   test('should show uploaded files list', async ({ page }) => {
-    await page.goto('/dashboard/playbook')
+    await page.goto('/dashboard/actions')
     await page.waitForLoadState('networkidle')
 
     const uploadButton = page.locator('button:has-text("Upload")').first()
@@ -168,7 +168,7 @@ test.describe('File Upload Features', () => {
   })
 
   test('should handle upload error gracefully', async ({ page }) => {
-    await page.goto('/dashboard/playbook')
+    await page.goto('/dashboard/actions')
     await page.waitForLoadState('networkidle')
 
     // Intercept upload API to simulate failure
@@ -203,7 +203,7 @@ test.describe('File Upload Features', () => {
   })
 
   test('should allow multiple file uploads', async ({ page }) => {
-    await page.goto('/dashboard/playbook')
+    await page.goto('/dashboard/actions')
     await page.waitForLoadState('networkidle')
 
     const uploadButton = page.locator('button:has-text("Upload")').first()

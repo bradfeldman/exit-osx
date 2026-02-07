@@ -173,7 +173,7 @@ export function ResultsPanel({ projections, isOnTrack }: ResultsPanelProps) {
                 before selling. Your action plan identifies specific improvements that could
                 boost your exit proceeds.
               </p>
-              <Link href="/dashboard/playbook">
+              <Link href="/dashboard/actions">
                 <Button variant="outline" size="sm" className="text-primary border-primary/30 hover:bg-primary/5">
                   View Actions to Increase Exit Value →
                 </Button>

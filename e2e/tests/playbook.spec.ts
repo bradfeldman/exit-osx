@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Action Playbook', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/dashboard/playbook')
+    await page.goto('/dashboard/actions')
     await page.waitForLoadState('networkidle')
   })
 

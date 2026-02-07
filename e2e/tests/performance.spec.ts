@@ -140,10 +140,10 @@ test.describe('Performance - Page Load Metrics', () => {
     expect(loadTime).toBeLessThan(PERFORMANCE_BUDGETS.pageLoad.load)
   })
 
-  test('playbook page loads within performance budget', async ({ page }) => {
+  test('actions page loads within performance budget', async ({ page }) => {
     const startTime = Date.now()
 
-    await page.goto('/dashboard/playbook')
+    await page.goto('/dashboard/actions')
     await page.waitForLoadState('networkidle')
 
     const loadTime = Date.now() - startTime
@@ -224,8 +224,8 @@ test.describe('Performance - Web Vitals', () => {
     }
   })
 
-  test('playbook meets Core Web Vitals thresholds', async ({ page }) => {
-    await page.goto('/dashboard/playbook')
+  test('actions meets Core Web Vitals thresholds', async ({ page }) => {
+    await page.goto('/dashboard/actions')
     await page.waitForLoadState('networkidle')
     await page.waitForTimeout(1000)
 
@@ -252,12 +252,12 @@ test.describe('Performance - Navigation Speed', () => {
 
     // Measure client-side navigation
     const navStart = Date.now()
-    await page.click('a[href="/dashboard/playbook"]')
-    await page.waitForURL('**/playbook')
+    await page.click('a[href="/dashboard/actions"]')
+    await page.waitForURL('**/actions')
     await page.waitForLoadState('networkidle')
     const navTime = Date.now() - navStart
 
-    console.log(`\nClient-side navigation to playbook: ${navTime}ms`)
+    console.log(`\nClient-side navigation to actions: ${navTime}ms`)
 
     // Client-side nav should be much faster than full page load
     expect(navTime).toBeLessThan(2000)
@@ -267,8 +267,8 @@ test.describe('Performance - Navigation Speed', () => {
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
 
-    await page.click('a[href="/dashboard/playbook"]')
-    await page.waitForURL('**/playbook')
+    await page.click('a[href="/dashboard/actions"]')
+    await page.waitForURL('**/actions')
     await page.waitForLoadState('networkidle')
 
     // Measure back navigation
@@ -496,7 +496,7 @@ test.describe('Performance - Summary Report @smoke', () => {
 
     const pages = [
       { url: '/dashboard', name: 'Dashboard' },
-      { url: '/dashboard/playbook', name: 'Playbook' },
+      { url: '/dashboard/actions', name: 'Playbook' },
       { url: '/dashboard/data-room', name: 'Data Room' },
       { url: '/dashboard/assessment', name: 'Assessment' },
       { url: '/dashboard/financials/pnl', name: 'Financials' },

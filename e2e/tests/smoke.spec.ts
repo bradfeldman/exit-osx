@@ -6,17 +6,17 @@ import { test, expect } from '@playwright/test'
  */
 
 test.describe('Smoke Tests', () => {
-  test('critical user journey - dashboard to playbook', async ({ page }) => {
+  test('critical user journey - dashboard to actions', async ({ page }) => {
     // 1. Dashboard loads
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
     await expect(page.locator('main').first()).toBeVisible({ timeout: 15000 })
 
-    // 2. Navigate to playbook
-    await page.locator('a[href="/dashboard/playbook"]').click()
-    await expect(page).toHaveURL(/playbook/)
+    // 2. Navigate to actions
+    await page.locator('a[href="/dashboard/actions"]').click()
+    await expect(page).toHaveURL(/actions/)
 
-    // 3. Playbook content loads (may show "select company" message or task content)
+    // 3. Actions content loads (may show "select company" message or task content)
     await expect(page.locator('main').first()).toBeVisible({ timeout: 15000 })
   })
 
@@ -35,7 +35,7 @@ test.describe('Smoke Tests', () => {
   test('all main pages load without errors', async ({ page }) => {
     const pages = [
       '/dashboard',
-      '/dashboard/playbook',
+      '/dashboard/actions',
       '/dashboard/data-room',
       '/dashboard/assessment',
       '/dashboard/financials/pnl',
@@ -91,7 +91,7 @@ test.describe('Smoke Tests', () => {
       await menuButton.click()
       await page.waitForTimeout(500)
       // Navigation should appear
-      const hasNav = await page.locator('nav, [role="navigation"], a[href="/dashboard/playbook"]').first().isVisible().catch(() => false)
+      const hasNav = await page.locator('nav, [role="navigation"], a[href="/dashboard/actions"]').first().isVisible().catch(() => false)
       expect(hasNav).toBeTruthy()
     }
   })

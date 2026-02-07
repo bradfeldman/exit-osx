@@ -52,7 +52,7 @@ export function RiskDriverRow({
       return
     }
     if (linkedTaskId) {
-      router.push(`/dashboard/playbook?taskId=${linkedTaskId}`)
+      router.push(`/dashboard/actions?taskId=${linkedTaskId}`)
     }
   }
 

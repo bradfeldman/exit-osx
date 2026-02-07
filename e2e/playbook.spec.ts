@@ -2,12 +2,12 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Playbook / Tasks', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/dashboard/playbook')
+    await page.goto('/dashboard/actions')
     await page.waitForLoadState('networkidle')
   })
 
-  test('should load playbook page', async ({ page }) => {
-    await expect(page).toHaveURL(/\/playbook/)
+  test('should load actions page', async ({ page }) => {
+    await expect(page).toHaveURL(/\/actions/)
     // Page should have main element with content (heading or "select company" message)
     await expect(page.locator('main').first()).toBeVisible({ timeout: 15000 })
   })

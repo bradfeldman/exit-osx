@@ -62,7 +62,7 @@ test.describe('Page Load Performance', () => {
 
   test('playbook loads within acceptable time', async ({ page }) => {
     const startTime = Date.now()
-    await page.goto('/dashboard/playbook')
+    await page.goto('/dashboard/actions')
     await page.waitForLoadState('networkidle')
     const loadTime = Date.now() - startTime
 

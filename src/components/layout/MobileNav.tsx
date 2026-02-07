@@ -284,7 +284,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                   </button>
                 )}
 
-                {/* Retirement Calculator - Stage 5+ */}
+                {/* Retirement Calculator */}
                 {isProgressionLocked('retirementCalculator') ? (
                   <button
                     className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"

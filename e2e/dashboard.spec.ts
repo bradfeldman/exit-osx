@@ -31,15 +31,15 @@ test.describe('Dashboard', () => {
     await expect(content).toBeVisible({ timeout: 15000 })
   })
 
-  test('should navigate to playbook from sidebar', async ({ page }) => {
+  test('should navigate to actions from sidebar', async ({ page }) => {
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
 
-    // Find and click playbook link in sidebar
-    const playbookLink = page.locator('a[href="/dashboard/playbook"]')
-    await playbookLink.click()
+    // Find and click actions link in sidebar
+    const actionsLink = page.locator('a[href="/dashboard/actions"]')
+    await actionsLink.click()
 
-    await expect(page).toHaveURL(/\/playbook/)
+    await expect(page).toHaveURL(/\/actions/)
   })
 
   test('should navigate to data room from sidebar', async ({ page }) => {
@@ -59,7 +59,7 @@ test.describe('Dashboard', () => {
 
     // Sidebar should have main nav items (using specific link selectors)
     await expect(page.locator('a[href="/dashboard"]').filter({ hasText: 'Value Snapshot' })).toBeVisible()
-    await expect(page.locator('a[href="/dashboard/playbook"]')).toBeVisible()
+    await expect(page.locator('a[href="/dashboard/actions"]')).toBeVisible()
     await expect(page.locator('a[href="/dashboard/data-room"]')).toBeVisible()
   })
 })

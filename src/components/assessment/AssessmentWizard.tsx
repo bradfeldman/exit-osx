@@ -702,7 +702,7 @@ export function AssessmentWizard({ companyId, companyName, title: _title = 'Buye
               <div>
                 <Button
                   size="lg"
-                  onClick={() => router.push('/dashboard/playbook')}
+                  onClick={() => router.push('/dashboard/actions')}
                   className="px-8 py-6 text-lg shadow-xl shadow-primary/25"
                 >
                   See Your Action Plan
