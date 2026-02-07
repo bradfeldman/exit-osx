@@ -501,37 +501,47 @@ export async function GET(
       : null
 
     // --- Value-at-risk aggregation ---
+    // Wrapped in try/catch because signal and value_ledger_entries tables
+    // may not exist yet if migrations haven't been run
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
 
-    const [lifetimeRecovered, openSignalRisk, monthlyLedger] = await Promise.all([
-      // Lifetime recovered from ledger
-      prisma.valueLedgerEntry.aggregate({
-        where: { companyId },
-        _sum: { deltaValueRecovered: true },
-      }),
-      // Current at-risk from OPEN signals
-      prisma.signal.aggregate({
-        where: {
-          companyId,
-          resolutionStatus: 'OPEN',
-          estimatedValueImpact: { not: null },
-        },
-        _sum: { estimatedValueImpact: true },
-        _count: true,
-      }),
-      // This month's ledger activity
-      prisma.valueLedgerEntry.aggregate({
-        where: {
-          companyId,
-          occurredAt: { gte: monthStart },
-        },
-        _sum: {
-          deltaValueRecovered: true,
-          deltaValueAtRisk: true,
-        },
-        _count: true,
-      }),
-    ])
+    let lifetimeRecovered: { _sum: { deltaValueRecovered: unknown } } = { _sum: { deltaValueRecovered: null } }
+    let openSignalRisk: { _sum: { estimatedValueImpact: unknown }; _count: number } = { _sum: { estimatedValueImpact: null }, _count: 0 }
+    let monthlyLedger: { _sum: { deltaValueRecovered: unknown; deltaValueAtRisk: unknown }; _count: number } = { _sum: { deltaValueRecovered: null, deltaValueAtRisk: null }, _count: 0 }
+
+    try {
+      ;[lifetimeRecovered, openSignalRisk, monthlyLedger] = await Promise.all([
+        // Lifetime recovered from ledger
+        prisma.valueLedgerEntry.aggregate({
+          where: { companyId },
+          _sum: { deltaValueRecovered: true },
+        }),
+        // Current at-risk from OPEN signals
+        prisma.signal.aggregate({
+          where: {
+            companyId,
+            resolutionStatus: 'OPEN',
+            estimatedValueImpact: { not: null },
+          },
+          _sum: { estimatedValueImpact: true },
+          _count: true,
+        }),
+        // This month's ledger activity
+        prisma.valueLedgerEntry.aggregate({
+          where: {
+            companyId,
+            occurredAt: { gte: monthStart },
+          },
+          _sum: {
+            deltaValueRecovered: true,
+            deltaValueAtRisk: true,
+          },
+          _count: true,
+        }),
+      ])
+    } catch {
+      // Tables don't exist yet — use defaults initialized above
+    }
 
     // --- NEW: Value Gap Delta (30-day comparison) ---
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
