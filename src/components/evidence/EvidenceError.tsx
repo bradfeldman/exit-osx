@@ -1,6 +1,7 @@
 'use client'
 
-import { AlertTriangle } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
+import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
 interface EvidenceErrorProps {
@@ -10,16 +11,16 @@ interface EvidenceErrorProps {
 export function EvidenceError({ onRetry }: EvidenceErrorProps) {
   return (
     <div className="max-w-[900px] mx-auto px-6 py-8">
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <AlertTriangle className="w-10 h-10 text-destructive/60" />
-        <h2 className="text-lg font-semibold text-foreground mt-4">Unable to load evidence</h2>
-        <p className="text-sm text-muted-foreground mt-2">
-          Something went wrong loading your evidence library. Please try again.
+      <Card className="p-8 text-center">
+        <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
+        <p className="text-sm font-medium mt-3">Unable to load your evidence</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Please refresh the page or try again in a moment.
         </p>
-        <Button className="mt-4" onClick={onRetry}>
-          Retry
+        <Button variant="outline" size="sm" className="mt-4" onClick={onRetry}>
+          Try Again
         </Button>
-      </div>
+      </Card>
     </div>
   )
 }
