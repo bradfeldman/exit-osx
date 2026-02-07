@@ -289,9 +289,11 @@ export async function middleware(request: NextRequest) {
     return createRedirect(url, supabaseResponse)
   }
 
-  // If user is NOT logged in and on app domain home page, redirect to marketing
+  // If user is NOT logged in and on app domain home page, redirect to login
   if (!user && pathname === '/' && isAppDomain(hostname) && !hostname.includes('localhost')) {
-    return createRedirect('https://exitosx.com', supabaseResponse)
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    return createRedirect(url, supabaseResponse)
   }
 
   return supabaseResponse
