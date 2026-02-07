@@ -138,7 +138,7 @@ export async function GET(
         }))
     }).sort((a, b) => b.sortScore - a.sortScore)
 
-    const topMissing = allMissing.slice(0, 4).map(({ sortScore: _sortScore, ...rest }) => rest)
+    const topMissing = allMissing.map(({ sortScore: _sortScore, ...rest }) => rest)
 
     // Recently added (last 30 days)
     const recentlyAdded = documents

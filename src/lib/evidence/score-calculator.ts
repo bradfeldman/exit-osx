@@ -11,16 +11,17 @@ interface CategoryScore {
 }
 
 /**
- * Calculate dots (0-4) based on document coverage ratio
+ * Calculate dots (0-5) based on document coverage ratio
  */
 export function calculateDots(uploaded: number, expected: number): number {
-  if (expected === 0) return 4
+  if (expected === 0) return 5
   const ratio = uploaded / expected
   if (ratio === 0) return 0
-  if (ratio < 0.34) return 1
-  if (ratio < 0.67) return 2
-  if (ratio < 1.0) return 3
-  return 4
+  if (ratio < 0.2) return 1
+  if (ratio < 0.4) return 2
+  if (ratio < 0.6) return 3
+  if (ratio < 1.0) return 4
+  return 5
 }
 
 /**

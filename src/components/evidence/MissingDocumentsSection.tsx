@@ -10,7 +10,13 @@ interface MissingDoc {
   category: string
   categoryLabel: string
   buyerExplanation: string
-  importance: 'required' | 'expected'
+  importance: 'required' | 'expected' | 'helpful'
+}
+
+const IMPORTANCE_STYLES: Record<string, string> = {
+  required: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
+  expected: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  helpful: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
 }
 
 interface MissingDocumentsSectionProps {
@@ -43,6 +49,9 @@ export function MissingDocumentsSection({ documents, totalMissing, onUploadSucce
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
                 <span className="text-sm font-medium text-foreground">{doc.name}</span>
+                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full capitalize ${IMPORTANCE_STYLES[doc.importance] ?? ''}`}>
+                  {doc.importance}
+                </span>
               </div>
               <span className="text-xs text-muted-foreground">{doc.categoryLabel}</span>
             </div>

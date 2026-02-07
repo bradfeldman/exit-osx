@@ -52,7 +52,7 @@ interface TopMissing {
   category: string
   categoryLabel: string
   buyerExplanation: string
-  importance: 'required' | 'expected'
+  importance: 'required' | 'expected' | 'helpful'
 }
 
 interface RecentDoc {

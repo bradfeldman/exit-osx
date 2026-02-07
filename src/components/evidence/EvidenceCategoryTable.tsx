@@ -93,7 +93,7 @@ export function EvidenceCategoryTable({ categories }: EvidenceCategoryTableProps
                 {/* Status dots */}
                 <div className="flex items-center gap-1">
                   <span className="text-sm text-muted-foreground mr-1">{cat.percentage}%</span>
-                  {[0, 1, 2, 3].map(i => (
+                  {[0, 1, 2, 3, 4].map(i => (
                     <span
                       key={i}
                       className={cn(
@@ -156,6 +156,14 @@ export function EvidenceCategoryTable({ categories }: EvidenceCategoryTableProps
                             <div className="flex items-center gap-2">
                               <span className="text-amber-500">&#x26A0;</span>
                               <span className="text-sm font-medium text-foreground">{doc.name}</span>
+                              <span className={cn(
+                                'text-[10px] font-semibold px-1.5 py-0.5 rounded-full capitalize',
+                                doc.importance === 'required' && 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
+                                doc.importance === 'expected' && 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                                doc.importance === 'helpful' && 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
+                              )}>
+                                {doc.importance}
+                              </span>
                             </div>
                             <p className="text-sm text-muted-foreground italic mt-1.5 pl-6 leading-relaxed">
                               &ldquo;{doc.buyerExplanation}&rdquo;

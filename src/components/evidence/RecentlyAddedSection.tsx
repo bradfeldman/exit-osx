@@ -40,7 +40,9 @@ export function RecentlyAddedSection({ documents }: RecentlyAddedSectionProps) {
               <Check className="w-4 h-4 text-emerald-500 shrink-0" />
               <span className="text-sm text-muted-foreground">
                 {doc.name}
-                {doc.source === 'integration' && ' (auto-synced)'}
+              </span>
+              <span className="text-[10px] text-muted-foreground/70 bg-muted px-1.5 py-0.5 rounded">
+                {doc.source === 'direct' ? 'Direct upload' : doc.source === 'task' ? 'From task' : 'Auto-synced'}
               </span>
             </div>
             <div className="flex items-center gap-4 shrink-0 ml-4">
