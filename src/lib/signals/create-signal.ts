@@ -54,11 +54,11 @@ export async function createSignal(input: CreateSignalInput) {
     },
   })
 
-  // Fire email alert for CRITICAL signals (non-blocking)
+  // Fire email alert for HIGH and CRITICAL signals (non-blocking)
   const effectiveSeverity = input.severity ?? 'MEDIUM'
-  if (effectiveSeverity === 'CRITICAL') {
-    triggerCriticalSignalEmail(signal.id, input).catch((err) => {
-      console.error('[Signal] Failed to send critical signal alert email:', err)
+  if (effectiveSeverity === 'CRITICAL' || effectiveSeverity === 'HIGH') {
+    triggerSignalAlertEmail(signal.id, input).catch((err) => {
+      console.error('[Signal] Failed to send signal alert email:', err)
     })
   }
 
@@ -66,27 +66,29 @@ export async function createSignal(input: CreateSignalInput) {
 }
 
 /**
- * Sends an alert email for a CRITICAL signal.
- * De-duplicates: max 1 CRITICAL email per company per 24 hours.
+ * Sends an alert email for HIGH or CRITICAL signals.
+ * De-duplicates: max 1 alert email per severity per company per 24 hours.
  */
-async function triggerCriticalSignalEmail(
+async function triggerSignalAlertEmail(
   signalId: string,
   input: CreateSignalInput
 ) {
-  // Check for any CRITICAL signal created in the last 24 hours for this company
-  // (excluding the one we just created) to enforce 1/day limit
+  const effectiveSeverity = input.severity ?? 'MEDIUM'
+
+  // Check for any signal of the same severity created in the last 24 hours for
+  // this company (excluding the one we just created) to enforce 1/day limit
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
   const recentCritical = await prisma.signal.findFirst({
     where: {
       companyId: input.companyId,
-      severity: 'CRITICAL',
+      severity: effectiveSeverity,
       createdAt: { gte: twentyFourHoursAgo },
       id: { not: signalId },
     },
   })
 
   if (recentCritical) {
-    console.log(`[Signal] Skipping CRITICAL alert email — already sent one for company ${input.companyId} in last 24h`)
+    console.log(`[Signal] Skipping ${effectiveSeverity} alert email — already sent one for company ${input.companyId} in last 24h`)
     return
   }
 
@@ -120,8 +122,8 @@ async function triggerCriticalSignalEmail(
     name: owner.name || undefined,
     companyName: company.name,
     signalTitle: input.title,
-    signalDescription: input.description || 'A critical signal has been detected for your company.',
-    severity: 'CRITICAL',
+    signalDescription: input.description || `A ${effectiveSeverity.toLowerCase()} severity signal has been detected for your company.`,
+    severity: effectiveSeverity,
     estimatedValueImpact: input.estimatedValueImpact ?? null,
     category: input.category ?? null,
   })

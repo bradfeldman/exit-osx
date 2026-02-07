@@ -1,15 +1,5 @@
-import { DealDetailView } from '@/components/deals'
+import { redirect } from 'next/navigation'
 
-export const metadata = {
-  title: 'Deal | ExitOSx',
-  description: 'View and manage deal details',
-}
-
-interface PageProps {
-  params: Promise<{ dealId: string }>
-}
-
-export default async function DealDetailPage({ params }: PageProps) {
-  const { dealId } = await params
-  return <DealDetailView dealId={dealId} />
+export default function DealDetailPage() {
+  redirect('/dashboard/deal-room')
 }

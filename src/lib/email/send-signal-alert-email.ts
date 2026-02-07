@@ -59,7 +59,7 @@ export async function sendSignalAlertEmail(params: SignalAlertEmailParams): Prom
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Critical Signal Alert - Exit OSx</title>
+  <title>Signal Alert - Exit OSx</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
@@ -80,7 +80,7 @@ export async function sendSignalAlertEmail(params: SignalAlertEmailParams): Prom
           <!-- Alert Banner -->
           <tr>
             <td style="padding: 24px 40px 0 40px;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #FEF2F2; border: 1px solid #FECACA; border-radius: 12px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: ${severity === 'CRITICAL' ? '#FEF2F2' : '#FFF7ED'}; border: 1px solid ${severity === 'CRITICAL' ? '#FECACA' : '#FED7AA'}; border-radius: 12px;">
                 <tr>
                   <td style="padding: 20px; text-align: center;">
                     <span style="display: inline-block; padding: 4px 12px; background-color: ${severityColor}; color: #ffffff; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 4px;">
@@ -101,7 +101,7 @@ export async function sendSignalAlertEmail(params: SignalAlertEmailParams): Prom
           <tr>
             <td style="padding: 32px 40px 16px 40px;">
               <h1 style="margin: 0 0 16px 0; font-size: 22px; font-weight: 700; color: #3D3D3D;">
-                ${firstName}, a critical signal was detected
+                ${firstName}, ${severity === 'CRITICAL' ? 'a critical signal was detected' : 'an important signal was detected'}
               </h1>
               <h2 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 600; color: #3D3D3D;">
                 ${signalTitle}
