@@ -14,6 +14,61 @@ import { getRedirectUrl, buildUrlWithRedirect, isInviteRedirect } from '@/lib/ut
 import { analytics } from '@/lib/analytics'
 import { useFormTracking } from '@/lib/analytics/hooks'
 
+// TEMPORARY: Reload loop diagnostic — remove after debugging
+function ReloadDiagnostic() {
+  const [info, setInfo] = useState<string | null>(null)
+
+  useEffect(() => {
+    try {
+      const key = 'diag-reload'
+      const now = Date.now()
+      const stored = localStorage.getItem(key)
+      let count = 1
+      let firstLoad = now
+
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        // Reset counter if more than 30 seconds since first load in this burst
+        if (now - parsed.first < 30000) {
+          count = parsed.count + 1
+          firstLoad = parsed.first
+        }
+      }
+
+      localStorage.setItem(key, JSON.stringify({ count, first: firstLoad, last: now }))
+
+      const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
+      const navType = navEntry?.type || 'unknown'
+      const errorsLogged: string[] = []
+
+      // Capture JS errors
+      const origOnError = window.onerror
+      window.onerror = (msg) => {
+        errorsLogged.push(String(msg))
+        setInfo(prev => prev + '\nERR: ' + String(msg).substring(0, 120))
+        if (origOnError) return (origOnError as Function)(msg)
+        return false
+      }
+
+      setInfo(`Load #${count} in ${Math.round((now - firstLoad) / 1000)}s | nav=${navType} | ua=${navigator.userAgent.substring(0, 60)}`)
+    } catch (e) {
+      setInfo('Diag error: ' + String(e))
+    }
+  }, [])
+
+  if (!info) return null
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
+      background: '#ffe0e0', color: '#900', fontSize: '11px',
+      padding: '6px 10px', fontFamily: 'monospace', whiteSpace: 'pre-wrap',
+    }}>
+      {info}
+    </div>
+  )
+}
+
 // Tiny component that reads search params inside its own Suspense boundary.
 // This isolates the BAILOUT_TO_CLIENT_SIDE_RENDERING so the rest of the
 // login form can be server-rendered as real HTML.
@@ -48,6 +103,7 @@ export default function LoginPage() {
 
   return (
     <>
+      <ReloadDiagnostic />
       {/* Search params reader in its own Suspense — bails out alone */}
       <Suspense fallback={null}>
         <SearchParamsReader onChange={handleSearchParams} />
