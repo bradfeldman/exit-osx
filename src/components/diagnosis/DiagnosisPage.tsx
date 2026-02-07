@@ -77,6 +77,21 @@ export function DiagnosisPage() {
       const response = await fetch(`/api/companies/${selectedCompanyId}/diagnosis`)
       if (!response.ok) throw new Error('Failed to fetch diagnosis data')
       const json = await response.json()
+
+      // If no assessment exists yet (e.g., user only did quick-scan onboarding),
+      // create one so the inline assessment buttons are enabled
+      if (!json.assessmentId) {
+        const createRes = await fetch('/api/assessments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ companyId: selectedCompanyId, assessmentType: 'INITIAL' }),
+        })
+        if (createRes.ok) {
+          const { assessment } = await createRes.json()
+          json.assessmentId = assessment.id
+        }
+      }
+
       setData(json)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
