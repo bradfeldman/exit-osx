@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -18,6 +19,7 @@ export function UserSettings() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
+  const router = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
@@ -69,6 +71,8 @@ export function UserSettings() {
 
       setUser(prev => prev ? { ...prev, name } : null)
       setMessage({ type: 'success', text: 'Profile updated successfully' })
+      // Re-run the server layout so the header picks up the new name
+      router.refresh()
     } catch (error) {
       setMessage({
         type: 'error',

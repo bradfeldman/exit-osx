@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Captcha, resetCaptcha } from '@/components/ui/captcha'
-import { Eye, EyeOff, Shield as ShieldIcon, Loader2, Clock } from 'lucide-react'
+import { Eye, EyeOff, Shield as ShieldIcon, Clock } from 'lucide-react'
 import { secureLogin } from '@/app/actions/auth'
 import { getRedirectUrl, buildUrlWithRedirect, isInviteRedirect } from '@/lib/utils/redirect'
 import { analytics } from '@/lib/analytics'
@@ -36,17 +36,15 @@ function SearchParamsReader({ onChange }: {
   onChange: (data: { redirectUrl: string; isFromInvite: boolean; isTimeout: boolean }) => void
 }) {
   const searchParams = useSearchParams()
-  const onChangeRef = useRef(onChange)
-  onChangeRef.current = onChange
 
   useEffect(() => {
     const redirectUrl = getRedirectUrl(searchParams)
-    onChangeRef.current({
+    onChange({
       redirectUrl,
       isFromInvite: isInviteRedirect(redirectUrl),
       isTimeout: searchParams.get('reason') === 'timeout',
     })
-  }, [searchParams])
+  }, [searchParams, onChange])
 
   return null
 }
