@@ -90,6 +90,10 @@ function isAppDomain(hostname: string): boolean {
   return hostname === 'app.exitosx.com' || hostname.includes('localhost')
 }
 
+// Session-scoped cookie options: no maxAge/expires means cookies are deleted
+// when the browser is fully closed, preventing persistent sessions.
+const sessionCookieOptions = { path: '/', sameSite: 'lax' as const }
+
 export async function middleware(request: NextRequest) {
   // SECURITY: Check staging authentication first
   const stagingAuthResponse = checkStagingAuth(request)
@@ -166,6 +170,7 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      cookieOptions: sessionCookieOptions,
       cookies: {
         getAll() {
           return request.cookies.getAll()
@@ -178,7 +183,7 @@ export async function middleware(request: NextRequest) {
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, { ...options, ...sessionCookieOptions })
           )
         },
       },

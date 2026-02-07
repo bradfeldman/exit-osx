@@ -5,6 +5,7 @@ import { useProgression } from '@/contexts/ProgressionContext'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 import { TrialBanner } from '@/components/subscription/TrialBanner'
+import { SessionTimeoutWarning } from '@/components/session/SessionTimeoutWarning'
 import { EntryScreen } from './EntryScreen'
 import type { User } from '@supabase/supabase-js'
 
@@ -44,6 +45,7 @@ export function DashboardContent({ children, user }: DashboardContentProps) {
           {children}
         </main>
       </div>
+      <SessionTimeoutWarning />
     </div>
   )
 }

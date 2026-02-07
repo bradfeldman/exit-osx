@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Captcha, resetCaptcha } from '@/components/ui/captcha'
-import { Eye, EyeOff, Shield as ShieldIcon, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Shield as ShieldIcon, Loader2, Clock } from 'lucide-react'
 import { secureLogin } from '@/app/actions/auth'
 import { getRedirectUrl, buildUrlWithRedirect, isInviteRedirect } from '@/lib/utils/redirect'
 import { analytics } from '@/lib/analytics'
@@ -49,6 +49,7 @@ function LoginPageContent() {
   const searchParams = useSearchParams()
   const redirectUrl = getRedirectUrl(searchParams)
   const isFromInvite = isInviteRedirect(redirectUrl)
+  const isTimeout = searchParams.get('reason') === 'timeout'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -280,6 +281,16 @@ function LoginPageContent() {
                 : 'Sign in to continue to your dashboard'}
             </p>
           </motion.div>
+
+          {isTimeout && (
+            <motion.div
+              variants={fadeInUp}
+              className="flex items-center gap-3 p-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg"
+            >
+              <Clock className="h-5 w-5 text-amber-600 shrink-0" />
+              <p>You were signed out due to inactivity. Please sign in again.</p>
+            </motion.div>
+          )}
 
           <motion.form variants={fadeInUp} onSubmit={handleLogin} className="space-y-6">
             {(error || getLockoutMessage()) && (

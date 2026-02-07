@@ -76,3 +76,24 @@ export const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024
  * Maximum request body size (1MB)
  */
 export const MAX_BODY_SIZE_BYTES = 1 * 1024 * 1024
+
+// =============================================================================
+// Session Timeout
+// =============================================================================
+
+/**
+ * Total inactivity timeout before auto-logout (30 minutes)
+ */
+export const SESSION_TIMEOUT_MS = 30 * 60 * 1000
+
+/**
+ * Time before timeout when warning dialog appears (25 minutes)
+ * Gives user a 5-minute window to stay signed in
+ */
+export const SESSION_WARNING_MS = 25 * 60 * 1000
+
+/**
+ * Throttle interval for user activity events (30 seconds)
+ * Prevents excessive timer resets from rapid mouse/key events
+ */
+export const ACTIVITY_THROTTLE_MS = 30 * 1000

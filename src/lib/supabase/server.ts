@@ -2,6 +2,10 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 
+// Session-scoped cookie options: no maxAge/expires means cookies are deleted
+// when the browser is fully closed, preventing persistent sessions.
+const sessionCookieOptions = { path: '/', sameSite: 'lax' as const }
+
 export async function createClient() {
   const cookieStore = await cookies()
 
@@ -9,6 +13,7 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      cookieOptions: sessionCookieOptions,
       cookies: {
         getAll() {
           return cookieStore.getAll()
@@ -16,7 +21,7 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, { ...options, ...sessionCookieOptions })
             )
           } catch {
             // The `setAll` method was called from a Server Component.
