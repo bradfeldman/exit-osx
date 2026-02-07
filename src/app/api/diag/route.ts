@@ -136,7 +136,11 @@ export async function GET(request: NextRequest) {
 </html>`
 
   return new NextResponse(html, {
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      // Override the restrictive API CSP so inline scripts work in this diagnostic page
+      'Content-Security-Policy': "default-src 'self' 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self';",
+    },
   })
 }
 
