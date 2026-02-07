@@ -29,27 +29,62 @@ const staggerContainer = {
   }
 }
 
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<LoginPageLoading />}>
-      <LoginPageContent />
-    </Suspense>
-  )
-}
-
-function LoginPageLoading() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-    </div>
-  )
-}
-
-function LoginPageContent() {
+// Tiny component that reads search params inside its own Suspense boundary.
+// This isolates the BAILOUT_TO_CLIENT_SIDE_RENDERING so the rest of the
+// login form can be server-rendered as real HTML.
+function SearchParamsReader({ onChange }: {
+  onChange: (data: { redirectUrl: string; isFromInvite: boolean; isTimeout: boolean }) => void
+}) {
   const searchParams = useSearchParams()
-  const redirectUrl = getRedirectUrl(searchParams)
-  const isFromInvite = isInviteRedirect(redirectUrl)
-  const isTimeout = searchParams.get('reason') === 'timeout'
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
+
+  useEffect(() => {
+    const redirectUrl = getRedirectUrl(searchParams)
+    onChangeRef.current({
+      redirectUrl,
+      isFromInvite: isInviteRedirect(redirectUrl),
+      isTimeout: searchParams.get('reason') === 'timeout',
+    })
+  }, [searchParams])
+
+  return null
+}
+
+export default function LoginPage() {
+  // Search params data — starts with defaults, updated once JS hydrates
+  const [redirectUrl, setRedirectUrl] = useState('/dashboard')
+  const [isFromInvite, setIsFromInvite] = useState(false)
+  const [isTimeout, setIsTimeout] = useState(false)
+
+  const handleSearchParams = useCallback((data: { redirectUrl: string; isFromInvite: boolean; isTimeout: boolean }) => {
+    setRedirectUrl(data.redirectUrl)
+    setIsFromInvite(data.isFromInvite)
+    setIsTimeout(data.isTimeout)
+  }, [])
+
+  return (
+    <>
+      {/* Search params reader in its own Suspense — bails out alone */}
+      <Suspense fallback={null}>
+        <SearchParamsReader onChange={handleSearchParams} />
+      </Suspense>
+      <LoginPageContent
+        redirectUrl={redirectUrl}
+        isFromInvite={isFromInvite}
+        isTimeout={isTimeout}
+      />
+    </>
+  )
+}
+
+interface LoginPageContentProps {
+  redirectUrl: string
+  isFromInvite: boolean
+  isTimeout: boolean
+}
+
+function LoginPageContent({ redirectUrl, isFromInvite, isTimeout }: LoginPageContentProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
