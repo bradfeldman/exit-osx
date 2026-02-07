@@ -96,8 +96,8 @@ function isAppDomain(hostname: string): boolean {
 // This helper copies all cookies from the Supabase response to the redirect.
 function createRedirect(url: string | URL, supabaseRes: NextResponse): NextResponse {
   const redirect = NextResponse.redirect(url)
-  supabaseRes.cookies.getAll().forEach(cookie => {
-    redirect.cookies.set(cookie.name, cookie.value)
+  supabaseRes.cookies.getAll().forEach(({ name, value, ...options }) => {
+    redirect.cookies.set(name, value, options)
   })
   return redirect
 }
