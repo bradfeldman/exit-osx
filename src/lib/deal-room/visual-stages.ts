@@ -12,37 +12,37 @@ export interface VisualStageConfig {
 export const VISUAL_STAGES: VisualStageConfig[] = [
   {
     id: 'identified',
-    label: 'Identified',
+    label: 'Target Identified',
     color: 'slate',
     backendStages: [DealStage.IDENTIFIED, DealStage.SELLER_REVIEWING, DealStage.APPROVED],
   },
   {
     id: 'engaged',
-    label: 'Engaged',
+    label: 'Initial Contact',
     color: 'blue',
     backendStages: [DealStage.TEASER_SENT, DealStage.INTERESTED, DealStage.NDA_SENT, DealStage.NDA_NEGOTIATING],
   },
   {
     id: 'under_nda',
-    label: 'Under NDA',
+    label: 'NDA / Confidentiality',
     color: 'indigo',
     backendStages: [DealStage.NDA_EXECUTED, DealStage.CIM_ACCESS, DealStage.LEVEL_2_ACCESS, DealStage.LEVEL_3_ACCESS, DealStage.MANAGEMENT_MEETING_SCHEDULED, DealStage.MANAGEMENT_MEETING_COMPLETED],
   },
   {
     id: 'offer_received',
-    label: 'Offer Received',
+    label: 'LOI / Offer',
     color: 'amber',
     backendStages: [DealStage.IOI_REQUESTED, DealStage.IOI_RECEIVED, DealStage.IOI_ACCEPTED, DealStage.LOI_REQUESTED, DealStage.LOI_RECEIVED, DealStage.LOI_SELECTED, DealStage.LOI_BACKUP],
   },
   {
     id: 'diligence',
-    label: 'Diligence',
+    label: 'Due Diligence',
     color: 'purple',
     backendStages: [DealStage.DUE_DILIGENCE, DealStage.PA_DRAFTING, DealStage.PA_NEGOTIATING, DealStage.CLOSING],
   },
   {
     id: 'closed',
-    label: 'Closed',
+    label: 'Closing',
     color: 'emerald',
     backendStages: [DealStage.CLOSED],
   },

@@ -22,10 +22,21 @@ export function AddBuyerForm({ onAdd, isAdding }: AddBuyerFormProps) {
   const [contactName, setContactName] = useState('')
   const [contactEmail, setContactEmail] = useState('')
   const [notes, setNotes] = useState('')
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {}
+    if (!companyName.trim()) newErrors.companyName = 'Company name is required'
+    if (!contactName.trim()) newErrors.contactName = 'Contact name is required'
+    if (!contactEmail.trim()) newErrors.contactEmail = 'Email is required'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail.trim())) newErrors.contactEmail = 'Invalid email format'
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!companyName.trim() || !contactName.trim() || !contactEmail.trim()) return
+    if (!validate()) return
 
     onAdd({
       companyName: companyName.trim(),
@@ -66,10 +77,12 @@ export function AddBuyerForm({ onAdd, isAdding }: AddBuyerFormProps) {
           type="text"
           placeholder="Company name..."
           value={companyName}
-          onChange={e => setCompanyName(e.target.value)}
-          className="w-full text-sm bg-transparent border-b border-border/50 pb-1 focus:outline-none focus:border-[var(--burnt-orange)] text-foreground placeholder:text-muted-foreground"
+          onChange={e => { setCompanyName(e.target.value); setErrors(prev => ({ ...prev, companyName: '' })) }}
+          className={`w-full text-sm bg-transparent border-b pb-1 focus:outline-none text-foreground placeholder:text-muted-foreground ${errors.companyName ? 'border-rose-500' : 'border-border/50 focus:border-[var(--burnt-orange)]'}`}
           autoFocus
+          required
         />
+        {errors.companyName && <p className="text-xs text-rose-500 mt-0.5">{errors.companyName}</p>}
       </div>
 
       <div>
@@ -87,20 +100,28 @@ export function AddBuyerForm({ onAdd, isAdding }: AddBuyerFormProps) {
       </div>
 
       <div className="flex gap-2">
-        <input
-          type="text"
-          placeholder="Contact name"
-          value={contactName}
-          onChange={e => setContactName(e.target.value)}
-          className="flex-1 text-sm bg-transparent border-b border-border/50 pb-1 focus:outline-none focus:border-[var(--burnt-orange)] text-foreground placeholder:text-muted-foreground"
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={contactEmail}
-          onChange={e => setContactEmail(e.target.value)}
-          className="flex-1 text-sm bg-transparent border-b border-border/50 pb-1 focus:outline-none focus:border-[var(--burnt-orange)] text-foreground placeholder:text-muted-foreground"
-        />
+        <div className="flex-1">
+          <input
+            type="text"
+            placeholder="Contact name"
+            value={contactName}
+            onChange={e => { setContactName(e.target.value); setErrors(prev => ({ ...prev, contactName: '' })) }}
+            className={`w-full text-sm bg-transparent border-b pb-1 focus:outline-none text-foreground placeholder:text-muted-foreground ${errors.contactName ? 'border-rose-500' : 'border-border/50 focus:border-[var(--burnt-orange)]'}`}
+            required
+          />
+          {errors.contactName && <p className="text-xs text-rose-500 mt-0.5">{errors.contactName}</p>}
+        </div>
+        <div className="flex-1">
+          <input
+            type="email"
+            placeholder="Email"
+            value={contactEmail}
+            onChange={e => { setContactEmail(e.target.value); setErrors(prev => ({ ...prev, contactEmail: '' })) }}
+            className={`w-full text-sm bg-transparent border-b pb-1 focus:outline-none text-foreground placeholder:text-muted-foreground ${errors.contactEmail ? 'border-rose-500' : 'border-border/50 focus:border-[var(--burnt-orange)]'}`}
+            required
+          />
+          {errors.contactEmail && <p className="text-xs text-rose-500 mt-0.5">{errors.contactEmail}</p>}
+        </div>
       </div>
 
       <div>

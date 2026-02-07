@@ -1,18 +1,32 @@
 'use client'
 
-import { X } from 'lucide-react'
+import { useState } from 'react'
+import { X, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BuyerTypeBadge } from '../shared/BuyerTypeBadge'
 import { TierBadge } from '../shared/TierBadge'
 import { EngagementDot } from '../shared/EngagementDot'
 import type { PipelineBuyer } from './BuyerCard'
 
+const STAGE_OPTIONS = [
+  { value: 'identified', label: 'Target Identified' },
+  { value: 'engaged', label: 'Initial Contact' },
+  { value: 'under_nda', label: 'NDA / Confidentiality' },
+  { value: 'offer_received', label: 'LOI / Offer' },
+  { value: 'diligence', label: 'Due Diligence' },
+  { value: 'closed', label: 'Closing' },
+]
+
 interface BuyerDetailPanelProps {
   buyer: PipelineBuyer
+  companyId: string | null
   onClose: () => void
+  onStageChange: () => void
 }
 
-export function BuyerDetailPanel({ buyer, onClose }: BuyerDetailPanelProps) {
+export function BuyerDetailPanel({ buyer, companyId, onClose, onStageChange }: BuyerDetailPanelProps) {
+  const [showStageSelect, setShowStageSelect] = useState(false)
+  const [isChangingStage, setIsChangingStage] = useState(false)
   const offerAmount = buyer.loiAmount ?? buyer.ioiAmount
 
   const formatAmount = (amount: number) =>
@@ -192,16 +206,51 @@ export function BuyerDetailPanel({ buyer, onClose }: BuyerDetailPanelProps) {
         </div>
 
         {/* Actions */}
-        <div className="p-4 border-t border-border/50 bg-card flex items-center gap-2">
-          <Button size="sm" variant="outline">
-            Change Stage
-          </Button>
-          <Button size="sm" variant="ghost">
-            Add Contact
-          </Button>
-          <Button size="sm" variant="ghost">
-            Log Meeting
-          </Button>
+        <div className="p-4 border-t border-border/50 bg-card space-y-2">
+          {showStageSelect && (
+            <div className="flex flex-wrap gap-1.5 pb-2">
+              {STAGE_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  disabled={isChangingStage}
+                  onClick={async () => {
+                    if (!companyId) return
+                    setIsChangingStage(true)
+                    try {
+                      const res = await fetch(
+                        `/api/companies/${companyId}/deal-room/buyers/${buyer.id}`,
+                        {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ stage: opt.value }),
+                        }
+                      )
+                      if (res.ok) {
+                        onStageChange()
+                        onClose()
+                      }
+                    } finally {
+                      setIsChangingStage(false)
+                    }
+                  }}
+                  className="text-xs px-2.5 py-1.5 rounded-md border border-border/50 hover:border-[var(--burnt-orange)] hover:text-[var(--burnt-orange)] transition-colors disabled:opacity-50"
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowStageSelect(!showStageSelect)}
+              disabled={isChangingStage}
+            >
+              {isChangingStage ? 'Updating...' : 'Change Stage'}
+              <ChevronDown className="ml-1 h-3 w-3" />
+            </Button>
+          </div>
         </div>
       </div>
     </>

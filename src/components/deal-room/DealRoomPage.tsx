@@ -208,7 +208,9 @@ export function DealRoomPage() {
       {selectedBuyer && (
         <BuyerDetailPanel
           buyer={selectedBuyer}
+          companyId={selectedCompanyId}
           onClose={() => setSelectedBuyerId(null)}
+          onStageChange={fetchData}
         />
       )}
     </div>

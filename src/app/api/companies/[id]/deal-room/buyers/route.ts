@@ -102,7 +102,7 @@ export async function POST(
         dealId: deal.id,
         canonicalCompanyId: canonicalCompany.id,
         currentStage: 'IDENTIFIED',
-        buyerRationale: notes ?? null,
+        internalNotes: notes ?? null,
         createdByUserId: auth.user.id,
       },
     })

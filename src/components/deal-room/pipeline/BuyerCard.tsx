@@ -50,7 +50,7 @@ export function BuyerCard({ buyer, onClick }: BuyerCardProps) {
         className="absolute top-2 right-2"
       />
 
-      <p className="text-sm font-medium text-foreground truncate pr-4">
+      <p className="text-sm font-medium text-foreground line-clamp-2 pr-4">
         {buyer.companyName}
       </p>
 
