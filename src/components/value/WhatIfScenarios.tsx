@@ -258,7 +258,7 @@ export function WhatIfScenarios({
                     }`}
                   >
                     {result.valueDelta > 0 ? '+' : result.valueDelta < 0 ? '-' : ''}
-                    ${animatedDelta}
+                    {animatedDelta}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">

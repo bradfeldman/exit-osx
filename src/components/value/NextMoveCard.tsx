@@ -117,7 +117,7 @@ export function NextMoveCard({ task, comingUp, isFreeUser = false, onUpgrade }: 
 
       {/* Buyer Consequence */}
       {task.buyerConsequence && (
-        <p className="mt-4 text-sm text-muted-foreground italic leading-relaxed before:content-['\u201C'] after:content-['\u201D'] line-clamp-2">
+        <p className="mt-4 text-sm text-muted-foreground italic leading-relaxed before:content-['\201C'] after:content-['\201D'] line-clamp-2">
           {task.buyerConsequence}
         </p>
       )}
