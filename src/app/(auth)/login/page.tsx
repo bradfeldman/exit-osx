@@ -4,7 +4,6 @@ import { useState, useCallback, Suspense, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,20 +13,6 @@ import { secureLogin } from '@/app/actions/auth'
 import { getRedirectUrl, buildUrlWithRedirect, isInviteRedirect } from '@/lib/utils/redirect'
 import { analytics } from '@/lib/analytics'
 import { useFormTracking } from '@/lib/analytics/hooks'
-
-// Animation variants
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
-}
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.2 }
-  }
-}
 
 // Tiny component that reads search params inside its own Suspense boundary.
 // This isolates the BAILOUT_TO_CLIENT_SIDE_RENDERING so the rest of the
@@ -213,12 +198,7 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout }: LoginPageCon
         {/* Decorative elements */}
         <div className="absolute top-20 right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
         <div className="absolute bottom-20 left-10 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
-        <motion.div
-          className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-        >
+        <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground">
           <Link href="/" className="flex items-center gap-3">
             <Image
               src="/logo-icon.png"
@@ -243,49 +223,36 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout }: LoginPageCon
             <p className="text-lg opacity-90 max-w-md">
               Get your valuation estimate, Buyer Readiness Score, and a personalized roadmap to maximize your exit outcome.
             </p>
-            <motion.div
-              className="space-y-4 pt-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-            >
+            <div className="space-y-4 pt-4">
               {[
                 'Real-time business valuation',
                 'Buyer Readiness Score across 6 dimensions',
                 'Prioritized value-building playbook'
-              ].map((text, i) => (
-                <motion.div
+              ].map((text) => (
+                <div
                   key={text}
                   className="flex items-center gap-3"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 + i * 0.1 }}
                 >
                   <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                     <CheckIcon className="w-4 h-4" />
                   </div>
                   <span>{text}</span>
-                </motion.div>
+                </div>
               ))}
-            </motion.div>
+            </div>
           </div>
 
           <p className="text-sm opacity-70">
             A Pasadena Private Financial Group Company
           </p>
-        </motion.div>
+        </div>
       </div>
 
       {/* Right side - Login Form */}
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-background">
-        <motion.div
-          className="w-full max-w-md space-y-8"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
-        >
+        <div className="w-full max-w-md space-y-8">
           {/* Mobile logo */}
-          <motion.div variants={fadeInUp} className="lg:hidden text-center">
+          <div className="lg:hidden text-center">
             <Link href="/" className="inline-flex items-center gap-2">
               <Image
                 src="/logo-icon.png"
@@ -302,9 +269,9 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout }: LoginPageCon
                 className="h-6 w-auto"
               />
             </Link>
-          </motion.div>
+          </div>
 
-          <motion.div variants={fadeInUp} className="text-center">
+          <div className="text-center">
             <h2 className="text-3xl font-bold font-display text-foreground tracking-tight">
               {isFromInvite ? 'Sign in to accept your invite' : 'Welcome back'}
             </h2>
@@ -313,32 +280,25 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout }: LoginPageCon
                 ? 'Log in to your account to join the team'
                 : 'Sign in to continue to your dashboard'}
             </p>
-          </motion.div>
+          </div>
 
           {isTimeout && (
-            <motion.div
-              variants={fadeInUp}
-              className="flex items-center gap-3 p-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg"
-            >
+            <div className="flex items-center gap-3 p-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg">
               <Clock className="h-5 w-5 text-amber-600 shrink-0" />
               <p>You were signed out due to inactivity. Please sign in again.</p>
-            </motion.div>
+            </div>
           )}
 
-          <motion.form variants={fadeInUp} onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-6">
             {(error || getLockoutMessage()) && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg space-y-1"
-              >
+              <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg space-y-1">
                 <p>{getLockoutMessage() || error}</p>
                 {attemptsRemaining !== null && attemptsRemaining > 0 && (
                   <p className="text-xs text-red-500">
                     {attemptsRemaining} attempt{attemptsRemaining > 1 ? 's' : ''} remaining before account lockout
                   </p>
                 )}
-              </motion.div>
+              </div>
             )}
 
             {!requiresTwoFactor ? (
@@ -457,9 +417,9 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout }: LoginPageCon
             >
               {loading ? 'Signing in...' : requiresTwoFactor ? 'Verify' : 'Sign In'}
             </Button>
-          </motion.form>
+          </form>
 
-          <motion.div variants={fadeInUp} className="text-center space-y-4">
+          <div className="text-center space-y-4">
             <p className="text-sm text-muted-foreground">
               Don&apos;t have an account?{' '}
               <Link href={buildUrlWithRedirect('/signup', redirectUrl)} className="font-medium text-primary hover:underline">
@@ -469,8 +429,8 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout }: LoginPageCon
             <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-block">
               &larr; Back to home
             </Link>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -4,7 +4,6 @@ import { useState, Suspense, useEffect, useRef, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,20 +13,6 @@ import { getRedirectUrl, buildUrlWithRedirect, isInviteRedirect } from '@/lib/ut
 import { type PlanTier } from '@/lib/pricing'
 import { analytics } from '@/lib/analytics'
 import { useFormTracking, useScrollDepthTracking, useExitIntent } from '@/lib/analytics/hooks'
-
-// Animation variants
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
-}
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.2 }
-  }
-}
 
 export default function SignupPage() {
   return (
@@ -189,14 +174,9 @@ function SignupPageContent() {
         </header>
 
         <main className="flex items-center justify-center px-4 py-12 md:py-20">
-          <motion.div
-            className="w-full max-w-lg space-y-8"
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-          >
+          <div className="w-full max-w-lg space-y-8">
             {/* Progress Indicator - Humans finish what they start */}
-            <motion.div variants={fadeInUp} className="flex items-center justify-center gap-2">
+            <div className="flex items-center justify-center gap-2">
               <div className="flex items-center gap-1">
                 <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-sm font-medium">
                   <CheckIcon className="w-4 h-4" />
@@ -217,10 +197,10 @@ function SignupPageContent() {
                 </div>
                 <span className="text-xs text-muted-foreground ml-1">See Score</span>
               </div>
-            </motion.div>
+            </div>
 
             {/* Main Message */}
-            <motion.div variants={fadeInUp} className="text-center space-y-4">
+            <div className="text-center space-y-4">
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
                 <MailIcon className="w-8 h-8 text-primary" />
               </div>
@@ -236,10 +216,10 @@ function SignupPageContent() {
               <p className="text-foreground">
                 Confirm your email to unlock your results.
               </p>
-            </motion.div>
+            </div>
 
             {/* Value Reinforcement - Short, strong */}
-            <motion.div variants={fadeInUp} className="bg-muted/50 rounded-xl p-6 space-y-3">
+            <div className="bg-muted/50 rounded-xl p-6 space-y-3">
               <p className="font-medium text-foreground text-sm">
                 Founders who complete this step typically uncover:
               </p>
@@ -257,10 +237,10 @@ function SignupPageContent() {
                   <span>Clear opportunities to increase exit leverage</span>
                 </li>
               </ul>
-            </motion.div>
+            </div>
 
             {/* Primary CTA - Do NOT send them away */}
-            <motion.div variants={fadeInUp} className="space-y-4">
+            <div className="space-y-4">
               <a
                 href={`https://mail.google.com/mail/u/0/#search/from%3Aexitosx+in%3Aanywhere`}
                 target="_blank"
@@ -288,30 +268,30 @@ function SignupPageContent() {
                 <span> · </span>
                 <span>Check spam</span>
               </div>
-            </motion.div>
+            </div>
 
             {isFromInvite && (
-              <motion.div variants={fadeInUp} className="p-4 text-sm text-primary bg-primary/5 border border-primary/20 rounded-lg text-center">
+              <div className="p-4 text-sm text-primary bg-primary/5 border border-primary/20 rounded-lg text-center">
                 <p className="font-medium">After verifying, you&apos;ll be redirected to accept your team invite.</p>
-              </motion.div>
+              </div>
             )}
 
             {warning && (
-              <motion.div variants={fadeInUp} className="p-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3 text-left">
+              <div className="p-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3 text-left">
                 <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-medium">Security Recommendation</p>
                   <p className="mt-1 text-amber-600">{warning}</p>
                 </div>
-              </motion.div>
+              </div>
             )}
 
             {/* Trust Footer - No "Back to Sign In" */}
-            <motion.div variants={fadeInUp} className="text-center space-y-1 pt-4 border-t border-border">
+            <div className="text-center space-y-1 pt-4 border-t border-border">
               <p className="text-sm text-muted-foreground">No sales calls. No obligation.</p>
               <p className="text-sm text-muted-foreground">Just clarity.</p>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </main>
       </div>
     )
@@ -351,12 +331,7 @@ function SignupPageContent() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           {/* Left Column - Value Proposition */}
-          <motion.div
-            className="space-y-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
+          <div className="space-y-8">
             {/* Headline */}
             <div className="space-y-4">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-display text-foreground tracking-tight leading-tight">
@@ -425,15 +400,10 @@ function SignupPageContent() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Right Column - Signup Form */}
-          <motion.div
-            className="lg:sticky lg:top-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
+          <div className="lg:sticky lg:top-8">
             <div className="bg-card border border-border rounded-2xl p-6 md:p-8 shadow-sm">
               <div className="text-center mb-6">
                 <h2 className="text-xl font-semibold text-foreground">
@@ -443,13 +413,9 @@ function SignupPageContent() {
 
               <form onSubmit={handleSignup} className="space-y-4">
                 {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg"
-                  >
+                  <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
                     {error}
-                  </motion.div>
+                  </div>
                 )}
 
                 <div className="space-y-1.5">
@@ -581,16 +547,11 @@ function SignupPageContent() {
                 Designed using real buyer diligence logic
               </p>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Mobile: What You'll See section */}
-        <motion.div
-          className="lg:hidden mt-12 space-y-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
+        <div className="lg:hidden mt-12 space-y-6">
           <h2 className="font-semibold text-foreground text-lg">What You&apos;ll See After Signup</h2>
           <p className="text-muted-foreground">Within minutes, you&apos;ll get:</p>
           <ul className="space-y-3 text-muted-foreground">
@@ -627,7 +588,7 @@ function SignupPageContent() {
               <p className="text-sm text-muted-foreground">Later is when buyers decide for you.</p>
             </div>
           </div>
-        </motion.div>
+        </div>
       </main>
 
       {/* Footer Microcopy */}
