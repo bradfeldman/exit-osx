@@ -5,6 +5,8 @@ import {
   SESSION_TIMEOUT_MS,
   SESSION_WARNING_MS,
   ACTIVITY_THROTTLE_MS,
+  SESSION_COOKIE_NAME,
+  SESSION_COOKIE_MAX_AGE,
 } from '@/lib/security/constants'
 
 const ACTIVITY_EVENTS = [
@@ -129,12 +131,19 @@ export function useIdleTimeout(): UseIdleTimeoutReturn {
     }, SESSION_WARNING_MS)
   }, [clearAllTimers, startCountdown])
 
+  const refreshActivityCookie = useCallback(() => {
+    document.cookie = `${SESSION_COOKIE_NAME}=${Date.now()}; path=/; max-age=${SESSION_COOKIE_MAX_AGE}; SameSite=Lax`
+  }, [])
+
   const recordActivity = useCallback(() => {
     const now = Date.now()
     if (now - throttleRef.current < ACTIVITY_THROTTLE_MS) return
     throttleRef.current = now
 
     resetTimers()
+
+    // Refresh server-side activity cookie
+    refreshActivityCookie()
 
     // Broadcast to other tabs
     try {
@@ -152,7 +161,7 @@ export function useIdleTimeout(): UseIdleTimeoutReturn {
     } catch {
       // localStorage may be unavailable
     }
-  }, [resetTimers])
+  }, [resetTimers, refreshActivityCookie])
 
   const dismissWarning = useCallback(() => {
     recordActivity()
@@ -240,6 +249,9 @@ export function useIdleTimeout(): UseIdleTimeoutReturn {
       // Otherwise, timers are already running correctly
     }
     document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    // Set activity cookie on mount so middleware knows session is active
+    document.cookie = `${SESSION_COOKIE_NAME}=${Date.now()}; path=/; max-age=${SESSION_COOKIE_MAX_AGE}; SameSite=Lax`
 
     // Start initial warning timer
     warningTimerRef.current = setTimeout(() => {

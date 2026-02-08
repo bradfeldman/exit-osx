@@ -97,3 +97,15 @@ export const SESSION_WARNING_MS = 25 * 60 * 1000
  * Prevents excessive timer resets from rapid mouse/key events
  */
 export const ACTIVITY_THROTTLE_MS = 30 * 1000
+
+/**
+ * Cookie name for server-side session activity tracking
+ * Browser auto-deletes this cookie after SESSION_COOKIE_MAX_AGE seconds of inactivity
+ */
+export const SESSION_COOKIE_NAME = 'last_activity'
+
+/**
+ * Max-age for the last_activity cookie (in seconds)
+ * Matches SESSION_TIMEOUT_MS (30 minutes) — when this expires, middleware treats the session as stale
+ */
+export const SESSION_COOKIE_MAX_AGE = 1800

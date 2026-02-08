@@ -5,6 +5,10 @@ import {
   RATE_LIMIT_CONFIGS,
   createRateLimitResponse,
 } from '@/lib/security/rate-limit'
+import {
+  SESSION_COOKIE_NAME,
+  SESSION_COOKIE_MAX_AGE,
+} from '@/lib/security/constants'
 
 // SECURITY: Basic auth protection for staging environment
 function checkStagingAuth(request: NextRequest): NextResponse | null {
@@ -211,6 +215,15 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Refresh the activity cookie on each authenticated navigation
+  if (user) {
+    supabaseResponse.cookies.set(SESSION_COOKIE_NAME, String(Date.now()), {
+      path: '/',
+      maxAge: SESSION_COOKIE_MAX_AGE,
+      sameSite: 'lax',
+    })
+  }
+
   // Check if accessing admin subdomain (admin.exitosx.com)
   const isAdminSubdomain = hostname.startsWith('admin.')
 
@@ -221,6 +234,23 @@ export async function middleware(request: NextRequest) {
   // Admin public routes (login/forgot-password on admin subdomain)
   const adminPublicRoutes = ['/admin/login', '/admin/forgot-password']
   const isAdminPublicRoute = adminPublicRoutes.some(route => pathname.startsWith(route))
+
+  // SECURITY: Check for stale sessions (user was inactive > 30 min or closed browser)
+  // The last_activity cookie has max-age=1800 — the browser auto-deletes it when it expires.
+  // If Supabase auth cookies exist but last_activity is gone, the session is stale.
+  const lastActivity = request.cookies.get(SESSION_COOKIE_NAME)
+  const hasAuthCookies = request.cookies.getAll().some(c => c.name.startsWith('sb-'))
+
+  if (!lastActivity && hasAuthCookies && !isPublicRoute && !isApiRoute && !isAdminPublicRoute) {
+    // Session is stale — clear Supabase cookies to force re-login
+    const redirectUrl = new URL('/login?reason=timeout', request.url)
+    const response = NextResponse.redirect(redirectUrl)
+    request.cookies.getAll()
+      .filter(c => c.name.startsWith('sb-'))
+      .forEach(c => response.cookies.delete(c.name))
+    response.cookies.delete(SESSION_COOKIE_NAME)
+    return response
+  }
 
   // SECURITY: Check if this is an admin route
   const isAdminRoute = ADMIN_ROUTE_PATTERNS.some(pattern => pathname.startsWith(pattern))

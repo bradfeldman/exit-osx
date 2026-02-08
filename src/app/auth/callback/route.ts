@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { serverAnalytics } from '@/lib/analytics/server'
+import { SESSION_COOKIE_NAME, SESSION_COOKIE_MAX_AGE } from '@/lib/security/constants'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -20,7 +21,13 @@ export async function GET(request: Request) {
 
       // Sync user to database (deferred to first dashboard load to avoid build issues)
       // The user sync will happen when they first access the dashboard
-      return NextResponse.redirect(`${origin}${next}`)
+      const response = NextResponse.redirect(`${origin}${next}`)
+      response.cookies.set(SESSION_COOKIE_NAME, String(Date.now()), {
+        path: '/',
+        maxAge: SESSION_COOKIE_MAX_AGE,
+        sameSite: 'lax',
+      })
+      return response
     }
   }
 
