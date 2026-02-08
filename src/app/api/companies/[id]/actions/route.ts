@@ -93,6 +93,34 @@ export async function GET(
       orderBy: [{ priorityRank: 'asc' }, { rawImpact: 'desc' }],
     })
 
+    // Fetch pending invites for all tasks
+    const taskIds = allTasks.map(t => t.id)
+    const pendingInvites = await prisma.taskInvite.findMany({
+      where: {
+        taskId: { in: taskIds },
+        acceptedAt: null,
+        declinedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      select: {
+        taskId: true,
+        email: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    // Build a map of taskId → most recent pending invite
+    const pendingInviteMap = new Map<string, { email: string; sentAt: string }>()
+    for (const inv of pendingInvites) {
+      if (!pendingInviteMap.has(inv.taskId)) {
+        pendingInviteMap.set(inv.taskId, {
+          email: inv.email,
+          sentAt: inv.createdAt.toISOString(),
+        })
+      }
+    }
+
     // Separate by status
     const activeTasks = allTasks.filter(t => t.status === 'IN_PROGRESS')
     const pendingTasks = allTasks.filter(t => t.status === 'PENDING' && t.inActionPlan)
@@ -174,6 +202,7 @@ export async function GET(
           : null,
         isAssignedToCurrentUser:
           !task.primaryAssigneeId || task.primaryAssigneeId === currentUserId,
+        pendingInvite: pendingInviteMap.get(task.id) ?? null,
         proofDocuments: task.proofDocuments.map(d => ({
           id: d.id,
           name: d.documentName,

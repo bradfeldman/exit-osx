@@ -111,11 +111,7 @@ export async function POST(
       },
     })
 
-    if (existingInvite && !existingInvite.acceptedAt && !existingInvite.declinedAt && existingInvite.expiresAt > new Date()) {
-      return NextResponse.json({
-        error: 'An invite has already been sent to this email',
-      }, { status: 400 })
-    }
+    // If there's an existing active invite, allow re-send (upsert below will update it)
 
     // Create the invite
     const expiresAt = new Date()
@@ -226,11 +222,20 @@ export async function DELETE(
   }
 
   try {
+    // Support both inviteId (query param) and email (body) for cancellation
     const { searchParams } = new URL(request.url)
     const inviteId = searchParams.get('inviteId')
+    let email: string | null = null
 
-    if (!inviteId) {
-      return NextResponse.json({ error: 'Invite ID is required' }, { status: 400 })
+    try {
+      const body = await request.json()
+      email = body.email?.toLowerCase() || null
+    } catch {
+      // No body, that's fine
+    }
+
+    if (!inviteId && !email) {
+      return NextResponse.json({ error: 'Invite ID or email is required' }, { status: 400 })
     }
 
     // Verify user has access to the task
@@ -255,9 +260,15 @@ export async function DELETE(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    await prisma.taskInvite.delete({
-      where: { id: inviteId, taskId },
-    })
+    if (inviteId) {
+      await prisma.taskInvite.delete({
+        where: { id: inviteId, taskId },
+      })
+    } else if (email) {
+      await prisma.taskInvite.delete({
+        where: { taskId_email: { taskId, email } },
+      })
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

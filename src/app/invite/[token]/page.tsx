@@ -356,12 +356,6 @@ export default function InviteAcceptPage() {
         </motion.div>
       </main>
 
-      {/* Footer */}
-      <footer className="p-6 text-center">
-        <p className="text-xs text-muted-foreground">
-          A Pasadena Private Financial Group Company
-        </p>
-      </footer>
     </div>
   )
 }

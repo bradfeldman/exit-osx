@@ -105,9 +105,6 @@ export async function sendAccountExistsEmail({ email, name }: SendAccountExistsE
               <p style="margin: 0 0 8px 0; font-size: 12px; color: #999999;">
                 &copy; ${new Date().getFullYear()} Exit OSx. All rights reserved.
               </p>
-              <p style="margin: 0; font-size: 12px; color: #999999;">
-                A Pasadena Private Financial Group Company
-              </p>
             </td>
           </tr>
 

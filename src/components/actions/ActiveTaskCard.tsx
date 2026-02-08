@@ -48,6 +48,7 @@ interface ActiveTask {
   outputFormat: { description: string; formats: string[]; guidance: string } | null
   assignee: { id: string; name: string; email: string; role: string | null } | null
   isAssignedToCurrentUser: boolean
+  pendingInvite: { email: string; sentAt: string } | null
   proofDocuments: { id: string; name: string; uploadedAt: string }[]
 }
 
@@ -56,9 +57,10 @@ interface ActiveTaskCardProps {
   onSubStepToggle: (taskId: string, stepId: string, completed: boolean) => void
   onComplete: () => void
   onBlock: (taskId: string, reason: string) => void
+  onRefresh?: () => void
 }
 
-export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onBlock }: ActiveTaskCardProps) {
+export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onBlock, onRefresh }: ActiveTaskCardProps) {
   const metaParts: string[] = []
   metaParts.push(`~${formatCurrency(task.normalizedValue)} impact`)
   if (task.estimatedMinutes) {
@@ -125,6 +127,8 @@ export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onBlock }: A
         onBlock={onBlock}
         assignee={task.assignee}
         isAssignedToCurrentUser={task.isAssignedToCurrentUser}
+        pendingInvite={task.pendingInvite}
+        onRefresh={onRefresh}
       />
 
       {/* Collapsible details */}

@@ -30,7 +30,7 @@ interface FirstMoveStepProps {
     potentialValue: number
     valueGap: number
   }
-  onComplete: () => void
+  onComplete: (taskId?: string) => void
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -131,7 +131,7 @@ export function FirstMoveStep({
           <p className="font-medium">Unable to generate action plan</p>
           <p className="text-sm mt-1">{error || 'No tasks available'}</p>
         </div>
-        <Button onClick={onComplete}>
+        <Button onClick={() => onComplete()}>
           Continue to Dashboard
         </Button>
       </div>
@@ -224,7 +224,7 @@ export function FirstMoveStep({
         <Button
           size="lg"
           className="w-full gap-2"
-          onClick={onComplete}
+          onClick={() => onComplete(firstTask.id)}
         >
           Start This Task
           <ArrowRight className="w-5 h-5" />

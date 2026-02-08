@@ -477,8 +477,8 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     goToStep(5) // Go to Risk Results step
   }
 
-  const handleComplete = async () => {
-    console.log('[ONBOARDING] handleComplete called, createdCompanyId:', createdCompanyId, 'riskResults:', riskResults)
+  const handleComplete = async (taskId?: string) => {
+    console.log('[ONBOARDING] handleComplete called, createdCompanyId:', createdCompanyId, 'riskResults:', riskResults, 'taskId:', taskId)
 
     // Note: Snapshot was already created in handleQuickScanComplete for task value calculation
     // We just need to send the completion email here
@@ -489,6 +489,25 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
         potentialValue: riskResults.potentialValue,
         valueGap: riskResults.valueGap,
       })
+      // Build topRisks from categoryScores (find lowest scoring categories)
+      const CATEGORY_LABELS: Record<string, string> = {
+        FINANCIAL: 'Financial Health',
+        TRANSFERABILITY: 'Transferability',
+        OPERATIONAL: 'Operations',
+        MARKET: 'Market Position',
+        LEGAL_TAX: 'Legal & Tax',
+        PERSONAL: 'Personal Readiness',
+      }
+
+      const topRisks = Object.entries(riskResults.categoryScores)
+        .filter(([cat]) => cat !== 'PERSONAL')
+        .map(([cat, score]) => ({
+          category: cat,
+          label: CATEGORY_LABELS[cat] || cat,
+          score: score as number,
+        }))
+        .sort((a, b) => a.score - b.score)
+
       // Send the onboarding complete email (non-blocking)
       fetch('/api/email/onboarding-complete', {
         method: 'POST',
@@ -500,10 +519,22 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
           valueGap: riskResults.valueGap,
           briScore: riskResults.briScore,
           categoryScores: riskResults.categoryScores,
+          topRisks,
         }),
       }).catch(err => {
         console.error('Failed to send onboarding email:', err)
       })
+
+      // Mark the task as IN_PROGRESS (non-blocking)
+      if (taskId) {
+        fetch(`/api/tasks/${taskId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'IN_PROGRESS' }),
+        }).catch(err => {
+          console.error('Failed to start task:', err)
+        })
+      }
     } else {
       console.warn('[ONBOARDING] Skipping snapshot creation - missing data:', {
         hasCompanyId: !!createdCompanyId,
@@ -518,8 +549,12 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     sessionStorage.removeItem('onboarding_formData')
     sessionStorage.removeItem('onboarding_businessDescription')
 
-    // Go to Value Builder to start the improvement journey
-    router.push('/dashboard/value-builder')
+    // Navigate to Actions page with the task if available, otherwise dashboard
+    if (taskId) {
+      router.push(`/dashboard/actions?taskId=${taskId}`)
+    } else {
+      router.push('/dashboard')
+    }
   }
 
   const canProceed = () => {

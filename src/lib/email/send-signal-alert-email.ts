@@ -153,9 +153,6 @@ export async function sendSignalAlertEmail(params: SignalAlertEmailParams): Prom
               <p style="margin: 0 0 8px 0; font-size: 12px; color: #999999;">
                 &copy; ${new Date().getFullYear()} Exit OSx. All rights reserved.
               </p>
-              <p style="margin: 0 0 12px 0; font-size: 12px; color: #999999;">
-                A Pasadena Private Financial Group Company
-              </p>
               <p style="margin: 0; font-size: 11px; color: #BBBBBB;">
                 <a href="${baseUrl}/unsubscribe" style="color: #BBBBBB; text-decoration: underline;">Unsubscribe</a> from alert emails
               </p>

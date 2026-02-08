@@ -587,9 +587,6 @@ export default function PricingPage() {
             <p className="text-sm text-muted-foreground">
               &copy; {new Date().getFullYear()} Exit OSx. All rights reserved.
             </p>
-            <p className="text-sm text-muted-foreground">
-              A Pasadena Private Financial Group Company
-            </p>
           </div>
         </div>
       </footer>

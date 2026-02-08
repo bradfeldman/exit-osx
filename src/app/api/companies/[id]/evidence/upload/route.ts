@@ -42,6 +42,11 @@ export async function POST(
       return NextResponse.json({ error: 'Document name and evidence category are required' }, { status: 400 })
     }
 
+    // Validate evidenceCategory is a known value before looking up the mapping
+    if (!(evidenceCategory in EVIDENCE_TO_DATAROOM_CATEGORY)) {
+      return NextResponse.json({ error: `Invalid evidence category: ${evidenceCategory}` }, { status: 400 })
+    }
+
     // Validate file (50MB limit)
     if (file.size > 50 * 1024 * 1024) {
       return NextResponse.json({ error: 'File too large. Maximum size is 50MB.' }, { status: 400 })

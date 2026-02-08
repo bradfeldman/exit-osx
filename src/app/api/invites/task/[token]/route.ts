@@ -43,12 +43,19 @@ export async function GET(
       return NextResponse.json({ error: 'Invite has expired' }, { status: 400 })
     }
 
+    // Check if the invited email has an existing account
+    const existingUser = await prisma.user.findUnique({
+      where: { email: invite.email.toLowerCase() },
+      select: { id: true },
+    })
+
     return NextResponse.json({
       invite: {
         id: invite.id,
         email: invite.email,
         isPrimary: invite.isPrimary,
         expiresAt: invite.expiresAt,
+        hasExistingAccount: !!existingUser,
         task: {
           id: invite.task.id,
           title: invite.task.title,

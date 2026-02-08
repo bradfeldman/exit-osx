@@ -325,9 +325,6 @@ export function Sidebar() {
           <p className="text-xs text-sidebar-foreground/40 text-center">
             Exit OSx v{packageJson.version}
           </p>
-          <p className="text-[10px] text-sidebar-foreground/30 text-center leading-tight">
-            Exit OSx is a Pasadena Private Financial Group Company
-          </p>
         </div>
       </div>
 

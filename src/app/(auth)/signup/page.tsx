@@ -34,9 +34,12 @@ function SignupPageContent() {
   const searchParams = useSearchParams()
   const redirectUrl = getRedirectUrl(searchParams)
   const isFromInvite = isInviteRedirect(redirectUrl)
+  const isFromTaskInvite = redirectUrl?.includes('/invite/task/') ?? false
+  const prefilledEmail = searchParams.get('email') || ''
+  const teamName = searchParams.get('team') || ''
   const selectedPlanId = searchParams.get('plan') as PlanTier | null
   const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(prefilledEmail)
   const [password, setPassword] = useState('')
   const [companyName, setCompanyName] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -206,7 +209,9 @@ function SignupPageContent() {
               </div>
 
               <h1 className="text-3xl md:text-4xl font-bold font-display text-foreground tracking-tight">
-                You&apos;re One Click Away From Your Exit Readiness Score
+                {isFromTaskInvite
+                  ? 'Almost There — Confirm Your Email'
+                  : "You're One Click Away From Your Exit Readiness Score"}
               </h1>
 
               <p className="text-muted-foreground">
@@ -219,25 +224,47 @@ function SignupPageContent() {
             </div>
 
             {/* Value Reinforcement - Short, strong */}
-            <div className="bg-muted/50 rounded-xl p-6 space-y-3">
-              <p className="font-medium text-foreground text-sm">
-                Founders who complete this step typically uncover:
-              </p>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                  <span>Hidden buyer risks</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                  <span>Valuation blind spots</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                  <span>Clear opportunities to increase exit leverage</span>
-                </li>
-              </ul>
-            </div>
+            {isFromTaskInvite ? (
+              <div className="bg-muted/50 rounded-xl p-6 space-y-3">
+                <p className="font-medium text-foreground text-sm">
+                  After confirming your email, you&apos;ll be able to:
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <span>View your assigned task and details</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <span>Track progress and upload evidence</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <span>Collaborate with your team</span>
+                  </li>
+                </ul>
+              </div>
+            ) : (
+              <div className="bg-muted/50 rounded-xl p-6 space-y-3">
+                <p className="font-medium text-foreground text-sm">
+                  Founders who complete this step typically uncover:
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <span>Hidden buyer risks</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <span>Valuation blind spots</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <span>Clear opportunities to increase exit leverage</span>
+                  </li>
+                </ul>
+              </div>
+            )}
 
             {/* Primary CTA - Open user's email provider */}
             <div className="space-y-4">
@@ -344,17 +371,33 @@ function SignupPageContent() {
           <div className="space-y-8">
             {/* Headline */}
             <div className="space-y-4">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-display text-foreground tracking-tight leading-tight">
-                See How Buyers Would Price Your Business Today
-              </h1>
-              <p className="text-lg text-muted-foreground">
-                Most founders don&apos;t lose money at exit because of revenue.
-                <br />
-                They lose it because of <span className="text-foreground font-medium">hidden risk</span>.
-              </p>
-              <p className="text-foreground">
-                Exit OSx shows you where buyers will discount your company—and what to do about it—in minutes.
-              </p>
+              {isFromTaskInvite ? (
+                <>
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-display text-foreground tracking-tight leading-tight">
+                    Create your account to get started on your assigned task
+                  </h1>
+                  <p className="text-lg text-muted-foreground">
+                    {teamName ? `You've been invited to join the ${teamName} team on Exit OSx.` : "You've been invited to collaborate on Exit OSx."}
+                  </p>
+                  <p className="text-foreground">
+                    Create your free account to view and work on your assigned task.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-display text-foreground tracking-tight leading-tight">
+                    See How Buyers Would Price Your Business Today
+                  </h1>
+                  <p className="text-lg text-muted-foreground">
+                    Most founders don&apos;t lose money at exit because of revenue.
+                    <br />
+                    They lose it because of <span className="text-foreground font-medium">hidden risk</span>.
+                  </p>
+                  <p className="text-foreground">
+                    Exit OSx shows you where buyers will discount your company—and what to do about it—in minutes.
+                  </p>
+                </>
+              )}
             </div>
 
             {/* Value Anchor - The money math */}
@@ -417,7 +460,11 @@ function SignupPageContent() {
             <div className="bg-card border border-border rounded-2xl p-6 md:p-8 shadow-sm">
               <div className="text-center mb-6">
                 <h2 className="text-xl font-semibold text-foreground">
-                  {isFromInvite ? 'Create Account to Join Team' : 'Create Your Free Account'}
+                  {isFromTaskInvite && teamName
+                    ? `Create Account to Join ${teamName} Team`
+                    : isFromInvite
+                      ? 'Create Account to Join Team'
+                      : 'Create Your Free Account'}
                 </h2>
               </div>
 
@@ -456,9 +503,14 @@ function SignupPageContent() {
                     onBlur={() => handleFieldBlur('email')}
                     required
                     disabled={loading}
-                    className="h-11"
+                    readOnly={!!prefilledEmail && isFromTaskInvite}
+                    className={`h-11 ${prefilledEmail && isFromTaskInvite ? 'bg-muted' : ''}`}
                   />
-                  <p className="text-xs text-muted-foreground">We&apos;ll send your results here.</p>
+                  {prefilledEmail && isFromTaskInvite ? (
+                    <p className="text-xs text-muted-foreground">This email matches your invite.</p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">We&apos;ll send your results here.</p>
+                  )}
                 </div>
 
                 <div className="space-y-1.5">
@@ -518,6 +570,8 @@ function SignupPageContent() {
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Creating account...
                     </>
+                  ) : isFromTaskInvite ? (
+                    'Create Account & View Task'
                   ) : (
                     'Reveal My Exit Risk Profile'
                   )}

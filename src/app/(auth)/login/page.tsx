@@ -242,9 +242,6 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout }: LoginPageCon
             </div>
           </div>
 
-          <p className="text-sm opacity-70">
-            A Pasadena Private Financial Group Company
-          </p>
         </div>
       </div>
 

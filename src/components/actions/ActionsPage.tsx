@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
 import { AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
 import { HeroSummaryBar } from './HeroSummaryBar'
@@ -59,6 +60,7 @@ interface ActiveTask {
     role: string | null
   } | null
   isAssignedToCurrentUser: boolean
+  pendingInvite: { email: string; sentAt: string } | null
   proofDocuments: { id: string; name: string; uploadedAt: string }[]
 }
 
@@ -114,6 +116,9 @@ interface ActionsData {
 
 export function ActionsPage() {
   const { selectedCompanyId } = useCompany()
+  const searchParams = useSearchParams()
+  const highlightTaskId = searchParams.get('taskId')
+  const scrolledRef = useRef(false)
   const [data, setData] = useState<ActionsData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -140,6 +145,20 @@ export function ActionsPage() {
   useEffect(() => {
     fetchData()
   }, [fetchData])
+
+  // Scroll to highlighted task from query param (e.g. after onboarding)
+  useEffect(() => {
+    if (highlightTaskId && data && !scrolledRef.current) {
+      scrolledRef.current = true
+      // Small delay to let animations render
+      setTimeout(() => {
+        const el = document.getElementById(`task-${highlightTaskId}`)
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      }, 300)
+    }
+  }, [highlightTaskId, data])
 
   const handleSubStepToggle = async (taskId: string, stepId: string, completed: boolean) => {
     if (!data) return
@@ -243,12 +262,15 @@ export function ActionsPage() {
 
         {data.activeTasks.map(task => (
           <AnimatedItem key={task.id}>
-            <ActiveTaskCard
-              task={task}
-              onSubStepToggle={handleSubStepToggle}
-              onComplete={() => handleCompleteTask(task)}
-              onBlock={handleBlockTask}
-            />
+            <div id={`task-${task.id}`}>
+              <ActiveTaskCard
+                task={task}
+                onSubStepToggle={handleSubStepToggle}
+                onComplete={() => handleCompleteTask(task)}
+                onBlock={handleBlockTask}
+                onRefresh={fetchData}
+              />
+            </div>
           </AnimatedItem>
         ))}
 

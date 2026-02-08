@@ -45,8 +45,7 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.exitosx.com'
-  const dashboardUrl = `${baseUrl}/dashboard`
-  const roundedBRI = Math.round(briScore * 100)
+  const roundedBRI = Math.round(briScore)
   const _firstName = name?.split(' ')[0] || 'there' // Reserved for future personalization
 
   // Determine BRI color and status
@@ -57,7 +56,7 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
     await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'Exit OSx <noreply@exitosx.com>',
       to: email,
-      subject: `Your Exit Readiness Report: ${companyName}`,
+      subject: `${companyName}'s Exit Readiness Report`,
       html: `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -80,7 +79,7 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
 
           <!-- Hero Section - Valuation -->
           <tr>
-            <td style="padding: 40px; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); text-align: center;">
+            <td style="padding: 24px 40px 40px 40px; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); text-align: center;">
               <p style="margin: 0 0 8px 0; font-size: 14px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px;">
                 Your Exit Readiness Report
               </p>
@@ -104,10 +103,10 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto; background-color: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px;">
                 <tr>
                   <td style="padding: 16px 24px;">
-                    <p style="margin: 0 0 4px 0; font-size: 14px; color: #FCD34D;">
-                      You could be worth <strong style="color: #FDE68A;">${formatCurrency(potentialValue)}</strong>
+                    <p style="margin: 0 0 4px 0; font-size: 14px; color: #FFFFFF;">
+                      You could be worth <strong style="color: #FFFFFF;">${formatCurrency(potentialValue)}</strong>
                     </p>
-                    <p style="margin: 0; font-size: 13px; color: rgba(252, 211, 77, 0.8);">
+                    <p style="margin: 0; font-size: 13px; color: rgba(255, 255, 255, 0.85);">
                       That's <strong>${formatCurrency(valueGap)}</strong> you're leaving on the table.
                     </p>
                   </td>
@@ -141,6 +140,9 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
                   </td>
                 </tr>
               </table>
+              <p style="margin: 16px 0 0 0; font-size: 14px; color: #666666;">
+                ${roundedBRI >= 70 ? 'Your business is well-positioned for buyer interest.' : roundedBRI >= 50 ? "There's room to improve before going to market." : 'Addressing key risks could significantly increase your sale price.'}
+              </p>
             </td>
           </tr>
 
@@ -169,7 +171,7 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
                       </tr>
                     </table>
                     <p style="margin: 8px 0 0 0; font-size: 13px; color: #A16207;">
-                      Lower scores = higher buyer risk = lower valuations
+                      This is the area where focused improvement will have the biggest impact on your valuation.
                     </p>
                   </td>
                 </tr>
@@ -207,7 +209,7 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
                     <table role="presentation" cellspacing="0" cellpadding="0">
                       <tr>
                         <td style="border-radius: 8px; background-color: #B87333;">
-                          <a href="${dashboardUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
+                          <a href="${baseUrl}/dashboard/actions" target="_blank" style="display: inline-block; padding: 14px 32px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
                             Start This Task
                           </a>
                         </td>
@@ -224,7 +226,7 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                 <tr>
                   <td style="border-radius: 8px; background-color: #B87333;">
-                    <a href="${dashboardUrl}" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
+                    <a href="${baseUrl}/dashboard/actions" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
                       View Your Action Plan
                     </a>
                   </td>
@@ -249,9 +251,6 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
             <td style="padding: 24px 40px; text-align: center; border-top: 1px solid #f0f0f0;">
               <p style="margin: 0 0 8px 0; font-size: 12px; color: #999999;">
                 &copy; ${new Date().getFullYear()} Exit OSx. All rights reserved.
-              </p>
-              <p style="margin: 0; font-size: 12px; color: #999999;">
-                A Pasadena Private Financial Group Company
               </p>
             </td>
           </tr>

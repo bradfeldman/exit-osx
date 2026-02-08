@@ -90,12 +90,6 @@ export function EntryScreen() {
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="absolute bottom-6 text-center">
-        <p className="text-xs text-slate-500">
-          Exit OSx is a Pasadena Private Financial Group Company
-        </p>
-      </div>
     </div>
   )
 }

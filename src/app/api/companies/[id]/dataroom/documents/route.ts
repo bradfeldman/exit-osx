@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
+import { UpdateFrequency } from '@prisma/client'
 import { logActivity } from '@/lib/dataroom'
+
+const VALID_FREQUENCIES = new Set<string>(Object.values(UpdateFrequency))
 
 /**
  * GET /api/companies/[id]/dataroom/documents
@@ -162,6 +165,10 @@ export async function POST(
 
     if (!folderId || !documentName) {
       return NextResponse.json({ error: 'Folder ID and document name are required' }, { status: 400 })
+    }
+
+    if (!VALID_FREQUENCIES.has(updateFrequency)) {
+      return NextResponse.json({ error: `Invalid update frequency: ${updateFrequency}` }, { status: 400 })
     }
 
     const dataRoom = await prisma.dataRoom.findUnique({

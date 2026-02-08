@@ -11,6 +11,7 @@ interface InviteData {
   email: string
   isPrimary: boolean
   expiresAt: string
+  hasExistingAccount: boolean
   task: {
     id: string
     title: string
@@ -68,9 +69,18 @@ export default function TaskInvitePage() {
   }, [token])
 
   const handleAccept = async () => {
-    if (!isLoggedIn) {
-      // Redirect to login with return URL
-      router.push(`/login?returnUrl=/invite/task/${token}`)
+    if (!isLoggedIn && invite) {
+      // Route to the correct auth page based on account existence
+      if (invite.hasExistingAccount) {
+        router.push(`/login?returnUrl=/invite/task/${token}`)
+      } else {
+        const signupParams = new URLSearchParams({
+          next: `/invite/task/${token}`,
+          email: invite.email,
+          team: invite.company.name,
+        })
+        router.push(`/signup?${signupParams.toString()}`)
+      }
       return
     }
 
@@ -87,8 +97,8 @@ export default function TaskInvitePage() {
       }
 
       const data = await res.json()
-      // Redirect to the task/dashboard
-      router.push(`/dashboard?company=${data.companyId}`)
+      // Route to the Actions page with the task highlighted
+      router.push(`/dashboard/actions?company=${data.companyId}&taskId=${data.taskId}`)
     } catch {
       setError('Failed to accept invite')
     } finally {
@@ -145,6 +155,12 @@ export default function TaskInvitePage() {
     return null
   }
 
+  const buttonLabel = isLoggedIn
+    ? 'Accept Invite'
+    : invite.hasExistingAccount
+      ? 'Log In to Accept'
+      : 'Create Account to Accept'
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <Card className="max-w-lg w-full">
@@ -173,7 +189,9 @@ export default function TaskInvitePage() {
           <div className="space-y-3">
             {!isLoggedIn && (
               <p className="text-sm text-center text-muted-foreground mb-4">
-                You&apos;ll need to log in or create an account to accept this invite.
+                {invite.hasExistingAccount
+                  ? "You'll need to log in to accept this invite."
+                  : "You'll need to create an account to accept this invite."}
               </p>
             )}
 
@@ -182,7 +200,7 @@ export default function TaskInvitePage() {
               onClick={handleAccept}
               disabled={isAccepting}
             >
-              {isAccepting ? 'Accepting...' : isLoggedIn ? 'Accept Invite' : 'Log In to Accept'}
+              {isAccepting ? 'Accepting...' : buttonLabel}
             </Button>
 
             <Button

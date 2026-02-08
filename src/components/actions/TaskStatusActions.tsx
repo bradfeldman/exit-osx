@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { MoreHorizontal, AlertTriangle, Clock, XCircle, UserPlus } from 'lucide-react'
+import { MoreHorizontal, AlertTriangle, Clock, XCircle, UserPlus, Mail, X } from 'lucide-react'
 
 interface TaskStatusActionsProps {
   taskId: string
@@ -11,6 +11,8 @@ interface TaskStatusActionsProps {
   onDelegate?: (taskId: string, email: string) => void
   assignee: { name: string; role: string | null } | null
   isAssignedToCurrentUser: boolean
+  pendingInvite?: { email: string; sentAt: string } | null
+  onRefresh?: () => void
 }
 
 export function TaskStatusActions({
@@ -20,6 +22,8 @@ export function TaskStatusActions({
   onDelegate,
   assignee,
   isAssignedToCurrentUser,
+  pendingInvite,
+  onRefresh,
 }: TaskStatusActionsProps) {
   const [showMenu, setShowMenu] = useState(false)
   const [showBlockInput, setShowBlockInput] = useState(false)
@@ -27,6 +31,7 @@ export function TaskStatusActions({
   const [showDelegateInput, setShowDelegateInput] = useState(false)
   const [delegateEmail, setDelegateEmail] = useState('')
   const [delegateStatus, setDelegateStatus] = useState<'idle' | 'sending' | 'sent'>('idle')
+  const [cancellingInvite, setCancellingInvite] = useState(false)
 
   const handleBlock = () => {
     if (blockReason.trim()) {
@@ -61,6 +66,29 @@ export function TaskStatusActions({
           setShowDelegateInput(false)
           setDelegateEmail('')
           setDelegateStatus('idle')
+          onRefresh?.()
+        }, 1500)
+      } else {
+        setDelegateStatus('idle')
+      }
+    } catch {
+      setDelegateStatus('idle')
+    }
+  }
+
+  const handleResendInvite = async () => {
+    if (!pendingInvite) return
+    setDelegateStatus('sending')
+    try {
+      const response = await fetch(`/api/tasks/${taskId}/invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pendingInvite.email, isPrimary: true }),
+      })
+      if (response.ok) {
+        setDelegateStatus('sent')
+        setTimeout(() => {
+          setDelegateStatus('idle')
         }, 2000)
       } else {
         setDelegateStatus('idle')
@@ -69,6 +97,25 @@ export function TaskStatusActions({
       setDelegateStatus('idle')
     }
   }
+
+  const handleCancelInvite = async () => {
+    if (!pendingInvite) return
+    setCancellingInvite(true)
+    try {
+      await fetch(`/api/tasks/${taskId}/invite`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pendingInvite.email }),
+      })
+      onRefresh?.()
+    } catch {
+      // silently fail
+    } finally {
+      setCancellingInvite(false)
+    }
+  }
+
+  const hasPendingInvite = !!pendingInvite
 
   return (
     <div className="mt-6 border-t border-border/50 pt-4">
@@ -88,17 +135,44 @@ export function TaskStatusActions({
 
             {showMenu && (
               <div className="absolute left-0 top-full mt-1 z-10 w-48 rounded-lg border border-border bg-card shadow-lg py-1">
-                <button
-                  type="button"
-                  className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted/50 flex items-center gap-2"
-                  onClick={() => {
-                    setShowDelegateInput(true)
-                    setShowMenu(false)
-                  }}
-                >
-                  <UserPlus className="h-3.5 w-3.5" />
-                  Delegate
-                </button>
+                {hasPendingInvite ? (
+                  <>
+                    <button
+                      type="button"
+                      className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted/50 flex items-center gap-2"
+                      onClick={() => {
+                        handleResendInvite()
+                        setShowMenu(false)
+                      }}
+                    >
+                      <Mail className="h-3.5 w-3.5" />
+                      Re-send Invite
+                    </button>
+                    <button
+                      type="button"
+                      className="w-full px-3 py-2 text-left text-sm text-destructive hover:bg-muted/50 flex items-center gap-2"
+                      onClick={() => {
+                        handleCancelInvite()
+                        setShowMenu(false)
+                      }}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      Cancel Invite
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted/50 flex items-center gap-2"
+                    onClick={() => {
+                      setShowDelegateInput(true)
+                      setShowMenu(false)
+                    }}
+                  >
+                    <UserPlus className="h-3.5 w-3.5" />
+                    Delegate
+                  </button>
+                )}
                 <button
                   type="button"
                   className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted/50 flex items-center gap-2"
@@ -132,11 +206,32 @@ export function TaskStatusActions({
         </div>
 
         <span className="text-sm text-muted-foreground">
-          {assignee && !isAssignedToCurrentUser
-            ? `Assigned: ${assignee.name}${assignee.role ? ` (${assignee.role})` : ''}`
-            : 'Assigned: You'}
+          {hasPendingInvite
+            ? `Invite sent to ${pendingInvite.email}`
+            : assignee && !isAssignedToCurrentUser
+              ? `Assigned: ${assignee.name}${assignee.role ? ` (${assignee.role})` : ''}`
+              : 'Assigned: You'}
         </span>
       </div>
+
+      {/* Pending invite banner */}
+      {hasPendingInvite && (
+        <div className="mt-3 flex items-center gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/30">
+          <Mail className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+          <p className="text-sm text-blue-700 dark:text-blue-300 flex-1">
+            Invite sent to <strong>{pendingInvite.email}</strong>
+            {delegateStatus === 'sent' && <span className="ml-2 text-green-600">(re-sent!)</span>}
+          </p>
+          <button
+            type="button"
+            className="text-xs text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-50"
+            onClick={handleCancelInvite}
+            disabled={cancellingInvite}
+          >
+            {cancellingInvite ? 'Cancelling...' : 'Cancel'}
+          </button>
+        </div>
+      )}
 
       {showBlockInput && (
         <div className="mt-3 flex items-center gap-2">

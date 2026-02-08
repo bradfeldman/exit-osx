@@ -390,9 +390,6 @@ export async function POST(
               <p style="margin: 0 0 16px 0; font-size: 13px; color: #9CA3AF; text-align: center;">
                 If you weren't expecting this invitation, you can safely ignore this email.
               </p>
-              <p style="margin: 0; font-size: 12px; color: #B87333; text-align: center;">
-                A Pasadena Private Financial Group Company
-              </p>
             </td>
           </tr>
 

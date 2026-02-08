@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
 import { DataRoomCategory, UpdateFrequency, DocumentStatus } from '@prisma/client'
 
+const VALID_CATEGORIES = new Set<string>(Object.values(DataRoomCategory))
+const VALID_FREQUENCIES = new Set<string>(Object.values(UpdateFrequency))
+
 // Standard required documents for each category
 const STANDARD_DOCUMENTS: Array<{
   category: DataRoomCategory
@@ -232,6 +235,14 @@ export async function POST(
 
     if (!category || !documentName) {
       return NextResponse.json({ error: 'Category and document name are required' }, { status: 400 })
+    }
+
+    if (!VALID_CATEGORIES.has(category)) {
+      return NextResponse.json({ error: `Invalid category: ${category}` }, { status: 400 })
+    }
+
+    if (!VALID_FREQUENCIES.has(updateFrequency)) {
+      return NextResponse.json({ error: `Invalid update frequency: ${updateFrequency}` }, { status: 400 })
     }
 
     // Get max display order for this category
