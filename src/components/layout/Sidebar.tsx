@@ -37,8 +37,11 @@ const coreLinks: NavLink[] = [
 const valueModelingLinks: NavLink[] = [
   { name: 'Business Financials', href: '/dashboard/financials', icon: FinancialsIcon, requiredPlan: 'growth', featureKey: 'business-financials' },
   { name: 'DCF Valuation', href: '/dashboard/valuation', icon: ChartBarIcon, requiredPlan: 'exit-ready', featureKey: 'dcf-valuation' },
-  { name: 'Retirement Calculator', href: '/dashboard/financials/retirement', icon: CalculatorIcon, requiredPlan: 'growth', featureKey: 'retirement-calculator', progressionKey: 'retirementCalculator' },
 ]
+
+const retirementCalculatorLink: NavLink = {
+  name: 'Retirement Calculator', href: '/dashboard/financials/retirement', icon: CalculatorIcon, requiredPlan: 'growth', featureKey: 'retirement-calculator', progressionKey: 'retirementCalculator',
+}
 
 // Personal financials (always in financials section when unlocked)
 const personalFinancialsLink: NavLink = {
@@ -254,6 +257,7 @@ export function Sidebar() {
               <ul role="list" className="mt-1 space-y-1">
                 {valueModelingLinks.map((link) => renderNavLink(link))}
                 {renderNavLink(personalFinancialsLink)}
+                {renderNavLink(retirementCalculatorLink)}
               </ul>
             </div>
           )}
