@@ -1,9 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { PlusCircle, Calendar } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { AddPeriodDialog } from './AddPeriodDialog'
+import { Calendar } from 'lucide-react'
 
 export interface FinancialPeriod {
   id: string
@@ -38,7 +36,6 @@ export function PeriodSelector({
 }: PeriodSelectorProps) {
   const [periods, setPeriods] = useState<FinancialPeriod[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [showAddDialog, setShowAddDialog] = useState(false)
 
   // Store callback in ref to avoid dependency issues
   const onPeriodsLoadedRef = useRef(onPeriodsLoaded)
@@ -64,23 +61,6 @@ export function PeriodSelector({
     fetchPeriods()
   }, [fetchPeriods])
 
-  const _handlePeriodSelect = (value: string) => {
-    if (value === 'add-new') {
-      setShowAddDialog(true)
-      return
-    }
-
-    const period = periods.find((p) => p.id === value)
-    onPeriodChange(period || null)
-  }
-
-  const handlePeriodCreated = (newPeriod: FinancialPeriod) => {
-    setPeriods((prev) => [newPeriod, ...prev])
-    onPeriodChange(newPeriod)
-  }
-
-  const _selectedPeriod = periods.find((p) => p.id === selectedPeriodId)
-
   const formatPeriodDisplay = (period: FinancialPeriod) => {
     const parts = [period.label]
     const indicators: string[] = []
@@ -101,52 +81,22 @@ export function PeriodSelector({
     )
   }
 
-  // When no periods exist, show just the Add Period button (no dropdown)
+  // When no periods exist, show a simple message
   if (periods.length === 0) {
     return (
       <div className={`flex items-center gap-2 ${className}`}>
-        <Button
-          variant="outline"
-          onClick={() => setShowAddDialog(true)}
-          className="gap-2"
-        >
-          <PlusCircle className="h-4 w-4" />
-          Add Fiscal Year
-        </Button>
-
-        <AddPeriodDialog
-          open={showAddDialog}
-          onOpenChange={setShowAddDialog}
-          companyId={companyId}
-          onPeriodCreated={handlePeriodCreated}
-        />
+        <Calendar className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">No periods yet</span>
       </div>
     )
   }
 
-  // When exactly 1 period exists, don't show selector (it's auto-selected)
-  // Just show the period label and an option to add more
+  // When exactly 1 period exists, just show the label
   if (periods.length === 1) {
     return (
       <div className={`flex items-center gap-2 ${className}`}>
         <Calendar className="h-4 w-4 text-muted-foreground" />
         <span className="text-sm font-medium text-gray-700">{periods[0].label}</span>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowAddDialog(true)}
-          className="gap-1 text-muted-foreground h-7 px-2"
-        >
-          <PlusCircle className="h-3 w-3" />
-          Add Year
-        </Button>
-
-        <AddPeriodDialog
-          open={showAddDialog}
-          onOpenChange={setShowAddDialog}
-          companyId={companyId}
-          onPeriodCreated={handlePeriodCreated}
-        />
       </div>
     )
   }
@@ -154,10 +104,6 @@ export function PeriodSelector({
   // When 2+ periods exist, show the dropdown selector
   const handleNativeSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value
-    if (value === 'add-new') {
-      setShowAddDialog(true)
-      return
-    }
     const period = periods.find((p) => p.id === value)
     onPeriodChange(period || null)
   }
@@ -176,15 +122,7 @@ export function PeriodSelector({
             {formatPeriodDisplay(period)}
           </option>
         ))}
-        <option value="add-new">+ Add New Period</option>
       </select>
-
-      <AddPeriodDialog
-        open={showAddDialog}
-        onOpenChange={setShowAddDialog}
-        companyId={companyId}
-        onPeriodCreated={handlePeriodCreated}
-      />
     </div>
   )
 }

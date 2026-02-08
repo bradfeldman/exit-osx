@@ -1,5 +1,4 @@
 export { PeriodSelector } from './PeriodSelector'
-export { AddPeriodDialog } from './AddPeriodDialog'
 export { FinancialSummaryPanel } from './FinancialSummaryPanel'
 export { DataSourceBadge, determineDataSource } from './DataSourceBadge'
 export { HorizontalScrollContainer } from './HorizontalScrollContainer'

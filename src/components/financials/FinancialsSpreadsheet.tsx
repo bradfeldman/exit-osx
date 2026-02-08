@@ -18,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { AddPeriodDialog } from './AddPeriodDialog'
 import { ValuationImpactCelebration } from './ValuationImpactCelebration'
 import {
   Dialog,
@@ -645,7 +644,6 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
-  const [showAddDialog, setShowAddDialog] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [periodToDelete, setPeriodToDelete] = useState<FinancialPeriod | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -1012,12 +1010,6 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
     }
     saveTimeoutRef.current = setTimeout(saveChanges, 3000)
   }, [saveChanges])
-
-  // Handle period created
-  const handlePeriodCreated = useCallback(() => {
-    setShowAddDialog(false)
-    loadData()
-  }, [loadData])
 
   // Handle period delete
   const handleDeletePeriod = useCallback(async () => {
@@ -1489,11 +1481,6 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
               </motion.div>
             )}
           </AnimatePresence>
-
-          <Button onClick={() => setShowAddDialog(true)} size="sm">
-            <Plus className="h-4 w-4 mr-1" />
-            Add Year
-          </Button>
         </div>
       </div>
 
@@ -1615,12 +1602,7 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {sortedPeriods.length === 1 ? (
-                  <Button size="sm" variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-100" onClick={() => { setShowAddDialog(true); setShowNextSteps(false) }}>
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add Year
-                  </Button>
-                ) : adjustments.length === 0 ? (
+                {adjustments.length === 0 ? (
                   <Button size="sm" variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-100" onClick={() => { setActiveTab('add-backs'); setShowNextSteps(false) }}>
                     Add-Backs
                     <ArrowRight className="h-4 w-4 ml-1" />
@@ -1662,11 +1644,7 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
         <Card>
           <CardContent className="py-12">
             <div className="flex flex-col items-center gap-4 text-center">
-              <p className="text-muted-foreground">No fiscal years yet. Add your first year to get started.</p>
-              <Button onClick={() => setShowAddDialog(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add First Year
-              </Button>
+              <p className="text-muted-foreground">No fiscal years yet. Return to the financials page to set up your periods.</p>
             </div>
           </CardContent>
         </Card>
@@ -2068,14 +2046,6 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
           </CardContent>
         </Card>
       )}
-
-      {/* Add Period Dialog */}
-      <AddPeriodDialog
-        open={showAddDialog}
-        onOpenChange={setShowAddDialog}
-        companyId={companyId}
-        onPeriodCreated={handlePeriodCreated}
-      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={!!periodToDelete} onOpenChange={(open) => !open && setPeriodToDelete(null)}>

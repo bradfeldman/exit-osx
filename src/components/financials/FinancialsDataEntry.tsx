@@ -2,12 +2,9 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
 import { PLFormGrid } from './PLFormGrid'
 import { FinancialsSpreadsheet } from './FinancialsSpreadsheet'
 import { FYESettingsLink } from './FYESettingsLink'
-import { AddPeriodDialog } from './AddPeriodDialog'
 
 type DataEntryTab = 'pnl' | 'balance-sheet' | 'add-backs' | 'cash-flow'
 
@@ -17,7 +14,6 @@ interface FinancialsDataEntryProps {
 
 export function FinancialsDataEntry({ companyId }: FinancialsDataEntryProps) {
   const [activeTab, setActiveTab] = useState<DataEntryTab>('pnl')
-  const [showAddDialog, setShowAddDialog] = useState(false)
   const [fyeMonth, setFyeMonth] = useState(12)
   const [fyeDay, setFyeDay] = useState(31)
 
@@ -43,12 +39,6 @@ export function FinancialsDataEntry({ companyId }: FinancialsDataEntryProps) {
     setFyeDay(day)
   }, [])
 
-  const handlePeriodCreated = useCallback(() => {
-    setShowAddDialog(false)
-    // PLFormGrid will reload on its own since companyId hasn't changed,
-    // but we could add a key-based refresh if needed
-  }, [])
-
   return (
     <div className="space-y-4">
       {/* Header bar */}
@@ -70,16 +60,6 @@ export function FinancialsDataEntry({ companyId }: FinancialsDataEntryProps) {
             onFYEChange={handleFYEChange}
           />
         </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowAddDialog(true)}
-          className="gap-1"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Add Year
-        </Button>
       </div>
 
       {/* Content */}
@@ -93,14 +73,6 @@ export function FinancialsDataEntry({ companyId }: FinancialsDataEntryProps) {
           hidePnlTab
         />
       )}
-
-      {/* Add Period Dialog (for power users) */}
-      <AddPeriodDialog
-        open={showAddDialog}
-        onOpenChange={setShowAddDialog}
-        companyId={companyId}
-        onPeriodCreated={handlePeriodCreated}
-      />
     </div>
   )
 }

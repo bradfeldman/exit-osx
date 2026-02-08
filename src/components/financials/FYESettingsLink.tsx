@@ -62,7 +62,7 @@ export function FYESettingsLink({
     setIsSaving(true)
     try {
       await fetch(`/api/companies/${companyId}`, {
-        method: 'PATCH',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fiscalYearEndMonth: tempMonth,
