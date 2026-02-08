@@ -571,11 +571,24 @@ export interface FinancialPeriodCreatedParams extends BaseEventParams {
   dataSource: 'manual' | 'quickbooks' | 'import'
 }
 
+export interface FinancialPeriodsBatchCreatedParams extends BaseEventParams {
+  created: number
+  skipped: number
+  totalPeriods: number
+}
+
 export interface FinancialDataSavedParams extends BaseEventParams {
   statementType: 'pnl' | 'balance_sheet' | 'cash_flow' | 'add_backs'
   periodId: string
   fieldsUpdated: number
   hasEbitda: boolean
+}
+
+export interface MonteCarloRunParams extends BaseEventParams {
+  iterations: number
+  resultMedian: number
+  resultP10: number
+  resultP90: number
 }
 
 export interface SensitivityTableViewedParams extends BaseEventParams {
@@ -882,7 +895,10 @@ export interface AnalyticsEventMap {
   'ebitda_adjustment_made': EbitdaAdjustmentMadeParams
   'financial_period_created': FinancialPeriodCreatedParams
   'financial_data_saved': FinancialDataSavedParams
+  'financials_enter_manually_clicked': BaseEventParams
+  'financial_periods_batch_created': FinancialPeriodsBatchCreatedParams
   'sensitivity_table_viewed': SensitivityTableViewedParams
+  'monte_carlo_run': MonteCarloRunParams
 
   // Phase 6: Personal Planning
   'pfs_started': PfsStartedParams

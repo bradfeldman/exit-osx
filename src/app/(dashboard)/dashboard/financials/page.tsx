@@ -6,8 +6,8 @@ import { motion, AnimatePresence } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { useCompany } from '@/contexts/CompanyContext'
 import { AddPeriodDialog } from '@/components/financials/AddPeriodDialog'
-import { FinancialsSpreadsheet } from '@/components/financials/FinancialsSpreadsheet'
-import { Plus, Pencil, Loader2, CheckCircle, Link2, AlertCircle, X, TrendingUp } from 'lucide-react'
+import { FinancialsDataEntry } from '@/components/financials/FinancialsDataEntry'
+import { Pencil, Loader2, CheckCircle, Link2, AlertCircle, X, TrendingUp } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { fetchWithRetry } from '@/lib/fetch-with-retry'
 import { analytics } from '@/lib/analytics'
@@ -78,6 +78,7 @@ function FinancialsEmptyState({
   onAddYear,
   onQuickBooksConnect,
   isConnecting,
+  isCreatingPeriods = false,
   hasAssessment = false,
   hasBriScore = false,
   completedTaskCount = 0,
@@ -88,6 +89,7 @@ function FinancialsEmptyState({
   onAddYear: () => void
   onQuickBooksConnect: () => void
   isConnecting: boolean
+  isCreatingPeriods?: boolean
   hasAssessment?: boolean
   hasBriScore?: boolean
   completedTaskCount?: number
@@ -329,9 +331,18 @@ function FinancialsEmptyState({
                 </div>
 
                 <div className="mt-4">
-                  <Button variant="outline" onClick={onAddYear} className="w-full">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add First Year
+                  <Button variant="outline" onClick={onAddYear} className="w-full" disabled={isCreatingPeriods}>
+                    {isCreatingPeriods ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Setting up your periods...
+                      </>
+                    ) : (
+                      <>
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Enter Manually
+                      </>
+                    )}
                   </Button>
                 </div>
               </motion.div>
@@ -384,6 +395,7 @@ function FinancialsContent() {
   const [isLoading, setIsLoading] = useState(true)
   const [isConnecting, setIsConnecting] = useState(false)
   const [showAddDialog, setShowAddDialog] = useState(false)
+  const [isCreatingPeriods, setIsCreatingPeriods] = useState(false)
   const [qbError, setQbError] = useState<string | null>(null)
   const [qbSuccess, setQbSuccess] = useState<string | null>(null)
 
@@ -563,6 +575,39 @@ function FinancialsContent() {
     }
   }
 
+  // Handle "Enter Manually" — batch-create all required periods
+  const handleEnterManually = async () => {
+    if (!selectedCompanyId || isCreatingPeriods) return
+
+    setIsCreatingPeriods(true)
+    analytics.track('financials_enter_manually_clicked', {})
+
+    try {
+      const response = await fetch(`/api/companies/${selectedCompanyId}/financial-periods/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to create periods')
+      }
+
+      const data = await response.json()
+      setPeriods(data.periods || [])
+
+      analytics.track('financial_periods_batch_created', {
+        created: data.created,
+        skipped: data.skipped,
+        totalPeriods: data.periods?.length || 0,
+      })
+    } catch (err) {
+      console.error('Error creating periods:', err)
+    } finally {
+      setIsCreatingPeriods(false)
+    }
+  }
+
   if (!selectedCompanyId) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -618,16 +663,17 @@ function FinancialsContent() {
         <FinancialsEmptyState
           companyId={selectedCompanyId}
           integrationData={integrationData}
-          onAddYear={() => setShowAddDialog(true)}
+          onAddYear={handleEnterManually}
           onQuickBooksConnect={handleQuickBooksConnect}
           isConnecting={isConnecting}
+          isCreatingPeriods={isCreatingPeriods}
           hasAssessment={hasAssessment}
           hasBriScore={hasBriScore}
           completedTaskCount={completedTaskCount}
           completedTaskValue={completedTaskValue}
         />
       ) : (
-        <FinancialsSpreadsheet companyId={selectedCompanyId} />
+        <FinancialsDataEntry companyId={selectedCompanyId} />
       )}
 
       {/* Add Period Dialog */}

@@ -111,6 +111,9 @@ interface RowConfig {
 
 interface FinancialsSpreadsheetProps {
   companyId: string
+  initialTab?: StatementType
+  hideTabs?: boolean
+  hidePnlTab?: boolean
 }
 
 // Adjustment type for add-backs/deductions
@@ -635,8 +638,8 @@ function AdjustmentCell({
   )
 }
 
-export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps) {
-  const [activeTab, setActiveTab] = useState<StatementType>('pnl')
+export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnlTab }: FinancialsSpreadsheetProps) {
+  const [activeTab, setActiveTab] = useState<StatementType>(initialTab || 'pnl')
   const [periods, setPeriods] = useState<FinancialPeriod[]>([])
   const [data, setData] = useState<Record<string, PeriodData>>({})
   const [isLoading, setIsLoading] = useState(true)
@@ -1643,14 +1646,16 @@ export function FinancialsSpreadsheet({ companyId }: FinancialsSpreadsheetProps)
       </AnimatePresence>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as StatementType)}>
-        <TabsList>
-          <TabsTrigger value="pnl">P&L</TabsTrigger>
-          <TabsTrigger value="balance-sheet">Balance Sheet</TabsTrigger>
-          <TabsTrigger value="add-backs">Add-Backs</TabsTrigger>
-          <TabsTrigger value="cash-flow">Cash Flow</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      {!hideTabs && (
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as StatementType)}>
+          <TabsList>
+            {!hidePnlTab && <TabsTrigger value="pnl">P&L</TabsTrigger>}
+            <TabsTrigger value="balance-sheet">Balance Sheet</TabsTrigger>
+            <TabsTrigger value="add-backs">Add-Backs</TabsTrigger>
+            <TabsTrigger value="cash-flow">Cash Flow</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      )}
 
       {/* Spreadsheet Grid */}
       {sortedPeriods.length === 0 ? (
