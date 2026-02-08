@@ -15,7 +15,7 @@ export default function TermsPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <header className="py-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
+          <a href="https://exitosx.com" className="flex items-center gap-2">
             <Image
               src="/logo.webp"
               alt="Exit OSx"
@@ -30,7 +30,7 @@ export default function TermsPage() {
               height={28}
               className="h-6 w-auto"
             />
-          </Link>
+          </a>
           <div className="flex items-center gap-4">
             <Link href="/login">
               <Button variant="ghost">Sign In</Button>

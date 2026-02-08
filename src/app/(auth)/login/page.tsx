@@ -199,7 +199,7 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout }: LoginPageCon
         <div className="absolute top-20 right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
         <div className="absolute bottom-20 left-10 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
         <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground">
-          <Link href="/" className="flex items-center gap-3">
+          <a href="https://exitosx.com" className="flex items-center gap-3">
             <Image
               src="/logo-icon.png"
               alt="Exit OSx"
@@ -214,7 +214,7 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout }: LoginPageCon
               height={34}
               className="h-8 w-auto brightness-0 invert"
             />
-          </Link>
+          </a>
 
           <div className="space-y-6">
             <h1 className="text-4xl font-bold font-display leading-tight tracking-tight">
@@ -253,7 +253,7 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout }: LoginPageCon
         <div className="w-full max-w-md space-y-8">
           {/* Mobile logo */}
           <div className="lg:hidden text-center">
-            <Link href="/" className="inline-flex items-center gap-2">
+            <a href="https://exitosx.com" className="inline-flex items-center gap-2">
               <Image
                 src="/logo-icon.png"
                 alt="Exit OSx"
@@ -268,7 +268,7 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout }: LoginPageCon
                 height={28}
                 className="h-6 w-auto"
               />
-            </Link>
+            </a>
           </div>
 
           <div className="text-center">
@@ -426,9 +426,9 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout }: LoginPageCon
                 Create one for free
               </Link>
             </p>
-            <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-block">
+            <a href="https://exitosx.com" className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-block">
               &larr; Back to home
-            </Link>
+            </a>
           </div>
         </div>
       </div>
