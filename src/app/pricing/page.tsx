@@ -34,6 +34,14 @@ function ChevronDownIcon({ className }: { className?: string }) {
   )
 }
 
+function ShieldIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+    </svg>
+  )
+}
+
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -109,7 +117,7 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Minimal Header - No nav distractions */}
+      {/* Minimal Header */}
       <motion.header
         className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border"
         initial={{ y: -20, opacity: 0 }}
@@ -149,7 +157,7 @@ export default function PricingPage() {
       {/* Main Content */}
       <main className="py-16 md:py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header - Hormozi style: outcome focused */}
+          {/* Header */}
           <div className="text-center mb-12">
             <motion.p
               className="text-sm font-medium text-primary mb-4"
@@ -178,6 +186,29 @@ export default function PricingPage() {
               Pick the plan that matches your exit timeline.
             </motion.p>
           </div>
+
+          {/* Do The Math — ABOVE pricing cards for value anchoring */}
+          <AnimatedSection className="max-w-3xl mx-auto mb-14 text-center">
+            <div className="bg-card border border-border rounded-2xl p-8 shadow-lg">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6 font-display">
+                Do The Math
+              </h2>
+              <p className="text-lg text-muted-foreground mb-6">
+                If your business is worth <span className="text-foreground font-semibold">$5M</span> and you&apos;re leaving
+                <span className="text-foreground font-semibold"> 20% on the table</span> due to preventable risks...
+              </p>
+              <p className="text-3xl font-bold text-destructive mb-6">
+                That&apos;s $1,000,000 lost.
+              </p>
+              <p className="text-muted-foreground mb-2">
+                Exit OSx Growth costs <span className="text-foreground font-medium">$1,788/year</span>.
+                That&apos;s <span className="text-foreground font-medium">0.18%</span> of what you could be losing.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Most founders we assess are leaving 1.5&ndash;2.5x more value on the table than they think.
+              </p>
+            </div>
+          </AnimatedSection>
 
           {/* Billing Toggle */}
           <motion.div
@@ -218,16 +249,15 @@ export default function PricingPage() {
           </motion.div>
 
           {/* Pricing Cards */}
-          <AnimatedStagger className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-16">
+          <AnimatedStagger className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-8">
             {PRICING_PLANS.map((plan) => {
               const price = billingCycle === 'annual' ? plan.annualPrice : plan.monthlyPrice
               const isHighlighted = plan.highlighted
 
-              // Custom descriptions for Hormozi-style outcomes
               const planDescriptions: Record<string, string> = {
                 'foundation': 'See where you stand. Free forever.',
                 'growth': 'Find the leaks. Fix the value.',
-                'exit-ready': 'Full buyer-ready preparation.',
+                'exit-ready': 'Done-with-you exit preparation.',
               }
 
               return (
@@ -322,8 +352,8 @@ export default function PricingPage() {
             })}
           </AnimatedStagger>
 
-          {/* Trust Indicators - Hormozi: Remove friction */}
-          <AnimatedSection className="flex flex-wrap items-center justify-center gap-8 mb-20 py-8 border-y border-border">
+          {/* Trust Indicators — Cancel anytime made prominent */}
+          <AnimatedSection className="flex flex-wrap items-center justify-center gap-8 mb-6 py-6">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <CheckIcon className="h-5 w-5 text-green-600" />
               <span>14-day free trial on paid plans</span>
@@ -332,9 +362,9 @@ export default function PricingPage() {
               <CheckIcon className="h-5 w-5 text-green-600" />
               <span>No credit card to start</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
               <CheckIcon className="h-5 w-5 text-green-600" />
-              <span>Cancel anytime</span>
+              <span>Cancel anytime. No penalties.</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <CheckIcon className="h-5 w-5 text-green-600" />
@@ -342,23 +372,19 @@ export default function PricingPage() {
             </div>
           </AnimatedSection>
 
-          {/* The Math Section - Hormozi style */}
-          <AnimatedSection className="max-w-3xl mx-auto mb-20 text-center">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6 font-display">
-              Do The Math
-            </h2>
-            <div className="bg-card border border-border rounded-2xl p-8">
-              <p className="text-lg text-muted-foreground mb-6">
-                If your business is worth <span className="text-foreground font-semibold">$5M</span> and you&apos;re leaving
-                <span className="text-foreground font-semibold"> 20% on the table</span> due to preventable risks...
+          {/* 90-Day Outcome Guarantee */}
+          <AnimatedSection className="max-w-2xl mx-auto mb-20">
+            <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded-2xl p-8 text-center">
+              <ShieldIcon className="h-10 w-10 text-green-600 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-foreground mb-3 font-display">
+                90-Day Outcome Guarantee
+              </h3>
+              <p className="text-muted-foreground leading-relaxed">
+                If your Exit Readiness Score doesn&apos;t improve within 90 days of following your
+                action plan, we&apos;ll refund your last 3 months. No questions asked.
               </p>
-              <p className="text-3xl font-bold text-destructive mb-6">
-                That&apos;s $1,000,000 lost.
-              </p>
-              <p className="text-muted-foreground">
-                Exit OSx Growth costs <span className="text-foreground font-medium">$1,788/year</span>.
-                <br />
-                That&apos;s <span className="text-foreground font-medium">0.18%</span> of what you could be losing.
+              <p className="text-sm text-muted-foreground/70 mt-4">
+                We can make this guarantee because the system works. Complete the actions, and your score goes up.
               </p>
             </div>
           </AnimatedSection>
@@ -411,40 +437,7 @@ export default function PricingPage() {
             </div>
           </AnimatedSection>
 
-          {/* FAQ Section - Hormozi: Direct answers */}
-          <AnimatedSection className="max-w-3xl mx-auto mb-20">
-            <h2 className="text-2xl font-bold text-foreground mb-8 text-center font-display">
-              Questions? Answers.
-            </h2>
-            <div className="border-t border-border">
-              <FAQItem
-                question="How is my valuation calculated?"
-                answer="We apply industry-specific multiples to your adjusted EBITDA, then factor in risk weightings based on customer concentration, revenue quality, owner dependence, and 40+ other variables that buyers actually care about. This isn't theory—it's how deals get priced."
-              />
-              <FAQItem
-                question="What if I'm not ready to sell?"
-                answer="That's exactly when you should start. The best exits are engineered 2-3 years before the deal. Foundation is free forever—use it to see where you stand. When you're ready to fix issues, upgrade."
-              />
-              <FAQItem
-                question="Can I switch plans?"
-                answer="Yes. Upgrade anytime and get immediate access. Downgrade at your next billing cycle. No penalties, no games."
-              />
-              <FAQItem
-                question="What's the Data Room?"
-                answer="A secure, organized repository for every document buyers will request during due diligence. Pre-built folder structures, access controls, and activity tracking. Having this ready signals professionalism and speeds up your deal."
-              />
-              <FAQItem
-                question="How does the Deal Tracker work?"
-                answer="Manage multiple buyer relationships in one place. Track engagement, deal stages, document access, and communication history. Essential when you're juggling 3-5 interested parties."
-              />
-              <FAQItem
-                question="What if I already have an advisor?"
-                answer="Great. Exit OSx shows you what to prioritize before you start paying success fees. Your advisor will thank you for doing the prep work."
-              />
-            </div>
-          </AnimatedSection>
-
-          {/* Who It's For Section */}
+          {/* Which Plan Is Right For You */}
           <AnimatedSection className="max-w-4xl mx-auto mb-20">
             <h2 className="text-2xl font-bold text-foreground mb-8 text-center font-display">
               Which Plan Is Right For You?
@@ -452,72 +445,109 @@ export default function PricingPage() {
             <div className="grid md:grid-cols-3 gap-6">
               <div className="bg-card border border-border rounded-xl p-6">
                 <h3 className="font-semibold text-foreground mb-3">Foundation</h3>
-                <p className="text-sm text-muted-foreground mb-4">Best for founders who:</p>
+                <p className="text-sm text-muted-foreground mb-4">You should start here if:</p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <span className="text-primary">•</span>
-                    Are curious about their business value
+                    You want to see what buyers would see
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary">•</span>
-                    Want to explore before committing
+                    You&apos;re curious about your risk profile
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary">•</span>
-                    Exit is 5+ years away
+                    You want a baseline before committing
                   </li>
                 </ul>
               </div>
 
               <div className="bg-primary/5 border border-primary rounded-xl p-6">
                 <h3 className="font-semibold text-foreground mb-3">Growth</h3>
-                <p className="text-sm text-muted-foreground mb-4">Best for founders who:</p>
+                <p className="text-sm text-muted-foreground mb-4">You need this if:</p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <span className="text-primary">•</span>
-                    Want to actively increase value
+                    You know there are risks but not which ones matter most
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary">•</span>
-                    Need to identify and fix risks
+                    You want a step-by-step plan to increase value
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary">•</span>
-                    Exit is 2-5 years away
+                    Exit is 2&ndash;5 years away and you want to be ready
                   </li>
                 </ul>
               </div>
 
               <div className="bg-card border border-border rounded-xl p-6">
                 <h3 className="font-semibold text-foreground mb-3">Exit-Ready</h3>
-                <p className="text-sm text-muted-foreground mb-4">Best for founders who:</p>
+                <p className="text-sm text-muted-foreground mb-4">Built for founders who:</p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <span className="text-primary">•</span>
-                    Are actively preparing for exit
+                    Are actively talking to buyers or advisors
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary">•</span>
-                    Need deal management tools
+                    Need a buyer-ready data room and deal tracking
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary">•</span>
-                    Exit is within 24 months
+                    Want to run a professional exit process within 24 months
                   </li>
                 </ul>
               </div>
             </div>
           </AnimatedSection>
 
+          {/* FAQ Section — Operational questions */}
+          <AnimatedSection className="max-w-3xl mx-auto mb-20">
+            <h2 className="text-2xl font-bold text-foreground mb-8 text-center font-display">
+              Questions? Answers.
+            </h2>
+            <div className="border-t border-border">
+              <FAQItem
+                question="How long does the assessment take?"
+                answer="About 10 minutes. You'll answer questions about your business across six risk categories. You get your Exit Readiness Score and a buyer-perspective diagnostic immediately."
+              />
+              <FAQItem
+                question="Is my data secure?"
+                answer="Yes. All data is encrypted in transit and at rest. We never share your information with buyers, brokers, or third parties. Your data is yours."
+              />
+              <FAQItem
+                question="Can I invite my CFO or advisor?"
+                answer="Yes. Growth plans include up to 3 team seats. Exit-Ready includes unlimited seats. Team members can collaborate on tasks, upload evidence, and track progress—without seeing your personal financial data."
+              />
+              <FAQItem
+                question="How is my valuation calculated?"
+                answer="We apply industry-specific multiples to your adjusted EBITDA, then factor in risk weightings based on customer concentration, revenue quality, owner dependence, and 40+ other variables that buyers actually care about. This isn't theory—it's how deals get priced."
+              />
+              <FAQItem
+                question="What if I already have an advisor?"
+                answer="Great. Exit OSx shows you what to prioritize before you start paying success fees. Your advisor will thank you for doing the prep work."
+              />
+              <FAQItem
+                question="Can I switch plans?"
+                answer="Yes. Upgrade anytime and get immediate access. Downgrade at your next billing cycle. No penalties, no games."
+              />
+              <FAQItem
+                question="How is this different from a valuation?"
+                answer="A valuation tells you a number. Exit OSx tells you why the number is what it is—and exactly what to do to change it. We show you the specific risks that would reduce your price in diligence and give you a prioritized plan to fix them."
+              />
+            </div>
+          </AnimatedSection>
+
           {/* Final CTA */}
           <AnimatedSection className="text-center py-12 px-8 rounded-2xl bg-primary">
             <h2 className="text-2xl md:text-3xl font-bold text-primary-foreground mb-4 font-display">
-              Every Day You Wait Is Value You Lose
+              Every Quarter You Wait Is Unmanaged Risk
             </h2>
             <p className="text-primary-foreground/80 mb-8 max-w-xl mx-auto">
               Start with Foundation. It&apos;s free. See your score in 10 minutes.
               <br />
-              Then decide if you want to fix what&apos;s broken.
+              Then decide if you want to fix what&apos;s costing you.
             </p>
             <Link href="/signup">
               <Button variant="secondary" size="lg" className="text-base px-8 h-14 btn-hover">
@@ -525,7 +555,7 @@ export default function PricingPage() {
               </Button>
             </Link>
             <p className="text-sm text-primary-foreground/60 mt-4">
-              No credit card required
+              No credit card required &middot; Cancel anytime
             </p>
           </AnimatedSection>
         </div>
