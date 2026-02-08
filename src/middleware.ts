@@ -228,7 +228,7 @@ export async function middleware(request: NextRequest) {
   const isAdminSubdomain = hostname.startsWith('admin.')
 
   // Public routes that don't require auth
-  const publicRoutes = ['/login', '/signup', '/auth/callback', '/auth/confirm', '/pricing', '/terms', '/privacy', '/invite', '/api/invites', '/api/cron', '/api/health', '/api/diag', '/api/industries', '/forgot-password', '/reset-password', '/test']
+  const publicRoutes = ['/login', '/signup', '/auth/callback', '/auth/confirm', '/pricing', '/terms', '/privacy', '/invite', '/api/invites', '/api/cron', '/api/health', '/api/diag', '/api/industries', '/api/public', '/forgot-password', '/reset-password', '/test']
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
 
   // Admin public routes (login/forgot-password on admin subdomain)

@@ -1,12 +1,41 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { AnimatedSection, AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
 
+function formatValueGap(amount: number): string {
+  if (amount >= 1_000_000) {
+    const millions = amount / 1_000_000
+    // Show one decimal only if it's not a whole number
+    return `$${millions % 1 === 0 ? millions.toFixed(0) : millions.toFixed(1)}M`
+  }
+  if (amount >= 1_000) {
+    return `$${Math.round(amount / 1_000)}K`
+  }
+  return `$${amount.toLocaleString()}`
+}
+
 export function LandingPage() {
+  const [stats, setStats] = useState({ assessmentCount: 347, avgValueGap: '$3.5M' })
+
+  useEffect(() => {
+    fetch('/api/public/stats')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.assessmentCount != null && data?.avgValueGap != null) {
+          setStats({
+            assessmentCount: data.assessmentCount,
+            avgValueGap: formatValueGap(data.avgValueGap),
+          })
+        }
+      })
+      .catch(() => {}) // Keep fallback values on error
+  }, [])
+
   return (
     <div className="min-h-screen bg-background">
       {/* Minimal Header */}
@@ -58,7 +87,7 @@ export function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 }}
               >
-                347 assessments completed. Average value gap discovered: $3.5M.
+                {stats.assessmentCount.toLocaleString()} assessments completed. Average value gap discovered: {stats.avgValueGap}.
               </motion.div>
 
               {/* Headline */}
