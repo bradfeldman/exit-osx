@@ -12,6 +12,9 @@ async function getUser(id: string) {
             select: {
               id: true,
               name: true,
+              _count: {
+                select: { users: true, companies: true },
+              },
             },
           },
         },

@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ImpersonationModal } from '@/components/admin/ImpersonationModal'
-import { ArrowLeft, Building2, Activity, Ticket, UserCog, Save } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Building2, Activity, Ticket, UserCog, Save } from 'lucide-react'
 
 interface UserDetailClientProps {
   user: {
@@ -29,6 +29,7 @@ interface UserDetailClientProps {
       organization: {
         id: string
         name: string
+        _count: { users: number; companies: number }
       }
     }>
     auditLogs: Array<{
@@ -118,6 +119,8 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
   }
 
   const isDeleteEnabled = deleteConfirmation === user.email
+
+  const soleOrgs = user.organizations.filter(ou => ou.organization._count.users === 1)
 
   const hasChanges =
     name !== (user.name || '') ||
@@ -408,6 +411,32 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
                 cannot be undone.
               </p>
             </div>
+
+            {soleOrgs.length > 0 && (
+              <div className="rounded-md border border-amber-200 bg-amber-50 p-4">
+                <div className="flex gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="text-sm text-amber-800">
+                    <p className="font-medium">
+                      The following organizations will also be permanently deleted because
+                      this user is the only member:
+                    </p>
+                    <ul className="mt-2 list-disc list-inside space-y-1">
+                      {soleOrgs.map(ou => (
+                        <li key={ou.organization.id}>
+                          {ou.organization.name} ({ou.organization._count.companies}{' '}
+                          {ou.organization._count.companies === 1 ? 'company' : 'companies'})
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-2">
+                      All companies, assessments, evidence, and data within these organizations
+                      will be permanently deleted.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {deleteError && (
               <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">

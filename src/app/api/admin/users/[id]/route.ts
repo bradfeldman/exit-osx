@@ -185,12 +185,26 @@ export async function DELETE(
     )
   }
 
+  // Find orgs where this user is the sole member — these become orphaned after deletion
+  const userOrgs = await prisma.organization.findMany({
+    where: {
+      users: { some: { userId: id } },
+    },
+    select: {
+      id: true,
+      name: true,
+      _count: { select: { users: true } },
+    },
+  })
+  const orgsToDelete = userOrgs.filter(org => org._count.users === 1)
+
   try {
     // Log before deletion (so we capture the user info)
     await logAdminAction(result.admin, 'user.delete', 'User', user.id, {
       deletedEmail: user.email,
       deletedName: user.name,
       reason: reason || null,
+      deletedOrganizations: orgsToDelete.map(o => ({ id: o.id, name: o.name })),
     })
 
     // Delete from Supabase Auth first (using service role client)
@@ -205,10 +219,18 @@ export async function DELETE(
       )
     }
 
-    // Delete from database (cascades will handle related records)
+    // Delete from database (cascades will handle related records like OrganizationUser)
     await prisma.user.delete({
       where: { id },
     })
+
+    // Delete orphaned orgs (sole-member orgs now have zero members)
+    // Organization → Company has onDelete: Cascade, so companies are auto-deleted
+    if (orgsToDelete.length > 0) {
+      await prisma.organization.deleteMany({
+        where: { id: { in: orgsToDelete.map(o => o.id) } },
+      })
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {
