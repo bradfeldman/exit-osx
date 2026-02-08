@@ -115,13 +115,14 @@ function FinancialsEmptyState({
   const [fyeMonth, setFyeMonth] = useState(12)
   const [fyeDay, setFyeDay] = useState(31)
 
-  // Adjust day if month changes and current day exceeds max
-  useEffect(() => {
-    const maxDay = getDaysInMonth(fyeMonth)
+  // Change month and clamp day if needed
+  const handleMonthChange = (month: number) => {
+    setFyeMonth(month)
+    const maxDay = getDaysInMonth(month)
     if (fyeDay > maxDay) {
       setFyeDay(maxDay)
     }
-  }, [fyeMonth, fyeDay])
+  }
 
   const isCalendarYear = fyeMonth === 12 && fyeDay === 31
   const fyeHint = isCalendarYear
@@ -374,7 +375,7 @@ function FinancialsEmptyState({
                       <Label className="text-xs">Month</Label>
                       <Select
                         value={fyeMonth.toString()}
-                        onValueChange={(v) => setFyeMonth(parseInt(v))}
+                        onValueChange={(v) => handleMonthChange(parseInt(v))}
                       >
                         <SelectTrigger className="h-8 text-sm">
                           <SelectValue />
