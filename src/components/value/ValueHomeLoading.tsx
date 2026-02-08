@@ -1,6 +1,7 @@
 'use client'
 
 import { Skeleton } from '@/components/ui/skeleton'
+import { LoadingMessage } from '@/components/ui/loading-message'
 
 export function ValueHomeLoading() {
   return (
@@ -20,6 +21,8 @@ export function ValueHomeLoading() {
 
       {/* Value Timeline */}
       <Skeleton className="h-[280px] rounded-xl" />
+
+      <LoadingMessage mode="value" />
     </div>
   )
 }

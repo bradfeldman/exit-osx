@@ -749,15 +749,17 @@ export function RiskAssessmentStep({
         )}
       </div>
 
-      {/* Skip link */}
-      <div className="mt-6 text-center">
-        <button
-          onClick={onSkip}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Skip for now
-        </button>
-      </div>
+      {/* Skip link - only show when not completing */}
+      {!completing && (
+        <div className="mt-6 text-center">
+          <button
+            onClick={onSkip}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Skip for now
+          </button>
+        </div>
+      )}
     </div>
   )
 }

@@ -223,13 +223,17 @@ export function ClarifyingQuestionsStep({
       </div>
 
       <div className="flex items-center justify-between pt-6 border-t border-border">
-        <button
-          type="button"
-          onClick={onSkip}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Skip for now
-        </button>
+        {!allQuestionsAnswered ? (
+          <button
+            type="button"
+            onClick={onSkip}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Skip for now
+          </button>
+        ) : (
+          <div />
+        )}
         <button
           type="button"
           onClick={handleContinue}

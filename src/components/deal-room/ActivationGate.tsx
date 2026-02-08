@@ -57,8 +57,8 @@ export function ActivationGate({ activation, onActivate, isActivating }: Activat
             <Circle className="w-4 h-4 text-muted-foreground flex-shrink-0" />
           )}
           <span className={activation.tenureReady ? 'text-foreground text-sm' : 'text-muted-foreground text-sm'}>
-            Platform tenure: {activation.accountAgeDays} days
-            {!activation.tenureReady && ' (90 required)'}
+            Platform tenure: {activation.accountAgeDays === 0 ? 'Today' : `${activation.accountAgeDays} day${activation.accountAgeDays !== 1 ? 's' : ''}`}
+            {!activation.tenureReady && ' (90 days required)'}
           </span>
         </div>
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { Skeleton } from '@/components/ui/skeleton'
+import { LoadingMessage } from '@/components/ui/loading-message'
 
 export function EvidenceLoading() {
   return (
@@ -12,6 +13,8 @@ export function EvidenceLoading() {
         <Skeleton className="h-24 rounded-lg" />
         <Skeleton className="h-24 rounded-lg" />
       </div>
+
+      <LoadingMessage mode="evidence" />
     </div>
   )
 }

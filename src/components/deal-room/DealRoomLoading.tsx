@@ -1,6 +1,7 @@
 'use client'
 
 import { Skeleton } from '@/components/ui/skeleton'
+import { LoadingMessage } from '@/components/ui/loading-message'
 
 export function DealRoomLoading() {
   return (
@@ -24,6 +25,8 @@ export function DealRoomLoading() {
           </div>
         ))}
       </div>
+
+      <LoadingMessage mode="deal-room" />
     </div>
   )
 }

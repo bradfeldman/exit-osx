@@ -1,6 +1,7 @@
 'use client'
 
 import { Skeleton } from '@/components/ui/skeleton'
+import { LoadingMessage } from '@/components/ui/loading-message'
 
 export function DiagnosisLoading() {
   return (
@@ -23,6 +24,8 @@ export function DiagnosisLoading() {
 
       {/* Risk drivers */}
       <Skeleton className="h-[300px] rounded-xl" />
+
+      <LoadingMessage mode="diagnosis" />
     </div>
   )
 }
