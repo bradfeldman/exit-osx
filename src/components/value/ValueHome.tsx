@@ -19,6 +19,9 @@ import { WeeklyCheckInTrigger } from '@/components/weekly-check-in/WeeklyCheckIn
 import { BenchmarkComparison } from './BenchmarkComparison'
 import { WhatIfScenarios } from './WhatIfScenarios'
 import { UpgradeModal } from '@/components/subscription/UpgradeModal'
+import { PlatformTour } from './PlatformTour'
+import { Compass } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import type { CoreFactors } from '@/lib/valuation/calculate-valuation'
 
 interface DashboardData {
@@ -118,6 +121,7 @@ export function ValueHome() {
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
   const [upgradeFeature, setUpgradeFeature] = useState<string | undefined>(undefined)
   const [upgradeFeatureName, setUpgradeFeatureName] = useState<string | undefined>(undefined)
+  const [showTour, setShowTour] = useState(false)
 
   const handleUpgrade = useCallback((feature?: string, featureName?: string) => {
     setUpgradeFeature(feature)
@@ -147,6 +151,19 @@ export function ValueHome() {
     fetchData()
   }, [fetchData])
 
+  // Auto-open platform tour on first visit
+  useEffect(() => {
+    if (!isLoading && data && !localStorage.getItem('exitosx-tour-seen')) {
+      const timer = setTimeout(() => setShowTour(true), 600)
+      return () => clearTimeout(timer)
+    }
+  }, [isLoading, data])
+
+  const handleTourComplete = useCallback(() => {
+    localStorage.setItem('exitosx-tour-seen', 'true')
+    setShowTour(false)
+  }, [])
+
   if (isLoading) return <ValueHomeLoading />
   if (error || !data) return <ValueHomeError onRetry={fetchData} />
 
@@ -154,6 +171,17 @@ export function ValueHome() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="flex justify-end mb-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground gap-1.5"
+          onClick={() => setShowTour(true)}
+        >
+          <Compass className="h-4 w-4" />
+          Tour
+        </Button>
+      </div>
       <AnimatedStagger className="space-y-8" staggerDelay={0.15}>
         {/* Weekly Check-In (shows only when pending) */}
         <AnimatedItem>
@@ -271,6 +299,8 @@ export function ValueHome() {
         feature={upgradeFeature}
         featureDisplayName={upgradeFeatureName}
       />
+
+      <PlatformTour open={showTour} onComplete={handleTourComplete} />
     </div>
   )
 }

@@ -775,6 +775,20 @@ export interface SupportTicketCreatedParams extends BaseEventParams {
 }
 
 // =============================================================================
+// PLATFORM TOUR EVENTS
+// =============================================================================
+
+export interface TourStartedParams extends BaseEventParams {}
+
+export interface TourCompletedParams extends BaseEventParams {
+  stepsViewed: number
+}
+
+export interface TourSkippedParams extends BaseEventParams {
+  skippedAtStep: number
+}
+
+// =============================================================================
 // EVENT MAP - Maps event names to their parameter types
 // =============================================================================
 
@@ -907,6 +921,11 @@ export interface AnalyticsEventMap {
   'error_displayed': ErrorDisplayedParams
   'help_accessed': HelpAccessedParams
   'support_ticket_created': SupportTicketCreatedParams
+
+  // Platform Tour
+  'tour_started': TourStartedParams
+  'tour_completed': TourCompletedParams
+  'tour_skipped': TourSkippedParams
 }
 
 export type AnalyticsEventName = keyof AnalyticsEventMap
