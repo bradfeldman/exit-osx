@@ -8,8 +8,6 @@ interface ActivationGateProps {
   activation: {
     evidenceReady: boolean
     evidenceScore: number
-    tenureReady: boolean
-    accountAgeDays: number
     tierReady: boolean
     currentTier: string
     canActivate: boolean
@@ -23,8 +21,6 @@ export function ActivationGate({ activation, onActivate, isActivating }: Activat
     activation.currentTier === 'EXIT_READY' ? 'Exit-Ready'
       : activation.currentTier === 'GROWTH' ? 'Growth'
       : 'Foundation'
-
-  const daysUntilTenure = Math.max(0, 90 - activation.accountAgeDays)
 
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center max-w-md mx-auto">
@@ -46,19 +42,6 @@ export function ActivationGate({ activation, onActivate, isActivating }: Activat
           <span className={activation.evidenceReady ? 'text-foreground text-sm' : 'text-muted-foreground text-sm'}>
             Evidence: {activation.evidenceScore}% buyer-ready
             {!activation.evidenceReady && ' (70% required)'}
-          </span>
-        </div>
-
-        {/* Tenure requirement */}
-        <div className="flex items-center gap-3">
-          {activation.tenureReady ? (
-            <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-          ) : (
-            <Circle className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          )}
-          <span className={activation.tenureReady ? 'text-foreground text-sm' : 'text-muted-foreground text-sm'}>
-            Platform tenure: {activation.accountAgeDays === 0 ? 'Today' : `${activation.accountAgeDays} day${activation.accountAgeDays !== 1 ? 's' : ''}`}
-            {!activation.tenureReady && ' (90 days required)'}
           </span>
         </div>
 
@@ -89,14 +72,10 @@ export function ActivationGate({ activation, onActivate, isActivating }: Activat
           <Button asChild className="bg-[var(--burnt-orange)] hover:bg-[var(--burnt-orange)]/90 text-white">
             <Link href="/dashboard/settings?tab=billing">Upgrade to Exit-Ready</Link>
           </Button>
-        ) : !activation.evidenceReady ? (
+        ) : (
           <Button asChild variant="outline">
             <Link href="/dashboard/evidence">Build Your Evidence</Link>
           </Button>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            Available in {daysUntilTenure} days
-          </p>
         )}
       </div>
 

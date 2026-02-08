@@ -156,15 +156,6 @@ export async function GET(
     // Last upload date
     const lastUpload = documents[0]?.createdAt?.toISOString() ?? null
 
-    // Deal Room readiness (simplified check)
-    const company = await prisma.company.findUnique({
-      where: { id: companyId },
-      select: { createdAt: true },
-    })
-    const daysOnPlatform = company
-      ? Math.floor((now.getTime() - company.createdAt.getTime()) / (1000 * 60 * 60 * 24))
-      : 0
-
     return NextResponse.json({
       score: {
         percentage: scoreResult.totalPercentage,
@@ -180,8 +171,7 @@ export async function GET(
       dealRoom: {
         eligible: true,
         scoreReady: scoreResult.totalPercentage >= 70,
-        tenureReady: daysOnPlatform >= 90,
-        canActivate: scoreResult.totalPercentage >= 70 && daysOnPlatform >= 90,
+        canActivate: scoreResult.totalPercentage >= 70,
         isActivated: false,
         documentsToUnlock: scoreResult.totalPercentage < 70
           ? Math.max(1, Math.ceil((70 - scoreResult.totalPercentage) / 4))

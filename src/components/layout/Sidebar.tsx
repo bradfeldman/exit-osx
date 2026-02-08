@@ -245,40 +245,21 @@ export function Sidebar() {
             </ul>
           </div>
 
-          {/* VALUE MODELING Section - visible when business financials uploaded */}
-          {progressionData?.hasBusinessFinancials && (
+          {/* VALUE MODELING Section - always visible so users see the full map */}
+          {progressionData && (
             <div className="mb-4 pt-4 border-t border-sidebar-border/50">
               <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
                 Value Modeling
               </p>
               <ul role="list" className="mt-1 space-y-1">
                 {valueModelingLinks.map((link) => renderNavLink(link))}
-                {/* Personal Financial Statement */}
                 {renderNavLink(personalFinancialsLink)}
               </ul>
             </div>
           )}
 
-          {/* Show locked Value Modeling preview when company exists but no financials */}
-          {progressionData && !progressionData.hasBusinessFinancials && (
-            <div className="mb-4 pt-4 border-t border-sidebar-border/50">
-              <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/30 uppercase tracking-wider">
-                Value Modeling
-              </p>
-              <ul role="list" className="mt-1 space-y-1">
-                <li>
-                  <ProgressionLockedItem
-                    name="Business Financials"
-                    icon={FinancialsIcon}
-                    unlockHint="Upload business financials to unlock"
-                  />
-                </li>
-              </ul>
-            </div>
-          )}
-
-          {/* CAPITAL Section - visible when both business + personal financials complete */}
-          {progressionData?.hasBusinessFinancials && progressionData?.hasPersonalFinancials && (
+          {/* CAPITAL Section - always visible so users see the full journey */}
+          {progressionData && (
             <div className="mb-4 pt-4 border-t border-sidebar-border/50">
               <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
                 Capital

@@ -16,8 +16,6 @@ interface DealRoomData {
   activation: {
     evidenceReady: boolean
     evidenceScore: number
-    tenureReady: boolean
-    accountAgeDays: number
     tierReady: boolean
     currentTier: string
     isActivated: boolean

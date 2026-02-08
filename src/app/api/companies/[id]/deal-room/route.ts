@@ -37,11 +37,6 @@ export async function GET(
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
-    // Calculate activation status
-    const accountAgeDays = Math.floor(
-      (now.getTime() - company.createdAt.getTime()) / (1000 * 60 * 60 * 24)
-    )
-
     // Calculate evidence score
     const documents = await prisma.dataRoomDocument.findMany({
       where: { companyId },
@@ -67,15 +62,12 @@ export async function GET(
 
     const tierReady = company.organization.planTier === 'EXIT_READY'
     const evidenceReady = evidenceScore >= 70
-    const tenureReady = accountAgeDays >= 90
-    const canActivate = tierReady && evidenceReady && tenureReady
+    const canActivate = tierReady && evidenceReady
     const isActivated = !!company.dealRoomActivatedAt
 
     const activation = {
       evidenceReady,
       evidenceScore,
-      tenureReady,
-      accountAgeDays,
       tierReady,
       currentTier: company.organization.planTier,
       isActivated,

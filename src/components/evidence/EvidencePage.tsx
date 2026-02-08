@@ -79,7 +79,6 @@ interface EvidenceData {
   dealRoom: {
     eligible: boolean
     scoreReady: boolean
-    tenureReady: boolean
     canActivate: boolean
     isActivated: boolean
     documentsToUnlock: number | null
