@@ -281,7 +281,7 @@ export function LandingPage() {
                   ),
                 },
                 {
-                  title: 'Buyer&apos;s Diligence Playbook',
+                  title: "Buyer's Diligence Playbook",
                   outcome: 'Know every question, concern, and objection a buyer will raise \u2014 before they raise it. Zero surprises in negotiations.',
                   icon: (
                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
