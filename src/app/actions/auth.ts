@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import {
   isAccountLocked,
   recordFailedAttempt,
@@ -10,6 +10,7 @@ import {
   withTimingSafeResponse,
   securityLogger,
 } from '@/lib/security'
+import { SESSION_COOKIE_NAME, SESSION_COOKIE_MAX_AGE } from '@/lib/security/constants'
 import { serverAnalytics } from '@/lib/analytics/server'
 
 interface LoginResult {
@@ -167,6 +168,16 @@ export async function secureLogin(
       email,
       ipAddress,
       userAgent,
+    })
+
+    // Set last_activity cookie so middleware doesn't treat this as a stale session.
+    // Without this, the redirect to /dashboard would hit the stale-session check
+    // (sb- cookies exist but last_activity expired) and bounce back to /login.
+    const cookieStore = await cookies()
+    cookieStore.set(SESSION_COOKIE_NAME, String(Date.now()), {
+      path: '/',
+      maxAge: SESSION_COOKIE_MAX_AGE,
+      sameSite: 'lax',
     })
 
     // Track successful login (non-blocking)
