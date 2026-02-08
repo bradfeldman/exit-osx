@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   Table,
   TableBody,
@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Search, ChevronLeft, ChevronRight, UserCog } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface User {
   id: string
@@ -21,9 +21,12 @@ interface User {
   name: string | null
   isSuperAdmin: boolean
   createdAt: string
-  _count: {
-    organizations: number
-  }
+  organizations: Array<{
+    organization: {
+      planTier: string
+      subscriptionStatus: string
+    }
+  }>
 }
 
 interface UserTableProps {
@@ -36,7 +39,22 @@ interface UserTableProps {
   }
 }
 
+const planTierConfig: Record<string, { label: string; variant: 'secondary' | 'default' | 'outline' ; className?: string }> = {
+  FOUNDATION: { label: 'Foundation', variant: 'secondary' },
+  GROWTH: { label: 'Growth', variant: 'default', className: 'bg-blue-100 text-blue-800 hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-300' },
+  EXIT_READY: { label: 'Exit Ready', variant: 'default', className: 'bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900 dark:text-green-300' },
+}
+
+const statusConfig: Record<string, { label: string; className: string }> = {
+  ACTIVE: { label: 'Active', className: 'bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900 dark:text-green-300' },
+  TRIALING: { label: 'Trial', className: 'bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-900 dark:text-amber-300' },
+  PAST_DUE: { label: 'Past Due', className: 'bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-900 dark:text-red-300' },
+  CANCELLED: { label: 'Cancelled', className: 'bg-gray-100 text-gray-800 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300' },
+  EXPIRED: { label: 'Expired', className: 'bg-gray-100 text-gray-800 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300' },
+}
+
 export function UserTable({ initialUsers, initialPagination }: UserTableProps) {
+  const router = useRouter()
   const [users, setUsers] = useState(initialUsers)
   const [pagination, setPagination] = useState(initialPagination)
   const [search, setSearch] = useState('')
@@ -97,10 +115,10 @@ export function UserTable({ initialUsers, initialPagination }: UserTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead>User</TableHead>
-              <TableHead>Organizations</TableHead>
+              <TableHead>Plan</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Joined</TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -111,32 +129,52 @@ export function UserTable({ initialUsers, initialPagination }: UserTableProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{user.name || 'No name'}</div>
-                      <div className="text-sm text-muted-foreground">{user.email}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{user._count.organizations}</TableCell>
-                  <TableCell>
-                    {user.isSuperAdmin && (
-                      <Badge variant="secondary">Super Admin</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/admin/users/${user.id}`}>
-                        <UserCog className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
+              users.map((user) => {
+                const org = user.organizations[0]?.organization
+                const tierCfg = org ? planTierConfig[org.planTier] : null
+                const statusCfg = org ? statusConfig[org.subscriptionStatus] : null
+
+                return (
+                  <TableRow
+                    key={user.id}
+                    className="cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => router.push(`/admin/users/${user.id}`)}
+                  >
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{user.name || 'No name'}</div>
+                        <div className="text-sm text-muted-foreground">{user.email}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {tierCfg ? (
+                        <Badge variant={tierCfg.variant} className={tierCfg.className}>
+                          {tierCfg.label}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground">&mdash;</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {statusCfg ? (
+                        <Badge variant="default" className={statusCfg.className}>
+                          {statusCfg.label}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground">&mdash;</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {user.isSuperAdmin && (
+                        <Badge variant="secondary">Super Admin</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </TableCell>
+                  </TableRow>
+                )
+              })
             )}
           </TableBody>
         </Table>

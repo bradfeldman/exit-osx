@@ -87,7 +87,7 @@ export default function TermsPage() {
 
               <h3 className="text-xl font-medium text-foreground mb-3">3.2 Account Requirements</h3>
               <p className="text-muted-foreground mb-4">
-                You must be at least 16 years old and have the legal capacity to enter into these Terms. If using the Service on behalf of an organization, you represent that you have authority to bind that organization.
+                You must be at least 18 years old and have the legal capacity to enter into these Terms. If using the Service on behalf of an organization, you represent that you have authority to bind that organization.
               </p>
             </section>
 
@@ -197,7 +197,7 @@ export default function TermsPage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-foreground mb-4">10. Limitation of Liability</h2>
               <p className="text-muted-foreground mb-4">
-                TO THE MAXIMUM EXTENT PERMITTED BY LAW, EXIT OSX SHALL NOT BE LIABLE FOR:
+                TO THE MAXIMUM EXTENT PERMITTED BY LAW, EXIT OSx SHALL NOT BE LIABLE FOR:
               </p>
               <ul className="list-disc pl-6 text-muted-foreground mb-4 space-y-2">
                 <li>Indirect, incidental, special, or consequential damages</li>

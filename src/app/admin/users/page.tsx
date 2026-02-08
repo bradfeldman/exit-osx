@@ -12,10 +12,16 @@ async function getUsers() {
         name: true,
         isSuperAdmin: true,
         createdAt: true,
-        _count: {
+        organizations: {
           select: {
-            organizations: true,
+            organization: {
+              select: {
+                planTier: true,
+                subscriptionStatus: true,
+              },
+            },
           },
+          take: 1,
         },
       },
       orderBy: { createdAt: 'desc' },

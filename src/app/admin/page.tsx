@@ -1,29 +1,20 @@
 import { prisma } from '@/lib/prisma'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Headset,
-  TrendingUp,
-  SlidersHorizontal,
-  Users,
-  FlaskConical,
-  ArrowRight,
-  Ticket,
-  Activity,
-  Building2,
-  Scale,
-  Calculator,
-  Camera,
-  ListTodo,
-} from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Users, Building2, Ticket, Activity, Building, FlaskConical } from 'lucide-react'
 import Link from 'next/link'
+import { Badge } from '@/components/ui/badge'
 
-async function getStats() {
+async function getDashboardData() {
   try {
     const [
       userCount,
       orgCount,
       openTicketCount,
       recentActivityCount,
+      companyCount,
+      activeTrialCount,
+      recentUsers,
+      recentTickets,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.organization.count(),
@@ -35,74 +26,82 @@ async function getStats() {
           createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
         },
       }),
+      prisma.company.count({ where: { deletedAt: null } }),
+      prisma.organization.count({ where: { subscriptionStatus: 'TRIALING' } }),
+      prisma.user.findMany({
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          createdAt: true,
+          organizations: {
+            select: {
+              organization: {
+                select: { planTier: true },
+              },
+            },
+            take: 1,
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      }),
+      prisma.supportTicket.findMany({
+        where: { status: { in: ['open', 'in_progress', 'waiting'] } },
+        select: {
+          id: true,
+          subject: true,
+          userEmail: true,
+          status: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      }),
     ])
 
-    return { userCount, orgCount, openTicketCount, recentActivityCount }
+    return {
+      userCount,
+      orgCount,
+      openTicketCount,
+      recentActivityCount,
+      companyCount,
+      activeTrialCount,
+      recentUsers,
+      recentTickets,
+    }
   } catch (error) {
-    console.error('Error fetching admin stats:', error)
-    return { userCount: 0, orgCount: 0, openTicketCount: 0, recentActivityCount: 0 }
+    console.error('Error fetching admin dashboard data:', error)
+    return {
+      userCount: 0,
+      orgCount: 0,
+      openTicketCount: 0,
+      recentActivityCount: 0,
+      companyCount: 0,
+      activeTrialCount: 0,
+      recentUsers: [],
+      recentTickets: [],
+    }
   }
 }
 
-const modules = [
-  {
-    title: 'Customer Service',
-    description: 'Support tickets, activity monitoring, and customer analytics',
-    icon: Headset,
-    href: '/admin/customer-service',
-    color: 'bg-blue-500',
-    items: [
-      { label: 'Support Tickets', href: '/admin/tickets', icon: Ticket },
-      { label: 'Activity Log', href: '/admin/activity', icon: Activity },
-    ],
-  },
-  {
-    title: 'Sales & Marketing',
-    description: 'Marketing tools, analytics, and campaign management',
-    icon: TrendingUp,
-    href: '/admin/sales-marketing',
-    color: 'bg-green-500',
-    items: [],
-  },
-  {
-    title: 'Variable Management',
-    description: 'BRI weights, industry multiples, and valuation adjustments',
-    icon: SlidersHorizontal,
-    href: '/admin/variables',
-    color: 'bg-purple-500',
-    items: [
-      { label: 'BRI Weights', href: '/admin/tools/bri-weights', icon: Scale },
-      { label: 'Industry Multiples', href: '/admin/tools/industry-multiples', icon: TrendingUp },
-      { label: 'Multiple Adjustment', href: '/admin/tools/multiple-adjustment', icon: Calculator },
-      { label: 'Global BRI Weighting', href: '/admin/tools/bri-weighting', icon: SlidersHorizontal },
-    ],
-  },
-  {
-    title: 'User Management',
-    description: 'Users, organizations, and access control',
-    icon: Users,
-    href: '/admin/users',
-    color: 'bg-orange-500',
-    items: [
-      { label: 'Users', href: '/admin/users', icon: Users },
-      { label: 'Organizations', href: '/admin/organizations', icon: Building2 },
-    ],
-  },
-  {
-    title: 'R&D',
-    description: 'Developer tools, snapshots, and task management',
-    icon: FlaskConical,
-    href: '/admin/rd',
-    color: 'bg-red-500',
-    items: [
-      { label: 'Snapshot', href: '/admin/tools/snapshot', icon: Camera },
-      { label: 'Task Viewer', href: '/admin/tools/task-viewer', icon: ListTodo },
-    ],
-  },
-]
+const planTierLabel: Record<string, string> = {
+  FOUNDATION: 'Foundation',
+  GROWTH: 'Growth',
+  EXIT_READY: 'Exit Ready',
+}
 
 export default async function AdminDashboard() {
-  const stats = await getStats()
+  const data = await getDashboardData()
+
+  const stats = [
+    { label: 'Total Users', value: data.userCount, icon: Users },
+    { label: 'Organizations', value: data.orgCount, icon: Building2 },
+    { label: 'Open Tickets', value: data.openTicketCount, icon: Ticket },
+    { label: 'Activity (24h)', value: data.recentActivityCount, icon: Activity },
+    { label: 'Companies', value: data.companyCount, icon: Building },
+    { label: 'Active Trials', value: data.activeTrialCount, icon: FlaskConical },
+  ]
 
   return (
     <div className="space-y-8">
@@ -113,84 +112,125 @@ export default async function AdminDashboard() {
         </p>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.userCount.toLocaleString()}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Organizations</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.orgCount.toLocaleString()}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Open Tickets</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.openTicketCount.toLocaleString()}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Activity (24h)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.recentActivityCount.toLocaleString()}</div>
-          </CardContent>
-        </Card>
+      {/* Stats Grid */}
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+        {stats.map((stat) => (
+          <Card key={stat.label}>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {stat.label}
+                </CardTitle>
+                <stat.icon className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value.toLocaleString()}</div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* Module Cards */}
-      <div>
-        <h2 className="text-lg font-semibold mb-4">Modules</h2>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {modules.map((module) => (
-            <Card key={module.title} className="group hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className={`p-3 rounded-lg ${module.color} text-white`}>
-                    <module.icon className="h-6 w-6" />
-                  </div>
+      {/* Recent Sections */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Recent Users */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Recent Users</CardTitle>
+              <Link
+                href="/admin/users"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                View all
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {data.recentUsers.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No users yet</p>
+            ) : (
+              <div className="space-y-3">
+                {data.recentUsers.map((user) => {
+                  const tier = user.organizations[0]?.organization.planTier
+                  return (
+                    <Link
+                      key={user.id}
+                      href={`/admin/users/${user.id}`}
+                      className="flex items-center justify-between py-1 hover:bg-muted/50 -mx-2 px-2 rounded transition-colors"
+                    >
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium truncate">
+                          {user.name || 'No name'}
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {user.email}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 ml-2 shrink-0">
+                        {tier && (
+                          <Badge variant="secondary" className="text-xs">
+                            {planTierLabel[tier] || tier}
+                          </Badge>
+                        )}
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(user.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Tickets */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Open Tickets</CardTitle>
+              <Link
+                href="/admin/tickets"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                View all
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {data.recentTickets.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No open tickets</p>
+            ) : (
+              <div className="space-y-3">
+                {data.recentTickets.map((ticket) => (
                   <Link
-                    href={module.href}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    key={ticket.id}
+                    href={`/admin/tickets/${ticket.id}`}
+                    className="flex items-center justify-between py-1 hover:bg-muted/50 -mx-2 px-2 rounded transition-colors"
                   >
-                    <ArrowRight className="h-5 w-5" />
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium truncate">
+                        {ticket.subject}
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {ticket.userEmail}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 ml-2 shrink-0">
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {ticket.status.replace('_', ' ')}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(ticket.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
                   </Link>
-                </div>
-                <CardTitle className="mt-4">{module.title}</CardTitle>
-                <CardDescription>{module.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {module.items.length > 0 ? (
-                  <div className="space-y-2">
-                    {module.items.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
-                      >
-                        <item.icon className="h-4 w-4" />
-                        {item.label}
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground italic">Coming soon</p>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

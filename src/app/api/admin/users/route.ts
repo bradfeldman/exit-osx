@@ -35,10 +35,16 @@ export async function GET(request: NextRequest) {
         isSuperAdmin: true,
         createdAt: true,
         updatedAt: true,
-        _count: {
+        organizations: {
           select: {
-            organizations: true,
+            organization: {
+              select: {
+                planTier: true,
+                subscriptionStatus: true,
+              },
+            },
           },
+          take: 1,
         },
       },
       orderBy: { createdAt: 'desc' },
