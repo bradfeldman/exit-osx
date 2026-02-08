@@ -489,7 +489,7 @@ function FinancialsContent() {
   // Analytics tracking
   const hasTrackedPageView = useRef(false)
 
-  // Load periods
+  // Load periods — auto-scaffold missing ones via batch endpoint
   const loadPeriods = useCallback(async () => {
     if (!selectedCompanyId) return
 
@@ -497,7 +497,23 @@ function FinancialsContent() {
       const response = await fetchWithRetry(`/api/companies/${selectedCompanyId}/financial-periods`)
       if (response.ok) {
         const data = await response.json()
-        setPeriods(data.periods || [])
+        const loadedPeriods = data.periods || []
+
+        // If user has some periods but fewer than 3, auto-scaffold the rest.
+        // The batch endpoint is idempotent — it skips existing, creates missing.
+        if (loadedPeriods.length > 0 && loadedPeriods.length < 3) {
+          const batchResponse = await fetch(
+            `/api/companies/${selectedCompanyId}/financial-periods/batch`,
+            { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+          )
+          if (batchResponse.ok) {
+            const batchData = await batchResponse.json()
+            setPeriods(batchData.periods || loadedPeriods)
+            return
+          }
+        }
+
+        setPeriods(loadedPeriods)
       }
     } catch (err) {
       console.error('Error loading periods:', err)
