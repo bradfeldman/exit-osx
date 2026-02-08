@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireSuperAdmin, isAdminError, logAdminAction } from '@/lib/admin'
+import { createServiceClient } from '@/lib/supabase/server'
 
 export async function GET(
   request: NextRequest,
@@ -141,4 +142,80 @@ export async function PATCH(
   await logAdminAction(result.admin, 'user.update', 'User', user.id, { changes })
 
   return NextResponse.json({ user })
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const result = await requireSuperAdmin()
+  if (isAdminError(result)) return result.error
+
+  const { id } = await params
+
+  // Prevent deleting yourself
+  if (id === result.admin.user.id) {
+    return NextResponse.json(
+      { error: 'Forbidden', message: 'Cannot delete your own account' },
+      { status: 403 }
+    )
+  }
+
+  const body = await request.json()
+  const { confirmEmail, reason } = body
+
+  // Find the user
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: { id: true, email: true, authId: true, name: true },
+  })
+
+  if (!user) {
+    return NextResponse.json(
+      { error: 'Not found', message: 'User not found' },
+      { status: 404 }
+    )
+  }
+
+  // Require email confirmation
+  if (confirmEmail !== user.email) {
+    return NextResponse.json(
+      { error: 'Bad request', message: 'Email confirmation does not match' },
+      { status: 400 }
+    )
+  }
+
+  try {
+    // Log before deletion (so we capture the user info)
+    await logAdminAction(result.admin, 'user.delete', 'User', user.id, {
+      deletedEmail: user.email,
+      deletedName: user.name,
+      reason: reason || null,
+    })
+
+    // Delete from Supabase Auth first (using service role client)
+    const supabase = createServiceClient()
+    const { error: authError } = await supabase.auth.admin.deleteUser(user.authId)
+
+    if (authError) {
+      console.error('Failed to delete Supabase auth user:', authError)
+      return NextResponse.json(
+        { error: 'Failed to delete user authentication', message: authError.message },
+        { status: 500 }
+      )
+    }
+
+    // Delete from database (cascades will handle related records)
+    await prisma.user.delete({
+      where: { id },
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Error deleting user:', error)
+    return NextResponse.json(
+      { error: 'Failed to delete user' },
+      { status: 500 }
+    )
+  }
 }

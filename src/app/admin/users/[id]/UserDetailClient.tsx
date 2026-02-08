@@ -65,6 +65,10 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
   const [isSuperAdmin, setIsSuperAdmin] = useState(user.isSuperAdmin)
   const [isSaving, setIsSaving] = useState(false)
   const [showImpersonationModal, setShowImpersonationModal] = useState(false)
+  const [deleteConfirmation, setDeleteConfirmation] = useState('')
+  const [deleteReason, setDeleteReason] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const handleSave = async () => {
     setIsSaving(true)
@@ -84,6 +88,36 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
       setIsSaving(false)
     }
   }
+
+  const handleDeleteUser = async () => {
+    if (deleteConfirmation !== user.email) return
+
+    setIsDeleting(true)
+    setDeleteError(null)
+
+    try {
+      const response = await fetch(`/api/admin/users/${user.id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          confirmEmail: deleteConfirmation,
+          reason: deleteReason || null,
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.message || 'Failed to delete user')
+      }
+
+      router.push('/admin/users')
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : 'Failed to delete user')
+      setIsDeleting(false)
+    }
+  }
+
+  const isDeleteEnabled = deleteConfirmation === user.email
 
   const hasChanges =
     name !== (user.name || '') ||
@@ -355,6 +389,71 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Danger Zone */}
+      <Card className="border-red-200 bg-red-50/30">
+        <CardHeader>
+          <CardTitle className="text-red-700">Danger Zone</CardTitle>
+          <CardDescription className="text-red-600">
+            Irreversible and destructive actions
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="rounded-md border border-red-200 bg-white p-4 space-y-4">
+            <div>
+              <h3 className="font-medium text-gray-900">Delete this user</h3>
+              <p className="text-sm text-gray-600 mt-1">
+                This will permanently delete the user&apos;s account, remove them from all
+                organizations, and delete their authentication credentials. This action
+                cannot be undone.
+              </p>
+            </div>
+
+            {deleteError && (
+              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                {deleteError}
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="delete-reason" className="text-gray-700">
+                  Reason for deletion (optional)
+                </Label>
+                <Input
+                  id="delete-reason"
+                  value={deleteReason}
+                  onChange={(e) => setDeleteReason(e.target.value)}
+                  placeholder="Why is this account being deleted?"
+                  className="bg-white"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="delete-confirmation" className="text-gray-700">
+                  To confirm, type <span className="font-semibold text-red-700">{user.email}</span> below
+                </Label>
+                <Input
+                  id="delete-confirmation"
+                  value={deleteConfirmation}
+                  onChange={(e) => setDeleteConfirmation(e.target.value)}
+                  placeholder="Enter user email to confirm"
+                  className="bg-white"
+                />
+              </div>
+
+              <Button
+                variant="destructive"
+                onClick={handleDeleteUser}
+                disabled={!isDeleteEnabled || isDeleting}
+                className="w-full"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete User'}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <ImpersonationModal
         open={showImpersonationModal}

@@ -12,6 +12,7 @@ export type AuditAction =
   | 'user.enable'
   | 'user.password_reset'
   | 'user.force_logout'
+  | 'user.delete'
   // Organization actions
   | 'organization.view'
   | 'organization.update'
