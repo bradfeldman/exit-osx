@@ -30,6 +30,7 @@ interface WhatIfScenariosProps {
   currentMultiple: number
   hasAssessment: boolean
   isFreeUser?: boolean
+  onUpgrade?: () => void
 }
 
 const FACTOR_CONFIG: Record<
@@ -108,6 +109,7 @@ export function WhatIfScenarios({
   currentMultiple,
   hasAssessment,
   isFreeUser = false,
+  onUpgrade,
 }: WhatIfScenariosProps) {
   const [selectedFactor, setSelectedFactor] = useState<FactorKey | null>(null)
   const [hypotheticalValue, setHypotheticalValue] = useState<string | null>(null)
@@ -155,9 +157,15 @@ export function WhatIfScenarios({
               ? 'Upgrade to unlock What-If Scenarios'
               : 'Complete your assessment to unlock What-If Scenarios'}
           </p>
-          <p className="text-xs text-muted-foreground/60">
+          <p className="text-xs text-muted-foreground/60 mb-3">
             See how improving specific business factors could change your valuation
           </p>
+          {isFreeUser && onUpgrade && (
+            <Button size="sm" variant="outline" onClick={onUpgrade}>
+              Explore Scenarios
+              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+            </Button>
+          )}
         </CardContent>
       </Card>
     )

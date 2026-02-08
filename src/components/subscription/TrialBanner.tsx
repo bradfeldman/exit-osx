@@ -39,13 +39,14 @@ export function TrialBanner() {
 
   const isDismissed = wasDismissed || manuallyDismissed
 
-  // Show for trial users with 7 or fewer days remaining
-  const shouldShowTrialBanner = isTrialing && trialDaysRemaining !== null && trialDaysRemaining <= 7
+  // Show for all trial users so they always know their trial status
+  const shouldShowTrialBanner = isTrialing && trialDaysRemaining !== null
 
   // Show for expired trials
   const showExpiredBanner = status === 'EXPIRED'
 
   const isUrgent = trialDaysRemaining !== null && trialDaysRemaining <= 3
+  const isEndingSoon = trialDaysRemaining !== null && trialDaysRemaining <= 7
   const shouldShow = !isLoading && !isDismissed && (shouldShowTrialBanner || showExpiredBanner)
 
   // Track banner display
@@ -77,7 +78,7 @@ export function TrialBanner() {
     })
   }
 
-  // Don't show if loading, dismissed, not trialing, or more than 7 days remaining
+  // Don't show if loading, dismissed, or not trialing/expired
   if (!shouldShow) {
     return null
   }
@@ -90,7 +91,9 @@ export function TrialBanner() {
           ? 'bg-destructive/10 border-b border-destructive/20'
           : isUrgent
           ? 'bg-amber-500/10 border-b border-amber-500/20'
-          : 'bg-primary/10 border-b border-primary/20'
+          : isEndingSoon
+          ? 'bg-primary/10 border-b border-primary/20'
+          : 'bg-muted/50 border-b border-border/50'
       )}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
@@ -102,7 +105,9 @@ export function TrialBanner() {
                 ? 'bg-destructive/10'
                 : isUrgent
                 ? 'bg-amber-500/10'
-                : 'bg-primary/10'
+                : isEndingSoon
+                ? 'bg-primary/10'
+                : 'bg-muted'
             )}
           >
             {showExpiredBanner ? (
@@ -111,7 +116,7 @@ export function TrialBanner() {
               <Sparkles
                 className={cn(
                   'h-4 w-4',
-                  isUrgent ? 'text-amber-600' : 'text-primary'
+                  isUrgent ? 'text-amber-600' : isEndingSoon ? 'text-primary' : 'text-muted-foreground'
                 )}
               />
             )}
@@ -141,7 +146,11 @@ export function TrialBanner() {
                     : `${trialDaysRemaining} days left in your trial`}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Upgrade to keep all your premium features
+                  {isUrgent
+                    ? 'After your trial, you\'ll lose access to premium features and revert to the free Foundation plan.'
+                    : isEndingSoon
+                    ? 'Upgrade to keep all your premium features when your trial ends.'
+                    : 'You have full access to all premium features. Upgrade anytime to keep them.'}
                 </p>
               </>
             )}

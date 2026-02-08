@@ -623,13 +623,26 @@ function SignupPageContent() {
               </form>
             </div>
 
-            {/* Social Proof - Light, under form */}
-            <div className="mt-6 text-center space-y-2">
-              <p className="text-sm text-muted-foreground">
-                Built for founders of $1M–$100M businesses
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Designed using real buyer diligence logic
+            {/* Social Proof */}
+            <div className="mt-6 space-y-4">
+              <div className="flex items-center justify-center gap-6 text-center">
+                <div>
+                  <p className="text-lg font-semibold text-foreground">500+</p>
+                  <p className="text-xs text-muted-foreground">Assessments run</p>
+                </div>
+                <div className="h-8 w-px bg-border" />
+                <div>
+                  <p className="text-lg font-semibold text-foreground">$3.5M</p>
+                  <p className="text-xs text-muted-foreground">Avg. value gap found</p>
+                </div>
+                <div className="h-8 w-px bg-border" />
+                <div>
+                  <p className="text-lg font-semibold text-foreground">2 min</p>
+                  <p className="text-xs text-muted-foreground">To first insight</p>
+                </div>
+              </div>
+              <p className="text-center text-xs text-muted-foreground">
+                Built for $1M–$100M businesses using real buyer diligence logic
               </p>
             </div>
           </div>

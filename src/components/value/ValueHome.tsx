@@ -18,6 +18,7 @@ import { DriftReportBanner } from '@/components/drift-report/DriftReportBanner'
 import { WeeklyCheckInTrigger } from '@/components/weekly-check-in/WeeklyCheckInTrigger'
 import { BenchmarkComparison } from './BenchmarkComparison'
 import { WhatIfScenarios } from './WhatIfScenarios'
+import { UpgradeModal } from '@/components/subscription/UpgradeModal'
 import type { CoreFactors } from '@/lib/valuation/calculate-valuation'
 
 interface DashboardData {
@@ -114,6 +115,15 @@ export function ValueHome() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
+  const [upgradeFeature, setUpgradeFeature] = useState<string | undefined>(undefined)
+  const [upgradeFeatureName, setUpgradeFeatureName] = useState<string | undefined>(undefined)
+
+  const handleUpgrade = useCallback((feature?: string, featureName?: string) => {
+    setUpgradeFeature(feature)
+    setUpgradeFeatureName(featureName)
+    setUpgradeModalOpen(true)
+  }, [])
 
   const fetchData = useCallback(async () => {
     if (!selectedCompanyId) return
@@ -178,6 +188,7 @@ export function ValueHome() {
             currentMultiple={tier1?.finalMultiple ?? 0}
             hasAssessment={data.hasAssessment}
             isFreeUser={isFreeUser}
+            onUpgrade={() => handleUpgrade('company-assessment', 'Industry Benchmarks')}
           />
         </AnimatedItem>
 
@@ -208,6 +219,7 @@ export function ValueHome() {
             currentMultiple={tier1?.finalMultiple ?? 0}
             hasAssessment={data.hasAssessment}
             isFreeUser={isFreeUser}
+            onUpgrade={() => handleUpgrade('company-assessment', 'What-If Scenarios')}
           />
         </AnimatedItem>
 
@@ -217,6 +229,7 @@ export function ValueHome() {
             task={data.nextMove.task}
             comingUp={data.nextMove.comingUp}
             isFreeUser={isFreeUser}
+            onUpgrade={() => handleUpgrade('action-plan', 'Action Plan')}
           />
         </AnimatedItem>
 
@@ -251,6 +264,13 @@ export function ValueHome() {
           />
         </AnimatedItem>
       </AnimatedStagger>
+
+      <UpgradeModal
+        open={upgradeModalOpen}
+        onOpenChange={setUpgradeModalOpen}
+        feature={upgradeFeature}
+        featureDisplayName={upgradeFeatureName}
+      />
     </div>
   )
 }

@@ -3,12 +3,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
+import { useSubscription } from '@/contexts/SubscriptionContext'
 import { AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
 import { DiagnosisHeader } from './DiagnosisHeader'
 import { CategoryPanel } from './CategoryPanel'
 import { RiskDriversSection } from './RiskDriversSection'
 import { DiagnosisLoading } from './DiagnosisLoading'
 import { DiagnosisError } from './DiagnosisError'
+import { UpgradeModal } from '@/components/subscription/UpgradeModal'
 
 interface CategoryData {
   category: string
@@ -60,12 +62,15 @@ interface DiagnosisData {
 
 export function DiagnosisPage() {
   const { selectedCompanyId } = useCompany()
+  const { planTier } = useSubscription()
+  const isFreeUser = planTier === 'foundation'
   const searchParams = useSearchParams()
   const [data, setData] = useState<DiagnosisData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
   const [hasInitializedExpand, setHasInitializedExpand] = useState(false)
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
 
   const fetchData = useCallback(async () => {
     if (!selectedCompanyId) return
@@ -172,10 +177,19 @@ export function DiagnosisPage() {
           <RiskDriversSection
             riskDrivers={data.riskDrivers}
             hasAssessment={data.hasAssessment}
+            isFreeUser={isFreeUser}
+            onUpgrade={() => setUpgradeModalOpen(true)}
             onExpandCategory={handleExpandCategory}
           />
         </AnimatedItem>
       </AnimatedStagger>
+
+      <UpgradeModal
+        open={upgradeModalOpen}
+        onOpenChange={setUpgradeModalOpen}
+        feature="risk-assessment"
+        featureDisplayName="Risk Diagnostic"
+      />
     </div>
   )
 }

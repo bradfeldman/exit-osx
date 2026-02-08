@@ -1,6 +1,6 @@
 'use client'
 
-import { Lock, Check, Circle } from 'lucide-react'
+import { Lock, Check, Circle, FolderOpen, Users, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
@@ -98,6 +98,42 @@ export function ActivationGate({ activation, onActivate, isActivating }: Activat
             Available in {daysUntilTenure} days
           </p>
         )}
+      </div>
+
+      {/* Value Preview */}
+      <div className="mt-10 w-full border-t border-border pt-8">
+        <p className="text-xs font-semibold tracking-wider uppercase text-muted-foreground mb-4">
+          What you&apos;ll unlock
+        </p>
+        <div className="grid grid-cols-1 gap-3 text-left">
+          <div className="flex items-start gap-3 rounded-lg border border-border/50 bg-muted/30 p-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
+              <FolderOpen className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">Buyer-Ready Data Room</p>
+              <p className="text-xs text-muted-foreground">Organized document vault matching what buyers expect in diligence</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 rounded-lg border border-border/50 bg-muted/30 p-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
+              <Users className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">Deal Pipeline Tracker</p>
+              <p className="text-xs text-muted-foreground">Track buyer conversations, offers, and deal stages in one place</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 rounded-lg border border-border/50 bg-muted/30 p-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
+              <FileText className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">Export-Ready Reports</p>
+              <p className="text-xs text-muted-foreground">Generate due diligence packages and readiness summaries for buyers</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

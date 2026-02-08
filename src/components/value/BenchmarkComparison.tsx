@@ -2,7 +2,8 @@
 
 import { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Lock } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Lock, ArrowRight } from 'lucide-react'
 
 interface BenchmarkComparisonProps {
   industryName: string
@@ -11,6 +12,7 @@ interface BenchmarkComparisonProps {
   currentMultiple: number
   hasAssessment: boolean
   isFreeUser?: boolean
+  onUpgrade?: () => void
 }
 
 export function BenchmarkComparison({
@@ -20,6 +22,7 @@ export function BenchmarkComparison({
   currentMultiple,
   hasAssessment,
   isFreeUser = false,
+  onUpgrade,
 }: BenchmarkComparisonProps) {
   const { percentile, topQuartileThreshold, quartile, message } = useMemo(() => {
     const range = industryMultipleHigh - industryMultipleLow
@@ -56,9 +59,15 @@ export function BenchmarkComparison({
               ? 'Upgrade to see industry benchmarks'
               : 'Complete your assessment to see industry benchmarks'}
           </p>
-          <p className="text-xs text-muted-foreground/60">
+          <p className="text-xs text-muted-foreground/60 mb-3">
             Compare your EBITDA multiple against industry peers
           </p>
+          {isFreeUser && onUpgrade && (
+            <Button size="sm" variant="outline" onClick={onUpgrade}>
+              See Where You Rank
+              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+            </Button>
+          )}
         </CardContent>
       </Card>
     )
