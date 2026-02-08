@@ -154,7 +154,7 @@ function SignupPageContent() {
         {/* Minimal Header */}
         <header className="border-b border-border">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <Link href="/" className="inline-flex items-center gap-2">
+            <a href="https://exitosx.com" className="inline-flex items-center gap-2">
               <Image
                 src="/logo.webp"
                 alt="Exit OSx"
@@ -169,7 +169,7 @@ function SignupPageContent() {
                 height={28}
                 className="h-6 w-auto"
               />
-            </Link>
+            </a>
           </div>
         </header>
 
@@ -303,7 +303,7 @@ function SignupPageContent() {
       {/* Minimal Header */}
       <header className="border-b border-border">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <Link href="/" className="inline-flex items-center gap-2">
+          <a href="https://exitosx.com" className="inline-flex items-center gap-2">
             <Image
               src="/logo.webp"
               alt="Exit OSx"
@@ -318,7 +318,7 @@ function SignupPageContent() {
               height={28}
               className="h-6 w-auto"
             />
-          </Link>
+          </a>
           <Link
             href={buildUrlWithRedirect('/login', redirectUrl)}
             className="text-sm text-muted-foreground hover:text-foreground"
@@ -595,7 +595,7 @@ function SignupPageContent() {
       <footer className="border-t border-border py-6">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm text-muted-foreground">
-            Exit OSx is an operating system for exit readiness—not a sales funnel.
+            Exit OSx is an operating system for exit readiness, not a sales funnel.
           </p>
           <p className="text-sm text-muted-foreground">
             Start free. Upgrade only when it makes sense.
