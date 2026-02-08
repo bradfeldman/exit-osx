@@ -778,7 +778,7 @@ export interface SupportTicketCreatedParams extends BaseEventParams {
 // PLATFORM TOUR EVENTS
 // =============================================================================
 
-export interface TourStartedParams extends BaseEventParams {}
+export type TourStartedParams = BaseEventParams
 
 export interface TourCompletedParams extends BaseEventParams {
   stepsViewed: number

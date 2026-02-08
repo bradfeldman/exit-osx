@@ -122,6 +122,7 @@ export function ValueHome() {
   const [upgradeFeature, setUpgradeFeature] = useState<string | undefined>(undefined)
   const [upgradeFeatureName, setUpgradeFeatureName] = useState<string | undefined>(undefined)
   const [showTour, setShowTour] = useState(false)
+  const [tourKey, setTourKey] = useState(0)
 
   const handleUpgrade = useCallback((feature?: string, featureName?: string) => {
     setUpgradeFeature(feature)
@@ -154,7 +155,10 @@ export function ValueHome() {
   // Auto-open platform tour on first visit
   useEffect(() => {
     if (!isLoading && data && !localStorage.getItem('exitosx-tour-seen')) {
-      const timer = setTimeout(() => setShowTour(true), 600)
+      const timer = setTimeout(() => {
+        setTourKey((k) => k + 1)
+        setShowTour(true)
+      }, 600)
       return () => clearTimeout(timer)
     }
   }, [isLoading, data])
@@ -176,7 +180,7 @@ export function ValueHome() {
           variant="ghost"
           size="sm"
           className="text-muted-foreground gap-1.5"
-          onClick={() => setShowTour(true)}
+          onClick={() => { setTourKey((k) => k + 1); setShowTour(true) }}
         >
           <Compass className="h-4 w-4" />
           Tour
@@ -300,7 +304,7 @@ export function ValueHome() {
         featureDisplayName={upgradeFeatureName}
       />
 
-      <PlatformTour open={showTour} onComplete={handleTourComplete} />
+      <PlatformTour key={tourKey} open={showTour} onComplete={handleTourComplete} />
     </div>
   )
 }

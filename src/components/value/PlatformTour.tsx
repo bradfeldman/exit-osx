@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from '@/lib/motion'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -110,12 +110,12 @@ interface PlatformTourProps {
 export function PlatformTour({ open, onComplete }: PlatformTourProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [direction, setDirection] = useState(1)
+  const hasTrackedStart = useRef(false)
 
-  // Reset to step 0 whenever the tour opens
+  // Track tour start once when opened (component remounts via key prop)
   useEffect(() => {
-    if (open) {
-      setCurrentStep(0)
-      setDirection(1)
+    if (open && !hasTrackedStart.current) {
+      hasTrackedStart.current = true
       analytics.track('tour_started', {})
     }
   }, [open])
