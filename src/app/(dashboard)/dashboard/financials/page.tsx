@@ -489,7 +489,8 @@ function FinancialsContent() {
   // Analytics tracking
   const hasTrackedPageView = useRef(false)
 
-  // Load periods — auto-scaffold missing ones via batch endpoint
+  // Load periods — always call batch to ensure current years are scaffolded.
+  // The batch endpoint is idempotent: skips existing, creates missing, returns full list.
   const loadPeriods = useCallback(async () => {
     if (!selectedCompanyId) return
 
@@ -499,9 +500,8 @@ function FinancialsContent() {
         const data = await response.json()
         const loadedPeriods = data.periods || []
 
-        // If user has some periods but fewer than 3, auto-scaffold the rest.
-        // The batch endpoint is idempotent — it skips existing, creates missing.
-        if (loadedPeriods.length > 0 && loadedPeriods.length < 3) {
+        if (loadedPeriods.length > 0) {
+          // Ensure periods are up-to-date (e.g. new fiscal year rolls over)
           const batchResponse = await fetch(
             `/api/companies/${selectedCompanyId}/financial-periods/batch`,
             { method: 'POST', headers: { 'Content-Type': 'application/json' } }
