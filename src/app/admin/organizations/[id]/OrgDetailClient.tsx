@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { formatIcbName } from '@/lib/utils/format-icb'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -334,7 +335,7 @@ export function OrgDetailClient({ organization }: OrgDetailClientProps) {
                         <TableCell>
                           <div className="font-medium">{company.name}</div>
                         </TableCell>
-                        <TableCell>{company.icbIndustry}</TableCell>
+                        <TableCell>{formatIcbName(company.icbIndustry)}</TableCell>
                         <TableCell>
                           {formatCurrency(company.annualRevenue)}
                         </TableCell>

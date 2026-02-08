@@ -10,6 +10,7 @@ import { UpNextQueue } from './UpNextQueue'
 import { CompletedThisMonth } from './CompletedThisMonth'
 import { WaitingOnOthers } from './WaitingOnOthers'
 import { EmptyState } from './EmptyState'
+import { AllCompletedState } from './AllCompletedState'
 import { ActionsLoading } from './ActionsLoading'
 import { ActionsError } from './ActionsError'
 import { TaskCompletionDialog } from './TaskCompletionDialog'
@@ -247,6 +248,10 @@ export function ActionsPage() {
 
   if (hasNoTasks) return <EmptyState />
 
+  const allTasksCompleted = data.activeTasks.length === 0
+    && data.upNext.length === 0
+    && data.waitingOnOthers.length === 0
+
   return (
     <div className="max-w-[800px] mx-auto px-6 py-8">
       <AnimatedStagger className="space-y-6" staggerDelay={0.1}>
@@ -259,6 +264,15 @@ export function ActionsPage() {
             valueRecoveredThisMonth={data.summary.valueRecoveredThisMonth}
           />
         </AnimatedItem>
+
+        {allTasksCompleted && (
+          <AnimatedItem>
+            <AllCompletedState
+              completedCount={data.summary.completedThisMonth}
+              valueRecovered={data.summary.valueRecoveredThisMonth}
+            />
+          </AnimatedItem>
+        )}
 
         {data.activeTasks.map(task => (
           <AnimatedItem key={task.id}>

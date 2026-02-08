@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Lock, TrendingUp, TrendingDown, ArrowRight } from 'lucide-react'
 import { useCountUpCurrency } from '@/hooks/useCountUp'
+import { CheckCircle } from 'lucide-react'
 import {
   CORE_FACTOR_SCORES,
   calculateCoreScore,
@@ -196,38 +197,58 @@ export function WhatIfScenarios({
         </div>
 
         {/* Hypothetical Value Selection */}
-        {selectedFactor && (
-          <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">
-              {FACTOR_CONFIG[selectedFactor].description}
-            </p>
-            <div className="flex items-center gap-3">
-              {currentFactorValue && (
-                <span className="text-xs text-muted-foreground px-2 py-1 bg-muted rounded">
-                  Current: {FACTOR_CONFIG[selectedFactor].options.find(o => o.value === currentFactorValue)?.label ?? currentFactorValue}
-                </span>
+        {selectedFactor && (() => {
+          const currentScore = currentFactorValue
+            ? (CORE_FACTOR_SCORES[selectedFactor]?.[currentFactorValue] ?? 0)
+            : 0
+          const upgradeOptions = FACTOR_CONFIG[selectedFactor].options
+            .filter(o => {
+              if (o.value === currentFactorValue) return false
+              const optionScore = CORE_FACTOR_SCORES[selectedFactor]?.[o.value] ?? 0
+              return optionScore > currentScore
+            })
+          const isAtTopTier = upgradeOptions.length === 0
+
+          return (
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">
+                {FACTOR_CONFIG[selectedFactor].description}
+              </p>
+              {isAtTopTier ? (
+                <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-lg">
+                  <CheckCircle className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                  <p className="text-xs text-emerald-700">
+                    You&apos;re already at the highest level for {FACTOR_CONFIG[selectedFactor].label.toLowerCase()}. Try improving another factor.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  {currentFactorValue && (
+                    <span className="text-xs text-muted-foreground px-2 py-1 bg-muted rounded">
+                      Current: {FACTOR_CONFIG[selectedFactor].options.find(o => o.value === currentFactorValue)?.label ?? currentFactorValue}
+                    </span>
+                  )}
+                  <ArrowRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                  <Select
+                    value={hypotheticalValue ?? ''}
+                    onValueChange={setHypotheticalValue}
+                  >
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="What if it were..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {upgradeOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               )}
-              <ArrowRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-              <Select
-                value={hypotheticalValue ?? ''}
-                onValueChange={setHypotheticalValue}
-              >
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="What if it were..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {FACTOR_CONFIG[selectedFactor].options
-                    .filter(o => o.value !== currentFactorValue)
-                    .map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
             </div>
-          </div>
-        )}
+          )
+        })()}
 
         {/* Result Card */}
         {result && hypotheticalValue && (

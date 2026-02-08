@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { formatIcbName } from '@/lib/utils/format-icb'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
@@ -133,7 +134,7 @@ export async function POST(request: Request) {
         </tr>
         <tr>
           <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9;"><strong>Industry</strong></td>
-          <td style="padding: 8px; border: 1px solid #ddd;">${company.icbSubSector || company.icbSector || company.icbSuperSector || 'Not specified'}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${formatIcbName(company.icbSubSector) || formatIcbName(company.icbSector) || formatIcbName(company.icbSuperSector) || 'Not specified'}</td>
         </tr>
         <tr>
           <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9;"><strong>Annual Revenue</strong></td>

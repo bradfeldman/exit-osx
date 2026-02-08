@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { formatIcbName } from '@/lib/utils/format-icb'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -239,7 +240,7 @@ export default function AdvisorClientPage() {
             <div>
               <h1 className="text-2xl font-bold">{company?.name}</h1>
               {company?.icbSector && (
-                <p className="text-muted-foreground">{company.icbSector}</p>
+                <p className="text-muted-foreground">{formatIcbName(company.icbSector)}</p>
               )}
             </div>
           </div>

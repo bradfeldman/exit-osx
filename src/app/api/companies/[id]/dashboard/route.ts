@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { formatIcbName } from '@/lib/utils/format-icb'
 
 // --- Buyer explanations for Valuation Bridge ---
 const BUYER_EXPLANATIONS: Record<string, string> = {
@@ -71,12 +72,6 @@ function formatImpact(valueDelta: number, briDelta: number): string {
     parts.push(`${briDelta > 0 ? '+' : ''}${Math.round(briDelta)} BRI points`)
   }
   return parts.join(', ') || 'Baseline'
-}
-
-// Helper to format ICB code to readable name
-function formatIcbName(code: string | null): string | null {
-  if (!code) return null
-  return code.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
 }
 
 // Build full industry classification path

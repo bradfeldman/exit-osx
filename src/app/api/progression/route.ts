@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
       latestSnapshot,
       completedTaskCount,
       financialPeriodCount,
+      financialEvidenceCount,
       personalFinancialsExists,
     ] = await Promise.all([
       // Get latest valuation snapshot (indicates assessment complete)
@@ -56,6 +57,15 @@ export async function GET(request: NextRequest) {
         },
       }),
 
+      // Also check for uploaded financial evidence documents (P&L, tax docs)
+      prisma.dataRoomDocument.count({
+        where: {
+          companyId,
+          category: { in: ['FINANCIAL', 'TAX'] },
+          fileUrl: { not: null },
+        },
+      }),
+
       // Check for personal financials (linked through company's organization)
       prisma.company.findUnique({
         where: { id: companyId },
@@ -78,8 +88,11 @@ export async function GET(request: NextRequest) {
     // Determine if user has personal financials
     const hasPersonalFinancials = personalFinancialsExists?.organization?.personalFinancials !== null
 
+    // Business financials unlocked if structured data OR uploaded evidence exists
+    const hasBusinessFinancials = financialPeriodCount > 0 || financialEvidenceCount > 0
+
     // Debug logging for progression unlock issues
-    console.log(`[PROGRESSION] Company ${companyId}: hasBusinessFinancials=${financialPeriodCount > 0}, hasDcfValuation=${hasDcfValuation}, hasPersonalFinancials=${hasPersonalFinancials}, personalFinancialsData=`, JSON.stringify(personalFinancialsExists))
+    console.log(`[PROGRESSION] Company ${companyId}: hasBusinessFinancials=${hasBusinessFinancials} (periods=${financialPeriodCount}, evidence=${financialEvidenceCount}), hasDcfValuation=${hasDcfValuation}, hasPersonalFinancials=${hasPersonalFinancials}, personalFinancialsData=`, JSON.stringify(personalFinancialsExists))
 
     // Determine if Exit-Ready (BRI score above threshold)
     const briScore = latestSnapshot?.briScore ? Number(latestSnapshot.briScore) : null
@@ -88,7 +101,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       hasAssessment: latestSnapshot !== null,
       completedTaskCount,
-      hasBusinessFinancials: financialPeriodCount > 0,
+      hasBusinessFinancials,
       hasDcfValuation,
       hasPersonalFinancials,
       isExitReady,

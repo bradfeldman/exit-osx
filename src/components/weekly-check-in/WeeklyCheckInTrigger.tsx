@@ -14,7 +14,11 @@ interface CheckInData {
   skippedAt: string | null
 }
 
-export function WeeklyCheckInTrigger() {
+interface WeeklyCheckInTriggerProps {
+  onRefresh?: () => void
+}
+
+export function WeeklyCheckInTrigger({ onRefresh }: WeeklyCheckInTriggerProps = {}) {
   const { selectedCompanyId } = useCompany()
   const [checkIn, setCheckIn] = useState<CheckInData | null>(null)
   const [showPrompt, setShowPrompt] = useState(false)
@@ -79,6 +83,7 @@ export function WeeklyCheckInTrigger() {
           onComplete={() => {
             setShowPrompt(false)
             fetchCheckIn()
+            onRefresh?.()
           }}
         />
       )}

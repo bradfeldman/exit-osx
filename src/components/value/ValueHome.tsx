@@ -147,12 +147,12 @@ export function ValueHome() {
       <AnimatedStagger className="space-y-8" staggerDelay={0.15}>
         {/* Weekly Check-In (shows only when pending) */}
         <AnimatedItem>
-          <WeeklyCheckInTrigger />
+          <WeeklyCheckInTrigger onRefresh={fetchData} />
         </AnimatedItem>
 
         {/* Monthly Disclosure Check-in (shows only when pending) */}
         <AnimatedItem>
-          <DisclosureTrigger />
+          <DisclosureTrigger onRefresh={fetchData} />
         </AnimatedItem>
 
         {/* Hero Metrics Bar */}

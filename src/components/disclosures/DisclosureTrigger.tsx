@@ -22,7 +22,11 @@ interface PromptSetData {
   }>
 }
 
-export function DisclosureTrigger() {
+interface DisclosureTriggerProps {
+  onRefresh?: () => void
+}
+
+export function DisclosureTrigger({ onRefresh }: DisclosureTriggerProps = {}) {
   const { selectedCompanyId } = useCompany()
   const [promptSet, setPromptSet] = useState<PromptSetData | null>(null)
   const [showPrompt, setShowPrompt] = useState(false)
@@ -90,6 +94,7 @@ export function DisclosureTrigger() {
           onComplete={() => {
             setShowPrompt(false)
             setPromptSet(null)
+            onRefresh?.()
           }}
         />
       )}

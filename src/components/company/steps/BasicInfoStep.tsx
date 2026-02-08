@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from '@/lib/motion'
+import { formatIcbName } from '@/lib/utils/format-icb'
 import { Button } from '@/components/ui/button'
 import { IndustryListInline } from '../IndustryListInline'
 import type { CompanyFormData } from '../CompanySetupWizard'
@@ -224,13 +225,13 @@ export function BasicInfoStep({ formData, updateFormData, businessDescription, o
                 </svg>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-foreground truncate">{formData.icbSubSector}</p>
+                <p className="font-bold text-foreground truncate">{formatIcbName(formData.icbSubSector)}</p>
                 <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                  <span>{formData.icbIndustry}</span>
+                  <span>{formatIcbName(formData.icbIndustry)}</span>
                   <span className="text-primary">→</span>
-                  <span>{formData.icbSuperSector}</span>
+                  <span>{formatIcbName(formData.icbSuperSector)}</span>
                   <span className="text-primary">→</span>
-                  <span>{formData.icbSector}</span>
+                  <span>{formatIcbName(formData.icbSector)}</span>
                 </p>
               </div>
               <button

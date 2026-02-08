@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { formatIcbName } from '@/lib/utils/format-icb'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -284,7 +285,7 @@ export default function AdvisorDashboardPage() {
 
                         {client.company?.icbSector && (
                           <p className="text-xs text-muted-foreground mb-3">
-                            {client.company.icbSector}
+                            {formatIcbName(client.company.icbSector)}
                           </p>
                         )}
 
