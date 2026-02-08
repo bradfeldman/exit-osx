@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Eye, EyeOff, AlertTriangle, Loader2 } from 'lucide-react'
 import { secureSignup } from '@/app/actions/auth'
+import { createClient } from '@/lib/supabase/client'
 import { getRedirectUrl, buildUrlWithRedirect, isInviteRedirect } from '@/lib/utils/redirect'
 import { type PlanTier } from '@/lib/pricing'
 import { analytics } from '@/lib/analytics'
@@ -47,6 +48,7 @@ function SignupPageContent() {
   const [warning, setWarning] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
 
   // Analytics: Page load time reference
   const pageLoadTime = useRef(Date.now())
@@ -291,19 +293,38 @@ function SignupPageContent() {
 
               {/* Secondary Action */}
               <div className="text-center text-sm text-muted-foreground">
-                <span>Didn&apos;t receive it? </span>
-                <button
-                  type="button"
-                  className="text-primary hover:underline font-medium"
-                  onClick={() => {
-                    // In a real implementation, this would trigger resend
-                    alert('Check your spam folder. If still missing, try signing up again.')
-                  }}
-                >
-                  Resend email
-                </button>
-                <span> · </span>
-                <span>Check spam</span>
+                {resendStatus === 'sent' ? (
+                  <span className="text-emerald-700 font-medium">New email sent! Check your inbox.</span>
+                ) : (
+                  <>
+                    <span>Didn&apos;t receive it? </span>
+                    <button
+                      type="button"
+                      className="text-primary hover:underline font-medium disabled:opacity-50"
+                      disabled={resendStatus === 'sending'}
+                      onClick={async () => {
+                        setResendStatus('sending')
+                        try {
+                          const supabase = createClient()
+                          const { error: resendError } = await supabase.auth.resend({
+                            type: 'signup',
+                            email,
+                          })
+                          setResendStatus(resendError ? 'error' : 'sent')
+                        } catch {
+                          setResendStatus('error')
+                        }
+                      }}
+                    >
+                      {resendStatus === 'sending' ? 'Sending...' : 'Resend email'}
+                    </button>
+                    <span> · </span>
+                    <span>Check spam</span>
+                  </>
+                )}
+                {resendStatus === 'error' && (
+                  <p className="text-destructive mt-1">Failed to resend. Try signing up again.</p>
+                )}
               </div>
             </div>
 

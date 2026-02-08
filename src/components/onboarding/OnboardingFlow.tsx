@@ -401,7 +401,7 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     // Use the canonical non-linear valuation formula
     // Core Score is 1.0 for onboarding (all optimal defaults)
     const coreScore = 1.0
-    const adjustedEbitda = industryPreviewData?.adjustedEbitda || formData.annualRevenue * 0.15
+    const adjustedEbitda = industryPreviewData?.adjustedEbitda || formData.annualRevenue * 0.10
     const multipleLow = industryPreviewData?.multipleLow || 3.0
     const multipleHigh = industryPreviewData?.multipleHigh || 6.0
 

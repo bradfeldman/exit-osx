@@ -7,6 +7,18 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/dashboard'
+  const errorCode = searchParams.get('error')
+  const errorDescription = searchParams.get('error_description')
+
+  // Handle Supabase error redirects (e.g. expired OTP links)
+  if (errorCode) {
+    const isExpired = errorCode === 'access_denied' &&
+      (errorDescription?.includes('expired') || errorDescription?.includes('OTP'))
+    if (isExpired) {
+      return NextResponse.redirect(`${origin}/login?error=link_expired`)
+    }
+    return NextResponse.redirect(`${origin}/login?error=auth_error`)
+  }
 
   if (code) {
     const supabase = await createClient()
@@ -29,8 +41,13 @@ export async function GET(request: Request) {
       })
       return response
     }
+
+    // exchangeCodeForSession failed — check if it's an expiration
+    if (error?.message?.includes('expired') || error?.code === 'otp_expired') {
+      return NextResponse.redirect(`${origin}/login?error=link_expired`)
+    }
   }
 
   // Return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/login?error=Could not authenticate user`)
+  return NextResponse.redirect(`${origin}/login?error=auth_error`)
 }

@@ -26,16 +26,37 @@ export function EvidenceUploadDialog({
   const [status, setStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
 
+  const [isDragOver, setIsDragOver] = useState(false)
+
+  const validateAndSetFile = (file: File) => {
+    if (file.size > 50 * 1024 * 1024) {
+      setErrorMessage('File too large. Maximum size is 50MB.')
+      return
+    }
+    setSelectedFile(file)
+    setErrorMessage('')
+  }
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      if (file.size > 50 * 1024 * 1024) {
-        setErrorMessage('File too large. Maximum size is 50MB.')
-        return
-      }
-      setSelectedFile(file)
-      setErrorMessage('')
-    }
+    if (file) validateAndSetFile(file)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file) validateAndSetFile(file)
   }
 
   const handleUpload = async () => {
@@ -110,10 +131,17 @@ export function EvidenceUploadDialog({
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="w-full border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 hover:bg-muted/20 transition-colors"
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`w-full border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+              isDragOver
+                ? 'border-primary bg-primary/5'
+                : 'border-border hover:border-primary/50 hover:bg-muted/20'
+            }`}
           >
-            <Upload className="h-8 w-8 mx-auto text-muted-foreground/60 mb-2" />
-            <p className="text-sm font-medium text-foreground">Click to select a file</p>
+            <Upload className={`h-8 w-8 mx-auto mb-2 ${isDragOver ? 'text-primary' : 'text-muted-foreground/60'}`} />
+            <p className="text-sm font-medium text-foreground">Drag and drop or click to select a file</p>
             <p className="text-xs text-muted-foreground mt-1">PDF, DOC, XLS, CSV, or images up to 50MB</p>
           </button>
         ) : (

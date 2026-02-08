@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { estimateEbitdaFromRevenue, type MultipleResult } from '@/lib/valuation/industry-multiples'
 
 /**
  * Lightweight endpoint for onboarding step 3 valuation preview.
@@ -73,7 +74,7 @@ export async function GET(
       const ebitdaMultipleLow = Number(industryMultiple.ebitdaMultipleLow)
       const ebitdaMultipleHigh = Number(industryMultiple.ebitdaMultipleHigh)
 
-      // Use stored EBITDA margin ranges if available, otherwise fallback to derived
+      // Use stored EBITDA margin ranges if available, otherwise use estimateEbitdaFromRevenue
       const marginLow = industryMultiple.ebitdaMarginLow
         ? Number(industryMultiple.ebitdaMarginLow) / 100
         : null
@@ -86,13 +87,18 @@ export async function GET(
         ebitdaMarginUsed = (marginLow + marginHigh) / 2
         adjustedEbitda = Math.round((revenue * ebitdaMarginUsed) / 100000) * 100000
       } else {
-        // Fallback: derive from revenue/EBITDA multiple ratio
-        const revMultipleLow = Number(industryMultiple.revenueMultipleLow)
-        const revMultipleHigh = Number(industryMultiple.revenueMultipleHigh)
-        const impliedEbitdaLow = revenue * (revMultipleLow / ebitdaMultipleLow)
-        const impliedEbitdaHigh = revenue * (revMultipleHigh / ebitdaMultipleHigh)
-        adjustedEbitda = Math.round(((impliedEbitdaLow + impliedEbitdaHigh) / 2) / 100000) * 100000
-        ebitdaMarginUsed = adjustedEbitda / revenue
+        // Use the same formula as onboarding-snapshot for consistency
+        const multiples: MultipleResult = {
+          ebitdaMultipleLow,
+          ebitdaMultipleHigh,
+          revenueMultipleLow: Number(industryMultiple.revenueMultipleLow),
+          revenueMultipleHigh: Number(industryMultiple.revenueMultipleHigh),
+          source: industryMultiple.source,
+          isDefault: false,
+          matchLevel: 'subsector',
+        }
+        adjustedEbitda = estimateEbitdaFromRevenue(revenue, multiples)
+        ebitdaMarginUsed = revenue > 0 ? adjustedEbitda / revenue : 0
       }
 
       multipleLow = ebitdaMultipleLow

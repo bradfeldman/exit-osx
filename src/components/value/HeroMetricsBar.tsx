@@ -67,7 +67,7 @@ export function HeroMetricsBar({
 
   const delta = getDeltaDisplay()
 
-  const briPercent = briScore != null ? Math.round(briScore * 100) : null
+  const briPercent = briScore != null ? Math.round(briScore) : null
   const { value: animatedBri } = useCountUpScore(briPercent ?? 0, { delay: 500, duration: 1800 })
 
   const getBriColor = () => {

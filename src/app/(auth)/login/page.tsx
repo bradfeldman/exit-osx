@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Captcha, resetCaptcha } from '@/components/ui/captcha'
 import { Eye, EyeOff, Shield as ShieldIcon, Clock } from 'lucide-react'
 import { secureLogin } from '@/app/actions/auth'
+import { createClient } from '@/lib/supabase/client'
 import { getRedirectUrl, buildUrlWithRedirect, isInviteRedirect } from '@/lib/utils/redirect'
 import { analytics } from '@/lib/analytics'
 import { useFormTracking } from '@/lib/analytics/hooks'
@@ -18,16 +19,19 @@ import { useFormTracking } from '@/lib/analytics/hooks'
 // This isolates the BAILOUT_TO_CLIENT_SIDE_RENDERING so the rest of the
 // login form can be server-rendered as real HTML.
 function SearchParamsReader({ onChange }: {
-  onChange: (data: { redirectUrl: string; isFromInvite: boolean; isTimeout: boolean }) => void
+  onChange: (data: { redirectUrl: string; isFromInvite: boolean; isTimeout: boolean; isExpiredLink: boolean; authError: string | null }) => void
 }) {
   const searchParams = useSearchParams()
 
   useEffect(() => {
     const redirectUrl = getRedirectUrl(searchParams)
+    const errorParam = searchParams.get('error')
     onChange({
       redirectUrl,
       isFromInvite: isInviteRedirect(redirectUrl),
       isTimeout: searchParams.get('reason') === 'timeout',
+      isExpiredLink: errorParam === 'link_expired',
+      authError: errorParam === 'auth_error' ? 'Authentication failed. Please try again.' : null,
     })
   }, [searchParams, onChange])
 
@@ -39,11 +43,15 @@ export default function LoginPage() {
   const [redirectUrl, setRedirectUrl] = useState('/dashboard')
   const [isFromInvite, setIsFromInvite] = useState(false)
   const [isTimeout, setIsTimeout] = useState(false)
+  const [isExpiredLink, setIsExpiredLink] = useState(false)
+  const [authError, setAuthError] = useState<string | null>(null)
 
-  const handleSearchParams = useCallback((data: { redirectUrl: string; isFromInvite: boolean; isTimeout: boolean }) => {
+  const handleSearchParams = useCallback((data: { redirectUrl: string; isFromInvite: boolean; isTimeout: boolean; isExpiredLink: boolean; authError: string | null }) => {
     setRedirectUrl(data.redirectUrl)
     setIsFromInvite(data.isFromInvite)
     setIsTimeout(data.isTimeout)
+    setIsExpiredLink(data.isExpiredLink)
+    setAuthError(data.authError)
   }, [])
 
   return (
@@ -56,6 +64,8 @@ export default function LoginPage() {
         redirectUrl={redirectUrl}
         isFromInvite={isFromInvite}
         isTimeout={isTimeout}
+        isExpiredLink={isExpiredLink}
+        authError={authError}
       />
     </>
   )
@@ -65,9 +75,11 @@ interface LoginPageContentProps {
   redirectUrl: string
   isFromInvite: boolean
   isTimeout: boolean
+  isExpiredLink: boolean
+  authError: string | null
 }
 
-function LoginPageContent({ redirectUrl, isFromInvite, isTimeout }: LoginPageContentProps) {
+function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink, authError }: LoginPageContentProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -79,6 +91,7 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout }: LoginPageCon
   const [requiresTwoFactor, setRequiresTwoFactor] = useState(false)
   const [twoFactorCode, setTwoFactorCode] = useState('')
   const [loading, setLoading] = useState(false)
+  const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const router = useRouter()
 
   // Analytics: Page load time reference
@@ -102,6 +115,25 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout }: LoginPageCon
   const handleCaptchaExpire = useCallback(() => {
     setCaptchaToken(null)
   }, [])
+
+  const handleResendVerification = async () => {
+    if (!email) return
+    setResendStatus('sending')
+    try {
+      const supabase = createClient()
+      const { error: resendError } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+      })
+      if (resendError) {
+        setResendStatus('error')
+      } else {
+        setResendStatus('sent')
+      }
+    } catch {
+      setResendStatus('error')
+    }
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -283,6 +315,36 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout }: LoginPageCon
             <div className="flex items-center gap-3 p-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg">
               <Clock className="h-5 w-5 text-amber-600 shrink-0" />
               <p>You were signed out due to inactivity. Please sign in again.</p>
+            </div>
+          )}
+
+          {isExpiredLink && (
+            <div className="p-4 text-sm bg-amber-50 border border-amber-200 rounded-lg space-y-3">
+              <div className="flex items-center gap-3 text-amber-800">
+                <Clock className="h-5 w-5 text-amber-600 shrink-0" />
+                <p>Your confirmation link has expired. Enter your email below and resend it.</p>
+              </div>
+              {resendStatus === 'sent' ? (
+                <p className="text-sm text-emerald-700 font-medium">New confirmation email sent! Check your inbox.</p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={!email || resendStatus === 'sending'}
+                  className="text-sm font-medium text-primary hover:underline disabled:opacity-50"
+                >
+                  {resendStatus === 'sending' ? 'Sending...' : 'Resend confirmation email'}
+                </button>
+              )}
+              {resendStatus === 'error' && (
+                <p className="text-sm text-destructive">Failed to resend. Try signing up again.</p>
+              )}
+            </div>
+          )}
+
+          {authError && !isExpiredLink && (
+            <div className="flex items-center gap-3 p-4 text-sm text-red-800 bg-red-50 border border-red-200 rounded-lg">
+              <p>{authError}</p>
             </div>
           )}
 
