@@ -37,9 +37,14 @@ export function ProgressionProvider({ children }: { children: ReactNode }) {
   const [progressionData, setProgressionData] = useState<ProgressionData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const { selectedCompanyId, companies } = useCompany()
+  const { selectedCompanyId, companies, isLoading: companiesLoading } = useCompany()
 
   const loadProgression = useCallback(async () => {
+    // Wait for CompanyContext to finish loading before deciding hasCompany.
+    // Without this, we see companies=[] while the fetch is in flight and
+    // briefly flash the EntryScreen (dark "add company" page).
+    if (companiesLoading) return
+
     // If no company selected and no companies exist, treat as no company
     if (!selectedCompanyId) {
       if (companies.length === 0) {
@@ -81,7 +86,7 @@ export function ProgressionProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false)
     }
-  }, [selectedCompanyId, companies.length])
+  }, [selectedCompanyId, companies.length, companiesLoading])
 
   useEffect(() => {
     loadProgression()
