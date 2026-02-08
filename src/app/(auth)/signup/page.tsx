@@ -239,18 +239,28 @@ function SignupPageContent() {
               </ul>
             </div>
 
-            {/* Primary CTA - Do NOT send them away */}
+            {/* Primary CTA - Open user's email provider */}
             <div className="space-y-4">
-              <a
-                href={`https://mail.google.com/mail/u/0/#search/from%3Aexitosx+in%3Aanywhere`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button className="w-full h-12 text-base font-medium">
-                  <MailIcon className="w-5 h-5 mr-2" />
-                  Open Email & See My Results
-                </Button>
-              </a>
+              {(() => {
+                const provider = getEmailProvider(email)
+                return provider.url ? (
+                  <a
+                    href={provider.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button className="w-full h-12 text-base font-medium">
+                      <MailIcon className="w-5 h-5 mr-2" />
+                      Open {provider.name} & See My Results
+                    </Button>
+                  </a>
+                ) : (
+                  <Button className="w-full h-12 text-base font-medium" disabled variant="secondary">
+                    <MailIcon className="w-5 h-5 mr-2" />
+                    Check Your Email & See My Results
+                  </Button>
+                )
+              })()}
 
               {/* Secondary Action */}
               <div className="text-center text-sm text-muted-foreground">
@@ -612,6 +622,29 @@ function CheckIcon({ className }: { className?: string }) {
       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
     </svg>
   )
+}
+
+function getEmailProvider(email: string): { name: string; url: string | null } {
+  const domain = email.split('@')[1]?.toLowerCase()
+  if (!domain) return { name: 'Email', url: null }
+
+  if (domain === 'gmail.com' || domain === 'googlemail.com') {
+    return { name: 'Gmail', url: 'https://mail.google.com/mail/u/0/#search/from%3Aexitosx+in%3Aanywhere' }
+  }
+  if (domain === 'outlook.com' || domain === 'hotmail.com' || domain === 'live.com') {
+    return { name: 'Outlook', url: 'https://outlook.live.com/mail/' }
+  }
+  if (domain === 'yahoo.com' || domain === 'ymail.com') {
+    return { name: 'Yahoo Mail', url: 'https://mail.yahoo.com/' }
+  }
+  if (domain === 'icloud.com' || domain === 'me.com' || domain === 'mac.com') {
+    return { name: 'iCloud Mail', url: 'https://www.icloud.com/mail/' }
+  }
+  if (domain === 'protonmail.com' || domain === 'proton.me' || domain === 'pm.me') {
+    return { name: 'Proton Mail', url: 'https://mail.proton.me/' }
+  }
+
+  return { name: 'Email', url: null }
 }
 
 function MailIcon({ className }: { className?: string }) {
