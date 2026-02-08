@@ -37,9 +37,9 @@ export function DashboardContent({ children, user }: DashboardContentProps) {
   // Normal dashboard layout
   return (
     <div className="min-h-screen bg-background">
-      <TrialBanner />
       <Sidebar />
       <div className="lg:pl-64">
+        <TrialBanner />
         <Header user={user} />
         <main className="p-6">
           {children}
