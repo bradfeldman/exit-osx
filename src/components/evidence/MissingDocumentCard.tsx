@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { Upload, Loader2, CheckCircle, AlertTriangle } from 'lucide-react'
 import { useCompany } from '@/contexts/CompanyContext'
@@ -35,48 +35,69 @@ export function MissingDocumentCard({
   onUploadClick,
 }: MissingDocumentCardProps) {
   const { selectedCompanyId } = useCompany()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [isDragOver, setIsDragOver] = useState(false)
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle')
   const [uploadError, setUploadError] = useState('')
-  const [fileName, setFileName] = useState('')
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 })
+  const [successCount, setSuccessCount] = useState(0)
 
-  const uploadFile = useCallback(async (file: File) => {
-    if (!selectedCompanyId) return
+  const uploadFiles = useCallback(async (files: File[]) => {
+    if (!selectedCompanyId || files.length === 0) return
 
-    if (file.size > 50 * 1024 * 1024) {
+    const oversized = files.find(f => f.size > 50 * 1024 * 1024)
+    if (oversized) {
       setUploadStatus('error')
-      setUploadError('File too large. Maximum size is 50MB.')
+      setUploadError(`${oversized.name} is too large. Maximum size is 50MB.`)
       return
     }
 
-    setFileName(file.name)
     setUploadStatus('uploading')
     setUploadError('')
+    setUploadProgress({ current: 0, total: files.length })
+    setSuccessCount(0)
 
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('documentName', name)
-      formData.append('evidenceCategory', category)
-      formData.append('expectedDocumentId', id)
+    let uploaded = 0
+    let failed = 0
 
-      const response = await fetch(`/api/companies/${selectedCompanyId}/evidence/upload`, {
-        method: 'POST',
-        body: formData,
-      })
+    for (const file of files) {
+      setUploadProgress({ current: uploaded + 1, total: files.length })
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Upload failed')
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('documentName', name)
+        formData.append('evidenceCategory', category)
+        formData.append('expectedDocumentId', id)
+
+        const response = await fetch(`/api/companies/${selectedCompanyId}/evidence/upload`, {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!response.ok) {
+          const data = await response.json()
+          throw new Error(data.error || 'Upload failed')
+        }
+
+        uploaded++
+      } catch {
+        failed++
       }
+    }
 
-      setUploadStatus('success')
-      setTimeout(() => {
-        onUploadSuccess?.()
-      }, 1000)
-    } catch (err) {
+    setSuccessCount(uploaded)
+
+    if (failed > 0 && uploaded === 0) {
       setUploadStatus('error')
-      setUploadError(err instanceof Error ? err.message : 'Upload failed')
+      setUploadError(`All ${failed} file${failed > 1 ? 's' : ''} failed to upload.`)
+    } else if (failed > 0) {
+      setUploadStatus('error')
+      setUploadError(`${uploaded} uploaded, ${failed} failed.`)
+      setTimeout(() => onUploadSuccess?.(), 1500)
+    } else {
+      setUploadStatus('success')
+      setTimeout(() => onUploadSuccess?.(), 1000)
     }
   }, [selectedCompanyId, name, category, id, onUploadSuccess])
 
@@ -96,16 +117,29 @@ export function MissingDocumentCard({
     e.preventDefault()
     e.stopPropagation()
     setIsDragOver(false)
-    const file = e.dataTransfer.files?.[0]
-    if (file) uploadFile(file)
-  }, [uploadFile])
+    const fileList = e.dataTransfer.files
+    if (fileList && fileList.length > 0) {
+      uploadFiles(Array.from(fileList))
+    }
+  }, [uploadFiles])
+
+  const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files
+    if (fileList && fileList.length > 0) {
+      uploadFiles(Array.from(fileList))
+    }
+    // Reset so the same files can be selected again
+    e.target.value = ''
+  }, [uploadFiles])
 
   if (uploadStatus === 'success') {
     return (
       <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-950/20 p-3">
         <div className="flex items-center gap-2">
           <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{fileName} uploaded</span>
+          <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+            {successCount === 1 ? '1 file uploaded' : `${successCount} files uploaded`}
+          </span>
         </div>
       </div>
     )
@@ -116,7 +150,11 @@ export function MissingDocumentCard({
       <div className="rounded-lg border border-border/30 bg-muted/20 p-3">
         <div className="flex items-center gap-2">
           <Loader2 className="w-4 h-4 text-primary animate-spin shrink-0" />
-          <span className="text-sm text-muted-foreground">Uploading {fileName}...</span>
+          <span className="text-sm text-muted-foreground">
+            {uploadProgress.total === 1
+              ? 'Uploading...'
+              : `Uploading ${uploadProgress.current} of ${uploadProgress.total}...`}
+          </span>
         </div>
       </div>
     )
@@ -156,7 +194,7 @@ export function MissingDocumentCard({
 
       {isDragOver ? (
         <p className="text-sm text-primary font-medium mt-1.5 pl-6">
-          Drop file to upload as {name}
+          Drop file(s) to upload as {name}
         </p>
       ) : (
         <>
@@ -167,9 +205,16 @@ export function MissingDocumentCard({
             <p className="text-xs text-destructive mt-1.5 pl-6">{uploadError}</p>
           )}
           <div className="mt-2 pl-6">
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              className="hidden"
+              onChange={handleFileInputChange}
+            />
             <button
               type="button"
-              onClick={onUploadClick}
+              onClick={() => fileInputRef.current?.click()}
               className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--burnt-orange)] hover:underline"
             >
               <Upload className="w-3.5 h-3.5" />
