@@ -2,12 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snapshot'
-import { generateAITasksForCompany } from '@/lib/playbook/generate-ai-tasks'
-import { generateTasksForCompany } from '@/lib/playbook/generate-tasks'
 
 /**
  * POST - Trigger BRI recalculation after inline category assessment updates
- * This creates a new ValuationSnapshot with updated scores based on current responses
+ * This creates a new ValuationSnapshot with updated scores based on current responses.
+ * Task generation is handled separately via /api/companies/[id]/generate-ai-tasks.
  */
 export async function POST(
   request: Request,
@@ -80,80 +79,9 @@ export async function POST(
       }
     })
 
-    // Generate tasks if none exist yet for this company
-    // Only runs once after all categories are assessed (or first time through)
-    let taskResult = { created: 0, skipped: 0 }
-    try {
-      // Check if there are already pending tasks — if so, skip generation
-      const existingPendingTasks = await prisma.task.count({
-        where: {
-          companyId,
-          status: { in: ['PENDING', 'IN_PROGRESS'] },
-        },
-      })
-
-      if (existingPendingTasks === 0 && snapshot) {
-        // No active tasks — generate them
-        const aiQuestionCount = await prisma.question.count({
-          where: { companyId, isActive: true },
-        })
-
-        if (aiQuestionCount > 0) {
-          // Use AI-powered task generation for AI questions
-          taskResult = await generateAITasksForCompany(companyId)
-          console.log(`[recalculate-bri] AI task generation: ${taskResult.created} created, ${taskResult.skipped} skipped`)
-        } else {
-          // Fallback: use template-based generation for seed questions
-          const assessment = await prisma.assessment.findFirst({
-            where: { companyId },
-            orderBy: { createdAt: 'desc' },
-            include: {
-              responses: {
-                where: { selectedOptionId: { not: null } },
-                include: {
-                  question: true,
-                  selectedOption: true,
-                },
-              },
-            },
-          })
-
-          if (assessment && assessment.responses.length > 0) {
-            const responses = assessment.responses
-              .filter(r => r.selectedOption && !r.question.companyId) // Seed questions only
-              .map(r => ({
-                questionId: r.questionId,
-                selectedOptionId: r.selectedOptionId!,
-                question: {
-                  id: r.question.id,
-                  questionText: r.question.questionText,
-                  briCategory: r.question.briCategory,
-                  issueTier: (r.question.issueTier || 'OPTIMIZATION') as 'CRITICAL' | 'SIGNIFICANT' | 'OPTIMIZATION',
-                  maxImpactPoints: r.question.maxImpactPoints,
-                },
-                selectedOption: {
-                  id: r.selectedOption!.id,
-                  scoreValue: r.selectedOption!.scoreValue,
-                },
-              }))
-
-            taskResult = await generateTasksForCompany(companyId, responses, {
-              valueGap: snapshot.valueGap,
-              briScore: snapshot.briScore,
-            })
-            console.log(`[recalculate-bri] Template task generation: ${taskResult.created} created, ${taskResult.skipped} skipped`)
-          }
-        }
-      }
-    } catch (taskError) {
-      // Don't fail the recalculation if task generation fails
-      console.error('[recalculate-bri] Task generation error (non-fatal):', taskError)
-    }
-
     return NextResponse.json({
       success: true,
       snapshotId: result.snapshotId,
-      tasksGenerated: taskResult.created,
       scores: snapshot ? {
         briScore: Math.round(Number(snapshot.briScore) * 100),
         categories: {

@@ -18,7 +18,7 @@ export function EmptyState() {
     setError(null)
 
     try {
-      const res = await fetch(`/api/companies/${selectedCompanyId}/recalculate-bri`, {
+      const res = await fetch(`/api/companies/${selectedCompanyId}/generate-ai-tasks`, {
         method: 'POST',
       })
       if (!res.ok) throw new Error('Failed to generate tasks')
@@ -28,8 +28,7 @@ export function EmptyState() {
         // Reload the page to show the new tasks
         window.location.reload()
       } else {
-        // No tasks generated — likely no assessment responses yet
-        router.push('/dashboard/diagnosis')
+        setError('No tasks to generate. Complete your diagnosis assessment first.')
       }
     } catch {
       setError('Unable to generate tasks. Complete your diagnosis first.')
