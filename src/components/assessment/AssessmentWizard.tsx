@@ -34,6 +34,7 @@ interface Question {
   helpText: string | null
   displayOrder: number
   maxImpactPoints: string
+  companyId?: string | null
   options: Array<{
     id: string
     optionText: string
@@ -905,6 +906,9 @@ export function AssessmentWizard({ companyId, companyName, title: _title = 'Buye
                 <span className="px-3 py-1 bg-primary/10 text-primary font-medium rounded-lg">
                   {CATEGORY_LABELS[currentQuestion.briCategory]}
                 </span>
+                {currentQuestion.companyId && (
+                  <Sparkles className="w-3.5 h-3.5 text-violet-500/70 dark:text-violet-400/70" />
+                )}
                 <span className="text-muted-foreground">
                   Question {categoryQuestionIndex + 1} of {categoryQuestions.length}
                 </span>

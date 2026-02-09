@@ -11,6 +11,7 @@ import {
   Loader2,
   HelpCircle,
   MinusCircle,
+  Sparkles,
   X,
 } from 'lucide-react'
 
@@ -21,6 +22,7 @@ interface Question {
   helpText: string | null
   displayOrder: number
   maxImpactPoints: string
+  companyId?: string | null
   options: Array<{
     id: string
     optionText: string
@@ -342,9 +344,14 @@ export function CategoryAssessmentFlow({
             transition={{ duration: 0.2 }}
           >
             {/* Question text */}
-            <h3 className="text-base font-medium text-foreground mb-1">
-              {currentQuestion.questionText}
-            </h3>
+            <div className="flex items-start gap-1.5 mb-1">
+              <h3 className="text-base font-medium text-foreground">
+                {currentQuestion.questionText}
+              </h3>
+              {currentQuestion.companyId && (
+                <Sparkles className="w-3.5 h-3.5 text-violet-500/70 dark:text-violet-400/70 mt-1 shrink-0" />
+              )}
+            </div>
             {currentQuestion.helpText && (
               <p className="text-sm text-muted-foreground mb-4">
                 {currentQuestion.helpText}
