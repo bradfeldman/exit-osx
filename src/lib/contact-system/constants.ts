@@ -301,6 +301,102 @@ export const PAGINATION = {
 // ============================================
 // Used to detect personal vs. business emails
 
+// ============================================
+// PARTICIPANT SIDES
+// ============================================
+
+export const PARTICIPANT_SIDE_LABELS = {
+  BUYER: 'Buyer',
+  SELLER: 'Seller',
+  NEUTRAL: 'Neutral',
+} as const
+
+export const PARTICIPANT_SIDE_COLORS = {
+  BUYER: 'blue',
+  SELLER: 'green',
+  NEUTRAL: 'gray',
+} as const
+
+// ============================================
+// PARTICIPANT ROLES
+// ============================================
+
+export const PARTICIPANT_ROLE_LABELS: Record<string, string> = {
+  // Buyer roles
+  DEAL_LEAD: 'Deal Lead',
+  DECISION_MAKER: 'Decision Maker',
+  DILIGENCE: 'Diligence',
+  BUYER_LEGAL: 'Legal',
+  BUYER_FINANCE: 'Finance',
+  BUYER_OPERATIONS: 'Operations',
+  // Advisory (seller-side)
+  CPA: 'CPA',
+  ATTORNEY: 'Attorney',
+  BROKER: 'Broker',
+  MA_ADVISOR: 'M&A Advisor',
+  WEALTH_PLANNER: 'Wealth Planner',
+  // Internal (seller-side)
+  COO: 'COO',
+  CFO: 'CFO',
+  GM: 'General Manager',
+  KEY_EMPLOYEE: 'Key Employee',
+  BOARD_MEMBER: 'Board Member',
+  // External (neutral)
+  BANKER: 'Banker',
+  ESCROW_AGENT: 'Escrow Agent',
+  INSURANCE_BROKER: 'Insurance Broker',
+  // Generic
+  PRIMARY_CONTACT: 'Primary Contact',
+  OTHER: 'Other',
+}
+
+export const ROLES_BY_SIDE: Record<string, string[]> = {
+  BUYER: ['DEAL_LEAD', 'DECISION_MAKER', 'DILIGENCE', 'BUYER_LEGAL', 'BUYER_FINANCE', 'BUYER_OPERATIONS', 'PRIMARY_CONTACT', 'OTHER'],
+  SELLER: ['CPA', 'ATTORNEY', 'BROKER', 'MA_ADVISOR', 'WEALTH_PLANNER', 'COO', 'CFO', 'GM', 'KEY_EMPLOYEE', 'BOARD_MEMBER', 'PRIMARY_CONTACT', 'OTHER'],
+  NEUTRAL: ['BANKER', 'ESCROW_AGENT', 'INSURANCE_BROKER', 'PRIMARY_CONTACT', 'OTHER'],
+}
+
+/**
+ * Infer a ParticipantRole from a parsed job title string.
+ */
+export function inferRoleFromTitle(title: string): string | null {
+  const t = title.toLowerCase().trim()
+
+  // CPA / Accountant
+  if (t.includes('cpa') || t.includes('certified public accountant') || t.includes('accountant')) return 'CPA'
+  // Attorney / Lawyer
+  if (t.includes('attorney') || t.includes('lawyer') || t.includes('counsel') || t.includes('legal')) return 'ATTORNEY'
+  // Broker / M&A
+  if (t.includes('m&a') || t.includes('mergers') || t.includes('investment banker')) return 'MA_ADVISOR'
+  if (t.includes('broker') && !t.includes('insurance')) return 'BROKER'
+  // Insurance
+  if (t.includes('insurance')) return 'INSURANCE_BROKER'
+  // Wealth
+  if (t.includes('wealth') || t.includes('financial planner') || t.includes('financial advisor')) return 'WEALTH_PLANNER'
+  // C-suite
+  if (t.includes('cfo') || t.includes('chief financial officer')) return 'CFO'
+  if (t.includes('coo') || t.includes('chief operating officer')) return 'COO'
+  if (t.includes('general manager') || t === 'gm') return 'GM'
+  // Board
+  if (t.includes('board') || t.includes('director') && !t.includes('managing director')) return 'BOARD_MEMBER'
+  // Buyer-side
+  if (t.includes('deal lead') || t.includes('managing director')) return 'DEAL_LEAD'
+  if (t.includes('diligence') || t.includes('due diligence')) return 'DILIGENCE'
+  // Escrow
+  if (t.includes('escrow')) return 'ESCROW_AGENT'
+  // Banker
+  if (t.includes('banker')) return 'BANKER'
+  // VP / Decision maker
+  if (t.includes('vp') || t.includes('vice president') || t.includes('ceo') || t.includes('president') || t.includes('owner')) return 'DECISION_MAKER'
+
+  return null
+}
+
+// ============================================
+// COMMON FREE EMAIL DOMAINS
+// ============================================
+// Used to detect personal vs. business emails
+
 export const FREE_EMAIL_DOMAINS = new Set([
   'gmail.com',
   'yahoo.com',

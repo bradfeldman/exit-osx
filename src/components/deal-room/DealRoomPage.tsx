@@ -8,6 +8,7 @@ import { PipelineView } from './pipeline/PipelineView'
 import { BuyerDetailPanel } from './pipeline/BuyerDetailPanel'
 import { DealDataRoom } from './data-room/DealDataRoom'
 import { ActivityFeed } from './activity/ActivityFeed'
+import { ContactsView } from './contacts/ContactsView'
 import { DealRoomLoading } from './DealRoomLoading'
 import { DealRoomError } from './DealRoomError'
 import type { PipelineBuyer } from './pipeline/BuyerCard'
@@ -73,6 +74,12 @@ interface DealRoomData {
     recentDownloads: number
   } | null
   recentActivityCount: number
+  contactsSummary: {
+    total: number
+    buyer: number
+    seller: number
+    neutral: number
+  } | null
 }
 
 export function DealRoomPage() {
@@ -179,6 +186,7 @@ export function DealRoomPage() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         buyerCount={data.pipeline?.totalBuyers ?? 0}
+        contactsCount={data.contactsSummary?.total ?? 0}
         openQuestions={data.dataRoom?.openQuestions ?? 0}
         recentActivityCount={data.recentActivityCount}
       />
@@ -192,6 +200,10 @@ export function DealRoomPage() {
           onAddBuyer={handleAddBuyer}
           isAddingBuyer={isAddingBuyer}
         />
+      )}
+
+      {activeTab === 'contacts' && data.deal && (
+        <ContactsView dealId={data.deal.id} companyId={selectedCompanyId} />
       )}
 
       {activeTab === 'data-room' && (

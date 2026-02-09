@@ -2,12 +2,13 @@
 
 import { cn } from '@/lib/utils'
 
-export type DealRoomTab = 'pipeline' | 'data-room' | 'activity'
+export type DealRoomTab = 'pipeline' | 'contacts' | 'data-room' | 'activity'
 
 interface DealRoomTabsProps {
   activeTab: DealRoomTab
   onTabChange: (tab: DealRoomTab) => void
   buyerCount: number
+  contactsCount: number
   openQuestions: number
   recentActivityCount: number
 }
@@ -16,11 +17,13 @@ export function DealRoomTabs({
   activeTab,
   onTabChange,
   buyerCount,
+  contactsCount,
   openQuestions,
   recentActivityCount,
 }: DealRoomTabsProps) {
   const tabs: { id: DealRoomTab; label: string; badge: number | null }[] = [
     { id: 'pipeline', label: 'Pipeline', badge: buyerCount > 0 ? buyerCount : null },
+    { id: 'contacts', label: 'Contacts', badge: contactsCount > 0 ? contactsCount : null },
     { id: 'data-room', label: 'Data Room', badge: openQuestions > 0 ? openQuestions : null },
     { id: 'activity', label: 'Activity', badge: recentActivityCount > 0 ? recentActivityCount : null },
   ]

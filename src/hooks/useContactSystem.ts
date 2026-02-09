@@ -286,6 +286,127 @@ export function useBuyerActivities(dealId: string, buyerId: string) {
 }
 
 // ============================================
+// DEAL PARTICIPANTS HOOK
+// ============================================
+
+export interface DealParticipantData {
+  id: string
+  dealId: string
+  dealBuyerId: string | null
+  side: string
+  role: string
+  isPrimary: boolean
+  isActive: boolean
+  vdrAccessLevel: string | null
+  createdAt: string
+  canonicalPerson: {
+    id: string
+    firstName: string
+    lastName: string
+    email: string | null
+    phone: string | null
+    currentTitle: string | null
+    linkedInUrl: string | null
+    currentCompany?: { id: string; name: string } | null
+  }
+  dealBuyer?: {
+    id: string
+    canonicalCompany: { id: string; name: string }
+  } | null
+}
+
+interface ParticipantCounts {
+  BUYER: number
+  SELLER: number
+  NEUTRAL: number
+}
+
+/**
+ * Hook to manage deal participants (unified contacts)
+ */
+export function useDealParticipants(dealId: string | null, sideFilter?: string) {
+  const queryParams = sideFilter ? `?side=${sideFilter}` : ''
+  const { data, isLoading, error, refresh } = useFetch<{
+    participants: DealParticipantData[]
+    total: number
+    counts: ParticipantCounts
+  }>(dealId ? `/api/deals/${dealId}/participants${queryParams}` : null)
+
+  const addParticipant = useCallback(async (params: {
+    canonicalPersonId: string
+    side: string
+    role: string
+    dealBuyerId?: string | null
+    isPrimary?: boolean
+  }) => {
+    const res = await fetch(`/api/deals/${dealId}/participants`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    })
+
+    if (!res.ok) {
+      const data = await res.json()
+      throw new Error(data.error || 'Failed to add participant')
+    }
+
+    refresh()
+    return res.json()
+  }, [dealId, refresh])
+
+  const updateParticipant = useCallback(async (
+    participantId: string,
+    updates: { role?: string; side?: string; isPrimary?: boolean; isActive?: boolean; dealBuyerId?: string | null }
+  ) => {
+    const res = await fetch(`/api/deals/${dealId}/participants/${participantId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    })
+
+    if (!res.ok) throw new Error('Failed to update participant')
+
+    refresh()
+    return res.json()
+  }, [dealId, refresh])
+
+  const removeParticipant = useCallback(async (participantId: string) => {
+    const res = await fetch(`/api/deals/${dealId}/participants/${participantId}`, {
+      method: 'DELETE',
+    })
+
+    if (!res.ok) throw new Error('Failed to remove participant')
+
+    refresh()
+  }, [dealId, refresh])
+
+  const smartAdd = useCallback(async (text: string) => {
+    const res = await fetch(`/api/deals/${dealId}/participants/smart-add`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    })
+
+    if (!res.ok) throw new Error('Failed to parse input')
+
+    return res.json()
+  }, [dealId])
+
+  return {
+    participants: data?.participants ?? [],
+    total: data?.total ?? 0,
+    counts: data?.counts ?? { BUYER: 0, SELLER: 0, NEUTRAL: 0 },
+    isLoading,
+    error,
+    refresh,
+    addParticipant,
+    updateParticipant,
+    removeParticipant,
+    smartAdd,
+  }
+}
+
+// ============================================
 // ANALYTICS HOOKS
 // ============================================
 

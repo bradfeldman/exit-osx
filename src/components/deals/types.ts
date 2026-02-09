@@ -2,7 +2,7 @@
  * Type definitions for Deal components
  */
 
-import { DealStage, DealStatus, ApprovalStatus, BuyerTier, BuyerType } from '@prisma/client'
+import { DealStage, DealStatus, ApprovalStatus, BuyerTier, BuyerType, ParticipantSide, ParticipantRole } from '@prisma/client'
 
 export interface Deal {
   id: string
@@ -89,6 +89,38 @@ export interface DealContact {
     id: string
     maxStage: string
     accessLevel: string
+  } | null
+}
+
+export interface DealParticipant {
+  id: string
+  dealId: string
+  dealBuyerId: string | null
+  side: ParticipantSide
+  role: ParticipantRole
+  isPrimary: boolean
+  isActive: boolean
+  vdrAccessLevel: string | null
+  createdAt: string
+  canonicalPerson: {
+    id: string
+    firstName: string
+    lastName: string
+    email: string | null
+    phone: string | null
+    currentTitle: string | null
+    linkedInUrl: string | null
+    currentCompany?: {
+      id: string
+      name: string
+    } | null
+  }
+  dealBuyer?: {
+    id: string
+    canonicalCompany: {
+      id: string
+      name: string
+    }
   } | null
 }
 

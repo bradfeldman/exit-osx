@@ -84,6 +84,7 @@ export async function GET(
         offers: [],
         dataRoom: null,
         recentActivityCount: 0,
+        contactsSummary: null,
       })
     }
 
@@ -116,6 +117,7 @@ export async function GET(
         offers: [],
         dataRoom: null,
         recentActivityCount: 0,
+        contactsSummary: null,
       })
     }
 
@@ -304,6 +306,18 @@ export async function GET(
         })
       : 0
 
+    // Contacts summary
+    const participantCounts = await prisma.dealParticipant.groupBy({
+      by: ['side'],
+      where: { dealId: deal.id, isActive: true },
+      _count: true,
+    })
+    const contactsSummary = { total: 0, buyer: 0, seller: 0, neutral: 0 }
+    for (const pc of participantCounts) {
+      contactsSummary[pc.side.toLowerCase() as 'buyer' | 'seller' | 'neutral'] = pc._count
+      contactsSummary.total += pc._count
+    }
+
     // Recent activity count
     const recentActivityCount = await prisma.dealActivity2.count({
       where: {
@@ -341,6 +355,7 @@ export async function GET(
         recentDownloads: recentDownloadCount,
       } : null,
       recentActivityCount,
+      contactsSummary,
     })
   } catch (error) {
     console.error('Error fetching deal room data:', error)
