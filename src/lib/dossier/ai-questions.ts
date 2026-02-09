@@ -138,8 +138,10 @@ function buildUserPrompt(dossier: CompanyDossierContent): string {
   return parts.join('\n')
 }
 
-function validateQuestions(questions: AIGeneratedQuestion[]): boolean {
-  if (questions.length !== 30) return false
+function validateQuestions(questions: AIGeneratedQuestion[]): string | null {
+  if (questions.length !== 30) {
+    return `Expected 30 questions, got ${questions.length}`
+  }
 
   // Check category distribution
   const catCounts: Record<string, number> = {}
@@ -148,21 +150,32 @@ function validateQuestions(questions: AIGeneratedQuestion[]): boolean {
   }
 
   for (const [cat, expected] of Object.entries(QUESTIONS_PER_CATEGORY)) {
-    if ((catCounts[cat] || 0) !== expected) return false
+    if ((catCounts[cat] || 0) !== expected) {
+      return `Category ${cat}: expected ${expected} questions, got ${catCounts[cat] || 0}`
+    }
   }
 
   // Check each question
-  for (const q of questions) {
-    if (q.options.length !== 4) return false
+  for (let i = 0; i < questions.length; i++) {
+    const q = questions[i]
+    if (q.options.length !== 4) {
+      return `Question ${i + 1}: expected 4 options, got ${q.options.length}`
+    }
     const scores = q.options.map(o => o.scoreValue).sort((a, b) => a - b)
-    if (scores[0] !== 0 || scores[3] !== 1) return false
+    if (scores[0] !== 0 || scores[3] !== 1) {
+      return `Question ${i + 1}: invalid score range [${scores.join(', ')}]`
+    }
 
     const range = IMPACT_RANGES[q.issueTier]
-    if (!range) return false
-    if (q.maxImpactPoints < range.min || q.maxImpactPoints > range.max) return false
+    if (!range) {
+      return `Question ${i + 1}: unknown issueTier "${q.issueTier}"`
+    }
+    if (q.maxImpactPoints < range.min || q.maxImpactPoints > range.max) {
+      return `Question ${i + 1}: maxImpactPoints ${q.maxImpactPoints} out of range [${range.min}-${range.max}] for tier ${q.issueTier}`
+    }
   }
 
-  return true
+  return null
 }
 
 /**
@@ -184,14 +197,15 @@ export async function generateQuestionsForCompany(companyId: string) {
   const { data, usage } = await generateJSON<QuestionGenerationResult>(
     userPrompt,
     systemPrompt,
-    { model: 'claude-sonnet', maxTokens: 8192, temperature: 0.7 }
+    { model: 'claude-sonnet', maxTokens: 16384, temperature: 0.7 }
   )
 
   const latencyMs = Date.now() - startTime
 
   // Validate output
-  if (!validateQuestions(data.questions)) {
-    // Log the failure
+  const validationError = validateQuestions(data.questions)
+  if (validationError) {
+    // Log the failure with specific reason
     await prisma.aIGenerationLog.create({
       data: {
         companyId,
@@ -202,10 +216,10 @@ export async function generateQuestionsForCompany(companyId: string) {
         inputTokens: usage.inputTokens,
         outputTokens: usage.outputTokens,
         latencyMs,
-        errorMessage: 'Validation failed: incorrect question count, distribution, or option structure',
+        errorMessage: `Validation failed: ${validationError}`,
       },
     })
-    throw new Error('AI question generation failed validation')
+    throw new Error(`AI question generation failed validation: ${validationError}`)
   }
 
   // Deactivate old AI questions for this company

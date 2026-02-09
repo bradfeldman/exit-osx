@@ -63,6 +63,11 @@ export async function generateJSON<T>(
     ],
   })
 
+  // Check for truncation
+  if (response.stop_reason === 'max_tokens') {
+    throw new Error(`Response truncated: max_tokens (${maxTokens}) exceeded. Increase maxTokens.`)
+  }
+
   // Extract text content
   const textContent = response.content.find((c) => c.type === 'text')
   if (!textContent || textContent.type !== 'text') {
