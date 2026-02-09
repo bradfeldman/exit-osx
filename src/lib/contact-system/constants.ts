@@ -378,7 +378,7 @@ export function inferRoleFromTitle(title: string): string | null {
   if (t.includes('coo') || t.includes('chief operating officer')) return 'COO'
   if (t.includes('general manager') || t === 'gm') return 'GM'
   // Board
-  if (t.includes('board') || t.includes('director') && !t.includes('managing director')) return 'BOARD_MEMBER'
+  if (t.includes('board member') || t.includes('board of directors')) return 'BOARD_MEMBER'
   // Buyer-side
   if (t.includes('deal lead') || t.includes('managing director')) return 'DEAL_LEAD'
   if (t.includes('diligence') || t.includes('due diligence')) return 'DILIGENCE'

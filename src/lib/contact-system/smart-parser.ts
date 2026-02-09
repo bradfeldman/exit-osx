@@ -100,12 +100,23 @@ function cleanString(str: string): string {
     .trim()
 }
 
+// Credentials/designations that can appear after a name
+const NAME_SUFFIXES = new Set([
+  'cfa', 'cpa', 'mba', 'jd', 'md', 'phd', 'esq', 'pe', 'cfp', 'clu',
+  'chfc', 'aif', 'caia', 'frm', 'pmp', 'rn', 'do', 'dds', 'dvm',
+  'jr', 'sr', 'ii', 'iii', 'iv',
+])
+
 /**
  * Check if a string looks like a person's name.
  */
 function isLikelyName(str: string): boolean {
-  const cleaned = cleanString(str)
-  const words = cleaned.split(' ').filter(w => w.length > 1)
+  // Strip commas and clean
+  const cleaned = cleanString(str).replace(/,/g, ' ').replace(/\s+/g, ' ').trim()
+  // Remove known credential suffixes
+  const words = cleaned.split(' ').filter(w =>
+    w.length > 1 && !NAME_SUFFIXES.has(w.toLowerCase().replace(/\./g, ''))
+  )
 
   // Names typically have 2-4 words, each starting with uppercase
   if (words.length < 2 || words.length > 4) return false
@@ -114,8 +125,8 @@ function isLikelyName(str: string): boolean {
   return words.every(word => {
     // Should start with uppercase
     if (!/^[A-Z]/.test(word)) return false
-    // Should be mostly letters
-    if (!/^[A-Za-z'-]+$/.test(word)) return false
+    // Should be mostly letters (allow trailing period for initials)
+    if (!/^[A-Za-z'-]+\.?$/.test(word)) return false
     // Shouldn't be a filler word
     if (FILLER_WORDS.has(word.toLowerCase())) return false
     return true
@@ -155,7 +166,8 @@ function isLikelyCompanyName(str: string): boolean {
  * Extract name parts from a full name string.
  */
 function parseFullName(fullName: string): { firstName: string; lastName: string } {
-  const parts = cleanString(fullName).split(' ').filter(p => p.length > 0)
+  // Strip commas and clean
+  const parts = cleanString(fullName).replace(/,/g, ' ').replace(/\s+/g, ' ').trim().split(' ').filter(p => p.length > 0)
 
   if (parts.length === 0) {
     return { firstName: '', lastName: '' }
@@ -165,9 +177,10 @@ function parseFullName(fullName: string): { firstName: string; lastName: string 
     return { firstName: parts[0], lastName: '' }
   }
 
-  // Handle common suffixes
-  const suffixes = ['Jr', 'Jr.', 'Sr', 'Sr.', 'II', 'III', 'IV', 'PhD', 'MD', 'Esq', 'Esq.']
-  const filtered = parts.filter(p => !suffixes.includes(p))
+  // Handle common suffixes and credentials
+  const filtered = parts.filter(p =>
+    !NAME_SUFFIXES.has(p.toLowerCase().replace(/\./g, ''))
+  )
 
   if (filtered.length === 0) {
     return { firstName: parts[0], lastName: '' }
@@ -182,6 +195,19 @@ function parseFullName(fullName: string): { firstName: string; lastName: string 
     firstName: filtered[0],
     lastName: filtered[filtered.length - 1]
   }
+}
+
+/**
+ * Format a digits-only phone string as (xxx) xxx-xxxx or +1 (xxx) xxx-xxxx.
+ */
+function formatPhone(digits: string): string {
+  // Strip leading '1' country code if 11 digits
+  const d = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits
+  if (d.length === 10) {
+    return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`
+  }
+  // If not 10 digits, return as-is
+  return digits
 }
 
 /**
@@ -244,7 +270,7 @@ export function parseInput(raw: string): ParsedInput {
 
   // 3. Extract phone numbers
   const phoneMatches = raw.match(PATTERNS.phone) || []
-  result.phones = [...new Set(phoneMatches.map(p => p.replace(/\D/g, '')))]
+  result.phones = [...new Set(phoneMatches.map(p => formatPhone(p.replace(/\D/g, ''))))]
 
   // 4. Extract URLs
   const urlMatches = raw.match(PATTERNS.url) || []
