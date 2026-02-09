@@ -123,6 +123,19 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // Evidence document viewer serves HTML from an API route — needs
+        // a permissive CSP so inline styles and Supabase-hosted images load.
+        // Placed after the general /api/:path* entry so it overrides the
+        // strict "default-src 'none'" policy for this specific path.
+        source: '/api/companies/:id/evidence/documents/:docId/view',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'none'; style-src 'unsafe-inline'; img-src https://*.supabase.co blob: data:; frame-src https://*.supabase.co; frame-ancestors 'none';",
+          },
+        ],
+      },
     ];
   },
 
