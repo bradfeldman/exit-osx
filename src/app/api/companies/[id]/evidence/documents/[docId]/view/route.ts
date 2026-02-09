@@ -19,7 +19,7 @@ async function addWatermarkToPdf(
 
   for (const page of pages) {
     const { width, height } = page.getSize()
-    const fontSize = 10
+    const fontSize = 14
     const textWidth = helveticaFont.widthOfTextAtSize(watermarkText, fontSize)
 
     page.drawText(watermarkText, {
@@ -27,20 +27,20 @@ async function addWatermarkToPdf(
       y: height / 2,
       size: fontSize,
       font: helveticaFont,
-      color: rgb(0.7, 0.7, 0.7),
+      color: rgb(0.6, 0.6, 0.6),
       rotate: degrees(45),
-      opacity: 0.3,
+      opacity: 0.4,
     })
 
     const footerText = `${userEmail} | ${timestamp}`
-    const footerWidth = helveticaFont.widthOfTextAtSize(footerText, 8)
+    const footerWidth = helveticaFont.widthOfTextAtSize(footerText, 9)
     page.drawText(footerText, {
       x: width / 2 - footerWidth / 2,
       y: 15,
-      size: 8,
+      size: 9,
       font: helveticaFont,
-      color: rgb(0.5, 0.5, 0.5),
-      opacity: 0.5,
+      color: rgb(0.4, 0.4, 0.4),
+      opacity: 0.6,
     })
   }
 
@@ -48,13 +48,126 @@ async function addWatermarkToPdf(
 }
 
 /**
+ * Generate an HTML page that displays the document with a watermark overlay.
+ * Works for images and any browser-renderable file type.
+ */
+function buildWatermarkedHtmlViewer(
+  signedUrl: string,
+  fileName: string,
+  mimeType: string | null,
+  userEmail: string
+): string {
+  const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC'
+  const watermarkText = `Viewed by ${userEmail} on ${timestamp}`
+  const isImage = mimeType?.startsWith('image/')
+
+  // Escape HTML entities
+  const escHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>${escHtml(fileName)}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a1a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    .header {
+      width: 100%;
+      background: #2a2a2a;
+      color: #999;
+      padding: 12px 24px;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #333;
+    }
+    .header .filename { color: #ccc; font-weight: 500; }
+    .viewer {
+      position: relative;
+      display: inline-block;
+      margin: 24px auto;
+      max-width: 95vw;
+    }
+    .viewer img {
+      max-width: 95vw;
+      max-height: 85vh;
+      display: block;
+      border-radius: 4px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    }
+    .viewer iframe {
+      width: 90vw;
+      height: 85vh;
+      border: none;
+      border-radius: 4px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    }
+    .watermark-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .watermark-text {
+      color: rgba(255, 255, 255, 0.25);
+      font-size: 20px;
+      font-weight: 600;
+      transform: rotate(-35deg);
+      white-space: nowrap;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      user-select: none;
+    }
+    .watermark-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #2a2a2a;
+      color: #888;
+      padding: 8px 24px;
+      font-size: 11px;
+      text-align: center;
+      border-top: 1px solid #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="filename">${escHtml(fileName)}</span>
+    <span>${escHtml(watermarkText)}</span>
+  </div>
+  <div class="viewer">
+    ${isImage
+      ? `<img src="${escHtml(signedUrl)}" alt="${escHtml(fileName)}" />`
+      : `<iframe src="${escHtml(signedUrl)}"></iframe>`
+    }
+    <div class="watermark-overlay">
+      <span class="watermark-text">${escHtml(watermarkText)}</span>
+    </div>
+  </div>
+  <div class="watermark-footer">${escHtml(watermarkText)}</div>
+</body>
+</html>`
+}
+
+/**
  * GET /api/companies/[id]/evidence/documents/[docId]/view
  *
  * Opens an evidence document directly in the browser.
- * - PDFs: served inline with watermark applied
- * - Non-PDFs: 302 redirect to a short-lived signed URL
- *
- * Designed to be opened via window.open() — no fetch needed client-side.
+ * - PDFs: served inline with watermark baked into the file
+ * - Images/other: served in an HTML viewer with watermark overlay
  */
 export async function GET(
   request: NextRequest,
@@ -79,7 +192,7 @@ export async function GET(
 
     const supabase = await createClient()
 
-    // Step 1: Always generate a signed URL (this is proven to work)
+    // Generate a signed URL
     const { data: urlData, error: urlError } = await supabase.storage
       .from('data-room')
       .createSignedUrl(document.filePath, 300)
@@ -92,13 +205,13 @@ export async function GET(
     const isPdf = document.mimeType === 'application/pdf' ||
                   document.fileName?.toLowerCase().endsWith('.pdf')
 
-    // Step 2: For PDFs, fetch via signed URL, watermark, and serve inline
+    // PDFs: fetch, watermark with pdf-lib, serve inline
     if (isPdf) {
       try {
         const fileResponse = await fetch(urlData.signedUrl)
         if (!fileResponse.ok) {
-          console.error('Evidence view - fetch from signed URL failed:', fileResponse.status)
-          return NextResponse.redirect(urlData.signedUrl)
+          // Fallback to HTML viewer
+          return serveHtmlViewer(urlData.signedUrl, document, result.auth.user.email)
         }
 
         const pdfBytes = await fileResponse.arrayBuffer()
@@ -113,15 +226,31 @@ export async function GET(
         })
       } catch (err) {
         console.error('Evidence view - watermark pipeline error:', err)
-        // Fallback: redirect without watermark
-        return NextResponse.redirect(urlData.signedUrl)
+        return serveHtmlViewer(urlData.signedUrl, document, result.auth.user.email)
       }
     }
 
-    // Step 3: Non-PDFs redirect directly to signed URL
-    return NextResponse.redirect(urlData.signedUrl)
+    // Non-PDFs: HTML viewer with watermark overlay
+    return serveHtmlViewer(urlData.signedUrl, document, result.auth.user.email)
   } catch (error) {
     console.error('Evidence view - unexpected error:', error)
     return new NextResponse('Internal server error', { status: 500 })
   }
+}
+
+function serveHtmlViewer(
+  signedUrl: string,
+  document: { fileName: string | null; mimeType: string | null; documentName: string },
+  userEmail: string
+) {
+  const html = buildWatermarkedHtmlViewer(
+    signedUrl,
+    document.fileName || document.documentName,
+    document.mimeType,
+    userEmail
+  )
+
+  return new NextResponse(html, {
+    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+  })
 }
