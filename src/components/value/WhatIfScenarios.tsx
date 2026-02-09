@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Select,
@@ -10,9 +10,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { Lock, TrendingUp, TrendingDown, ArrowRight } from 'lucide-react'
+import { Lock, TrendingUp, TrendingDown, ArrowRight, Loader2, Check } from 'lucide-react'
 import { useCountUpCurrency } from '@/hooks/useCountUp'
-import { CheckCircle } from 'lucide-react'
 import {
   CORE_FACTOR_SCORES,
   calculateCoreScore,
@@ -31,6 +30,8 @@ interface WhatIfScenariosProps {
   hasAssessment: boolean
   isFreeUser?: boolean
   onUpgrade?: () => void
+  companyId?: string
+  onCoreFactorSaved?: () => void
 }
 
 const FACTOR_CONFIG: Record<
@@ -100,22 +101,49 @@ const BUYER_INSIGHTS: Record<string, string> = {
 type FactorKey = keyof typeof CORE_FACTOR_SCORES
 
 export function WhatIfScenarios({
-  coreFactors,
+  coreFactors: initialCoreFactors,
   adjustedEbitda,
   industryMultipleLow,
   industryMultipleHigh,
-  currentValue,
+  currentValue: initialCurrentValue,
   briScore,
-  currentMultiple,
+  currentMultiple: initialCurrentMultiple,
   hasAssessment,
   isFreeUser = false,
   onUpgrade,
+  companyId,
+  onCoreFactorSaved,
 }: WhatIfScenariosProps) {
   const [selectedFactor, setSelectedFactor] = useState<FactorKey | null>(null)
   const [hypotheticalValue, setHypotheticalValue] = useState<string | null>(null)
+  const [localCoreFactors, setLocalCoreFactors] = useState<CoreFactors | null>(null)
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'success'>('idle')
+
+  // Use local state if we've saved a change, otherwise use props
+  const coreFactors = localCoreFactors ?? initialCoreFactors
+
+  // Recalculate current values when local core factors change
+  const currentValues = useMemo(() => {
+    if (!localCoreFactors) {
+      return { currentValue: initialCurrentValue, currentMultiple: initialCurrentMultiple }
+    }
+    const coreScore = calculateCoreScore(localCoreFactors)
+    const valuation = calculateValuation({
+      adjustedEbitda,
+      industryMultipleLow,
+      industryMultipleHigh,
+      coreScore,
+      briScore: briScore / 100,
+    })
+    return { currentValue: valuation.currentValue, currentMultiple: valuation.finalMultiple }
+  }, [localCoreFactors, initialCurrentValue, initialCurrentMultiple, adjustedEbitda, industryMultipleLow, industryMultipleHigh, briScore])
+
+  const { currentValue, currentMultiple } = currentValues
 
   const result = useMemo(() => {
     if (!selectedFactor || !hypotheticalValue || !coreFactors) return null
+    // No delta if the selected value matches current
+    if (hypotheticalValue === coreFactors[selectedFactor as keyof CoreFactors]) return null
 
     // Build hypothetical core factors
     const hypotheticalFactors: CoreFactors = {
@@ -142,6 +170,39 @@ export function WhatIfScenarios({
       newMultiple: newValuation.finalMultiple,
     }
   }, [selectedFactor, hypotheticalValue, coreFactors, adjustedEbitda, industryMultipleLow, industryMultipleHigh, briScore, currentValue, currentMultiple])
+
+  const handleSave = useCallback(async () => {
+    if (!companyId || !selectedFactor || !hypotheticalValue || !coreFactors) return
+
+    setSaveState('saving')
+    try {
+      const updatedFactors: CoreFactors = {
+        ...coreFactors,
+        [selectedFactor]: hypotheticalValue,
+      }
+
+      const response = await fetch(`/api/companies/${companyId}/core-factors`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedFactors),
+      })
+
+      if (!response.ok) throw new Error('Failed to save')
+
+      // Update local state immediately so the card reflects the new current value
+      setLocalCoreFactors(updatedFactors)
+      setHypotheticalValue(updatedFactors[selectedFactor as keyof CoreFactors])
+      setSaveState('success')
+
+      // Refresh dashboard data
+      onCoreFactorSaved?.()
+
+      // Reset success state after a moment
+      setTimeout(() => setSaveState('idle'), 2000)
+    } catch {
+      setSaveState('idle')
+    }
+  }, [companyId, selectedFactor, hypotheticalValue, coreFactors, onCoreFactorSaved])
 
   const { value: animatedDelta } = useCountUpCurrency(
     Math.abs(result?.valueDelta ?? 0)
@@ -182,7 +243,7 @@ export function WhatIfScenarios({
           What-If Scenarios
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          See how improving a business factor could change your valuation
+          Adjust a business factor to see and save the valuation impact
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -197,6 +258,7 @@ export function WhatIfScenarios({
               onClick={() => {
                 setSelectedFactor(key)
                 setHypotheticalValue(null)
+                setSaveState('idle')
               }}
             >
               {FACTOR_CONFIG[key].label}
@@ -204,59 +266,57 @@ export function WhatIfScenarios({
           ))}
         </div>
 
-        {/* Hypothetical Value Selection */}
-        {selectedFactor && (() => {
-          const currentScore = currentFactorValue
-            ? (CORE_FACTOR_SCORES[selectedFactor]?.[currentFactorValue] ?? 0)
-            : 0
-          const upgradeOptions = FACTOR_CONFIG[selectedFactor].options
-            .filter(o => {
-              if (o.value === currentFactorValue) return false
-              const optionScore = CORE_FACTOR_SCORES[selectedFactor]?.[o.value] ?? 0
-              return optionScore > currentScore
-            })
-          const isAtTopTier = upgradeOptions.length === 0
-
-          return (
-            <div className="space-y-2">
-              <p className="text-xs text-muted-foreground">
-                {FACTOR_CONFIG[selectedFactor].description}
-              </p>
-              {isAtTopTier ? (
-                <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-lg">
-                  <CheckCircle className="h-4 w-4 text-emerald-600 flex-shrink-0" />
-                  <p className="text-xs text-emerald-700">
-                    You&apos;re already at the highest level for {FACTOR_CONFIG[selectedFactor].label.toLowerCase()}. Try improving another factor.
-                  </p>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  {currentFactorValue && (
-                    <span className="text-xs text-muted-foreground px-2 py-1 bg-muted rounded">
-                      Current: {FACTOR_CONFIG[selectedFactor].options.find(o => o.value === currentFactorValue)?.label ?? currentFactorValue}
-                    </span>
+        {/* Factor Value Selection */}
+        {selectedFactor && (
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">
+              {FACTOR_CONFIG[selectedFactor].description}
+            </p>
+            <div className="flex items-center gap-3">
+              <Select
+                value={hypotheticalValue ?? currentFactorValue ?? ''}
+                onValueChange={(val) => {
+                  setHypotheticalValue(val)
+                  setSaveState('idle')
+                }}
+              >
+                <SelectTrigger className="w-[220px]">
+                  <SelectValue placeholder="Select a value..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {FACTOR_CONFIG[selectedFactor].options.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                      {option.value === currentFactorValue ? ' (current)' : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {result && companyId && (
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={saveState === 'saving' || saveState === 'success'}
+                  className="gap-1.5"
+                >
+                  {saveState === 'saving' ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Saving...
+                    </>
+                  ) : saveState === 'success' ? (
+                    <>
+                      <Check className="h-3.5 w-3.5" />
+                      Saved
+                    </>
+                  ) : (
+                    'Save Change'
                   )}
-                  <ArrowRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                  <Select
-                    value={hypotheticalValue ?? ''}
-                    onValueChange={setHypotheticalValue}
-                  >
-                    <SelectTrigger className="w-[200px]">
-                      <SelectValue placeholder="What if it were..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {upgradeOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                </Button>
               )}
             </div>
-          )
-        })()}
+          </div>
+        )}
 
         {/* Result Card */}
         {result && hypotheticalValue && (

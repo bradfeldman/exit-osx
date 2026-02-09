@@ -252,6 +252,8 @@ export function ValueHome() {
             hasAssessment={data.hasAssessment}
             isFreeUser={isFreeUser}
             onUpgrade={() => handleUpgrade('company-assessment', 'What-If Scenarios')}
+            companyId={selectedCompanyId ?? undefined}
+            onCoreFactorSaved={fetchData}
           />
         </AnimatedItem>
 
