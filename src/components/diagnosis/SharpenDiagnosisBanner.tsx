@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Sparkles, Loader2, CheckCircle2 } from 'lucide-react'
+import { Sparkles, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface SharpenDiagnosisBannerProps {
@@ -10,10 +10,11 @@ interface SharpenDiagnosisBannerProps {
   onComplete: () => void
 }
 
-type BannerState = 'idle' | 'generating' | 'success'
+type BannerState = 'idle' | 'generating' | 'success' | 'error'
 
 export function SharpenDiagnosisBanner({ companyId, autoGenerate, onComplete }: SharpenDiagnosisBannerProps) {
   const [state, setState] = useState<BannerState>(autoGenerate ? 'generating' : 'idle')
+  const [questionCount, setQuestionCount] = useState(0)
   const hasAutoFired = useRef(false)
 
   const runGeneration = async () => {
@@ -21,16 +22,24 @@ export function SharpenDiagnosisBanner({ companyId, autoGenerate, onComplete }: 
 
     setState('generating')
     try {
-      await fetch(`/api/companies/${companyId}/dossier/generate-questions`, {
+      const res = await fetch(`/api/companies/${companyId}/dossier/generate-questions`, {
         method: 'POST',
       })
-      setState('success')
-      setTimeout(() => {
-        onComplete()
-      }, 2000)
+
+      if (res.ok) {
+        const data = await res.json()
+        if (data.questionCount > 0) {
+          setQuestionCount(data.questionCount)
+          setState('success')
+          setTimeout(() => onComplete(), 2000)
+        } else {
+          setState('error')
+        }
+      } else {
+        setState('error')
+      }
     } catch {
-      // Still refresh on failure so banner doesn't get stuck
-      onComplete()
+      setState('error')
     }
   }
 
@@ -72,12 +81,42 @@ export function SharpenDiagnosisBanner({ companyId, autoGenerate, onComplete }: 
           </div>
           <div>
             <h3 className="text-sm font-semibold text-foreground">
-              New questions added
+              {questionCount} new questions added
             </h3>
             <p className="text-sm text-muted-foreground mt-0.5">
               Review your updated categories to sharpen your scores.
             </p>
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (state === 'error') {
+    return (
+      <div className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50/50 to-orange-50/50 p-5">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">
+                Couldn&apos;t generate new questions
+              </h3>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Something went wrong. Try again in a moment.
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={runGeneration}
+            className="shrink-0 border-amber-300 text-amber-700 hover:bg-amber-50"
+          >
+            Retry
+          </Button>
         </div>
       </div>
     )
