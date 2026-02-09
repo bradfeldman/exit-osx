@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
   ChevronDown,
@@ -13,13 +12,11 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { fetchWithRetry } from '@/lib/fetch-with-retry'
-
-interface FinancialPeriod {
-  id: string
-  label: string
-  fiscalYear: number
-  periodType: string
-}
+import {
+  GridInput,
+  CalcCell,
+  type FinancialPeriod,
+} from './form-grid-shared'
 
 interface PeriodPLData {
   grossRevenue: number
@@ -42,75 +39,12 @@ interface PLFormGridProps {
   companyId: string
 }
 
-function formatInputValue(value: number): string {
-  if (value === 0) return ''
-  return new Intl.NumberFormat('en-US').format(value)
-}
-
-function parseInputValue(value: string): number {
-  const cleaned = value.replace(/[^0-9.-]/g, '')
-  return parseFloat(cleaned) || 0
-}
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value)
-}
-
-function formatPercent(value: number): string {
-  return `${value.toFixed(1)}%`
-}
-
 function calculateValues(data: PeriodPLData): CalculatedValues {
   const grossProfit = data.grossRevenue - data.cogs
   const grossMarginPct = data.grossRevenue > 0 ? (grossProfit / data.grossRevenue) * 100 : 0
   const ebitda = grossProfit - data.totalExpenses + data.depreciation + data.amortization + data.interestExpense + data.taxExpense
   const ebitdaMarginPct = data.grossRevenue > 0 ? (ebitda / data.grossRevenue) * 100 : 0
   return { grossProfit, grossMarginPct, ebitda, ebitdaMarginPct }
-}
-
-// Currency input cell for the grid
-function GridInput({
-  value,
-  onChange,
-  periodId,
-  field,
-}: {
-  value: number
-  onChange: (periodId: string, field: string, value: number) => void
-  periodId: string
-  field: string
-}) {
-  return (
-    <div className="relative">
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-      <Input
-        type="text"
-        inputMode="numeric"
-        value={formatInputValue(value)}
-        onChange={(e) => onChange(periodId, field, parseInputValue(e.target.value))}
-        className="pl-7 h-9 text-sm font-medium bg-gray-50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-right"
-        placeholder="0"
-      />
-    </div>
-  )
-}
-
-// Read-only calculated value cell
-function CalcCell({ value, format, highlight }: { value: number; format: 'currency' | 'percent'; highlight?: boolean }) {
-  const formatted = format === 'currency' ? formatCurrency(value) : formatPercent(value)
-  return (
-    <div className={cn(
-      'h-9 flex items-center justify-end px-3 text-sm font-semibold rounded',
-      highlight ? 'bg-blue-50 text-blue-700' : 'bg-gray-50 text-gray-700'
-    )}>
-      {formatted}
-    </div>
-  )
 }
 
 export function PLFormGrid({ companyId }: PLFormGridProps) {

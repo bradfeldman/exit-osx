@@ -3,7 +3,9 @@
 import { useState, useCallback, useEffect } from 'react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PLFormGrid } from './PLFormGrid'
-import { FinancialsSpreadsheet } from './FinancialsSpreadsheet'
+import { BSFormGrid } from './BSFormGrid'
+import { AddBacksFormGrid } from './AddBacksFormGrid'
+import { CashFlowFormGrid } from './CashFlowFormGrid'
 import { FYESettingsLink } from './FYESettingsLink'
 
 type DataEntryTab = 'pnl' | 'balance-sheet' | 'add-backs' | 'cash-flow'
@@ -63,16 +65,10 @@ export function FinancialsDataEntry({ companyId }: FinancialsDataEntryProps) {
       </div>
 
       {/* Content */}
-      {activeTab === 'pnl' ? (
-        <PLFormGrid companyId={companyId} />
-      ) : (
-        <FinancialsSpreadsheet
-          companyId={companyId}
-          initialTab={activeTab}
-          hideTabs
-          hidePnlTab
-        />
-      )}
+      {activeTab === 'pnl' && <PLFormGrid companyId={companyId} />}
+      {activeTab === 'balance-sheet' && <BSFormGrid companyId={companyId} />}
+      {activeTab === 'add-backs' && <AddBacksFormGrid companyId={companyId} />}
+      {activeTab === 'cash-flow' && <CashFlowFormGrid companyId={companyId} />}
     </div>
   )
 }
