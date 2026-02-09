@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { PeriodType } from '@prisma/client'
+import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snapshot'
 
 // Calculate cash flow statement from P&L and Balance Sheet data
 function calculateCashFlowStatement(
@@ -499,6 +500,14 @@ export async function PUT(
         freeCashFlow,
       }
     })
+
+    // Trigger snapshot recalculation (includes auto-DCF)
+    try {
+      await recalculateSnapshotForCompany(companyId, 'Cash flow data updated')
+    } catch (err) {
+      console.error('Error recalculating snapshot after cash flow save:', err)
+      // Non-fatal: cash flow was saved successfully
+    }
 
     return NextResponse.json({
       cashFlowStatement: {

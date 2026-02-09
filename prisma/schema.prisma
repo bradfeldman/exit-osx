@@ -396,6 +396,17 @@ model ValuationSnapshot {
   valueGap             Decimal  @map("value_gap") @db.Decimal(15, 2)
   alphaConstant        Decimal  @default(0.40) @map("alpha_constant") @db.Decimal(3, 2)
   snapshotReason       String?  @map("snapshot_reason")
+  // Auto-DCF fields (nullable — only populated when cash flow data is available)
+  dcfEnterpriseValue     Decimal?  @map("dcf_enterprise_value") @db.Decimal(15, 2)
+  dcfEquityValue         Decimal?  @map("dcf_equity_value") @db.Decimal(15, 2)
+  dcfWacc                Decimal?  @map("dcf_wacc") @db.Decimal(5, 4)
+  dcfBaseFcf             Decimal?  @map("dcf_base_fcf") @db.Decimal(15, 2)
+  dcfGrowthRates         Json?     @map("dcf_growth_rates")
+  dcfTerminalMethod      String?   @map("dcf_terminal_method")
+  dcfPerpetualGrowthRate Decimal?  @map("dcf_perpetual_growth_rate") @db.Decimal(5, 4)
+  dcfNetDebt             Decimal?  @map("dcf_net_debt") @db.Decimal(15, 2)
+  dcfImpliedMultiple     Decimal?  @map("dcf_implied_multiple") @db.Decimal(4, 2)
+  dcfSource              String?   @map("dcf_source") // 'auto' | 'manual'
   createdAt            DateTime @default(now()) @map("created_at")
   company              Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   createdBy            User?    @relation(fields: [createdByUserId], references: [id])
@@ -673,10 +684,11 @@ model DataRoomAccess {
   invitedById  String              @map("invited_by_id")
   createdAt    DateTime            @default(now()) @map("created_at")
   updatedAt    DateTime            @updatedAt @map("updated_at")
-  buyerContact BuyerContact?
-  dataRoom     DataRoom            @relation(fields: [dataRoomId], references: [id], onDelete: Cascade)
+  buyerContact    BuyerContact?
+  dataRoom        DataRoom            @relation(fields: [dataRoomId], references: [id], onDelete: Cascade)
   // Contact System - link to deal contact
-  dealContact  DealContact?
+  dealContact     DealContact?
+  dealParticipant DealParticipant?
 
   @@unique([dataRoomId, email])
   @@index([dataRoomId, userId])
@@ -965,6 +977,7 @@ model DCFAssumptions {
   enterpriseValue            Decimal? @map("enterprise_value") @db.Decimal(15, 2)
   equityValue                Decimal? @map("equity_value") @db.Decimal(15, 2)
   useDCFValue                Boolean  @default(false) @map("use_dcf_value") // When true, scorecard uses DCF value instead of EBITDA multiple
+  isManuallyConfigured       Boolean  @default(false) @map("is_manually_configured") // When true, auto-DCF is skipped
   ebitdaMultipleLowOverride  Decimal? @map("ebitda_multiple_low_override") @db.Decimal(4, 2)
   ebitdaMultipleHighOverride Decimal? @map("ebitda_multiple_high_override") @db.Decimal(4, 2)
   createdAt                  DateTime @default(now()) @map("created_at")
@@ -1975,6 +1988,41 @@ enum BuyerContactRole {
   OPERATIONS
 }
 
+enum ParticipantSide {
+  BUYER
+  SELLER
+  NEUTRAL
+}
+
+enum ParticipantRole {
+  // Buyer roles
+  DEAL_LEAD
+  DECISION_MAKER
+  DILIGENCE
+  BUYER_LEGAL
+  BUYER_FINANCE
+  BUYER_OPERATIONS
+  // Advisory (seller-side)
+  CPA
+  ATTORNEY
+  BROKER
+  MA_ADVISOR
+  WEALTH_PLANNER
+  // Internal (seller-side)
+  COO
+  CFO
+  GM
+  KEY_EMPLOYEE
+  BOARD_MEMBER
+  // External (neutral)
+  BANKER
+  ESCROW_AGENT
+  INSURANCE_BROKER
+  // Generic
+  PRIMARY_CONTACT
+  OTHER
+}
+
 enum DealDocumentType {
   TEASER
   NDA_TEMPLATE
@@ -2160,6 +2208,7 @@ model CanonicalPerson {
   currentCompany    CanonicalCompany?  @relation("CurrentEmployer", fields: [currentCompanyId], references: [id])
   employmentHistory PersonEmployment[]
   dealContacts      DealContact[]
+  dealParticipants  DealParticipant[]
   activities        DealActivity2[]
   emailAttempts     EmailAttempt[]
 
@@ -2333,8 +2382,9 @@ model Deal {
   createdByUserId String   @map("created_by_user_id")
 
   // Relationships
-  buyers     DealBuyer[]
-  activities DealActivity2[]
+  buyers       DealBuyer[]
+  participants DealParticipant[]
+  activities   DealActivity2[]
 
   @@unique([companyId, codeName])
   @@index([companyId])
@@ -2402,6 +2452,7 @@ model DealBuyer {
 
   // Relationships
   contacts      DealContact[]
+  participants  DealParticipant[]
   stageHistory  DealStageHistory2[]
   activities    DealActivity2[]
   documents     DealDocument2[]
@@ -2452,6 +2503,51 @@ model DealContact {
   @@unique([dealBuyerId, canonicalPersonId]) // One record per person per buyer
   @@index([canonicalPersonId])
   @@map("deal_contacts")
+}
+
+// --------------------------------------------
+// DEAL PARTICIPANT (unified contacts)
+// --------------------------------------------
+// Supports buyer-side, seller-side, and neutral contacts at the deal level.
+
+model DealParticipant {
+  id String @id @default(cuid())
+
+  // Always linked to a deal
+  dealId String @map("deal_id")
+  deal   Deal   @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  // Optional buyer link (null for seller-side / neutral)
+  dealBuyerId String?    @map("deal_buyer_id")
+  dealBuyer   DealBuyer? @relation(fields: [dealBuyerId], references: [id], onDelete: Cascade)
+
+  // Canonical person
+  canonicalPersonId String          @map("canonical_person_id")
+  canonicalPerson   CanonicalPerson @relation(fields: [canonicalPersonId], references: [id])
+
+  // Classification
+  side      ParticipantSide @default(SELLER)
+  role      ParticipantRole @default(OTHER)
+  isPrimary Boolean         @default(false) @map("is_primary")
+
+  // VDR access
+  dataRoomAccessId   String?         @unique @map("data_room_access_id")
+  dataRoomAccess     DataRoomAccess? @relation(fields: [dataRoomAccessId], references: [id])
+  vdrAccessLevel     VDRAccessLevel? @map("vdr_access_level")
+  vdrAccessGrantedAt DateTime?       @map("vdr_access_granted_at")
+
+  // Status
+  isActive Boolean @default(true) @map("is_active")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([dealId, dealBuyerId, canonicalPersonId])
+  @@index([dealId, side])
+  @@index([dealBuyerId])
+  @@index([canonicalPersonId])
+  @@map("deal_participants")
 }
 
 // --------------------------------------------

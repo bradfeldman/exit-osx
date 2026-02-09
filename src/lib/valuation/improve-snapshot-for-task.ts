@@ -160,6 +160,21 @@ export async function improveSnapshotForOnboardingTask(
     const previousCurrentValue = Number(latestSnapshot.currentValue)
     const actualValueIncrease = Math.round(currentValue - previousCurrentValue)
 
+    // Carry forward DCF fields from previous snapshot (DCF is independent of BRI)
+    const dcfCarryForward: Record<string, unknown> = {}
+    if (latestSnapshot.dcfEnterpriseValue != null) {
+      dcfCarryForward.dcfEnterpriseValue = latestSnapshot.dcfEnterpriseValue
+      dcfCarryForward.dcfEquityValue = latestSnapshot.dcfEquityValue
+      dcfCarryForward.dcfWacc = latestSnapshot.dcfWacc
+      dcfCarryForward.dcfBaseFcf = latestSnapshot.dcfBaseFcf
+      dcfCarryForward.dcfGrowthRates = latestSnapshot.dcfGrowthRates
+      dcfCarryForward.dcfTerminalMethod = latestSnapshot.dcfTerminalMethod
+      dcfCarryForward.dcfPerpetualGrowthRate = latestSnapshot.dcfPerpetualGrowthRate
+      dcfCarryForward.dcfNetDebt = latestSnapshot.dcfNetDebt
+      dcfCarryForward.dcfImpliedMultiple = latestSnapshot.dcfImpliedMultiple
+      dcfCarryForward.dcfSource = latestSnapshot.dcfSource
+    }
+
     // Create new snapshot with improved scores
     const newSnapshot = await prisma.valuationSnapshot.create({
       data: {
@@ -183,6 +198,7 @@ export async function improveSnapshotForOnboardingTask(
         valueGap,
         alphaConstant: ALPHA,
         snapshotReason: `Task completed: ${task.title}`,
+        ...dcfCarryForward,
       },
     })
 

@@ -56,7 +56,7 @@ interface DashboardData {
     hasCustomMultiples: boolean
   }
   tier5: {
-    valueTrend: Array<{ value: number; date: string }>
+    valueTrend: Array<{ value: number; date: string; dcfValue: number | null }>
     briTrend: { direction: string; change: number } | null
     exitWindow: string | null
     annotations: Array<{
@@ -106,6 +106,16 @@ interface DashboardData {
       briCategory: string
     }>
   }
+  dcfValuation: {
+    enterpriseValue: number
+    equityValue: number | null
+    wacc: number | null
+    impliedMultiple: number | null
+    source: 'auto' | 'manual'
+    multipleBasedValue: number
+    divergenceRatio: number | null
+    confidenceSignal: 'high' | 'moderate' | 'low'
+  } | null
   coreFactors: CoreFactors | null
   hasAssessment: boolean
 }
@@ -208,6 +218,7 @@ export function ValueHome() {
             isEstimated={tier1?.isEstimated ?? true}
             hasAssessment={data.hasAssessment}
             isEbitdaFromFinancials={data.tier2?.isEbitdaFromFinancials ?? false}
+            dcfValuation={data.dcfValuation}
           />
         </AnimatedItem>
 

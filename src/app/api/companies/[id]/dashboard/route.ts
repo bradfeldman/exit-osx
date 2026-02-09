@@ -322,13 +322,14 @@ export async function GET(
       }
     }
 
-    // Calculate value trend for sparkline
+    // Calculate value trend for sparkline (include dcfValue for dual-line)
     const valueTrend = company.valuationSnapshots
       .slice()
       .reverse()
       .map(s => ({
         value: Number(s.currentValue),
         date: s.createdAt.toISOString(),
+        dcfValue: s.dcfEnterpriseValue ? Number(s.dcfEnterpriseValue) : null,
       }))
 
     // Calculate exit readiness window (rough estimate based on BRI score trajectory)
@@ -934,6 +935,36 @@ export async function GET(
         ownerInvolvement: company.coreFactors.ownerInvolvement,
       } : null,
       hasAssessment: !!latestSnapshot,
+      // Auto-DCF valuation (from snapshot pipeline)
+      dcfValuation: (() => {
+        if (!latestSnapshot?.dcfEnterpriseValue) return null
+
+        const dcfEV = Number(latestSnapshot.dcfEnterpriseValue)
+        const multipleBasedValue = latestSnapshot
+          ? Number(latestSnapshot.currentValue)
+          : 0
+
+        const divergenceRatio = multipleBasedValue > 0
+          ? Math.abs(dcfEV - multipleBasedValue) / multipleBasedValue
+          : null
+
+        let confidenceSignal: 'high' | 'moderate' | 'low' = 'low'
+        if (divergenceRatio !== null) {
+          if (divergenceRatio < 0.15) confidenceSignal = 'high'
+          else if (divergenceRatio < 0.35) confidenceSignal = 'moderate'
+        }
+
+        return {
+          enterpriseValue: dcfEV,
+          equityValue: latestSnapshot.dcfEquityValue ? Number(latestSnapshot.dcfEquityValue) : null,
+          wacc: latestSnapshot.dcfWacc ? Number(latestSnapshot.dcfWacc) : null,
+          impliedMultiple: latestSnapshot.dcfImpliedMultiple ? Number(latestSnapshot.dcfImpliedMultiple) : null,
+          source: (latestSnapshot.dcfSource as 'auto' | 'manual') ?? 'auto',
+          multipleBasedValue,
+          divergenceRatio,
+          confidenceSignal,
+        }
+      })(),
       // Re-assessment trigger data
       lastAssessmentDate,
       tasksCompletedSinceAssessment,

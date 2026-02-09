@@ -117,6 +117,7 @@ export async function PUT(
         enterpriseValue: enterpriseValue ?? null,
         equityValue: equityValue ?? null,
         useDCFValue: useDCFValue ?? false,
+        isManuallyConfigured: true, // Manual save = skip auto-DCF
         ebitdaMultipleLowOverride: ebitdaMultipleLowOverride ?? null,
         ebitdaMultipleHighOverride: ebitdaMultipleHighOverride ?? null,
       },
@@ -136,6 +137,7 @@ export async function PUT(
         enterpriseValue: enterpriseValue ?? null,
         equityValue: equityValue ?? null,
         useDCFValue: useDCFValue ?? false,
+        isManuallyConfigured: true, // Manual save = skip auto-DCF
         ebitdaMultipleLowOverride: ebitdaMultipleLowOverride ?? null,
         ebitdaMultipleHighOverride: ebitdaMultipleHighOverride ?? null,
       },

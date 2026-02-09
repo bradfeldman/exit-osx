@@ -8,6 +8,7 @@ import {
   CORE_FACTOR_SCORES,
   calculateValuation,
 } from './calculate-valuation'
+import { calculateAutoDCF } from './auto-dcf'
 
 // Default category weights for BRI calculation
 const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
@@ -298,6 +299,42 @@ export async function recalculateSnapshotForCompany(
       return cs ? cs.score : 0
     }
 
+    // Auto-DCF: calculate DCF valuation from financial data if available
+    // Skip if user has manually configured DCF assumptions
+    let dcfData: Record<string, unknown> = {}
+    try {
+      const dcfAssumptions = await prisma.dCFAssumptions.findUnique({
+        where: { companyId },
+        select: { isManuallyConfigured: true },
+      })
+
+      if (!dcfAssumptions?.isManuallyConfigured) {
+        const dcfResult = await calculateAutoDCF(companyId)
+        if (dcfResult.success) {
+          dcfData = {
+            dcfEnterpriseValue: dcfResult.enterpriseValue,
+            dcfEquityValue: dcfResult.equityValue,
+            dcfWacc: dcfResult.wacc,
+            dcfBaseFcf: dcfResult.baseFcf,
+            dcfGrowthRates: dcfResult.growthRates,
+            dcfTerminalMethod: dcfResult.terminalMethod,
+            dcfPerpetualGrowthRate: dcfResult.perpetualGrowthRate,
+            dcfNetDebt: dcfResult.netDebt,
+            dcfImpliedMultiple: dcfResult.impliedMultiple,
+            dcfSource: 'auto',
+          }
+          console.log(`[AUTO-DCF] Company ${companyId}: EV=${dcfResult.enterpriseValue.toFixed(0)}, WACC=${(dcfResult.wacc * 100).toFixed(1)}%, baseFCF=${dcfResult.baseFcf.toFixed(0)}`)
+        } else {
+          console.log(`[AUTO-DCF] Company ${companyId}: Skipped — ${dcfResult.reason}`)
+        }
+      } else {
+        console.log(`[AUTO-DCF] Company ${companyId}: Skipped — manually configured`)
+      }
+    } catch (error) {
+      console.error(`[AUTO-DCF] Error for company ${companyId}:`, error)
+      // Non-fatal: snapshot still gets created without DCF fields
+    }
+
     // Create new snapshot
     const snapshot = await prisma.valuationSnapshot.create({
       data: {
@@ -322,6 +359,7 @@ export async function recalculateSnapshotForCompany(
         valueGap,
         alphaConstant: ALPHA,
         snapshotReason,
+        ...dcfData,
       },
     })
 

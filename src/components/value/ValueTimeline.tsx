@@ -3,6 +3,7 @@
 import {
   AreaChart,
   Area,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -22,6 +23,7 @@ interface TimelineAnnotation {
 interface ValueTrendPoint {
   value: number
   date: string
+  dcfValue?: number | null
 }
 
 interface ValueTimelineProps {
@@ -58,13 +60,18 @@ function _AnnotationTooltipContent({ annotation }: { annotation: TimelineAnnotat
 }
 
 // Custom tooltip for the chart
-function ChartTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: { date: string; value: number } }> }) {
+function ChartTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: { date: string; value: number; dcfValue?: number | null } }> }) {
   if (!active || !payload || !payload.length) return null
   const data = payload[0].payload
   return (
     <div className="bg-card border border-border rounded-lg shadow-lg p-2">
       <div className="text-xs text-muted-foreground">{formatDate(data.date)}</div>
       <div className="text-sm font-semibold">{formatCurrency(data.value)}</div>
+      {data.dcfValue != null && (
+        <div className="text-xs text-muted-foreground mt-0.5">
+          DCF: {formatCurrency(data.dcfValue)}
+        </div>
+      )}
     </div>
   )
 }
@@ -97,9 +104,11 @@ export function ValueTimeline({ valueTrend, annotations }: ValueTimelineProps) {
   }
 
   // Build chart data
+  const hasDcfData = valueTrend.some(p => p.dcfValue != null)
   const chartData = valueTrend.map(point => ({
     date: point.date,
     value: point.value,
+    dcfValue: point.dcfValue ?? undefined,
     formattedDate: formatDate(point.date),
   }))
 
@@ -164,6 +173,18 @@ export function ValueTimeline({ valueTrend, annotations }: ValueTimelineProps) {
                 strokeWidth={2}
                 fill="url(#valueGradient)"
               />
+              {hasDcfData && (
+                <Line
+                  type="monotone"
+                  dataKey="dcfValue"
+                  stroke="#6b7280"
+                  strokeWidth={1.5}
+                  strokeDasharray="4 3"
+                  dot={false}
+                  connectNulls
+                  name="DCF Value"
+                />
+              )}
               {annotationDots.map((dot, i) => (
                 <ReferenceDot
                   key={i}
@@ -178,6 +199,18 @@ export function ValueTimeline({ valueTrend, annotations }: ValueTimelineProps) {
             </AreaChart>
           </ResponsiveContainer>
         </div>
+
+        {/* Legend when DCF line is shown */}
+        {hasDcfData && (
+          <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block w-4 h-0.5 bg-[#B87333]" /> EBITDA Multiple
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block w-4 h-0.5 border-t-[1.5px] border-dashed border-gray-500" /> DCF
+            </span>
+          </div>
+        )}
 
         {/* Annotation list below chart */}
         {annotations.length > 0 && (
