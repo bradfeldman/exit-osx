@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { triggerDossierUpdate } from '@/lib/dossier/build-dossier'
 
 export async function GET(
   request: Request,
@@ -259,6 +260,9 @@ export async function PUT(
         workingCapital,
       }
     })
+
+    // Update company dossier (non-blocking)
+    triggerDossierUpdate(companyId, 'financial_data_updated', periodId)
 
     return NextResponse.json({
       balanceSheet: {

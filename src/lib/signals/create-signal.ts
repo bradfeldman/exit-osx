@@ -9,6 +9,7 @@ import type {
 } from '@prisma/client'
 import { createLedgerEntry } from '@/lib/value-ledger/create-entry'
 import { sendSignalAlertEmail } from '@/lib/email/send-signal-alert-email'
+import { triggerDossierUpdate } from '@/lib/dossier/build-dossier'
 
 interface CreateSignalInput {
   companyId: string
@@ -61,6 +62,9 @@ export async function createSignal(input: CreateSignalInput) {
       console.error('[Signal] Failed to send signal alert email:', err)
     })
   }
+
+  // Update company dossier (non-blocking)
+  triggerDossierUpdate(input.companyId, 'signal_created', signal.id)
 
   return signal
 }

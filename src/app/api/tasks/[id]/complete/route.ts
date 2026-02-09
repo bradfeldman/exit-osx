@@ -9,6 +9,7 @@ import { onTaskStatusChange } from '@/lib/tasks/action-plan'
 import { BRI_CATEGORY_LABELS, type BRICategory } from '@/lib/constants/bri-categories'
 import { createLedgerEntryForTaskCompletion } from '@/lib/value-ledger/create-entry'
 import { createSignal } from '@/lib/signals/create-signal'
+import { triggerDossierUpdate } from '@/lib/dossier/build-dossier'
 import type { BriCategory } from '@prisma/client'
 import type { TaskGeneratedData } from '@/lib/signals/types'
 
@@ -203,6 +204,9 @@ export async function POST(
     } catch (err) {
       console.error('[Signal] Failed to create task signal (non-blocking):', err)
     }
+
+    // Update company dossier (non-blocking)
+    triggerDossierUpdate(existingTask.companyId, 'task_completed', id)
 
     await checkAssessmentTriggers(existingTask.companyId)
     await onTaskStatusChange(id, 'COMPLETED', true)

@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
-export async function GET() {
+export async function GET(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -11,17 +11,58 @@ export async function GET() {
   }
 
   try {
-    const questions = await prisma.question.findMany({
-      where: { isActive: true },
-      include: {
-        options: {
-          orderBy: { displayOrder: 'asc' },
+    const { searchParams } = new URL(request.url)
+    const companyId = searchParams.get('companyId')
+
+    let questions
+
+    if (companyId) {
+      // Fetch both company-specific AI questions and global seed questions
+      const [aiQuestions, globalQuestions] = await Promise.all([
+        prisma.question.findMany({
+          where: { companyId, isActive: true },
+          include: {
+            options: { orderBy: { displayOrder: 'asc' } },
+          },
+          orderBy: [{ briCategory: 'asc' }, { displayOrder: 'asc' }],
+        }),
+        prisma.question.findMany({
+          where: { companyId: null, isActive: true },
+          include: {
+            options: { orderBy: { displayOrder: 'asc' } },
+          },
+          orderBy: [{ briCategory: 'asc' }, { displayOrder: 'asc' }],
+        }),
+      ])
+
+      if (aiQuestions.length > 0) {
+        // Prefer company-specific questions per category, fall back to global
+        const aiCategories = new Set(aiQuestions.map(q => q.briCategory))
+        const fallbackQuestions = globalQuestions.filter(
+          q => !aiCategories.has(q.briCategory)
+        )
+        questions = [...aiQuestions, ...fallbackQuestions]
+      } else {
+        // No AI questions yet — use all global seed questions
+        questions = globalQuestions
+      }
+    } else {
+      // No companyId — return all global seed questions (backward compatible)
+      questions = await prisma.question.findMany({
+        where: { isActive: true, companyId: null },
+        include: {
+          options: { orderBy: { displayOrder: 'asc' } },
         },
-      },
-      orderBy: [
-        { briCategory: 'asc' },
-        { displayOrder: 'asc' },
-      ],
+        orderBy: [{ briCategory: 'asc' }, { displayOrder: 'asc' }],
+      })
+    }
+
+    // Sort final list by category then displayOrder
+    questions.sort((a, b) => {
+      if (a.briCategory !== b.briCategory) {
+        return a.briCategory.localeCompare(b.briCategory)
+      }
+      return a.displayOrder - b.displayOrder
     })
 
     // Group questions by category

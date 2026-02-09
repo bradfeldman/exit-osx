@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { RevenueSizeCategory } from '@prisma/client'
 import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snapshot'
+import { triggerDossierUpdate } from '@/lib/dossier/build-dossier'
 
 // Helper to determine revenue size category from actual revenue
 function getRevenueSizeCategory(revenue: number): RevenueSizeCategory {
@@ -270,6 +271,9 @@ export async function PUT(
       // Log but don't fail the request if recalculation fails
       console.error('Failed to recalculate valuation snapshot:', recalcError)
     }
+
+    // Update company dossier (non-blocking)
+    triggerDossierUpdate(companyId, 'financial_data_updated', periodId)
 
     return NextResponse.json({
       incomeStatement: {

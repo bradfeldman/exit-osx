@@ -116,7 +116,21 @@ export function AssessmentWizard({ companyId, companyName, title: _title = 'Buye
 
     async function initAssessment() {
       try {
-        const questionsRes = await fetch('/api/questions')
+        // Trigger AI question generation if dossier exists (non-blocking failure)
+        if (companyId) {
+          try {
+            await fetch(`/api/companies/${companyId}/dossier/generate-questions`, {
+              method: 'POST',
+            })
+          } catch {
+            // Silently fall back to existing questions
+          }
+        }
+
+        const questionsUrl = companyId
+          ? `/api/questions?companyId=${companyId}`
+          : '/api/questions'
+        const questionsRes = await fetch(questionsUrl)
         if (!questionsRes.ok) throw new Error('Failed to load questions')
         const { questions: fetchedQuestions } = await questionsRes.json()
         setQuestions(fetchedQuestions)

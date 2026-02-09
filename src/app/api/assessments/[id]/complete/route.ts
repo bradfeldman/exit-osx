@@ -2,7 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { generateTasksForCompany } from '@/lib/playbook/generate-tasks'
+import { generateAITasksForCompany } from '@/lib/dossier/ai-tasks'
 import { getIndustryMultiples, estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
+import { triggerDossierUpdate } from '@/lib/dossier/build-dossier'
 
 // Default category weights for BRI calculation (used if no custom weights set)
 const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
@@ -113,7 +115,13 @@ export async function POST(
     }
 
     // Check if all questions are answered
-    const totalQuestions = await prisma.question.count({ where: { isActive: true } })
+    // Count questions — prefer company-specific AI questions, fall back to global
+    const aiQuestionCount = await prisma.question.count({
+      where: { companyId: assessment.companyId, isActive: true },
+    })
+    const totalQuestions = aiQuestionCount > 0
+      ? aiQuestionCount
+      : await prisma.question.count({ where: { isActive: true, companyId: null } })
     if (assessment.responses.length < totalQuestions) {
       return NextResponse.json(
         {
@@ -323,17 +331,45 @@ export async function POST(
       r => r.confidenceLevel !== 'NOT_APPLICABLE' && r.selectedOption !== null && r.selectedOptionId !== null
     ) as Array<typeof assessment.responses[number] & { selectedOptionId: string; selectedOption: NonNullable<typeof assessment.responses[number]['selectedOption']> }>
 
-    const taskResult = await generateTasksForCompany(
-      assessment.companyId,
-      applicableResponses,
-      snapshot
-    )
+    // Check if this company has AI-generated questions (dossier path)
+    const hasAIQuestions = await prisma.question.count({
+      where: { companyId: assessment.companyId, isActive: true },
+    })
+
+    let taskResult: { created: number; skipped: number }
+    if (hasAIQuestions > 0) {
+      // AI path: generate contextual tasks using dossier
+      try {
+        taskResult = await generateAITasksForCompany(
+          assessment.companyId,
+          applicableResponses,
+          snapshot
+        )
+      } catch (aiError) {
+        console.error('[Assessment] AI task generation failed, falling back to templates:', aiError)
+        taskResult = await generateTasksForCompany(
+          assessment.companyId,
+          applicableResponses,
+          snapshot
+        )
+      }
+    } else {
+      // Legacy path: use template-based task generation
+      taskResult = await generateTasksForCompany(
+        assessment.companyId,
+        applicableResponses,
+        snapshot
+      )
+    }
 
     // Mark assessment as completed
     const completedAssessment = await prisma.assessment.update({
       where: { id: assessmentId },
       data: { completedAt: new Date() },
     })
+
+    // Update company dossier (non-blocking)
+    triggerDossierUpdate(assessment.companyId, 'assessment_completed', assessmentId)
 
     return NextResponse.json({
       assessment: completedAssessment,

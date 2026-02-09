@@ -65,8 +65,11 @@ export function CategoryAssessmentFlow({
   useEffect(() => {
     async function loadData() {
       try {
-        // Fetch all questions
-        const questionsRes = await fetch('/api/questions')
+        // Fetch questions (company-scoped if companyId available)
+        const questionsUrl = companyId
+          ? `/api/questions?companyId=${companyId}`
+          : '/api/questions'
+        const questionsRes = await fetch(questionsUrl)
         if (!questionsRes.ok) throw new Error('Failed to load questions')
         const { questions: allQuestions } = await questionsRes.json()
 

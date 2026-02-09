@@ -208,6 +208,9 @@ model Company {
   driftReports             DriftReport[]
   weeklyCheckIns           WeeklyCheckIn[]
   accountabilityPartner    AccountabilityPartner?
+  // Company Dossier - adaptive intelligence engine
+  dossiers                 CompanyDossier[]
+  aiGeneratedQuestions     Question[]
 
   @@map("companies")
 }
@@ -302,6 +305,7 @@ model CoreFactors {
 
 model Question {
   id              String               @id @default(cuid())
+  companyId       String?              @map("company_id")
   briCategory     BriCategory          @map("bri_category")
   issueTier       IssueTier            @default(OPTIMIZATION) @map("issue_tier")
   questionText    String               @map("question_text")
@@ -313,8 +317,10 @@ model Question {
   riskDriverName  String?              @map("risk_driver_name")
   responses       AssessmentResponse[]
   options         QuestionOption[]
+  company         Company?             @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([issueTier])
+  @@index([companyId, isActive])
   @@map("questions")
 }
 
@@ -3078,4 +3084,31 @@ model AccountabilityPartner {
   @@index([accessToken])
   @@index([inviteToken])
   @@map("accountability_partners")
+}
+
+// Company Dossier - Adaptive Intelligence Engine
+model CompanyDossier {
+  id            String           @id @default(cuid())
+  companyId     String           @map("company_id")
+  version       Int              @default(1)
+  buildType     DossierBuildType @map("build_type")
+  triggerEvent  String           @map("trigger_event")
+  triggerSource String?          @map("trigger_source")
+  content       Json
+  contentHash   String           @map("content_hash")
+  sections      String[]
+  previousId    String?          @map("previous_id")
+  isCurrent     Boolean          @default(true) @map("is_current")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  company       Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  previous      CompanyDossier?  @relation("DossierVersions", fields: [previousId], references: [id])
+  newerVersions CompanyDossier[] @relation("DossierVersions")
+
+  @@index([companyId, isCurrent])
+  @@map("company_dossiers")
+}
+
+enum DossierBuildType {
+  FULL
+  INCREMENTAL
 }
