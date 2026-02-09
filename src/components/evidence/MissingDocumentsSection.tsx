@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { AlertTriangle, Upload } from 'lucide-react'
 import { EvidenceUploadDialog } from './EvidenceUploadDialog'
+import { MissingDocumentCard } from './MissingDocumentCard'
 
 interface MissingDoc {
   id: string
@@ -11,12 +11,6 @@ interface MissingDoc {
   categoryLabel: string
   buyerExplanation: string
   importance: 'required' | 'expected' | 'helpful'
-}
-
-const IMPORTANCE_STYLES: Record<string, string> = {
-  required: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
-  expected: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  helpful: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
 }
 
 interface MissingDocumentsSectionProps {
@@ -44,31 +38,17 @@ export function MissingDocumentsSection({ documents, totalMissing, onUploadSucce
       {/* Missing items */}
       <div className="mt-4 space-y-4">
         {visible.map(doc => (
-          <div key={doc.id} className="rounded-lg border border-border/30 p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
-                <span className="text-sm font-medium text-foreground">{doc.name}</span>
-                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full capitalize ${IMPORTANCE_STYLES[doc.importance] ?? ''}`}>
-                  {doc.importance}
-                </span>
-              </div>
-              <span className="text-xs text-muted-foreground">{doc.categoryLabel}</span>
-            </div>
-            <p className="text-sm text-muted-foreground italic leading-relaxed mt-2 pl-6">
-              &ldquo;{doc.buyerExplanation}&rdquo;
-            </p>
-            <div className="mt-3 pl-6">
-              <button
-                type="button"
-                onClick={() => setUploadingDoc(doc)}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--burnt-orange)] hover:underline"
-              >
-                <Upload className="w-3.5 h-3.5" />
-                Upload {doc.name}
-              </button>
-            </div>
-          </div>
+          <MissingDocumentCard
+            key={doc.id}
+            id={doc.id}
+            name={doc.name}
+            category={doc.category}
+            buyerExplanation={doc.buyerExplanation}
+            importance={doc.importance}
+            categoryLabel={doc.categoryLabel}
+            onUploadSuccess={onUploadSuccess}
+            onUploadClick={() => setUploadingDoc(doc)}
+          />
         ))}
       </div>
 
@@ -83,13 +63,16 @@ export function MissingDocumentsSection({ documents, totalMissing, onUploadSucce
         </button>
       )}
 
-      {/* Upload Dialog */}
+      {/* Upload Dialog (fallback for click-to-upload) */}
       {uploadingDoc && (
         <EvidenceUploadDialog
           documentName={uploadingDoc.name}
           evidenceCategory={uploadingDoc.category}
           expectedDocumentId={uploadingDoc.id}
-          onSuccess={() => onUploadSuccess?.()}
+          onSuccess={() => {
+            setUploadingDoc(null)
+            onUploadSuccess?.()
+          }}
           onClose={() => setUploadingDoc(null)}
         />
       )}

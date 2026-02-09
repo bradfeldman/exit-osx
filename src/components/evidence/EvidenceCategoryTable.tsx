@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { DollarSign, Scale, Briefcase, Users, UserCheck, Cpu, Upload } from 'lucide-react'
+import { DollarSign, Scale, Briefcase, Users, UserCheck, Cpu } from 'lucide-react'
 import { EvidenceUploadDialog } from './EvidenceUploadDialog'
+import { MissingDocumentCard } from './MissingDocumentCard'
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
   financial: DollarSign,
@@ -155,33 +156,16 @@ export function EvidenceCategoryTable({ categories, onUploadSuccess }: EvidenceC
                       </p>
                       <div className="space-y-3">
                         {cat.missingDocuments.map(doc => (
-                          <div key={doc.id} className="rounded-lg border border-border/30 p-3">
-                            <div className="flex items-center gap-2">
-                              <span className="text-amber-500">&#x26A0;</span>
-                              <span className="text-sm font-medium text-foreground">{doc.name}</span>
-                              <span className={cn(
-                                'text-[10px] font-semibold px-1.5 py-0.5 rounded-full capitalize',
-                                doc.importance === 'required' && 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
-                                doc.importance === 'expected' && 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-                                doc.importance === 'helpful' && 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
-                              )}>
-                                {doc.importance}
-                              </span>
-                            </div>
-                            <p className="text-sm text-muted-foreground italic mt-1.5 pl-6 leading-relaxed">
-                              &ldquo;{doc.buyerExplanation}&rdquo;
-                            </p>
-                            <div className="mt-2 pl-6">
-                              <button
-                                type="button"
-                                onClick={() => setUploadingDoc({ id: doc.id, name: doc.name, category: cat.id })}
-                                className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--burnt-orange)] hover:underline"
-                              >
-                                <Upload className="w-3.5 h-3.5" />
-                                Upload {doc.name}
-                              </button>
-                            </div>
-                          </div>
+                          <MissingDocumentCard
+                            key={doc.id}
+                            id={doc.id}
+                            name={doc.name}
+                            category={cat.id}
+                            buyerExplanation={doc.buyerExplanation}
+                            importance={doc.importance}
+                            onUploadSuccess={onUploadSuccess}
+                            onUploadClick={() => setUploadingDoc({ id: doc.id, name: doc.name, category: cat.id })}
+                          />
                         ))}
                       </div>
                     </div>
@@ -193,7 +177,7 @@ export function EvidenceCategoryTable({ categories, onUploadSuccess }: EvidenceC
         })}
       </div>
 
-      {/* Upload Dialog */}
+      {/* Upload Dialog (fallback for click-to-upload) */}
       {uploadingDoc && (
         <EvidenceUploadDialog
           documentName={uploadingDoc.name}
