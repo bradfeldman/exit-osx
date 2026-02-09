@@ -137,7 +137,7 @@ export function EvidencePage() {
         ) : (
           <>
             <AnimatedItem>
-              <EvidenceCategoryTable categories={data.categories} />
+              <EvidenceCategoryTable categories={data.categories} onUploadSuccess={fetchData} />
             </AnimatedItem>
 
             {data.topMissing.length > 0 && (

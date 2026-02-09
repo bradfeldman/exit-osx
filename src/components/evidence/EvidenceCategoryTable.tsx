@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { DollarSign, Scale, Briefcase, Users, UserCheck, Cpu } from 'lucide-react'
+import { DollarSign, Scale, Briefcase, Users, UserCheck, Cpu, Upload } from 'lucide-react'
+import { EvidenceUploadDialog } from './EvidenceUploadDialog'
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
   financial: DollarSign,
@@ -51,10 +52,12 @@ interface EvidenceCategory {
 
 interface EvidenceCategoryTableProps {
   categories: EvidenceCategory[]
+  onUploadSuccess?: () => void
 }
 
-export function EvidenceCategoryTable({ categories }: EvidenceCategoryTableProps) {
+export function EvidenceCategoryTable({ categories, onUploadSuccess }: EvidenceCategoryTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [uploadingDoc, setUploadingDoc] = useState<{ id: string; name: string; category: string } | null>(null)
 
   return (
     <div className="rounded-xl border border-border/50 bg-card overflow-hidden">
@@ -168,6 +171,16 @@ export function EvidenceCategoryTable({ categories }: EvidenceCategoryTableProps
                             <p className="text-sm text-muted-foreground italic mt-1.5 pl-6 leading-relaxed">
                               &ldquo;{doc.buyerExplanation}&rdquo;
                             </p>
+                            <div className="mt-2 pl-6">
+                              <button
+                                type="button"
+                                onClick={() => setUploadingDoc({ id: doc.id, name: doc.name, category: cat.id })}
+                                className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--burnt-orange)] hover:underline"
+                              >
+                                <Upload className="w-3.5 h-3.5" />
+                                Upload {doc.name}
+                              </button>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -179,6 +192,20 @@ export function EvidenceCategoryTable({ categories }: EvidenceCategoryTableProps
           )
         })}
       </div>
+
+      {/* Upload Dialog */}
+      {uploadingDoc && (
+        <EvidenceUploadDialog
+          documentName={uploadingDoc.name}
+          evidenceCategory={uploadingDoc.category}
+          expectedDocumentId={uploadingDoc.id}
+          onSuccess={() => {
+            setUploadingDoc(null)
+            onUploadSuccess?.()
+          }}
+          onClose={() => setUploadingDoc(null)}
+        />
+      )}
     </div>
   )
 }
