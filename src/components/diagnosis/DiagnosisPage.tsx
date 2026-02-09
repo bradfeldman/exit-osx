@@ -27,6 +27,7 @@ interface CategoryData {
     lastUpdated: string | null
     daysSinceUpdate: number | null
     isStale: boolean
+    hasUnansweredAiQuestions: boolean
   }
   isLowestConfidence: boolean
 }

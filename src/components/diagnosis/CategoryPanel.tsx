@@ -43,6 +43,7 @@ interface CategoryPanelProps {
     lastUpdated: string | null
     daysSinceUpdate: number | null
     isStale: boolean
+    hasUnansweredAiQuestions: boolean
   }
   isLowestConfidence: boolean
   assessmentId: string | null
@@ -77,6 +78,7 @@ export function CategoryPanel({
   const getCtaLabel = (): string => {
     if (confidence.questionsAnswered === 0) return 'Start Assessment'
     if (confidence.isStale) return 'Review & Refresh'
+    if (confidence.hasUnansweredAiQuestions) return 'Sharpen Diagnosis'
     if (confidence.questionsAnswered < confidence.questionsTotal) return 'Continue'
     if (score >= 80 && confidence.questionsAnswered === confidence.questionsTotal) return 'Maintaining'
     return 'Review Answers'

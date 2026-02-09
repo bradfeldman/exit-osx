@@ -56,14 +56,29 @@ export async function GET(
   if (isAuthError(result)) return result.error
 
   try {
-    // Fetch all active questions with options
-    const questions = await prisma.question.findMany({
-      where: { isActive: true },
-      include: {
-        options: { orderBy: { displayOrder: 'asc' } },
-      },
-      orderBy: [{ briCategory: 'asc' }, { displayOrder: 'asc' }],
-    })
+    // Fetch company-scoped questions: AI questions for this company + global seed questions
+    const [aiQuestions, globalQuestions] = await Promise.all([
+      prisma.question.findMany({
+        where: { companyId, isActive: true },
+        include: { options: { orderBy: { displayOrder: 'asc' } } },
+        orderBy: [{ briCategory: 'asc' }, { displayOrder: 'asc' }],
+      }),
+      prisma.question.findMany({
+        where: { companyId: null, isActive: true },
+        include: { options: { orderBy: { displayOrder: 'asc' } } },
+        orderBy: [{ briCategory: 'asc' }, { displayOrder: 'asc' }],
+      }),
+    ])
+
+    // Merge: prefer company-specific AI questions per category, fall back to global seed
+    let questions: typeof globalQuestions
+    if (aiQuestions.length > 0) {
+      const aiCategories = new Set(aiQuestions.map(q => q.briCategory))
+      const fallbackQuestions = globalQuestions.filter(q => !aiCategories.has(q.briCategory))
+      questions = [...aiQuestions, ...fallbackQuestions]
+    } else {
+      questions = globalQuestions
+    }
 
     // Fetch the latest completed assessment for this company
     const latestAssessment = await prisma.assessment.findFirst({
@@ -158,6 +173,7 @@ export async function GET(
         lastUpdated: string | null
         daysSinceUpdate: number | null
         isStale: boolean
+        hasUnansweredAiQuestions: boolean
       }
       isLowestConfidence: boolean
     }
@@ -173,6 +189,7 @@ export async function GET(
       // Count answered questions and find latest response date
       let questionsAnswered = 0
       let latestResponseDate: Date | null = null
+      let hasUnansweredAiQuestions = false
 
       for (const q of catQuestions) {
         const response = responseMap.get(q.id)
@@ -181,6 +198,8 @@ export async function GET(
           if (!latestResponseDate || response.updatedAt > latestResponseDate) {
             latestResponseDate = response.updatedAt
           }
+        } else if (q.companyId) {
+          hasUnansweredAiQuestions = true
         }
       }
 
@@ -227,6 +246,7 @@ export async function GET(
           lastUpdated: latestResponseDate?.toISOString() ?? null,
           daysSinceUpdate,
           isStale: daysSinceUpdate !== null && daysSinceUpdate > 90,
+          hasUnansweredAiQuestions,
         },
         isLowestConfidence: false, // Set below
       })
