@@ -1,11 +1,42 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ListChecks } from 'lucide-react'
+import { ListChecks, Loader2, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useCompany } from '@/contexts/CompanyContext'
 
 export function EmptyState() {
   const router = useRouter()
+  const { selectedCompanyId } = useCompany()
+  const [generating, setGenerating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleGenerateTasks = async () => {
+    if (!selectedCompanyId) return
+    setGenerating(true)
+    setError(null)
+
+    try {
+      const res = await fetch(`/api/companies/${selectedCompanyId}/recalculate-bri`, {
+        method: 'POST',
+      })
+      if (!res.ok) throw new Error('Failed to generate tasks')
+      const data = await res.json()
+
+      if (data.tasksGenerated > 0) {
+        // Reload the page to show the new tasks
+        window.location.reload()
+      } else {
+        // No tasks generated — likely no assessment responses yet
+        router.push('/dashboard/diagnosis')
+      }
+    } catch {
+      setError('Unable to generate tasks. Complete your diagnosis first.')
+    } finally {
+      setGenerating(false)
+    }
+  }
 
   return (
     <div className="max-w-[800px] mx-auto px-6 py-8">
@@ -17,9 +48,29 @@ export function EmptyState() {
         <p className="text-sm text-muted-foreground mt-2 max-w-md">
           Complete your diagnosis to generate personalized tasks that increase your business value.
         </p>
-        <Button className="mt-4" onClick={() => router.push('/dashboard/diagnosis')}>
-          Go to Diagnosis
-        </Button>
+        {error && (
+          <p className="text-sm text-destructive mt-2">{error}</p>
+        )}
+        <div className="flex gap-3 mt-4">
+          <Button variant="outline" onClick={() => router.push('/dashboard/diagnosis')}>
+            Go to Diagnosis
+          </Button>
+          {selectedCompanyId && (
+            <Button onClick={handleGenerateTasks} disabled={generating}>
+              {generating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-1" />
+                  Generate Tasks
+                </>
+              )}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   )
