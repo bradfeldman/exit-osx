@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useSubscription } from '@/contexts/SubscriptionContext'
@@ -10,6 +10,7 @@ import { CategoryPanel } from './CategoryPanel'
 import { RiskDriversSection } from './RiskDriversSection'
 import { DiagnosisLoading } from './DiagnosisLoading'
 import { DiagnosisError } from './DiagnosisError'
+import { SharpenDiagnosisBanner } from './SharpenDiagnosisBanner'
 import { UpgradeModal } from '@/components/subscription/UpgradeModal'
 
 interface CategoryData {
@@ -136,6 +137,15 @@ export function DiagnosisPage() {
     setExpandedCategory(category)
   }, [])
 
+  // Show "Sharpen Diagnosis" banner when all questions are answered and no unanswered AI questions exist
+  const allQuestionsAnswered = useMemo(() => {
+    if (!data || data.categories.length === 0) return false
+    return data.categories.every(
+      cat => cat.confidence.questionsAnswered === cat.confidence.questionsTotal
+        && !cat.confidence.hasUnansweredAiQuestions
+    )
+  }, [data])
+
   if (isLoading) return <DiagnosisLoading />
   if (error || !data) return <DiagnosisError onRetry={fetchData} />
 
@@ -149,6 +159,16 @@ export function DiagnosisPage() {
             isEstimated={data.isEstimated}
           />
         </AnimatedItem>
+
+        {/* Sharpen Diagnosis Banner */}
+        {allQuestionsAnswered && (
+          <AnimatedItem>
+            <SharpenDiagnosisBanner
+              companyId={selectedCompanyId}
+              onComplete={fetchData}
+            />
+          </AnimatedItem>
+        )}
 
         {/* Category Grid */}
         <AnimatedItem>

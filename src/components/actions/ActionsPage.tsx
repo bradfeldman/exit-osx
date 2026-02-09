@@ -120,6 +120,7 @@ export function ActionsPage() {
   const searchParams = useSearchParams()
   const highlightTaskId = searchParams.get('taskId')
   const scrolledRef = useRef(false)
+  const generationFiredRef = useRef(false)
   const [data, setData] = useState<ActionsData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -160,6 +161,20 @@ export function ActionsPage() {
       }, 300)
     }
   }, [highlightTaskId, data])
+
+  // Auto-trigger AI question generation when all tasks are completed
+  const allTasksCompleted = data
+    ? data.activeTasks.length === 0 && data.upNext.length === 0 && data.waitingOnOthers.length === 0
+    : false
+
+  useEffect(() => {
+    if (allTasksCompleted && selectedCompanyId && !generationFiredRef.current) {
+      generationFiredRef.current = true
+      fetch(`/api/companies/${selectedCompanyId}/dossier/generate-questions`, {
+        method: 'POST',
+      }).catch(() => {})
+    }
+  }, [allTasksCompleted, selectedCompanyId])
 
   const handleSubStepToggle = async (taskId: string, stepId: string, completed: boolean) => {
     if (!data) return
@@ -248,10 +263,6 @@ export function ActionsPage() {
 
   if (hasNoTasks) return <EmptyState />
 
-  const allTasksCompleted = data.activeTasks.length === 0
-    && data.upNext.length === 0
-    && data.waitingOnOthers.length === 0
-
   return (
     <div className="max-w-[800px] mx-auto px-6 py-8">
       <AnimatedStagger className="space-y-6" staggerDelay={0.1}>
@@ -270,6 +281,7 @@ export function ActionsPage() {
             <AllCompletedState
               completedCount={data.summary.completedThisMonth}
               valueRecovered={data.summary.valueRecoveredThisMonth}
+              companyId={selectedCompanyId}
             />
           </AnimatedItem>
         )}
