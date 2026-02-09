@@ -29,7 +29,7 @@ export function RecentlyAddedSection({ documents }: RecentlyAddedSectionProps) {
     const win = window.open('about:blank', '_blank')
 
     try {
-      const response = await fetch(`/api/companies/${selectedCompanyId}/dataroom/documents/${docId}/download`)
+      const response = await fetch(`/api/companies/${selectedCompanyId}/evidence/documents/${docId}/view`)
       if (!response.ok) {
         win?.close()
         throw new Error('Failed to fetch document')
