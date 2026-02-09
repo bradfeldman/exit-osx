@@ -30,6 +30,8 @@ function buildSystemPrompt(): string {
 
 Your job is to generate exactly 30 assessment questions tailored to a specific company based on its dossier data. These questions are used to calculate a BRI score across 6 categories: FINANCIAL, TRANSFERABILITY, OPERATIONAL, MARKET, LEGAL_TAX, PERSONAL.
 
+Think like a team of experts evaluating this company for acquisition: an investment banker assessing deal viability, a buyer scrutinizing risks, an accountant auditing the books, a tax advisor looking for liabilities, an estate planner protecting the owner, and a lawyer reviewing legal exposure.
+
 RULES:
 1. Generate questions distributed as follows: FINANCIAL=7, TRANSFERABILITY=6, OPERATIONAL=6, MARKET=5, LEGAL_TAX=3, PERSONAL=3 (total=30)
 2. Each question MUST have exactly 4 answer options
@@ -37,13 +39,15 @@ RULES:
 4. Options must be mutually exclusive and collectively exhaustive
 5. Options must progress from worst case to best case
 6. Questions must be SPECIFIC to the company's industry, size, and situation
-7. Do NOT ask about things the dossier already clearly answers — probe areas of weakness, gaps, or uncertainty
+7. CRITICAL: The user prompt includes ALREADY ASKED QUESTIONS — you must NOT repeat, rephrase, or ask substantially similar questions. Each new question must cover a DIFFERENT risk dimension or go significantly deeper into a topic than the previous question did.
 8. Prioritize the weakest BRI categories for harder/more revealing questions
 9. Each question needs an issueTier: CRITICAL (deal-killers), SIGNIFICANT (major value drivers), or OPTIMIZATION (nice-to-have)
 10. maxImpactPoints range: CRITICAL=12-15, SIGNIFICANT=8-12, OPTIMIZATION=5-8
 11. Include a buyerLogic field (max 200 chars) explaining why a buyer cares about this
 12. Include a riskDriverName (short label for the risk dimension being assessed)
 13. Include a helpText explaining what the question is really asking and why it matters
+14. Use the answers to previously asked questions to identify where the company is WEAKEST and probe those areas with sharper, more specific follow-up questions
+15. Ask about second-order risks: if they answered "good" on management team, ask about key-person succession plans, cross-training, or non-compete agreements
 
 Return valid JSON matching this exact structure:
 {
@@ -69,7 +73,14 @@ Return valid JSON matching this exact structure:
 }`
 }
 
-function buildUserPrompt(dossier: CompanyDossierContent): string {
+interface AnsweredQuestion {
+  question: string
+  category: string
+  answer: string
+  score: number
+}
+
+function buildUserPrompt(dossier: CompanyDossierContent, answeredQuestions: AnsweredQuestion[]): string {
   const { identity, financials, assessment, valuation, tasks, evidence, signals, engagement, aiContext } = dossier
 
   const parts: string[] = []
@@ -133,7 +144,23 @@ function buildUserPrompt(dossier: CompanyDossierContent): string {
     parts.push(`IDENTIFIED RISKS: ${aiContext.identifiedRisks.slice(0, 5).join('; ')}`)
   }
 
-  parts.push(`\nGenerate 30 BRI assessment questions tailored to this company. Focus on probing weaknesses and gaps.`)
+  // Include previously answered questions so AI doesn't repeat them
+  if (answeredQuestions.length > 0) {
+    parts.push(`\nALREADY ASKED QUESTIONS (DO NOT repeat or rephrase these — they are already answered):`)
+    const byCategory: Record<string, AnsweredQuestion[]> = {}
+    for (const q of answeredQuestions) {
+      if (!byCategory[q.category]) byCategory[q.category] = []
+      byCategory[q.category].push(q)
+    }
+    for (const [cat, qs] of Object.entries(byCategory)) {
+      parts.push(`  ${cat}:`)
+      for (const q of qs) {
+        parts.push(`    - Q: "${q.question}" → Answer: "${q.answer}" (score: ${q.score})`)
+      }
+    }
+  }
+
+  parts.push(`\nGenerate 30 NEW BRI assessment questions tailored to this company. These must be COMPLETELY DIFFERENT from the already-asked questions above. Go deeper — ask about specific risks, second-order effects, and details that the previous round of questions didn't cover.`)
 
   return parts.join('\n')
 }
@@ -179,6 +206,44 @@ function validateQuestions(questions: AIGeneratedQuestion[]): string | null {
 }
 
 /**
+ * Fetch all previously answered questions (seed + AI) with the user's selected answer.
+ */
+async function getAnsweredQuestions(companyId: string) {
+  // Find the company's assessment to get responses
+  const assessment = await prisma.assessment.findFirst({
+    where: { companyId },
+    orderBy: { createdAt: 'desc' },
+    select: { id: true },
+  })
+  if (!assessment) return []
+
+  // Get all responses with question text and selected option
+  const responses = await prisma.assessmentResponse.findMany({
+    where: {
+      assessmentId: assessment.id,
+      selectedOptionId: { not: null },
+    },
+    select: {
+      question: {
+        select: { questionText: true, briCategory: true },
+      },
+      selectedOption: {
+        select: { optionText: true, scoreValue: true },
+      },
+    },
+  })
+
+  return responses
+    .filter(r => r.selectedOption !== null)
+    .map(r => ({
+      question: r.question.questionText,
+      category: r.question.briCategory,
+      answer: r.selectedOption!.optionText,
+      score: Number(r.selectedOption!.scoreValue),
+    }))
+}
+
+/**
  * Generate AI-tailored BRI questions for a company based on its dossier.
  * Deactivates old AI questions and creates new ones.
  */
@@ -189,8 +254,9 @@ export async function generateQuestionsForCompany(companyId: string) {
   }
 
   const content = dossier.content as unknown as CompanyDossierContent
+  const answeredQuestions = await getAnsweredQuestions(companyId)
   const systemPrompt = buildSystemPrompt()
-  const userPrompt = buildUserPrompt(content)
+  const userPrompt = buildUserPrompt(content, answeredQuestions)
 
   const startTime = Date.now()
 
