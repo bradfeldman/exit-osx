@@ -56,7 +56,7 @@ export async function GET(
   if (isAuthError(result)) return result.error
 
   try {
-    // Fetch all active questions with options (original query)
+    // Fetch all active questions with options
     const allQuestions = await prisma.question.findMany({
       where: { isActive: true },
       include: {
@@ -66,7 +66,7 @@ export async function GET(
     })
 
     // Scope to this company: seed questions (no companyId) + AI questions for THIS company only
-    const companyAiCategories = new Set(
+    const companyAiCategories = new Set<string>(
       allQuestions.filter(q => q.companyId === companyId).map(q => q.briCategory)
     )
     // If AI questions exist for a category, prefer them over seed questions for that category
@@ -77,7 +77,11 @@ export async function GET(
         )
       : allQuestions.filter(q => q.companyId === null)
 
-    // Fetch the latest completed assessment for this company
+    // Also keep seed questions for categories that have AI questions,
+    // so we can count seed responses as "answered" before AI questions are answered
+    const seedQuestions = allQuestions.filter(q => q.companyId === null)
+
+    // Fetch the latest assessment for this company
     const latestAssessment = await prisma.assessment.findFirst({
       where: { companyId },
       orderBy: { createdAt: 'desc' },
@@ -188,14 +192,42 @@ export async function GET(
       let latestResponseDate: Date | null = null
       let hasUnansweredAiQuestions = false
 
+      // Check if this category uses AI questions but none are answered yet
+      const isAiCategory = companyAiCategories.has(catKey)
+      let aiAnsweredCount = 0
+
       for (const q of catQuestions) {
         const response = responseMap.get(q.id)
         if (response && response.selectedOptionId) {
           questionsAnswered++
+          aiAnsweredCount++
           if (!latestResponseDate || response.updatedAt > latestResponseDate) {
             latestResponseDate = response.updatedAt
           }
         } else if (q.companyId) {
+          hasUnansweredAiQuestions = true
+        }
+      }
+
+      // Fallback: if this category has AI questions but 0 AI answers,
+      // count seed question responses so completed categories don't revert to "Start Assessment"
+      if (isAiCategory && aiAnsweredCount === 0) {
+        const seedCatQuestions = seedQuestions.filter(q => q.briCategory === catKey)
+        let seedAnswered = 0
+        for (const sq of seedCatQuestions) {
+          const response = responseMap.get(sq.id)
+          if (response && response.selectedOptionId) {
+            seedAnswered++
+            if (!latestResponseDate || response.updatedAt > latestResponseDate) {
+              latestResponseDate = response.updatedAt
+            }
+          }
+        }
+        if (seedAnswered > 0) {
+          // Map seed coverage to AI question count so the progress feels accurate
+          // e.g., 5/5 seed answered → 5 of 7 AI total shown as answered
+          questionsAnswered = Math.min(seedAnswered, totalQuestions)
+          // Still flag that AI questions need answering
           hasUnansweredAiQuestions = true
         }
       }
@@ -326,13 +358,22 @@ export async function GET(
     // Sort risk drivers by dollar impact descending
     riskDrivers.sort((a, b) => b.dollarImpact - a.dollarImpact)
 
-    // Build question counts
+    // Build question counts (same fallback logic as above)
     const questionCounts: Record<string, { total: number; answered: number; unanswered: number }> = {}
     for (const catKey of categoryKeys) {
       const catQuestions = questionsByCategory.get(catKey) ?? []
       let answered = 0
       for (const q of catQuestions) {
         if (responseMap.get(q.id)?.selectedOptionId) answered++
+      }
+      // Fallback to seed responses if AI category has 0 answers
+      if (companyAiCategories.has(catKey) && answered === 0) {
+        const seedCatQs = seedQuestions.filter(q => q.briCategory === catKey)
+        let seedAns = 0
+        for (const sq of seedCatQs) {
+          if (responseMap.get(sq.id)?.selectedOptionId) seedAns++
+        }
+        answered = Math.min(seedAns, catQuestions.length)
       }
       questionCounts[catKey] = {
         total: catQuestions.length,
