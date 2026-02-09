@@ -49,8 +49,12 @@ async function addWatermarkToPdf(
 
 /**
  * GET /api/companies/[id]/evidence/documents/[docId]/view
- * View an evidence document. PDFs are returned with watermark.
- * Non-PDFs return a short-lived signed URL.
+ *
+ * Opens an evidence document directly in the browser.
+ * - PDFs: served inline with watermark applied
+ * - Non-PDFs: 302 redirect to a short-lived signed URL
+ *
+ * Designed to be opened via window.open() — no fetch needed client-side.
  */
 export async function GET(
   request: NextRequest,
@@ -66,11 +70,11 @@ export async function GET(
     })
 
     if (!document || document.companyId !== companyId) {
-      return NextResponse.json({ error: 'Document not found' }, { status: 404 })
+      return new NextResponse('Document not found', { status: 404 })
     }
 
     if (!document.filePath) {
-      return NextResponse.json({ error: 'No file available' }, { status: 404 })
+      return new NextResponse('No file available', { status: 404 })
     }
 
     const supabase = createServiceClient()
@@ -85,7 +89,8 @@ export async function GET(
 
       if (downloadError || !fileData) {
         console.error('Evidence view - storage download error:', downloadError)
-        return NextResponse.json({ error: 'Failed to retrieve file' }, { status: 500 })
+        // Fallback to redirect
+        return redirectToSignedUrl(supabase, document.filePath)
       }
 
       try {
@@ -101,32 +106,30 @@ export async function GET(
         })
       } catch (watermarkError) {
         console.error('Evidence view - watermark error:', watermarkError)
-        // Fallback: signed URL without watermark
-        const { data, error } = await supabase.storage
-          .from('data-room')
-          .createSignedUrl(document.filePath, 300)
-
-        if (error) {
-          return NextResponse.json({ error: 'Failed to generate view URL' }, { status: 500 })
-        }
-
-        return NextResponse.json({ url: data.signedUrl, fileName: document.fileName })
+        return redirectToSignedUrl(supabase, document.filePath)
       }
     }
 
-    // For non-PDFs, return a signed URL
-    const { data, error } = await supabase.storage
-      .from('data-room')
-      .createSignedUrl(document.filePath, 300)
-
-    if (error) {
-      console.error('Evidence view - signed URL error:', error)
-      return NextResponse.json({ error: 'Failed to generate view URL' }, { status: 500 })
-    }
-
-    return NextResponse.json({ url: data.signedUrl, fileName: document.fileName })
+    // For non-PDFs, redirect to signed URL
+    return redirectToSignedUrl(supabase, document.filePath)
   } catch (error) {
     console.error('Evidence view - unexpected error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return new NextResponse('Internal server error', { status: 500 })
   }
+}
+
+async function redirectToSignedUrl(
+  supabase: ReturnType<typeof createServiceClient>,
+  filePath: string
+) {
+  const { data, error } = await supabase.storage
+    .from('data-room')
+    .createSignedUrl(filePath, 300)
+
+  if (error || !data?.signedUrl) {
+    console.error('Evidence view - signed URL error:', error)
+    return new NextResponse('Failed to generate view URL', { status: 500 })
+  }
+
+  return NextResponse.redirect(data.signedUrl)
 }

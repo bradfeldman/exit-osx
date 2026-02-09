@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { Check, ExternalLink, Loader2 } from 'lucide-react'
+import { Check, ExternalLink } from 'lucide-react'
 import { useCompany } from '@/contexts/CompanyContext'
 
 interface RecentDoc {
@@ -19,45 +18,11 @@ interface RecentlyAddedSectionProps {
 
 export function RecentlyAddedSection({ documents }: RecentlyAddedSectionProps) {
   const { selectedCompanyId } = useCompany()
-  const [viewingDocId, setViewingDocId] = useState<string | null>(null)
 
-  const handleViewDocument = useCallback(async (docId: string) => {
-    if (!selectedCompanyId || viewingDocId) return
-    setViewingDocId(docId)
-
-    // Open window synchronously to avoid popup blocker
-    const win = window.open('about:blank', '_blank')
-
-    try {
-      const response = await fetch(`/api/companies/${selectedCompanyId}/evidence/documents/${docId}/view`)
-      if (!response.ok) {
-        win?.close()
-        throw new Error('Failed to fetch document')
-      }
-
-      const contentType = response.headers.get('Content-Type')
-
-      if (contentType === 'application/pdf') {
-        const blob = await response.blob()
-        const url = URL.createObjectURL(blob)
-        if (win) win.location.href = url
-        else window.open(url, '_blank')
-      } else {
-        const data = await response.json()
-        if (data.url) {
-          if (win) win.location.href = data.url
-          else window.open(data.url, '_blank')
-        } else {
-          win?.close()
-        }
-      }
-    } catch (err) {
-      console.error('Error viewing document:', err)
-      win?.close()
-    } finally {
-      setViewingDocId(null)
-    }
-  }, [selectedCompanyId, viewingDocId])
+  const handleViewDocument = (docId: string) => {
+    if (!selectedCompanyId) return
+    window.open(`/api/companies/${selectedCompanyId}/evidence/documents/${docId}/view`, '_blank')
+  }
 
   if (documents.length === 0) return null
 
@@ -79,7 +44,6 @@ export function RecentlyAddedSection({ documents }: RecentlyAddedSectionProps) {
             key={doc.id}
             type="button"
             onClick={() => handleViewDocument(doc.id)}
-            disabled={viewingDocId === doc.id}
             className="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-muted/20 cursor-pointer group transition-colors"
           >
             <div className="flex items-center gap-2">
@@ -96,11 +60,7 @@ export function RecentlyAddedSection({ documents }: RecentlyAddedSectionProps) {
               <span className="text-xs text-muted-foreground">
                 {new Date(doc.addedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </span>
-              {viewingDocId === doc.id ? (
-                <Loader2 className="w-3.5 h-3.5 text-muted-foreground animate-spin" />
-              ) : (
-                <ExternalLink className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-              )}
+              <ExternalLink className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           </button>
         ))}

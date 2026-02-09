@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { DollarSign, Scale, Briefcase, Users, UserCheck, Cpu, Loader2, ExternalLink } from 'lucide-react'
+import { DollarSign, Scale, Briefcase, Users, UserCheck, Cpu, ExternalLink } from 'lucide-react'
 import { useCompany } from '@/contexts/CompanyContext'
 import { EvidenceUploadDialog } from './EvidenceUploadDialog'
 import { MissingDocumentCard } from './MissingDocumentCard'
@@ -61,45 +61,11 @@ export function EvidenceCategoryTable({ categories, onUploadSuccess }: EvidenceC
   const { selectedCompanyId } = useCompany()
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [uploadingDoc, setUploadingDoc] = useState<{ id: string; name: string; category: string } | null>(null)
-  const [viewingDocId, setViewingDocId] = useState<string | null>(null)
 
-  const handleViewDocument = useCallback(async (docId: string) => {
-    if (!selectedCompanyId || viewingDocId) return
-    setViewingDocId(docId)
-
-    // Open window synchronously to avoid popup blocker
-    const win = window.open('about:blank', '_blank')
-
-    try {
-      const response = await fetch(`/api/companies/${selectedCompanyId}/evidence/documents/${docId}/view`)
-      if (!response.ok) {
-        win?.close()
-        throw new Error('Failed to fetch document')
-      }
-
-      const contentType = response.headers.get('Content-Type')
-
-      if (contentType === 'application/pdf') {
-        const blob = await response.blob()
-        const url = URL.createObjectURL(blob)
-        if (win) win.location.href = url
-        else window.open(url, '_blank')
-      } else {
-        const data = await response.json()
-        if (data.url) {
-          if (win) win.location.href = data.url
-          else window.open(data.url, '_blank')
-        } else {
-          win?.close()
-        }
-      }
-    } catch (err) {
-      console.error('Error viewing document:', err)
-      win?.close()
-    } finally {
-      setViewingDocId(null)
-    }
-  }, [selectedCompanyId, viewingDocId])
+  const handleViewDocument = (docId: string) => {
+    if (!selectedCompanyId) return
+    window.open(`/api/companies/${selectedCompanyId}/evidence/documents/${docId}/view`, '_blank')
+  }
 
   return (
     <div className="rounded-xl border border-border/50 bg-card overflow-hidden">
@@ -170,7 +136,6 @@ export function EvidenceCategoryTable({ categories, onUploadSuccess }: EvidenceC
                             key={doc.id}
                             type="button"
                             onClick={() => handleViewDocument(doc.id)}
-                            disabled={viewingDocId === doc.id}
                             className="w-full text-left flex items-start justify-between py-2 px-2 -mx-2 rounded-md hover:bg-muted/30 transition-colors cursor-pointer group"
                           >
                             <div className="flex items-start gap-2">
@@ -189,11 +154,7 @@ export function EvidenceCategoryTable({ categories, onUploadSuccess }: EvidenceC
                                 )}
                               </div>
                             </div>
-                            {viewingDocId === doc.id ? (
-                              <Loader2 className="w-4 h-4 text-muted-foreground animate-spin shrink-0 mt-0.5" />
-                            ) : (
-                              <ExternalLink className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5" />
-                            )}
+                            <ExternalLink className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5" />
                           </button>
                         ))}
                       </div>
