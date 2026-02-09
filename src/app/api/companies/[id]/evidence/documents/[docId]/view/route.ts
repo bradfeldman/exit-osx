@@ -78,23 +78,30 @@ export async function GET(
     }
 
     const supabase = await createClient()
+
+    // Step 1: Always generate a signed URL (this is proven to work)
+    const { data: urlData, error: urlError } = await supabase.storage
+      .from('data-room')
+      .createSignedUrl(document.filePath, 300)
+
+    if (urlError || !urlData?.signedUrl) {
+      console.error('Evidence view - signed URL error:', urlError)
+      return new NextResponse('Failed to generate view URL', { status: 500 })
+    }
+
     const isPdf = document.mimeType === 'application/pdf' ||
                   document.fileName?.toLowerCase().endsWith('.pdf')
 
-    // For PDFs, watermark and return inline
+    // Step 2: For PDFs, fetch via signed URL, watermark, and serve inline
     if (isPdf) {
-      const { data: fileData, error: downloadError } = await supabase.storage
-        .from('data-room')
-        .download(document.filePath)
-
-      if (downloadError || !fileData) {
-        console.error('Evidence view - storage download error:', downloadError)
-        // Fallback to redirect
-        return redirectToSignedUrl(supabase, document.filePath)
-      }
-
       try {
-        const pdfBytes = await fileData.arrayBuffer()
+        const fileResponse = await fetch(urlData.signedUrl)
+        if (!fileResponse.ok) {
+          console.error('Evidence view - fetch from signed URL failed:', fileResponse.status)
+          return NextResponse.redirect(urlData.signedUrl)
+        }
+
+        const pdfBytes = await fileResponse.arrayBuffer()
         const watermarkedPdf = await addWatermarkToPdf(pdfBytes, result.auth.user.email)
 
         return new NextResponse(Buffer.from(watermarkedPdf), {
@@ -104,32 +111,17 @@ export async function GET(
             'Content-Length': watermarkedPdf.length.toString(),
           },
         })
-      } catch (watermarkError) {
-        console.error('Evidence view - watermark error:', watermarkError)
-        return redirectToSignedUrl(supabase, document.filePath)
+      } catch (err) {
+        console.error('Evidence view - watermark pipeline error:', err)
+        // Fallback: redirect without watermark
+        return NextResponse.redirect(urlData.signedUrl)
       }
     }
 
-    // For non-PDFs, redirect to signed URL
-    return redirectToSignedUrl(supabase, document.filePath)
+    // Step 3: Non-PDFs redirect directly to signed URL
+    return NextResponse.redirect(urlData.signedUrl)
   } catch (error) {
     console.error('Evidence view - unexpected error:', error)
     return new NextResponse('Internal server error', { status: 500 })
   }
-}
-
-async function redirectToSignedUrl(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  filePath: string
-) {
-  const { data, error } = await supabase.storage
-    .from('data-room')
-    .createSignedUrl(filePath, 300)
-
-  if (error || !data?.signedUrl) {
-    console.error('Evidence view - signed URL error:', error)
-    return new NextResponse('Failed to generate view URL', { status: 500 })
-  }
-
-  return NextResponse.redirect(data.signedUrl)
 }
