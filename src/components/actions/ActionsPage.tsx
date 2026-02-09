@@ -281,7 +281,6 @@ export function ActionsPage() {
             <AllCompletedState
               completedCount={data.summary.completedThisMonth}
               valueRecovered={data.summary.valueRecoveredThisMonth}
-              companyId={selectedCompanyId}
             />
           </AnimatedItem>
         )}

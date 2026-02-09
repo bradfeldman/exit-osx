@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
@@ -67,12 +67,15 @@ export function DiagnosisPage() {
   const { planTier } = useSubscription()
   const isFreeUser = planTier === 'foundation'
   const searchParams = useSearchParams()
+  const router = useRouter()
   const [data, setData] = useState<DiagnosisData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
   const [hasInitializedExpand, setHasInitializedExpand] = useState(false)
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
+  const [sharpenActive, setSharpenActive] = useState(false)
+  const sharpenConsumedRef = useRef(false)
 
   const fetchData = useCallback(async () => {
     if (!selectedCompanyId) return
@@ -126,6 +129,16 @@ export function DiagnosisPage() {
     }
   }, [searchParams, data, isLoading, hasInitializedExpand])
 
+  // Auto-trigger sharpen from ?sharpen=true query param (e.g., from Actions page)
+  useEffect(() => {
+    if (!sharpenConsumedRef.current && searchParams.get('sharpen') === 'true' && !isLoading) {
+      sharpenConsumedRef.current = true
+      setSharpenActive(true)
+      // Clean the URL param
+      router.replace('/dashboard/diagnosis', { scroll: false })
+    }
+  }, [searchParams, isLoading, router])
+
   // Callback for when an inline assessment completes - refetch all data
   const handleAssessmentComplete = useCallback(() => {
     setExpandedCategory(null)
@@ -161,11 +174,15 @@ export function DiagnosisPage() {
         </AnimatedItem>
 
         {/* Sharpen Diagnosis Banner */}
-        {allQuestionsAnswered && (
+        {(allQuestionsAnswered || sharpenActive) && (
           <AnimatedItem>
             <SharpenDiagnosisBanner
               companyId={selectedCompanyId}
-              onComplete={fetchData}
+              autoGenerate={sharpenActive}
+              onComplete={() => {
+                setSharpenActive(false)
+                fetchData()
+              }}
             />
           </AnimatedItem>
         )}
