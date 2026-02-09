@@ -229,7 +229,7 @@ export function AddParticipantModal({
         let currentCompanyId: string | undefined
         if (activeTab === 'smart' && parsed?.companies[0]) {
           const company = parsed.companies[0]
-          const companyRes = await fetch('/api/contact-system/canonical/companies', {
+          const companyRes = await fetch('/api/canonical/companies', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -241,22 +241,38 @@ export function AddParticipantModal({
           if (companyRes.ok) {
             const companyData = await companyRes.json()
             currentCompanyId = companyData.company.id
+          } else if (companyRes.status === 409) {
+            // Duplicate detected — use the matched company
+            try {
+              const dupData = await companyRes.json()
+              const topMatch = dupData.matchResult?.matches?.[0]
+              if (topMatch?.id) currentCompanyId = topMatch.id
+            } catch { /* ignore parse errors */ }
           }
         }
 
-        const personRes = await fetch('/api/contact-system/canonical/people', {
+        const personRes = await fetch('/api/canonical/people', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...personData, currentCompanyId }),
         })
 
         if (!personRes.ok) {
-          const data = await personRes.json()
-          throw new Error(data.error || 'Failed to create contact')
-        }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let data: any = null
+          try { data = await personRes.json() } catch { /* not JSON */ }
 
-        const personResult = await personRes.json()
-        canonicalPersonId = personResult.person.id
+          // If duplicate found, use the existing person
+          const existingId = data?.existingPerson?.id || data?.matchResult?.matches?.[0]?.id
+          if (existingId) {
+            canonicalPersonId = existingId
+          } else {
+            throw new Error(data?.error || data?.message || 'Failed to create contact')
+          }
+        } else {
+          const personResult = await personRes.json()
+          canonicalPersonId = personResult.person.id
+        }
       }
 
       if (!canonicalPersonId) throw new Error('No person to add')

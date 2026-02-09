@@ -346,12 +346,14 @@ export function useDealParticipants(dealId: string | null, sideFilter?: string) 
     })
 
     if (!res.ok) {
-      const data = await res.json()
-      throw new Error(data.error || 'Failed to add participant')
+      let msg = 'Failed to add participant'
+      try { const data = await res.json(); msg = data.error || msg } catch { /* not JSON */ }
+      throw new Error(msg)
     }
 
+    const result = await res.json()
     refresh()
-    return res.json()
+    return result
   }, [dealId, refresh])
 
   const updateParticipant = useCallback(async (
