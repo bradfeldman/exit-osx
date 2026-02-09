@@ -72,6 +72,8 @@ export async function GET(request: Request, { params }: RouteParams) {
         netWorth: null,
         exitGoalAmount: null,
         retirementAge: null,
+        currentAge: null,
+        businessOwnership: null,
         notes: null,
       }
     })
@@ -139,6 +141,8 @@ export async function PUT(request: Request, { params }: RouteParams) {
       netWorth,
       exitGoalAmount,
       retirementAge,
+      currentAge,
+      businessOwnership,
       notes,
     } = body
 
@@ -153,6 +157,8 @@ export async function PUT(request: Request, { params }: RouteParams) {
         netWorth: netWorth !== undefined ? netWorth : null,
         exitGoalAmount: exitGoalAmount !== undefined ? exitGoalAmount : null,
         retirementAge: retirementAge !== undefined ? retirementAge : null,
+        currentAge: currentAge !== undefined ? currentAge : null,
+        businessOwnership: businessOwnership !== undefined ? businessOwnership : null,
         notes: notes || null,
       },
       create: {
@@ -164,6 +170,8 @@ export async function PUT(request: Request, { params }: RouteParams) {
         netWorth: netWorth !== undefined ? netWorth : null,
         exitGoalAmount: exitGoalAmount !== undefined ? exitGoalAmount : null,
         retirementAge: retirementAge !== undefined ? retirementAge : null,
+        currentAge: currentAge !== undefined ? currentAge : null,
+        businessOwnership: businessOwnership !== undefined ? businessOwnership : null,
         notes: notes || null,
       },
     })

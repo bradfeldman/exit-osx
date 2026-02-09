@@ -263,6 +263,8 @@ model PersonalFinancials {
   netWorth            Decimal?     @map("net_worth") @db.Decimal(15, 2)
   exitGoalAmount      Decimal?     @map("exit_goal_amount") @db.Decimal(15, 2)
   retirementAge       Int?         @map("retirement_age")
+  currentAge          Int?         @map("current_age")
+  businessOwnership   Json?        @map("business_ownership")
   notes               String?
   createdAt           DateTime     @default(now()) @map("created_at")
   updatedAt           DateTime     @updatedAt @map("updated_at")

@@ -22,6 +22,8 @@ import {
   DollarSign,
   CheckCircle2,
   ChevronDown,
+  User,
+  Target,
 } from 'lucide-react'
 import {
   Select,
@@ -203,12 +205,18 @@ export default function PersonalFinancialStatementPage() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [savedSuccessfully, setSavedSuccessfully] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [currentAge, setCurrentAge] = useState<number | null>(null)
+  const [retirementAge, setRetirementAge] = useState<number | null>(null)
+  const [exitGoalAmount, setExitGoalAmount] = useState<number>(0)
 
   // Track original state for dirty checking
   const [originalState, setOriginalState] = useState<{
     personalAssets: PersonalAsset[]
     personalLiabilities: PersonalLiability[]
     businessOwnership: Record<string, number>
+    currentAge: number | null
+    retirementAge: number | null
+    exitGoalAmount: number
   } | null>(null)
 
   // Check permissions
@@ -238,15 +246,20 @@ export default function PersonalFinancialStatementPage() {
       return true
     }
 
+    // Check owner profile fields
+    if (currentAge !== originalState.currentAge) return true
+    if (retirementAge !== originalState.retirementAge) return true
+    if (exitGoalAmount !== originalState.exitGoalAmount) return true
+
     return false
-  }, [personalAssets, personalLiabilities, businessAssets, originalState])
+  }, [personalAssets, personalLiabilities, businessAssets, originalState, currentAge, retirementAge, exitGoalAmount])
 
   // Load companies and saved data on mount
   useEffect(() => {
     async function loadAllData() {
       if (!permissionsLoading && canViewPersonal) {
         // Load personal financials first (if company selected)
-        let loadedPersonalData = { assets: [] as PersonalAsset[], liabilities: [] as PersonalLiability[] }
+        let loadedPersonalData = { assets: [] as PersonalAsset[], liabilities: [] as PersonalLiability[], currentAge: null as number | null, retirementAge: null as number | null, exitGoalAmount: 0, businessOwnership: null as Record<string, number> | null }
         if (selectedCompanyId) {
           loadedPersonalData = await loadPersonalFinancials(selectedCompanyId)
         }
@@ -283,6 +296,10 @@ export default function PersonalFinancialStatementPage() {
           totalRetirement: personalAssets
             .filter(a => a.category === 'Retirement Accounts')
             .reduce((sum, a) => sum + a.value, 0),
+          currentAge,
+          retirementAge,
+          exitGoalAmount: exitGoalAmount || null,
+          businessOwnership: ownership,
         }),
       })
 
@@ -297,6 +314,9 @@ export default function PersonalFinancialStatementPage() {
         personalAssets: JSON.parse(JSON.stringify(personalAssets)),
         personalLiabilities: JSON.parse(JSON.stringify(personalLiabilities)),
         businessOwnership: ownership,
+        currentAge,
+        retirementAge,
+        exitGoalAmount,
       })
 
       setLastSaved(new Date())
@@ -313,7 +333,7 @@ export default function PersonalFinancialStatementPage() {
     }
   }
 
-  async function loadPersonalFinancials(companyId: string): Promise<{ assets: PersonalAsset[], liabilities: PersonalLiability[] }> {
+  async function loadPersonalFinancials(companyId: string): Promise<{ assets: PersonalAsset[], liabilities: PersonalLiability[], currentAge: number | null, retirementAge: number | null, exitGoalAmount: number, businessOwnership: Record<string, number> | null }> {
     try {
       const response = await fetch(`/api/companies/${companyId}/personal-financials`)
       if (response.ok) {
@@ -321,16 +341,23 @@ export default function PersonalFinancialStatementPage() {
         if (data.personalFinancials) {
           const loadedAssets = data.personalFinancials.personalAssets || []
           const loadedLiabilities = data.personalFinancials.personalLiabilities || []
+          const loadedCurrentAge = data.personalFinancials.currentAge ?? null
+          const loadedRetirementAge = data.personalFinancials.retirementAge ?? null
+          const loadedExitGoal = data.personalFinancials.exitGoalAmount ? Number(data.personalFinancials.exitGoalAmount) : 0
+          const loadedOwnership = data.personalFinancials.businessOwnership ?? null
           setPersonalAssets(loadedAssets)
           setPersonalLiabilities(loadedLiabilities)
-          return { assets: loadedAssets, liabilities: loadedLiabilities }
+          setCurrentAge(loadedCurrentAge)
+          setRetirementAge(loadedRetirementAge)
+          setExitGoalAmount(loadedExitGoal)
+          return { assets: loadedAssets, liabilities: loadedLiabilities, currentAge: loadedCurrentAge, retirementAge: loadedRetirementAge, exitGoalAmount: loadedExitGoal, businessOwnership: loadedOwnership }
         }
       }
     } catch (error) {
       console.error('Failed to load personal financials:', error)
       loadSavedDataFromLocalStorage()
     }
-    return { assets: [], liabilities: [] }
+    return { assets: [], liabilities: [], currentAge: null, retirementAge: null, exitGoalAmount: 0, businessOwnership: null }
   }
 
   function loadSavedDataFromLocalStorage() {
@@ -344,7 +371,7 @@ export default function PersonalFinancialStatementPage() {
     }
   }
 
-  async function loadCompaniesWithOriginalState(personalData: { assets: PersonalAsset[], liabilities: PersonalLiability[] }) {
+  async function loadCompaniesWithOriginalState(personalData: { assets: PersonalAsset[], liabilities: PersonalLiability[], currentAge: number | null, retirementAge: number | null, exitGoalAmount: number, businessOwnership: Record<string, number> | null }) {
     setLoading(true)
     try {
       const response = await fetch('/api/companies')
@@ -352,13 +379,17 @@ export default function PersonalFinancialStatementPage() {
         const data = await response.json()
         setCompanies(data.companies || [])
 
-        // Load saved ownership percentages
+        // Load ownership: DB first, localStorage fallback
         let savedOwnership: Record<string, number> = {}
-        try {
-          const saved = localStorage.getItem('pfs_businessOwnership')
-          if (saved) savedOwnership = JSON.parse(saved)
-        } catch {
-          // Ignore parse errors
+        if (personalData.businessOwnership && Object.keys(personalData.businessOwnership).length > 0) {
+          savedOwnership = personalData.businessOwnership
+        } else {
+          try {
+            const saved = localStorage.getItem('pfs_businessOwnership')
+            if (saved) savedOwnership = JSON.parse(saved)
+          } catch {
+            // Ignore parse errors
+          }
         }
 
         // Fetch current calculated value from dashboard API for each company
@@ -398,6 +429,9 @@ export default function PersonalFinancialStatementPage() {
           personalAssets: JSON.parse(JSON.stringify(personalData.assets)),
           personalLiabilities: JSON.parse(JSON.stringify(personalData.liabilities)),
           businessOwnership: ownership,
+          currentAge: personalData.currentAge,
+          retirementAge: personalData.retirementAge,
+          exitGoalAmount: personalData.exitGoalAmount,
         })
       }
     } catch (error) {
@@ -689,6 +723,62 @@ export default function PersonalFinancialStatementPage() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Owner Profile */}
+      <div>
+        <CollapsibleSection
+          title="Owner Profile"
+          description="Your age, retirement target, and exit goals"
+          icon={User}
+          defaultOpen={!!(currentAge || retirementAge || exitGoalAmount)}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1.5">Current Age</label>
+              <Input
+                type="number"
+                inputMode="numeric"
+                min={18}
+                max={100}
+                value={currentAge ?? ''}
+                onChange={(e) => setCurrentAge(e.target.value ? Math.min(100, Math.max(18, parseInt(e.target.value))) : null)}
+                placeholder="e.g. 52"
+                className="h-9"
+                disabled={!canEditPersonal}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1.5">Target Retirement Age</label>
+              <Input
+                type="number"
+                inputMode="numeric"
+                min={currentAge ? currentAge + 1 : 19}
+                max={100}
+                value={retirementAge ?? ''}
+                onChange={(e) => setRetirementAge(e.target.value ? Math.min(100, Math.max(currentAge ? currentAge + 1 : 19, parseInt(e.target.value))) : null)}
+                placeholder="e.g. 65"
+                className="h-9"
+                disabled={!canEditPersonal}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1.5">Exit Goal</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  value={formatInputValue(exitGoalAmount)}
+                  onChange={(e) => setExitGoalAmount(parseInputValue(e.target.value))}
+                  placeholder="0"
+                  className="pl-7 text-right h-9"
+                  disabled={!canEditPersonal}
+                />
+              </div>
+            </div>
+          </div>
+        </CollapsibleSection>
       </div>
 
       {/* Business Assets */}
@@ -1030,6 +1120,53 @@ export default function PersonalFinancialStatementPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Exit Insight Card */}
+      {exitGoalAmount > 0 && (
+        <div>
+          <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Target className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="text-lg font-semibold font-display">Exit Insight</h3>
+              </div>
+              {(() => {
+                const nonBusinessNetWorth = totalPersonalAssets - totalLiabilities
+                const minimumExitProceeds = Math.max(0, exitGoalAmount - nonBusinessNetWorth)
+                return (
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Non-Business Net Worth</span>
+                      <span className="font-medium text-foreground">{formatCurrency(nonBusinessNetWorth)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Exit Goal</span>
+                      <span className="font-medium text-foreground">{formatCurrency(exitGoalAmount)}</span>
+                    </div>
+                    <div className="flex justify-between text-lg pt-3 border-t border-primary/20">
+                      <span className="font-bold text-foreground">Minimum Exit Proceeds Needed</span>
+                      <span className={`font-bold ${minimumExitProceeds === 0 ? 'text-green-600' : 'text-primary'}`}>
+                        {formatCurrency(minimumExitProceeds)}
+                      </span>
+                    </div>
+                    {minimumExitProceeds === 0 ? (
+                      <p className="text-sm text-green-600 font-medium pt-1">
+                        Your non-business assets already cover your exit goal.
+                      </p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground pt-1">
+                        This is the minimum your business sale must net after tax to reach your exit goal.
+                      </p>
+                    )}
+                  </div>
+                )
+              })()}
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Note */}
       <p className="text-xs text-muted-foreground text-center pb-4">

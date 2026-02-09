@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
     ${cookies.map(c => `<tr><th>${escapeHtml(c.name)}</th><td>${escapeHtml(c.value)}</td></tr>`).join('\n    ')}
   </table>`}
 
-  <h2>5. Fetch Test</h2>
+  <h2>5. Fetch Test - /api/health</h2>
   <p id="fetch-test">Testing fetch to /api/health...</p>
   <script>
     (async function() {
@@ -87,6 +87,33 @@ export async function GET(request: NextRequest) {
       } catch(e) {
         el.textContent = 'Fetch FAILED: ' + e.message;
         el.style.color = 'red';
+      }
+    })();
+  </script>
+
+  <h2>5b. Fetch Test - /api/companies (THE KEY TEST)</h2>
+  <p id="companies-test">Testing fetch to /api/companies...</p>
+  <pre id="companies-body" style="max-height:300px;overflow:auto;">waiting...</pre>
+  <script>
+    (async function() {
+      var el = document.getElementById('companies-test');
+      var bodyEl = document.getElementById('companies-body');
+      try {
+        var start = Date.now();
+        var res = await fetch('/api/companies');
+        var ms = Date.now() - start;
+        var text = await res.text();
+        el.textContent = '/api/companies: ' + res.status + ' ' + res.statusText + ' in ' + ms + 'ms';
+        el.style.color = res.ok ? 'green' : 'red';
+        try {
+          bodyEl.textContent = JSON.stringify(JSON.parse(text), null, 2);
+        } catch(e2) {
+          bodyEl.textContent = text.substring(0, 2000);
+        }
+      } catch(e) {
+        el.textContent = '/api/companies FAILED: ' + e.message;
+        el.style.color = 'red';
+        bodyEl.textContent = e.stack || e.message;
       }
     })();
   </script>

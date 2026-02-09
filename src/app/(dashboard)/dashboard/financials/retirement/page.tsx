@@ -101,16 +101,43 @@ export default function RetirementCalculatorPage() {
 
   const importFromPFS = useCallback(async () => {
     try {
-      // Load business assets from API
+      // Load companies first
       const response = await fetch('/api/companies')
       let businessAssets: RetirementAsset[] = []
       let companies: { id: string; name: string; valuationSnapshots?: { currentValue: string | number }[] }[] = []
 
+      // Fetch PFS data early so ownership is available for business asset calculation
+      let pfsData: { personalFinancials?: { personalAssets?: { id: string; category: string; description: string; value: number }[]; personalLiabilities?: { amount: number }[]; businessOwnership?: Record<string, number>; currentAge?: number; retirementAge?: number } } | null = null
+      let personalAssets: RetirementAsset[] = []
+      let totalLiabilities = 0
+
       if (response.ok) {
         const data = await response.json()
         companies = data.companies || []
-        const savedOwnership = localStorage.getItem('pfs_businessOwnership')
-        const ownership = savedOwnership ? JSON.parse(savedOwnership) : {}
+
+        // Fetch PFS data before building business assets (need ownership %)
+        const firstCompanyId = companies[0]?.id
+        if (firstCompanyId) {
+          try {
+            const pfsResponse = await fetch(`/api/companies/${firstCompanyId}/personal-financials`)
+            if (pfsResponse.ok) {
+              pfsData = await pfsResponse.json()
+            }
+          } catch (error) {
+            console.error('Failed to load personal financials from API:', error)
+          }
+        }
+
+        // Resolve ownership: DB first, localStorage fallback
+        let ownership: Record<string, number> = {}
+        if (pfsData?.personalFinancials?.businessOwnership && Object.keys(pfsData.personalFinancials.businessOwnership).length > 0) {
+          ownership = pfsData.personalFinancials.businessOwnership
+        } else {
+          const savedOwnership = localStorage.getItem('pfs_businessOwnership')
+          if (savedOwnership) {
+            try { ownership = JSON.parse(savedOwnership) } catch { /* ignore */ }
+          }
+        }
 
         businessAssets = await Promise.all(
           companies.map(
@@ -141,52 +168,46 @@ export default function RetirementCalculatorPage() {
             }
           )
         )
-      }
 
-      // Load personal assets and liabilities from database API (organization-level storage)
-      let personalAssets: RetirementAsset[] = []
-      let totalLiabilities = 0
+        // Process personal assets and liabilities from PFS data
+        if (pfsData?.personalFinancials) {
+          const pfsAssets = pfsData.personalFinancials.personalAssets || []
+          personalAssets = pfsAssets.map(
+            (asset) => {
+              let taxTreatment: TaxTreatment = 'already_taxed'
+              if (asset.category === 'Retirement Accounts') {
+                taxTreatment = 'tax_deferred'
+              } else if (asset.category === 'Investment Accounts') {
+                taxTreatment = 'capital_gains'
+              } else if (asset.category === 'Real Estate') {
+                taxTreatment = 'capital_gains'
+              }
 
-      // Get first company ID to use for API call (personal financials are org-level)
-      const firstCompanyId = companies[0]?.id
-      if (firstCompanyId) {
-        try {
-          const pfsResponse = await fetch(`/api/companies/${firstCompanyId}/personal-financials`)
-          if (pfsResponse.ok) {
-            const pfsData = await pfsResponse.json()
-            if (pfsData.personalFinancials) {
-              const pfsAssets = pfsData.personalFinancials.personalAssets || []
-              personalAssets = pfsAssets.map(
-                (asset: { id: string; category: string; description: string; value: number }) => {
-                  let taxTreatment: TaxTreatment = 'already_taxed'
-                  if (asset.category === 'Retirement Accounts') {
-                    taxTreatment = 'tax_deferred'
-                  } else if (asset.category === 'Investment Accounts') {
-                    taxTreatment = 'capital_gains'
-                  } else if (asset.category === 'Real Estate') {
-                    taxTreatment = 'capital_gains'
-                  }
-
-                  return {
-                    id: asset.id,
-                    name: asset.description || asset.category,
-                    category: asset.category,
-                    currentValue: asset.value,
-                    taxTreatment,
-                    costBasis: asset.category === 'Real Estate' ? asset.value * 0.5 : 0,
-                  }
-                }
-              )
-
-              const pfsLiabilities = pfsData.personalFinancials.personalLiabilities || []
-              totalLiabilities = pfsLiabilities.reduce(
-                (sum: number, l: { amount: number }) => sum + l.amount,
-                0
-              )
+              return {
+                id: asset.id,
+                name: asset.description || asset.category,
+                category: asset.category,
+                currentValue: asset.value,
+                taxTreatment,
+                costBasis: asset.category === 'Real Estate' ? asset.value * 0.5 : 0,
+              }
             }
-          }
-        } catch (error) {
-          console.error('Failed to load personal financials from API:', error)
+          )
+
+          const pfsLiabilities = pfsData.personalFinancials.personalLiabilities || []
+          totalLiabilities = pfsLiabilities.reduce(
+            (sum: number, l: { amount: number }) => sum + l.amount,
+            0
+          )
+        }
+
+        // Seed identity data from PFS when no local assumptions exist
+        const hasSavedAssumptions = !!localStorage.getItem('retirement_assumptions')
+        if (!hasSavedAssumptions && pfsData?.personalFinancials) {
+          const pfsAge = pfsData.personalFinancials.currentAge
+          const pfsRetAge = pfsData.personalFinancials.retirementAge
+          if (pfsAge) setAssumptions(prev => ({ ...prev, currentAge: pfsAge }))
+          if (pfsRetAge) setAssumptions(prev => ({ ...prev, retirementAge: pfsRetAge }))
         }
       }
 
