@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import Link from 'next/link'
 import { motion, AnimatePresence } from '@/lib/motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -737,12 +738,14 @@ export default function PersonalFinancialStatementPage() {
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1.5">Current Age</label>
               <Input
-                type="number"
+                type="text"
                 inputMode="numeric"
-                min={18}
-                max={100}
-                value={currentAge ?? ''}
-                onChange={(e) => setCurrentAge(e.target.value ? Math.min(100, Math.max(18, parseInt(e.target.value))) : null)}
+                value={currentAge !== null ? String(currentAge) : ''}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^0-9]/g, '')
+                  if (!v) { setCurrentAge(null); return }
+                  setCurrentAge(Math.min(100, Math.max(18, parseInt(v))))
+                }}
                 placeholder="e.g. 52"
                 className="h-9"
                 disabled={!canEditPersonal}
@@ -751,12 +754,15 @@ export default function PersonalFinancialStatementPage() {
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1.5">Target Retirement Age</label>
               <Input
-                type="number"
+                type="text"
                 inputMode="numeric"
-                min={currentAge ? currentAge + 1 : 19}
-                max={100}
-                value={retirementAge ?? ''}
-                onChange={(e) => setRetirementAge(e.target.value ? Math.min(100, Math.max(currentAge ? currentAge + 1 : 19, parseInt(e.target.value))) : null)}
+                value={retirementAge !== null ? String(retirementAge) : ''}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^0-9]/g, '')
+                  if (!v) { setRetirementAge(null); return }
+                  const minAge = currentAge ? currentAge + 1 : 19
+                  setRetirementAge(Math.min(100, Math.max(minAge, parseInt(v))))
+                }}
                 placeholder="e.g. 65"
                 className="h-9"
                 disabled={!canEditPersonal}
@@ -1121,48 +1127,31 @@ export default function PersonalFinancialStatementPage() {
         </Card>
       </div>
 
-      {/* Exit Insight Card */}
+      {/* Exit Goal CTA — link to Retirement Calculator */}
       {exitGoalAmount > 0 && (
         <div>
           <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Target className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="text-lg font-semibold font-display">Exit Insight</h3>
-              </div>
-              {(() => {
-                const nonBusinessNetWorth = totalPersonalAssets - totalLiabilities
-                const minimumExitProceeds = Math.max(0, exitGoalAmount - nonBusinessNetWorth)
-                return (
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Non-Business Net Worth</span>
-                      <span className="font-medium text-foreground">{formatCurrency(nonBusinessNetWorth)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Exit Goal</span>
-                      <span className="font-medium text-foreground">{formatCurrency(exitGoalAmount)}</span>
-                    </div>
-                    <div className="flex justify-between text-lg pt-3 border-t border-primary/20">
-                      <span className="font-bold text-foreground">Minimum Exit Proceeds Needed</span>
-                      <span className={`font-bold ${minimumExitProceeds === 0 ? 'text-green-600' : 'text-primary'}`}>
-                        {formatCurrency(minimumExitProceeds)}
-                      </span>
-                    </div>
-                    {minimumExitProceeds === 0 ? (
-                      <p className="text-sm text-green-600 font-medium pt-1">
-                        Your non-business assets already cover your exit goal.
-                      </p>
-                    ) : (
-                      <p className="text-xs text-muted-foreground pt-1">
-                        This is the minimum your business sale must net after tax to reach your exit goal.
-                      </p>
-                    )}
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Target className="h-5 w-5 text-primary" />
                   </div>
-                )
-              })()}
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      You&apos;ve set an exit goal of {formatCurrency(exitGoalAmount)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      See if your assets and exit proceeds will fund your retirement lifestyle.
+                    </p>
+                  </div>
+                </div>
+                <Link href="/dashboard/financials/retirement">
+                  <Button variant="outline" size="sm">
+                    Retirement Calculator
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         </div>
