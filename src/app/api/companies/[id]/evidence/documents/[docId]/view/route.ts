@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { PDFDocument, rgb, StandardFonts, degrees } from 'pdf-lib'
 
 /**
@@ -77,7 +77,7 @@ export async function GET(
       return new NextResponse('No file available', { status: 404 })
     }
 
-    const supabase = createServiceClient()
+    const supabase = await createClient()
     const isPdf = document.mimeType === 'application/pdf' ||
                   document.fileName?.toLowerCase().endsWith('.pdf')
 
@@ -119,7 +119,7 @@ export async function GET(
 }
 
 async function redirectToSignedUrl(
-  supabase: ReturnType<typeof createServiceClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   filePath: string
 ) {
   const { data, error } = await supabase.storage
