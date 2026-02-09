@@ -25,22 +25,35 @@ export function RecentlyAddedSection({ documents }: RecentlyAddedSectionProps) {
     if (!selectedCompanyId || viewingDocId) return
     setViewingDocId(docId)
 
+    // Open window synchronously to avoid popup blocker
+    const win = window.open('about:blank', '_blank')
+
     try {
       const response = await fetch(`/api/companies/${selectedCompanyId}/dataroom/documents/${docId}/download`)
-      if (!response.ok) throw new Error('Failed to fetch document')
+      if (!response.ok) {
+        win?.close()
+        throw new Error('Failed to fetch document')
+      }
 
       const contentType = response.headers.get('Content-Type')
 
       if (contentType === 'application/pdf') {
         const blob = await response.blob()
         const url = URL.createObjectURL(blob)
-        window.open(url, '_blank')
+        if (win) win.location.href = url
+        else window.open(url, '_blank')
       } else {
         const data = await response.json()
-        if (data.url) window.open(data.url, '_blank')
+        if (data.url) {
+          if (win) win.location.href = data.url
+          else window.open(data.url, '_blank')
+        } else {
+          win?.close()
+        }
       }
     } catch (err) {
       console.error('Error viewing document:', err)
+      win?.close()
     } finally {
       setViewingDocId(null)
     }
