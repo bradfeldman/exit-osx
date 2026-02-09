@@ -56,29 +56,26 @@ export async function GET(
   if (isAuthError(result)) return result.error
 
   try {
-    // Fetch company-scoped questions: AI questions for this company + global seed questions
-    const [aiQuestions, globalQuestions] = await Promise.all([
-      prisma.question.findMany({
-        where: { companyId, isActive: true },
-        include: { options: { orderBy: { displayOrder: 'asc' } } },
-        orderBy: [{ briCategory: 'asc' }, { displayOrder: 'asc' }],
-      }),
-      prisma.question.findMany({
-        where: { companyId: null, isActive: true },
-        include: { options: { orderBy: { displayOrder: 'asc' } } },
-        orderBy: [{ briCategory: 'asc' }, { displayOrder: 'asc' }],
-      }),
-    ])
+    // Fetch all active questions with options (original query)
+    const allQuestions = await prisma.question.findMany({
+      where: { isActive: true },
+      include: {
+        options: { orderBy: { displayOrder: 'asc' } },
+      },
+      orderBy: [{ briCategory: 'asc' }, { displayOrder: 'asc' }],
+    })
 
-    // Merge: prefer company-specific AI questions per category, fall back to global seed
-    let questions: typeof globalQuestions
-    if (aiQuestions.length > 0) {
-      const aiCategories = new Set(aiQuestions.map(q => q.briCategory))
-      const fallbackQuestions = globalQuestions.filter(q => !aiCategories.has(q.briCategory))
-      questions = [...aiQuestions, ...fallbackQuestions]
-    } else {
-      questions = globalQuestions
-    }
+    // Scope to this company: seed questions (no companyId) + AI questions for THIS company only
+    const companyAiCategories = new Set(
+      allQuestions.filter(q => q.companyId === companyId).map(q => q.briCategory)
+    )
+    // If AI questions exist for a category, prefer them over seed questions for that category
+    const questions = companyAiCategories.size > 0
+      ? allQuestions.filter(q =>
+          q.companyId === companyId ||
+          (q.companyId === null && !companyAiCategories.has(q.briCategory))
+        )
+      : allQuestions.filter(q => q.companyId === null)
 
     // Fetch the latest completed assessment for this company
     const latestAssessment = await prisma.assessment.findFirst({
