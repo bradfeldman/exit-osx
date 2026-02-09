@@ -361,7 +361,7 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching diagnosis data:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch diagnosis data', debug: error instanceof Error ? error.message : String(error) },
+      { error: 'Failed to fetch diagnosis data' },
       { status: 500 }
     )
   }
