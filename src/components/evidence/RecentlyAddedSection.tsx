@@ -1,6 +1,8 @@
 'use client'
 
-import { Check } from 'lucide-react'
+import { useState, useCallback } from 'react'
+import { Check, ExternalLink, Loader2 } from 'lucide-react'
+import { useCompany } from '@/contexts/CompanyContext'
 
 interface RecentDoc {
   id: string
@@ -16,6 +18,34 @@ interface RecentlyAddedSectionProps {
 }
 
 export function RecentlyAddedSection({ documents }: RecentlyAddedSectionProps) {
+  const { selectedCompanyId } = useCompany()
+  const [viewingDocId, setViewingDocId] = useState<string | null>(null)
+
+  const handleViewDocument = useCallback(async (docId: string) => {
+    if (!selectedCompanyId || viewingDocId) return
+    setViewingDocId(docId)
+
+    try {
+      const response = await fetch(`/api/companies/${selectedCompanyId}/dataroom/documents/${docId}/download`)
+      if (!response.ok) throw new Error('Failed to fetch document')
+
+      const contentType = response.headers.get('Content-Type')
+
+      if (contentType === 'application/pdf') {
+        const blob = await response.blob()
+        const url = URL.createObjectURL(blob)
+        window.open(url, '_blank')
+      } else {
+        const data = await response.json()
+        if (data.url) window.open(data.url, '_blank')
+      }
+    } catch (err) {
+      console.error('Error viewing document:', err)
+    } finally {
+      setViewingDocId(null)
+    }
+  }, [selectedCompanyId, viewingDocId])
+
   if (documents.length === 0) return null
 
   return (
@@ -32,13 +62,16 @@ export function RecentlyAddedSection({ documents }: RecentlyAddedSectionProps) {
       {/* Rows */}
       <div className="mt-3 space-y-1">
         {documents.map(doc => (
-          <div
+          <button
             key={doc.id}
-            className="flex items-center justify-between py-2 px-1 rounded hover:bg-muted/20 cursor-pointer"
+            type="button"
+            onClick={() => handleViewDocument(doc.id)}
+            disabled={viewingDocId === doc.id}
+            className="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-muted/20 cursor-pointer group transition-colors"
           >
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                 {doc.name}
               </span>
               <span className="text-[10px] text-muted-foreground/70 bg-muted px-1.5 py-0.5 rounded">
@@ -50,8 +83,13 @@ export function RecentlyAddedSection({ documents }: RecentlyAddedSectionProps) {
               <span className="text-xs text-muted-foreground">
                 {new Date(doc.addedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </span>
+              {viewingDocId === doc.id ? (
+                <Loader2 className="w-3.5 h-3.5 text-muted-foreground animate-spin" />
+              ) : (
+                <ExternalLink className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              )}
             </div>
-          </div>
+          </button>
         ))}
       </div>
 

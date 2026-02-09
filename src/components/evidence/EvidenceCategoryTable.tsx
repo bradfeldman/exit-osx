@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { cn } from '@/lib/utils'
-import { DollarSign, Scale, Briefcase, Users, UserCheck, Cpu } from 'lucide-react'
+import { DollarSign, Scale, Briefcase, Users, UserCheck, Cpu, Loader2, ExternalLink } from 'lucide-react'
+import { useCompany } from '@/contexts/CompanyContext'
 import { EvidenceUploadDialog } from './EvidenceUploadDialog'
 import { MissingDocumentCard } from './MissingDocumentCard'
 
@@ -57,8 +58,35 @@ interface EvidenceCategoryTableProps {
 }
 
 export function EvidenceCategoryTable({ categories, onUploadSuccess }: EvidenceCategoryTableProps) {
+  const { selectedCompanyId } = useCompany()
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [uploadingDoc, setUploadingDoc] = useState<{ id: string; name: string; category: string } | null>(null)
+  const [viewingDocId, setViewingDocId] = useState<string | null>(null)
+
+  const handleViewDocument = useCallback(async (docId: string) => {
+    if (!selectedCompanyId || viewingDocId) return
+    setViewingDocId(docId)
+
+    try {
+      const response = await fetch(`/api/companies/${selectedCompanyId}/dataroom/documents/${docId}/download`)
+      if (!response.ok) throw new Error('Failed to fetch document')
+
+      const contentType = response.headers.get('Content-Type')
+
+      if (contentType === 'application/pdf') {
+        const blob = await response.blob()
+        const url = URL.createObjectURL(blob)
+        window.open(url, '_blank')
+      } else {
+        const data = await response.json()
+        if (data.url) window.open(data.url, '_blank')
+      }
+    } catch (err) {
+      console.error('Error viewing document:', err)
+    } finally {
+      setViewingDocId(null)
+    }
+  }, [selectedCompanyId, viewingDocId])
 
   return (
     <div className="rounded-xl border border-border/50 bg-card overflow-hidden">
@@ -125,11 +153,17 @@ export function EvidenceCategoryTable({ categories, onUploadSuccess }: EvidenceC
                       </p>
                       <div className="space-y-2">
                         {cat.uploadedDocuments.map(doc => (
-                          <div key={doc.id} className="flex items-start justify-between py-2">
+                          <button
+                            key={doc.id}
+                            type="button"
+                            onClick={() => handleViewDocument(doc.id)}
+                            disabled={viewingDocId === doc.id}
+                            className="w-full text-left flex items-start justify-between py-2 px-2 -mx-2 rounded-md hover:bg-muted/30 transition-colors cursor-pointer group"
+                          >
                             <div className="flex items-start gap-2">
                               <span className="text-emerald-500 mt-0.5">&#x2713;</span>
                               <div>
-                                <p className="text-sm text-foreground">{doc.name}</p>
+                                <p className="text-sm text-foreground group-hover:text-primary transition-colors">{doc.name}</p>
                                 <p className="text-xs text-muted-foreground mt-0.5">
                                   {new Date(doc.uploadedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                   {doc.sourceLabel && ` · Source: ${doc.sourceLabel}`}
@@ -142,7 +176,12 @@ export function EvidenceCategoryTable({ categories, onUploadSuccess }: EvidenceC
                                 )}
                               </div>
                             </div>
-                          </div>
+                            {viewingDocId === doc.id ? (
+                              <Loader2 className="w-4 h-4 text-muted-foreground animate-spin shrink-0 mt-0.5" />
+                            ) : (
+                              <ExternalLink className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5" />
+                            )}
+                          </button>
                         ))}
                       </div>
                     </div>
