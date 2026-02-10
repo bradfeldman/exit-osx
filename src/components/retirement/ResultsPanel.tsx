@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { type RetirementProjections, formatCurrency } from '@/lib/retirement/retirement-calculator'
 
@@ -15,46 +15,18 @@ export function ResultsPanel({ projections, isOnTrack }: ResultsPanelProps) {
 
   return (
     <Card className={isOnTrack ? 'border-green-200' : 'border-amber-200'}>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base font-medium flex items-center gap-2">
-          {isOnTrack ? (
-            <>
-              <svg
-                className="w-5 h-5 text-green-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span className="text-green-700">On Track for Retirement</span>
-            </>
-          ) : (
-            <>
-              <svg
-                className="w-5 h-5 text-amber-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
-              <span className="text-amber-700">Gap to Close</span>
-            </>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+      {/* Hero Answer */}
+      <div className={`px-6 py-5 rounded-t-lg ${isOnTrack ? 'bg-green-50' : 'bg-amber-50'}`}>
+        <p className={`text-2xl font-bold ${isOnTrack ? 'text-green-800' : 'text-amber-800'}`}>
+          {isOnTrack ? 'Yes — you can retire if you sell.' : 'Not yet — there\u2019s a gap to close.'}
+        </p>
+        <p className={`text-sm mt-1 ${isOnTrack ? 'text-green-700' : 'text-amber-700'}`}>
+          {isOnTrack
+            ? `You have a ${formatCurrency(projections.surplusOrShortfall)} surplus beyond what you need.`
+            : `You\u2019re ${formatCurrency(Math.abs(projections.surplusOrShortfall))} short of your retirement goal.`}
+        </p>
+      </div>
+      <CardContent className="space-y-4 pt-4">
         {/* Key Metrics */}
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 bg-gray-50 rounded-lg">

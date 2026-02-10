@@ -188,7 +188,7 @@ export const DEFAULT_ASSUMPTIONS: RetirementAssumptions = {
   currentAge: 50,
   retirementAge: 65,
   lifeExpectancy: getLifeExpectancy(50),
-  annualSpendingNeeds: 100000,
+  annualSpendingNeeds: 500000,
   inflationRate: MARKET_BENCHMARKS.inflationRate.current,
   growthRate: 0.06,
   federalTaxRate: 0.22,

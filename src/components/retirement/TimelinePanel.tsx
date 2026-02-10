@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -33,9 +34,9 @@ export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: T
           </div>
           <p className="text-xs text-gray-500">
             Synced from your{' '}
-            <a href="/dashboard/financials/personal" className="text-primary hover:underline">
+            <Link href="/dashboard/financials/personal" className="text-primary hover:underline">
               Personal Financial Statement
-            </a>
+            </Link>
           </p>
         </div>
 
