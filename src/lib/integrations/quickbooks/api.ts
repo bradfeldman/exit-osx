@@ -99,8 +99,10 @@ async function makeQuickBooksRequest<T>(
   })
 
   if (!response.ok) {
+    const intuitTid = response.headers.get('intuit_tid') || 'unknown'
     const errorText = await response.text()
-    throw new Error(`QuickBooks API error: ${response.status} - ${errorText}`)
+    console.error(`QuickBooks API error [intuit_tid: ${intuitTid}]: ${response.status}`)
+    throw new Error(`QuickBooks API error: ${response.status} - ${errorText} (intuit_tid: ${intuitTid})`)
   }
 
   return response.json()
