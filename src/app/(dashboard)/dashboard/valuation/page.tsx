@@ -64,9 +64,9 @@ export default function ValuationPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [assumptions, setAssumptions] = useState<DCFAssumptions>(DEFAULT_ASSUMPTIONS)
-  const [baseFCF, setBaseFCF] = useState(500000) // Default $500K FCF
+  const [baseFCF, setBaseFCF] = useState(0)
   const [netDebt, setNetDebt] = useState(0)
-  const [ebitda, setEbitda] = useState(600000) // Default $600K EBITDA
+  const [ebitda, setEbitda] = useState(0)
   const [hasChanges, setHasChanges] = useState(false)
   const [originalAssumptions, setOriginalAssumptions] = useState<DCFAssumptions | null>(null)
   const [useDCFValue, setUseDCFValue] = useState(false) // Toggle to use DCF value for scorecard/PFS/loans
@@ -542,12 +542,14 @@ export default function ValuationPage() {
             )}
           </Card>
 
-          <SensitivityTable
-            baseInputs={dcfInputsForSensitivity}
-            centerWACC={calculatedWACC}
-            centerTerminalGrowth={assumptions.perpetualGrowthRate}
-            finalEBITDA={ebitda}
-          />
+          {baseFCF > 0 && (
+            <SensitivityTable
+              baseInputs={dcfInputsForSensitivity}
+              centerWACC={calculatedWACC}
+              centerTerminalGrowth={assumptions.perpetualGrowthRate}
+              finalEBITDA={ebitda}
+            />
+          )}
 
         </div>
       </div>

@@ -15,11 +15,35 @@ export async function GET(
       where: { companyId },
     })
 
+    // Fetch latest annual financial period for base FCF, EBITDA, and net debt
+    const latestPeriod = await prisma.financialPeriod.findFirst({
+      where: { companyId, periodType: 'ANNUAL' },
+      orderBy: { endDate: 'desc' },
+      include: { cashFlowStatement: true, incomeStatement: true, balanceSheet: true },
+    })
+
+    const financials = latestPeriod
+      ? {
+          freeCashFlow: latestPeriod.cashFlowStatement?.freeCashFlow
+            ? Number(latestPeriod.cashFlowStatement.freeCashFlow)
+            : null,
+          ebitda: latestPeriod.incomeStatement?.ebitda
+            ? Number(latestPeriod.incomeStatement.ebitda)
+            : null,
+          netDebt: latestPeriod.balanceSheet
+            ? Number(latestPeriod.balanceSheet.longTermDebt) +
+              Number(latestPeriod.balanceSheet.currentPortionLtd) -
+              Number(latestPeriod.balanceSheet.cash)
+            : null,
+        }
+      : null
+
     if (!dcfAssumptions) {
-      return NextResponse.json({ assumptions: null })
+      return NextResponse.json({ assumptions: null, financials })
     }
 
     return NextResponse.json({
+      financials,
       assumptions: {
         baseFCF: dcfAssumptions.baseFCF
           ? Number(dcfAssumptions.baseFCF)

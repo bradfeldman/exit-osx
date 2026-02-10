@@ -48,6 +48,24 @@ export function SensitivityTable({
 
   // Find min and max for color scaling
   const validValues = sensitivityData.filter((d) => d.enterpriseValue > 0).map((d) => d.enterpriseValue)
+
+  if (validValues.length === 0) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-medium text-gray-900">
+            Sensitivity Analysis
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground text-center py-6">
+            Enter Base Free Cash Flow to see sensitivity analysis
+          </p>
+        </CardContent>
+      </Card>
+    )
+  }
+
   const minValue = Math.min(...validValues)
   const maxValue = Math.max(...validValues)
   const centerValue = sensitivityData.find(
