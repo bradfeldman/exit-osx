@@ -20,7 +20,7 @@ export function QuickBooksStatus({ isConnected, lastSyncedAt }: QuickBooksStatus
   if (isConnected) {
     return (
       <Link
-        href="/dashboard/settings"
+        href="/dashboard/financials"
         className="inline-flex items-center gap-2 text-sm text-green-700 hover:text-green-800 transition-colors"
       >
         <CheckCircle2 className="h-4 w-4" />
@@ -34,7 +34,7 @@ export function QuickBooksStatus({ isConnected, lastSyncedAt }: QuickBooksStatus
 
   return (
     <Link
-      href="/dashboard/settings"
+      href="/dashboard/financials"
       className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 transition-colors"
     >
       <Link2 className="h-4 w-4" />

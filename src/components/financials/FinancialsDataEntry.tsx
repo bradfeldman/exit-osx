@@ -7,6 +7,7 @@ import { BSFormGrid } from './BSFormGrid'
 import { AddBacksFormGrid } from './AddBacksFormGrid'
 import { CashFlowFormGrid } from './CashFlowFormGrid'
 import { FYESettingsLink } from './FYESettingsLink'
+import { QuickBooksCard } from '@/components/integrations'
 
 type DataEntryTab = 'pnl' | 'balance-sheet' | 'add-backs' | 'cash-flow'
 
@@ -43,6 +44,9 @@ export function FinancialsDataEntry({ companyId }: FinancialsDataEntryProps) {
 
   return (
     <div className="space-y-4">
+      {/* QuickBooks Integration */}
+      <QuickBooksCard companyId={companyId} />
+
       {/* Header bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

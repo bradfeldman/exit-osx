@@ -16,7 +16,6 @@ import {
 } from '@/components/ui/select'
 import { useCompany } from '@/contexts/CompanyContext'
 import { IndustryListInline } from '@/components/company/IndustryListInline'
-import { QuickBooksCard } from '@/components/integrations'
 import { AccountabilityPartnerCard } from '@/components/settings/AccountabilityPartnerCard'
 import { getFlattenedOptionBySubSector } from '@/lib/data/industries'
 
@@ -517,9 +516,6 @@ export function CompanySettings() {
 
       {/* Accountability Partner */}
       <AccountabilityPartnerCard />
-
-      {/* QuickBooks Integration */}
-      <QuickBooksCard companyId={selectedCompanyId} />
 
       {message && (
         <div
