@@ -248,15 +248,14 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
               )}
             </div>
             {!connected && (
-              <div className="flex items-center gap-2">
-                <span className="px-2 py-1 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">
-                  Coming Soon
-                </span>
-                <Button disabled className="opacity-50 cursor-not-allowed">
+              <Button onClick={handleConnect} disabled={isConnecting}>
+                {isConnecting ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
                   <Link2 className="h-4 w-4 mr-2" />
-                  Connect
-                </Button>
-              </div>
+                )}
+                {isConnecting ? 'Connecting...' : 'Connect'}
+              </Button>
             )}
           </div>
 
