@@ -24,7 +24,6 @@ import {
   CheckCircle2,
   ChevronDown,
   User,
-  Target,
 } from 'lucide-react'
 import {
   Select,
@@ -730,9 +729,9 @@ export default function PersonalFinancialStatementPage() {
       <div>
         <CollapsibleSection
           title="Owner Profile"
-          description="Your age, retirement target, and exit goals"
+          description="Your age for retirement planning"
           icon={User}
-          defaultOpen={!!(currentAge || retirementAge || exitGoalAmount)}
+          defaultOpen={!!currentAge}
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -750,38 +749,6 @@ export default function PersonalFinancialStatementPage() {
                 className="h-9"
                 disabled={!canEditPersonal}
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1.5">Target Retirement Age</label>
-              <Input
-                type="text"
-                inputMode="numeric"
-                value={retirementAge !== null ? String(retirementAge) : ''}
-                onChange={(e) => {
-                  const v = e.target.value.replace(/[^0-9]/g, '')
-                  if (!v) { setRetirementAge(null); return }
-                  const minAge = currentAge ? currentAge + 1 : 19
-                  setRetirementAge(Math.min(100, Math.max(minAge, parseInt(v))))
-                }}
-                placeholder="e.g. 65"
-                className="h-9"
-                disabled={!canEditPersonal}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1.5">Exit Goal</label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  value={formatInputValue(exitGoalAmount)}
-                  onChange={(e) => setExitGoalAmount(parseInputValue(e.target.value))}
-                  placeholder="0"
-                  className="pl-7 text-right h-9"
-                  disabled={!canEditPersonal}
-                />
-              </div>
             </div>
           </div>
         </CollapsibleSection>
@@ -1127,35 +1094,6 @@ export default function PersonalFinancialStatementPage() {
         </Card>
       </div>
 
-      {/* Exit Goal CTA — link to Retirement Calculator */}
-      {exitGoalAmount > 0 && (
-        <div>
-          <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
-            <CardContent className="py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <Target className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">
-                      You&apos;ve set an exit goal of {formatCurrency(exitGoalAmount)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      See if your assets and exit proceeds will fund your retirement lifestyle.
-                    </p>
-                  </div>
-                </div>
-                <Link href="/dashboard/financials/retirement">
-                  <Button variant="outline" size="sm">
-                    Retirement Calculator
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Note */}
       <p className="text-xs text-muted-foreground text-center pb-4">

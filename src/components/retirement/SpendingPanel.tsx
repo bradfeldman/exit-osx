@@ -56,9 +56,19 @@ export function SpendingPanel({
           </div>
 
           {/* Simple Summary */}
-          <div className="p-3 bg-gray-50 rounded-lg">
+          <div className="p-3 bg-gray-50 rounded-lg space-y-1.5">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-700">Annual withdrawal needed</span>
+              <span className="text-gray-600">At retirement (inflation-adjusted)</span>
+              <span className="font-medium">{formatCurrency(spendingAtRetirement)}/yr</span>
+            </div>
+            {annualOtherIncome > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Less: Social Security + other income</span>
+                <span className="font-medium text-green-600">-{formatCurrency(annualOtherIncome)}/yr</span>
+              </div>
+            )}
+            <div className="flex justify-between text-sm pt-1.5 border-t border-gray-200">
+              <span className="text-gray-700 font-medium">Portfolio withdrawal needed</span>
               <span className="font-bold text-primary">
                 {formatCurrency(Math.max(0, spendingAtRetirement - annualOtherIncome))}/yr
               </span>

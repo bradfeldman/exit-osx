@@ -45,16 +45,17 @@ export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: T
           <div className="flex justify-between items-center">
             <Label className="text-sm text-gray-700">Retirement Age</Label>
             <Input
-              type="number"
-              min={assumptions.currentAge}
-              max={100}
-              value={assumptions.retirementAge}
-              onChange={(e) =>
+              type="text"
+              inputMode="numeric"
+              value={String(assumptions.retirementAge)}
+              onChange={(e) => {
+                const v = e.target.value.replace(/[^0-9]/g, '')
+                if (!v) return
                 onAssumptionChange(
                   'retirementAge',
-                  Math.max(assumptions.currentAge, Math.min(100, Number(e.target.value)))
+                  Math.max(assumptions.currentAge, Math.min(100, Number(v)))
                 )
-              }
+              }}
               className="w-20 h-8 text-sm text-right"
             />
           </div>

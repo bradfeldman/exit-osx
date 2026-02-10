@@ -266,6 +266,14 @@ export default function RetirementCalculatorPage() {
         // Ignore parse errors
       }
 
+      // Auto-exclude Real Estate (primary residence) for first-time users
+      if (savedExcluded.length === 0 && savedManual.length === 0 && Object.keys(savedOverrides).length === 0) {
+        const realEstateIds = pfsAssets
+          .filter(a => a.category === 'Real Estate')
+          .map(a => a.id)
+        savedExcluded = [...savedExcluded, ...realEstateIds]
+      }
+
       // Filter out excluded PFS assets, apply overrides, then add manual assets
       const filteredPfsAssets = pfsAssets
         .filter(a => !savedExcluded.includes(a.id))
