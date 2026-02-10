@@ -224,9 +224,8 @@ export default function RetirementCalculatorPage() {
           )
         }
 
-        // Seed identity data from PFS when no local assumptions exist
-        const hasSavedAssumptions = !!localStorage.getItem('retirement_assumptions')
-        if (!hasSavedAssumptions && pfsData?.personalFinancials) {
+        // Always sync age and retirement age from PFS (source of truth)
+        if (pfsData?.personalFinancials) {
           const pfsAge = pfsData.personalFinancials.currentAge
           const pfsRetAge = pfsData.personalFinancials.retirementAge
           if (pfsAge) {

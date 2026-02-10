@@ -29,28 +29,14 @@ export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: T
         <div className="space-y-2">
           <div className="flex justify-between items-center">
             <Label className="text-sm text-gray-700">Current Age</Label>
-            <Input
-              type="number"
-              min={18}
-              max={100}
-              value={assumptions.currentAge}
-              onChange={(e) =>
-                onAssumptionChange('currentAge', Math.min(100, Math.max(18, Number(e.target.value))))
-              }
-              className="w-20 h-8 text-sm text-right"
-            />
+            <span className="text-sm font-medium text-gray-900">{assumptions.currentAge}</span>
           </div>
-          <Slider
-            value={assumptions.currentAge}
-            onValueChange={(v) => onAssumptionChange('currentAge', v)}
-            min={18}
-            max={80}
-            step={1}
-          />
-          <div className="flex justify-between text-xs text-gray-400">
-            <span>18</span>
-            <span>80</span>
-          </div>
+          <p className="text-xs text-gray-500">
+            Synced from your{' '}
+            <a href="/dashboard/financials/personal" className="text-primary hover:underline">
+              Personal Financial Statement
+            </a>
+          </p>
         </div>
 
         {/* Retirement Age */}
