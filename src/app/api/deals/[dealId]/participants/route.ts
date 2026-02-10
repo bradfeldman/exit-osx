@@ -256,6 +256,7 @@ export async function POST(
     }, { status: 201 })
   } catch (error) {
     console.error('Error adding deal participant:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Internal server error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
