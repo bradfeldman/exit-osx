@@ -10,6 +10,9 @@ import {
 import { createSignedOAuthState } from '@/lib/security/oauth-state'
 import { decryptToken, isEncrypted } from '@/lib/security/token-encryption'
 
+// Sync can make 12+ API calls to QuickBooks — needs extended timeout
+export const maxDuration = 60
+
 // GET - Get QuickBooks integration status for a company
 export async function GET(request: NextRequest) {
   try {

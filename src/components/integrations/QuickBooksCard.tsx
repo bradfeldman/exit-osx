@@ -67,11 +67,32 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
     const qbError = params.get('qb_error')
 
     if (qbConnected === 'true') {
-      setSuccessMessage('QuickBooks connected successfully! Initial sync in progress.')
+      setSuccessMessage('QuickBooks connected! Starting initial sync...')
       // Clean URL
       window.history.replaceState({}, '', window.location.pathname)
-      // Refresh status
-      fetchStatus()
+      // Refresh status then trigger initial sync
+      fetchStatus().then(() => {
+        setIsSyncing(true)
+        fetch('/api/integrations/quickbooks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'sync', companyId }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              setSuccessMessage(
+                `Sync complete! ${data.periodsCreated} periods created, ${data.periodsUpdated} updated.`
+              )
+              fetchStatus()
+              onSyncComplete?.()
+            } else {
+              setError(data.error || 'Initial sync failed')
+            }
+          })
+          .catch(() => setError('Initial sync failed'))
+          .finally(() => setIsSyncing(false))
+      })
     } else if (qbError) {
       setError(decodeURIComponent(qbError))
       window.history.replaceState({}, '', window.location.pathname)
