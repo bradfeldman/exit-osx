@@ -300,7 +300,7 @@ export function generateYearlyProjections(
   const projections: YearlyProjection[] = []
   let portfolioValue = totalAfterTaxToday
   let annualSpending = annualSpendingNeeds
-  const annualOtherIncome = (socialSecurityMonthly + otherIncomeMonthly) * 12
+  let annualOtherIncome = (socialSecurityMonthly + otherIncomeMonthly) * 12
 
   for (let year = 0; year <= lifeExpectancy - currentAge; year++) {
     const age = currentAge + year
@@ -328,8 +328,9 @@ export function generateYearlyProjections(
       isRetired,
     })
 
-    // Increase spending by inflation
+    // Increase spending and income by inflation
     annualSpending *= 1 + inflationRate
+    annualOtherIncome *= 1 + inflationRate
 
     if (portfolioValue <= 0 && isRetired) break
   }
@@ -367,8 +368,9 @@ export function calculateRetirementProjections(
   // Calculate inflation-adjusted annual spending at retirement
   const spendingAtRetirement = annualSpendingNeeds * Math.pow(1 + inflationRate, yearsToRetirement)
 
-  // Annual income from Social Security and other sources
-  const annualOtherIncome = (socialSecurityMonthly + otherIncomeMonthly) * 12
+  // Annual income from Social Security and other sources (inflation-adjusted to retirement)
+  const annualOtherIncome =
+    (socialSecurityMonthly + otherIncomeMonthly) * 12 * Math.pow(1 + inflationRate, yearsToRetirement)
 
   // Net annual withdrawal needed from portfolio
   const annualWithdrawalNeeded = Math.max(0, spendingAtRetirement - annualOtherIncome)
@@ -377,12 +379,13 @@ export function calculateRetirementProjections(
   let portfolioValue = valueAtRetirement
   let yearsMoneyLasts = 0
   let annualSpending = spendingAtRetirement
-  const annualIncome = annualOtherIncome
+  let annualIncome = annualOtherIncome
 
   while (portfolioValue > 0 && yearsMoneyLasts < yearsInRetirement + 50) {
     const withdrawal = Math.max(0, annualSpending - annualIncome)
     portfolioValue = portfolioValue * (1 + growthRate) - withdrawal
     annualSpending *= 1 + inflationRate
+    annualIncome *= 1 + inflationRate
     yearsMoneyLasts++
   }
 

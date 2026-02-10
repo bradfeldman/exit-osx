@@ -35,6 +35,7 @@ export default function RetirementCalculatorPage() {
   const [assets, setAssets] = useState<RetirementAsset[]>([])
   const [manualAssets, setManualAssets] = useState<RetirementAsset[]>([]) // Manually added for modeling
   const [excludedAssetIds, setExcludedAssetIds] = useState<string[]>([]) // PFS assets excluded from calc
+  const [excludedAssetDetails, setExcludedAssetDetails] = useState<{ name: string; value: number }[]>([]) // For display
   const [assetOverrides, setAssetOverrides] = useState<Record<string, Partial<RetirementAsset>>>({}) // Overrides for PFS assets
   const [assumptions, setAssumptions] = useState<RetirementAssumptions>(DEFAULT_ASSUMPTIONS)
   const [showAdvancedTax, setShowAdvancedTax] = useState(false)
@@ -283,6 +284,11 @@ export default function RetirementCalculatorPage() {
       setAssets(allAssets)
       setManualAssets(savedManual)
       setExcludedAssetIds(savedExcluded)
+      setExcludedAssetDetails(
+        pfsAssets
+          .filter(a => savedExcluded.includes(a.id))
+          .map(a => ({ name: a.name || a.category, value: a.currentValue }))
+      )
       setAssetOverrides(savedOverrides)
     } catch (error) {
       console.error('Failed to import PFS data:', error)
@@ -782,6 +788,17 @@ export default function RetirementCalculatorPage() {
                       {formatCurrency(projections.totalAfterTaxToday)}
                     </div>
                   </div>
+                  {excludedAssetDetails.length > 0 && (
+                    <p className="text-xs text-gray-500 pt-3 border-t mt-3">
+                      <span className="font-medium text-gray-600">Not included:</span>{' '}
+                      {excludedAssetDetails.map(a => `${a.name} (${formatCurrency(a.value)})`).join(', ')}.
+                      {' '}Primary residence is excluded since most retirees continue living in their home.{' '}
+                      <button onClick={() => setMode('pro')} className="text-primary hover:underline">
+                        Switch to Pro mode
+                      </button>{' '}
+                      to include it.
+                    </p>
+                  )}
                   <p className="text-xs text-gray-500 pt-3 border-t mt-3">
                     After-tax values use default rates ({((assumptions.federalTaxRate + assumptions.stateTaxRate + assumptions.localTaxRate) * 100).toFixed(0)}% income, {(assumptions.capitalGainsTaxRate * 100).toFixed(0)}% cap gains).{' '}
                     <button onClick={() => setMode('pro')} className="text-primary hover:underline">

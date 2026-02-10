@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -17,6 +18,9 @@ interface TimelinePanelProps {
 }
 
 export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: TimelinePanelProps) {
+  const [retireAgeText, setRetireAgeText] = useState(String(assumptions.retirementAge))
+  const [isEditingRetireAge, setIsEditingRetireAge] = useState(false)
+
   const yearsToRetirement = Math.max(0, assumptions.retirementAge - assumptions.currentAge)
   const yearsInRetirement = Math.max(0, assumptions.lifeExpectancy - assumptions.retirementAge)
 
@@ -47,14 +51,25 @@ export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: T
             <Input
               type="text"
               inputMode="numeric"
-              value={String(assumptions.retirementAge)}
+              value={isEditingRetireAge ? retireAgeText : String(assumptions.retirementAge)}
+              onFocus={() => {
+                setRetireAgeText(String(assumptions.retirementAge))
+                setIsEditingRetireAge(true)
+              }}
               onChange={(e) => {
-                const v = e.target.value.replace(/[^0-9]/g, '')
-                if (!v) return
+                setRetireAgeText(e.target.value.replace(/[^0-9]/g, ''))
+              }}
+              onBlur={() => {
+                setIsEditingRetireAge(false)
+                const num = Number(retireAgeText)
+                if (!retireAgeText || isNaN(num)) return
                 onAssumptionChange(
                   'retirementAge',
-                  Math.max(assumptions.currentAge, Math.min(100, Number(v)))
+                  Math.max(assumptions.currentAge, Math.min(100, num))
                 )
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
               }}
               className="w-20 h-8 text-sm text-right"
             />

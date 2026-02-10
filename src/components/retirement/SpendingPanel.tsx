@@ -63,7 +63,7 @@ export function SpendingPanel({
             </div>
             {annualOtherIncome > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Less: Social Security + other income</span>
+                <span className="text-gray-600">Less: Social Security</span>
                 <span className="font-medium text-green-600">-{formatCurrency(annualOtherIncome)}/yr</span>
               </div>
             )}
