@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Slider } from '@/components/ui/slider'
-import { type RetirementAssumptions } from '@/lib/retirement/retirement-calculator'
+import { type RetirementAssumptions, getLifeExpectancy } from '@/lib/retirement/retirement-calculator'
 
 interface TimelinePanelProps {
   assumptions: RetirementAssumptions
@@ -12,9 +12,10 @@ interface TimelinePanelProps {
     key: K,
     value: RetirementAssumptions[K]
   ) => void
+  simplified?: boolean
 }
 
-export function TimelinePanel({ assumptions, onAssumptionChange }: TimelinePanelProps) {
+export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: TimelinePanelProps) {
   const yearsToRetirement = Math.max(0, assumptions.retirementAge - assumptions.currentAge)
   const yearsInRetirement = Math.max(0, assumptions.lifeExpectancy - assumptions.retirementAge)
 
@@ -85,36 +86,51 @@ export function TimelinePanel({ assumptions, onAssumptionChange }: TimelinePanel
         </div>
 
         {/* Life Expectancy */}
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Label className="text-sm text-gray-700">Life Expectancy</Label>
-            <Input
-              type="number"
-              min={assumptions.retirementAge}
-              max={110}
+        {simplified ? (
+          <p className="text-xs text-gray-500 -mt-1">
+            Life expectancy: Age {assumptions.lifeExpectancy} (SSA actuarial data + 3 yr buffer)
+          </p>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <Label className="text-sm text-gray-700">Life Expectancy</Label>
+              <Input
+                type="number"
+                min={assumptions.retirementAge}
+                max={110}
+                value={assumptions.lifeExpectancy}
+                onChange={(e) =>
+                  onAssumptionChange(
+                    'lifeExpectancy',
+                    Math.max(assumptions.retirementAge, Math.min(110, Number(e.target.value)))
+                  )
+                }
+                className="w-20 h-8 text-sm text-right"
+              />
+            </div>
+            <Slider
               value={assumptions.lifeExpectancy}
-              onChange={(e) =>
-                onAssumptionChange(
-                  'lifeExpectancy',
-                  Math.max(assumptions.retirementAge, Math.min(110, Number(e.target.value)))
-                )
-              }
-              className="w-20 h-8 text-sm text-right"
+              onValueChange={(v) => onAssumptionChange('lifeExpectancy', Math.max(assumptions.retirementAge, v))}
+              min={70}
+              max={100}
+              step={1}
             />
+            <div className="flex justify-between text-xs text-gray-400">
+              <span>70</span>
+              {assumptions.lifeExpectancy !== getLifeExpectancy(assumptions.currentAge) ? (
+                <button
+                  className="text-primary hover:underline"
+                  onClick={() => onAssumptionChange('lifeExpectancy', getLifeExpectancy(assumptions.currentAge))}
+                >
+                  Reset to SSA default ({getLifeExpectancy(assumptions.currentAge)})
+                </button>
+              ) : (
+                <span>SSA: {getLifeExpectancy(assumptions.currentAge)}</span>
+              )}
+              <span>100</span>
+            </div>
           </div>
-          <Slider
-            value={assumptions.lifeExpectancy}
-            onValueChange={(v) => onAssumptionChange('lifeExpectancy', Math.max(assumptions.retirementAge, v))}
-            min={70}
-            max={100}
-            step={1}
-          />
-          <div className="flex justify-between text-xs text-gray-400">
-            <span>70</span>
-            <span>Avg: 85</span>
-            <span>100</span>
-          </div>
-        </div>
+        )}
 
         {/* Timeline Summary */}
         <div className="p-3 bg-gray-50 rounded-lg">

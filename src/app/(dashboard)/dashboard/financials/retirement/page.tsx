@@ -20,10 +20,12 @@ import {
   DEFAULT_ASSUMPTIONS,
   TAX_TREATMENTS,
   US_STATE_TAX_RATES,
+  MARKET_BENCHMARKS,
   calculateRetirementProjections,
   formatCurrency,
   formatInputValue,
   parseInputValue,
+  getLifeExpectancy,
 } from '@/lib/retirement/retirement-calculator'
 
 type CalculatorMode = 'easy' | 'pro'
@@ -98,6 +100,27 @@ export default function RetirementCalculatorPage() {
   useEffect(() => {
     localStorage.setItem('retirement_calculator_mode', mode)
   }, [mode])
+
+  // Auto-derive life expectancy and inflation when entering Easy mode
+  useEffect(() => {
+    if (mode === 'easy') {
+      setAssumptions(prev => ({
+        ...prev,
+        lifeExpectancy: getLifeExpectancy(prev.currentAge),
+        inflationRate: MARKET_BENCHMARKS.inflationRate.current,
+      }))
+    }
+  }, [mode])
+
+  // Auto-derive life expectancy when current age changes in Easy mode
+  useEffect(() => {
+    if (mode === 'easy') {
+      setAssumptions(prev => ({
+        ...prev,
+        lifeExpectancy: getLifeExpectancy(prev.currentAge),
+      }))
+    }
+  }, [assumptions.currentAge, mode])
 
   const importFromPFS = useCallback(async () => {
     try {
@@ -206,7 +229,13 @@ export default function RetirementCalculatorPage() {
         if (!hasSavedAssumptions && pfsData?.personalFinancials) {
           const pfsAge = pfsData.personalFinancials.currentAge
           const pfsRetAge = pfsData.personalFinancials.retirementAge
-          if (pfsAge) setAssumptions(prev => ({ ...prev, currentAge: pfsAge }))
+          if (pfsAge) {
+            setAssumptions(prev => ({
+              ...prev,
+              currentAge: pfsAge,
+              lifeExpectancy: getLifeExpectancy(pfsAge),
+            }))
+          }
           if (pfsRetAge) setAssumptions(prev => ({ ...prev, retirementAge: pfsRetAge }))
         }
       }
@@ -403,7 +432,7 @@ export default function RetirementCalculatorPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column: Simple Inputs */}
           <div className="space-y-4">
-            <TimelinePanel assumptions={assumptions} onAssumptionChange={updateAssumption} />
+            <TimelinePanel assumptions={assumptions} onAssumptionChange={updateAssumption} simplified />
 
             <SpendingPanel
               assumptions={assumptions}

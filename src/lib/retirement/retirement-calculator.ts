@@ -71,6 +71,32 @@ export interface YearlyProjection {
   isRetired: boolean
 }
 
+// SSA 2023 Period Life Table — expected age at death by current age
+// Source: Social Security Administration actuarial tables
+const SSA_LIFE_EXPECTANCY: Record<number, number> = {
+  18: 79, 19: 79, 20: 79, 21: 79, 22: 79, 23: 79, 24: 79, 25: 80,
+  26: 80, 27: 80, 28: 80, 29: 80, 30: 80, 31: 80, 32: 80, 33: 80,
+  34: 80, 35: 80, 36: 81, 37: 81, 38: 81, 39: 81, 40: 81, 41: 81,
+  42: 81, 43: 81, 44: 81, 45: 82, 46: 82, 47: 82, 48: 82, 49: 82,
+  50: 82, 51: 82, 52: 83, 53: 83, 54: 83, 55: 83, 56: 83, 57: 83,
+  58: 84, 59: 84, 60: 84, 61: 84, 62: 84, 63: 85, 64: 85, 65: 85,
+  66: 85, 67: 86, 68: 86, 69: 86, 70: 86, 71: 87, 72: 87, 73: 87,
+  74: 88, 75: 88, 76: 88, 77: 89, 78: 89, 79: 89, 80: 90, 81: 90,
+  82: 91, 83: 91, 84: 91, 85: 92, 86: 92, 87: 93, 88: 93, 89: 94,
+  90: 94, 91: 95, 92: 95, 93: 96, 94: 96, 95: 97, 96: 97, 97: 98,
+  98: 99, 99: 99, 100: 100,
+}
+
+/**
+ * Get actuarial life expectancy for a given current age.
+ * Adds a 3-year planning buffer (financial planning best practice: plan for longer than average).
+ */
+export function getLifeExpectancy(currentAge: number): number {
+  const clamped = Math.min(100, Math.max(18, Math.round(currentAge)))
+  const actuarial = SSA_LIFE_EXPECTANCY[clamped] ?? 82
+  return actuarial + 3
+}
+
 // Market benchmarks (as of January 2026)
 export const MARKET_BENCHMARKS = {
   inflationRate: { current: 0.028, historical: 0.03, range: { min: 0.02, max: 0.05 } },
@@ -161,9 +187,9 @@ export const GROWTH_PRESETS = [
 export const DEFAULT_ASSUMPTIONS: RetirementAssumptions = {
   currentAge: 50,
   retirementAge: 65,
-  lifeExpectancy: 90,
+  lifeExpectancy: getLifeExpectancy(50),
   annualSpendingNeeds: 100000,
-  inflationRate: 0.03,
+  inflationRate: MARKET_BENCHMARKS.inflationRate.current,
   growthRate: 0.06,
   federalTaxRate: 0.22,
   stateCode: 'CA',
