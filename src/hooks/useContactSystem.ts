@@ -299,6 +299,7 @@ export interface DealParticipantData {
   isActive: boolean
   category: string | null
   description: string | null
+  notes: string | null
   vdrAccessLevel: string | null
   createdAt: string
   canonicalPerson: {
@@ -370,7 +371,7 @@ export function useDealParticipants(dealId: string | null, sideFilter?: string) 
 
   const updateParticipant = useCallback(async (
     participantId: string,
-    updates: { role?: string; side?: string; category?: string; description?: string; isPrimary?: boolean; isActive?: boolean; dealBuyerId?: string | null }
+    updates: { role?: string; side?: string; category?: string; description?: string; notes?: string; isPrimary?: boolean; isActive?: boolean; dealBuyerId?: string | null }
   ) => {
     const res = await fetch(`/api/deals/${dealId}/participants/${participantId}`, {
       method: 'PATCH',

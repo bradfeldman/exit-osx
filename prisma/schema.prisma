@@ -2535,6 +2535,7 @@ model DealParticipant {
   // Simplified category
   category    String?  @map("category")      // PROSPECT, MANAGEMENT, ADVISOR, OTHER
   description String?  @map("description")   // Free text: "patents attorney", "CPA", etc.
+  notes       String?  @map("notes")         // Multi-line freeform notes
 
   // VDR access
   dataRoomAccessId   String?         @unique @map("data_room_access_id")

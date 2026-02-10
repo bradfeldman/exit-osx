@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Mail, Phone, Linkedin, ExternalLink } from 'lucide-react'
+import { X, Mail, Phone, Linkedin, ExternalLink, Pencil, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { CategoryBadge } from './CategoryBadge'
 import { useDealParticipants } from '@/hooks/useContactSystem'
 import {
@@ -28,11 +29,23 @@ export function ParticipantDetailPanel({
 }: ParticipantDetailPanelProps) {
   const [isUpdating, setIsUpdating] = useState(false)
   const [editDescription, setEditDescription] = useState(participant.description ?? '')
+  const [editNotes, setEditNotes] = useState(participant.notes ?? '')
+  const [isEditing, setIsEditing] = useState(false)
+  const [editFields, setEditFields] = useState({
+    firstName: participant.canonicalPerson.firstName,
+    lastName: participant.canonicalPerson.lastName,
+    email: participant.canonicalPerson.email ?? '',
+    phone: participant.canonicalPerson.phone ?? '',
+    currentTitle: participant.canonicalPerson.currentTitle ?? '',
+    linkedInUrl: participant.canonicalPerson.linkedInUrl ?? '',
+  })
   const { updateParticipant, removeParticipant } = useDealParticipants(dealId)
 
   const { canonicalPerson, isPrimary, isActive, dealBuyer, createdAt } = participant
   const category = participant.category ?? 'OTHER'
-  const fullName = `${canonicalPerson.firstName} ${canonicalPerson.lastName}`
+  const displayName = isEditing
+    ? `${editFields.firstName} ${editFields.lastName}`
+    : `${canonicalPerson.firstName} ${canonicalPerson.lastName}`
   const initials = `${canonicalPerson.firstName.charAt(0)}${canonicalPerson.lastName.charAt(0)}`.toUpperCase()
 
   const handleCategoryChange = async (newCategory: string) => {
@@ -60,6 +73,19 @@ export function ParticipantDetailPanel({
     }
   }
 
+  const handleNotesBlur = async () => {
+    if (editNotes === (participant.notes ?? '')) return
+    setIsUpdating(true)
+    try {
+      await updateParticipant(participant.id, { notes: editNotes })
+      onUpdate()
+    } catch {
+      // silently fail
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
   const handleTogglePrimary = async () => {
     setIsUpdating(true)
     try {
@@ -72,11 +98,12 @@ export function ParticipantDetailPanel({
     }
   }
 
-  const handleDeactivate = async () => {
+  const handleRemove = async () => {
     setIsUpdating(true)
     try {
-      await updateParticipant(participant.id, { isActive: !isActive })
+      await removeParticipant(participant.id)
       onUpdate()
+      onClose()
     } catch {
       // silently fail
     } finally {
@@ -84,10 +111,26 @@ export function ParticipantDetailPanel({
     }
   }
 
-  const handleRemove = async () => {
+  const handleSaveContactInfo = async () => {
     setIsUpdating(true)
     try {
-      await removeParticipant(participant.id)
+      const res = await fetch(`/api/canonical/people/${canonicalPerson.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: editFields.firstName.trim(),
+          lastName: editFields.lastName.trim(),
+          email: editFields.email.trim() || null,
+          phone: editFields.phone.trim() || null,
+          currentTitle: editFields.currentTitle.trim() || null,
+          linkedInUrl: editFields.linkedInUrl.trim() || null,
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to update')
+      }
+      setIsEditing(false)
       onUpdate()
     } catch {
       // silently fail
@@ -105,7 +148,10 @@ export function ParticipantDetailPanel({
       />
 
       {/* Panel */}
-      <div className="fixed inset-y-0 right-0 w-[500px] bg-card border-l border-border shadow-xl z-50 flex flex-col">
+      <div
+        className="fixed inset-y-0 right-0 w-[500px] bg-card border-l border-border shadow-xl z-50 flex flex-col"
+        onClick={e => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="p-6 border-b border-border/50 relative">
           <button
@@ -120,7 +166,7 @@ export function ParticipantDetailPanel({
               {initials}
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-foreground pr-8">{fullName}</h2>
+              <h2 className="text-lg font-semibold text-foreground pr-8">{displayName}</h2>
               <div className="flex items-center gap-2 mt-0.5">
                 <CategoryBadge category={category} />
                 {participant.description && (
@@ -142,62 +188,169 @@ export function ParticipantDetailPanel({
         <div className="p-6 overflow-y-auto flex-1 space-y-6">
           {/* Contact Info */}
           <section>
-            <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-3">
-              Contact Info
-            </h3>
-            <div className="space-y-2 text-sm">
-              {canonicalPerson.currentTitle && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Title</span>
-                  <span>{canonicalPerson.currentTitle}</span>
-                </div>
-              )}
-              {canonicalPerson.currentCompany && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Company</span>
-                  <span>{canonicalPerson.currentCompany.name}</span>
-                </div>
-              )}
-              {canonicalPerson.email && (
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground flex items-center gap-1">
-                    <Mail className="h-3.5 w-3.5" />
-                    Email
-                  </span>
-                  <a
-                    href={`mailto:${canonicalPerson.email}`}
-                    className="text-primary hover:underline text-xs"
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                Contact Info
+              </h3>
+              {!isEditing ? (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
+                >
+                  <Pencil className="h-3 w-3" />
+                  Edit
+                </button>
+              ) : (
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => {
+                      setIsEditing(false)
+                      setEditFields({
+                        firstName: canonicalPerson.firstName,
+                        lastName: canonicalPerson.lastName,
+                        email: canonicalPerson.email ?? '',
+                        phone: canonicalPerson.phone ?? '',
+                        currentTitle: canonicalPerson.currentTitle ?? '',
+                        linkedInUrl: canonicalPerson.linkedInUrl ?? '',
+                      })
+                    }}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {canonicalPerson.email}
-                  </a>
-                </div>
-              )}
-              {canonicalPerson.phone && (
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground flex items-center gap-1">
-                    <Phone className="h-3.5 w-3.5" />
-                    Phone
-                  </span>
-                  <span className="text-xs">{canonicalPerson.phone}</span>
-                </div>
-              )}
-              {canonicalPerson.linkedInUrl && (
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground flex items-center gap-1">
-                    <Linkedin className="h-3.5 w-3.5" />
-                    LinkedIn
-                  </span>
-                  <a
-                    href={canonicalPerson.linkedInUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline text-xs flex items-center gap-1"
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveContactInfo}
+                    disabled={isUpdating}
+                    className="text-xs text-primary hover:text-primary/80 flex items-center gap-1 font-medium transition-colors"
                   >
-                    View <ExternalLink className="h-3 w-3" />
-                  </a>
+                    <Check className="h-3 w-3" />
+                    Save
+                  </button>
                 </div>
               )}
             </div>
+
+            {isEditing ? (
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">First Name</label>
+                    <Input
+                      value={editFields.firstName}
+                      onChange={e => setEditFields(f => ({ ...f, firstName: e.target.value }))}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">Last Name</label>
+                    <Input
+                      value={editFields.lastName}
+                      onChange={e => setEditFields(f => ({ ...f, lastName: e.target.value }))}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground">Title</label>
+                  <Input
+                    value={editFields.currentTitle}
+                    onChange={e => setEditFields(f => ({ ...f, currentTitle: e.target.value }))}
+                    placeholder="e.g. Managing Director"
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground">Email</label>
+                  <Input
+                    value={editFields.email}
+                    onChange={e => setEditFields(f => ({ ...f, email: e.target.value }))}
+                    placeholder="email@example.com"
+                    className="h-8 text-sm"
+                    type="email"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground">Phone</label>
+                  <Input
+                    value={editFields.phone}
+                    onChange={e => setEditFields(f => ({ ...f, phone: e.target.value }))}
+                    placeholder="555-123-4567"
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground">LinkedIn URL</label>
+                  <Input
+                    value={editFields.linkedInUrl}
+                    onChange={e => setEditFields(f => ({ ...f, linkedInUrl: e.target.value }))}
+                    placeholder="https://linkedin.com/in/..."
+                    className="h-8 text-sm"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2 text-sm">
+                {canonicalPerson.currentTitle && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Title</span>
+                    <span>{canonicalPerson.currentTitle}</span>
+                  </div>
+                )}
+                {canonicalPerson.currentCompany && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Company</span>
+                    <span>{canonicalPerson.currentCompany.name}</span>
+                  </div>
+                )}
+                {canonicalPerson.email && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <Mail className="h-3.5 w-3.5" />
+                      Email
+                    </span>
+                    <a
+                      href={`mailto:${canonicalPerson.email}`}
+                      className="text-primary hover:underline text-xs"
+                    >
+                      {canonicalPerson.email}
+                    </a>
+                  </div>
+                )}
+                {canonicalPerson.phone && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <Phone className="h-3.5 w-3.5" />
+                      Phone
+                    </span>
+                    <span className="text-xs">{canonicalPerson.phone}</span>
+                  </div>
+                )}
+                {canonicalPerson.linkedInUrl && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <Linkedin className="h-3.5 w-3.5" />
+                      LinkedIn
+                    </span>
+                    <a
+                      href={canonicalPerson.linkedInUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline text-xs flex items-center gap-1"
+                    >
+                      View <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                )}
+                {!canonicalPerson.currentTitle && !canonicalPerson.email && !canonicalPerson.phone && !canonicalPerson.linkedInUrl && !canonicalPerson.currentCompany && (
+                  <p className="text-xs text-muted-foreground italic">
+                    No contact info yet.{' '}
+                    <button onClick={() => setIsEditing(true)} className="text-primary hover:underline">
+                      Add details
+                    </button>
+                  </p>
+                )}
+              </div>
+            )}
           </section>
 
           {/* Category & Description */}
@@ -239,6 +392,21 @@ export function ParticipantDetailPanel({
                 />
               </div>
             </div>
+          </section>
+
+          {/* Notes */}
+          <section>
+            <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-3">
+              Notes
+            </h3>
+            <Textarea
+              value={editNotes}
+              onChange={e => setEditNotes(e.target.value)}
+              onBlur={handleNotesBlur}
+              placeholder="Add notes about this contact..."
+              className="text-sm min-h-[80px] resize-y"
+              disabled={isUpdating}
+            />
           </section>
 
           {/* Buyer Link */}
@@ -291,15 +459,6 @@ export function ParticipantDetailPanel({
               disabled={isUpdating}
             >
               {isPrimary ? 'Remove Primary' : 'Set as Primary'}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full justify-start"
-              onClick={handleDeactivate}
-              disabled={isUpdating}
-            >
-              {isActive ? 'Deactivate' : 'Reactivate'}
             </Button>
             <Button
               variant="ghost"

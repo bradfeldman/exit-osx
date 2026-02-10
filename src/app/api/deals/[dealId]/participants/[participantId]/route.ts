@@ -90,6 +90,7 @@ export async function PATCH(
     }
 
     if (body.description !== undefined) data.description = body.description
+    if (body.notes !== undefined) data.notes = body.notes
     if (body.role !== undefined) data.role = body.role as ParticipantRole
     if (body.side !== undefined) data.side = body.side as ParticipantSide
     if (body.isPrimary !== undefined) data.isPrimary = body.isPrimary

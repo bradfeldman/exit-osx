@@ -342,20 +342,26 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
                 {/* Actions */}
                 <div className="flex gap-2 pt-1">
                   {isSyncing || integration.lastSyncStatus === 'SYNCING' ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleCancelSync}
-                      disabled={isCancelling}
-                      className="text-red-600 border-red-200 hover:bg-red-50"
-                    >
-                      {isCancelling ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : (
-                        <XCircle className="h-4 w-4 mr-2" />
-                      )}
-                      {isCancelling ? 'Cancelling...' : 'Cancel Sync'}
-                    </Button>
+                    <>
+                      <span className="flex items-center gap-2 text-sm text-blue-600">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Syncing...
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleCancelSync}
+                        disabled={isCancelling}
+                        className="text-gray-500 hover:text-red-600"
+                      >
+                        {isCancelling ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <XCircle className="h-4 w-4 mr-2" />
+                        )}
+                        {isCancelling ? 'Cancelling...' : 'Cancel'}
+                      </Button>
+                    </>
                   ) : (
                     <>
                       <Button

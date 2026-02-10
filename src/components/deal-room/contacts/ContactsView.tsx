@@ -29,7 +29,7 @@ export function ContactsView({ dealId, companyId }: ContactsViewProps) {
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('ALL')
   const [companyFilter, setCompanyFilter] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedParticipant, setSelectedParticipant] = useState<DealParticipantData | null>(null)
+  const [selectedParticipantId, setSelectedParticipantId] = useState<string | null>(null)
 
   // Inline add state
   const [smartInput, setSmartInput] = useState('')
@@ -41,6 +41,12 @@ export function ContactsView({ dealId, companyId }: ContactsViewProps) {
 
   const { participants, categoryCounts, isLoading, refresh, addParticipant } =
     useDealParticipants(dealId)
+
+  // Derive selected participant from the live list so it stays fresh after refresh
+  const selectedParticipant = useMemo(
+    () => (selectedParticipantId ? participants.find(p => p.id === selectedParticipantId) ?? null : null),
+    [selectedParticipantId, participants]
+  )
 
   const total = participants.length
   const categoryTotal =
@@ -410,7 +416,7 @@ export function ContactsView({ dealId, companyId }: ContactsViewProps) {
                 return (
                   <tr
                     key={p.id}
-                    onClick={() => setSelectedParticipant(p)}
+                    onClick={() => setSelectedParticipantId(p.id)}
                     className={cn(
                       'border-b last:border-0 cursor-pointer transition-colors hover:bg-muted/30',
                       !p.isActive && 'opacity-50'
@@ -495,11 +501,8 @@ export function ContactsView({ dealId, companyId }: ContactsViewProps) {
         <ParticipantDetailPanel
           participant={selectedParticipant}
           dealId={dealId}
-          onClose={() => setSelectedParticipant(null)}
-          onUpdate={() => {
-            setSelectedParticipant(null)
-            refresh()
-          }}
+          onClose={() => setSelectedParticipantId(null)}
+          onUpdate={refresh}
         />
       )}
     </div>

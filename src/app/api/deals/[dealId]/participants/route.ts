@@ -139,6 +139,7 @@ export async function POST(
       canonicalPersonId,
       category,
       description,
+      notes,
       dealBuyerId = null,
       isPrimary = false,
     } = body
@@ -225,6 +226,7 @@ export async function POST(
         isPrimary,
         category: category || null,
         description: description || null,
+        notes: notes || null,
       },
       include: {
         canonicalPerson: { select: PERSON_SELECT },
