@@ -1,76 +1,219 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { Plus, Search, Users } from 'lucide-react'
+import { useState, useMemo, useCallback } from 'react'
+import { Plus, Search, Users, X, Loader2, User, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { useDealParticipants } from '@/hooks/useContactSystem'
-import { ParticipantRow } from './ParticipantRow'
-import { AddParticipantModal } from './AddParticipantModal'
+import { SmartInputField } from '@/components/prospects/SmartInputField'
+import { ContactSearch } from '@/components/contacts/ContactSearch'
+import { CategoryBadge } from './CategoryBadge'
 import { ParticipantDetailPanel } from './ParticipantDetailPanel'
+import {
+  CONTACT_CATEGORIES,
+  CONTACT_CATEGORY_LABELS,
+  inferRoleFromTitle,
+} from '@/lib/contact-system/constants'
 import type { DealParticipantData } from '@/hooks/useContactSystem'
+import type { ParsedInput } from '@/lib/contact-system/smart-parser'
 
 interface ContactsViewProps {
   dealId: string
   companyId: string | null
 }
 
-type SideFilter = 'ALL' | 'BUYER' | 'SELLER' | 'NEUTRAL'
+type CategoryFilter = 'ALL' | 'PROSPECT' | 'MANAGEMENT' | 'ADVISOR' | 'OTHER'
 
 export function ContactsView({ dealId, companyId }: ContactsViewProps) {
-  const [sideFilter, setSideFilter] = useState<SideFilter>('ALL')
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('ALL')
+  const [companyFilter, setCompanyFilter] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [selectedParticipant, setSelectedParticipant] = useState<DealParticipantData | null>(null)
 
-  const { participants, counts, isLoading, refresh } = useDealParticipants(dealId)
+  // Inline add state
+  const [smartInput, setSmartInput] = useState('')
+  const [parsed, setParsed] = useState<ParsedInput | null>(null)
+  const [addCategory, setAddCategory] = useState<string>('ADVISOR')
+  const [addDescription, setAddDescription] = useState('')
+  const [isAdding, setIsAdding] = useState(false)
+  const [addError, setAddError] = useState<string | null>(null)
 
-  const total = counts.BUYER + counts.SELLER + counts.NEUTRAL
+  const { participants, categoryCounts, isLoading, refresh, addParticipant } =
+    useDealParticipants(dealId)
 
-  // Client-side filter by search query and side
+  const total = participants.length
+  const categoryTotal =
+    categoryCounts.PROSPECT + categoryCounts.MANAGEMENT + categoryCounts.ADVISOR + categoryCounts.OTHER
+
+  // Client-side filter
   const filtered = useMemo(() => {
     let result = participants
-    if (sideFilter !== 'ALL') {
-      result = result.filter(p => p.side === sideFilter)
+    if (categoryFilter !== 'ALL') {
+      result = result.filter(p => p.category === categoryFilter)
+    }
+    if (companyFilter) {
+      result = result.filter(p => {
+        const companyName =
+          p.canonicalPerson.currentCompany?.name ??
+          p.dealBuyer?.canonicalCompany?.name
+        return companyName === companyFilter
+      })
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase()
       result = result.filter(p => {
         const name = `${p.canonicalPerson.firstName} ${p.canonicalPerson.lastName}`.toLowerCase()
         const email = p.canonicalPerson.email?.toLowerCase() ?? ''
-        return name.includes(q) || email.includes(q)
+        const company = p.canonicalPerson.currentCompany?.name?.toLowerCase() ?? ''
+        return name.includes(q) || email.includes(q) || company.includes(q)
       })
     }
     return result
-  }, [participants, sideFilter, searchQuery])
+  }, [participants, categoryFilter, companyFilter, searchQuery])
 
-  // Group by side
-  const grouped = useMemo(() => {
-    const groups: Record<string, DealParticipantData[]> = { SELLER: [], BUYER: [], NEUTRAL: [] }
-    for (const p of filtered) {
-      if (groups[p.side]) {
-        groups[p.side].push(p)
-      }
-    }
-    return groups
-  }, [filtered])
-
-  const filterPills: { id: SideFilter; label: string; count: number }[] = [
-    { id: 'ALL', label: 'All', count: total },
-    { id: 'BUYER', label: 'Buyer', count: counts.BUYER },
-    { id: 'SELLER', label: 'Seller', count: counts.SELLER },
-    { id: 'NEUTRAL', label: 'Neutral', count: counts.NEUTRAL },
+  const filterPills: { id: CategoryFilter; label: string; count: number }[] = [
+    { id: 'ALL', label: 'All', count: categoryTotal },
+    ...CONTACT_CATEGORIES.map(cat => ({
+      id: cat as CategoryFilter,
+      label: CONTACT_CATEGORY_LABELS[cat],
+      count: categoryCounts[cat],
+    })),
   ]
 
-  const sideOrder: ('SELLER' | 'BUYER' | 'NEUTRAL')[] =
-    sideFilter === 'ALL' ? ['SELLER', 'BUYER', 'NEUTRAL'] : [sideFilter as 'SELLER' | 'BUYER' | 'NEUTRAL']
+  // Smart paste handler
+  const handleParsed = useCallback((result: ParsedInput) => {
+    setParsed(result)
+    setAddError(null)
 
-  const sideLabels: Record<string, string> = {
-    SELLER: 'Seller Side',
-    BUYER: 'Buyer Side',
-    NEUTRAL: 'Neutral',
+    // Auto-infer category from title
+    if (result.people.length > 0 && result.people[0].title) {
+      const role = inferRoleFromTitle(result.people[0].title)
+      if (role) {
+        const advisorRoles = ['CPA', 'ATTORNEY', 'BROKER', 'MA_ADVISOR', 'WEALTH_PLANNER']
+        const mgmtRoles = ['COO', 'CFO', 'GM', 'KEY_EMPLOYEE', 'BOARD_MEMBER', 'DECISION_MAKER']
+        if (advisorRoles.includes(role)) setAddCategory('ADVISOR')
+        else if (mgmtRoles.includes(role)) setAddCategory('MANAGEMENT')
+        else setAddCategory('PROSPECT')
+      }
+    }
+  }, [])
+
+  // Add contact from smart paste
+  const handleAddFromPaste = async () => {
+    if (!parsed?.people[0]) return
+    setIsAdding(true)
+    setAddError(null)
+
+    try {
+      const person = parsed.people[0]
+
+      // Create company if parsed
+      let currentCompanyId: string | undefined
+      if (parsed.companies[0]) {
+        const companyRes = await fetch('/api/canonical/companies', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: parsed.companies[0].name,
+            website: parsed.companies[0].website,
+            linkedInUrl: parsed.companies[0].linkedInUrl,
+          }),
+        })
+        if (companyRes.ok) {
+          const companyData = await companyRes.json()
+          currentCompanyId = companyData.company.id
+        } else if (companyRes.status === 409) {
+          try {
+            const dupData = await companyRes.json()
+            const topMatch = dupData.matchResult?.matches?.[0]
+            if (topMatch?.id) currentCompanyId = topMatch.id
+          } catch { /* ignore */ }
+        }
+      }
+
+      // Create canonical person
+      const personRes = await fetch('/api/canonical/people', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: person.firstName,
+          lastName: person.lastName,
+          email: person.email,
+          phone: person.phone,
+          currentTitle: person.title,
+          linkedInUrl: person.linkedInUrl,
+          currentCompanyId,
+        }),
+      })
+
+      let canonicalPersonId: string
+      if (personRes.ok) {
+        const data = await personRes.json()
+        canonicalPersonId = data.person.id
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let data: any = null
+        try { data = await personRes.json() } catch { /* not JSON */ }
+        const existingId = data?.existingPerson?.id || data?.matchResult?.matches?.[0]?.id
+        if (existingId) {
+          canonicalPersonId = existingId
+        } else {
+          throw new Error(data?.error || 'Failed to create contact')
+        }
+      }
+
+      // Add as participant
+      await addParticipant({
+        canonicalPersonId,
+        category: addCategory,
+        description: addDescription.trim() || undefined,
+      })
+
+      // Reset
+      setSmartInput('')
+      setParsed(null)
+      setAddDescription('')
+      setAddCategory('ADVISOR')
+    } catch (err) {
+      setAddError(err instanceof Error ? err.message : 'Failed to add contact')
+    } finally {
+      setIsAdding(false)
+    }
   }
+
+  // Add contact from search
+  const handleSearchSelect = async (contact: {
+    id: string
+    firstName: string
+    lastName: string
+    email: string | null
+    currentTitle: string | null
+    currentCompany?: { id: string; name: string } | null
+  }) => {
+    setIsAdding(true)
+    setAddError(null)
+    try {
+      await addParticipant({
+        canonicalPersonId: contact.id,
+        category: addCategory,
+        description: addDescription.trim() || undefined,
+      })
+      setAddDescription('')
+    } catch (err) {
+      setAddError(err instanceof Error ? err.message : 'Failed to add contact')
+    } finally {
+      setIsAdding(false)
+    }
+  }
+
+  const handleCompanyClick = (companyName: string) => {
+    setCompanyFilter(companyName)
+    setCategoryFilter('ALL')
+  }
+
+  const getCompanyName = (p: DealParticipantData) =>
+    p.canonicalPerson.currentCompany?.name ?? p.dealBuyer?.canonicalCompany?.name ?? null
 
   if (isLoading) {
     return (
@@ -81,106 +224,271 @@ export function ContactsView({ dealId, companyId }: ContactsViewProps) {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Header: filter pills + add button */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-1">
-          {filterPills.map(pill => (
-            <button
-              key={pill.id}
-              type="button"
-              onClick={() => setSideFilter(pill.id)}
-              className={cn(
-                'px-3 py-1.5 text-xs font-medium rounded-full transition-colors',
-                sideFilter === pill.id
-                  ? 'bg-foreground text-background'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              )}
-            >
-              {pill.label}
-              {pill.count > 0 && (
-                <span className="ml-1 text-[10px] opacity-70">({pill.count})</span>
-              )}
-            </button>
-          ))}
+    <div className="space-y-6">
+      {/* Inline Add Section */}
+      <div className="bg-card border rounded-lg p-4 space-y-4">
+        <SmartInputField
+          value={smartInput}
+          onChange={setSmartInput}
+          onParsed={handleParsed}
+          placeholder="Paste email signature, LinkedIn URL, or contact info..."
+          label="Add Contact"
+          minRows={3}
+        />
+
+        {/* Detected preview */}
+        {parsed && parsed.people.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-muted-foreground text-xs">Detected:</span>
+            <span className="flex items-center gap-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs">
+              <User className="h-3 w-3" />
+              {parsed.people[0].fullName}
+            </span>
+            {parsed.companies[0] && (
+              <span className="flex items-center gap-1 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded text-xs">
+                <Building2 className="h-3 w-3" />
+                {parsed.companies[0].name}
+              </span>
+            )}
+            {parsed.people[0].title && (
+              <span className="text-xs text-muted-foreground">
+                {parsed.people[0].title}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Category + Description + Add */}
+        <div className="flex flex-wrap items-end gap-3">
+          {/* Category radio */}
+          <div className="space-y-1.5">
+            <label className="text-xs text-muted-foreground font-medium">Category</label>
+            <div className="flex gap-1">
+              {CONTACT_CATEGORIES.map(cat => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setAddCategory(cat)}
+                  className={cn(
+                    'px-2.5 py-1 text-xs font-medium rounded-md border transition-colors',
+                    addCategory === cat
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border text-muted-foreground hover:border-primary/50'
+                  )}
+                >
+                  {CONTACT_CATEGORY_LABELS[cat]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="flex-1 min-w-[200px] space-y-1.5">
+            <label className="text-xs text-muted-foreground font-medium">Description</label>
+            <Input
+              value={addDescription}
+              onChange={e => setAddDescription(e.target.value)}
+              placeholder="e.g. patents attorney, CPA, tax accountant..."
+              className="h-8 text-sm"
+            />
+          </div>
+
+          {/* Add button */}
+          <Button
+            size="sm"
+            onClick={handleAddFromPaste}
+            disabled={isAdding || !parsed?.people?.length}
+          >
+            {isAdding ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <Plus className="h-4 w-4 mr-1" />
+                Add Contact
+              </>
+            )}
+          </Button>
         </div>
-        <Button size="sm" onClick={() => setIsAddModalOpen(true)}>
-          <Plus className="h-4 w-4 mr-1" />
-          Add Contact
-        </Button>
+
+        {addError && (
+          <p className="text-xs text-red-600 dark:text-red-400">{addError}</p>
+        )}
+
+        {/* Or search existing */}
+        <div className="pt-2 border-t">
+          <p className="text-xs text-muted-foreground mb-2">- or search existing contacts -</p>
+          <ContactSearch
+            onSelect={handleSearchSelect}
+            excludeIds={participants.map(p => p.canonicalPerson.id)}
+            placeholder="Search contacts by name or email..."
+          />
+        </div>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search by name or email..."
-          className="pl-9 h-9"
-        />
+      {/* Filter pills + Search */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-1 flex-wrap">
+            {filterPills.map(pill => (
+              <button
+                key={pill.id}
+                type="button"
+                onClick={() => { setCategoryFilter(pill.id); setCompanyFilter(null) }}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-medium rounded-full transition-colors',
+                  categoryFilter === pill.id && !companyFilter
+                    ? 'bg-foreground text-background'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                )}
+              >
+                {pill.label}
+                {pill.count > 0 && (
+                  <span className="ml-1 text-[10px] opacity-70">({pill.count})</span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Company filter chip */}
+        {companyFilter && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Filtered by:</span>
+            <button
+              type="button"
+              onClick={() => setCompanyFilter(null)}
+              className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 rounded-full hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors"
+            >
+              <Building2 className="h-3 w-3" />
+              {companyFilter}
+              <X className="h-3 w-3 ml-0.5" />
+            </button>
+          </div>
+        )}
+
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Filter by name, email, or company..."
+            className="pl-9 h-9"
+          />
+        </div>
       </div>
 
       {/* Empty state */}
-      {total === 0 && (
+      {categoryTotal === 0 && (
         <div className="text-center py-16">
           <Users className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
           <p className="text-sm text-muted-foreground mb-1">No contacts yet</p>
-          <p className="text-xs text-muted-foreground/70 mb-4">
-            Add your CPA, attorney, M&A advisor, or any deal participant
+          <p className="text-xs text-muted-foreground/70">
+            Paste an email signature or LinkedIn profile above to add your first contact
           </p>
-          <Button size="sm" variant="outline" onClick={() => setIsAddModalOpen(true)}>
-            <Plus className="h-4 w-4 mr-1" />
-            Add First Contact
-          </Button>
         </div>
       )}
 
-      {/* Grouped list */}
-      {total > 0 && (
-        <div className="space-y-6">
-          {sideOrder.map(side => {
-            const items = grouped[side]
-            if (!items || items.length === 0) return null
-            return (
-              <section key={side}>
-                {sideFilter === 'ALL' && (
-                  <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-2">
-                    {sideLabels[side]} ({items.length})
-                  </h3>
-                )}
-                <div className="space-y-0.5">
-                  {items.map(p => (
-                    <ParticipantRow
-                      key={p.id}
-                      participant={p}
-                      onClick={() => setSelectedParticipant(p)}
-                    />
-                  ))}
-                </div>
-              </section>
-            )
-          })}
+      {/* Table */}
+      {categoryTotal > 0 && (
+        <div className="border rounded-lg overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-muted/50 border-b">
+                <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+                <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Company</th>
+                <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden md:table-cell">Title</th>
+                <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</th>
+                <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden lg:table-cell">Description</th>
+                <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden lg:table-cell">Phone</th>
+                <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden md:table-cell">Email</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(p => {
+                const companyName = getCompanyName(p)
+                return (
+                  <tr
+                    key={p.id}
+                    onClick={() => setSelectedParticipant(p)}
+                    className={cn(
+                      'border-b last:border-0 cursor-pointer transition-colors hover:bg-muted/30',
+                      !p.isActive && 'opacity-50'
+                    )}
+                  >
+                    <td className="px-3 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-foreground">
+                          {p.canonicalPerson.firstName} {p.canonicalPerson.lastName}
+                        </span>
+                        {p.isPrimary && (
+                          <span className="text-[9px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                            Primary
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      {companyName ? (
+                        <button
+                          type="button"
+                          onClick={e => { e.stopPropagation(); handleCompanyClick(companyName) }}
+                          className="text-primary hover:underline text-xs"
+                        >
+                          {companyName}
+                        </button>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">-</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2.5 hidden md:table-cell">
+                      <span className="text-xs text-muted-foreground">
+                        {p.canonicalPerson.currentTitle ?? '-'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <CategoryBadge category={p.category ?? 'OTHER'} />
+                    </td>
+                    <td className="px-3 py-2.5 hidden lg:table-cell">
+                      <span className="text-xs text-muted-foreground">
+                        {p.description ?? '-'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5 hidden lg:table-cell">
+                      <span className="text-xs text-muted-foreground">
+                        {p.canonicalPerson.phone ?? '-'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5 hidden md:table-cell">
+                      {p.canonicalPerson.email ? (
+                        <a
+                          href={`mailto:${p.canonicalPerson.email}`}
+                          onClick={e => e.stopPropagation()}
+                          className="text-xs text-primary hover:underline"
+                        >
+                          {p.canonicalPerson.email}
+                        </a>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
 
-          {filtered.length === 0 && searchQuery && (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              No contacts match &ldquo;{searchQuery}&rdquo;
-            </p>
+          {filtered.length === 0 && (
+            <div className="text-center py-8 text-sm text-muted-foreground">
+              {searchQuery
+                ? `No contacts match "${searchQuery}"`
+                : companyFilter
+                  ? `No contacts at ${companyFilter}`
+                  : 'No contacts in this category'}
+            </div>
           )}
         </div>
       )}
-
-      {/* Add modal */}
-      <AddParticipantModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        dealId={dealId}
-        companyId={companyId}
-        onCreated={() => {
-          setIsAddModalOpen(false)
-          refresh()
-        }}
-      />
 
       {/* Detail panel */}
       {selectedParticipant && (

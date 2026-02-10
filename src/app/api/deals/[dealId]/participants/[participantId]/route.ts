@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { ParticipantSide, ParticipantRole } from '@prisma/client'
+import { deriveSideRoleFromCategory, inferCategoryFromSideRole } from '@/lib/contact-system/constants'
 
 const PERSON_SELECT = {
   id: true,
@@ -45,7 +46,12 @@ export async function GET(
       return NextResponse.json({ error: 'Participant not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ participant })
+    return NextResponse.json({
+      participant: {
+        ...participant,
+        category: participant.category ?? inferCategoryFromSideRole(participant.side, participant.role),
+      },
+    })
   } catch (error) {
     console.error('Error fetching participant:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -75,6 +81,15 @@ export async function PATCH(
     const body = await request.json()
     const data: Record<string, unknown> = {}
 
+    // Handle category change — re-derive side/role
+    if (body.category !== undefined) {
+      data.category = body.category
+      const derived = deriveSideRoleFromCategory(body.category)
+      data.side = derived.side as ParticipantSide
+      data.role = derived.role as ParticipantRole
+    }
+
+    if (body.description !== undefined) data.description = body.description
     if (body.role !== undefined) data.role = body.role as ParticipantRole
     if (body.side !== undefined) data.side = body.side as ParticipantSide
     if (body.isPrimary !== undefined) data.isPrimary = body.isPrimary
@@ -95,7 +110,12 @@ export async function PATCH(
       },
     })
 
-    return NextResponse.json({ participant })
+    return NextResponse.json({
+      participant: {
+        ...participant,
+        category: participant.category ?? inferCategoryFromSideRole(participant.side, participant.role),
+      },
+    })
   } catch (error) {
     console.error('Error updating participant:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

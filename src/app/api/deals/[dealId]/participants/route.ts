@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { ParticipantSide, ParticipantRole } from '@prisma/client'
+import { inferCategoryFromSideRole, deriveSideRoleFromCategory } from '@/lib/contact-system/constants'
 
 const PERSON_SELECT = {
   id: true,
@@ -33,6 +34,7 @@ export async function GET(
     const side = url.searchParams.get('side') as ParticipantSide | null
     const buyerId = url.searchParams.get('buyerId')
     const role = url.searchParams.get('role') as ParticipantRole | null
+    const category = url.searchParams.get('category')
     const search = url.searchParams.get('search')
 
     // Verify deal exists
@@ -49,6 +51,7 @@ export async function GET(
     if (side) where.side = side
     if (buyerId) where.dealBuyerId = buyerId
     if (role) where.role = role
+    if (category) where.category = category
     if (search) {
       where.canonicalPerson = {
         OR: [
@@ -73,7 +76,19 @@ export async function GET(
       orderBy: [{ isPrimary: 'desc' }, { side: 'asc' }, { createdAt: 'asc' }],
     })
 
-    // Count by side
+    // Enrich with computed category for rows that don't have one
+    const enriched = participants.map(p => ({
+      ...p,
+      category: p.category ?? inferCategoryFromSideRole(p.side, p.role),
+      description: p.description ?? null,
+    }))
+
+    // If filtering by category client-side (for inferred categories)
+    const filtered = category
+      ? enriched.filter(p => p.category === category)
+      : enriched
+
+    // Count by side (legacy)
     const counts = await prisma.dealParticipant.groupBy({
       by: ['side'],
       where: { dealId, isActive: true },
@@ -85,10 +100,20 @@ export async function GET(
       countMap[c.side] = c._count
     }
 
+    // Count by category (always count all participants, not just filtered)
+    const categoryCounts: Record<string, number> = { PROSPECT: 0, MANAGEMENT: 0, ADVISOR: 0, OTHER: 0 }
+    for (const p of enriched) {
+      const cat = p.category ?? 'OTHER'
+      if (categoryCounts[cat] !== undefined) {
+        categoryCounts[cat]++
+      }
+    }
+
     return NextResponse.json({
-      participants,
-      total: participants.length,
+      participants: filtered,
+      total: filtered.length,
       counts: countMap,
+      categoryCounts,
     })
   } catch (error) {
     console.error('Error fetching deal participants:', error)
@@ -112,11 +137,24 @@ export async function POST(
     const body = await request.json()
     const {
       canonicalPersonId,
-      side = 'SELLER' as ParticipantSide,
-      role = 'OTHER' as ParticipantRole,
+      category,
+      description,
       dealBuyerId = null,
       isPrimary = false,
     } = body
+
+    // Accept explicit side/role or derive from category
+    let side = body.side as ParticipantSide | undefined
+    let role = body.role as ParticipantRole | undefined
+
+    if (category && !side) {
+      const derived = deriveSideRoleFromCategory(category)
+      side = derived.side as ParticipantSide
+      role = derived.role as ParticipantRole
+    }
+
+    if (!side) side = 'SELLER' as ParticipantSide
+    if (!role) role = 'OTHER' as ParticipantRole
 
     if (!canonicalPersonId) {
       return NextResponse.json(
@@ -136,14 +174,6 @@ export async function POST(
     if (deal.status !== 'ACTIVE') {
       return NextResponse.json(
         { error: 'Cannot add participants to a non-active deal' },
-        { status: 400 }
-      )
-    }
-
-    // Buyer-side requires dealBuyerId
-    if (side === 'BUYER' && !dealBuyerId) {
-      return NextResponse.json(
-        { error: 'Buyer-side participants require a dealBuyerId' },
         { status: 400 }
       )
     }
@@ -193,6 +223,8 @@ export async function POST(
         side: side as ParticipantSide,
         role: role as ParticipantRole,
         isPrimary,
+        category: category || null,
+        description: description || null,
       },
       include: {
         canonicalPerson: { select: PERSON_SELECT },
@@ -211,12 +243,17 @@ export async function POST(
         dealId,
         dealBuyerId: dealBuyerId || undefined,
         activityType: 'NOTE_ADDED',
-        subject: `${person.firstName} ${person.lastName} added as ${side.toLowerCase()} participant`,
+        subject: `${person.firstName} ${person.lastName} added as ${category ? category.toLowerCase() : side.toLowerCase()} participant`,
         performedByUserId: result.auth.user.id,
       },
     })
 
-    return NextResponse.json({ participant }, { status: 201 })
+    return NextResponse.json({
+      participant: {
+        ...participant,
+        category: participant.category ?? inferCategoryFromSideRole(participant.side, participant.role),
+      },
+    }, { status: 201 })
   } catch (error) {
     console.error('Error adding deal participant:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

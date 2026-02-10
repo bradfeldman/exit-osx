@@ -393,6 +393,62 @@ export function inferRoleFromTitle(title: string): string | null {
 }
 
 // ============================================
+// CONTACT CATEGORIES (simplified classification)
+// ============================================
+
+export const CONTACT_CATEGORIES = ['PROSPECT', 'MANAGEMENT', 'ADVISOR', 'OTHER'] as const
+export type ContactCategory = (typeof CONTACT_CATEGORIES)[number]
+
+export const CONTACT_CATEGORY_LABELS: Record<string, string> = {
+  PROSPECT: 'Prospect',
+  MANAGEMENT: 'Management',
+  ADVISOR: 'Advisor',
+  OTHER: 'Other',
+}
+
+export const CONTACT_CATEGORY_COLORS: Record<string, { bg: string; text: string; darkBg: string; darkText: string }> = {
+  PROSPECT: { bg: 'bg-blue-100', text: 'text-blue-700', darkBg: 'dark:bg-blue-900/30', darkText: 'dark:text-blue-400' },
+  MANAGEMENT: { bg: 'bg-purple-100', text: 'text-purple-700', darkBg: 'dark:bg-purple-900/30', darkText: 'dark:text-purple-400' },
+  ADVISOR: { bg: 'bg-emerald-100', text: 'text-emerald-700', darkBg: 'dark:bg-emerald-900/30', darkText: 'dark:text-emerald-400' },
+  OTHER: { bg: 'bg-slate-100', text: 'text-slate-700', darkBg: 'dark:bg-slate-900/30', darkText: 'dark:text-slate-400' },
+}
+
+/**
+ * Derive legacy side/role from simplified category.
+ * Used when creating new participants with category.
+ */
+export function deriveSideRoleFromCategory(category: string): { side: string; role: string } {
+  switch (category) {
+    case 'PROSPECT':
+      return { side: 'BUYER', role: 'PRIMARY_CONTACT' }
+    case 'MANAGEMENT':
+      return { side: 'SELLER', role: 'KEY_EMPLOYEE' }
+    case 'ADVISOR':
+      return { side: 'SELLER', role: 'OTHER' }
+    case 'OTHER':
+    default:
+      return { side: 'NEUTRAL', role: 'OTHER' }
+  }
+}
+
+/**
+ * Infer category from legacy side/role for existing rows with null category.
+ */
+export function inferCategoryFromSideRole(side: string, role: string): string {
+  if (side === 'BUYER') return 'PROSPECT'
+  if (side === 'SELLER') {
+    // Advisory roles
+    const advisorRoles = ['CPA', 'ATTORNEY', 'BROKER', 'MA_ADVISOR', 'WEALTH_PLANNER']
+    if (advisorRoles.includes(role)) return 'ADVISOR'
+    // Management/internal roles
+    const mgmtRoles = ['COO', 'CFO', 'GM', 'KEY_EMPLOYEE', 'BOARD_MEMBER', 'DECISION_MAKER']
+    if (mgmtRoles.includes(role)) return 'MANAGEMENT'
+    return 'ADVISOR' // Default seller-side to advisor
+  }
+  return 'OTHER'
+}
+
+// ============================================
 // COMMON FREE EMAIL DOMAINS
 // ============================================
 // Used to detect personal vs. business emails

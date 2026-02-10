@@ -87,7 +87,7 @@ export function DealRoomPage() {
   const [data, setData] = useState<DealRoomData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(false)
-  const [activeTab, setActiveTab] = useState<DealRoomTab>('pipeline')
+  const [activeTab, setActiveTab] = useState<DealRoomTab>('contacts')
   const [selectedBuyerId, setSelectedBuyerId] = useState<string | null>(null)
   const [isActivating, setIsActivating] = useState(false)
   const [isAddingBuyer, setIsAddingBuyer] = useState(false)

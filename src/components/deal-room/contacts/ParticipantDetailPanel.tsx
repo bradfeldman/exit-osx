@@ -3,20 +3,14 @@
 import { useState } from 'react'
 import { X, Mail, Phone, Linkedin, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { SideBadge } from './SideBadge'
+import { Input } from '@/components/ui/input'
+import { CategoryBadge } from './CategoryBadge'
 import { useDealParticipants } from '@/hooks/useContactSystem'
 import {
-  PARTICIPANT_ROLE_LABELS,
-  PARTICIPANT_SIDE_LABELS,
-  ROLES_BY_SIDE,
+  CONTACT_CATEGORIES,
+  CONTACT_CATEGORY_LABELS,
 } from '@/lib/contact-system/constants'
+import { cn } from '@/lib/utils'
 import type { DealParticipantData } from '@/hooks/useContactSystem'
 
 interface ParticipantDetailPanelProps {
@@ -33,16 +27,18 @@ export function ParticipantDetailPanel({
   onUpdate,
 }: ParticipantDetailPanelProps) {
   const [isUpdating, setIsUpdating] = useState(false)
+  const [editDescription, setEditDescription] = useState(participant.description ?? '')
   const { updateParticipant, removeParticipant } = useDealParticipants(dealId)
 
-  const { canonicalPerson, side, role, isPrimary, isActive, dealBuyer, createdAt } = participant
+  const { canonicalPerson, isPrimary, isActive, dealBuyer, createdAt } = participant
+  const category = participant.category ?? 'OTHER'
   const fullName = `${canonicalPerson.firstName} ${canonicalPerson.lastName}`
   const initials = `${canonicalPerson.firstName.charAt(0)}${canonicalPerson.lastName.charAt(0)}`.toUpperCase()
 
-  const handleRoleChange = async (newRole: string) => {
+  const handleCategoryChange = async (newCategory: string) => {
     setIsUpdating(true)
     try {
-      await updateParticipant(participant.id, { role: newRole })
+      await updateParticipant(participant.id, { category: newCategory })
       onUpdate()
     } catch {
       // silently fail
@@ -51,13 +47,11 @@ export function ParticipantDetailPanel({
     }
   }
 
-  const handleSideChange = async (newSide: string) => {
+  const handleDescriptionBlur = async () => {
+    if (editDescription === (participant.description ?? '')) return
     setIsUpdating(true)
     try {
-      // Reset buyer link if changing away from buyer
-      const updates: Record<string, unknown> = { side: newSide }
-      if (newSide !== 'BUYER') updates.dealBuyerId = null
-      await updateParticipant(participant.id, updates as { side: string; dealBuyerId?: null })
+      await updateParticipant(participant.id, { description: editDescription })
       onUpdate()
     } catch {
       // silently fail
@@ -102,8 +96,6 @@ export function ParticipantDetailPanel({
     }
   }
 
-  const validRoles = ROLES_BY_SIDE[side] ?? []
-
   return (
     <>
       {/* Backdrop */}
@@ -130,10 +122,12 @@ export function ParticipantDetailPanel({
             <div>
               <h2 className="text-lg font-semibold text-foreground pr-8">{fullName}</h2>
               <div className="flex items-center gap-2 mt-0.5">
-                <SideBadge side={side} />
-                <span className="text-xs text-muted-foreground">
-                  {PARTICIPANT_ROLE_LABELS[role] ?? role}
-                </span>
+                <CategoryBadge category={category} />
+                {participant.description && (
+                  <span className="text-xs text-muted-foreground">
+                    {participant.description}
+                  </span>
+                )}
                 {isPrimary && (
                   <span className="text-[9px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
                     Primary
@@ -206,41 +200,43 @@ export function ParticipantDetailPanel({
             </div>
           </section>
 
-          {/* Deal Classification */}
+          {/* Category & Description */}
           <section>
             <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-3">
               Classification
             </h3>
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <label className="text-xs text-muted-foreground">Side</label>
-                <Select value={side} onValueChange={handleSideChange} disabled={isUpdating}>
-                  <SelectTrigger className="h-8 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(PARTICIPANT_SIDE_LABELS).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <label className="text-xs text-muted-foreground">Category</label>
+                <div className="flex gap-1.5 flex-wrap">
+                  {CONTACT_CATEGORIES.map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => handleCategoryChange(cat)}
+                      disabled={isUpdating}
+                      className={cn(
+                        'px-2.5 py-1 text-xs font-medium rounded-md border transition-colors',
+                        category === cat
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border text-muted-foreground hover:border-primary/50'
+                      )}
+                    >
+                      {CONTACT_CATEGORY_LABELS[cat]}
+                    </button>
+                  ))}
+                </div>
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs text-muted-foreground">Role</label>
-                <Select value={role} onValueChange={handleRoleChange} disabled={isUpdating}>
-                  <SelectTrigger className="h-8 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {validRoles.map(r => (
-                      <SelectItem key={r} value={r}>
-                        {PARTICIPANT_ROLE_LABELS[r] ?? r}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <label className="text-xs text-muted-foreground">Description</label>
+                <Input
+                  value={editDescription}
+                  onChange={e => setEditDescription(e.target.value)}
+                  onBlur={handleDescriptionBlur}
+                  placeholder="e.g. patents attorney, tax accountant..."
+                  className="h-8 text-sm"
+                  disabled={isUpdating}
+                />
               </div>
             </div>
           </section>

@@ -22,8 +22,8 @@ export function DealRoomTabs({
   recentActivityCount,
 }: DealRoomTabsProps) {
   const tabs: { id: DealRoomTab; label: string; badge: number | null }[] = [
-    { id: 'pipeline', label: 'Pipeline', badge: buyerCount > 0 ? buyerCount : null },
     { id: 'contacts', label: 'Contacts', badge: contactsCount > 0 ? contactsCount : null },
+    { id: 'pipeline', label: 'Pipeline', badge: buyerCount > 0 ? buyerCount : null },
     { id: 'data-room', label: 'Data Room', badge: openQuestions > 0 ? openQuestions : null },
     { id: 'activity', label: 'Activity', badge: recentActivityCount > 0 ? recentActivityCount : null },
   ]

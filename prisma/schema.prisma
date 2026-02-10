@@ -2532,6 +2532,10 @@ model DealParticipant {
   role      ParticipantRole @default(OTHER)
   isPrimary Boolean         @default(false) @map("is_primary")
 
+  // Simplified category
+  category    String?  @map("category")      // PROSPECT, MANAGEMENT, ADVISOR, OTHER
+  description String?  @map("description")   // Free text: "patents attorney", "CPA", etc.
+
   // VDR access
   dataRoomAccessId   String?         @unique @map("data_room_access_id")
   dataRoomAccess     DataRoomAccess? @relation(fields: [dataRoomAccessId], references: [id])

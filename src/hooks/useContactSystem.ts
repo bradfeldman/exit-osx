@@ -297,6 +297,8 @@ export interface DealParticipantData {
   role: string
   isPrimary: boolean
   isActive: boolean
+  category: string | null
+  description: string | null
   vdrAccessLevel: string | null
   createdAt: string
   canonicalPerson: {
@@ -321,6 +323,13 @@ interface ParticipantCounts {
   NEUTRAL: number
 }
 
+interface CategoryCounts {
+  PROSPECT: number
+  MANAGEMENT: number
+  ADVISOR: number
+  OTHER: number
+}
+
 /**
  * Hook to manage deal participants (unified contacts)
  */
@@ -330,12 +339,15 @@ export function useDealParticipants(dealId: string | null, sideFilter?: string) 
     participants: DealParticipantData[]
     total: number
     counts: ParticipantCounts
+    categoryCounts: CategoryCounts
   }>(dealId ? `/api/deals/${dealId}/participants${queryParams}` : null)
 
   const addParticipant = useCallback(async (params: {
     canonicalPersonId: string
-    side: string
-    role: string
+    side?: string
+    role?: string
+    category?: string
+    description?: string
     dealBuyerId?: string | null
     isPrimary?: boolean
   }) => {
@@ -358,7 +370,7 @@ export function useDealParticipants(dealId: string | null, sideFilter?: string) 
 
   const updateParticipant = useCallback(async (
     participantId: string,
-    updates: { role?: string; side?: string; isPrimary?: boolean; isActive?: boolean; dealBuyerId?: string | null }
+    updates: { role?: string; side?: string; category?: string; description?: string; isPrimary?: boolean; isActive?: boolean; dealBuyerId?: string | null }
   ) => {
     const res = await fetch(`/api/deals/${dealId}/participants/${participantId}`, {
       method: 'PATCH',
@@ -398,6 +410,7 @@ export function useDealParticipants(dealId: string | null, sideFilter?: string) 
     participants: data?.participants ?? [],
     total: data?.total ?? 0,
     counts: data?.counts ?? { BUYER: 0, SELLER: 0, NEUTRAL: 0 },
+    categoryCounts: data?.categoryCounts ?? { PROSPECT: 0, MANAGEMENT: 0, ADVISOR: 0, OTHER: 0 },
     isLoading,
     error,
     refresh,
