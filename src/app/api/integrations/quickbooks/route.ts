@@ -154,6 +154,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (action === 'cancel-sync') {
+      // Reset stuck sync status
+      await prisma.integration.updateMany({
+        where: {
+          companyId,
+          provider: 'QUICKBOOKS_ONLINE',
+          lastSyncStatus: 'SYNCING',
+        },
+        data: {
+          lastSyncStatus: 'IDLE',
+          lastSyncError: null,
+        },
+      })
+      return NextResponse.json({ success: true })
+    }
+
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
   } catch (error) {
     console.error('Error in QuickBooks POST:', error)

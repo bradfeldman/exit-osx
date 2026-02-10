@@ -34,6 +34,7 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
   const [isConnecting, setIsConnecting] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
   const [isDisconnecting, setIsDisconnecting] = useState(false)
+  const [isCancelling, setIsCancelling] = useState(false)
   const [configured, setConfigured] = useState(false)
   const [connected, setConnected] = useState(false)
   const [integration, setIntegration] = useState<QuickBooksIntegration | null>(null)
@@ -179,6 +180,26 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
     }
   }
 
+  const handleCancelSync = async () => {
+    setIsCancelling(true)
+    try {
+      const response = await fetch('/api/integrations/quickbooks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'cancel-sync', companyId }),
+      })
+      if (response.ok) {
+        setIsSyncing(false)
+        setSuccessMessage('Sync cancelled.')
+        fetchStatus()
+      }
+    } catch (_err) {
+      setError('Failed to cancel sync')
+    } finally {
+      setIsCancelling(false)
+    }
+  }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
@@ -320,33 +341,47 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleSync}
-                    disabled={isSyncing || integration.lastSyncStatus === 'SYNCING'}
-                  >
-                    {isSyncing ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                    )}
-                    Sync Now
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleDisconnect}
-                    disabled={isDisconnecting}
-                    className="text-gray-500 hover:text-red-600"
-                  >
-                    {isDisconnecting ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <Unlink className="h-4 w-4 mr-2" />
-                    )}
-                    Disconnect
-                  </Button>
+                  {isSyncing || integration.lastSyncStatus === 'SYNCING' ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCancelSync}
+                      disabled={isCancelling}
+                      className="text-red-600 border-red-200 hover:bg-red-50"
+                    >
+                      {isCancelling ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <XCircle className="h-4 w-4 mr-2" />
+                      )}
+                      {isCancelling ? 'Cancelling...' : 'Cancel Sync'}
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSync}
+                      >
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Sync Now
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleDisconnect}
+                        disabled={isDisconnecting}
+                        className="text-gray-500 hover:text-red-600"
+                      >
+                        {isDisconnecting ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <Unlink className="h-4 w-4 mr-2" />
+                        )}
+                        Disconnect
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             </>

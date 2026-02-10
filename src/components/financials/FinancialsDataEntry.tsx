@@ -19,6 +19,11 @@ export function FinancialsDataEntry({ companyId }: FinancialsDataEntryProps) {
   const [activeTab, setActiveTab] = useState<DataEntryTab>('pnl')
   const [fyeMonth, setFyeMonth] = useState(12)
   const [fyeDay, setFyeDay] = useState(31)
+  const [syncVersion, setSyncVersion] = useState(0)
+
+  const handleSyncComplete = useCallback(() => {
+    setSyncVersion((v) => v + 1)
+  }, [])
 
   // Load company FYE settings
   useEffect(() => {
@@ -45,7 +50,7 @@ export function FinancialsDataEntry({ companyId }: FinancialsDataEntryProps) {
   return (
     <div className="space-y-4">
       {/* QuickBooks Integration */}
-      <QuickBooksCard companyId={companyId} />
+      <QuickBooksCard companyId={companyId} onSyncComplete={handleSyncComplete} />
 
       {/* Header bar */}
       <div className="flex items-center justify-between">
@@ -69,10 +74,10 @@ export function FinancialsDataEntry({ companyId }: FinancialsDataEntryProps) {
       </div>
 
       {/* Content */}
-      {activeTab === 'pnl' && <PLFormGrid companyId={companyId} />}
-      {activeTab === 'balance-sheet' && <BSFormGrid companyId={companyId} />}
-      {activeTab === 'add-backs' && <AddBacksFormGrid companyId={companyId} />}
-      {activeTab === 'cash-flow' && <CashFlowFormGrid companyId={companyId} />}
+      {activeTab === 'pnl' && <PLFormGrid key={syncVersion} companyId={companyId} />}
+      {activeTab === 'balance-sheet' && <BSFormGrid key={syncVersion} companyId={companyId} />}
+      {activeTab === 'add-backs' && <AddBacksFormGrid key={syncVersion} companyId={companyId} />}
+      {activeTab === 'cash-flow' && <CashFlowFormGrid key={syncVersion} companyId={companyId} />}
     </div>
   )
 }
