@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
 
     let integration
     if (existingIntegration) {
-      // Update existing integration (reconnect)
+      // Update existing integration (reconnect) — clear stale sync status
       integration = await prisma.integration.update({
         where: { id: existingIntegration.id },
         data: {
@@ -112,6 +112,9 @@ export async function GET(request: NextRequest) {
           realmId: tokens.realmId || realmId,
           disconnectedAt: null,
           connectedAt: new Date(),
+          lastSyncStatus: 'IDLE',
+          lastSyncError: null,
+          lastSyncAt: null,
         },
       })
     } else {
