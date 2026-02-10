@@ -22,6 +22,7 @@ interface NavLink {
   requiredPlan?: PlanTier
   featureKey?: string
   progressionKey?: string // Key for progression-based locking
+  exactMatch?: boolean // Only highlight on exact pathname match
 }
 
 // CORE section links - 5 Mode Navigation (Dan/Alex design)
@@ -35,7 +36,7 @@ const coreLinks: NavLink[] = [
 
 // VALUE MODELING section
 const valueModelingLinks: NavLink[] = [
-  { name: 'Business Financials', href: '/dashboard/financials', icon: FinancialsIcon, requiredPlan: 'growth', featureKey: 'business-financials' },
+  { name: 'Business Financials', href: '/dashboard/financials', icon: FinancialsIcon, requiredPlan: 'growth', featureKey: 'business-financials', exactMatch: true },
   { name: 'DCF Valuation', href: '/dashboard/valuation', icon: ChartBarIcon, requiredPlan: 'exit-ready', featureKey: 'dcf-valuation' },
 ]
 
@@ -100,7 +101,9 @@ export function Sidebar() {
     // Special case for Value (/dashboard) - only match exact path
     const isActive = link.href === '/dashboard'
       ? pathname === '/dashboard'
-      : pathname === link.href || pathname.startsWith(link.href + '/')
+      : link.exactMatch
+        ? pathname === link.href
+        : pathname === link.href || pathname.startsWith(link.href + '/')
     const IconComponent = link.icon
 
     // Check subscription lock first

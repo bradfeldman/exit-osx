@@ -8,7 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { formatPercent } from '@/lib/valuation/dcf-calculator'
+import { formatPercent, formatCurrency } from '@/lib/valuation/dcf-calculator'
 import { Settings2, RotateCcw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -24,6 +24,8 @@ interface MarketDataPanelProps {
   ebitdaMultipleLowOverride?: number | null
   ebitdaMultipleHighOverride?: number | null
   onMultipleOverrideChange?: (low: number | null, high: number | null) => void
+  // Working capital
+  workingCapital?: { t12: number | null; lastFY: number | null; threeYearAvg: number | null } | null
 }
 
 // Market data as of January 2026
@@ -102,6 +104,7 @@ export function MarketDataPanel({
   ebitdaMultipleLowOverride,
   ebitdaMultipleHighOverride,
   onMultipleOverrideChange,
+  workingCapital,
 }: MarketDataPanelProps) {
   const [open, setOpen] = useState(false)
   const [lowInput, setLowInput] = useState('')
@@ -343,6 +346,33 @@ export function MarketDataPanel({
               </div>
             )}
           </div>
+
+          {/* Working Capital */}
+          {workingCapital && (workingCapital.t12 != null || workingCapital.lastFY != null || workingCapital.threeYearAvg != null) && (
+            <div className="pt-3 mt-3 border-t border-gray-100">
+              <span className="text-sm text-gray-600 block mb-2">Working Capital</span>
+              <div className="space-y-1 pl-2">
+                {workingCapital.t12 != null && (
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-500">Trailing 12 Months</span>
+                    <span className="font-medium text-gray-700">{formatCurrency(workingCapital.t12)}</span>
+                  </div>
+                )}
+                {workingCapital.lastFY != null && (
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-500">Last Fiscal Year</span>
+                    <span className="font-medium text-gray-700">{formatCurrency(workingCapital.lastFY)}</span>
+                  </div>
+                )}
+                {workingCapital.threeYearAvg != null && (
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-500">3-Year Average</span>
+                    <span className="font-medium text-gray-700">{formatCurrency(workingCapital.threeYearAvg)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="mt-3 pt-2 border-t border-gray-100">
             <span className="text-xs text-gray-400">

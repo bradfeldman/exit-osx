@@ -15,12 +15,20 @@ export async function GET(
       where: { companyId },
     })
 
-    // Fetch latest annual financial period for base FCF, EBITDA, and net debt
-    const latestPeriod = await prisma.financialPeriod.findFirst({
+    // Fetch up to 4 annual periods for base FCF, EBITDA, net debt, and working capital
+    const periods = await prisma.financialPeriod.findMany({
       where: { companyId, periodType: 'ANNUAL' },
       orderBy: { endDate: 'desc' },
+      take: 4,
       include: { cashFlowStatement: true, incomeStatement: true, balanceSheet: true },
     })
+
+    // Split into T12 and fiscal year periods
+    const t12Period = periods.find((p) => p.label?.startsWith('T12'))
+    const fyPeriods = periods.filter((p) => !p.label?.startsWith('T12'))
+
+    // Use latest period (T12 if available, otherwise latest FY) for financials
+    const latestPeriod = periods[0] || null
 
     const financials = latestPeriod
       ? {
@@ -38,12 +46,34 @@ export async function GET(
         }
       : null
 
+    // Build working capital data
+    const t12WorkingCapital = t12Period?.balanceSheet?.workingCapital != null
+      ? Number(t12Period.balanceSheet.workingCapital)
+      : null
+    const lastFYWorkingCapital = fyPeriods[0]?.balanceSheet?.workingCapital != null
+      ? Number(fyPeriods[0].balanceSheet.workingCapital)
+      : null
+    const threeYearWcValues = fyPeriods
+      .slice(0, 3)
+      .map((p) => p.balanceSheet?.workingCapital != null ? Number(p.balanceSheet.workingCapital) : null)
+      .filter((v): v is number => v !== null)
+    const threeYearAvgWorkingCapital = threeYearWcValues.length > 0
+      ? threeYearWcValues.reduce((sum, v) => sum + v, 0) / threeYearWcValues.length
+      : null
+
+    const workingCapital = {
+      t12: t12WorkingCapital,
+      lastFY: lastFYWorkingCapital,
+      threeYearAvg: threeYearAvgWorkingCapital,
+    }
+
     if (!dcfAssumptions) {
-      return NextResponse.json({ assumptions: null, financials })
+      return NextResponse.json({ assumptions: null, financials, workingCapital })
     }
 
     return NextResponse.json({
       financials,
+      workingCapital,
       assumptions: {
         baseFCF: dcfAssumptions.baseFCF
           ? Number(dcfAssumptions.baseFCF)

@@ -70,6 +70,7 @@ export default function ValuationPage() {
   const [hasChanges, setHasChanges] = useState(false)
   const [originalAssumptions, setOriginalAssumptions] = useState<DCFAssumptions | null>(null)
   const [useDCFValue, setUseDCFValue] = useState(false) // Toggle to use DCF value for scorecard/PFS/loans
+  const [workingCapital, setWorkingCapital] = useState<{ t12: number | null; lastFY: number | null; threeYearAvg: number | null } | null>(null)
   const [originalUseDCFValue, setOriginalUseDCFValue] = useState(false)
 
   // Analytics tracking
@@ -140,6 +141,11 @@ export default function ValuationPage() {
           // No saved assumptions - use defaults and set original for change tracking
           setOriginalAssumptions(DEFAULT_ASSUMPTIONS)
           setOriginalUseDCFValue(false)
+        }
+
+        // Set working capital data
+        if (data.workingCapital) {
+          setWorkingCapital(data.workingCapital)
         }
 
         // Try to get financial data for base FCF and EBITDA
@@ -454,6 +460,7 @@ export default function ValuationPage() {
             ebitdaMultipleLowOverride={assumptions.ebitdaMultipleLowOverride}
             ebitdaMultipleHighOverride={assumptions.ebitdaMultipleHighOverride}
             onMultipleOverrideChange={handleMultipleOverrideChange}
+            workingCapital={workingCapital}
           />
         </div>
 

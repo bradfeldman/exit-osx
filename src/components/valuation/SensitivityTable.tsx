@@ -49,6 +49,23 @@ export function SensitivityTable({
   // Find min and max for color scaling
   const validValues = sensitivityData.filter((d) => d.enterpriseValue > 0).map((d) => d.enterpriseValue)
 
+  const centerValue = sensitivityData.find(
+    (d) => d.wacc === centerWACC && d.growth === centerTerminalGrowth
+  )?.enterpriseValue || 0
+
+  // Track when sensitivity table is viewed with valid data
+  const hasTrackedView = useRef(false)
+  useEffect(() => {
+    if (hasTrackedView.current || centerValue <= 0) return
+    hasTrackedView.current = true
+
+    analytics.track('sensitivity_table_viewed', {
+      centerWacc: centerWACC,
+      centerGrowth: centerTerminalGrowth,
+      baseValue: centerValue,
+    })
+  }, [centerValue, centerWACC, centerTerminalGrowth])
+
   if (validValues.length === 0) {
     return (
       <Card>
@@ -68,22 +85,6 @@ export function SensitivityTable({
 
   const minValue = Math.min(...validValues)
   const maxValue = Math.max(...validValues)
-  const centerValue = sensitivityData.find(
-    (d) => d.wacc === centerWACC && d.growth === centerTerminalGrowth
-  )?.enterpriseValue || 0
-
-  // Track when sensitivity table is viewed with valid data
-  const hasTrackedView = useRef(false)
-  useEffect(() => {
-    if (hasTrackedView.current || centerValue <= 0) return
-    hasTrackedView.current = true
-
-    analytics.track('sensitivity_table_viewed', {
-      centerWacc: centerWACC,
-      centerGrowth: centerTerminalGrowth,
-      baseValue: centerValue,
-    })
-  }, [centerValue, centerWACC, centerTerminalGrowth])
 
   // Calculate color for cell based on value relative to center
   const getCellColor = (value: number) => {
