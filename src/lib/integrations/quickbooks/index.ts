@@ -4,6 +4,7 @@ export {
   getAuthorizationUrl,
   exchangeCodeForTokens,
   refreshAccessToken,
+  revokeTokens,
 } from './client'
 
 export {

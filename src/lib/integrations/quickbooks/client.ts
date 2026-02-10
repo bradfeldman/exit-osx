@@ -76,6 +76,14 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
   }
 }
 
+// Revoke tokens at Intuit (call on disconnect)
+export async function revokeTokens(refreshToken: string): Promise<void> {
+  const oauthClient = createQuickBooksClient()
+  // intuit-oauth has no type declarations; revoke() exists at runtime
+  await (oauthClient as unknown as { revoke(params: { refresh_token: string }): Promise<unknown> })
+    .revoke({ refresh_token: refreshToken })
+}
+
 // Get API base URL based on environment
 export function getApiBaseUrl(): string {
   return QUICKBOOKS_ENVIRONMENT === 'production'

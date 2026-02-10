@@ -74,21 +74,12 @@ export async function syncQuickBooksData(
           getBalanceSheetReport(integrationId, endDate),
         ])
 
-        // Debug: Log raw report structure
-        console.log(`[QB Sync] Year ${year} - P&L Report Header:`, JSON.stringify(plReport.Header, null, 2))
-        console.log(`[QB Sync] Year ${year} - P&L Report has ${plReport.Rows?.Row?.length || 0} rows`)
-        console.log(`[QB Sync] Year ${year} - P&L First 5 rows:`, JSON.stringify(plReport.Rows?.Row?.slice(0, 5), null, 2))
-
         // Parse reports
         const plData = parseProfitAndLossReport(plReport)
         const bsData = parseBalanceSheetReport(bsReport)
 
-        // Debug: Log parsed data
-        console.log(`[QB Sync] Year ${year} - Parsed P&L:`, plData)
-
         // Skip if no revenue (likely future year with no data)
         if (plData.grossRevenue === 0) {
-          console.log(`[QB Sync] Year ${year} - Skipping: grossRevenue is 0`)
           continue
         }
 

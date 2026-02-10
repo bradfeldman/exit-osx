@@ -1,5 +1,6 @@
 import { getApiBaseUrl, refreshAccessToken } from './client'
 import { prisma } from '@/lib/prisma'
+import { decryptToken, encryptToken, isEncrypted } from '@/lib/security/token-encryption'
 
 interface QuickBooksReportRow {
   ColData: Array<{
@@ -58,18 +59,23 @@ async function makeQuickBooksRequest<T>(
     throw new Error('Integration not found')
   }
 
-  let accessToken = integration.accessToken
+  let accessToken = isEncrypted(integration.accessToken)
+    ? decryptToken(integration.accessToken)
+    : integration.accessToken
   const realmId = integration.realmId
 
   // Check if token needs refresh (refresh 5 minutes before expiry)
   if (new Date(integration.tokenExpiresAt) < new Date(Date.now() + 5 * 60 * 1000)) {
     try {
-      const newTokens = await refreshAccessToken(integration.refreshToken)
+      const currentRefreshToken = isEncrypted(integration.refreshToken)
+        ? decryptToken(integration.refreshToken)
+        : integration.refreshToken
+      const newTokens = await refreshAccessToken(currentRefreshToken)
       await prisma.integration.update({
         where: { id: integrationId },
         data: {
-          accessToken: newTokens.accessToken,
-          refreshToken: newTokens.refreshToken,
+          accessToken: encryptToken(newTokens.accessToken),
+          refreshToken: encryptToken(newTokens.refreshToken),
           tokenExpiresAt: newTokens.tokenExpiresAt,
         },
       })

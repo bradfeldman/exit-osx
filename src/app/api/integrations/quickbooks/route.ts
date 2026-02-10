@@ -5,8 +5,10 @@ import {
   isQuickBooksConfigured,
   getAuthorizationUrl,
   syncQuickBooksData,
+  revokeTokens,
 } from '@/lib/integrations/quickbooks'
 import { createSignedOAuthState } from '@/lib/security/oauth-state'
+import { decryptToken, isEncrypted } from '@/lib/security/token-encryption'
 
 // GET - Get QuickBooks integration status for a company
 export async function GET(request: NextRequest) {
@@ -171,7 +173,29 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Company ID required' }, { status: 400 })
     }
 
-    // Mark integration as disconnected (soft delete to preserve history)
+    // Find the active integration to revoke its tokens
+    const integration = await prisma.integration.findFirst({
+      where: {
+        companyId,
+        provider: 'QUICKBOOKS_ONLINE',
+        disconnectedAt: null,
+      },
+    })
+
+    if (integration?.refreshToken) {
+      // Revoke token at Intuit before disconnecting
+      try {
+        const refreshToken = isEncrypted(integration.refreshToken)
+          ? decryptToken(integration.refreshToken)
+          : integration.refreshToken
+        await revokeTokens(refreshToken)
+      } catch (e) {
+        // Log but don't block disconnect if revocation fails
+        console.error('Failed to revoke QuickBooks token:', e)
+      }
+    }
+
+    // Mark as disconnected and clear tokens from DB
     await prisma.integration.updateMany({
       where: {
         companyId,
@@ -180,6 +204,8 @@ export async function DELETE(request: NextRequest) {
       },
       data: {
         disconnectedAt: new Date(),
+        accessToken: '',
+        refreshToken: '',
       },
     })
 

@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { exchangeCodeForTokens, syncQuickBooksData, getCompanyInfo } from '@/lib/integrations/quickbooks'
 import { verifySignedOAuthState } from '@/lib/security/oauth-state'
+import { encryptToken } from '@/lib/security/token-encryption'
 
 // GET - OAuth callback handler
 export async function GET(request: NextRequest) {
@@ -105,8 +106,8 @@ export async function GET(request: NextRequest) {
       integration = await prisma.integration.update({
         where: { id: existingIntegration.id },
         data: {
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
+          accessToken: encryptToken(tokens.accessToken),
+          refreshToken: encryptToken(tokens.refreshToken),
           tokenExpiresAt: tokens.tokenExpiresAt,
           realmId: tokens.realmId || realmId,
           disconnectedAt: null,
@@ -119,8 +120,8 @@ export async function GET(request: NextRequest) {
         data: {
           companyId,
           provider: 'QUICKBOOKS_ONLINE',
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
+          accessToken: encryptToken(tokens.accessToken),
+          refreshToken: encryptToken(tokens.refreshToken),
           tokenExpiresAt: tokens.tokenExpiresAt,
           realmId: tokens.realmId || realmId,
         },
