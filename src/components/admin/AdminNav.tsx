@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
   Users,
+  Building,
   Building2,
   Activity,
   Ticket,
@@ -71,6 +72,7 @@ const navSections: NavSection[] = [
     href: '/admin/users',
     items: [
       { label: 'Users', href: '/admin/users', icon: Users },
+      { label: 'Companies', href: '/admin/companies', icon: Building },
       { label: 'Organizations', href: '/admin/organizations', icon: Building2 },
     ],
   },

@@ -1,29 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { requireSuperAdmin, isAdminError } from '@/lib/admin'
-import { sanitizePagination } from '@/lib/security/validation'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { CompanyTable } from '@/components/admin/CompanyTable'
 
-export async function GET(request: NextRequest) {
-  const result = await requireSuperAdmin()
-  if (isAdminError(result)) return result.error
-
-  const searchParams = request.nextUrl.searchParams
-  const search = searchParams.get('search') || ''
-  // SECURITY: Validate pagination to prevent DoS (max 100 items)
-  const { page, limit, skip } = sanitizePagination({
-    page: searchParams.get('page'),
-    limit: searchParams.get('limit'),
-  })
-
-  const where = search
-    ? {
-        name: { contains: search, mode: 'insensitive' as const },
-      }
-    : {}
-
+async function getCompanies() {
+  const limit = 20
   const [companies, total] = await Promise.all([
     prisma.company.findMany({
-      where,
       select: {
         id: true,
         name: true,
@@ -61,18 +43,15 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { name: 'asc' },
-      skip,
       take: limit,
     }),
-    prisma.company.count({ where }),
+    prisma.company.count(),
   ])
 
-  // Compute member count and last login from nested data
   const enriched = companies.map((company) => {
     const orgUsers = company.organization.users
     const memberCount = orgUsers.length
 
-    // Find the most recent session across all org users
     let lastLogin: string | null = null
     for (const ou of orgUsers) {
       const session = ou.user.sessions[0]
@@ -100,13 +79,40 @@ export async function GET(request: NextRequest) {
     }
   })
 
-  return NextResponse.json({
+  return {
     companies: enriched,
     pagination: {
-      page,
+      page: 1,
       limit,
       total,
       totalPages: Math.ceil(total / limit),
     },
-  })
+  }
+}
+
+export default async function AdminCompaniesPage() {
+  const { companies, pagination } = await getCompanies()
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">Companies</h1>
+        <p className="text-muted-foreground">
+          View company accounts and their key metrics
+        </p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>All Companies</CardTitle>
+          <CardDescription>
+            {pagination.total} companies in the system
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <CompanyTable initialCompanies={companies} initialPagination={pagination} />
+        </CardContent>
+      </Card>
+    </div>
+  )
 }

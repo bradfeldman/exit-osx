@@ -12,14 +12,11 @@ export default async function AdminRootLayout({
   // These routes should bypass the admin layout authentication
   const headersList = await headers()
   const pathname = headersList.get('x-pathname') || ''
-  const referer = headersList.get('referer') || ''
   const url = headersList.get('x-url') || ''
 
-  // Detect admin auth routes by checking multiple sources
+  // Detect admin auth routes by checking pathname and url (not referer, which lingers after login)
   const isAuthRoute = pathname.includes('/admin/login') ||
     pathname.includes('/admin/forgot-password') ||
-    referer.includes('/admin/login') ||
-    referer.includes('/admin/forgot-password') ||
     url.includes('/admin/login') ||
     url.includes('/admin/forgot-password')
 
