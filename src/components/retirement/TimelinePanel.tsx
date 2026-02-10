@@ -20,6 +20,8 @@ interface TimelinePanelProps {
 export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: TimelinePanelProps) {
   const [retireAgeText, setRetireAgeText] = useState(String(assumptions.retirementAge))
   const [isEditingRetireAge, setIsEditingRetireAge] = useState(false)
+  const [lifeExpText, setLifeExpText] = useState(String(assumptions.lifeExpectancy))
+  const [isEditingLifeExp, setIsEditingLifeExp] = useState(false)
 
   const yearsToRetirement = Math.max(0, assumptions.retirementAge - assumptions.currentAge)
   const yearsInRetirement = Math.max(0, assumptions.lifeExpectancy - assumptions.retirementAge)
@@ -98,16 +100,28 @@ export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: T
             <div className="flex justify-between items-center">
               <Label className="text-sm text-gray-700">Life Expectancy</Label>
               <Input
-                type="number"
-                min={assumptions.retirementAge}
-                max={110}
-                value={assumptions.lifeExpectancy}
-                onChange={(e) =>
+                type="text"
+                inputMode="numeric"
+                value={isEditingLifeExp ? lifeExpText : String(assumptions.lifeExpectancy)}
+                onFocus={() => {
+                  setLifeExpText(String(assumptions.lifeExpectancy))
+                  setIsEditingLifeExp(true)
+                }}
+                onChange={(e) => {
+                  setLifeExpText(e.target.value.replace(/[^0-9]/g, ''))
+                }}
+                onBlur={() => {
+                  setIsEditingLifeExp(false)
+                  const num = Number(lifeExpText)
+                  if (!lifeExpText || isNaN(num)) return
                   onAssumptionChange(
                     'lifeExpectancy',
-                    Math.max(assumptions.retirementAge, Math.min(110, Number(e.target.value)))
+                    Math.max(assumptions.retirementAge, Math.min(110, num))
                   )
-                }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                }}
                 className="w-20 h-8 text-sm text-right"
               />
             </div>

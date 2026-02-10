@@ -52,10 +52,6 @@ export default function RetirementCalculatorPage() {
         // Use defaults if parse fails
       }
     }
-    const savedMode = localStorage.getItem('retirement_calculator_mode') as CalculatorMode | null
-    if (savedMode === 'easy' || savedMode === 'pro') {
-      setMode(savedMode)
-    }
     // Load manual modeling adjustments
     const savedManualAssets = localStorage.getItem('retirement_manual_assets')
     if (savedManualAssets) {
@@ -96,11 +92,6 @@ export default function RetirementCalculatorPage() {
     localStorage.setItem('retirement_excluded_assets', JSON.stringify(excludedAssetIds))
     localStorage.setItem('retirement_asset_overrides', JSON.stringify(assetOverrides))
   }, [manualAssets, excludedAssetIds, assetOverrides, isLoading])
-
-  // Save mode preference
-  useEffect(() => {
-    localStorage.setItem('retirement_calculator_mode', mode)
-  }, [mode])
 
   // Auto-derive life expectancy and inflation when entering Easy mode
   useEffect(() => {
@@ -535,12 +526,14 @@ export default function RetirementCalculatorPage() {
                     <label className="block text-sm text-gray-600 mb-1">Local Tax Rate</label>
                     <div className="relative">
                       <input
-                        type="number"
-                        step="0.1"
+                        type="text"
+                        inputMode="decimal"
                         value={(assumptions.localTaxRate * 100).toFixed(1)}
-                        onChange={(e) =>
-                          updateAssumption('localTaxRate', Number(e.target.value) / 100)
-                        }
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/[^0-9.]/g, '')
+                          if (v === '' || v === '.') return
+                          updateAssumption('localTaxRate', Number(v) / 100)
+                        }}
                         className="w-full pr-7 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                       <span className="absolute right-3 top-2 text-gray-500 text-sm">%</span>

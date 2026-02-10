@@ -55,6 +55,7 @@ export interface RetirementProjections {
   safeWithdrawalAmount: number
   sustainableSpendingLevel: number
   yearsToRetirement: number
+  inflationFactor: number // (1 + inflationRate)^yearsToRetirement — divide to get today's dollars
   successProbability?: number
   portfolioByYear: YearlyProjection[]
 }
@@ -432,6 +433,7 @@ export function calculateRetirementProjections(
     safeWithdrawalAmount,
     sustainableSpendingLevel,
     yearsToRetirement,
+    inflationFactor: Math.pow(1 + inflationRate, yearsToRetirement),
     portfolioByYear,
   }
 }

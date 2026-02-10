@@ -46,12 +46,18 @@ export function ResultsPanel({ projections, isOnTrack }: ResultsPanelProps) {
             <p className="text-lg font-bold text-gray-900">
               {formatCurrency(projections.requiredNestEgg)}
             </p>
+            <p className="text-xs text-gray-400">
+              {formatCurrency(projections.requiredNestEgg / projections.inflationFactor)} in today&apos;s $
+            </p>
           </div>
           <div className={`p-3 rounded-lg ${isOnTrack ? 'bg-green-50' : 'bg-red-50'}`}>
             <p className="text-xs text-gray-500">{isOnTrack ? 'Surplus' : 'Shortfall'}</p>
             <p className={`text-lg font-bold ${isOnTrack ? 'text-green-700' : 'text-red-700'}`}>
               {isOnTrack ? '+' : ''}
               {formatCurrency(projections.surplusOrShortfall)}
+            </p>
+            <p className="text-xs text-gray-400">
+              {isOnTrack ? '+' : ''}{formatCurrency(projections.surplusOrShortfall / projections.inflationFactor)} in today&apos;s $
             </p>
           </div>
         </div>

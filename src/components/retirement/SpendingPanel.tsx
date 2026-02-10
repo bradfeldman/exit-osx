@@ -105,14 +105,14 @@ export function SpendingPanel({
           <Slider
             value={assumptions.annualSpendingNeeds}
             onValueChange={(v) => onAssumptionChange('annualSpendingNeeds', v)}
-            min={30000}
-            max={300000}
-            step={5000}
+            min={100000}
+            max={1000000}
+            step={10000}
           />
           <div className="flex justify-between text-xs text-gray-400">
-            <span>$30K</span>
-            <span>$150K</span>
-            <span>$300K</span>
+            <span>$100K</span>
+            <span>$500K</span>
+            <span>$1M</span>
           </div>
         </div>
 
