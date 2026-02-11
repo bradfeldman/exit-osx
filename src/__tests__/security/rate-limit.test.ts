@@ -6,6 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { NextResponse } from 'next/server'
 import {
   checkRateLimit,
   getClientIdentifier,
@@ -336,7 +337,7 @@ describe('Rate Limiting', () => {
 
   describe('addRateLimitHeaders', () => {
     it('adds rate limit headers to response', () => {
-      const response = new Response('OK', { status: 200 })
+      const response = NextResponse.json({ success: true }, { status: 200 })
       const result: RateLimitResult = {
         success: true,
         limit: 10,
@@ -353,7 +354,7 @@ describe('Rate Limiting', () => {
 
     it('preserves original response body and status', async () => {
       const originalBody = { data: 'test' }
-      const response = new Response(JSON.stringify(originalBody), {
+      const response = NextResponse.json(originalBody, {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       })

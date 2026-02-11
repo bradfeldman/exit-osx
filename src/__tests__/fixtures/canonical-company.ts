@@ -183,10 +183,48 @@ export const PERFECT_SAAS_COMPANY = {
   industryMultipleHigh: 8.0,
 } as const
 
+// Define a flexible company type for tests
+export type CompanyInput = {
+  name: string
+  annualRevenue: number
+  annualEbitda: number
+  ownerCompensation: number
+  icbIndustry: string
+  icbSuperSector: string
+  icbSector: string
+  icbSubSector: string
+  industryMultipleLow: number
+  industryMultipleHigh: number
+  coreFactors: {
+    revenueSizeCategory: 'UNDER_1M' | 'ONE_TO_FIVE_M' | 'FIVE_TO_TEN_M' | 'OVER_TEN_M'
+    revenueModel: 'PROJECT_BASED' | 'TRANSACTIONAL' | 'RECURRING_CONTRACTS' | 'SUBSCRIPTION_SAAS'
+    grossMarginProxy: 'LOW' | 'MODERATE' | 'GOOD' | 'EXCELLENT'
+    laborIntensity: 'VERY_HIGH' | 'HIGH' | 'MODERATE' | 'LOW'
+    assetIntensity: 'ASSET_HEAVY' | 'MODERATE' | 'ASSET_LIGHT'
+    ownerInvolvement: 'CRITICAL' | 'HIGH' | 'MODERATE' | 'LOW' | 'MINIMAL'
+  }
+  briScores: {
+    FINANCIAL: number
+    TRANSFERABILITY: number
+    OPERATIONAL: number
+    MARKET: number
+    LEGAL_TAX: number
+    PERSONAL: number
+  }
+  briWeights: {
+    FINANCIAL: number
+    TRANSFERABILITY: number
+    OPERATIONAL: number
+    MARKET: number
+    LEGAL_TAX: number
+    PERSONAL: number
+  }
+}
+
 /**
  * Helper function to calculate expected valuation for any company scenario
  */
-export function calculateExpectedValuation(company: typeof CANONICAL_COMPANY) {
+export function calculateExpectedValuation(company: CompanyInput) {
   const briScore = Object.entries(company.briScores).reduce(
     (sum, [category, score]) =>
       sum + score * company.briWeights[category as keyof typeof company.briWeights],
@@ -231,7 +269,7 @@ export function calculateExpectedValuation(company: typeof CANONICAL_COMPANY) {
  */
 export function assertValuationMatches(
   actual: ReturnType<typeof calculateValuation>,
-  expected: typeof EXPECTED_VALUATION,
+  expected: ReturnType<typeof calculateValuation> & { coreScore: number; briScore: number },
   tolerance = { value: 100, multiple: 0.01, fraction: 0.001 }
 ) {
   return {

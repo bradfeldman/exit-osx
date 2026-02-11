@@ -16,37 +16,10 @@ import {
 import { NotificationBell } from './NotificationBell'
 import { ExitCoachButton } from '@/components/ai-coach/ExitCoachButton'
 import { MobileNav } from './MobileNav'
-import { useSubscription } from '@/contexts/SubscriptionContext'
 import type { User } from '@supabase/supabase-js'
 
 interface HeaderProps {
   user: User
-}
-
-// Format plan tier for display
-function formatPlanTier(tier: string): string {
-  switch (tier) {
-    case 'exit-ready':
-      return 'Exit-Ready'
-    case 'growth':
-      return 'Growth'
-    case 'foundation':
-    default:
-      return 'Foundation'
-  }
-}
-
-// Get badge color based on plan tier
-function getPlanBadgeClass(tier: string): string {
-  switch (tier) {
-    case 'exit-ready':
-      return 'bg-primary/10 text-primary border-primary/20'
-    case 'growth':
-      return 'bg-blue-500/10 text-blue-600 border-blue-500/20'
-    case 'foundation':
-    default:
-      return 'bg-muted text-muted-foreground border-border'
-  }
 }
 
 export function Header({ user }: HeaderProps) {
@@ -54,7 +27,6 @@ export function Header({ user }: HeaderProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const router = useRouter()
   const supabase = createClient()
-  const { planTier, isTrialing: _isTrialing, trialDaysRemaining: _trialDaysRemaining, isLoading: subscriptionLoading } = useSubscription()
 
   const handleSignOut = async () => {
     setLoading(true)
@@ -95,24 +67,8 @@ export function Header({ user }: HeaderProps) {
       <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
         <div className="flex flex-1" />
 
-        {/* Subscription badge and User menu */}
+        {/* User menu */}
         <div className="flex items-center gap-x-4 lg:gap-x-6">
-          {/* Subscription Status */}
-          {!subscriptionLoading && (
-            <div className="hidden sm:flex flex-col items-center gap-0.5">
-              <a
-                href="/pricing"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium hover:opacity-80 transition-opacity ${getPlanBadgeClass(planTier)}`}
-              >
-                {formatPlanTier(planTier)}
-              </a>
-              <span className="text-[10px] text-muted-foreground text-center w-full">
-                member
-              </span>
-            </div>
-          )}
           <ExitCoachButton />
           <NotificationBell />
           <DropdownMenu>

@@ -5,7 +5,7 @@
  * SECURITY: TOTP secrets and OAuth tokens must be encrypted at rest
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import {
   generateTotpSecret,
   generateTotp,

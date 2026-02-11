@@ -966,6 +966,7 @@ describe('Valuation Calculations', () => {
         industryMultipleLow: 2.0,
         industryMultipleHigh: 4.0,
         coreFactors: {
+          revenueSizeCategory: 'UNDER_1M' as const,
           revenueModel: 'PROJECT_BASED' as const,    // 0.25
           grossMarginProxy: 'LOW' as const,          // 0.25
           laborIntensity: 'VERY_HIGH' as const,      // 0.25

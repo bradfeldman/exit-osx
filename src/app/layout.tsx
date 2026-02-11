@@ -60,7 +60,9 @@ export const viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1, // Prevents iOS zoom on input focus (all inputs are 16px+ so this is safe)
+  minimumScale: 1, // Prevents zoom out
   userScalable: false, // Disables pinch-zoom to prevent layout shifts
+  viewportFit: 'cover' as const, // Extends into safe area on notched devices
 };
 
 export default function RootLayout({

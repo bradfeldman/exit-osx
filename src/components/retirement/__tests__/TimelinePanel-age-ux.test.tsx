@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { TimelinePanel } from '../TimelinePanel'
 import type { RetirementAssumptions } from '@/lib/retirement/retirement-calculator'
 
@@ -7,13 +7,11 @@ const mockAssumptions: RetirementAssumptions = {
   currentAge: 52,
   retirementAge: 65,
   lifeExpectancy: 88,
-  annualSpending: 120000,
+  annualSpendingNeeds: 120000,
   inflationRate: 0.03,
-  returnRate: 0.07,
-  withdrawalRate: 0.04,
-  socialSecurityAnnual: 30000,
-  pensionAnnual: 0,
-  otherIncomeAnnual: 0,
+  growthRate: 0.07,
+  socialSecurityMonthly: 2500,
+  otherIncomeMonthly: 0,
   federalTaxRate: 0.24,
   stateTaxRate: 0.05,
   capitalGainsTaxRate: 0.15,

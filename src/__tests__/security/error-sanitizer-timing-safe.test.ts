@@ -5,7 +5,7 @@
  * SECURITY: Prevents reconnaissance via error messages and timing analysis
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import {
   GENERIC_ERRORS,
   createSanitizedError,
@@ -29,7 +29,10 @@ describe('Error Sanitizer', () => {
   })
 
   afterEach(() => {
-    process.env.NODE_ENV = originalEnv
+    if (originalEnv !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(process.env as any).NODE_ENV = originalEnv
+    }
   })
 
   describe('GENERIC_ERRORS', () => {
@@ -66,7 +69,8 @@ describe('Error Sanitizer', () => {
     })
 
     it('hides internal message in production', async () => {
-      process.env.NODE_ENV = 'production'
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(process.env as any).NODE_ENV = 'production'
 
       const response = createSanitizedError(
         'INTERNAL',
@@ -82,7 +86,8 @@ describe('Error Sanitizer', () => {
     it('includes debug info in development', async () => {
       // Note: isDevelopment is set at module load time, so this test
       // checks behavior based on the NODE_ENV at module load, not runtime
-      process.env.NODE_ENV = 'development'
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(process.env as any).NODE_ENV = 'development'
 
       const response = createSanitizedError(
         'INTERNAL',
@@ -102,7 +107,8 @@ describe('Error Sanitizer', () => {
     it('returns actual error message in development', () => {
       // Note: isDevelopment is set at module load time, so this test
       // checks behavior based on the NODE_ENV at module load, not runtime
-      process.env.NODE_ENV = 'development'
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(process.env as any).NODE_ENV = 'development'
 
       const error = new Error('Database connection refused on port 5432')
       const sanitized = sanitizeErrorForClient(error)
@@ -113,7 +119,8 @@ describe('Error Sanitizer', () => {
     })
 
     it('returns generic message in production', () => {
-      process.env.NODE_ENV = 'production'
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(process.env as any).NODE_ENV = 'production'
 
       const error = new Error('Database connection refused on port 5432')
       const sanitized = sanitizeErrorForClient(error)
@@ -124,7 +131,8 @@ describe('Error Sanitizer', () => {
     })
 
     it('handles non-Error objects', () => {
-      process.env.NODE_ENV = 'production'
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(process.env as any).NODE_ENV = 'production'
 
       const sanitized = sanitizeErrorForClient('string error')
 
@@ -381,8 +389,8 @@ describe('Timing-Safe Utilities', () => {
       const wrongPassword = 'wrong-password-456'
 
       const iterations = 100
-      let timeCorrect = 0n
-      let timeWrong = 0n
+      let timeCorrect = BigInt(0)
+      let timeWrong = BigInt(0)
 
       for (let i = 0; i < iterations; i++) {
         const start1 = process.hrtime.bigint()

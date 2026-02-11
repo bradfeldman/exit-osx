@@ -1,9 +1,11 @@
-// @ts-nocheck
 /**
  * Tests for Monthly Industry Multiple Refresh Cron
  * Tests the /api/cron/refresh-multiples endpoint
+ *
+ * Note: Prisma mock types are complex; uses type assertions for test mocks.
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { GET } from '@/app/api/cron/refresh-multiples/route'
 import { prisma } from '@/lib/prisma'
@@ -89,8 +91,8 @@ describe('Refresh Multiples Cron Job', () => {
       source: 'Market Update',
     }
 
-    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple])
-    vi.mocked(prisma.industryMultiple.findFirst).mockResolvedValue(oldMultiple)
+    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple as any])
+    vi.mocked(prisma.industryMultiple.findFirst).mockResolvedValue(oldMultiple as any)
 
     // Mock affected company
     const company = {
@@ -98,7 +100,7 @@ describe('Refresh Multiples Cron Job', () => {
       name: 'Test Company',
       icbSubSector: subsector,
     }
-    vi.mocked(prisma.company.findMany).mockResolvedValue([company])
+    vi.mocked(prisma.company.findMany).mockResolvedValue([company as any])
 
     // Mock successful recalculation
     vi.mocked(recalculateSnapshotForCompany).mockResolvedValue({
@@ -171,15 +173,15 @@ describe('Refresh Multiples Cron Job', () => {
       source: 'Market Update',
     }
 
-    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple])
-    vi.mocked(prisma.industryMultiple.findFirst).mockResolvedValue(oldMultiple)
+    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple as any])
+    vi.mocked(prisma.industryMultiple.findFirst).mockResolvedValue(oldMultiple as any)
 
     const company = {
       id: 'company-1',
       name: 'Test Company',
       icbSubSector: subsector,
     }
-    vi.mocked(prisma.company.findMany).mockResolvedValue([company])
+    vi.mocked(prisma.company.findMany).mockResolvedValue([company as any])
     vi.mocked(recalculateSnapshotForCompany).mockResolvedValue({
       success: true,
       snapshotId: 'snapshot-1',
@@ -238,15 +240,15 @@ describe('Refresh Multiples Cron Job', () => {
       source: 'Market Update',
     }
 
-    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple])
-    vi.mocked(prisma.industryMultiple.findFirst).mockResolvedValue(oldMultiple)
+    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple as any])
+    vi.mocked(prisma.industryMultiple.findFirst).mockResolvedValue(oldMultiple as any)
 
     const company = {
       id: 'company-1',
       name: 'Test Company',
       icbSubSector: subsector,
     }
-    vi.mocked(prisma.company.findMany).mockResolvedValue([company])
+    vi.mocked(prisma.company.findMany).mockResolvedValue([company as any])
     vi.mocked(recalculateSnapshotForCompany).mockResolvedValue({
       success: true,
       snapshotId: 'snapshot-1',
@@ -283,7 +285,7 @@ describe('Refresh Multiples Cron Job', () => {
       source: 'Market Update',
     }
 
-    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple])
+    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple as any])
     vi.mocked(prisma.industryMultiple.findFirst).mockResolvedValue(null) // No previous
 
     const company = {
@@ -291,7 +293,7 @@ describe('Refresh Multiples Cron Job', () => {
       name: 'Test Company',
       icbSubSector: subsector,
     }
-    vi.mocked(prisma.company.findMany).mockResolvedValue([company])
+    vi.mocked(prisma.company.findMany).mockResolvedValue([company as any])
     vi.mocked(recalculateSnapshotForCompany).mockResolvedValue({
       success: true,
       snapshotId: 'snapshot-1',
@@ -331,14 +333,14 @@ describe('Refresh Multiples Cron Job', () => {
       source: 'Market Update',
     }
 
-    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple])
+    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple as any])
     vi.mocked(prisma.industryMultiple.findFirst).mockResolvedValue(null)
 
     const companies = [
       { id: 'company-1', name: 'Test Company 1', icbSubSector: subsector },
       { id: 'company-2', name: 'Test Company 2', icbSubSector: subsector },
     ]
-    vi.mocked(prisma.company.findMany).mockResolvedValue(companies)
+    vi.mocked(prisma.company.findMany).mockResolvedValue(companies as any)
 
     // First company succeeds, second fails
     vi.mocked(recalculateSnapshotForCompany)
@@ -441,20 +443,18 @@ describe('Refresh Multiples Cron Job', () => {
       source: 'Market Update',
     }
 
-    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple1, newMultiple2])
-    vi.mocked(prisma.industryMultiple.findFirst)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .mockImplementation(async (args: any) => {
-        if (args?.where?.icbSubSector === subsector1) return oldMultiple1
-        if (args?.where?.icbSubSector === subsector2) return oldMultiple2
-        return null
-      })
+    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple1 as any, newMultiple2 as any])
+    ;(vi.mocked(prisma.industryMultiple.findFirst) as any).mockImplementation(async (args: any) => {
+      if (args?.where?.icbSubSector === subsector1) return oldMultiple1 as any
+      if (args?.where?.icbSubSector === subsector2) return oldMultiple2 as any
+      return null
+    })
 
     const companies = [
       { id: 'company-1', name: 'Tech Co', icbSubSector: subsector1 },
       { id: 'company-2', name: 'Mfg Co', icbSubSector: subsector2 },
     ]
-    vi.mocked(prisma.company.findMany).mockResolvedValue(companies)
+    vi.mocked(prisma.company.findMany).mockResolvedValue(companies as any)
     vi.mocked(recalculateSnapshotForCompany).mockResolvedValue({
       success: true,
       snapshotId: 'snapshot-1',
@@ -509,15 +509,15 @@ describe('Refresh Multiples Cron Job', () => {
       source: 'Market Update',
     }
 
-    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple])
-    vi.mocked(prisma.industryMultiple.findFirst).mockResolvedValue(oldMultiple)
+    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple as any])
+    vi.mocked(prisma.industryMultiple.findFirst).mockResolvedValue(oldMultiple as any)
 
     const company = {
       id: 'company-1',
       name: 'Test Company',
       icbSubSector: subsector,
     }
-    vi.mocked(prisma.company.findMany).mockResolvedValue([company])
+    vi.mocked(prisma.company.findMany).mockResolvedValue([company as any])
     vi.mocked(recalculateSnapshotForCompany).mockResolvedValue({
       success: true,
       snapshotId: 'snapshot-1',
