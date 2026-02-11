@@ -6,11 +6,17 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 });
 
-// SECURITY: Content Security Policy
-// Adjust these directives based on your actual resource origins
+// SECURITY FIX (PROD-091 #5): Remove 'unsafe-eval' from CSP in production.
+// 'unsafe-eval' allows eval() and is a major XSS vector. Next.js only requires
+// it during development for hot module replacement (HMR). In production builds,
+// Next.js does not use eval(). The Vercel toolbar (vercel.live) only appears in
+// preview deployments — it also only needs 'unsafe-eval' in those contexts.
+const isDev = process.env.NODE_ENV !== 'production';
+const scriptSrcEval = isDev ? "'unsafe-eval' " : '';
+
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://vercel.live https://www.googletagmanager.com https://www.google-analytics.com https://*.sentry.io https://browser.sentry-cdn.com;
+  script-src 'self' ${scriptSrcEval}'unsafe-inline' https://js.stripe.com https://vercel.live https://www.googletagmanager.com https://www.google-analytics.com https://*.sentry.io https://browser.sentry-cdn.com;
   style-src 'self' 'unsafe-inline';
   img-src 'self' blob: data: https://*.supabase.co https://www.gravatar.com https://www.googletagmanager.com https://www.google-analytics.com;
   font-src 'self';
@@ -141,6 +147,7 @@ const nextConfig: NextConfig = {
 
   async redirects() {
     return [
+      // Financial statement tab redirects
       {
         source: '/dashboard/financials/pnl',
         destination: '/dashboard/financials/statements?tab=pnl',
@@ -160,6 +167,97 @@ const nextConfig: NextConfig = {
         source: '/dashboard/financials/cash-flow',
         destination: '/dashboard/financials/statements?tab=cash-flow',
         permanent: false,
+      },
+
+      // Legacy route redirects (PROD-025)
+      // Redirect old action plan routes to ACTIONS mode
+      {
+        source: '/dashboard/playbook',
+        destination: '/dashboard/actions',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/action-plan',
+        destination: '/dashboard/actions',
+        permanent: true,
+      },
+
+      // Redirect old assessment routes to DIAGNOSIS mode
+      {
+        source: '/dashboard/assessment',
+        destination: '/dashboard/diagnosis',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/assessment/:path*',
+        destination: '/dashboard/diagnosis',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/assessments',
+        destination: '/dashboard/diagnosis',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/assessments/:path*',
+        destination: '/dashboard/diagnosis',
+        permanent: true,
+      },
+
+      // Redirect old deal/contact routes to DEAL ROOM mode
+      {
+        source: '/dashboard/deal-tracker',
+        destination: '/dashboard/deal-room',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/deal-tracker/:path*',
+        destination: '/dashboard/deal-room',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/contacts',
+        destination: '/dashboard/deal-room',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/contacts/:path*',
+        destination: '/dashboard/deal-room',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/data-room',
+        destination: '/dashboard/deal-room',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/deals',
+        destination: '/dashboard/deal-room',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/deals/:path*',
+        destination: '/dashboard/deal-room',
+        permanent: true,
+      },
+
+      // Redirect old value builder to VALUE mode (home dashboard)
+      {
+        source: '/dashboard/value-builder',
+        destination: '/dashboard',
+        permanent: true,
+      },
+
+      // Redirect developer tools to admin (admin-only access enforced by middleware)
+      {
+        source: '/dashboard/developer/:path*',
+        destination: '/admin/tools/:path*',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/global/:path*',
+        destination: '/admin/tools/:path*',
+        permanent: true,
       },
     ];
   },
