@@ -100,7 +100,8 @@ export function StreamlinedOnboardingFlow({ userName }: StreamlinedOnboardingFlo
   })
 
   const [isProcessing, setIsProcessing] = useState(false)
-  const [processingMessage, setProcessingMessage] = useState('')
+  const [processingSteps, setProcessingSteps] = useState<Array<{ label: string; status: 'pending' | 'active' | 'complete' }>>([])
+  const [showSlowMessage, setShowSlowMessage] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Check for pending company name from signup
@@ -138,8 +139,15 @@ export function StreamlinedOnboardingFlow({ userName }: StreamlinedOnboardingFlo
     if (state.companyId) return // Already processed
 
     setIsProcessing(true)
-    setProcessingMessage('Analyzing your business...')
+    setShowSlowMessage(false)
     setError(null)
+
+    // Initialize steps
+    const steps = [{ label: 'Analyzing your business', status: 'active' as const }]
+    setProcessingSteps(steps)
+
+    // Set timeout for slow message
+    const slowTimeout = setTimeout(() => setShowSlowMessage(true), 5000)
 
     try {
       // Sync user (non-fatal)
@@ -152,15 +160,18 @@ export function StreamlinedOnboardingFlow({ userName }: StreamlinedOnboardingFlo
       // Industry already classified inline during Step 1
       // No additional AI processing needed here
 
-      setProcessingMessage('Setting up your profile...')
+      // Complete step
+      setProcessingSteps([{ label: 'Analyzing your business', status: 'complete' }])
       await new Promise(resolve => setTimeout(resolve, 500)) // Brief delay for UX
 
     } catch (err) {
       console.error('[ONBOARDING] Processing error:', err)
       setError(err instanceof Error ? err.message : 'Processing failed')
     } finally {
+      clearTimeout(slowTimeout)
       setIsProcessing(false)
-      setProcessingMessage('')
+      setProcessingSteps([])
+      setShowSlowMessage(false)
     }
   }, [state.companyId])
 
@@ -169,8 +180,17 @@ export function StreamlinedOnboardingFlow({ userName }: StreamlinedOnboardingFlo
     if (state.companyId) return // Already created
 
     setIsProcessing(true)
-    setProcessingMessage('Creating your company profile...')
+    setShowSlowMessage(false)
     setError(null)
+
+    // Initialize steps
+    setProcessingSteps([
+      { label: 'Creating your company profile', status: 'active' },
+      { label: 'Setting up your financial model', status: 'pending' },
+    ])
+
+    // Set timeout for slow message
+    const slowTimeout = setTimeout(() => setShowSlowMessage(true), 5000)
 
     try {
       // Determine revenue size category
@@ -210,6 +230,12 @@ export function StreamlinedOnboardingFlow({ userName }: StreamlinedOnboardingFlo
       const { company } = await companyResponse.json()
       updateState({ companyId: company.id })
 
+      // Advance to step 2
+      setProcessingSteps([
+        { label: 'Creating your company profile', status: 'complete' },
+        { label: 'Setting up your financial model', status: 'active' },
+      ])
+
       // Save core factors with optimal defaults (Core Score = 1.0)
       await fetch(`/api/companies/${company.id}/core-factors`, {
         method: 'PUT',
@@ -228,21 +254,40 @@ export function StreamlinedOnboardingFlow({ userName }: StreamlinedOnboardingFlo
       setSelectedCompanyId(company.id)
       await refreshCompanies()
 
+      // Complete all steps
+      setProcessingSteps([
+        { label: 'Creating your company profile', status: 'complete' },
+        { label: 'Setting up your financial model', status: 'complete' },
+      ])
+
     } catch (err) {
       console.error('[ONBOARDING] Company creation failed:', err)
       setError(err instanceof Error ? err.message : 'Failed to create company')
       throw err
     } finally {
+      clearTimeout(slowTimeout)
       setIsProcessing(false)
-      setProcessingMessage('')
+      setProcessingSteps([])
+      setShowSlowMessage(false)
     }
   }, [state, updateState, setSelectedCompanyId, refreshCompanies])
 
   // Background processing for Step 3 -> 4 transition
   const processAssessment = useCallback(async () => {
     setIsProcessing(true)
-    setProcessingMessage('Calculating your readiness score...')
+    setShowSlowMessage(false)
     setError(null)
+
+    // Initialize steps
+    setProcessingSteps([
+      { label: 'Analyzing your risk profile', status: 'active' },
+      { label: 'Benchmarking industry peers', status: 'pending' },
+      { label: 'Calculating your valuation range', status: 'pending' },
+      { label: 'Building your action plan', status: 'pending' },
+    ])
+
+    // Set timeout for slow message
+    const slowTimeout = setTimeout(() => setShowSlowMessage(true), 5000)
 
     try {
       // Calculate category scores from risk answers
@@ -284,9 +329,15 @@ export function StreamlinedOnboardingFlow({ userName }: StreamlinedOnboardingFlo
         briScore += score * weight
       }
 
-      // Get valuation data
-      setProcessingMessage('Calculating your valuation range...')
+      // Advance to step 2
+      setProcessingSteps([
+        { label: 'Analyzing your risk profile', status: 'complete' },
+        { label: 'Benchmarking industry peers', status: 'active' },
+        { label: 'Calculating your valuation range', status: 'pending' },
+        { label: 'Building your action plan', status: 'pending' },
+      ])
 
+      // Get valuation data
       const valuationResponse = await fetch(`/api/companies/${state.companyId}/initial-valuation`)
       let multipleLow = 3.0
       let multipleHigh = 6.0
@@ -298,6 +349,14 @@ export function StreamlinedOnboardingFlow({ userName }: StreamlinedOnboardingFlo
         multipleHigh = valuationData.multipleHigh
         adjustedEbitda = valuationData.adjustedEbitda
       }
+
+      // Advance to step 3
+      setProcessingSteps([
+        { label: 'Analyzing your risk profile', status: 'complete' },
+        { label: 'Benchmarking industry peers', status: 'complete' },
+        { label: 'Calculating your valuation range', status: 'active' },
+        { label: 'Building your action plan', status: 'pending' },
+      ])
 
       // Calculate valuation using canonical formula
       const coreScore = 1.0
@@ -327,9 +386,15 @@ export function StreamlinedOnboardingFlow({ userName }: StreamlinedOnboardingFlo
         valueGap,
       })
 
-      // Create snapshot for task value calculation
-      setProcessingMessage('Generating your action plan...')
+      // Advance to step 4
+      setProcessingSteps([
+        { label: 'Analyzing your risk profile', status: 'complete' },
+        { label: 'Benchmarking industry peers', status: 'complete' },
+        { label: 'Calculating your valuation range', status: 'complete' },
+        { label: 'Building your action plan', status: 'active' },
+      ])
 
+      // Create snapshot for task value calculation
       if (state.companyId) {
         await fetch(`/api/companies/${state.companyId}/onboarding-snapshot`, {
           method: 'POST',
@@ -367,13 +432,23 @@ export function StreamlinedOnboardingFlow({ userName }: StreamlinedOnboardingFlo
         }
       }
 
+      // Complete all steps
+      setProcessingSteps([
+        { label: 'Analyzing your risk profile', status: 'complete' },
+        { label: 'Benchmarking industry peers', status: 'complete' },
+        { label: 'Calculating your valuation range', status: 'complete' },
+        { label: 'Building your action plan', status: 'complete' },
+      ])
+
     } catch (err) {
       console.error('[ONBOARDING] Assessment processing failed:', err)
       setError(err instanceof Error ? err.message : 'Assessment calculation failed')
       throw err
     } finally {
+      clearTimeout(slowTimeout)
       setIsProcessing(false)
-      setProcessingMessage('')
+      setProcessingSteps([])
+      setShowSlowMessage(false)
     }
   }, [state, updateState])
 
@@ -620,13 +695,87 @@ export function StreamlinedOnboardingFlow({ userName }: StreamlinedOnboardingFlo
                 exit={{ opacity: 0 }}
                 className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center"
               >
-                <div className="bg-card rounded-2xl border border-border p-8 shadow-2xl text-center max-w-sm mx-4">
-                  <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
-                  <p className="text-foreground font-medium">{processingMessage}</p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    This will just take a moment...
-                  </p>
-                </div>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="bg-card rounded-2xl border border-border p-8 shadow-2xl max-w-md mx-4 w-full"
+                >
+                  {/* Step List */}
+                  <div className="space-y-4">
+                    {processingSteps.map((step, index) => (
+                      <motion.div
+                        key={`${index}-${step.label}`}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex items-center gap-3"
+                      >
+                        {/* Icon */}
+                        <div className="flex-shrink-0">
+                          <AnimatePresence mode="wait">
+                            {step.status === 'complete' ? (
+                              <motion.div
+                                key="check"
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                exit={{ scale: 0 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                              >
+                                <CheckCircle2 className="w-5 h-5 text-green-500 dark:text-green-400" />
+                              </motion.div>
+                            ) : step.status === 'active' ? (
+                              <motion.div
+                                key="spinner"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                              >
+                                <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                              </motion.div>
+                            ) : (
+                              <motion.div
+                                key="pending"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                              >
+                                <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/30" />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+
+                        {/* Label */}
+                        <p
+                          className={`font-medium transition-colors ${
+                            step.status === 'complete'
+                              ? 'text-foreground'
+                              : step.status === 'active'
+                                ? 'text-foreground'
+                                : 'text-muted-foreground/50'
+                          }`}
+                        >
+                          {step.label}
+                        </p>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {/* Slow Message */}
+                  <AnimatePresence>
+                    {showSlowMessage && (
+                      <motion.p
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="text-sm text-muted-foreground mt-6 text-center"
+                      >
+                        Almost there...
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
