@@ -7,7 +7,12 @@
 
 import Script from 'next/script'
 import { useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { setDefaultConsent, initializeDataLayer } from '@/lib/analytics/consent'
+
+// Auth pages where GTM should NOT load — GTM tags can inject arbitrary JS
+// that interferes with the login/signup flow (observed: reload loop on iOS)
+const GTM_EXCLUDED_PATHS = ['/login', '/signup', '/forgot-password', '/reset-password', '/activate']
 
 interface GoogleTagManagerProps {
   gtmId: string
@@ -84,7 +89,8 @@ export function GoogleTagManagerHead({ gtmId }: GoogleTagManagerProps) {
  * Must be placed immediately after the opening <body> tag
  */
 export function GoogleTagManagerBody({ gtmId }: GoogleTagManagerProps) {
-  if (!gtmId) return null
+  const pathname = usePathname()
+  if (!gtmId || GTM_EXCLUDED_PATHS.includes(pathname)) return null
 
   return (
     <noscript>
@@ -104,6 +110,8 @@ export function GoogleTagManagerBody({ gtmId }: GoogleTagManagerProps) {
  * Note: The body iframe should ideally be placed right after <body> tag
  */
 export function GoogleTagManager({ gtmId }: GoogleTagManagerProps) {
+  const pathname = usePathname()
+  if (GTM_EXCLUDED_PATHS.includes(pathname)) return null
   return <GoogleTagManagerHead gtmId={gtmId} />
 }
 
