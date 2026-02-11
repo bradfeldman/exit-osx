@@ -143,9 +143,9 @@ describe('Cron Jobs - Core Logic Validation', () => {
         !i.company.deletedAt
 
       expect(isActive(activeIntegration)).toBe(true)
-      expect(isActive(disabledIntegration as typeof activeIntegration)).toBe(false)
-      expect(isActive(disconnectedIntegration as typeof activeIntegration)).toBe(false)
-      expect(isActive(deletedCompany as typeof activeIntegration)).toBe(false)
+      expect(isActive(disabledIntegration as unknown as typeof activeIntegration)).toBe(false)
+      expect(isActive(disconnectedIntegration as unknown as typeof activeIntegration)).toBe(false)
+      expect(isActive(deletedCompany as unknown as typeof activeIntegration)).toBe(false)
     })
   })
 

@@ -332,7 +332,7 @@ describe('PROD-004: Comparable Engine', () => {
         { name: undefined, metrics: { evToEbitda: 10 }, relevanceScore: 0.8 },
         { metrics: { evToEbitda: 10 }, relevanceScore: 0.8 },
       ]
-      const result = validateAndNormalizeComparables(raw as unknown[])
+      const result = validateAndNormalizeComparables(raw as any)
       expect(result).toHaveLength(0)
     })
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Tests for Monthly Industry Multiple Refresh Cron
  * Tests the /api/cron/refresh-multiples endpoint

@@ -65,7 +65,7 @@ for (const header of requiredHeaders) {
 
 // Check for HSTS with proper max-age
 console.log('\nChecking HSTS configuration...')
-const hstsMatch = configContent.match(/Strict-Transport-Security.*max-age=(\d+)/)
+const hstsMatch = configContent.match(/Strict-Transport-Security[^}]*max-age=(\d+)/s)
 if (hstsMatch) {
   const maxAge = parseInt(hstsMatch[1], 10)
   const oneYear = 31536000
