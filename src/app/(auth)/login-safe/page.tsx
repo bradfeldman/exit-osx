@@ -6,12 +6,14 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Eye, EyeOff } from 'lucide-react'
 import { secureLogin } from '@/app/actions/auth'
 
 /**
  * TEMPORARY: Incremental rebuild of login page for iOS debugging.
- * Round 3b: shadcn + Tailwind + Link, NO next/image, NO lucide icons.
- * If this works: next/image or lucide is the culprit.
+ * Round 3c: Add lucide icons back (no next/image).
+ * If this loops: lucide-react is the culprit.
+ * If this works: next/image is the culprit.
  */
 
 function SearchParamsReader({ onChange }: {
@@ -136,15 +138,14 @@ function LoginPageContent({ redirectUrl }: { redirectUrl: string }) {
                   autoComplete="current-password"
                   className="h-12 pr-12"
                 />
-                {/* Plain text toggle instead of lucide icons */}
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors -m-2 p-2 rounded-md text-xs"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors -m-2 p-2 rounded-md"
                   tabIndex={-1}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? 'Hide' : 'Show'}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
