@@ -5,6 +5,16 @@ import { prisma } from '@/lib/prisma'
 // BRI score threshold for "Exit-Ready" status
 const EXIT_READY_BRI_THRESHOLD = 80
 
+// All 6 BRI categories that must be assessed for "full assessment"
+const ALL_BRI_CATEGORIES = [
+  'FINANCIAL',
+  'TRANSFERABILITY',
+  'OPERATIONAL',
+  'MARKET',
+  'LEGAL_TAX',
+  'PERSONAL',
+] as const
+
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -28,6 +38,9 @@ export async function GET(request: NextRequest) {
       financialPeriodCount,
       financialEvidenceCount,
       personalFinancialsExists,
+      assessedCategories,
+      evidenceCounts,
+      dataRoom,
     ] = await Promise.all([
       // Get latest valuation snapshot (indicates assessment complete)
       prisma.valuationSnapshot.findFirst({
@@ -79,10 +92,41 @@ export async function GET(request: NextRequest) {
           },
         },
       }),
+
+      // Get distinct BRI categories that have at least one assessment response
+      // This tells us which of the 6 categories have been assessed
+      prisma.assessmentResponse.findMany({
+        where: {
+          assessment: { companyId },
+        },
+        select: {
+          question: {
+            select: {
+              briCategory: true,
+            },
+          },
+        },
+        distinct: ['questionId'],
+      }),
+
+      // Count evidence documents by category for evidence percentage
+      prisma.dataRoomDocument.groupBy({
+        by: ['category'],
+        where: {
+          companyId,
+          fileUrl: { not: null },
+        },
+        _count: true,
+      }),
+
+      // Check if deal room has been initialized
+      prisma.dataRoom.findFirst({
+        where: { companyId },
+        select: { id: true },
+      }),
     ])
 
     // Check for DCF valuation data
-    // DCF is considered complete if there's a valuation with adjustedEbitda and reasonable multiples
     const hasDcfValuation = latestSnapshot !== null
 
     // Determine if user has personal financials
@@ -91,21 +135,49 @@ export async function GET(request: NextRequest) {
     // Business financials unlocked if structured data OR uploaded evidence exists
     const hasBusinessFinancials = financialPeriodCount > 0 || financialEvidenceCount > 0
 
-    // Debug logging for progression unlock issues
-    console.log(`[PROGRESSION] Company ${companyId}: hasBusinessFinancials=${hasBusinessFinancials} (periods=${financialPeriodCount}, evidence=${financialEvidenceCount}), hasDcfValuation=${hasDcfValuation}, hasPersonalFinancials=${hasPersonalFinancials}, personalFinancialsData=`, JSON.stringify(personalFinancialsExists))
+    // Determine assessed categories from assessment responses
+    const assessedCategorySet = new Set<string>()
+    for (const response of assessedCategories) {
+      if (response.question?.briCategory) {
+        assessedCategorySet.add(response.question.briCategory)
+      }
+    }
+    const hasAssessment = assessedCategorySet.size > 0
+    const hasFullAssessment = ALL_BRI_CATEGORIES.every(cat => assessedCategorySet.has(cat))
+    const assessedCategoryCount = assessedCategorySet.size
+
+    // Calculate evidence percentage
+    // Simple approach: count total uploaded evidence docs vs a reasonable baseline
+    // Using the same logic as evidence score calculator -- total docs uploaded / total expected
+    const totalEvidenceUploaded = evidenceCounts.reduce((sum, group) => sum + group._count, 0)
+    // We track evidence percentage as a proportion of uploaded vs what we generally expect
+    // A rough expected baseline is ~20 docs across all categories
+    const EXPECTED_EVIDENCE_BASELINE = 20
+    const evidencePercentage = Math.min(
+      Math.round((totalEvidenceUploaded / EXPECTED_EVIDENCE_BASELINE) * 100),
+      100
+    )
+
+    // Deal room initialized
+    const hasDealRoom = dataRoom !== null
 
     // Determine if Exit-Ready (BRI score above threshold)
     const briScore = latestSnapshot?.briScore ? Number(latestSnapshot.briScore) : null
     const isExitReady = briScore !== null && briScore >= EXIT_READY_BRI_THRESHOLD
 
     return NextResponse.json({
-      hasAssessment: latestSnapshot !== null,
-      completedTaskCount,
+      // Milestones
+      hasAssessment,
+      hasFullAssessment,
       hasBusinessFinancials,
       hasDcfValuation,
       hasPersonalFinancials,
+      hasDealRoom,
       isExitReady,
       briScore,
+      completedTaskCount,
+      assessedCategoryCount,
+      evidencePercentage,
     })
   } catch (error) {
     console.error('Error fetching progression data:', error)

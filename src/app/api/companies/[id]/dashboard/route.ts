@@ -2,6 +2,15 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { formatIcbName } from '@/lib/utils/format-icb'
+import {
+  calculateCoreScore as calculateCoreScoreShared,
+  calculateValuation,
+  type CoreFactors,
+} from '@/lib/valuation/calculate-valuation'
+import { calculateCategoryValueGaps } from '@/lib/valuation/value-gap-attribution'
+import { DEFAULT_BRI_WEIGHTS } from '@/lib/bri-weights'
+import { calculateWeightedValueAtRisk } from '@/lib/signals/signal-ranking'
+import { calculateValueAtRisk, type ValueAtRiskSignal } from '@/lib/signals/value-at-risk'
 
 // --- Buyer explanations for Valuation Bridge ---
 const BUYER_EXPLANATIONS: Record<string, string> = {
@@ -23,13 +32,9 @@ const BUYER_CONSEQUENCE_TEMPLATES: Record<string, string> = {
 }
 
 // --- BRI weights for bridge calculation ---
-const BRI_WEIGHTS: Record<string, number> = {
-  FINANCIAL: 0.25,
-  TRANSFERABILITY: 0.25,
-  OPERATIONAL: 0.20,
-  MARKET: 0.15,
-  LEGAL_TAX: 0.15,
-}
+// Uses DEFAULT_BRI_WEIGHTS imported from @/lib/bri-weights for consistency
+// Previous version had incorrect weights (TRANSFERABILITY: 0.25, LEGAL_TAX: 0.15, missing PERSONAL)
+const BRI_WEIGHTS: Record<string, number> = DEFAULT_BRI_WEIGHTS
 
 // --- Timeline annotation helpers ---
 function getAnnotationLabel(reason: string | null): string | null {
@@ -92,10 +97,8 @@ function buildIndustryPath(company: {
 }
 
 // Calculate Core Score from core factors (0-1 scale)
-// NOTE: revenueSizeCategory is intentionally EXCLUDED because revenue already
-// affects valuation through the EBITDA × multiple calculation.
-// Including it would double-count revenue impact.
-// This matches the calculation in calculate-valuation.ts and recalculate-snapshot.ts
+// Delegates to shared utility in calculate-valuation.ts
+// Returns null if no core factors exist (dashboard needs to distinguish "no data" from "low score")
 function calculateCoreScore(coreFactors: {
   revenueSizeCategory: string
   revenueModel: string
@@ -105,49 +108,7 @@ function calculateCoreScore(coreFactors: {
   ownerInvolvement: string
 } | null): number | null {
   if (!coreFactors) return null
-
-  const factorScores: Record<string, Record<string, number>> = {
-    revenueModel: {
-      PROJECT_BASED: 0.25,
-      TRANSACTIONAL: 0.5,
-      RECURRING_CONTRACTS: 0.75,
-      SUBSCRIPTION_SAAS: 1.0,
-    },
-    grossMarginProxy: {
-      LOW: 0.25,
-      MODERATE: 0.5,
-      GOOD: 0.75,
-      EXCELLENT: 1.0,
-    },
-    laborIntensity: {
-      VERY_HIGH: 0.25,
-      HIGH: 0.5,
-      MODERATE: 0.75,
-      LOW: 1.0,
-    },
-    assetIntensity: {
-      ASSET_HEAVY: 0.33,
-      MODERATE: 0.67,
-      ASSET_LIGHT: 1.0,
-    },
-    ownerInvolvement: {
-      CRITICAL: 0.0,
-      HIGH: 0.25,
-      MODERATE: 0.5,
-      LOW: 0.75,
-      MINIMAL: 1.0,
-    },
-  }
-
-  const scores = [
-    factorScores.revenueModel[coreFactors.revenueModel] ?? 0.5,
-    factorScores.grossMarginProxy[coreFactors.grossMarginProxy] ?? 0.5,
-    factorScores.laborIntensity[coreFactors.laborIntensity] ?? 0.5,
-    factorScores.assetIntensity[coreFactors.assetIntensity] ?? 0.5,
-    factorScores.ownerInvolvement[coreFactors.ownerInvolvement] ?? 0.5,
-  ]
-
-  return scores.reduce((a, b) => a + b, 0) / scores.length
+  return calculateCoreScoreShared(coreFactors as CoreFactors)
 }
 
 export async function GET(
@@ -502,25 +463,32 @@ export async function GET(
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
 
     let lifetimeRecovered: { _sum: { deltaValueRecovered: unknown } } = { _sum: { deltaValueRecovered: null } }
-    let openSignalRisk: { _sum: { estimatedValueImpact: unknown }; _count: number } = { _sum: { estimatedValueImpact: null }, _count: 0 }
+    let openSignalsList: Array<{ id: string; title: string; severity: string; estimatedValueImpact: unknown; confidence: string; category: string | null; createdAt: Date }> = []
     let monthlyLedger: { _sum: { deltaValueRecovered: unknown; deltaValueAtRisk: unknown }; _count: number } = { _sum: { deltaValueRecovered: null, deltaValueAtRisk: null }, _count: 0 }
 
     try {
-      ;[lifetimeRecovered, openSignalRisk, monthlyLedger] = await Promise.all([
+      ;[lifetimeRecovered, openSignalsList, monthlyLedger] = await Promise.all([
         // Lifetime recovered from ledger
         prisma.valueLedgerEntry.aggregate({
           where: { companyId },
           _sum: { deltaValueRecovered: true },
         }),
-        // Current at-risk from OPEN signals
-        prisma.signal.aggregate({
+        // PROD-021/022: Fetch open signals with full fields for both
+        // confidence weighting and value-at-risk aggregation
+        prisma.signal.findMany({
           where: {
             companyId,
             resolutionStatus: 'OPEN',
-            estimatedValueImpact: { not: null },
           },
-          _sum: { estimatedValueImpact: true },
-          _count: true,
+          select: {
+            id: true,
+            title: true,
+            severity: true,
+            estimatedValueImpact: true,
+            confidence: true,
+            category: true,
+            createdAt: true,
+          },
         }),
         // This month's ledger activity
         prisma.valueLedgerEntry.aggregate({
@@ -539,6 +507,31 @@ export async function GET(
       // Tables don't exist yet — use defaults initialized above
     }
 
+    // PROD-021: Apply confidence weighting to signal value-at-risk
+    // PROD-022: Also compute full VaR aggregation (top threats, by-category, trend)
+    const varSignals: ValueAtRiskSignal[] = openSignalsList.map(s => ({
+      id: s.id,
+      title: s.title,
+      severity: s.severity as import('@prisma/client').SignalSeverity,
+      confidence: s.confidence as import('@prisma/client').ConfidenceLevel,
+      estimatedValueImpact: s.estimatedValueImpact != null ? Number(s.estimatedValueImpact) : null,
+      category: s.category as import('@prisma/client').BriCategory | null,
+      createdAt: s.createdAt,
+    }))
+
+    // Backward-compatible: signals that have value impact for the existing weighting
+    const signalsWithImpact = varSignals.filter(s => s.estimatedValueImpact != null)
+    const openSignalCount = openSignalsList.length
+    const weightedValueAtRisk = calculateWeightedValueAtRisk(
+      signalsWithImpact.map(s => ({
+        estimatedValueImpact: s.estimatedValueImpact,
+        confidence: s.confidence,
+      }))
+    )
+
+    // PROD-022: Full value-at-risk aggregation (used for valueAtRisk response section)
+    const varResult = calculateValueAtRisk(varSignals)
+
     // --- NEW: Value Gap Delta (30-day comparison) ---
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     const previousSnapshot = company.valuationSnapshots.length > 1
@@ -556,40 +549,38 @@ export async function GET(
       ? currentValueGap - Number(previousSnapshot.valueGap)
       : null
 
-    // --- NEW: Valuation Bridge Categories ---
+    // --- Valuation Bridge Categories (PROD-016 fix: uses shared utility for reconciliation) ---
     const bridgeCategories = (() => {
       if (!latestSnapshot) return []
       const valueGap = Number(latestSnapshot.valueGap)
       if (valueGap <= 0) return []
 
-      const categories = [
-        { key: 'FINANCIAL', score: Number(latestSnapshot.briFinancial), label: 'Financial Health' },
-        { key: 'TRANSFERABILITY', score: Number(latestSnapshot.briTransferability), label: 'Transferability' },
-        { key: 'OPERATIONAL', score: Number(latestSnapshot.briOperational), label: 'Operations' },
-        { key: 'MARKET', score: Number(latestSnapshot.briMarket), label: 'Market Position' },
-        { key: 'LEGAL_TAX', score: Number(latestSnapshot.briLegalTax), label: 'Legal & Tax' },
+      const CATEGORY_LABELS: Record<string, string> = {
+        FINANCIAL: 'Financial Health',
+        TRANSFERABILITY: 'Transferability',
+        OPERATIONAL: 'Operations',
+        MARKET: 'Market Position',
+        LEGAL_TAX: 'Legal & Tax',
+      }
+
+      const categoryInputs = [
+        { category: 'FINANCIAL', score: Number(latestSnapshot.briFinancial), weight: BRI_WEIGHTS['FINANCIAL'] || 0 },
+        { category: 'TRANSFERABILITY', score: Number(latestSnapshot.briTransferability), weight: BRI_WEIGHTS['TRANSFERABILITY'] || 0 },
+        { category: 'OPERATIONAL', score: Number(latestSnapshot.briOperational), weight: BRI_WEIGHTS['OPERATIONAL'] || 0 },
+        { category: 'MARKET', score: Number(latestSnapshot.briMarket), weight: BRI_WEIGHTS['MARKET'] || 0 },
+        { category: 'LEGAL_TAX', score: Number(latestSnapshot.briLegalTax), weight: BRI_WEIGHTS['LEGAL_TAX'] || 0 },
       ]
 
-      const rawGaps = categories.map(c => ({
-        ...c,
-        weight: BRI_WEIGHTS[c.key] || 0,
-        rawGap: (1 - c.score) * (BRI_WEIGHTS[c.key] || 0),
+      const gaps = calculateCategoryValueGaps(categoryInputs, valueGap)
+
+      return gaps.map(g => ({
+        category: g.category,
+        label: CATEGORY_LABELS[g.category] || g.category,
+        score: Math.round(g.score * 100),
+        dollarImpact: g.dollarImpact,
+        weight: g.weight,
+        buyerExplanation: BUYER_EXPLANATIONS[g.category] || '',
       }))
-
-      const totalRawGap = rawGaps.reduce((sum, c) => sum + c.rawGap, 0)
-
-      return rawGaps
-        .map(c => ({
-          category: c.key,
-          label: c.label,
-          score: Math.round(c.score * 100),
-          dollarImpact: totalRawGap > 0
-            ? Math.round((c.rawGap / totalRawGap) * valueGap)
-            : 0,
-          weight: c.weight,
-          buyerExplanation: BUYER_EXPLANATIONS[c.key] || '',
-        }))
-        .sort((a, b) => b.dollarImpact - a.dollarImpact)
     })()
 
     // --- NEW: Next Move Task ---
@@ -697,8 +688,9 @@ export async function GET(
         adjustedEbitda,
       },
       // Tier 1: Core KPIs
-      // When no financials have been uploaded, use snapshot's stored values directly
-      // When financials are uploaded OR using DCF OR custom multiples, recalculate
+      // PROD-062: Always recalculate fresh using calculateValuation()
+      // Snapshots are for historical comparison only, not current value display.
+      // This eliminates value "jumps" when users upload financials, enable DCF, or set custom multiples.
       tier1: (() => {
         if (latestSnapshot) {
           // Use override multiples if set, otherwise use snapshot's original industry multiples
@@ -712,52 +704,21 @@ export async function GET(
           const snapshotCoreScore = Number(latestSnapshot.coreScore)
           const snapshotBriScore = Number(latestSnapshot.briScore)
 
-          // Determine if we should use snapshot values directly or recalculate
-          // Use snapshot values when: no financials, no DCF, no custom multiples
-          // This prevents valuation jumps after onboarding
-          const shouldUseSnapshotValues = !isEbitdaFromFinancials && !useDCF && !hasMultipleOverride
+          // Always recalculate using shared calculateValuation() for consistency
+          console.log(`[DASHBOARD] Company ${companyId}: Fresh calculation - adjustedEbitda: ${adjustedEbitda}, coreScore: ${snapshotCoreScore}, briScore: ${snapshotBriScore}, multipleLow: ${effectiveMultipleLow}, multipleHigh: ${effectiveMultipleHigh}`)
 
-          if (shouldUseSnapshotValues) {
-            // Use snapshot's stored values directly - these were calculated consistently during onboarding/task completion
-            const currentValue = Number(latestSnapshot.currentValue)
-            const potentialValue = Number(latestSnapshot.potentialValue)
-            const valueGap = Number(latestSnapshot.valueGap)
-            const marketPremium = Math.max(0, currentValue - potentialValue)
-
-            console.log(`[DASHBOARD] Company ${companyId}: Using snapshot values - currentValue: ${currentValue}, potentialValue: ${potentialValue}, valueGap: ${valueGap}, isEbitdaFromFinancials: ${isEbitdaFromFinancials}, useDCF: ${useDCF}, hasMultipleOverride: ${hasMultipleOverride}`)
-
-            return {
-              currentValue,
-              potentialValue,
-              valueGap,
-              marketPremium,
-              briScore: Math.round(snapshotBriScore * 100),
-              coreScore: Math.round(snapshotCoreScore * 100),
-              finalMultiple: Number(latestSnapshot.finalMultiple),
-              multipleRange: {
-                low: effectiveMultipleLow,
-                high: effectiveMultipleHigh,
-              },
-              industryName: buildIndustryPath(company),
-              isEstimated: false,
-              useDCFValue: false,
-              hasCustomMultiples: false,
-            }
-          }
-
-          // Recalculate values when financials, DCF, or custom multiples are used
-          console.log(`[DASHBOARD] Company ${companyId}: RECALCULATING values - isEbitdaFromFinancials: ${isEbitdaFromFinancials}, useDCF: ${useDCF}, hasMultipleOverride: ${hasMultipleOverride}, adjustedEbitda: ${adjustedEbitda}`)
-          const ALPHA = 1.4
-
-          // Recalculate base and final multiples using the (possibly overridden) range
-          const baseMultiple = effectiveMultipleLow + snapshotCoreScore * (effectiveMultipleHigh - effectiveMultipleLow)
-          const discountFraction = Math.pow(1 - snapshotBriScore, ALPHA)
-          const recalculatedFinalMultiple = effectiveMultipleLow + (baseMultiple - effectiveMultipleLow) * (1 - discountFraction)
+          const recalculated = calculateValuation({
+            adjustedEbitda,
+            industryMultipleLow: effectiveMultipleLow,
+            industryMultipleHigh: effectiveMultipleHigh,
+            coreScore: snapshotCoreScore,
+            briScore: snapshotBriScore,
+          })
 
           // If using DCF, use that value and calculate implied multiple
-          // Otherwise, use EBITDA × recalculated multiple
-          const currentValue = dcfEnterpriseValue ?? (adjustedEbitda * recalculatedFinalMultiple)
-          const impliedMultiple = dcfImpliedMultiple ?? recalculatedFinalMultiple
+          // Otherwise, use EBITDA x recalculated multiple
+          const currentValue = dcfEnterpriseValue ?? recalculated.currentValue
+          const impliedMultiple = dcfImpliedMultiple ?? recalculated.finalMultiple
           const industryBasedPotential = adjustedEbitda * effectiveMultipleHigh
 
           // When DCF value exceeds industry-based potential, show DCF as both current and potential
@@ -826,21 +787,26 @@ export async function GET(
       })(),
       // Tier 2: Value Drivers
       // Priority: 1. Financials, 2. Revenue conversion, 3. Company Assessment
+      // PROD-062: Always recalculate current multiple fresh (consistent with tier1)
       tier2: (() => {
-        // Recalculate current multiple for tier2 if we have a snapshot and overrides
         let tier2CurrentMultiple = estimatedMultiple
         if (latestSnapshot) {
-          if (hasMultipleOverride) {
-            // Recalculate with override range
-            const snapshotCoreScore = Number(latestSnapshot.coreScore)
-            const snapshotBriScore = Number(latestSnapshot.briScore)
-            const ALPHA = 1.4
-            const baseMultiple = multipleLow + snapshotCoreScore * (multipleHigh - multipleLow)
-            const discountFraction = Math.pow(1 - snapshotBriScore, ALPHA)
-            tier2CurrentMultiple = multipleLow + (baseMultiple - multipleLow) * (1 - discountFraction)
-          } else {
-            tier2CurrentMultiple = Number(latestSnapshot.finalMultiple)
-          }
+          const effectiveMultipleLow = hasMultipleOverride
+            ? multipleLow
+            : Number(latestSnapshot.industryMultipleLow)
+          const effectiveMultipleHigh = hasMultipleOverride
+            ? multipleHigh
+            : Number(latestSnapshot.industryMultipleHigh)
+          const snapshotCoreScore = Number(latestSnapshot.coreScore)
+          const snapshotBriScore = Number(latestSnapshot.briScore)
+          const tier2Recalculated = calculateValuation({
+            adjustedEbitda: 1, // Only need the multiple, EBITDA doesn't affect it
+            industryMultipleLow: effectiveMultipleLow,
+            industryMultipleHigh: effectiveMultipleHigh,
+            coreScore: snapshotCoreScore,
+            briScore: snapshotBriScore,
+          })
+          tier2CurrentMultiple = tier2Recalculated.finalMultiple
         }
 
         return {
@@ -893,13 +859,23 @@ export async function GET(
       valueGapDelta,
       previousValueGap: previousSnapshot ? Number(previousSnapshot.valueGap) : null,
       // Value Home: Progress Context
+      // PROD-021: valueAtRiskCurrent is now confidence-weighted
       progressContext: {
         valueRecoveredLifetime: Number(lifetimeRecovered._sum.deltaValueRecovered ?? 0),
-        valueAtRiskCurrent: Number(openSignalRisk._sum.estimatedValueImpact ?? 0),
-        openSignalCount: openSignalRisk._count,
+        valueAtRiskCurrent: weightedValueAtRisk,
+        openSignalCount,
         valueRecoveredThisMonth: Number(monthlyLedger._sum.deltaValueRecovered ?? 0),
         valueAtRiskThisMonth: Number(monthlyLedger._sum.deltaValueAtRisk ?? 0),
         ledgerEventsThisMonth: monthlyLedger._count,
+      },
+      // PROD-022: Full value-at-risk breakdown (top threats, by-category, trend)
+      valueAtRisk: {
+        totalValueAtRisk: varResult.totalValueAtRisk,
+        rawValueAtRisk: varResult.rawValueAtRisk,
+        signalCount: varResult.signalCount,
+        topThreats: varResult.topThreats,
+        byCategory: varResult.byCategory,
+        trend: varResult.trend,
       },
       // Value Home: Next Move
       nextMove: {

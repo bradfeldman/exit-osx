@@ -397,9 +397,9 @@ async function handleOnboardingTaskGeneration(body: {
     })
   } catch (error) {
     console.error('Error generating onboarding tasks:', error)
-    const message = error instanceof Error ? error.message : 'Failed to generate tasks'
+    // SECURITY FIX (PROD-060): Don't expose internal error messages to the client
     return NextResponse.json(
-      { error: message },
+      { error: 'Failed to generate tasks' },
       { status: 500 }
     )
   }

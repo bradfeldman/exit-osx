@@ -1,20 +1,17 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createSignalWithLedgerEntry } from '@/lib/signals/create-signal'
+import { getDefaultConfidenceForChannel } from '@/lib/signals/confidence-scoring'
 import { generateNarrative } from '@/lib/value-ledger/narrative-templates'
+import { verifyCronAuth } from '@/lib/security/cron-auth'
 import type { TimeDecayData } from '@/lib/signals/types'
 
-const CRON_SECRET = process.env.CRON_SECRET
 const STALENESS_THRESHOLD_DAYS = 180 // 6 months
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization')
-
-  if (process.env.NODE_ENV === 'production' && CRON_SECRET) {
-    if (authHeader !== `Bearer ${CRON_SECRET}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-  }
+  // SECURITY FIX (PROD-060): Uses verifyCronAuth which fails closed when CRON_SECRET is not set.
+  const authError = verifyCronAuth(request)
+  if (authError) return authError
 
   try {
     const now = new Date()
@@ -73,13 +70,19 @@ export async function GET(request: Request) {
         thresholdDays: STALENESS_THRESHOLD_DAYS,
       }
 
+      // Escalate severity: > 1 year is CRITICAL, > 6 months is HIGH
+      const severity = daysSinceUpdate > 365 ? 'CRITICAL' as const : 'HIGH' as const
+
       await createSignalWithLedgerEntry({
         companyId: company.id,
         channel: 'TIME_DECAY',
         category: 'FINANCIAL',
         eventType: 'financial_staleness',
-        severity: 'HIGH',
-        title: 'Financial data is more than 6 months old',
+        severity,
+        confidence: getDefaultConfidenceForChannel('TIME_DECAY'),
+        title: daysSinceUpdate > 365
+          ? 'Financial data is more than 1 year old'
+          : 'Financial data is more than 6 months old',
         description: `Last financial period ended ${daysSinceUpdate} days ago. Buyers expect current financials.`,
         rawData: rawData as unknown as Record<string, unknown>,
         sourceType: 'financial_period',

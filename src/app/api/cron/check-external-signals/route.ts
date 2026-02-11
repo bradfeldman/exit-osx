@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { verifyCronAuth } from '@/lib/security/cron-auth'
 
 // Placeholder for v2 automated external signal checking
 // When implemented, this will:
@@ -7,16 +8,10 @@ import { NextResponse } from 'next/server'
 // 3. Create EXTERNAL signals for any new findings
 // NOT added to vercel.json cron schedule yet
 
-const CRON_SECRET = process.env.CRON_SECRET
-
 export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization')
-
-  if (process.env.NODE_ENV === 'production' && CRON_SECRET) {
-    if (authHeader !== `Bearer ${CRON_SECRET}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-  }
+  // SECURITY FIX (PROD-060): Uses verifyCronAuth which fails closed when CRON_SECRET is not set.
+  const authError = verifyCronAuth(request)
+  if (authError) return authError
 
   return NextResponse.json({
     message: 'External signal checking not yet automated. Use POST /api/admin/external-signals for manual ingestion.',

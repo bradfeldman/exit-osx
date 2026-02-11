@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@prisma/client'
 import type { LedgerEventType, BriCategory, ConfidenceLevel } from '@prisma/client'
 import { generateNarrative } from './narrative-templates'
+import { generateAINarrative } from './ai-narratives'
 
 interface CreateLedgerEntryInput {
   companyId: string
@@ -80,12 +81,29 @@ export async function createLedgerEntryForTaskCompletion(input: TaskCompletionIn
       ? input.briImpact.newScore - input.briImpact.previousScore
       : null
 
-  const narrative = generateNarrative({
-    eventType: 'TASK_COMPLETED',
-    title: input.taskTitle,
-    category: input.briCategory as BriCategory,
-    deltaValueRecovered,
-  })
+  // PROD-059: Use AI narrative for task completion events (falls back to template)
+  let narrative: string
+  try {
+    const aiResult = await generateAINarrative({
+      companyId: input.companyId,
+      eventType: 'TASK_COMPLETED',
+      category: input.briCategory as BriCategory,
+      title: input.taskTitle,
+      deltaValueRecovered,
+      briScoreBefore: input.briImpact?.previousScore ?? null,
+      briScoreAfter: input.briImpact?.newScore ?? null,
+      taskId: input.taskId,
+    })
+    narrative = aiResult.narrative
+  } catch {
+    // Graceful degradation: never let AI failure block ledger entry creation
+    narrative = generateNarrative({
+      eventType: 'TASK_COMPLETED',
+      title: input.taskTitle,
+      category: input.briCategory as BriCategory,
+      deltaValueRecovered,
+    })
+  }
 
   return createLedgerEntry({
     companyId: input.companyId,

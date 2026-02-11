@@ -3,6 +3,10 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { PeriodType } from '@prisma/client'
 import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snapshot'
+import {
+  calculateFreeCashFlow,
+  calculateNetIncomeFromEbitda,
+} from '@/lib/financial-calculations'
 
 // Calculate cash flow statement from P&L and Balance Sheet data
 function calculateCashFlowStatement(
@@ -64,13 +68,18 @@ function calculateCashFlowStatement(
   const bs = currentPeriod.balanceSheet
   const pbs = priorPeriod.balanceSheet
 
-  // Calculate Net Income from EBITDA
-  // Net Income = EBITDA - Depreciation - Amortization - Interest - Taxes
+  // Calculate Net Income from EBITDA using shared utility (PROD-010)
   const depreciation = is.depreciation || 0
   const amortization = is.amortization || 0
   const interestExpense = is.interestExpense || 0
   const taxExpense = is.taxExpense || 0
-  const netIncome = is.ebitda - depreciation - amortization - interestExpense - taxExpense
+  const netIncome = calculateNetIncomeFromEbitda({
+    ebitda: is.ebitda,
+    depreciation,
+    amortization,
+    interestExpense,
+    taxExpense,
+  })
 
   // Operating Activities (Indirect Method)
   // Changes in working capital (increase in assets = cash outflow, increase in liabilities = cash inflow)
@@ -106,8 +115,11 @@ function calculateCashFlowStatement(
   const beginningCash = pbs.cash
   const endingCash = bs.cash
 
-  // Free Cash Flow = Cash from Operations - CapEx
-  const freeCashFlow = cashFromOperations - Math.abs(capitalExpenditures)
+  // Free Cash Flow = Cash from Operations + CapEx (PROD-010 fix)
+  // capitalExpenditures is already signed: negative for purchases (outflows)
+  // Previous bug: Math.abs(capitalExpenditures) would double-negate when capex was
+  // already negative, and incorrectly subtract when capex was positive (asset sales)
+  const freeCashFlow = calculateFreeCashFlow(cashFromOperations, capitalExpenditures)
 
   return {
     netIncome,
@@ -430,8 +442,10 @@ export async function PUT(
 
     const netChangeInCash = cashFromOperations + cashFromInvesting + cashFromFinancing
 
-    // Free Cash Flow = CFO - CapEx (absolute value since CapEx is typically negative)
-    const freeCashFlow = cashFromOperations - Math.abs(capitalExpenditures)
+    // Free Cash Flow = CFO + CapEx (PROD-010 fix: CapEx is already signed)
+    // When user provides CapEx as a negative number, adding it to CFO is correct.
+    // When user provides CapEx as a positive number (asset sale), it increases FCF.
+    const freeCashFlow = calculateFreeCashFlow(cashFromOperations, capitalExpenditures)
 
     // Upsert cash flow statement
     const cfs = await prisma.cashFlowStatement.upsert({

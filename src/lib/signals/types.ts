@@ -28,3 +28,23 @@ export interface ExternalSignalData {
   previousValue?: string | number
   newValue?: string | number
 }
+
+export interface DocumentUploadData {
+  documentId: string
+  documentName: string
+  evidenceCategory: string
+  expectedDocumentId: string | null
+  source: 'direct' | 'task' | 'integration'
+  linkedTaskId: string | null
+  mimeType: string | null
+  fileSize: number | null
+}
+
+export interface AdvisorSignalData {
+  advisorUserId: string
+  observationType: 'advisor_observation' | 'advisor_confirmation' | 'advisor_denial'
+  originalSignalId?: string
+  previousConfidence?: string
+  newConfidence?: string
+  reason?: string
+}

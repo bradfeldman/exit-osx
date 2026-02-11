@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { updateDossier } from '@/lib/dossier/build-dossier'
+import { verifyCronAuth } from '@/lib/security/cron-auth'
 
 /**
  * Weekly cron job to refresh stale dossiers.
@@ -8,12 +9,9 @@ import { updateDossier } from '@/lib/dossier/build-dossier'
  * Protected by CRON_SECRET header.
  */
 export async function POST(request: Request) {
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  // SECURITY FIX (PROD-060): Uses verifyCronAuth which fails closed when CRON_SECRET is not set.
+  const authError = verifyCronAuth(request)
+  if (authError) return authError
 
   try {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)

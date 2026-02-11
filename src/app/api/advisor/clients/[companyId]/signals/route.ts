@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
 import { getAdvisorClients, isExternalAdvisor } from '@/lib/auth/check-granular-permission'
-import { createSignal } from '@/lib/signals/create-signal'
+import { createSignalWithLedgerEntry } from '@/lib/signals/create-signal'
+import { getDefaultConfidenceForChannel } from '@/lib/signals/confidence-scoring'
 
 async function verifyAdvisorAccess(companyId: string) {
   const supabase = await createClient()
@@ -38,7 +39,7 @@ export async function GET(
   const signals = await prisma.signal.findMany({
     where: {
       companyId,
-      resolutionStatus: { in: ['OPEN', 'ACKNOWLEDGED'] },
+      resolutionStatus: { in: ['OPEN', 'ACKNOWLEDGED', 'DISMISSED'] },
     },
     orderBy: [
       { severity: 'desc' },
@@ -57,6 +58,7 @@ export async function GET(
       confirmedAt: true,
       confirmedByUserId: true,
       resolutionStatus: true,
+      resolutionNotes: true,
       estimatedValueImpact: true,
       createdAt: true,
     },
@@ -88,17 +90,21 @@ export async function POST(
     return NextResponse.json({ error: 'Title is required' }, { status: 400 })
   }
 
-  const signal = await createSignal({
+  const advisorConfidence = getDefaultConfidenceForChannel('ADVISOR')
+
+  const { signal } = await createSignalWithLedgerEntry({
     companyId,
     channel: 'ADVISOR',
     category: category || null,
     eventType: 'advisor_observation',
     severity: severity || 'MEDIUM',
-    confidence: 'CONFIDENT',
+    confidence: advisorConfidence,
     title,
     description: description || null,
     sourceType: 'advisor',
     sourceId: user.id,
+    ledgerEventType: 'NEW_DATA_CONNECTED',
+    narrativeSummary: `Advisor observation: "${title}"${description ? ` — ${description}` : ''}`,
   })
 
   return NextResponse.json({ signal }, { status: 201 })

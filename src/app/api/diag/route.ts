@@ -1,14 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireDevEndpoint, logDevEndpointAccess } from '@/lib/security'
 
 /**
  * TEMPORARY DIAGNOSTIC ENDPOINT
  * Returns a zero-JS HTML page with all request information.
  * Works even if React/Next.js client code is completely broken.
  *
+ * SECURITY FIX (PROD-060): Protected with requireDevEndpoint — was previously
+ * accessible without any auth in production, leaking request headers, cookies,
+ * and session information to anyone who visited /api/diag.
+ *
  * Visit: /api/diag from iPhone to see what the server sees.
  * Remove after debugging is complete.
  */
 export async function GET(request: NextRequest) {
+  // SECURITY: Block in production unless ENABLE_DEV_ENDPOINTS=true
+  const devCheck = requireDevEndpoint()
+  if (devCheck) return devCheck
+
+  logDevEndpointAccess('GET /api/diag')
   const headers: Record<string, string> = {}
   request.headers.forEach((value, key) => {
     headers[key] = value

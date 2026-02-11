@@ -8,7 +8,8 @@ import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { onTaskStatusChange } from '@/lib/tasks/action-plan'
 import { BRI_CATEGORY_LABELS, type BRICategory } from '@/lib/constants/bri-categories'
 import { createLedgerEntryForTaskCompletion } from '@/lib/value-ledger/create-entry'
-import { createSignal } from '@/lib/signals/create-signal'
+import { createSignalWithLedgerEntry } from '@/lib/signals/create-signal'
+import { getDefaultConfidenceForChannel, applyConfidenceWeight } from '@/lib/signals/confidence-scoring'
 import { triggerDossierUpdate } from '@/lib/dossier/build-dossier'
 import type { BriCategory } from '@prisma/client'
 import type { TaskGeneratedData } from '@/lib/signals/types'
@@ -62,6 +63,20 @@ export async function POST(
         blockedReason: null,
       },
     })
+
+    // Create a TaskNote if completion notes were provided
+    if (completionNotes && completionNotes.trim().length > 0) {
+      await prisma.taskNote.create({
+        data: {
+          taskId: id,
+          userId: result.auth.user.id,
+          content: completionNotes.trim(),
+          noteType: 'COMPLETION',
+        },
+      }).catch(err => {
+        console.error('[TaskNote] Failed to create completion note (non-blocking):', err)
+      })
+    }
 
     // Link evidence documents if provided
     if (evidenceDocumentIds && evidenceDocumentIds.length > 0) {
@@ -174,7 +189,7 @@ export async function POST(
       console.error('[ValueLedger] Failed to create entry (non-blocking):', err)
     }
 
-    // Create TASK_GENERATED signal (non-blocking)
+    // Create TASK_GENERATED signal with Value Ledger entry (non-blocking)
     try {
       const signalData: TaskGeneratedData = {
         taskId: id,
@@ -184,13 +199,25 @@ export async function POST(
         completedValue: Number(completedValue),
       }
 
-      await createSignal({
+      const taskConfidence = getDefaultConfidenceForChannel('TASK_GENERATED')
+      const rawImpact = Number(completedValue)
+      const weightedImpact = applyConfidenceWeight(rawImpact, taskConfidence)
+
+      // Determine severity based on BRI impact magnitude
+      let signalSeverity: 'INFO' | 'LOW' | 'MEDIUM' | 'HIGH' = 'LOW'
+      if (briImpact) {
+        const briDelta = briImpact.newScore - briImpact.previousScore
+        if (briDelta >= 0.05) signalSeverity = 'HIGH'
+        else if (briDelta >= 0.02) signalSeverity = 'MEDIUM'
+      }
+
+      await createSignalWithLedgerEntry({
         companyId: existingTask.companyId,
         channel: 'TASK_GENERATED',
         category: existingTask.briCategory as BriCategory,
         eventType: 'task_completed',
-        severity: 'LOW',
-        confidence: 'CONFIDENT',
+        severity: signalSeverity,
+        confidence: taskConfidence,
         title: `Task completed: ${existingTask.title}`,
         description: briImpact
           ? `BRI improved from ${(briImpact.previousScore * 100).toFixed(1)} to ${(briImpact.newScore * 100).toFixed(1)}`
@@ -198,8 +225,13 @@ export async function POST(
         rawData: signalData as unknown as Record<string, unknown>,
         sourceType: 'task',
         sourceId: id,
-        estimatedValueImpact: Number(completedValue),
+        estimatedValueImpact: weightedImpact,
         estimatedBriImpact: briImpact ? briImpact.newScore - briImpact.previousScore : null,
+        ledgerEventType: 'TASK_COMPLETED',
+        deltaValueRecovered: weightedImpact,
+        narrativeSummary: briImpact
+          ? `Task "${existingTask.title}" completed — BRI improved by ${((briImpact.newScore - briImpact.previousScore) * 100).toFixed(1)} points`
+          : `Task "${existingTask.title}" completed — ~${formatCurrency(weightedImpact)} value recovered`,
       })
     } catch (err) {
       console.error('[Signal] Failed to create task signal (non-blocking):', err)

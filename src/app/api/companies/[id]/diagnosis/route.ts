@@ -6,6 +6,7 @@ import {
   BRI_CATEGORY_LABELS,
   type BRICategory,
 } from '@/lib/constants/bri-categories'
+import { calculateCategoryValueGaps } from '@/lib/valuation/value-gap-attribution'
 
 // BRI weights matching the assessment system
 const BRI_WEIGHTS: Record<string, number> = {
@@ -65,35 +66,37 @@ export async function GET(
       orderBy: [{ briCategory: 'asc' }, { displayOrder: 'asc' }],
     })
 
-    // Scope to this company: seed questions (no companyId) + AI questions for THIS company only
-    const companyAiCategories = new Set<string>(
-      allQuestions.filter(q => q.companyId === companyId).map(q => q.briCategory)
+    // PROD-014: Include BOTH seed questions and AI questions for this company.
+    // Seed questions are foundational; AI questions are adaptive follow-ups.
+    // Both are shown, with seed questions ordered first within each category.
+    const questions = allQuestions.filter(q =>
+      q.companyId === companyId || q.companyId === null
     )
-    // If AI questions exist for a category, prefer them over seed questions for that category
-    const questions = companyAiCategories.size > 0
-      ? allQuestions.filter(q =>
-          q.companyId === companyId ||
-          (q.companyId === null && !companyAiCategories.has(q.briCategory))
-        )
-      : allQuestions.filter(q => q.companyId === null)
 
-    // Also keep seed questions for categories that have AI questions,
-    // so we can count seed responses as "answered" before AI questions are answered
-    const seedQuestions = allQuestions.filter(q => q.companyId === null)
-
-    // Fetch the latest assessment for this company
+    // Fetch the latest assessment for this company (for assessmentId reference)
     const latestAssessment = await prisma.assessment.findFirst({
       where: { companyId },
       orderBy: { createdAt: 'desc' },
-      include: {
-        responses: {
-          include: {
-            question: true,
-            selectedOption: true,
-            effectiveOption: true,
-          },
-        },
+      select: {
+        id: true,
+        completedAt: true,
+        updatedAt: true,
       },
+    })
+
+    // PROD-013 FIX: Gather the latest response per question across ALL assessments
+    // for this company. This ensures re-assessing one category doesn't lose
+    // other categories' responses when they live on a different assessment.
+    const allResponses = await prisma.assessmentResponse.findMany({
+      where: {
+        assessment: { companyId },
+      },
+      include: {
+        question: true,
+        selectedOption: true,
+        effectiveOption: true,
+      },
+      orderBy: { updatedAt: 'desc' },
     })
 
     // Fetch latest valuation snapshot for dollar impacts
@@ -116,10 +119,14 @@ export async function GET(
       tasks.filter(t => t.linkedQuestionId).map(t => [t.linkedQuestionId!, t])
     )
 
-    // Build response map
-    const responseMap = new Map(
-      (latestAssessment?.responses ?? []).map(r => [r.questionId, r])
-    )
+    // Build response map — deduplicate to latest response per question
+    // Since allResponses is ordered by updatedAt desc, first occurrence wins
+    const responseMap = new Map<string, typeof allResponses[number]>()
+    for (const r of allResponses) {
+      if (!responseMap.has(r.questionId)) {
+        responseMap.set(r.questionId, r)
+      }
+    }
 
     // Group questions by category
     const questionsByCategory = new Map<string, typeof questions>()
@@ -129,30 +136,23 @@ export async function GET(
       questionsByCategory.set(q.briCategory, existing)
     }
 
-    // Calculate bridge dollar impacts per category
+    // Calculate bridge dollar impacts per category using shared utility (PROD-016 fix)
+    // This ensures category gaps sum exactly to total value gap (rounding-corrected)
     const valueGap = latestSnapshot ? Number(latestSnapshot.valueGap) : 0
     const categoryDollarImpacts = new Map<string, number>()
 
     if (latestSnapshot && valueGap > 0) {
-      const snapshotCategories = [
-        { key: 'FINANCIAL', score: Number(latestSnapshot.briFinancial) },
-        { key: 'TRANSFERABILITY', score: Number(latestSnapshot.briTransferability) },
-        { key: 'OPERATIONAL', score: Number(latestSnapshot.briOperational) },
-        { key: 'MARKET', score: Number(latestSnapshot.briMarket) },
-        { key: 'LEGAL_TAX', score: Number(latestSnapshot.briLegalTax) },
+      const categoryInputs = [
+        { category: 'FINANCIAL', score: Number(latestSnapshot.briFinancial), weight: BRI_WEIGHTS['FINANCIAL'] || 0 },
+        { category: 'TRANSFERABILITY', score: Number(latestSnapshot.briTransferability), weight: BRI_WEIGHTS['TRANSFERABILITY'] || 0 },
+        { category: 'OPERATIONAL', score: Number(latestSnapshot.briOperational), weight: BRI_WEIGHTS['OPERATIONAL'] || 0 },
+        { category: 'MARKET', score: Number(latestSnapshot.briMarket), weight: BRI_WEIGHTS['MARKET'] || 0 },
+        { category: 'LEGAL_TAX', score: Number(latestSnapshot.briLegalTax), weight: BRI_WEIGHTS['LEGAL_TAX'] || 0 },
       ]
 
-      const rawGaps = snapshotCategories.map(c => ({
-        key: c.key,
-        rawGap: (1 - c.score) * (BRI_WEIGHTS[c.key] || 0),
-      }))
-      const totalRawGap = rawGaps.reduce((sum, c) => sum + c.rawGap, 0)
-
-      for (const c of rawGaps) {
-        categoryDollarImpacts.set(
-          c.key,
-          totalRawGap > 0 ? Math.round((c.rawGap / totalRawGap) * valueGap) : 0
-        )
+      const gaps = calculateCategoryValueGaps(categoryInputs, valueGap)
+      for (const g of gaps) {
+        categoryDollarImpacts.set(g.category, g.dollarImpact)
       }
     }
 
@@ -166,6 +166,7 @@ export async function GET(
       scoreDecimal: number
       dollarImpact: number | null
       weight: number
+      isAssessed: boolean
       confidence: {
         dots: number
         label: string
@@ -188,46 +189,21 @@ export async function GET(
       const totalQuestions = catQuestions.length
 
       // Count answered questions and find latest response date
+      // PROD-014: Now that both seed and AI questions are in the questions list,
+      // we iterate over all of them directly — no fallback needed.
       let questionsAnswered = 0
       let latestResponseDate: Date | null = null
       let hasUnansweredAiQuestions = false
-
-      // Check if this category uses AI questions but none are answered yet
-      const isAiCategory = companyAiCategories.has(catKey)
-      let aiAnsweredCount = 0
 
       for (const q of catQuestions) {
         const response = responseMap.get(q.id)
         if (response && response.selectedOptionId) {
           questionsAnswered++
-          aiAnsweredCount++
           if (!latestResponseDate || response.updatedAt > latestResponseDate) {
             latestResponseDate = response.updatedAt
           }
         } else if (q.companyId) {
-          hasUnansweredAiQuestions = true
-        }
-      }
-
-      // Fallback: if this category has AI questions but 0 AI answers,
-      // count seed question responses so completed categories don't revert to "Start Assessment"
-      if (isAiCategory && aiAnsweredCount === 0) {
-        const seedCatQuestions = seedQuestions.filter(q => q.briCategory === catKey)
-        let seedAnswered = 0
-        for (const sq of seedCatQuestions) {
-          const response = responseMap.get(sq.id)
-          if (response && response.selectedOptionId) {
-            seedAnswered++
-            if (!latestResponseDate || response.updatedAt > latestResponseDate) {
-              latestResponseDate = response.updatedAt
-            }
-          }
-        }
-        if (seedAnswered > 0) {
-          // Map seed coverage to AI question count so the progress feels accurate
-          // e.g., 5/5 seed answered → 5 of 7 AI total shown as answered
-          questionsAnswered = Math.min(seedAnswered, totalQuestions)
-          // Still flag that AI questions need answering
+          // This is an AI (adaptive) question that hasn't been answered yet
           hasUnansweredAiQuestions = true
         }
       }
@@ -260,6 +236,11 @@ export async function GET(
         lowestConfidenceCategory = catKey
       }
 
+      // PROD-014: A category is "assessed" if the user has answered at least one
+      // question in it. Categories with 0 responses show "Not Assessed" instead
+      // of a fake default score (previously defaulted to 70).
+      const isAssessed = questionsAnswered > 0
+
       categories.push({
         category: catKey,
         label: BRI_CATEGORY_LABELS[catKey as BRICategory] || catKey,
@@ -267,6 +248,7 @@ export async function GET(
         scoreDecimal,
         dollarImpact: catKey === 'PERSONAL' ? null : (categoryDollarImpacts.get(catKey) ?? 0),
         weight: BRI_WEIGHTS[catKey] || 0,
+        isAssessed,
         confidence: {
           dots: confidence.dots,
           label: confidence.label,
@@ -358,22 +340,14 @@ export async function GET(
     // Sort risk drivers by dollar impact descending
     riskDrivers.sort((a, b) => b.dollarImpact - a.dollarImpact)
 
-    // Build question counts (same fallback logic as above)
+    // PROD-014: Build question counts — with both seed and AI questions now included
+    // in catQuestions, no fallback logic is needed.
     const questionCounts: Record<string, { total: number; answered: number; unanswered: number }> = {}
     for (const catKey of categoryKeys) {
       const catQuestions = questionsByCategory.get(catKey) ?? []
       let answered = 0
       for (const q of catQuestions) {
         if (responseMap.get(q.id)?.selectedOptionId) answered++
-      }
-      // Fallback to seed responses if AI category has 0 answers
-      if (companyAiCategories.has(catKey) && answered === 0) {
-        const seedCatQs = seedQuestions.filter(q => q.briCategory === catKey)
-        let seedAns = 0
-        for (const sq of seedCatQs) {
-          if (responseMap.get(sq.id)?.selectedOptionId) seedAns++
-        }
-        answered = Math.min(seedAns, catQuestions.length)
       }
       questionCounts[catKey] = {
         total: catQuestions.length,
@@ -386,7 +360,7 @@ export async function GET(
     const briScoreDecimal = latestSnapshot ? Number(latestSnapshot.briScore) : 0
 
     // hasAssessment is true if we have any responses (not just if formally completed)
-    const hasResponses = (latestAssessment?.responses?.length ?? 0) > 0
+    const hasResponses = allResponses.length > 0
 
     return NextResponse.json({
       briScore,

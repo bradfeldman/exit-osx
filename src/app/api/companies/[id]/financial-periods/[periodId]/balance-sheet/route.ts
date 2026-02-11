@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { triggerDossierUpdate } from '@/lib/dossier/build-dossier'
+import { calculateWorkingCapital } from '@/lib/financial-calculations'
 
 export async function GET(
   request: Request,
@@ -184,8 +185,12 @@ export async function PUT(
     const totalLiabilities = totalCurrentLiabilities + totalLongTermLiabilities
 
     const totalEquity = retainedEarnings + ownersEquity
-    // Operating Working Capital = AR + Inventory - AP
-    const workingCapital = accountsReceivable + inventory - accountsPayable
+    // Operating Working Capital = AR + Inventory - AP (shared utility, PROD-010)
+    const workingCapital = calculateWorkingCapital({
+      accountsReceivable,
+      inventory,
+      accountsPayable,
+    })
 
     // Upsert balance sheet
     const bs = await prisma.balanceSheet.upsert({

@@ -5,6 +5,12 @@ import { generateTasksForCompany } from '@/lib/playbook/generate-tasks'
 import { generateAITasksForCompany } from '@/lib/dossier/ai-tasks'
 import { getIndustryMultiples, estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
 import { triggerDossierUpdate } from '@/lib/dossier/build-dossier'
+import {
+  ALPHA,
+  calculateCoreScore,
+  calculateValuation,
+  type CoreFactors,
+} from '@/lib/valuation/calculate-valuation'
 
 // Default category weights for BRI calculation (used if no custom weights set)
 const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
@@ -42,10 +48,7 @@ async function getBriWeightsForCompany(companyBriWeights: unknown): Promise<Reco
   return DEFAULT_CATEGORY_WEIGHTS
 }
 
-// Alpha constant for non-linear discount calculation
-// Controls buyer skepticism curve - higher = more skeptical
-// Recommended range: 1.3 - 1.6, default 1.4
-const ALPHA = 1.4
+// ALPHA imported from @/lib/valuation/calculate-valuation
 
 interface CategoryScore {
   category: string
@@ -177,62 +180,8 @@ export async function POST(
 
     // Calculate Core Score from company factors
     const coreFactors = assessment.company.coreFactors
-    let coreScore = 0.5 // Default if no core factors
-
-    if (coreFactors) {
-      // Simple scoring based on core factors
-      const factorScores: Record<string, Record<string, number>> = {
-        revenueSizeCategory: {
-          UNDER_500K: 0.2,
-          FROM_500K_TO_1M: 0.4,
-          FROM_1M_TO_3M: 0.6,
-          FROM_3M_TO_10M: 0.8,
-          FROM_10M_TO_25M: 0.9,
-          OVER_25M: 1.0,
-        },
-        revenueModel: {
-          PROJECT_BASED: 0.25,
-          TRANSACTIONAL: 0.5,
-          RECURRING_CONTRACTS: 0.75,
-          SUBSCRIPTION_SAAS: 1.0,
-        },
-        grossMarginProxy: {
-          LOW: 0.25,
-          MODERATE: 0.5,
-          GOOD: 0.75,
-          EXCELLENT: 1.0,
-        },
-        laborIntensity: {
-          VERY_HIGH: 0.25,
-          HIGH: 0.5,
-          MODERATE: 0.75,
-          LOW: 1.0,
-        },
-        assetIntensity: {
-          ASSET_HEAVY: 0.33,
-          MODERATE: 0.67,
-          ASSET_LIGHT: 1.0,
-        },
-        ownerInvolvement: {
-          CRITICAL: 0.0,
-          HIGH: 0.25,
-          MODERATE: 0.5,
-          LOW: 0.75,
-          MINIMAL: 1.0,
-        },
-      }
-
-      const scores = [
-        factorScores.revenueSizeCategory[coreFactors.revenueSizeCategory] || 0.5,
-        factorScores.revenueModel[coreFactors.revenueModel] || 0.5,
-        factorScores.grossMarginProxy[coreFactors.grossMarginProxy] || 0.5,
-        factorScores.laborIntensity[coreFactors.laborIntensity] || 0.5,
-        factorScores.assetIntensity[coreFactors.assetIntensity] || 0.5,
-        factorScores.ownerInvolvement[coreFactors.ownerInvolvement] || 0.5,
-      ]
-
-      coreScore = scores.reduce((a, b) => a + b, 0) / scores.length
-    }
+    // Use shared utility for Core Score (5 factors, NOT 6 - revenueSizeCategory excluded)
+    const coreScore = calculateCoreScore(coreFactors as CoreFactors | null)
 
     // Get industry multiples (needed for both EBITDA estimation and valuation)
     const multiples = await getIndustryMultiples(
@@ -272,25 +221,15 @@ export async function POST(
       adjustedEbitda = estimatedEbitda + addBacks + excessComp - deductions
     }
 
-    // Step 1: Core Score positions within industry range
-    // BaseMultiple = L + (CS / 100) × (H − L)
-    // coreScore is 0-1, so we use it directly
-    const baseMultiple = industryMultipleLow + coreScore * (industryMultipleHigh - industryMultipleLow)
-
-    // Step 2: Non-linear discount based on BRI
-    // DiscountFraction = (1 − BRI)^α where α = 1.4
-    // briScore is 0-1
-    const discountFraction = Math.pow(1 - briScore, ALPHA)
-
-    // Step 3: Final multiple with floor guarantee
-    // FinalMultiple = L + (BaseMultiple − L) × (1 − DiscountFraction)
-    // This guarantees FinalMultiple ≥ L (industry floor)
-    const finalMultiple = industryMultipleLow + (baseMultiple - industryMultipleLow) * (1 - discountFraction)
-
-    // Calculate valuations
-    const currentValue = adjustedEbitda * finalMultiple
-    const potentialValue = adjustedEbitda * baseMultiple
-    const valueGap = potentialValue - currentValue
+    // Use shared utility for consistent valuation calculation
+    const valuation = calculateValuation({
+      adjustedEbitda,
+      industryMultipleLow,
+      industryMultipleHigh,
+      coreScore,
+      briScore,
+    })
+    const { baseMultiple, discountFraction, finalMultiple, currentValue, potentialValue, valueGap } = valuation
 
     // Get category-specific scores
     const getCategoryScore = (cat: string) => {

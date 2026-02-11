@@ -5,20 +5,19 @@ import { prisma } from '@/lib/prisma'
 import { getIndustryMultiples, estimateEbitdaFromRevenue } from './industry-multiples'
 import {
   ALPHA,
-  CORE_FACTOR_SCORES,
+  calculateCoreScore,
   calculateValuation,
+  type CoreFactors,
 } from './calculate-valuation'
 import { calculateAutoDCF } from './auto-dcf'
-
-// Default category weights for BRI calculation
-const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
-  FINANCIAL: 0.25,
-  TRANSFERABILITY: 0.20,
-  OPERATIONAL: 0.20,
-  MARKET: 0.15,
-  LEGAL_TAX: 0.10,
-  PERSONAL: 0.10,
-}
+import {
+  DEFAULT_CATEGORY_WEIGHTS,
+  type ScoringResponse,
+  deduplicateResponses,
+  calculateCategoryScores,
+  calculateWeightedBriScore,
+  getCategoryScore as getCatScore,
+} from './bri-scoring'
 
 // Market salary benchmarks by revenue size category
 // Based on industry compensation studies for owner/CEO roles
@@ -137,98 +136,54 @@ export async function recalculateSnapshotForCompany(
       }
     }
 
-    // Get the latest assessment for this company (completed or in-progress)
-    // This allows inline category assessments to trigger recalculation
-    // Include both selectedOption and effectiveOption for Answer Upgrade System
-    const latestAssessment = await prisma.assessment.findFirst({
-      where: { companyId },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        responses: {
-          include: {
-            question: true,
-            selectedOption: true,
-            effectiveOption: true, // For Answer Upgrade System
-          },
-        },
+    // PROD-013 FIX: Gather the latest response per question across ALL assessments
+    // for this company, not just the single latest assessment. This prevents
+    // re-assessing one category from zeroing out others when multiple assessments exist.
+    const allResponses = await prisma.assessmentResponse.findMany({
+      where: {
+        assessment: { companyId },
       },
+      include: {
+        question: true,
+        selectedOption: true,
+        effectiveOption: true, // For Answer Upgrade System
+      },
+      orderBy: { updatedAt: 'desc' },
     })
 
-    if (!latestAssessment) {
+    if (allResponses.length === 0) {
       return {
         success: false,
-        error: 'No assessment found',
+        error: 'No assessment responses found',
         companyId,
         companyName: company.name,
       }
     }
 
-    // Need at least some responses to calculate scores
-    if (latestAssessment.responses.length === 0) {
+    // Convert Prisma responses to ScoringResponse format for the pure scoring functions
+    const scoringResponses: ScoringResponse[] = allResponses.map(r => {
+      const optionToUse = r.effectiveOption || r.selectedOption
       return {
-        success: false,
-        error: 'No responses found in assessment',
-        companyId,
-        companyName: company.name,
+        questionId: r.questionId,
+        briCategory: r.question.briCategory,
+        maxImpactPoints: Number(r.question.maxImpactPoints),
+        scoreValue: optionToUse ? Number(optionToUse.scoreValue) : null,
+        hasOption: !!optionToUse,
+        updatedAt: r.updatedAt,
       }
-    }
+    })
 
-    // Calculate category scores from assessment responses
-    // Use effectiveOption if available (from completed tasks), otherwise use selectedOption
-    const scoresByCategory: Record<string, { total: number; earned: number }> = {}
-
-    for (const response of latestAssessment.responses) {
-      // Skip NOT_APPLICABLE responses (they don't have a selected option)
-      const optionToUse = response.effectiveOption || response.selectedOption
-      if (!optionToUse) continue
-
-      const category = response.question.briCategory
-      const maxPoints = Number(response.question.maxImpactPoints)
-      // Answer Upgrade System: use effective answer if tasks have upgraded it
-      const scoreValue = Number(optionToUse.scoreValue)
-      const earnedPoints = maxPoints * scoreValue
-
-      if (!scoresByCategory[category]) {
-        scoresByCategory[category] = { total: 0, earned: 0 }
-      }
-      scoresByCategory[category].total += maxPoints
-      scoresByCategory[category].earned += earnedPoints
-    }
-
-    const categoryScores: Array<{ category: string; score: number }> = []
-    for (const [category, scores] of Object.entries(scoresByCategory)) {
-      categoryScores.push({
-        category,
-        score: scores.total > 0 ? scores.earned / scores.total : 0,
-      })
-    }
+    // Deduplicate to latest response per question, then calculate scores
+    const dedupedResponses = deduplicateResponses(scoringResponses)
+    const categoryScores = calculateCategoryScores(dedupedResponses)
 
     // Fetch BRI weights (company-specific or global) and calculate weighted BRI score
     const categoryWeights = await getBriWeightsForCompany(company.briWeights)
-    let briScore = 0
-    for (const cs of categoryScores) {
-      const weight = categoryWeights[cs.category] || 0
-      briScore += cs.score * weight
-    }
+    const briScore = calculateWeightedBriScore(categoryScores, categoryWeights)
 
     // Calculate Core Score from company factors using shared utility
     const coreFactors = company.coreFactors
-    let coreScore = 0.5 // Default if no core factors
-
-    if (coreFactors) {
-      // Core Score is based on business model quality factors only
-      // Revenue size is NOT included - it already affects valuation through revenue × multiple
-      // Uses shared CORE_FACTOR_SCORES from calculate-valuation.ts
-      const scores = [
-        CORE_FACTOR_SCORES.revenueModel[coreFactors.revenueModel] ?? 0.5,
-        CORE_FACTOR_SCORES.grossMarginProxy[coreFactors.grossMarginProxy] ?? 0.5,
-        CORE_FACTOR_SCORES.laborIntensity[coreFactors.laborIntensity] ?? 0.5,
-        CORE_FACTOR_SCORES.assetIntensity[coreFactors.assetIntensity] ?? 0.5,
-        CORE_FACTOR_SCORES.ownerInvolvement[coreFactors.ownerInvolvement] ?? 0.5,
-      ]
-
-      coreScore = scores.reduce((a, b) => a + b, 0) / scores.length
-    }
+    const coreScore = calculateCoreScore(coreFactors as CoreFactors | null)
 
     // Get latest industry multiples (needed for both EBITDA estimation and valuation)
     const multiples = await getIndustryMultiples(
@@ -293,11 +248,8 @@ export async function recalculateSnapshotForCompany(
     const potentialValue = potentialEbitda * baseMultiple
     const valueGap = potentialValue - currentValue
 
-    // Helper to get category score
-    const getCategoryScore = (cat: string) => {
-      const cs = categoryScores.find(c => c.category === cat)
-      return cs ? cs.score : 0
-    }
+    // Helper to get category score (uses imported utility)
+    const getCategoryScore = (cat: string) => getCatScore(categoryScores, cat)
 
     // Auto-DCF: calculate DCF valuation from financial data if available
     // Skip if user has manually configured DCF assumptions

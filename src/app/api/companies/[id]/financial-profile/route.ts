@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { calculateEbitda } from '@/lib/financial-calculations'
 
 interface FinancialMetric {
   label: string
@@ -65,24 +66,48 @@ export async function GET(
     const priorIs = priorPeriod?.incomeStatement
     const _priorBs = priorPeriod?.balanceSheet
 
-    // Calculate metrics
+    // Calculate metrics using shared EBITDA formula (PROD-010 fix)
     const grossRevenue = is ? Number(is.grossRevenue) : null
     const cogs = is ? Number(is.cogs) : null
     const operatingExpenses = is ? Number(is.operatingExpenses) : null
-    const grossProfit = grossRevenue && cogs ? grossRevenue - cogs : null
-    const ebitda = grossProfit && operatingExpenses ? grossProfit - operatingExpenses : null
+    const grossProfit = grossRevenue !== null && cogs !== null ? grossRevenue - cogs : null
     const depreciation = is?.depreciation ? Number(is.depreciation) : 0
     const amortization = is?.amortization ? Number(is.amortization) : 0
     const interestExpense = is?.interestExpense ? Number(is.interestExpense) : 0
     const taxExpense = is?.taxExpense ? Number(is.taxExpense) : 0
-    const netIncome = ebitda ? ebitda - depreciation - amortization - interestExpense - taxExpense : null
+    // EBITDA = Gross Profit - Operating Expenses + D + A + I + T
+    // Previous bug: was using grossProfit - operatingExpenses (missing D, A, I, T add-backs)
+    const ebitda = grossProfit !== null && operatingExpenses !== null
+      ? calculateEbitda({
+          grossProfit,
+          operatingExpenses,
+          depreciation,
+          amortization,
+          interestExpense,
+          taxExpense,
+        })
+      : null
+    const netIncome = ebitda !== null ? ebitda - depreciation - amortization - interestExpense - taxExpense : null
 
-    // Prior period for trends
+    // Prior period for trends (PROD-010: use consistent EBITDA formula)
     const priorGrossRevenue = priorIs ? Number(priorIs.grossRevenue) : null
     const priorCogs = priorIs ? Number(priorIs.cogs) : null
-    const priorGrossProfit = priorGrossRevenue && priorCogs ? priorGrossRevenue - priorCogs : null
+    const priorGrossProfit = priorGrossRevenue !== null && priorCogs !== null ? priorGrossRevenue - priorCogs : null
     const priorOperatingExpenses = priorIs ? Number(priorIs.operatingExpenses) : null
-    const priorEbitda = priorGrossProfit && priorOperatingExpenses ? priorGrossProfit - priorOperatingExpenses : null
+    const priorDepreciation = priorIs?.depreciation ? Number(priorIs.depreciation) : 0
+    const priorAmortization = priorIs?.amortization ? Number(priorIs.amortization) : 0
+    const priorInterestExpense = priorIs?.interestExpense ? Number(priorIs.interestExpense) : 0
+    const priorTaxExpense = priorIs?.taxExpense ? Number(priorIs.taxExpense) : 0
+    const priorEbitda = priorGrossProfit !== null && priorOperatingExpenses !== null
+      ? calculateEbitda({
+          grossProfit: priorGrossProfit,
+          operatingExpenses: priorOperatingExpenses,
+          depreciation: priorDepreciation,
+          amortization: priorAmortization,
+          interestExpense: priorInterestExpense,
+          taxExpense: priorTaxExpense,
+        })
+      : null
 
     // Balance sheet values
     const totalCurrentAssets = bs ? Number(bs.totalCurrentAssets) : null

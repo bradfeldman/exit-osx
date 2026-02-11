@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
-import { Resend } from 'resend'
-
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+import { sendTaskDelegationEmail } from '@/lib/email/send-task-delegation-email'
 
 // POST - Invite a user to a task
 export async function POST(
@@ -145,48 +143,33 @@ export async function POST(
       where: { email: email.toLowerCase() },
     })
 
-    // Send email notification
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-    const inviteUrl = `${baseUrl}/invite/task/${invite.token}`
+    // Send delegation email using the proper template
+    // For users who don't exist yet, we use the currentUser's ID for logging/tracking
+    // and skip preference checks since they have no preferences yet
+    try {
+      const normalizedValue = Number(task.normalizedValue)
 
-    if (resend) {
-      try {
-        if (existingUser) {
-          // Existing user - notify them of the invite
-          await resend.emails.send({
-            from: 'Exit OSx <noreply@exitosx.com>',
-            to: email,
-            subject: `You've been invited to a task: ${task.title}`,
-            html: `
-              <h2>You've been invited to a task</h2>
-              <p><strong>${currentUser.name || currentUser.email}</strong> has invited you to work on a task for <strong>${task.company.name}</strong>.</p>
-              <h3>${task.title}</h3>
-              <p>${task.description}</p>
-              <p><a href="${inviteUrl}" style="display: inline-block; padding: 12px 24px; background-color: #B87333; color: white; text-decoration: none; border-radius: 6px;">Accept Invite</a></p>
-              <p>This invite expires in 7 days.</p>
-            `,
-          })
-        } else {
-          // New user - invite them to join
-          await resend.emails.send({
-            from: 'Exit OSx <noreply@exitosx.com>',
-            to: email,
-            subject: `You've been invited to join Exit OSx`,
-            html: `
-              <h2>You've been invited to Exit OSx</h2>
-              <p><strong>${currentUser.name || currentUser.email}</strong> has invited you to work on a task for <strong>${task.company.name}</strong>.</p>
-              <h3>${task.title}</h3>
-              <p>${task.description}</p>
-              <p>Exit OSx helps business owners prepare for a successful exit by improving their buyer readiness.</p>
-              <p><a href="${inviteUrl}" style="display: inline-block; padding: 12px 24px; background-color: #B87333; color: white; text-decoration: none; border-radius: 6px;">Accept Invite & Create Account</a></p>
-              <p>This invite expires in 7 days.</p>
-            `,
-          })
-        }
-      } catch (emailError) {
-        console.error('Error sending invite email:', emailError)
-        // Don't fail the request if email fails
-      }
+      await sendTaskDelegationEmail({
+        userId: existingUser?.id || currentUser.id, // Use inviter's ID for logging if invitee doesn't exist
+        email: email.toLowerCase(),
+        name: existingUser?.name ?? undefined,
+        companyId: task.companyId,
+        companyName: task.company.name,
+        taskId: task.id,
+        taskTitle: task.title,
+        taskDescription: task.description ?? undefined,
+        taskCategory: task.briCategory,
+        estimatedValue: normalizedValue > 0 ? normalizedValue : undefined,
+        delegatedBy: {
+          name: currentUser.name || currentUser.email,
+          email: currentUser.email,
+        },
+        dueDate: task.dueDate,
+        inviteToken: invite.token, // Link to invite acceptance page
+      })
+    } catch (emailError) {
+      console.error('Error sending task delegation email:', emailError)
+      // Don't fail the request if email fails - invite is still created
     }
 
     return NextResponse.json({

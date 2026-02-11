@@ -84,6 +84,10 @@ export async function GET(
             createdAt: true,
           },
         },
+        subSteps: {
+          select: { id: true, title: true, completed: true, completedAt: true, order: true },
+          orderBy: { order: 'asc' },
+        },
       },
     })
 
@@ -105,7 +109,7 @@ export async function PATCH(
 
   try {
     const body = await request.json()
-    const { status, deferredUntil, deferralReason, blockedReason, dueDate, primaryAssigneeId, assigneeIds, completionNotes, subStepProgress } = body
+    const { status, deferredUntil, deferralReason, blockedReason, dueDate, primaryAssigneeId, assigneeIds, completionNotes, subStepId, subStepCompleted } = body
 
     // Fetch task to get companyId for permission check
     const existingTask = await prisma.task.findUnique({
@@ -172,15 +176,15 @@ export async function PATCH(
       }
     }
 
-    // Handle sub-step progress update
-    if (subStepProgress && typeof subStepProgress === 'object') {
-      const currentProgress = (existingTask.taskProgress as { steps?: Record<string, boolean> } | null) ?? { steps: {} }
-      updateData.taskProgress = {
-        steps: {
-          ...(currentProgress.steps ?? {}),
-          ...subStepProgress,
+    // Handle sub-step toggle (new approach using TaskSubStep model)
+    if (subStepId !== undefined && subStepCompleted !== undefined) {
+      await prisma.taskSubStep.update({
+        where: { id: subStepId },
+        data: {
+          completed: subStepCompleted,
+          completedAt: subStepCompleted ? new Date() : null,
         },
-      }
+      })
     }
 
     // Update completion notes even without status change
@@ -297,6 +301,10 @@ export async function PATCH(
             status: true,
             createdAt: true,
           },
+        },
+        subSteps: {
+          select: { id: true, title: true, completed: true, completedAt: true, order: true },
+          orderBy: { order: 'asc' },
         },
       },
     })

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 import { getFlattenedIndustryOptions, type FlattenedIndustryOption } from '@/lib/data/industries'
 
 // Get all industry options for matching
@@ -73,6 +74,17 @@ function keywordMatch(description: string): FlattenedIndustryOption | null {
 }
 
 export async function POST(request: Request) {
+  // SECURITY FIX (PROD-060): Was completely unauthenticated. This endpoint calls OpenAI,
+  // so an attacker could abuse it for AI cost amplification. Require auth.
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json(
+      { error: 'Unauthorized', message: 'You must be logged in to use industry matching' },
+      { status: 401 }
+    )
+  }
+
   try {
     const body = await request.json()
     const { description } = body

@@ -13,6 +13,12 @@ import { prisma } from '@/lib/prisma'
 import { getIndustryMultiples, estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
 import { generateTasksFromProjectAssessment } from '@/lib/playbook/generate-tasks'
 import { updateActionPlan } from '@/lib/tasks/action-plan'
+import {
+  ALPHA,
+  calculateCoreScore,
+  calculateValuation,
+  type CoreFactors,
+} from '@/lib/valuation/calculate-valuation'
 
 // Default category weights for BRI calculation
 const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
@@ -24,8 +30,7 @@ const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
   PERSONAL: 0.10,
 }
 
-// Alpha constant for non-linear discount calculation
-const ALPHA = 1.4
+// ALPHA imported from @/lib/valuation/calculate-valuation
 
 interface CategoryScore {
   category: string
@@ -267,44 +272,9 @@ export async function POST(
     // Step 4: Calculate Core Score
     // ========================================
 
+    // Use shared utility for Core Score (5 factors, NOT 6 - revenueSizeCategory excluded)
     const coreFactors = company.coreFactors
-    let coreScore = previousSnapshot ? Number(previousSnapshot.coreScore) : 0.5
-
-    if (coreFactors) {
-      const factorScores: Record<string, Record<string, number>> = {
-        revenueSizeCategory: {
-          UNDER_500K: 0.2, FROM_500K_TO_1M: 0.4, FROM_1M_TO_3M: 0.6,
-          FROM_3M_TO_10M: 0.8, FROM_10M_TO_25M: 0.9, OVER_25M: 1.0,
-        },
-        revenueModel: {
-          PROJECT_BASED: 0.25, TRANSACTIONAL: 0.5,
-          RECURRING_CONTRACTS: 0.75, SUBSCRIPTION_SAAS: 1.0,
-        },
-        grossMarginProxy: {
-          LOW: 0.25, MODERATE: 0.5, GOOD: 0.75, EXCELLENT: 1.0,
-        },
-        laborIntensity: {
-          VERY_HIGH: 0.25, HIGH: 0.5, MODERATE: 0.75, LOW: 1.0,
-        },
-        assetIntensity: {
-          ASSET_HEAVY: 0.33, MODERATE: 0.67, ASSET_LIGHT: 1.0,
-        },
-        ownerInvolvement: {
-          CRITICAL: 0.0, HIGH: 0.25, MODERATE: 0.5, LOW: 0.75, MINIMAL: 1.0,
-        },
-      }
-
-      const scores = [
-        factorScores.revenueSizeCategory[coreFactors.revenueSizeCategory] || 0.5,
-        factorScores.revenueModel[coreFactors.revenueModel] || 0.5,
-        factorScores.grossMarginProxy[coreFactors.grossMarginProxy] || 0.5,
-        factorScores.laborIntensity[coreFactors.laborIntensity] || 0.5,
-        factorScores.assetIntensity[coreFactors.assetIntensity] || 0.5,
-        factorScores.ownerInvolvement[coreFactors.ownerInvolvement] || 0.5,
-      ]
-
-      coreScore = scores.reduce((a, b) => a + b, 0) / scores.length
-    }
+    const coreScore = calculateCoreScore(coreFactors as CoreFactors | null)
 
     // ========================================
     // Step 5: Calculate Valuation
@@ -341,14 +311,15 @@ export async function POST(
       adjustedEbitda = estimatedEbitda + addBacks + excessComp - deductions
     }
 
-    // Calculate multiples and values
-    const baseMultiple = industryMultipleLow + coreScore * (industryMultipleHigh - industryMultipleLow)
-    const discountFraction = Math.pow(1 - briScore, ALPHA)
-    const finalMultiple = industryMultipleLow + (baseMultiple - industryMultipleLow) * (1 - discountFraction)
-
-    const currentValue = adjustedEbitda * finalMultiple
-    const potentialValue = adjustedEbitda * baseMultiple
-    const valueGap = potentialValue - currentValue
+    // Use shared utility for consistent valuation calculation
+    const valuation = calculateValuation({
+      adjustedEbitda,
+      industryMultipleLow,
+      industryMultipleHigh,
+      coreScore,
+      briScore,
+    })
+    const { baseMultiple, discountFraction, finalMultiple, currentValue, potentialValue, valueGap } = valuation
 
     // Helper to get category score
     const getCategoryScore = (cat: string) => {

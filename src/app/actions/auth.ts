@@ -308,6 +308,146 @@ export async function secureSignup(
   }
 }
 
+interface MagicLinkResult {
+  success: boolean
+  error?: string
+}
+
+/**
+ * Server action for magic-link signup.
+ * Creates a Supabase user with signInWithOtp (no password), then sends a branded
+ * email via Resend with a link to the activation page.
+ *
+ * SECURITY:
+ * - Uses timing-safe responses to prevent email enumeration
+ * - Existing users receive an "account exists" email instead of an error
+ * - Rate limited at middleware level (AUTH tier: 5/min)
+ * - Selected plan is stored in user_metadata for trial setup during sync
+ */
+export async function sendMagicLink(
+  email: string,
+  selectedPlan?: string
+): Promise<MagicLinkResult> {
+  const headersList = await headers()
+  const ipAddress = headersList.get('x-forwarded-for')?.split(',')[0] || 'unknown'
+
+  return withTimingSafeResponse(async () => {
+    // Normalize email
+    const normalizedEmail = email.trim().toLowerCase()
+
+    // Basic email validation (server-side defense in depth)
+    if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return { success: false, error: 'Please enter a valid email address.' }
+    }
+
+    const { sendAccountExistsEmail } = await import('@/lib/email/send-account-exists-email')
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.exitosx.com'
+
+    // Use Supabase signInWithOtp to create the user and generate a magic link token.
+    // The emailRedirectTo points to our auth/callback route, which will redirect to /activate.
+    const supabase = await createClient()
+    const { error } = await supabase.auth.signInWithOtp({
+      email: normalizedEmail,
+      options: {
+        data: {
+          selected_plan: selectedPlan || 'foundation',
+          signup_method: 'magic_link',
+        },
+        // Supabase will append the token to this URL as query params
+        emailRedirectTo: `${baseUrl}/auth/callback?next=/activate`,
+        // shouldCreateUser ensures new users are created if they don't exist
+        shouldCreateUser: true,
+      },
+    })
+
+    if (error) {
+      // Check if user already exists with a password
+      // Supabase may return various error messages for existing users
+      if (error.message.includes('already registered') || error.message.includes('already been registered')) {
+        // Send account-exists email (non-blocking, always return success for enumeration protection)
+        sendAccountExistsEmail({ email: normalizedEmail }).catch((err) => {
+          console.error('[Auth] Failed to send account exists email:', err)
+        })
+
+        return { success: true }
+      }
+
+      securityLogger.error('auth.magic_link_failed', 'Magic link send failed', {
+        ipAddress,
+        metadata: { error: error.message },
+      })
+
+      return { success: false, error: 'Unable to send verification email. Please try again.' }
+    }
+
+    // Track signup initiated (non-blocking)
+    serverAnalytics.auth.signupInitiated({
+      email: normalizedEmail,
+      method: 'magic_link',
+    }).catch(() => {})
+
+    return { success: true }
+  })
+}
+
+/**
+ * Server action to set a password for a magic-link user who has verified their email.
+ * Called from the /activate page after the user clicks the magic link.
+ *
+ * SECURITY:
+ * - Requires an active Supabase session (user must have clicked the magic link)
+ * - Password is validated for strength and breach checking
+ * - Session cookie is set after password creation
+ */
+export async function setPasswordForMagicLink(
+  password: string
+): Promise<{ success: boolean; error?: string; passwordWarning?: string }> {
+  const { validatePassword, getPasswordWarning } = await import('@/lib/security')
+
+  // Validate password strength and check for breaches
+  const validationError = await validatePassword(password)
+  if (validationError) {
+    return { success: false, error: validationError }
+  }
+
+  const supabase = await createClient()
+
+  // Verify there is an active session (user clicked magic link and was redirected)
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return {
+      success: false,
+      error: 'Your session has expired. Please request a new signup link.',
+    }
+  }
+
+  // Set the password on the existing user
+  const { error } = await supabase.auth.updateUser({ password })
+  if (error) {
+    return {
+      success: false,
+      error: error.message || 'Failed to set password. Please try again.',
+    }
+  }
+
+  // Set last_activity cookie so middleware doesn't treat this as a stale session
+  const cookieStore = await cookies()
+  cookieStore.set(SESSION_COOKIE_NAME, String(Date.now()), {
+    path: '/',
+    maxAge: SESSION_COOKIE_MAX_AGE,
+    sameSite: 'lax',
+  })
+
+  // Check for password warning (non-blocking)
+  const warning = await getPasswordWarning(password)
+
+  return {
+    success: true,
+    passwordWarning: warning || undefined,
+  }
+}
+
 /**
  * Verify hCaptcha or reCAPTCHA token
  */
