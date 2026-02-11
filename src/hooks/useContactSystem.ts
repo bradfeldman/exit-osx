@@ -336,12 +336,21 @@ interface CategoryCounts {
  */
 export function useDealParticipants(dealId: string | null, sideFilter?: string) {
   const queryParams = sideFilter ? `?side=${sideFilter}` : ''
-  const { data, isLoading, error, refresh } = useFetch<{
+  const fetchResult = useFetch<{
     participants: DealParticipantData[]
     total: number
     counts: ParticipantCounts
     categoryCounts: CategoryCounts
   }>(dealId ? `/api/deals/${dealId}/participants${queryParams}` : null)
+
+  // Local optimistic state overlay
+  const [optimisticUpdates, setOptimisticUpdates] = useState<Record<string, Partial<DealParticipantData>>>({})
+
+  // Merge server data with optimistic updates
+  const participants = (fetchResult.data?.participants ?? []).map(p => ({
+    ...p,
+    ...optimisticUpdates[p.id]
+  }))
 
   const addParticipant = useCallback(async (params: {
     canonicalPersonId: string
@@ -365,25 +374,55 @@ export function useDealParticipants(dealId: string | null, sideFilter?: string) 
     }
 
     const result = await res.json()
-    refresh()
+    fetchResult.refresh()
     return result
-  }, [dealId, refresh])
+  }, [dealId, fetchResult])
 
   const updateParticipant = useCallback(async (
     participantId: string,
     updates: { role?: string; side?: string; category?: string; description?: string; notes?: string; isPrimary?: boolean; isActive?: boolean; dealBuyerId?: string | null }
   ) => {
-    const res = await fetch(`/api/deals/${dealId}/participants/${participantId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updates),
-    })
+    // Optimistic update: immediately update local overlay
+    setOptimisticUpdates(prev => ({
+      ...prev,
+      [participantId]: { ...prev[participantId], ...updates }
+    }))
 
-    if (!res.ok) throw new Error('Failed to update participant')
+    try {
+      const res = await fetch(`/api/deals/${dealId}/participants/${participantId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      })
 
-    refresh()
-    return res.json()
-  }, [dealId, refresh])
+      if (!res.ok) {
+        // Rollback on error
+        setOptimisticUpdates(prev => {
+          const newUpdates = { ...prev }
+          delete newUpdates[participantId]
+          return newUpdates
+        })
+        throw new Error('Failed to update participant')
+      }
+
+      // Clear optimistic update after successful API call
+      setOptimisticUpdates(prev => {
+        const newUpdates = { ...prev }
+        delete newUpdates[participantId]
+        return newUpdates
+      })
+
+      return res.json()
+    } catch (error) {
+      // Rollback optimistic update on error
+      setOptimisticUpdates(prev => {
+        const newUpdates = { ...prev }
+        delete newUpdates[participantId]
+        return newUpdates
+      })
+      throw error
+    }
+  }, [dealId])
 
   const removeParticipant = useCallback(async (participantId: string) => {
     const res = await fetch(`/api/deals/${dealId}/participants/${participantId}`, {
@@ -392,8 +431,8 @@ export function useDealParticipants(dealId: string | null, sideFilter?: string) 
 
     if (!res.ok) throw new Error('Failed to remove participant')
 
-    refresh()
-  }, [dealId, refresh])
+    fetchResult.refresh()
+  }, [dealId, fetchResult])
 
   const smartAdd = useCallback(async (text: string) => {
     const res = await fetch(`/api/deals/${dealId}/participants/smart-add`, {
@@ -408,13 +447,13 @@ export function useDealParticipants(dealId: string | null, sideFilter?: string) 
   }, [dealId])
 
   return {
-    participants: data?.participants ?? [],
-    total: data?.total ?? 0,
-    counts: data?.counts ?? { BUYER: 0, SELLER: 0, NEUTRAL: 0 },
-    categoryCounts: data?.categoryCounts ?? { PROSPECT: 0, MANAGEMENT: 0, ADVISOR: 0, OTHER: 0 },
-    isLoading,
-    error,
-    refresh,
+    participants,
+    total: fetchResult.data?.total ?? 0,
+    counts: fetchResult.data?.counts ?? { BUYER: 0, SELLER: 0, NEUTRAL: 0 },
+    categoryCounts: fetchResult.data?.categoryCounts ?? { PROSPECT: 0, MANAGEMENT: 0, ADVISOR: 0, OTHER: 0 },
+    isLoading: fetchResult.isLoading,
+    error: fetchResult.error,
+    refresh: fetchResult.refresh,
     addParticipant,
     updateParticipant,
     removeParticipant,

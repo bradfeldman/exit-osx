@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useSubscription } from '@/contexts/SubscriptionContext'
+import { useExposure } from '@/contexts/ExposureContext'
 import { AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
 import { HeroMetricsBar } from './HeroMetricsBar'
 import { ValuationBridge } from './ValuationBridge'
@@ -17,6 +18,7 @@ import { DisclosureTrigger } from '@/components/disclosures/DisclosureTrigger'
 import { DriftReportBanner } from '@/components/drift-report/DriftReportBanner'
 import { WeeklyCheckInTrigger } from '@/components/weekly-check-in/WeeklyCheckInTrigger'
 import { BenchmarkComparison } from './BenchmarkComparison'
+import { BRIRangeGauge } from '@/components/diagnosis/BRIRangeGauge'
 import { WhatIfScenarios } from './WhatIfScenarios'
 import { UpgradeModal } from '@/components/subscription/UpgradeModal'
 import { PlatformTour } from './PlatformTour'
@@ -123,6 +125,7 @@ interface DashboardData {
 export function ValueHome() {
   const { selectedCompanyId } = useCompany()
   const { planTier } = useSubscription()
+  const { isLearning, isLoading: exposureLoading } = useExposure()
   const router = useRouter()
   const isFreeUser = planTier === 'foundation'
   const [data, setData] = useState<DashboardData | null>(null)
@@ -162,16 +165,16 @@ export function ValueHome() {
     fetchData()
   }, [fetchData])
 
-  // Auto-open platform tour on first visit
+  // Auto-open platform tour on first visit (only in LEARNING state)
   useEffect(() => {
-    if (!isLoading && data && !localStorage.getItem('exitosx-tour-seen')) {
+    if (!isLoading && !exposureLoading && data && isLearning && !localStorage.getItem('exitosx-tour-seen')) {
       const timer = setTimeout(() => {
         setTourKey((k) => k + 1)
         setShowTour(true)
       }, 600)
       return () => clearTimeout(timer)
     }
-  }, [isLoading, data])
+  }, [isLoading, exposureLoading, data, isLearning])
 
   const handleTourComplete = useCallback(() => {
     localStorage.setItem('exitosx-tour-seen', 'true')
@@ -222,18 +225,26 @@ export function ValueHome() {
           />
         </AnimatedItem>
 
-        {/* Benchmark Comparison */}
-        <AnimatedItem>
-          <BenchmarkComparison
-            industryName={tier1?.industryName ?? 'Your Industry'}
-            industryMultipleLow={tier1?.multipleRange?.low ?? 3}
-            industryMultipleHigh={tier1?.multipleRange?.high ?? 6}
-            currentMultiple={tier1?.finalMultiple ?? 0}
-            hasAssessment={data.hasAssessment}
-            isFreeUser={isFreeUser}
-            onUpgrade={() => handleUpgrade('company-assessment', 'Industry Benchmarks')}
-          />
-        </AnimatedItem>
+        {/* BRI Range Gauge + Benchmark Comparison */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <AnimatedItem>
+            <BRIRangeGauge
+              briScore={tier1?.briScore ?? null}
+              isEstimated={tier1?.isEstimated ?? true}
+            />
+          </AnimatedItem>
+          <AnimatedItem>
+            <BenchmarkComparison
+              industryName={tier1?.industryName ?? 'Your Industry'}
+              industryMultipleLow={tier1?.multipleRange?.low ?? 3}
+              industryMultipleHigh={tier1?.multipleRange?.high ?? 6}
+              currentMultiple={tier1?.finalMultiple ?? 0}
+              hasAssessment={data.hasAssessment}
+              isFreeUser={isFreeUser}
+              onUpgrade={() => handleUpgrade('company-assessment', 'Industry Benchmarks')}
+            />
+          </AnimatedItem>
+        </div>
 
         {/* Valuation Bridge */}
         <AnimatedItem>
@@ -291,7 +302,11 @@ export function ValueHome() {
           />
         </AnimatedItem>
 
-        {/* Value Ledger Summary */}
+        {/* Value Ledger Summary
+            NOTE: Not in original Mode 1 spec (which defined 4 sections). Added after
+            signal architecture (PROD-020) and value ledger were implemented. Shows recent
+            value changes (task completions, drift events) to provide momentum visibility.
+            Self-hides when no entries exist. See ADR-001 in docs/ for full rationale. */}
         <AnimatedItem>
           <ValueLedgerSection />
         </AnimatedItem>

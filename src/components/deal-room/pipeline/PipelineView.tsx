@@ -1,10 +1,14 @@
 'use client'
 
+import { useState } from 'react'
 import { PipelineColumn } from './PipelineColumn'
 import { ExitedBuyersSection } from './ExitedBuyersSection'
 import { AddBuyerForm } from './AddBuyerForm'
 import { OfferComparison } from './OfferComparison'
+import { StagePickerDialog } from './StagePickerDialog'
+import { getVisualStage } from '@/lib/deal-room/visual-stages'
 import type { PipelineBuyer } from './BuyerCard'
+import type { DealStage } from '@prisma/client'
 
 interface PipelineStage {
   visualStage: string
@@ -47,6 +51,7 @@ interface PipelineViewProps {
   }
   offers: Offer[]
   onBuyerClick: (buyerId: string) => void
+  onStageChange: (buyerId: string, newVisualStage: string) => Promise<void>
   onAddBuyer: (data: {
     companyName: string
     buyerType: string
@@ -61,12 +66,63 @@ export function PipelineView({
   pipeline,
   offers,
   onBuyerClick,
+  onStageChange,
   onAddBuyer,
   isAddingBuyer,
 }: PipelineViewProps) {
+  const [draggedBuyerId, setDraggedBuyerId] = useState<string | null>(null)
+  const [stagePickerOpen, setStagePickerOpen] = useState(false)
+  const [selectedBuyerForMove, setSelectedBuyerForMove] = useState<PipelineBuyer | null>(null)
+
   const ndaCount = pipeline.stages
     .filter(s => ['under_nda', 'offer_received', 'diligence', 'closed'].includes(s.visualStage))
     .reduce((sum, s) => sum + s.buyerCount, 0)
+
+  const handleDragStart = (buyerId: string) => {
+    setDraggedBuyerId(buyerId)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedBuyerId(null)
+  }
+
+  const handleDrop = async (buyerId: string, targetVisualStage: string) => {
+    // Find current stage of dragged buyer
+    const currentStage = pipeline.stages.find(s =>
+      s.buyers.some(b => b.id === buyerId)
+    )
+
+    // Don't update if dropped on same stage
+    if (currentStage?.visualStage === targetVisualStage) {
+      handleDragEnd()
+      return
+    }
+
+    try {
+      await onStageChange(buyerId, targetVisualStage)
+    } catch (error) {
+      console.error('Failed to update stage:', error)
+    } finally {
+      handleDragEnd()
+    }
+  }
+
+  const handleOpenStagePicker = (buyerId: string) => {
+    const buyer = pipeline.stages
+      .flatMap(s => s.buyers)
+      .find(b => b.id === buyerId)
+
+    if (buyer) {
+      setSelectedBuyerForMove(buyer)
+      setStagePickerOpen(true)
+    }
+  }
+
+  const handleStageSelect = async (visualStage: string) => {
+    if (selectedBuyerForMove) {
+      await onStageChange(selectedBuyerForMove.id, visualStage)
+    }
+  }
 
   return (
     <div>
@@ -98,10 +154,16 @@ export function PipelineView({
           {pipeline.stages.map(stage => (
             <PipelineColumn
               key={stage.visualStage}
+              visualStage={stage.visualStage}
               label={stage.label}
               buyerCount={stage.buyerCount}
               buyers={stage.buyers}
               onBuyerClick={onBuyerClick}
+              onChangeStage={handleOpenStagePicker}
+              onDragStart={handleDragStart}
+              onDrop={handleDrop}
+              isDragging={draggedBuyerId !== null}
+              draggedBuyerId={draggedBuyerId}
             />
           ))}
         </div>
@@ -112,6 +174,20 @@ export function PipelineView({
 
       {/* Add Buyer */}
       <AddBuyerForm onAdd={onAddBuyer} isAdding={isAddingBuyer} />
+
+      {/* Stage Picker Dialog */}
+      {selectedBuyerForMove && (
+        <StagePickerDialog
+          isOpen={stagePickerOpen}
+          onClose={() => {
+            setStagePickerOpen(false)
+            setSelectedBuyerForMove(null)
+          }}
+          buyerName={selectedBuyerForMove.companyName}
+          currentStage={getVisualStage(selectedBuyerForMove.currentStage as DealStage) as string}
+          onStageSelect={handleStageSelect}
+        />
+      )}
     </div>
   )
 }

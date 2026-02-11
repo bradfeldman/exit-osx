@@ -80,7 +80,7 @@ export function ValuationImpactCelebration({
 
   const handleContinue = () => {
     onDismiss()
-    router.push('/dashboard/value-builder')
+    router.push('/dashboard')
   }
 
   return (

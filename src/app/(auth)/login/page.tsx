@@ -223,7 +223,7 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
   const isLocked = !!lockedUntil && lockedUntil > Date.now()
 
   return (
-    <div className="min-h-screen flex">
+    <div className="flex min-h-[100dvh]">
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
@@ -374,7 +374,8 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
                     onBlur={() => handleFieldBlur('email')}
                     required
                     disabled={loading || isLocked}
-                    className="h-12 transition-all duration-200 focus:scale-[1.01]"
+                    autoComplete="email"
+                    className="h-12"
                   />
                 </div>
 
@@ -399,7 +400,8 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
                       onBlur={() => handleFieldBlur('password')}
                       required
                       disabled={loading || isLocked}
-                      className="h-12 pr-12 transition-all duration-200 focus:scale-[1.01]"
+                      autoComplete="current-password"
+                      className="h-12 pr-12"
                     />
                     <button
                       type="button"
@@ -451,7 +453,8 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
                     onChange={(e) => setTwoFactorCode(e.target.value.replace(/[^0-9-]/g, ''))}
                     required
                     disabled={loading}
-                    className="h-12 text-center text-lg tracking-widest font-mono transition-all duration-200 focus:scale-[1.01]"
+                    autoComplete="one-time-code"
+                    className="h-12 text-center text-lg tracking-widest font-mono"
                     autoFocus
                   />
                   <p className="text-xs text-muted-foreground text-center">
@@ -471,8 +474,9 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
 
             <Button
               type="submit"
-              className="w-full h-12 text-base transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/25"
+              className="w-full h-12 text-base"
               disabled={loading || isLocked || (showCaptcha && !captchaToken) || (requiresTwoFactor && twoFactorCode.length < 6)}
+              animated={false}
             >
               {loading ? 'Signing in...' : requiresTwoFactor ? 'Verify' : 'Sign In'}
             </Button>

@@ -102,7 +102,7 @@ export function BenchmarkComparison({
               className="absolute inset-y-0 bg-emerald-200/70"
               style={{ left: '75%', width: '25%' }}
             />
-            {/* Current position marker */}
+            {/* Current position marker - positioned proportionally between min and max */}
             <div
               className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-5 w-5 rounded-full border-2 border-white shadow-md z-10"
               style={{
@@ -114,11 +114,11 @@ export function BenchmarkComparison({
 
           {/* Labels */}
           <div className="flex justify-between text-[11px] text-muted-foreground">
-            <span>{industryMultipleLow.toFixed(1)}x</span>
+            <span>Min: {industryMultipleLow.toFixed(1)}x</span>
             <span className="font-medium text-foreground">
               You: {currentMultiple.toFixed(1)}x
             </span>
-            <span>{industryMultipleHigh.toFixed(1)}x</span>
+            <span>Max: {industryMultipleHigh.toFixed(1)}x</span>
           </div>
         </div>
 

@@ -39,7 +39,7 @@ export function AllCompletedState({ completedCount, valueRecovered }: AllComplet
         onClick={() => router.push('/dashboard/diagnosis?sharpen=true')}
       >
         <Sparkles className="h-4 w-4 mr-1" />
-        Sharpen Diagnosis
+        Re-Assess
       </Button>
     </div>
   )

@@ -35,6 +35,7 @@ interface CategoryPanelProps {
   label: string
   score: number
   dollarImpact: number | null
+  isAssessed: boolean
   confidence: {
     dots: number
     label: string
@@ -52,6 +53,8 @@ interface CategoryPanelProps {
   isExpanded?: boolean
   onExpand?: () => void
   onCollapse?: () => void
+  /** PROD-017: Next cadence-based prompt date (ISO string or null) */
+  nextPromptDate?: string | null
 }
 
 export function CategoryPanel({
@@ -59,6 +62,7 @@ export function CategoryPanel({
   label,
   score,
   dollarImpact,
+  isAssessed,
   confidence,
   isLowestConfidence,
   assessmentId,
@@ -67,6 +71,7 @@ export function CategoryPanel({
   isExpanded: controlledIsExpanded,
   onExpand,
   onCollapse,
+  nextPromptDate,
 }: CategoryPanelProps) {
   // Fully controlled mode when parent provides onExpand/onCollapse
   const isControlled = onExpand !== undefined && onCollapse !== undefined
@@ -78,7 +83,7 @@ export function CategoryPanel({
   const getCtaLabel = (): string => {
     if (confidence.questionsAnswered === 0) return 'Start Assessment'
     if (confidence.isStale) return 'Review & Refresh'
-    if (confidence.hasUnansweredAiQuestions) return 'Sharpen Diagnosis'
+    if (confidence.hasUnansweredAiQuestions) return 'Re-Assess'
     if (confidence.questionsAnswered < confidence.questionsTotal) return 'Continue'
     if (score >= 80 && confidence.questionsAnswered === confidence.questionsTotal) return 'Maintaining'
     return 'Review Answers'
@@ -124,20 +129,36 @@ export function CategoryPanel({
 
   return (
     <div className={cn(
-      'bg-card border border-border rounded-xl p-5 transition-all',
-      'hover:border-primary/20 hover:shadow-sm',
-      isLowestConfidence && 'border-amber-300/50',
-      isExpanded && 'border-primary/40 shadow-md'
+      'bg-card border rounded-xl p-5 transition-all',
+      // PROD-014: Visually distinguish unassessed categories
+      !isAssessed && 'border-dashed border-border/60 bg-muted/30',
+      isAssessed && 'border-border hover:border-primary/20 hover:shadow-sm',
+      isLowestConfidence && isAssessed && 'border-amber-300/50',
+      isExpanded && 'border-primary/40 shadow-md border-solid'
     )}>
       {/* Header: Dot + Label + Score */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className={cn('h-2.5 w-2.5 rounded-full', CATEGORY_DOT_COLORS[category] || 'bg-gray-400')} />
-          <span className="text-sm font-semibold text-foreground">{label}</span>
+          <div className={cn(
+            'h-2.5 w-2.5 rounded-full',
+            isAssessed
+              ? (CATEGORY_DOT_COLORS[category] || 'bg-gray-400')
+              : 'bg-gray-300'
+          )} />
+          <span className={cn(
+            'text-sm font-semibold',
+            isAssessed ? 'text-foreground' : 'text-muted-foreground'
+          )}>{label}</span>
         </div>
-        <span className={cn('text-lg font-bold', getScoreColor(score))}>
-          {score}/100
-        </span>
+        {isAssessed ? (
+          <span className={cn('text-lg font-bold', getScoreColor(score))}>
+            {score}/100
+          </span>
+        ) : (
+          <span className="text-sm font-medium text-muted-foreground/60 italic">
+            Not Assessed
+          </span>
+        )}
       </div>
 
       {/* Confidence */}
@@ -145,13 +166,13 @@ export function CategoryPanel({
         <ConfidenceDots dots={confidence.dots} label={confidence.label} />
       </div>
 
-      {/* Dollar Impact */}
-      {dollarImpact !== null && dollarImpact > 0 && (
+      {/* Dollar Impact — only shown for assessed categories */}
+      {isAssessed && dollarImpact !== null && dollarImpact > 0 && (
         <p className="text-sm font-medium mt-2 text-muted-foreground">
           Costing you ~{formatCurrency(dollarImpact)}
         </p>
       )}
-      {category === 'PERSONAL' && (
+      {isAssessed && category === 'PERSONAL' && (
         <p className="text-xs text-muted-foreground mt-2">
           Affects your exit timeline, not buyer pricing
         </p>
@@ -169,8 +190,17 @@ export function CategoryPanel({
           : 'Not yet assessed'}
       </p>
 
-      {/* Lowest confidence highlight */}
-      {isLowestConfidence && confidence.dots < 4 && (
+      {/* PROD-017: Next re-assessment date (when cadence suppresses prompt) */}
+      {isAssessed && nextPromptDate && !confidence.isStale && (
+        <p className="text-xs text-muted-foreground/70 mt-1">
+          {new Date(nextPromptDate) <= new Date()
+            ? 'Re-assessment available'
+            : `Next re-assessment suggested: ${new Date(nextPromptDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+        </p>
+      )}
+
+      {/* Lowest confidence highlight — only for assessed categories */}
+      {isAssessed && isLowestConfidence && confidence.dots < 4 && (
         <div className="flex items-center gap-1.5 mt-2 text-xs text-amber-600">
           <AlertTriangle className="h-3.5 w-3.5" />
           <span>Lowest confidence — improve this first</span>

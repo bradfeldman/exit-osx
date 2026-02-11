@@ -6,6 +6,7 @@ import { UserRoleProvider } from '@/contexts/UserRoleContext'
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext'
 import { ProgressionProvider } from '@/contexts/ProgressionContext'
 import { ExitCoachProvider } from '@/contexts/ExitCoachContext'
+import { ExposureProvider } from '@/contexts/ExposureContext'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 import { TrialBanner } from '@/components/subscription/TrialBanner'
@@ -24,12 +25,14 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
       <UserRoleProvider>
         <SubscriptionProvider>
           <ProgressionProvider>
-            <ExitCoachProvider>
-              <DashboardContent user={user}>
-                {children}
-              </DashboardContent>
-              <ExitCoachDrawer />
-            </ExitCoachProvider>
+            <ExposureProvider>
+              <ExitCoachProvider>
+                <DashboardContent user={user}>
+                  {children}
+                </DashboardContent>
+                <ExitCoachDrawer />
+              </ExitCoachProvider>
+            </ExposureProvider>
           </ProgressionProvider>
         </SubscriptionProvider>
       </UserRoleProvider>

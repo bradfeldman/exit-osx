@@ -6,6 +6,7 @@ import { SubStepChecklist } from './SubStepChecklist'
 import { BuyerContextBlock } from './BuyerContextBlock'
 import { TaskDetailsCollapsible } from './TaskDetailsCollapsible'
 import { TaskStatusActions } from './TaskStatusActions'
+import { TaskNotes } from './TaskNotes'
 
 function formatCurrency(value: number): string {
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
@@ -57,10 +58,12 @@ interface ActiveTaskCardProps {
   onSubStepToggle: (taskId: string, stepId: string, completed: boolean) => void
   onComplete: () => void
   onBlock: (taskId: string, reason: string) => void
+  onDefer?: (taskId: string, deferredUntil: string, reason: string) => void
   onRefresh?: () => void
+  disabled?: boolean
 }
 
-export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onBlock, onRefresh }: ActiveTaskCardProps) {
+export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onBlock, onDefer, onRefresh, disabled = false }: ActiveTaskCardProps) {
   const metaParts: string[] = []
   metaParts.push(`~${formatCurrency(task.normalizedValue)} impact`)
   if (task.estimatedMinutes) {
@@ -73,7 +76,7 @@ export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onBlock, onR
   const showStaleNudge = task.daysInProgress !== null && task.daysInProgress >= 14
 
   return (
-    <div className="rounded-xl border-2 border-[var(--burnt-orange)]/30 bg-card p-6 shadow-sm">
+    <div className={cn('rounded-xl border-2 border-[var(--burnt-orange)]/30 bg-card p-6 shadow-sm', disabled && 'opacity-60 pointer-events-none')}>
       {/* Header row */}
       <div className="flex items-center justify-between">
         <div className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--burnt-orange)]">
@@ -125,11 +128,17 @@ export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onBlock, onR
         taskId={task.id}
         onComplete={onComplete}
         onBlock={onBlock}
+        onDefer={onDefer}
         assignee={task.assignee}
         isAssignedToCurrentUser={task.isAssignedToCurrentUser}
         pendingInvite={task.pendingInvite}
         onRefresh={onRefresh}
       />
+
+      {/* Task notes */}
+      <div className="mt-4">
+        <TaskNotes taskId={task.id} taskTitle={task.title} disabled={disabled} />
+      </div>
 
       {/* Collapsible details */}
       <TaskDetailsCollapsible

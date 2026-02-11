@@ -21,17 +21,21 @@ interface NavLink {
   icon: React.ComponentType<{ className?: string }>
   requiredPlan?: PlanTier
   featureKey?: string
-  progressionKey?: string // Key for progression-based locking
-  exactMatch?: boolean // Only highlight on exact pathname match
+  progressionKey?: string // Key for feature-level progression locking (e.g. retirementCalculator)
+  modeKey?: string        // Key for mode-level milestone gating (e.g. actions, evidence, dealRoom)
+  exactMatch?: boolean    // Only highlight on exact pathname match
 }
 
-// CORE section links - 5 Mode Navigation (Dan/Alex design)
+// CORE section links - 5 Mode Navigation
+// Value and Diagnosis are always accessible.
+// Actions and Evidence require hasAssessment (at least 1 category assessed).
+// Deal Room requires evidencePercentage >= 70.
 const coreLinks: NavLink[] = [
   { name: 'Value', href: '/dashboard', icon: HomeIcon },
   { name: 'Diagnosis', href: '/dashboard/diagnosis', icon: DiagnosisIcon },
-  { name: 'Actions', href: '/dashboard/actions', icon: ActionsIcon },
-  { name: 'Evidence', href: '/dashboard/evidence', icon: EvidenceIcon },
-  { name: 'Deal Room', href: '/dashboard/deal-room', icon: DealRoomIcon },
+  { name: 'Actions', href: '/dashboard/actions', icon: ActionsIcon, modeKey: 'actions' },
+  { name: 'Evidence', href: '/dashboard/evidence', icon: EvidenceIcon, modeKey: 'evidence' },
+  { name: 'Deal Room', href: '/dashboard/deal-room', icon: DealRoomIcon, modeKey: 'dealRoom' },
 ]
 
 // VALUE MODELING section
@@ -41,7 +45,7 @@ const valueModelingLinks: NavLink[] = [
 ]
 
 const retirementCalculatorLink: NavLink = {
-  name: 'Retirement Calculator', href: '/dashboard/financials/retirement', icon: CalculatorIcon, requiredPlan: 'growth', featureKey: 'retirement-calculator', progressionKey: 'retirementCalculator',
+  name: 'Retirement Calculator', href: '/dashboard/financials/retirement', icon: CalculatorIcon, progressionKey: 'retirementCalculator',
 }
 
 // Personal financials (always in financials section when unlocked)
@@ -80,8 +84,23 @@ export function Sidebar() {
     ? () => false
     : subscription.shouldShowRequestAccess
 
-  // Progression unlocks
-  const { progressionData, getUnlockHint, isProgressionLocked } = progression
+  // Progression unlocks (milestone-based)
+  const {
+    progressionData,
+    getUnlockHint,
+    getModeUnlockHint,
+    isProgressionLocked,
+    canAccessActions,
+    canAccessEvidence,
+    canAccessDealRoom,
+  } = progression
+
+  // Map modeKey to its canAccess gate
+  const modeAccessMap: Record<string, boolean> = {
+    actions: canAccessActions,
+    evidence: canAccessEvidence,
+    dealRoom: canAccessDealRoom,
+  }
 
   const handleLockedClick = (featureKey: string, featureName: string) => {
     // Check if this is a personal feature that staff can request access to
@@ -96,7 +115,7 @@ export function Sidebar() {
 
   const selectedCompany = companies.find(c => c.id === selectedCompanyId)
 
-  // Helper to render a nav link with both subscription and progression locking
+  // Helper to render a nav link with subscription, mode-milestone, and feature-progression locking
   const renderNavLink = (link: NavLink, options?: { showBadge?: boolean; badgeType?: 'warning' | 'alert' }) => {
     // Special case for Value (/dashboard) - only match exact path
     const isActive = link.href === '/dashboard'
@@ -106,10 +125,26 @@ export function Sidebar() {
         : pathname === link.href || pathname.startsWith(link.href + '/')
     const IconComponent = link.icon
 
-    // Check subscription lock first
+    // Check mode-level milestone gate (for core 5-mode navigation)
+    if (link.modeKey && modeAccessMap[link.modeKey] === false) {
+      const modeHint = getModeUnlockHint(link.modeKey)
+      if (modeHint) {
+        return (
+          <li key={link.href}>
+            <ProgressionLockedItem
+              name={link.name}
+              icon={IconComponent}
+              unlockHint={modeHint}
+            />
+          </li>
+        )
+      }
+    }
+
+    // Check subscription lock
     const isSubscriptionLocked = link.featureKey && !canAccessFeature(link.featureKey)
 
-    // Check progression lock
+    // Check feature-level progression lock (for sub-items like retirement calculator)
     const progressionLocked = link.progressionKey && isProgressionLocked(link.progressionKey)
     const unlockHint = link.progressionKey ? getUnlockHint(link.progressionKey) : null
 

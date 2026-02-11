@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useCompany } from '@/contexts/CompanyContext'
+import { toast } from 'sonner'
 import { ActivationGate } from './ActivationGate'
 import { DealRoomTabs, type DealRoomTab } from './DealRoomTabs'
 import { PipelineView } from './pipeline/PipelineView'
 import { BuyerDetailPanel } from './pipeline/BuyerDetailPanel'
-import { DealDataRoom } from './data-room/DealDataRoom'
+import { DiligenceDataRoom } from './data-room/DiligenceDataRoom'
 import { ActivityFeed } from './activity/ActivityFeed'
 import { ContactsView } from './contacts/ContactsView'
 import { DealRoomLoading } from './DealRoomLoading'
@@ -17,8 +18,6 @@ interface DealRoomData {
   activation: {
     evidenceReady: boolean
     evidenceScore: number
-    tierReady: boolean
-    currentTier: string
     isActivated: boolean
     activatedAt: string | null
     canActivate: boolean
@@ -158,6 +157,42 @@ export function DealRoomPage() {
     setSelectedBuyerId(buyerId)
   }
 
+  const handleStageChange = async (buyerId: string, newVisualStage: string) => {
+    if (!selectedCompanyId) return
+
+    // Find buyer name for toast message
+    const buyer = data?.pipeline?.stages
+      .flatMap(s => s.buyers)
+      .find(b => b.id === buyerId)
+
+    const stageName = newVisualStage.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+
+    try {
+      const res = await fetch(
+        `/api/companies/${selectedCompanyId}/deal-room/buyers/${buyerId}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stage: newVisualStage }),
+        }
+      )
+      if (!res.ok) throw new Error('Failed to update stage')
+
+      toast.success(
+        buyer
+          ? `${buyer.companyName} moved to ${stageName}`
+          : `Stage updated to ${stageName}`
+      )
+
+      await fetchData()
+    } catch (error) {
+      console.error('Failed to update buyer stage:', error)
+      toast.error('Failed to update stage. Please try again.')
+      // Re-fetch to ensure UI is in sync
+      await fetchData()
+    }
+  }
+
   // Find the selected buyer across all stages
   const selectedBuyer = data?.pipeline?.stages
     .flatMap(s => s.buyers)
@@ -197,6 +232,7 @@ export function DealRoomPage() {
           pipeline={data.pipeline}
           offers={data.offers}
           onBuyerClick={handleBuyerClick}
+          onStageChange={handleStageChange}
           onAddBuyer={handleAddBuyer}
           isAddingBuyer={isAddingBuyer}
         />
@@ -207,7 +243,7 @@ export function DealRoomPage() {
       )}
 
       {activeTab === 'data-room' && (
-        <DealDataRoom dataRoom={data.dataRoom} />
+        <DiligenceDataRoom />
       )}
 
       {activeTab === 'activity' && selectedCompanyId && (

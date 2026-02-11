@@ -27,6 +27,7 @@ import {
   parseInputValue,
   getLifeExpectancy,
 } from '@/lib/retirement/retirement-calculator'
+import { detectTaxTreatment } from '@/lib/retirement/account-type-detector'
 
 type CalculatorMode = 'easy' | 'pro'
 
@@ -187,20 +188,18 @@ export default function RetirementCalculatorPage() {
         // Process personal assets and liabilities from PFS data
         if (pfsData?.personalFinancials) {
           const pfsAssets = pfsData.personalFinancials.personalAssets || []
+          // PROD-046 FIX: Use account-type detector for correct tax treatment.
+          // Previously all "Retirement Accounts" were treated as tax_deferred,
+          // which incorrectly taxed Roth IRA/401k withdrawals.
+          // Now the detector checks account name for Roth/HSA keywords first.
           personalAssets = pfsAssets.map(
             (asset) => {
-              let taxTreatment: TaxTreatment = 'already_taxed'
-              if (asset.category === 'Retirement Accounts') {
-                taxTreatment = 'tax_deferred'
-              } else if (asset.category === 'Investment Accounts') {
-                taxTreatment = 'capital_gains'
-              } else if (asset.category === 'Real Estate') {
-                taxTreatment = 'capital_gains'
-              }
+              const accountName = asset.description || asset.category
+              const taxTreatment = detectTaxTreatment(accountName, asset.category)
 
               return {
                 id: asset.id,
-                name: asset.description || asset.category,
+                name: accountName,
                 category: asset.category,
                 currentValue: asset.value,
                 taxTreatment,

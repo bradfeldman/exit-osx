@@ -28,7 +28,22 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
   const progression = useProgression()
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const { progressionData, isProgressionLocked, getUnlockHint } = progression
+  const {
+    progressionData,
+    isProgressionLocked,
+    getUnlockHint,
+    getModeUnlockHint,
+    canAccessActions,
+    canAccessEvidence,
+    canAccessDealRoom,
+  } = progression
+
+  // Map modeKey to its canAccess gate
+  const modeAccessMap: Record<string, boolean> = {
+    actions: canAccessActions,
+    evidence: canAccessEvidence,
+    dealRoom: canAccessDealRoom,
+  }
 
   // Defensive: if subscription is still loading, allow all features
   const canAccessFeature = subscription.isLoading
@@ -193,18 +208,36 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
 
           {/* Navigation */}
           <nav className="flex-1 space-y-1">
-            {/* CORE Section — 5-Mode Navigation */}
+            {/* CORE Section -- 5-Mode Navigation with milestone gating */}
             {[
               { name: 'Value', href: '/dashboard', icon: HomeIcon, exact: true },
               { name: 'Diagnosis', href: '/dashboard/diagnosis', icon: DiagnosisIcon },
-              { name: 'Actions', href: '/dashboard/actions', icon: ActionsIcon },
-              { name: 'Evidence', href: '/dashboard/evidence', icon: EvidenceIcon },
-              { name: 'Deal Room', href: '/dashboard/deal-room', icon: DealRoomIcon },
+              { name: 'Actions', href: '/dashboard/actions', icon: ActionsIcon, modeKey: 'actions' },
+              { name: 'Evidence', href: '/dashboard/evidence', icon: EvidenceIcon, modeKey: 'evidence' },
+              { name: 'Deal Room', href: '/dashboard/deal-room', icon: DealRoomIcon, modeKey: 'dealRoom' },
             ].map((link) => {
               const isActive = link.exact
                 ? pathname === link.href
                 : pathname === link.href || pathname.startsWith(link.href + '/')
               const Icon = link.icon
+
+              // Check mode-level milestone gate
+              if (link.modeKey && modeAccessMap[link.modeKey] === false) {
+                const modeHint = getModeUnlockHint(link.modeKey)
+                return (
+                  <button
+                    key={link.href}
+                    className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full cursor-not-allowed"
+                    disabled
+                    title={modeHint || undefined}
+                  >
+                    <Icon className="h-5 w-5 text-sidebar-foreground/30" />
+                    {link.name}
+                    <MilestoneLockIcon className="h-4 w-4 ml-auto text-sidebar-foreground/30" />
+                  </button>
+                )
+              }
+
               return (
                 <Link
                   key={link.href}
@@ -578,6 +611,15 @@ function DealRoomIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
+    </svg>
+  )
+}
+
+// Clock icon for milestone-locked items (distinct from subscription lock)
+function MilestoneLockIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
     </svg>
   )
 }

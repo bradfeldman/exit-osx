@@ -1538,7 +1538,7 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Link href="/dashboard/value-builder">
+                <Link href="/dashboard">
                   <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
                     View Impact
                     <ArrowRight className="h-4 w-4 ml-1" />
@@ -1608,7 +1608,7 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                     <ArrowRight className="h-4 w-4 ml-1" />
                   </Button>
                 ) : (
-                  <Link href="/dashboard/value-builder">
+                  <Link href="/dashboard">
                     <Button size="sm" variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-100">
                       Value Builder
                       <ArrowRight className="h-4 w-4 ml-1" />

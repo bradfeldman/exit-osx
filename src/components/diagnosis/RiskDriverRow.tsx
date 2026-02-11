@@ -110,7 +110,7 @@ export function RiskDriverRow({
                     window.scrollTo({ top: 0, behavior: 'smooth' })
                     onExpandCategory(category)
                   } else {
-                    router.push('/dashboard/assessment')
+                    router.push('/dashboard/diagnosis')
                   }
                 }}>
                   Review & Update

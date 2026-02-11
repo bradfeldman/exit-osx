@@ -458,13 +458,10 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
         await fetch(`/api/companies/${createdCompanyId}/onboarding-snapshot`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          // PROD-063: Only send raw inputs — server recalculates all valuation values
           body: JSON.stringify({
             briScore: riskResultsData.briScore,
             categoryScores: riskResultsData.categoryScores,
-            valueGapByCategory: riskResultsData.valueGapByCategory,
-            currentValue: riskResultsData.currentValue,
-            potentialValue: riskResultsData.potentialValue,
-            valueGap: riskResultsData.valueGap,
           }),
         })
         console.log('[ONBOARDING] Snapshot created after quick scan for task value calculation')

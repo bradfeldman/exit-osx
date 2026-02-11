@@ -17,6 +17,7 @@ import {
 import { useCompany } from '@/contexts/CompanyContext'
 import { IndustryListInline } from '@/components/company/IndustryListInline'
 import { AccountabilityPartnerCard } from '@/components/settings/AccountabilityPartnerCard'
+import { AssessmentCadenceCard } from '@/components/settings/AssessmentCadenceCard'
 import { getFlattenedOptionBySubSector } from '@/lib/data/industries'
 
 interface CompanyData {
@@ -513,6 +514,9 @@ export function CompanySettings() {
           </p>
         </CardContent>
       </Card>
+
+      {/* Assessment Cadence */}
+      <AssessmentCadenceCard />
 
       {/* Accountability Partner */}
       <AccountabilityPartnerCard />
