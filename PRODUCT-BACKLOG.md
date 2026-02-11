@@ -1,6 +1,6 @@
 # Exit OSx Product Backlog
 
-**Last Updated:** 2026-02-10
+**Last Updated:** 2026-02-11
 **Managed By:** project-manager agent
 **Sources:** Product Lead Review (2026-02-10), Spec Audit (2026-02-06), Valuation Bug Report (2026-02-04), Agent Memory
 
@@ -8,34 +8,34 @@
 
 ## Executive Summary
 
-### Total Items: 95
+### Total Items: 104 | Completed: 87 | Remaining: 17
 
-| Priority | Count | Description |
-|----------|-------|-------------|
-| **Blocker** | 28 | Critical issues preventing core functionality or creating broken UX |
-| **High** | 34 | Important improvements, significant gaps, user experience issues |
-| **Medium** | 20 | Quality improvements, nice-to-haves for this quarter |
-| **Parking Lot** | 13 | Future features, deferred work for Phase 2+ |
+| Status | Count | Description |
+|--------|-------|-------------|
+| **Done** | 87 | Implemented, tested, and deployed |
+| **Partial** | 3 | Infrastructure exists, needs completion (PROD-078, 082, 086) |
+| **Not Started** | 14 | Future features and mobile app (Phase 3-4, PROD-080/081/083/084/087, PROD-096-104) |
 
-### Category Breakdown
+### Completion by Category
 
-| Category | Count | Top Priority |
-|----------|-------|--------------|
-| **Testing / DevOps / Security** | **8** | **Blocker (Sprint 0)** |
-| Onboarding | 6 | Blocker |
-| Financial/Valuation | 10 | Blocker |
-| Scoring/BRI | 6 | Blocker |
-| Actions/Tasks | 5 | High |
-| Evidence/Data Room | 3 | High |
-| Deal Room/Contacts | 3 | High |
-| Sustained Value | 7 | Blocker (drift engine) |
-| Legacy Cleanup | 9 | High |
-| Mobile | 1 | Blocker |
-| UX/Navigation | 11 | Medium |
-| Technical Debt | 15 | High |
-| Future Features | 11 | Parking Lot |
-
-> **IMPORTANT: Database was wiped clean before launch.** All test users and company data deleted. Test accounts and seed data must be recreated before any automated testing can run (see PROD-089).
+| Category | Done | Partial | Not Started |
+|----------|------|---------|-------------|
+| Onboarding (001-006) | 6 | — | — |
+| Valuation & Financial (007-012) | 6 | — | — |
+| Scoring & Assessment (013-017) | 5 | — | — |
+| Sustained Value & Signals (018-022) | 5 | — | — |
+| Mobile & Intelligence (023-024) | 2 | — | — |
+| Legacy Cleanup (025-034) | 10 | — | — |
+| Actions & Tasks (035-040) | 6 | — | — |
+| Deal Room & UX (041-053) | 13 | — | — |
+| Cron Jobs (054-057) | 4 | — | — |
+| AI Features (058-059) | 2 | — | — |
+| Technical Debt (060-072) | 13 | — | — |
+| Phase 2 Features (073-079, 085) | 7 | 1 | — |
+| Phase 3-4 Features (080-084, 086-087) | — | 2 | 5 |
+| Testing & DevOps (088-095) | 8 | — | — |
+| Mobile App (096-104) | — | — | 9 |
+| **Totals** | **87** | **3** | **14** |
 
 ---
 
@@ -65,7 +65,7 @@ Current signup flow asks for password + company name upfront, creating too much 
 
 **Dependencies:** None (unblocks PROD-002)
 
-**Status:** New
+**Status:** ✅ Done — Magic link signup at `(auth)/signup/page.tsx`, activation at `(auth)/activate/page.tsx`
 
 ---
 
@@ -90,7 +90,7 @@ GICS-first industry classification is too rigid. Replace with freeform business 
 
 **Dependencies:** PROD-001 (onboarding entry point)
 
-**Status:** New
+**Status:** ✅ Done — AI industry matching at `api/industries/match/route.ts`, uses GPT-4o-mini for ICB classification
 
 ---
 
@@ -115,7 +115,7 @@ Current flow forces users through: describe → submit → classify → select �
 
 **Dependencies:** PROD-002 (classification must work inline)
 
-**Status:** New
+**Status:** ✅ Done — `StreamlinedOnboardingFlow.tsx` with 4-step flow (basics, financials, risk, summary)
 
 ---
 
@@ -142,7 +142,7 @@ No robust system for deriving defensible valuation multiples. Need investment-ba
 
 **Dependencies:** PROD-002 (needs industry classification)
 
-**Status:** New
+**Status:** ✅ Done — `comparable-engine.ts` with Claude AI, `api/companies/[id]/comparables/route.ts`, 40+ ICB sub-sectors
 
 ---
 
@@ -167,7 +167,7 @@ Dead loading state while system builds action plan is poor UX. Show animated pro
 
 **Dependencies:** PROD-003 (new onboarding flow)
 
-**Status:** New
+**Status:** ✅ Done — Step-by-step animated progress overlay in `StreamlinedOnboardingFlow.tsx`
 
 ---
 
@@ -192,7 +192,7 @@ Users forced into tasks before understanding product leads to confusion. Show fi
 
 **Dependencies:** PROD-003 (onboarding flow complete)
 
-**Status:** New
+**Status:** ✅ Done — `PlatformTour.tsx` + `ExposureContext.tsx` with LEARNING→TOURING→VIEWING→ACTING state machine
 
 ---
 
@@ -218,7 +218,7 @@ Onboarding uses LINEAR formula (currentValue = potentialValue × briRatio) while
 
 **Dependencies:** PROD-009 (shared utility must exist first)
 
-**Status:** Known (root cause identified)
+**Status:** ✅ Done — NON-LINEAR formula with ALPHA=1.4 in `calculate-valuation.ts`
 
 ---
 
@@ -241,7 +241,7 @@ Dashboard uses 6 factors in Core Score calculation (includes revenueSizeCategory
 
 **Dependencies:** PROD-009 (shared utility)
 
-**Status:** Known (root cause identified)
+**Status:** ✅ Done — Standardized 6-factor core score in `calculate-valuation.ts`
 
 ---
 
@@ -271,7 +271,7 @@ Five separate places calculate valuations with different formulas. Need single s
 
 **Dependencies:** None (blocks PROD-007, PROD-008)
 
-**Status:** Known (solution designed, not implemented)
+**Status:** ✅ Done — Shared `calculateValuation()` in `src/lib/valuation/calculate-valuation.ts`
 
 ---
 
@@ -297,7 +297,7 @@ Multiple financial calculation errors reported: cash flow year alignment incorre
 
 **Dependencies:** None
 
-**Status:** New
+**Status:** ✅ Done — EBITDA bug fixed in FinancialsSpreadsheet.tsx, BRI weights consolidated
 
 ---
 
@@ -322,7 +322,7 @@ QuickBooks integration doesn't auto-sync on initial connection. Large persistent
 
 **Dependencies:** None
 
-**Status:** New
+**Status:** ✅ Done — Auto-sync in `quickbooks/sync.ts`, Force Sync button in `QuickBooksCard.tsx`
 
 ---
 
@@ -347,7 +347,7 @@ Too much technical burden on user to choose between DCF, EBITDA multiple, and Re
 
 **Dependencies:** PROD-009 (shared valuation utility)
 
-**Status:** New
+**Status:** ✅ Done — Auto-selection engine in `method-selector.ts` with decision tree
 
 ---
 
@@ -374,7 +374,7 @@ Re-assessing one category sets other categories to zero. Confidence levels behav
 
 **Dependencies:** None
 
-**Status:** New
+**Status:** ✅ Done — Cross-assessment aggregation via shared `bri-scoring.ts` utilities
 
 ---
 
@@ -399,7 +399,7 @@ Advanced questions appear before initial questions answered. "Sharpen Diagnosis"
 
 **Dependencies:** PROD-013 (assessment engine fixes)
 
-**Status:** New
+**Status:** ✅ Done — Assessment flow logic enforced (Initial → Adaptive)
 
 ---
 
@@ -423,7 +423,7 @@ BRI range graphic displays company at bottom of range instead of between min and
 
 **Dependencies:** None
 
-**Status:** New
+**Status:** ✅ Done — BRI range graphic fixed
 
 ---
 
@@ -447,7 +447,7 @@ Individual category value gaps don't sum to total estimated value gap. Need math
 
 **Dependencies:** PROD-009 (shared valuation utility)
 
-**Status:** New
+**Status:** ✅ Done — Category value gap reconciliation via `calculateCategoryValueGaps()`
 
 ---
 
@@ -474,7 +474,7 @@ Weekly + monthly + category updates create assessment fatigue. Need smart cadenc
 
 **Dependencies:** PROD-014 (assessment flow fixes)
 
-**Status:** New
+**Status:** ✅ Done — Assessment cadence control with fatigue prevention
 
 ---
 
@@ -502,7 +502,7 @@ Monthly Value Drift Ritual is the primary retention mechanism and is NOT built. 
 
 **Dependencies:** PROD-019 (email infrastructure)
 
-**Status:** Known (scaffolded but incomplete)
+**Status:** ✅ Done — Drift engine + 3-screen UI + email notifications in `lib/drift/`
 
 ---
 
@@ -531,7 +531,7 @@ No email notification system beyond onboarding-complete. Need email templates an
 
 **Dependencies:** None (blocks PROD-018)
 
-**Status:** Known (gap identified)
+**Status:** ✅ Done — Email infrastructure via Resend, 10+ email types
 
 ---
 
@@ -557,7 +557,7 @@ Signal pipeline partially built. Channel 1 (Prompted Disclosure) works. Need to 
 
 **Dependencies:** PROD-018 (drift engine consumes signals)
 
-**Status:** Known (partially built)
+**Status:** ✅ Done — All 5 signal channels implemented in `lib/signals/`
 
 ---
 
@@ -582,7 +582,7 @@ Signal confidence levels defined in schema but actual scoring pipeline (confiden
 
 **Dependencies:** PROD-020 (signal pipeline)
 
-**Status:** Known (needs verification)
+**Status:** ✅ Done — Confidence scoring in `confidence-scoring.ts` with fatigue prevention
 
 ---
 
@@ -607,7 +607,7 @@ Spec describes continuous value-at-risk tracking that feeds into Value Gap. No c
 
 **Dependencies:** PROD-020, PROD-021 (signal pipeline + confidence scoring)
 
-**Status:** New
+**Status:** ✅ Done — VaR aggregation engine in `value-at-risk.ts` with trend analysis
 
 ---
 
@@ -634,7 +634,7 @@ Login page jumps back and forth on mobile. Mobile routing and state management b
 
 **Dependencies:** None
 
-**Status:** New
+**Status:** ✅ Done — `min-h-[100dvh]`, viewport config, removed scale animations
 
 ---
 
@@ -662,7 +662,7 @@ Knowledge learned over time (onboarding data, assessments, task completions, not
 
 **Dependencies:** None (foundational infrastructure)
 
-**Status:** New
+**Status:** ✅ Done — Company Intelligence Layer in `lib/intelligence/company-intelligence.ts`
 
 ---
 
@@ -703,7 +703,7 @@ Knowledge learned over time (onboarding data, assessments, task completions, not
 
 **Dependencies:** PROD-026 (nav cleanup), PROD-027 (dev tools removed from sidebar)
 
-**Status:** Known (15+ routes identified)
+**Status:** ✅ Done — Empty dirs removed, 301 redirects added in middleware.ts
 
 ---
 
@@ -727,7 +727,7 @@ Developer and Global sections render in product sidebar for super admins. These 
 
 **Dependencies:** None (enables PROD-025)
 
-**Status:** Known
+**Status:** ✅ Done — Dev/Global sections removed from Sidebar.tsx
 
 ---
 
@@ -751,7 +751,7 @@ Sidebar lines 59-63 show "Data Room", "Deal Tracker", "Contacts" as separate nav
 
 **Dependencies:** None (enables PROD-025)
 
-**Status:** Known
+**Status:** ✅ Done — Exit Tools section removed, consolidated into Deal Room
 
 ---
 
@@ -779,7 +779,7 @@ Sidebar uses numeric `stage` from useProgression() to gate nav sections. This IS
 
 **Dependencies:** None
 
-**Status:** Known (killed feature still active)
+**Status:** ✅ Done — Milestone-based system in `ProgressionContext.tsx`
 
 ---
 
@@ -804,7 +804,7 @@ Four separate settings routes (billing, company, organization, user) violate spe
 
 **Dependencies:** None
 
-**Status:** Known
+**Status:** ✅ Done — Tabbed settings page with 4 tabs (Company, Account, Team, Billing)
 
 ---
 
@@ -827,7 +827,7 @@ Sidebar.tsx line 30 uses "Home" as nav label. Spec explicitly says "Value" for m
 
 **Dependencies:** None
 
-**Status:** Known (spec deviation)
+**Status:** ✅ Done — Nav label changed to "Value" in Sidebar.tsx
 
 ---
 
@@ -859,7 +859,7 @@ Monte Carlo simulation is killed feature but files still exist: monte-carlo.ts (
 
 **Dependencies:** None
 
-**Status:** Known (killed feature still in codebase)
+**Status:** ✅ Done — Monte Carlo code fully removed
 
 ---
 
@@ -885,7 +885,7 @@ Sprint model, SprintPriority enum, SprintStatus enum still in schema. Task model
 
 **Dependencies:** None
 
-**Status:** Known (killed feature model still exists)
+**Status:** ✅ Done — Sprint model removed from Prisma schema
 
 ---
 
@@ -915,7 +915,7 @@ Old dashboard components replaced by Mode 1 components but still in codebase.
 
 **Dependencies:** None
 
-**Status:** Known (dead code identified)
+**Status:** ✅ Done — Old dashboard components removed
 
 ---
 
@@ -944,7 +944,7 @@ Old playbook, deal-tracker, and dataroom component directories may contain dead 
 
 **Dependencies:** PROD-025 (legacy routes removed)
 
-**Status:** Known (needs audit)
+**Status:** ✅ Done — Old playbook/dataroom removed; `StageChangeModal.tsx` kept (used by Deal Room)
 
 ---
 
@@ -971,7 +971,7 @@ Email invites for task delegation not received. Debug email service, spam, confi
 
 **Dependencies:** PROD-019 (email infrastructure)
 
-**Status:** New
+**Status:** ✅ Done — `TaskInvite` model, delegation email via `send-task-delegation-email.ts`
 
 ---
 
@@ -996,7 +996,7 @@ Unclear where task notes go or how they're used. Notes should persist, be search
 
 **Dependencies:** PROD-024 (Company Intelligence Layer)
 
-**Status:** New
+**Status:** ✅ Done — `TaskNote` model, CRUD API, `TaskNotes.tsx` component, Intelligence Layer integration
 
 ---
 
@@ -1021,7 +1021,7 @@ Sub-steps appear to be generated dynamically (not in Prisma schema). Verify pers
 
 **Dependencies:** None
 
-**Status:** Known (needs verification)
+**Status:** ✅ Done — `TaskSubStep` model with migration, `SubStepChecklist.tsx` component
 
 ---
 
@@ -1046,7 +1046,7 @@ Spec describes pace indicator for mature state: "At this rate, you'll close your
 
 **Dependencies:** None
 
-**Status:** Known (not implemented)
+**Status:** ✅ Done — Pace API at `api/companies/[id]/pace/route.ts`, displayed in `HeroSummaryBar.tsx`
 
 ---
 
@@ -1073,7 +1073,7 @@ Evidence exists but Data Room isn't diligence-ready. Need to organize Data Room 
 
 **Dependencies:** None
 
-**Status:** New
+**Status:** ✅ Done — 5 diligence sections in `diligence-sections.ts`, `DiligenceDataRoom.tsx`
 
 ---
 
@@ -1097,7 +1097,7 @@ Verify evidence categories map correctly to 6 BRI categories. Spec uses: Financi
 
 **Dependencies:** None
 
-**Status:** Known (needs verification)
+**Status:** ✅ Done — Category mapper in `category-mapper.ts` with corrected BRI→Evidence mappings
 
 ---
 
@@ -1124,7 +1124,7 @@ No intuitive way to move deals through pipeline stages. Add drag-and-drop and vi
 
 **Dependencies:** None
 
-**Status:** New
+**Status:** ✅ Done — HTML5 drag-and-drop in `PipelineView.tsx`, `StagePickerDialog.tsx` fallback
 
 ---
 
@@ -1148,7 +1148,7 @@ Contacts page refreshes on every edit. Implement partial state updates instead o
 
 **Dependencies:** None
 
-**Status:** New
+**Status:** ✅ Done — Optimistic UI updates in `useContactSystem.ts`
 
 ---
 
@@ -1171,7 +1171,7 @@ Spec says 6 visual stages: IDENTIFIED → ENGAGED → UNDER NDA → OFFER RECEIV
 
 **Dependencies:** None
 
-**Status:** Known (needs verification)
+**Status:** ✅ Done — 6 visual stages in `visual-stages.ts`, `grid-cols-6` layout
 
 ---
 
@@ -1196,7 +1196,7 @@ Retirement calculator is locked and frustrating users. Remove lock entirely.
 
 **Dependencies:** None
 
-**Status:** New
+**Status:** ✅ Done — Retirement calculator unlocked for Growth tier in `pricing.ts`
 
 ---
 
@@ -1221,7 +1221,7 @@ Age buried in PFS, defaults to 58 silently, numeric inputs painful. Ask birthday
 
 **Dependencies:** None
 
-**Status:** New
+**Status:** ✅ Done — Stepper inputs with bounds, adaptive retirement age in `TimelinePanel.tsx`
 
 ---
 
@@ -1246,7 +1246,7 @@ Sustainable spending logic inconsistent. Roth IRA incorrectly treated as tax-def
 
 **Dependencies:** None
 
-**Status:** New
+**Status:** ✅ Done — Roth IRA correctly detected as `tax_free`, 518-line regression test suite
 
 ---
 
@@ -1273,7 +1273,7 @@ Users dropped into full app immediately leads to overwhelm. Implement gradual ex
 
 **Dependencies:** PROD-006 (tour-first onboarding)
 
-**Status:** New
+**Status:** ✅ Done — Progressive disclosure flow in `ExposureContext.tsx` (LEARNING→VIEWING→ACTING)
 
 ---
 
@@ -1296,7 +1296,7 @@ Too many locks and clicks in Deal Room. Remove locks entirely at this stage (pro
 
 **Dependencies:** None
 
-**Status:** New
+**Status:** ✅ Done — No subscription locks in Deal Room, only evidence-based activation gate
 
 ---
 
@@ -1319,7 +1319,7 @@ ValueHome.tsx doesn't pass isFreeUser prop to NextMoveCard. Free tier Start butt
 
 **Dependencies:** None
 
-**Status:** Known (prop not passed)
+**Status:** ✅ Done — `isFreeUser` prop in `NextMoveCard.tsx` with upgrade handler
 
 ---
 
@@ -1341,7 +1341,7 @@ NextMoveCard.tsx line 62 routes to `/dashboard/playbook?taskId=...` (legacy rout
 
 **Dependencies:** None
 
-**Status:** Known (functional bug)
+**Status:** ✅ Done — Navigates to `/dashboard/actions` (not `/playbook`)
 
 ---
 
@@ -1362,7 +1362,7 @@ NextMoveCard.tsx line 79: Button text is "Review Diagnosis". Spec says "Start Re
 
 **Dependencies:** None
 
-**Status:** Known (spec deviation, low priority)
+**Status:** ✅ Done — Button text is "Start Re-Assessment" matching spec
 
 ---
 
@@ -1384,7 +1384,7 @@ Spec says Current Value card should show "Industry Preview" badge in preview sta
 
 **Dependencies:** None
 
-**Status:** Known (needs verification)
+**Status:** ✅ Done — Industry Preview badge in `HeroMetricsBar.tsx`
 
 ---
 
@@ -1405,7 +1405,7 @@ Implementation uses "Monthly Check-in" / "X quick questions". Spec says "Quick c
 
 **Dependencies:** None
 
-**Status:** Known (copy difference, low priority)
+**Status:** ✅ Done — Copy says "Has anything changed that buyers would ask about?" in `DisclosureTrigger.tsx`
 
 ---
 
@@ -1433,7 +1433,7 @@ Cron job to generate monthly drift reports (once drift engine is built). Runs 1s
 
 **Dependencies:** PROD-018 (drift engine), PROD-019 (email system)
 
-**Status:** Known (not built)
+**Status:** ✅ Done — Monthly drift report cron at `api/cron/monthly-drift-report/route.ts`
 
 ---
 
@@ -1458,7 +1458,7 @@ Detect users inactive for 21+ days, generate signal, trigger email nudge.
 
 **Dependencies:** PROD-019 (email system), PROD-020 (signal pipeline)
 
-**Status:** Known (not built)
+**Status:** ✅ Done — Inactivity detection cron at `api/cron/detect-inactivity/route.ts` (21-day threshold)
 
 ---
 
@@ -1483,7 +1483,7 @@ Currently QB only syncs on callback. Add scheduled daily sync for active connect
 
 **Dependencies:** PROD-011 (QB auto-sync fixes)
 
-**Status:** New
+**Status:** ✅ Done — QB sync cron at `api/cron/sync-quickbooks/route.ts` (daily at 2am)
 
 ---
 
@@ -1508,7 +1508,7 @@ Industry multiples should refresh monthly (not static). Cron job to update multi
 
 **Dependencies:** PROD-004 (comparable company engine)
 
-**Status:** New
+**Status:** ✅ Done — Multiple refresh cron at `api/cron/refresh-multiples/route.ts` (monthly)
 
 ---
 
@@ -1533,7 +1533,7 @@ Verify if task buyerConsequence field is AI-generated or template-based. If temp
 
 **Dependencies:** PROD-024 (Company Intelligence Layer)
 
-**Status:** Known (needs verification)
+**Status:** ✅ Done — Claude Haiku generates buyer consequences in `lib/ai/buyer-consequences.ts`
 
 ---
 
@@ -1557,7 +1557,7 @@ Value Ledger entries currently use template-based narratives (narrative-template
 
 **Dependencies:** PROD-024 (Company Intelligence Layer)
 
-**Status:** Known (templates exist, AI not implemented)
+**Status:** ✅ Done — AI narratives in `lib/value-ledger/ai-narratives.ts` with template fallback
 
 ---
 
@@ -1582,7 +1582,7 @@ Audit all API routes for proper rate limiting, error handling, and auth checks. 
 
 **Dependencies:** None
 
-**Status:** New
+**Status:** ✅ Done — Full API audit: 15 unauth routes fixed, 11 cron routes hardened, 12 error leaks patched, rate limiting added
 
 ---
 
@@ -1606,7 +1606,7 @@ Ensure all schema changes have corresponding production migrations. Missing migr
 
 **Dependencies:** None
 
-**Status:** New (ongoing process improvement)
+**Status:** ✅ Done — Migration process documented
 
 ---
 
@@ -1632,7 +1632,7 @@ shouldUseSnapshotValues flag causes valuation "jumps" as users progress. After f
 
 **Dependencies:** PROD-009, PROD-007, PROD-008 (valuation consistency fixed)
 
-**Status:** Known (conditional logic causes bug)
+**Status:** ✅ Done — `shouldUseSnapshotValues` conditional removed
 
 ---
 
@@ -1655,7 +1655,7 @@ Onboarding-snapshot API currently trusts UI-calculated values directly. Should r
 
 **Dependencies:** PROD-009 (shared utility)
 
-**Status:** Known (solution designed)
+**Status:** ✅ Done — Server-side recalc in onboarding-snapshot API
 
 ---
 
@@ -1678,7 +1678,7 @@ DocumentStatus enum only has CURRENT, NEEDS_UPDATE, OVERDUE (no ARCHIVED). Verif
 
 **Dependencies:** None
 
-**Status:** Known (common pitfall)
+**Status:** ✅ Done — DocumentStatus enum verified (CURRENT, NEEDS_UPDATE, OVERDUE only)
 
 ---
 
@@ -1702,7 +1702,7 @@ DealActivity2 uses performedAt (not createdAt) and requires performedByUserId. V
 
 **Dependencies:** None
 
-**Status:** Known (common pitfall)
+**Status:** ✅ Done — DealActivity2 model verified (`performedAt` + `performedByUserId`)
 
 ---
 
@@ -1726,7 +1726,7 @@ Spec says Value Gap value uses text-primary (#B87333). Verify HeroMetricsBar.tsx
 
 **Dependencies:** None
 
-**Status:** Known (needs verification)
+**Status:** ✅ Done — Value Gap uses `text-primary` (#B87333) in `HeroMetricsBar.tsx`
 
 ---
 
@@ -1748,7 +1748,7 @@ Mode 1 spec describes 4 sections, but implementation has 5 (adds ValueLedgerSect
 
 **Dependencies:** None
 
-**Status:** Known (extra feature, needs documentation)
+**Status:** ✅ Done — ADR-001 documents ValueLedgerSection decision
 
 ---
 
@@ -1771,7 +1771,7 @@ Spec says "5-7 questions max" onboarding. Current implementation is 2 steps. Ver
 
 **Dependencies:** PROD-003 (streamlined onboarding flow)
 
-**Status:** Known (needs verification)
+**Status:** ✅ Done — All onboarding steps verified ≤7 fields
 
 ---
 
@@ -1796,7 +1796,7 @@ Spec describes deferredUntil date logic and auto-resurfacing. HeroSummaryBar sho
 
 **Dependencies:** None
 
-**Status:** Known (needs verification)
+**Status:** ✅ Done — Full defer flow: UI, API, auto-resurface, manual resume
 
 ---
 
@@ -1819,7 +1819,7 @@ Spec describes "Lowest confidence" prompt at bottom of Diagnosis page with CTA t
 
 **Dependencies:** None
 
-**Status:** Known (needs verification)
+**Status:** ✅ Done — LowestConfidencePrompt verified with 20 tests
 
 ---
 
@@ -1841,7 +1841,7 @@ ActivationGate.tsx copy differs slightly from spec. Verify current copy is appro
 
 **Dependencies:** None
 
-**Status:** Known (copy difference, low priority)
+**Status:** ✅ Done — Deal Room activation gate copy verified
 
 ---
 
@@ -1865,7 +1865,7 @@ Verify pricing page and subscription logic use correct tier names and prices: Fo
 
 **Dependencies:** None
 
-**Status:** Known (needs verification)
+**Status:** ✅ Done — Pricing tier names verified (Foundation, Growth, Exit-Ready)
 
 ---
 
@@ -1896,7 +1896,7 @@ Initialize Expo project with file-based routing, tab navigation (5 modes), auth 
 
 **Dependencies:** None (blocks all other mobile items)
 
-**Status:** New
+**Status:** 🔲 Not Started
 
 ---
 
@@ -1922,7 +1922,7 @@ Build push notification infrastructure: Expo push token registration, dispatch i
 
 **Dependencies:** PROD-096 (Expo project)
 
-**Status:** New
+**Status:** 🔲 Not Started
 
 ---
 
@@ -1948,7 +1948,7 @@ Build the home tab screen showing valuation, BRI score, value gap, and next move
 
 **Dependencies:** PROD-096
 
-**Status:** New
+**Status:** 🔲 Not Started
 
 ---
 
@@ -1974,7 +1974,7 @@ Build the Actions tab with current task display, sub-step checklist, completion 
 
 **Dependencies:** PROD-096
 
-**Status:** New
+**Status:** 🔲 Not Started
 
 ---
 
@@ -1998,7 +1998,7 @@ Build the Diagnosis tab showing 6 BRI category cards with scores, confidence, an
 
 **Dependencies:** PROD-096
 
-**Status:** New
+**Status:** 🔲 Not Started
 
 ---
 
@@ -2023,7 +2023,7 @@ Build the Evidence tab with camera capture for document photos, file picker, upl
 
 **Dependencies:** PROD-096
 
-**Status:** New
+**Status:** 🔲 Not Started
 
 ---
 
@@ -2047,7 +2047,7 @@ Build the Deal Room tab with horizontal stage pipeline, buyer cards, and activit
 
 **Dependencies:** PROD-096
 
-**Status:** New
+**Status:** 🔲 Not Started
 
 ---
 
@@ -2072,7 +2072,7 @@ Build offline data caching and delta sync protocol so the app works without conn
 
 **Dependencies:** PROD-096
 
-**Status:** New
+**Status:** 🔲 Not Started
 
 ---
 
@@ -2098,7 +2098,7 @@ Prepare the app for App Store (iOS) and Play Store (Android) submission. Screens
 
 **Dependencies:** PROD-098, PROD-099, PROD-100 (core screens built)
 
-**Status:** New
+**Status:** 🔲 Not Started
 
 ---
 
@@ -2119,7 +2119,7 @@ Interactive scenario modeling: "What if I improved my gross margin by 5%?" Shows
 
 **Dependencies:** PROD-009 (shared valuation utility)
 
-**Status:** Not Yet Built (Phase 2)
+**Status:** ✅ Done — `WhatIfScenarios.tsx` with interactive sliders, before/after valuation
 
 ---
 
@@ -2136,7 +2136,7 @@ Mobile-optimized 5-question weekly prompt. Different from monthly disclosure (fo
 
 **Dependencies:** PROD-019 (email system for reminders)
 
-**Status:** Not Yet Built (Phase 2)
+**Status:** ✅ Done — `WeeklyCheckInPrompt.tsx` with 5-question mobile-optimized wizard
 
 ---
 
@@ -2153,7 +2153,7 @@ Peer comparison UI: "Businesses like yours sell for X, you're at Y." Uses indust
 
 **Dependencies:** PROD-004 (comparable company engine)
 
-**Status:** Not Yet Built (Phase 2)
+**Status:** ✅ Done — `BenchmarkComparison.tsx` with gauge bar and quartile zones
 
 ---
 
@@ -2170,7 +2170,7 @@ Anthropic-powered conversational AI coach. Context-aware chat interface for exit
 
 **Dependencies:** PROD-024 (Company Intelligence Layer for context)
 
-**Status:** Not Yet Built (Phase 2a)
+**Status:** ✅ Done — `ExitCoachDrawer.tsx` with Claude Sonnet chat, 20 msg/day limit
 
 ---
 
@@ -2187,7 +2187,7 @@ Invite one trusted person to receive weekly progress summaries. Partner sees hig
 
 **Dependencies:** PROD-019 (email system)
 
-**Status:** Not Yet Built (Phase 2)
+**Status:** ✅ Done — Full partner portal: invite, summary, nudge emails, `AccountabilityPartnerCard.tsx`
 
 ---
 
@@ -2204,7 +2204,7 @@ Monitor external public data sources for signals: SOS filing changes, court dock
 
 **Dependencies:** PROD-020 (signal pipeline)
 
-**Status:** Not Yet Built (Phase 2b)
+**Status:** ⚠️ Partial — Signal types + manual API exist; automated polling of SOS/court data not implemented
 
 ---
 
@@ -2221,7 +2221,7 @@ Advisor portal has view access but no signal confirmation/deny workflow. Advisor
 
 **Dependencies:** PROD-020 (signal pipeline)
 
-**Status:** Not Yet Built (Phase 2)
+**Status:** ✅ Done — Advisor portal with signal confirm/dismiss/add observation workflow
 
 ---
 
@@ -2248,7 +2248,7 @@ Full Stripe integration for subscription billing. Currently tier gating exists b
 
 **Dependencies:** Product pricing finalized
 
-**Status:** Blocked on subscription model + billing ownership transfer design
+**Status:** 🔲 Not Started — UI placeholder exists ("Coming Soon"), no Stripe SDK
 
 ---
 
@@ -2265,7 +2265,7 @@ Integrate real-time tax API for accurate retirement projections. Currently uses 
 
 **Dependencies:** Budget for API costs
 
-**Status:** Not Yet Built (Phase 3)
+**Status:** 🔲 Not Started — Static tax rates only, no external tax API
 
 ---
 
@@ -2284,7 +2284,7 @@ Integrate real-time tax API for accurate retirement projections. Currently uses 
 
 **Dependencies:** Lender partnerships
 
-**Status:** Not Yet Built (Phase 4)
+**Status:** ⚠️ Partial — Full qualification engine for PPL lender, no multi-lender marketplace
 
 ---
 
@@ -2301,7 +2301,7 @@ Fine-grained Data Room permissions: grant/revoke access per buyer, per document.
 
 **Dependencies:** PROD-039 (organized Data Room)
 
-**Status:** Not Yet Built (Phase 3)
+**Status:** 🔲 Not Started — Org-level access only, no per-buyer document permissions
 
 ---
 
@@ -2318,7 +2318,7 @@ Internationalization for non-US markets. Spanish first (large market opportunity
 
 **Dependencies:** Market research complete
 
-**Status:** Not Yet Built (Phase 3+)
+**Status:** 🔲 Not Started — All content hardcoded English, no i18n infrastructure
 
 ---
 
@@ -2335,7 +2335,7 @@ Side-by-side comparison of multiple offers with deal structure analysis. Current
 
 **Dependencies:** PROD-041 (pipeline management)
 
-**Status:** Partially Built (basic comparison exists, advanced analysis needed)
+**Status:** ✅ Done — `OfferComparison.tsx` with side-by-side IOI/LOI analysis
 
 ---
 
@@ -2352,7 +2352,7 @@ White-label version for advisors/brokers to offer to their clients. Advisor bran
 
 **Dependencies:** Product-market fit in direct B2C
 
-**Status:** Not Yet Built (Phase 4+)
+**Status:** ⚠️ Partial — Advisor portal functional, no white-label branding or multi-tenancy
 
 ---
 
@@ -2369,7 +2369,7 @@ Anonymized exit stories from platform users. Benchmarking data: "Businesses in y
 
 **Dependencies:** Sufficient user base with completed exits
 
-**Status:** Not Yet Built (Phase 3)
+**Status:** 🔲 Not Started — Static industry benchmarks only, no platform success data
 
 ---
 
@@ -2414,7 +2414,7 @@ No CI/CD pipeline exists. All tests (Vitest, Playwright, visual regression, perf
 
 **Dependencies:** PROD-089 (test user setup)
 
-**Status:** New
+**Status:** ✅ Done — CI/CD pipeline in `.github/workflows/ci.yml` with test gates
 
 ---
 
@@ -2444,7 +2444,7 @@ All users and company data were deleted from the database before launch. Playwri
 
 **Dependencies:** None (blocks PROD-088, PROD-090, PROD-091, PROD-092)
 
-**Status:** New
+**Status:** ✅ Done — Test user and seed data scripts
 
 ---
 
@@ -2480,7 +2480,7 @@ Additionally, auth/RBAC (`check-permission.ts`, `check-granular-permission.ts`, 
 
 **Dependencies:** PROD-089 (test fixtures)
 
-**Status:** New
+**Status:** ✅ Done — Security module test suite covering auth, RBAC, rate limiting
 
 ---
 
@@ -2511,7 +2511,7 @@ Six known security issues identified during prior audits remain open:
 
 **Dependencies:** None
 
-**Status:** Known (from prior audits)
+**Status:** ✅ Done — All 6 security vulnerabilities fixed (cookies, staging auth, rate limiting, CSP)
 
 ---
 
@@ -2541,7 +2541,7 @@ The 29% valuation discrepancy between onboarding and dashboard (BUG-REPORT-VALUA
 
 **Dependencies:** PROD-009 (shared valuation utility), PROD-089 (test fixtures)
 
-**Status:** New
+**Status:** ✅ Done — Golden-file tests for valuation calculations
 
 ---
 
@@ -2572,7 +2572,7 @@ Current visual regression has 16 screenshots. Need comprehensive coverage across
 
 **Dependencies:** PROD-088 (CI pipeline), PROD-089 (test user)
 
-**Status:** New
+**Status:** ✅ Done — Visual regression with 21 test cases across modes and viewports
 
 ---
 
@@ -2603,7 +2603,7 @@ Current E2E tests are shallow "page loads without crashing." Need deep journey t
 
 **Dependencies:** PROD-088 (CI pipeline), PROD-089 (test user + seed data)
 
-**Status:** New
+**Status:** ✅ Done — 4 E2E user journey tests in `e2e/tests/user-journeys.spec.ts`
 
 ---
 
@@ -2633,7 +2633,7 @@ Existing Playwright performance tests measure Web Vitals but use approximations.
 
 **Dependencies:** PROD-088 (CI pipeline)
 
-**Status:** New
+**Status:** ✅ Done — Performance budgets, bundle size checks, k6 load tests
 
 ---
 
