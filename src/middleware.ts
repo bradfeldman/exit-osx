@@ -192,6 +192,25 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set('x-pathname', pathname)
   requestHeaders.set('x-url', request.url)
 
+  // MOBILE FIX: Clear stale auth cookies on login/signup pages BEFORE the
+  // Supabase client is created. Without this, getUser() may refresh an expired-
+  // but-refreshable session on /login, causing a redirect to /dashboard. On
+  // mobile WebKit (iOS Chrome/Safari), cookies set during server-side redirects
+  // can be dropped, leading to a loop: /login → /dashboard → /login → ...
+  // The stale session check (line ~263) only fires for non-public routes, so
+  // /login (public) was never cleaned. This pre-check handles that gap.
+  let staleCookieNames: string[] = []
+  const isAuthPage = pathname === '/login' || pathname === '/signup'
+  if (isAuthPage) {
+    const hasActivity = request.cookies.get(SESSION_COOKIE_NAME)
+    const authCookies = request.cookies.getAll().filter(c => c.name.startsWith('sb-'))
+    if (!hasActivity && authCookies.length > 0) {
+      staleCookieNames = authCookies.map(c => c.name)
+      // Remove from request so getUser() sees a clean slate
+      authCookies.forEach(c => request.cookies.delete(c.name))
+    }
+  }
+
   let supabaseResponse = NextResponse.next({
     request: {
       headers: requestHeaders,
@@ -225,6 +244,12 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+
+  // MOBILE FIX (continued): Send deletion headers so the browser clears the stale cookies
+  if (staleCookieNames.length > 0) {
+    staleCookieNames.forEach(name => supabaseResponse.cookies.delete(name))
+    supabaseResponse.cookies.delete(SESSION_COOKIE_NAME)
+  }
 
   // Refresh the activity cookie on each authenticated navigation
   // SECURITY FIX (PROD-091 #1): Added httpOnly to prevent client-side JS access
@@ -330,10 +355,29 @@ export async function middleware(request: NextRequest) {
   // EXCEPTION: /activate page REQUIRES an active session (magic link creates it) — do not redirect
   // MOBILE FIX: Only redirect if this isn't a form submission (POST) to prevent interrupting login flow
   if (user && (pathname === '/login' || pathname === '/signup' || pathname === '/admin/login') && request.method === 'GET') {
+    // LOOP GUARD: If we JUST redirected from a protected route to /login and user
+    // still appears authenticated, we're in a redirect loop. Break it by clearing
+    // all auth state and serving the login page.
+    const loopGuard = request.cookies.get('_auth_loop_guard')
+    if (loopGuard) {
+      request.cookies.getAll()
+        .filter(c => c.name.startsWith('sb-'))
+        .forEach(c => supabaseResponse.cookies.delete(c.name))
+      supabaseResponse.cookies.delete(SESSION_COOKIE_NAME)
+      supabaseResponse.cookies.delete('_auth_loop_guard')
+      return supabaseResponse
+    }
+
     const url = request.nextUrl.clone()
     // If on admin subdomain or trying to access admin login, redirect to admin dashboard
     url.pathname = (isAdminSubdomain || pathname === '/admin/login') ? '/admin' : '/dashboard'
-    return createRedirect(url, supabaseResponse)
+    const redirect = createRedirect(url, supabaseResponse)
+    // Set a short-lived guard cookie — if we end up back at /login within 10s, it's a loop
+    redirect.cookies.set('_auth_loop_guard', '1', {
+      maxAge: 10, path: '/', httpOnly: true, sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    })
+    return redirect
   }
 
   // If user is logged in and on home page
