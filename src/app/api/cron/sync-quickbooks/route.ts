@@ -128,7 +128,7 @@ export async function GET(request: Request) {
           if (!existingSignal) {
             await createSignalWithLedgerEntry({
               companyId: integration.companyId,
-              channel: 'INTEGRATION',
+              channel: 'EXTERNAL',
               eventType: 'quickbooks_sync_failed',
               category: 'FINANCIAL',
               severity: 'MEDIUM',
