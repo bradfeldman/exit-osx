@@ -3,6 +3,7 @@
  * Analyzes Next.js build output and checks bundle sizes
  * Warns if bundles exceed recommended thresholds
  */
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 const fs = require('fs')
 const path = require('path')

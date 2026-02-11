@@ -3,6 +3,7 @@
  * Validates CSP (Content Security Policy) configuration in next.config.ts
  * Ensures all required security headers are present and properly configured
  */
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 const fs = require('fs')
 const path = require('path')

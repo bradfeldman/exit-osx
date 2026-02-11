@@ -3,6 +3,7 @@
  * Extracts performance metrics from Playwright test results
  * Generates a JSON summary for trend tracking
  */
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 const fs = require('fs')
 const path = require('path')
