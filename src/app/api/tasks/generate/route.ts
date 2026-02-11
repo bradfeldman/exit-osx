@@ -108,7 +108,7 @@ export async function POST(request: Request) {
 
     // Get or create current week's progress
     const now = new Date()
-    const _weekNumber = Math.ceil(
+    const weekNumber = Math.ceil(
       (now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / 604800000
     )
 
