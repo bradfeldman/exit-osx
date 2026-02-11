@@ -158,7 +158,7 @@ export interface SignupSubmitParams extends BaseEventParams {
 }
 
 export interface SignupCompleteParams extends BaseEventParams {
-  method: 'email' | 'google' | 'github'
+  method: 'email' | 'google' | 'github' | 'magic_link'
 }
 
 // Email Verification Events
