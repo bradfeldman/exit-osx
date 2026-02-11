@@ -12,10 +12,7 @@ import { cn } from '@/lib/utils'
 import {
   History,
   Building2,
-  Briefcase,
-  Calendar,
   ExternalLink,
-  ArrowRight,
   CheckCircle,
   XCircle,
   Clock,

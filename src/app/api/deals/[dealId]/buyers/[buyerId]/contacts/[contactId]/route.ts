@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { BuyerContactRole } from '@prisma/client'
 
 type RouteParams = Promise<{ dealId: string; buyerId: string; contactId: string }>
@@ -12,6 +13,10 @@ export async function GET(
   request: NextRequest,
   { params }: { params: RouteParams }
 ) {
+  // SECURITY FIX (PROD-060): Was completely unauthenticated — anyone could read/write deal contacts.
+  const result = await checkPermission('COMPANY_VIEW')
+  if (isAuthError(result)) return result.error
+
   try {
     const { dealId, buyerId, contactId } = await params
 
@@ -65,6 +70,9 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: RouteParams }
 ) {
+  const putResult = await checkPermission('COMPANY_UPDATE')
+  if (isAuthError(putResult)) return putResult.error
+
   try {
     const { dealId, buyerId, contactId } = await params
     const body = await request.json()
@@ -154,6 +162,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: RouteParams }
 ) {
+  const deleteResult = await checkPermission('COMPANY_UPDATE')
+  if (isAuthError(deleteResult)) return deleteResult.error
+
   try {
     const { dealId, buyerId, contactId } = await params
 

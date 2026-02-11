@@ -7,12 +7,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ActivityType } from '@prisma/client'
-import { ACTIVITY_TYPE_LABELS, ACTIVITY_TYPE_ICONS } from '@/lib/contact-system/constants'
+import { ACTIVITY_TYPE_ICONS } from '@/lib/contact-system/constants'
 import { cn } from '@/lib/utils'
 import {
   Mail,
   MailOpen,
-  Phone,
   PhoneOutgoing,
   PhoneIncoming,
   Calendar,
@@ -27,7 +26,6 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  MoreHorizontal,
   RefreshCw,
   User,
   Activity,
@@ -137,7 +135,7 @@ export function ActivityTimeline({
     fetchActivities()
   }, [dealId, buyerId, limit])
 
-  const getActivityIcon = (activityType: ActivityType) => {
+  const _getActivityIcon = (activityType: ActivityType) => {
     const iconName = ACTIVITY_TYPE_ICONS[activityType]
     return ACTIVITY_ICONS[iconName] || <Activity className="h-4 w-4" />
   }

@@ -41,7 +41,6 @@ import { ApprovalStatus, BuyerType } from '@prisma/client'
 import { BUYER_TYPE_LABELS, BUYER_TYPE_COLORS } from '@/lib/deal-tracker/constants'
 import {
   APPROVAL_STATUS_LABELS,
-  APPROVAL_STATUS_COLORS,
 } from '@/lib/contact-system/constants'
 import { cn } from '@/lib/utils'
 import {

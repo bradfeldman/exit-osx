@@ -60,35 +60,35 @@ describe('Pricing Plans', () => {
 
   describe('hasFeatureAccess', () => {
     it('should return true for included features', () => {
-      // All plans include Initial Assessment
-      expect(hasFeatureAccess('foundation', 'Initial Assessment')).toBe(true)
-      expect(hasFeatureAccess('growth', 'Initial Assessment')).toBe(true)
-      expect(hasFeatureAccess('exit-ready', 'Initial Assessment')).toBe(true)
+      // All plans include Exit Readiness Assessment
+      expect(hasFeatureAccess('foundation', 'Exit Readiness Assessment')).toBe(true)
+      expect(hasFeatureAccess('growth', 'Exit Readiness Assessment')).toBe(true)
+      expect(hasFeatureAccess('exit-ready', 'Exit Readiness Assessment')).toBe(true)
     })
 
     it('should return false for excluded features', () => {
-      // Foundation does not include Company Assessment
-      expect(hasFeatureAccess('foundation', 'Company Assessment')).toBe(false)
+      // Foundation does not include Full Risk Diagnostic
+      expect(hasFeatureAccess('foundation', 'Full Risk Diagnostic')).toBe(false)
     })
 
     it('should return true for growth features', () => {
-      expect(hasFeatureAccess('growth', 'Company Assessment')).toBe(true)
-      expect(hasFeatureAccess('growth', 'Risk Assessment')).toBe(true)
-      expect(hasFeatureAccess('growth', 'Value Improvement Playbook')).toBe(true)
-      expect(hasFeatureAccess('growth', 'QuickBooks Integration')).toBe(true)
+      expect(hasFeatureAccess('growth', 'Full Risk Diagnostic')).toBe(true)
+      expect(hasFeatureAccess('growth', 'Personal Readiness Check')).toBe(true)
+      expect(hasFeatureAccess('growth', 'Value Improvement Action Plan')).toBe(true)
+      expect(hasFeatureAccess('growth', 'Automated Financial Sync')).toBe(true)
     })
 
     it('should return true for exit-ready-only features', () => {
-      expect(hasFeatureAccess('exit-ready', 'Data Room')).toBe(true)
-      expect(hasFeatureAccess('exit-ready', 'DCF Analysis')).toBe(true)
-      expect(hasFeatureAccess('exit-ready', 'Multiple Companies')).toBe(true)
+      expect(hasFeatureAccess('exit-ready', 'Buyer-Ready Data Room')).toBe(true)
+      expect(hasFeatureAccess('exit-ready', 'Discounted Cash Flow Analysis')).toBe(true)
+      expect(hasFeatureAccess('exit-ready', 'Multi-Company Portfolio')).toBe(true)
     })
 
     it('should return false for exit-ready-only features on lower tiers', () => {
-      expect(hasFeatureAccess('foundation', 'Data Room')).toBe(false)
-      expect(hasFeatureAccess('growth', 'Data Room')).toBe(false)
-      expect(hasFeatureAccess('foundation', 'DCF Analysis')).toBe(false)
-      expect(hasFeatureAccess('growth', 'DCF Analysis')).toBe(false)
+      expect(hasFeatureAccess('foundation', 'Buyer-Ready Data Room')).toBe(false)
+      expect(hasFeatureAccess('growth', 'Buyer-Ready Data Room')).toBe(false)
+      expect(hasFeatureAccess('foundation', 'Discounted Cash Flow Analysis')).toBe(false)
+      expect(hasFeatureAccess('growth', 'Discounted Cash Flow Analysis')).toBe(false)
     })
 
     it('should return false for non-existent features', () => {

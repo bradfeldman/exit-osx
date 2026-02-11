@@ -71,10 +71,10 @@ export function DisclosureTrigger({ onRefresh }: DisclosureTriggerProps = {}) {
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-semibold text-zinc-800">
-              Monthly Check-in
+              Quick Check
             </h3>
             <p className="text-sm text-zinc-500 mt-0.5">
-              {remaining.length} quick question{remaining.length !== 1 ? 's' : ''} about changes in your business
+              Has anything changed that buyers would ask about?
             </p>
           </div>
           <Button
@@ -82,7 +82,7 @@ export function DisclosureTrigger({ onRefresh }: DisclosureTriggerProps = {}) {
             size="sm"
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
-            Start Check-in
+            Quick Check
           </Button>
         </div>
       </div>

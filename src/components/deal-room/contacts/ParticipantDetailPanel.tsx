@@ -52,9 +52,9 @@ export function ParticipantDetailPanel({
     setIsUpdating(true)
     try {
       await updateParticipant(participant.id, { category: newCategory })
-      onUpdate()
+      // Optimistic update in hook handles UI - no refresh needed
     } catch {
-      // silently fail
+      // silently fail - optimistic update already rolled back
     } finally {
       setIsUpdating(false)
     }
@@ -65,9 +65,9 @@ export function ParticipantDetailPanel({
     setIsUpdating(true)
     try {
       await updateParticipant(participant.id, { description: editDescription })
-      onUpdate()
+      // Optimistic update in hook handles UI - no refresh needed
     } catch {
-      // silently fail
+      // silently fail - optimistic update already rolled back
     } finally {
       setIsUpdating(false)
     }
@@ -78,9 +78,9 @@ export function ParticipantDetailPanel({
     setIsUpdating(true)
     try {
       await updateParticipant(participant.id, { notes: editNotes })
-      onUpdate()
+      // Optimistic update in hook handles UI - no refresh needed
     } catch {
-      // silently fail
+      // silently fail - optimistic update already rolled back
     } finally {
       setIsUpdating(false)
     }
@@ -90,9 +90,9 @@ export function ParticipantDetailPanel({
     setIsUpdating(true)
     try {
       await updateParticipant(participant.id, { isPrimary: !isPrimary })
-      onUpdate()
+      // Optimistic update in hook handles UI - no refresh needed
     } catch {
-      // silently fail
+      // silently fail - optimistic update already rolled back
     } finally {
       setIsUpdating(false)
     }
@@ -102,6 +102,7 @@ export function ParticipantDetailPanel({
     setIsUpdating(true)
     try {
       await removeParticipant(participant.id)
+      // Refresh triggers in hook after successful deletion
       onUpdate()
       onClose()
     } catch {
@@ -131,6 +132,7 @@ export function ParticipantDetailPanel({
         throw new Error(data.error || 'Failed to update')
       }
       setIsEditing(false)
+      // Trigger refresh for canonical person updates (not optimistically handled)
       onUpdate()
     } catch {
       // silently fail

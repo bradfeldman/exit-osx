@@ -29,8 +29,8 @@ describe('Smart Parser', () => {
       const result = parseInput(input)
 
       expect(result.phones).toHaveLength(2)
-      expect(result.phones).toContain('5551234567')
-      expect(result.phones).toContain('5559876543')
+      expect(result.phones).toContain('(555) 123-4567')
+      expect(result.phones).toContain('(555) 987-6543')
     })
 
     it('should extract LinkedIn profile URLs', () => {
@@ -76,7 +76,7 @@ https://linkedin.com/in/johnsmith
       expect(result.people[0].firstName).toBe('John')
       expect(result.people[0].lastName).toBe('Smith')
       expect(result.people[0].email).toBe('john.smith@acmecorp.com')
-      expect(result.people[0].phone).toBe('5551234567')
+      expect(result.people[0].phone).toBe('(555) 123-4567')
       expect(result.people[0].title).toContain('Vice President')
     })
 

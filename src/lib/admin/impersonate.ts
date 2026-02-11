@@ -7,16 +7,19 @@ import { logAdminAction } from './audit'
 import { cookies } from 'next/headers'
 import { SignJWT, jwtVerify } from 'jose'
 
-// SECURITY: Require explicit secret - fail early if not configured
-const IMPERSONATION_SECRET_RAW = process.env.IMPERSONATION_SECRET
-if (!IMPERSONATION_SECRET_RAW || IMPERSONATION_SECRET_RAW.length < 32) {
-  throw new Error(
-    'CRITICAL: IMPERSONATION_SECRET environment variable must be set and be at least 32 characters. ' +
-    'Generate with: openssl rand -base64 32'
-  )
-}
-const IMPERSONATION_SECRET = new TextEncoder().encode(IMPERSONATION_SECRET_RAW)
+// SECURITY: Require explicit secret - validated lazily to avoid build-time failures
 const IMPERSONATION_COOKIE = 'impersonation_session'
+
+function getImpersonationSecret(): Uint8Array {
+  const raw = process.env.IMPERSONATION_SECRET
+  if (!raw || raw.length < 32) {
+    throw new Error(
+      'CRITICAL: IMPERSONATION_SECRET environment variable must be set and be at least 32 characters. ' +
+      'Generate with: openssl rand -base64 32'
+    )
+  }
+  return new TextEncoder().encode(raw)
+}
 // SECURITY: Reduced from 1 hour to 30 minutes to limit exposure window
 const IMPERSONATION_EXPIRY_MINUTES = 30
 
@@ -110,7 +113,7 @@ export async function startImpersonation(
   const token = await new SignJWT(claims as unknown as Record<string, unknown>)
     .setProtectedHeader({ alg: 'HS256' })
     .setExpirationTime(expiresAt / 1000)
-    .sign(IMPERSONATION_SECRET)
+    .sign(getImpersonationSecret())
 
   // Set cookie
   // SECURITY: Use strict SameSite to prevent CSRF during impersonation
@@ -175,7 +178,7 @@ export async function getImpersonationSession(): Promise<ImpersonationClaims | n
 
     if (!token) return null
 
-    const { payload } = await jwtVerify(token, IMPERSONATION_SECRET)
+    const { payload } = await jwtVerify(token, getImpersonationSecret())
     const claims = payload as unknown as ImpersonationClaims
 
     // Check if expired

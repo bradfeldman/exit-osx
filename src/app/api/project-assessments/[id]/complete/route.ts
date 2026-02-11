@@ -13,26 +13,20 @@ import { prisma } from '@/lib/prisma'
 import { getIndustryMultiples, estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
 import { generateTasksFromProjectAssessment } from '@/lib/playbook/generate-tasks'
 import { updateActionPlan } from '@/lib/tasks/action-plan'
-
-// Default category weights for BRI calculation
-const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
-  FINANCIAL: 0.25,
-  TRANSFERABILITY: 0.20,
-  OPERATIONAL: 0.20,
-  MARKET: 0.15,
-  LEGAL_TAX: 0.10,
-  PERSONAL: 0.10,
-}
-
-// Alpha constant for non-linear discount calculation
-const ALPHA = 1.4
-
-interface CategoryScore {
-  category: string
-  totalPoints: number
-  earnedPoints: number
-  score: number
-}
+import {
+  ALPHA,
+  calculateCoreScore,
+  calculateValuation,
+  type CoreFactors,
+} from '@/lib/valuation/calculate-valuation'
+import {
+  DEFAULT_CATEGORY_WEIGHTS,
+  type ScoringResponse,
+  deduplicateResponses,
+  calculateCategoryScores,
+  calculateWeightedBriScore,
+  getCategoryScore as getCatScore,
+} from '@/lib/valuation/bri-scoring'
 
 /**
  * Fetch BRI weights for a company
@@ -142,21 +136,19 @@ export async function POST(
     // Step 1: Gather ALL responses for BRI calculation
     // ========================================
 
-    // Get initial assessment responses
-    const initialAssessment = await prisma.assessment.findFirst({
+    // PROD-013 FIX: Gather the latest response per question across ALL initial
+    // assessments for this company (not just the single latest completed one).
+    // This prevents re-assessing one category from zeroing out others.
+    const allInitialResponses = await prisma.assessmentResponse.findMany({
       where: {
-        companyId: company.id,
-        completedAt: { not: null }
+        assessment: { companyId: company.id },
       },
       include: {
-        responses: {
-          include: {
-            question: true,
-            selectedOption: true,
-          }
-        }
+        question: true,
+        selectedOption: true,
+        effectiveOption: true, // For Answer Upgrade System
       },
-      orderBy: { completedAt: 'desc' }
+      orderBy: { updatedAt: 'desc' },
     })
 
     // Get all completed project assessment responses (including this one)
@@ -178,34 +170,23 @@ export async function POST(
       }
     })
 
-    // Build a map of question -> best response
-    // Project assessment responses override initial assessment responses
-    // More recent project assessments override older ones
-    const responseMap = new Map<string, {
-      category: string
-      maxPoints: number
-      scoreValue: number
-      earnedPoints: number
-    }>()
-
-    // First, add initial assessment responses
-    if (initialAssessment) {
-      for (const response of initialAssessment.responses) {
-        // Skip NOT_APPLICABLE responses (they don't have a selected option)
-        if (!response.selectedOption) continue
-
-        const maxPoints = Number(response.question.maxImpactPoints)
-        const scoreValue = Number(response.selectedOption.scoreValue)
-        responseMap.set(response.questionId, {
-          category: response.question.briCategory,
-          maxPoints,
-          scoreValue,
-          earnedPoints: maxPoints * scoreValue,
-        })
+    // Build initial assessment scoring responses using shared types
+    // Pre-sorted by updatedAt desc from the query
+    const initialScoringResponses: ScoringResponse[] = allInitialResponses.map(r => {
+      const optionToUse = r.effectiveOption || r.selectedOption
+      return {
+        questionId: r.questionId,
+        briCategory: r.question.briCategory,
+        maxImpactPoints: Number(r.question.maxImpactPoints),
+        scoreValue: optionToUse ? Number(optionToUse.scoreValue) : null,
+        hasOption: !!optionToUse,
+        updatedAt: r.updatedAt,
       }
-    }
+    })
 
-    // Then, overlay project assessment responses (they use effectiveOptionId for task-upgraded answers)
+    // Build project assessment scoring responses
+    // Project assessment responses override initial assessment responses
+    const projectScoringResponses: ScoringResponse[] = []
     for (const pa of allProjectAssessments) {
       for (const response of pa.responses) {
         // Use effectiveOptionId if available (task completion may have upgraded the answer)
@@ -213,43 +194,29 @@ export async function POST(
           ? await prisma.projectQuestionOption.findUnique({ where: { id: response.effectiveOptionId } })
           : response.selectedOption
 
-        if (effectiveOption) {
-          const scoreValue = Number(effectiveOption.scoreValue)
+        projectScoringResponses.push({
+          questionId: response.questionId,
+          briCategory: response.question.briCategory,
           // Project questions don't have maxImpactPoints, use 1.0 as weight
-          const maxPoints = 1.0
-          responseMap.set(response.questionId, {
-            category: response.question.briCategory,
-            maxPoints,
-            scoreValue,
-            earnedPoints: maxPoints * scoreValue,
-          })
-        }
+          maxImpactPoints: 1.0,
+          scoreValue: effectiveOption ? Number(effectiveOption.scoreValue) : null,
+          hasOption: !!effectiveOption,
+          // Use a future date to ensure project responses override initial ones
+          updatedAt: response.updatedAt ?? new Date(),
+        })
       }
     }
+
+    // Combine: project responses first (they override), then initial responses
+    // deduplicateResponses keeps the first occurrence per questionId
+    const allScoringResponses = [...projectScoringResponses, ...initialScoringResponses]
+    const dedupedResponses = deduplicateResponses(allScoringResponses)
 
     // ========================================
     // Step 2: Calculate category scores
     // ========================================
 
-    const scoresByCategory: Record<string, { total: number; earned: number }> = {}
-
-    for (const [, data] of responseMap) {
-      if (!scoresByCategory[data.category]) {
-        scoresByCategory[data.category] = { total: 0, earned: 0 }
-      }
-      scoresByCategory[data.category].total += data.maxPoints
-      scoresByCategory[data.category].earned += data.earnedPoints
-    }
-
-    const categoryScores: CategoryScore[] = []
-    for (const [category, scores] of Object.entries(scoresByCategory)) {
-      categoryScores.push({
-        category,
-        totalPoints: scores.total,
-        earnedPoints: scores.earned,
-        score: scores.total > 0 ? scores.earned / scores.total : 0,
-      })
-    }
+    const categoryScores = calculateCategoryScores(dedupedResponses)
 
     // ========================================
     // Step 3: Calculate BRI Score
@@ -257,54 +224,15 @@ export async function POST(
 
     const categoryWeights = await getBriWeightsForCompany(company.briWeights)
 
-    let briScore = 0
-    for (const cs of categoryScores) {
-      const weight = categoryWeights[cs.category] || 0
-      briScore += cs.score * weight
-    }
+    const briScore = calculateWeightedBriScore(categoryScores, categoryWeights)
 
     // ========================================
     // Step 4: Calculate Core Score
     // ========================================
 
+    // Use shared utility for Core Score (5 factors, NOT 6 - revenueSizeCategory excluded)
     const coreFactors = company.coreFactors
-    let coreScore = previousSnapshot ? Number(previousSnapshot.coreScore) : 0.5
-
-    if (coreFactors) {
-      const factorScores: Record<string, Record<string, number>> = {
-        revenueSizeCategory: {
-          UNDER_500K: 0.2, FROM_500K_TO_1M: 0.4, FROM_1M_TO_3M: 0.6,
-          FROM_3M_TO_10M: 0.8, FROM_10M_TO_25M: 0.9, OVER_25M: 1.0,
-        },
-        revenueModel: {
-          PROJECT_BASED: 0.25, TRANSACTIONAL: 0.5,
-          RECURRING_CONTRACTS: 0.75, SUBSCRIPTION_SAAS: 1.0,
-        },
-        grossMarginProxy: {
-          LOW: 0.25, MODERATE: 0.5, GOOD: 0.75, EXCELLENT: 1.0,
-        },
-        laborIntensity: {
-          VERY_HIGH: 0.25, HIGH: 0.5, MODERATE: 0.75, LOW: 1.0,
-        },
-        assetIntensity: {
-          ASSET_HEAVY: 0.33, MODERATE: 0.67, ASSET_LIGHT: 1.0,
-        },
-        ownerInvolvement: {
-          CRITICAL: 0.0, HIGH: 0.25, MODERATE: 0.5, LOW: 0.75, MINIMAL: 1.0,
-        },
-      }
-
-      const scores = [
-        factorScores.revenueSizeCategory[coreFactors.revenueSizeCategory] || 0.5,
-        factorScores.revenueModel[coreFactors.revenueModel] || 0.5,
-        factorScores.grossMarginProxy[coreFactors.grossMarginProxy] || 0.5,
-        factorScores.laborIntensity[coreFactors.laborIntensity] || 0.5,
-        factorScores.assetIntensity[coreFactors.assetIntensity] || 0.5,
-        factorScores.ownerInvolvement[coreFactors.ownerInvolvement] || 0.5,
-      ]
-
-      coreScore = scores.reduce((a, b) => a + b, 0) / scores.length
-    }
+    const coreScore = calculateCoreScore(coreFactors as CoreFactors | null)
 
     // ========================================
     // Step 5: Calculate Valuation
@@ -341,20 +269,18 @@ export async function POST(
       adjustedEbitda = estimatedEbitda + addBacks + excessComp - deductions
     }
 
-    // Calculate multiples and values
-    const baseMultiple = industryMultipleLow + coreScore * (industryMultipleHigh - industryMultipleLow)
-    const discountFraction = Math.pow(1 - briScore, ALPHA)
-    const finalMultiple = industryMultipleLow + (baseMultiple - industryMultipleLow) * (1 - discountFraction)
+    // Use shared utility for consistent valuation calculation
+    const valuation = calculateValuation({
+      adjustedEbitda,
+      industryMultipleLow,
+      industryMultipleHigh,
+      coreScore,
+      briScore,
+    })
+    const { baseMultiple, discountFraction, finalMultiple, currentValue, potentialValue, valueGap } = valuation
 
-    const currentValue = adjustedEbitda * finalMultiple
-    const potentialValue = adjustedEbitda * baseMultiple
-    const valueGap = potentialValue - currentValue
-
-    // Helper to get category score
-    const getCategoryScore = (cat: string) => {
-      const cs = categoryScores.find(c => c.category === cat)
-      return cs ? cs.score : 0
-    }
+    // Helper to get category score (uses imported utility)
+    const getCategoryScore = (cat: string) => getCatScore(categoryScores, cat)
 
     // ========================================
     // Step 6: Create new valuation snapshot

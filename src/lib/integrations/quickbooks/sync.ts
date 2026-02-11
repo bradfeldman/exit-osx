@@ -7,6 +7,11 @@ import {
   parseBalanceSheetReport,
   getCompanyInfo,
 } from './api'
+import {
+  calculateEbitda,
+  calculateEbitdaMargin,
+  calculateWorkingCapital,
+} from '@/lib/financial-calculations'
 
 interface SyncResult {
   success: boolean
@@ -118,12 +123,21 @@ export async function syncQuickBooksData(
           periodsUpdated++
         }
 
-        // Calculate derived P&L values
+        // Calculate derived P&L values using shared utility (PROD-010 fix)
+        // NOTE: In QuickBooks, plData.depreciation includes both depreciation AND amortization
+        // (see api.ts line 248). Amortization is passed as 0 here since it's combined.
         const grossMarginPct = plData.grossRevenue > 0
           ? plData.grossProfit / plData.grossRevenue
           : 0
-        const ebitda = plData.grossProfit - plData.operatingExpenses + plData.depreciation
-        const ebitdaMarginPct = plData.grossRevenue > 0 ? ebitda / plData.grossRevenue : 0
+        const ebitda = calculateEbitda({
+          grossProfit: plData.grossProfit,
+          operatingExpenses: plData.operatingExpenses,
+          depreciation: plData.depreciation,  // Includes amortization from QB
+          amortization: 0,                     // Combined into depreciation by QB parser
+          interestExpense: plData.interestExpense,
+          taxExpense: plData.taxExpense,
+        })
+        const ebitdaMarginPct = calculateEbitdaMargin(ebitda, plData.grossRevenue)
 
         // Upsert income statement
         if (period.incomeStatement) {
@@ -184,8 +198,12 @@ export async function syncQuickBooksData(
         const totalEquity = bsData.totalEquity ||
           (bsData.retainedEarnings + bsData.ownersEquity)
 
-        // Operating Working Capital = AR + Inventory - AP
-        const workingCapital = bsData.accountsReceivable + bsData.inventory - bsData.accountsPayable
+        // Operating Working Capital = AR + Inventory - AP (shared utility, PROD-010)
+        const workingCapital = calculateWorkingCapital({
+          accountsReceivable: bsData.accountsReceivable,
+          inventory: bsData.inventory,
+          accountsPayable: bsData.accountsPayable,
+        })
 
         // Upsert balance sheet
         if (period.balanceSheet) {
@@ -254,7 +272,11 @@ export async function syncQuickBooksData(
           })
         }
       } catch (yearError) {
-        console.error(`Error syncing year ${year}:`, yearError)
+        // SECURITY FIX (PROD-091 #6): Do not log the full error object, which may
+        // contain QuickBooks API response bodies with financial data (revenue, expenses,
+        // balance sheet figures). Only log the error message string.
+        const yearErrorMessage = yearError instanceof Error ? yearError.message : 'Unknown error'
+        console.error(`[QuickBooks] Error syncing year ${year}: ${yearErrorMessage}`)
         // Continue with other years
       }
     }

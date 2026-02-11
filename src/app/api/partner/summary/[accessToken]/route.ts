@@ -1,11 +1,21 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import {
+  applyRateLimit,
+  RATE_LIMIT_CONFIGS,
+  createRateLimitResponse,
+} from '@/lib/security'
 
 // GET — Sanitized progress data for accountability partner
+// SECURITY FIX (PROD-060): Added rate limiting to token-based endpoint
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ accessToken: string }> }
 ) {
+  const rateLimitResult = await applyRateLimit(request, RATE_LIMIT_CONFIGS.SENSITIVE)
+  if (!rateLimitResult.success) {
+    return createRateLimitResponse(rateLimitResult)
+  }
   const { accessToken } = await params
 
   const partner = await prisma.accountabilityPartner.findUnique({

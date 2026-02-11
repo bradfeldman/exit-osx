@@ -5,18 +5,6 @@ import { getGravatarUrl } from '@/lib/utils/gravatar'
 import { PlanTier, SubscriptionStatus, BillingCycle } from '@prisma/client'
 import { serverAnalytics } from '@/lib/analytics/server'
 
-// Map plan ID to Prisma PlanTier enum
-function getPlanTier(planId: string): PlanTier {
-  switch (planId) {
-    case 'growth':
-      return 'GROWTH'
-    case 'exit-ready':
-      return 'EXIT_READY'
-    default:
-      return 'FOUNDATION'
-  }
-}
-
 // Get subscription config for new users
 // All new signups get EXIT_READY tier with a 14-day trial, regardless of selected plan
 function getSubscriptionConfig(_planId: string): {
@@ -266,9 +254,9 @@ export async function POST() {
     })
   } catch (error) {
     console.error('Error syncing user:', error)
-    const message = error instanceof Error ? error.message : 'Unknown error'
+    // SECURITY FIX (PROD-060): Removed error.message from response to prevent leaking internal details
     return NextResponse.json(
-      { error: 'Failed to sync user', details: message },
+      { error: 'Failed to sync user' },
       { status: 500 }
     )
   }

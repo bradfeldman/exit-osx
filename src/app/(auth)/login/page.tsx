@@ -40,18 +40,22 @@ function SearchParamsReader({ onChange }: {
 
 export default function LoginPage() {
   // Search params data — starts with defaults, updated once JS hydrates
+  // Use useRef to prevent layout shift on first render
   const [redirectUrl, setRedirectUrl] = useState('/dashboard')
   const [isFromInvite, setIsFromInvite] = useState(false)
   const [isTimeout, setIsTimeout] = useState(false)
   const [isExpiredLink, setIsExpiredLink] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [isHydrated, setIsHydrated] = useState(false)
 
   const handleSearchParams = useCallback((data: { redirectUrl: string; isFromInvite: boolean; isTimeout: boolean; isExpiredLink: boolean; authError: string | null }) => {
+    // Batch state updates to prevent multiple re-renders
     setRedirectUrl(data.redirectUrl)
     setIsFromInvite(data.isFromInvite)
     setIsTimeout(data.isTimeout)
     setIsExpiredLink(data.isExpiredLink)
     setAuthError(data.authError)
+    setIsHydrated(true)
   }, [])
 
   return (
@@ -137,6 +141,13 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Prevent form from jumping by scrolling to top if needed
+    if (window.scrollY > 0) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+
+    // Batch state updates to prevent layout shift
     setError(null)
     setAttemptsRemaining(null)
     setLoading(true)
@@ -192,7 +203,9 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
         timeToSubmit: Date.now() - pageLoadTime.current,
       })
 
-      router.push(redirectUrl)
+      // Use replace instead of push to prevent back button issues
+      // and potential redirect loops on mobile
+      router.replace(redirectUrl)
       router.refresh()
     } catch {
       setError('An unexpected error occurred')
@@ -223,9 +236,9 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
   const isLocked = !!lockedUntil && lockedUntil > Date.now()
 
   return (
-    <div className="min-h-screen flex">
+    <div className="flex min-h-[100dvh] bg-background">
       {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden flex-shrink-0">
         <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
         {/* Decorative elements */}
         <div className="absolute top-20 right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
@@ -278,8 +291,8 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
       </div>
 
       {/* Right side - Login Form */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-background">
-        <div className="w-full max-w-md space-y-8">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-background min-h-[100dvh] lg:min-h-0">
+        <div className="w-full max-w-md space-y-8 py-8">
           {/* Mobile logo */}
           <div className="lg:hidden text-center">
             <a href="https://exitosx.com" className="inline-flex items-center gap-2">
@@ -349,16 +362,19 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
           )}
 
           <form onSubmit={handleLogin} className="space-y-6">
-            {(error || getLockoutMessage()) && (
-              <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg space-y-1">
-                <p>{getLockoutMessage() || error}</p>
-                {attemptsRemaining !== null && attemptsRemaining > 0 && (
-                  <p className="text-xs text-red-500">
-                    {attemptsRemaining} attempt{attemptsRemaining > 1 ? 's' : ''} remaining before account lockout
-                  </p>
-                )}
-              </div>
-            )}
+            {/* Error message container with fixed min-height to prevent layout shift */}
+            <div className="min-h-[4rem]">
+              {(error || getLockoutMessage()) && (
+                <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg space-y-1">
+                  <p>{getLockoutMessage() || error}</p>
+                  {attemptsRemaining !== null && attemptsRemaining > 0 && (
+                    <p className="text-xs text-red-500">
+                      {attemptsRemaining} attempt{attemptsRemaining > 1 ? 's' : ''} remaining before account lockout
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
 
             {!requiresTwoFactor ? (
               <>
@@ -374,7 +390,8 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
                     onBlur={() => handleFieldBlur('email')}
                     required
                     disabled={loading || isLocked}
-                    className="h-12 transition-all duration-200 focus:scale-[1.01]"
+                    autoComplete="email"
+                    className="h-12"
                   />
                 </div>
 
@@ -399,13 +416,15 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
                       onBlur={() => handleFieldBlur('password')}
                       required
                       disabled={loading || isLocked}
-                      className="h-12 pr-12 transition-all duration-200 focus:scale-[1.01]"
+                      autoComplete="current-password"
+                      className="h-12 pr-12"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors -m-2 p-2 rounded-md"
                       tabIndex={-1}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
@@ -451,7 +470,8 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
                     onChange={(e) => setTwoFactorCode(e.target.value.replace(/[^0-9-]/g, ''))}
                     required
                     disabled={loading}
-                    className="h-12 text-center text-lg tracking-widest font-mono transition-all duration-200 focus:scale-[1.01]"
+                    autoComplete="one-time-code"
+                    className="h-12 text-center text-lg tracking-widest font-mono"
                     autoFocus
                   />
                   <p className="text-xs text-muted-foreground text-center">
@@ -471,8 +491,9 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
 
             <Button
               type="submit"
-              className="w-full h-12 text-base transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/25"
+              className="w-full h-12 text-base"
               disabled={loading || isLocked || (showCaptcha && !captchaToken) || (requiresTwoFactor && twoFactorCode.length < 6)}
+              animated={false}
             >
               {loading ? 'Signing in...' : requiresTwoFactor ? 'Verify' : 'Sign In'}
             </Button>

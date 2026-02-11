@@ -16,6 +16,7 @@ import {
   Rocket,
 } from 'lucide-react'
 import { analytics } from '@/lib/analytics'
+import { useExposure } from '@/contexts/ExposureContext'
 import type { LucideIcon } from 'lucide-react'
 
 interface TourStep {
@@ -251,6 +252,7 @@ export function PlatformTour({ open, onComplete }: PlatformTourProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [direction, setDirection] = useState(1)
   const hasTrackedStart = useRef(false)
+  const { completeTour } = useExposure()
 
   // Track tour start once when opened (component remounts via key prop)
   useEffect(() => {
@@ -265,10 +267,11 @@ export function PlatformTour({ open, onComplete }: PlatformTourProps) {
   const isLast = currentStep === TOUR_STEPS.length - 1
   const showMiniNav = !!step.highlightId
 
-  function handleNext() {
+  async function handleNext() {
     setDirection(1)
     if (isLast) {
       analytics.track('tour_completed', { stepsViewed: currentStep + 1 })
+      await completeTour()
       onComplete()
     } else {
       setCurrentStep((s) => s + 1)
@@ -280,8 +283,9 @@ export function PlatformTour({ open, onComplete }: PlatformTourProps) {
     setCurrentStep((s) => Math.max(0, s - 1))
   }
 
-  function handleSkip() {
+  async function handleSkip() {
     analytics.track('tour_skipped', { skippedAtStep: currentStep })
+    await completeTour()
     onComplete()
   }
 

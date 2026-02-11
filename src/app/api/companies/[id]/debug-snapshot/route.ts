@@ -62,7 +62,7 @@ export async function GET(
       adjustedEbitda: Number(latestSnapshot.adjustedEbitda),
       snapshotReason: latestSnapshot.snapshotReason,
     } : null,
-    shouldUseSnapshotValues: !hasFinancials && !useDCF && !hasMultipleOverride,
+    // PROD-062: shouldUseSnapshotValues removed — dashboard always recalculates fresh
     conditions: {
       hasFinancials,
       useDCF,

@@ -117,7 +117,7 @@ export function TaskExecutionClient({ taskId }: TaskExecutionClientProps) {
 
       // Navigate back to Value Builder with success indication and value
       const taskValue = task.rawImpact ? Math.round(Number(task.rawImpact)) : 0
-      router.push(`/dashboard/value-builder?completed=true&value=${taskValue}`)
+      router.push(`/dashboard?completed=true&value=${taskValue}`)
     } catch (err) {
       console.error('Error completing task:', err)
       setError('Failed to complete task')
@@ -145,7 +145,7 @@ export function TaskExecutionClient({ taskId }: TaskExecutionClientProps) {
           <p className="text-muted-foreground mb-6">
             The task you&apos;re looking for could not be loaded.
           </p>
-          <Button onClick={() => router.push('/dashboard/value-builder')}>
+          <Button onClick={() => router.push('/dashboard')}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Value Builder
           </Button>
@@ -165,7 +165,7 @@ export function TaskExecutionClient({ taskId }: TaskExecutionClientProps) {
       >
         {/* Back button */}
         <button
-          onClick={() => router.push('/dashboard/value-builder')}
+          onClick={() => router.push('/dashboard')}
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />

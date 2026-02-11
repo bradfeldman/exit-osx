@@ -3,17 +3,12 @@ import { prisma } from '@/lib/prisma'
 import { generateDriftReport } from '@/lib/drift-report/generate-report'
 import { sendDriftReportEmail } from '@/lib/email/send-drift-report-email'
 import { sendPartnerMonthlySummaryEmail } from '@/lib/email/send-partner-monthly-summary-email'
-
-const CRON_SECRET = process.env.CRON_SECRET
+import { verifyCronAuth } from '@/lib/security/cron-auth'
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization')
-
-  if (process.env.NODE_ENV === 'production' && CRON_SECRET) {
-    if (authHeader !== `Bearer ${CRON_SECRET}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-  }
+  // SECURITY FIX (PROD-060): Uses verifyCronAuth which fails closed when CRON_SECRET is not set.
+  const authError = verifyCronAuth(request)
+  if (authError) return authError
 
   try {
     // Calculate last month's date range

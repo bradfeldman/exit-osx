@@ -42,7 +42,7 @@ async function checkDatabase(): Promise<ServiceHealth> {
     return {
       status: 'unhealthy',
       latency: Date.now() - start,
-      error: error instanceof Error ? error.message : 'Database connection failed',
+      error: 'Database connection failed',
       lastChecked: new Date().toISOString(),
     }
   }
@@ -77,7 +77,7 @@ async function checkSupabaseAuth(): Promise<ServiceHealth> {
     return {
       status: 'unhealthy',
       latency: Date.now() - start,
-      error: error instanceof Error ? error.message : 'Supabase Auth connection failed',
+      error: 'Supabase Auth connection failed',
       lastChecked: new Date().toISOString(),
     }
   }
@@ -114,7 +114,7 @@ async function checkSupabaseStorage(): Promise<ServiceHealth> {
     return {
       status: 'unhealthy',
       latency: Date.now() - start,
-      error: error instanceof Error ? error.message : 'Supabase Storage connection failed',
+      error: 'Supabase Storage connection failed',
       lastChecked: new Date().toISOString(),
     }
   }
@@ -157,7 +157,7 @@ async function checkOpenAI(): Promise<ServiceHealth> {
     return {
       status: 'degraded', // Degraded because keyword fallback exists
       latency: Date.now() - start,
-      error: error instanceof Error ? error.message : 'OpenAI API check failed',
+      error: 'OpenAI API check failed',
       lastChecked: new Date().toISOString(),
     }
   }
@@ -199,7 +199,7 @@ async function checkResend(): Promise<ServiceHealth> {
     return {
       status: 'degraded',
       latency: Date.now() - start,
-      error: error instanceof Error ? error.message : 'Resend API check failed',
+      error: 'Resend API check failed',
       lastChecked: new Date().toISOString(),
     }
   }
@@ -232,7 +232,7 @@ async function checkQuickBooks(): Promise<ServiceHealth> {
     return {
       status: 'degraded',
       latency: Date.now() - start,
-      error: error instanceof Error ? error.message : 'QuickBooks check failed',
+      error: 'QuickBooks check failed',
       lastChecked: new Date().toISOString(),
     }
   }

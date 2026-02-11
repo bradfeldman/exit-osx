@@ -15,7 +15,7 @@ function formatDollars(amount: number): string {
   return `$${amount.toFixed(0)}`
 }
 
-interface NarrativeParams {
+export interface NarrativeParams {
   eventType: LedgerEventType
   title?: string
   category?: BriCategory | null

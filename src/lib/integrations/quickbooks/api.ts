@@ -100,8 +100,11 @@ async function makeQuickBooksRequest<T>(
 
   if (!response.ok) {
     const intuitTid = response.headers.get('intuit_tid') || 'unknown'
+    // SECURITY FIX (PROD-091 #6): Read the error body for the thrown error message
+    // but do NOT log it — QB error responses may contain financial data or tokens.
+    // Only log the status code and intuit_tid for debugging/correlation.
     const errorText = await response.text()
-    console.error(`QuickBooks API error [intuit_tid: ${intuitTid}]: ${response.status}`)
+    console.error(`[QuickBooks] API error [intuit_tid: ${intuitTid}]: HTTP ${response.status}`)
     throw new Error(`QuickBooks API error: ${response.status} - ${errorText} (intuit_tid: ${intuitTid})`)
   }
 

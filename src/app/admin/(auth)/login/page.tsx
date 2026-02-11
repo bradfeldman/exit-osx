@@ -34,7 +34,7 @@ export default function AdminLoginPage() {
 
 function AdminLoginLoading() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-[100dvh] flex items-center justify-center bg-background">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   )
@@ -133,7 +133,7 @@ function AdminLoginContent() {
   const isLocked = !!lockedUntil && lockedUntil > Date.now()
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-[100dvh] flex">
       {/* Left side - Admin Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-slate-900 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-800" />
@@ -222,7 +222,8 @@ function AdminLoginContent() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={loading || isLocked}
-                    className="h-12 transition-all duration-200 focus:scale-[1.01]"
+                    autoComplete="email"
+                    className="h-12"
                   />
                 </div>
 
@@ -245,13 +246,15 @@ function AdminLoginContent() {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       disabled={loading || isLocked}
-                      className="h-12 pr-12 transition-all duration-200 focus:scale-[1.01]"
+                      autoComplete="current-password"
+                      className="h-12 pr-12"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors -m-2 p-2 rounded-md"
                       tabIndex={-1}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
@@ -297,7 +300,8 @@ function AdminLoginContent() {
                     onChange={(e) => setTwoFactorCode(e.target.value.replace(/[^0-9-]/g, ''))}
                     required
                     disabled={loading}
-                    className="h-12 text-center text-lg tracking-widest font-mono transition-all duration-200 focus:scale-[1.01]"
+                    autoComplete="one-time-code"
+                    className="h-12 text-center text-lg tracking-widest font-mono"
                     autoFocus
                   />
                   <p className="text-xs text-muted-foreground text-center">
@@ -317,8 +321,9 @@ function AdminLoginContent() {
 
             <Button
               type="submit"
-              className="w-full h-12 text-base transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/25"
+              className="w-full h-12 text-base"
               disabled={loading || isLocked || (showCaptcha && !captchaToken) || (requiresTwoFactor && twoFactorCode.length < 6)}
+              animated={false}
             >
               {loading ? 'Signing in...' : requiresTwoFactor ? 'Verify' : 'Sign In'}
             </Button>

@@ -163,7 +163,18 @@ class RedisStore implements StoreInterface {
   }
 }
 
-// Determine which store to use
+// SECURITY FIX (PROD-091 #3): Determine which store to use.
+// On Vercel serverless, each function invocation may run in a separate isolate,
+// so in-memory state is NOT shared across instances. This means rate limiting and
+// account lockout counters are per-instance only — an attacker can bypass limits
+// by hitting different instances.
+//
+// RECOMMENDATION: Provision Upstash Redis (Vercel integration) and set REDIS_URL
+// in Vercel environment variables. Upstash provides a serverless Redis that works
+// with ioredis and costs ~$0 for low-volume usage.
+//
+// TODO: Set up Upstash Redis and configure REDIS_URL for production to enable
+// distributed rate limiting and account lockout across all serverless instances.
 let securityStore: StoreInterface
 
 if (process.env.REDIS_URL) {
@@ -174,10 +185,11 @@ if (process.env.REDIS_URL) {
 } else {
   securityStore = new MemoryStore()
   if (process.env.NODE_ENV === 'production') {
-    console.warn(
-      '[Security] WARNING: Using in-memory store. ' +
-        'This will NOT work correctly with multiple server instances. ' +
-        'Set REDIS_URL for production deployments.'
+    // Log at error level so this surfaces in monitoring/alerting dashboards
+    console.error(
+      '[Security] CRITICAL: Using in-memory store for rate limiting. ' +
+        'Rate limits and account lockouts will NOT be enforced across Vercel serverless instances. ' +
+        'Set REDIS_URL (e.g., Upstash Redis) for production deployments.'
     )
   }
 }

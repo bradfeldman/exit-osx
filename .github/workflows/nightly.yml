@@ -1,0 +1,210 @@
+name: Nightly Tests & Checks
+
+on:
+  schedule:
+    # Run every night at 2 AM UTC (9 PM EST / 6 PM PST)
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  load-testing:
+    name: Load Testing (k6)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Run smoke test
+        run: k6 run load-tests/smoke-test.js
+        env:
+          BASE_URL: https://staging.exitosx.com
+          AUTH_TOKEN: ${{ secrets.K6_AUTH_TOKEN }}
+
+      - name: Upload k6 results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-results
+          path: '*.json'
+          retention-days: 30
+
+  security-audit:
+    name: Full Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit (full)
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Run dependency check
+        run: |
+          echo "Checking for outdated dependencies..."
+          npm outdated || true
+
+      - name: Check for known vulnerabilities
+        run: |
+          echo "Scanning for known vulnerability patterns..."
+          # Check for dependencies with known issues
+          npx audit-ci --moderate
+        continue-on-error: true
+
+      - name: Generate security report
+        if: always()
+        run: |
+          npm audit --json > security-audit.json || true
+
+      - name: Upload security report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-audit-report
+          path: security-audit.json
+          retention-days: 30
+
+  performance-tracking:
+    name: Performance Trend Tracking
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run performance tests
+        run: npm run test:perf:no-auth
+        env:
+          TEST_BASE_URL: https://staging.exitosx.com
+          SKIP_WEB_SERVER: '1'
+
+      - name: Extract performance metrics
+        if: always()
+        run: node scripts/ci/extract-perf-metrics.js
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-metrics
+          path: |
+            test-results/
+            performance-metrics.json
+          retention-days: 30
+
+  weekly-full-e2e:
+    name: Weekly Full E2E Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Only run on Sundays (day 0)
+    if: github.event.schedule == '0 2 * * 0' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run full E2E test suite
+        run: npm run test:e2e:staging
+        env:
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          SKIP_WEB_SERVER: '1'
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: weekly-e2e-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 30
+
+  notify-failures:
+    name: Notify on Failures
+    runs-on: ubuntu-latest
+    needs: [load-testing, security-audit, performance-tracking]
+    if: always() && (needs.load-testing.result == 'failure' || needs.security-audit.result == 'failure' || needs.performance-tracking.result == 'failure')
+
+    steps:
+      - name: Create failure summary
+        run: |
+          echo "## Nightly Test Failures" > failure-summary.md
+          echo "" >> failure-summary.md
+          echo "The following nightly jobs failed:" >> failure-summary.md
+          echo "" >> failure-summary.md
+
+          if [[ "${{ needs.load-testing.result }}" == "failure" ]]; then
+            echo "- ❌ Load Testing" >> failure-summary.md
+          fi
+
+          if [[ "${{ needs.security-audit.result }}" == "failure" ]]; then
+            echo "- ❌ Security Audit" >> failure-summary.md
+          fi
+
+          if [[ "${{ needs.performance-tracking.result }}" == "failure" ]]; then
+            echo "- ❌ Performance Tracking" >> failure-summary.md
+          fi
+
+          echo "" >> failure-summary.md
+          echo "**Run Date:** $(date -u)" >> failure-summary.md
+          echo "**Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> failure-summary.md
+
+      - name: Create GitHub Issue for failures
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('failure-summary.md', 'utf8');
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Nightly Tests Failed - ${new Date().toISOString().split('T')[0]}`,
+              body: summary,
+              labels: ['automated', 'nightly-failure', 'needs-triage']
+            });

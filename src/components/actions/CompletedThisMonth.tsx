@@ -45,6 +45,8 @@ export function CompletedThisMonth({ tasks, totalValue }: CompletedThisMonthProp
             title={task.title}
             completedValue={task.completedValue}
             completedAt={task.completedAt}
+            completionNotes={task.completionNotes}
+            hasEvidence={task.hasEvidence}
           />
         ))}
       </div>

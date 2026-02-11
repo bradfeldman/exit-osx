@@ -36,6 +36,7 @@ model User {
   avatarUrl                String?                   @map("avatar_url")
   isSuperAdmin             Boolean                   @default(false) @map("is_super_admin")
   userType                 UserType                  @default(SUBSCRIBER) @map("user_type")
+  exposureState            ExposureState             @default(LEARNING) @map("exposure_state")
   createdAt                DateTime                  @default(now()) @map("created_at")
   updatedAt                DateTime                  @updatedAt @map("updated_at")
   advisorProfile           AdvisorProfile?
@@ -54,6 +55,7 @@ model User {
   taskAssignments          TaskAssignment[]
   taskInvitesSent          TaskInvite[]              @relation("TaskInvitesSent")
   primaryTasks             Task[]                    @relation("TaskPrimaryAssignee")
+  taskNotes                TaskNote[]
   ticketMessages           TicketMessage[]
   twoFactorAuth            TwoFactorAuth?
   consents                 UserConsent[]
@@ -68,6 +70,8 @@ model User {
   companyInvitesSent       CompanyInvite[]           @relation("CompanyInviter")
   confirmedSignals         Signal[]                  @relation("SignalConfirmer")
   accountabilityPartners   AccountabilityPartner[]
+  emailPreference          EmailPreference?
+  emailLogs                EmailLog[]
 
   @@map("users")
 }
@@ -211,6 +215,10 @@ model Company {
   // Company Dossier - adaptive intelligence engine
   dossiers                 CompanyDossier[]
   aiGeneratedQuestions     Question[]
+  emailLogs                EmailLog[]
+  // Assessment Cadence Control (PROD-017)
+  assessmentCadence        String                       @default("monthly") @map("assessment_cadence") // 'weekly' | 'monthly' | 'manual'
+  cadencePromptsShownAt    DateTime[]                   @default([]) @map("cadence_prompts_shown_at") // Timestamps of prompts shown (for weekly limit)
 
   @@map("companies")
 }
@@ -481,6 +489,8 @@ model Task {
   proofDocuments       DataRoomDocument[] @relation("TaskProofDocuments")
   assignments          TaskAssignment[]
   invites              TaskInvite[]
+  subSteps             TaskSubStep[]
+  notes                TaskNote[]
   company              Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   primaryAssignee      User?              @relation("TaskPrimaryAssignee", fields: [primaryAssigneeId], references: [id])
   upgradesFromOption   QuestionOption?    @relation("TaskUpgradeFrom", fields: [upgradesFromOptionId], references: [id])
@@ -523,6 +533,37 @@ model TaskInvite {
   @@index([token])
   @@index([email])
   @@map("task_invites")
+}
+
+model TaskSubStep {
+  id          String    @id @default(cuid())
+  taskId      String    @map("task_id")
+  title       String
+  order       Int       @default(0)
+  completed   Boolean   @default(false)
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId, order])
+  @@map("task_sub_steps")
+}
+
+model TaskNote {
+  id        String   @id @default(cuid())
+  taskId    String   @map("task_id")
+  userId    String   @map("user_id")
+  content   String   @db.Text
+  noteType  String   @default("GENERAL") @map("note_type") // GENERAL, COMPLETION, BLOCKER, PROGRESS
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([taskId, createdAt])
+  @@index([userId])
+  @@map("task_notes")
 }
 
 model IndustryMultiple {
@@ -1853,6 +1894,11 @@ enum UpdateFrequency {
   ONE_TIME
 }
 
+// Document status for data room documents.
+// CURRENT: Document is up-to-date and within its refresh window.
+// NEEDS_UPDATE: Document is approaching its next update due date (within 7 days).
+// OVERDUE: Document has passed its next update due date.
+// NOTE: There is no ARCHIVED status. To archive a document, soft-delete it or use a custom field.
 enum DocumentStatus {
   CURRENT
   NEEDS_UPDATE
@@ -2050,6 +2096,12 @@ enum UserType {
   SUBSCRIBER
   GUEST
   COMPED
+}
+
+enum ExposureState {
+  LEARNING
+  VIEWING
+  ACTING
 }
 
 enum AccessRequestStatus {
@@ -2583,6 +2635,13 @@ model DealStageHistory2 {
 // DEAL ACTIVITY (v2)
 // --------------------------------------------
 // Activity log for deal buyers.
+//
+// IMPORTANT: This model uses `performedAt` (NOT `createdAt`) for the activity timestamp.
+// REQUIRED FIELDS when creating:
+//   - performedByUserId: User ID who performed the action (use 'system' for automated actions)
+//   - performedAt: Defaults to now(), but can be set explicitly for backdated activities
+//
+// Common pitfall: Do not rely on a `createdAt` field - it does not exist on this model.
 
 model DealActivity2 {
   id String @id @default(cuid())
@@ -3214,4 +3273,37 @@ model CompanyDossier {
 enum DossierBuildType {
   FULL
   INCREMENTAL
+}
+
+// Email notification system
+model EmailPreference {
+  id                String    @id @default(cuid())
+  userId            String    @unique @map("user_id")
+  frequency         String    @default("WEEKLY") // REALTIME, DAILY, WEEKLY, MONTHLY, NEVER
+  enabledTypes      String[]  @default([]) @map("enabled_types")
+  unsubscribedAt    DateTime? @map("unsubscribed_at")
+  unsubscribeToken  String?   @unique @map("unsubscribe_token")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("email_preferences")
+}
+
+model EmailLog {
+  id             String    @id @default(cuid())
+  userId         String    @map("user_id")
+  companyId      String?   @map("company_id")
+  emailType      String    @map("email_type")
+  recipientEmail String    @map("recipient_email")
+  subject        String
+  success        Boolean
+  error          String?
+  sentAt         DateTime  @default(now()) @map("sent_at")
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company        Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([userId, emailType, sentAt])
+  @@index([companyId])
+  @@map("email_logs")
 }

@@ -39,9 +39,13 @@ function checkStagingAuth(request: NextRequest): NextResponse | null {
   const validPassword = process.env.STAGING_AUTH_PASSWORD
 
   if (!validPassword) {
-    // If no password configured, allow access (fail open for development)
-    console.warn('STAGING_AUTH_PASSWORD not configured')
-    return null
+    // SECURITY FIX (PROD-091 #2): Fail closed — if STAGING_AUTH_PASSWORD is not set,
+    // block all access to the staging environment. Previously this failed open, which
+    // meant a missing env var would expose staging to the public internet.
+    console.error('[Security] STAGING_AUTH_PASSWORD not configured — blocking staging access (fail closed)')
+    return new NextResponse('Staging environment is not configured. Contact administrator.', {
+      status: 503,
+    })
   }
 
   if (username !== validUsername || password !== validPassword) {
@@ -72,6 +76,7 @@ const AUTH_API_RATE_LIMITED_ROUTES = [
 const AUTH_PAGE_ROUTES = [
   '/login',
   '/signup',
+  '/activate',
 ]
 
 // SECURITY: Sensitive routes with stricter rate limits
@@ -116,13 +121,20 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const hostname = request.headers.get('host') || ''
 
-  // TEMPORARY DIAGNOSTIC LOGGING — remove after iPhone debugging
-  const isDiagTarget = pathname === '/login' || pathname === '/' || pathname === '/test'
-  if (isDiagTarget) {
-    const ua = request.headers.get('user-agent') || 'unknown'
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(ua)
-    console.log(`[DIAG] ${request.method} ${hostname}${pathname} | mobile=${isMobile} | ua=${ua.substring(0, 80)} | cookies=${request.cookies.getAll().map(c => c.name).join(',')}`)
+  // PROD-025: Redirect legacy routes to their new locations
+  const legacyRedirects: Record<string, string> = {
+    '/dashboard/playbook': '/dashboard/actions',
+    '/dashboard/action-plan': '/dashboard/actions',
+    '/dashboard/data-room': '/dashboard/evidence',
+    '/dashboard/contacts': '/dashboard/deal-room',
   }
+  const redirectTarget = legacyRedirects[pathname]
+  if (redirectTarget) {
+    return NextResponse.redirect(new URL(redirectTarget, request.url), 301)
+  }
+
+  // SECURITY FIX (PROD-091): Removed temporary DIAG logging that exposed user-agent
+  // strings, cookie names, and routing decisions to console/log output in production.
 
   // === DOMAIN-BASED ROUTING ===
 
@@ -135,7 +147,6 @@ export async function middleware(request: NextRequest) {
       const url = new URL(request.url)
       url.hostname = 'app.exitosx.com'
       url.port = ''
-      if (isDiagTarget) console.log(`[DIAG] REDIRECT: ${hostname}${pathname} → ${url.toString()} (marketing domain, non-marketing route)`)
       return NextResponse.redirect(url)
     }
     // Continue processing for marketing routes (serve landing, pricing, etc.)
@@ -216,11 +227,17 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Refresh the activity cookie on each authenticated navigation
+  // SECURITY FIX (PROD-091 #1): Added httpOnly to prevent client-side JS access
+  // (XSS cannot steal/tamper the cookie) and secure to ensure HTTPS-only transmission.
+  // The client-side SessionTimeoutWarning component uses its own JS timer, not this cookie,
+  // so httpOnly does not break any client-side functionality.
   if (user) {
     supabaseResponse.cookies.set(SESSION_COOKIE_NAME, String(Date.now()), {
       path: '/',
       maxAge: SESSION_COOKIE_MAX_AGE,
       sameSite: 'lax',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
     })
   }
 
@@ -228,7 +245,9 @@ export async function middleware(request: NextRequest) {
   const isAdminSubdomain = hostname.startsWith('admin.')
 
   // Public routes that don't require auth
-  const publicRoutes = ['/login', '/signup', '/auth/callback', '/auth/confirm', '/pricing', '/terms', '/privacy', '/invite', '/api/invites', '/api/cron', '/api/health', '/api/diag', '/api/industries', '/api/public', '/forgot-password', '/reset-password', '/test']
+  // SECURITY FIX (PROD-060): Removed /api/diag (now behind requireDevEndpoint),
+  // /api/industries (now requires auth — calls OpenAI which has cost abuse risk)
+  const publicRoutes = ['/login', '/signup', '/activate', '/auth/callback', '/auth/confirm', '/pricing', '/terms', '/privacy', '/invite', '/api/invites', '/api/cron', '/api/health', '/api/public', '/forgot-password', '/reset-password', '/test']
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
 
   // Admin public routes (login/forgot-password on admin subdomain)
@@ -308,11 +327,12 @@ export async function middleware(request: NextRequest) {
   }
 
   // If user is logged in and trying to access auth pages, redirect to dashboard
-  if (user && (pathname === '/login' || pathname === '/signup' || pathname === '/admin/login')) {
+  // EXCEPTION: /activate page REQUIRES an active session (magic link creates it) — do not redirect
+  // MOBILE FIX: Only redirect if this isn't a form submission (POST) to prevent interrupting login flow
+  if (user && (pathname === '/login' || pathname === '/signup' || pathname === '/admin/login') && request.method === 'GET') {
     const url = request.nextUrl.clone()
     // If on admin subdomain or trying to access admin login, redirect to admin dashboard
     url.pathname = (isAdminSubdomain || pathname === '/admin/login') ? '/admin' : '/dashboard'
-    if (isDiagTarget) console.log(`[DIAG] REDIRECT: ${pathname} → ${url.pathname} (user logged in, redirecting away from auth page)`)
     return createRedirect(url, supabaseResponse)
   }
 
@@ -333,11 +353,9 @@ export async function middleware(request: NextRequest) {
   if (!user && pathname === '/' && isAppDomain(hostname) && !hostname.includes('localhost')) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    if (isDiagTarget) console.log(`[DIAG] REDIRECT: / → /login (unauthenticated on app domain)`)
     return createRedirect(url, supabaseResponse)
   }
 
-  if (isDiagTarget) console.log(`[DIAG] PASSTHROUGH: ${pathname} | user=${user ? 'yes' : 'no'} | isPublic=${isPublicRoute} | setCookies=${supabaseResponse.cookies.getAll().map(c => c.name).join(',')}`)
   return supabaseResponse
 }
 

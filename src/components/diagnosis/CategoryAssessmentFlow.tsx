@@ -75,10 +75,17 @@ export function CategoryAssessmentFlow({
         if (!questionsRes.ok) throw new Error('Failed to load questions')
         const { questions: allQuestions } = await questionsRes.json()
 
-        // Filter to this category and sort by displayOrder
+        // Filter to this category and sort: seed (foundational) first, then AI (adaptive)
+        // PROD-014: Enforce Initial -> Adaptive question ordering
         const categoryQuestions = (allQuestions as Question[])
           .filter(q => q.briCategory === category)
-          .sort((a, b) => a.displayOrder - b.displayOrder)
+          .sort((a, b) => {
+            // Seed questions (companyId is null/undefined) come before AI questions
+            const aIsSeed = !a.companyId ? 0 : 1
+            const bIsSeed = !b.companyId ? 0 : 1
+            if (aIsSeed !== bIsSeed) return aIsSeed - bIsSeed
+            return a.displayOrder - b.displayOrder
+          })
         setQuestions(categoryQuestions)
 
         // Fetch existing responses

@@ -23,9 +23,10 @@ interface UpNextQueueProps {
   hasMore: boolean
   totalQueueSize: number
   onStartTask: (taskId: string) => void
+  disabled?: boolean
 }
 
-export function UpNextQueue({ tasks, hasMore, totalQueueSize, onStartTask }: UpNextQueueProps) {
+export function UpNextQueue({ tasks, hasMore, totalQueueSize, onStartTask, disabled = false }: UpNextQueueProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   return (
@@ -45,7 +46,7 @@ export function UpNextQueue({ tasks, hasMore, totalQueueSize, onStartTask }: UpN
                   {task.estimatedMinutes && ` · ${task.estimatedMinutes} min`}
                 </p>
                 <div className="flex items-center gap-2 mt-3">
-                  <Button size="sm" onClick={() => onStartTask(task.id)}>
+                  <Button size="sm" onClick={() => onStartTask(task.id)} disabled={disabled}>
                     Start This Task
                   </Button>
                   <Button

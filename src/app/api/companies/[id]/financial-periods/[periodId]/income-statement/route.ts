@@ -4,6 +4,12 @@ import { NextResponse } from 'next/server'
 import { RevenueSizeCategory } from '@prisma/client'
 import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snapshot'
 import { triggerDossierUpdate } from '@/lib/dossier/build-dossier'
+import {
+  calculateGrossProfit,
+  calculateGrossMargin,
+  calculateEbitda,
+  calculateEbitdaMargin,
+} from '@/lib/financial-calculations'
 
 // Helper to determine revenue size category from actual revenue
 function getRevenueSizeCategory(revenue: number): RevenueSizeCategory {
@@ -156,12 +162,18 @@ export async function PUT(
       return NextResponse.json({ error: 'Period not found' }, { status: 404 })
     }
 
-    // Calculate derived fields
-    const grossProfit = grossRevenue - cogs
-    const grossMarginPct = grossRevenue > 0 ? grossProfit / grossRevenue : 0
-    // EBITDA = Gross Profit - Total Expenses + D + A + I + T
-    const ebitda = grossProfit - operatingExpenses + (depreciation ?? 0) + (amortization ?? 0) + (interestExpense ?? 0) + (taxExpense ?? 0)
-    const ebitdaMarginPct = grossRevenue > 0 ? ebitda / grossRevenue : 0
+    // Calculate derived fields using shared utilities (PROD-010)
+    const grossProfit = calculateGrossProfit(grossRevenue, cogs)
+    const grossMarginPct = calculateGrossMargin(grossProfit, grossRevenue)
+    const ebitda = calculateEbitda({
+      grossProfit,
+      operatingExpenses,
+      depreciation: depreciation ?? 0,
+      amortization: amortization ?? 0,
+      interestExpense: interestExpense ?? 0,
+      taxExpense: taxExpense ?? 0,
+    })
+    const ebitdaMarginPct = calculateEbitdaMargin(ebitda, grossRevenue)
 
     // Upsert income statement
     const stmt = await prisma.incomeStatement.upsert({

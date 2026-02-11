@@ -34,7 +34,6 @@ import {
 import { BUYER_TYPE_LABELS } from '@/lib/deal-tracker/constants'
 import {
   Upload,
-  FileText,
   Loader2,
   AlertCircle,
   CheckCircle,
@@ -43,7 +42,6 @@ import {
   Building2,
   User,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 
 interface ImportResult {
   index: number

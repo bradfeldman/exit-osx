@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { DealStage, ApprovalStatus } from '@prisma/client'
+import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { DealStage } from '@prisma/client'
 
 type RouteParams = Promise<{ dealId: string }>
 
@@ -65,7 +66,7 @@ const STAGE_LABELS: Record<DealStage, string> = {
   [DealStage.TERMINATED]: 'Terminated',
 }
 
-interface ExitData {
+interface _ExitData {
   buyer: {
     id: string
     createdAt: Date
@@ -85,6 +86,10 @@ export async function GET(
   request: NextRequest,
   { params }: { params: RouteParams }
 ) {
+  // SECURITY FIX (PROD-060): Was completely unauthenticated — anyone could access deal analytics.
+  const result = await checkPermission('COMPANY_VIEW')
+  if (isAuthError(result)) return result.error
+
   try {
     const { dealId } = await params
 

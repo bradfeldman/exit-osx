@@ -77,7 +77,7 @@ export function NextMoveCard({ task, comingUp, isFreeUser = false, onUpgrade }: 
           Your next assessment will generate new recommendations based on your updated profile.
         </p>
         <Button className="mt-5" onClick={() => router.push('/dashboard/diagnosis')}>
-          Review Diagnosis →
+          Start Re-Assessment
         </Button>
       </div>
     )

@@ -73,7 +73,7 @@ interface FocusedOnboardingWizardProps {
   userName?: string
 }
 
-export function FocusedOnboardingWizard({ userName }: FocusedOnboardingWizardProps) {
+export function FocusedOnboardingWizard({ userName: _userName }: FocusedOnboardingWizardProps) {
   const router = useRouter()
   const supabase = createClient()
   const { refreshCompanies, setSelectedCompanyId } = useCompany()

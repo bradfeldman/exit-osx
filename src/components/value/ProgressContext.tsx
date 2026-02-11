@@ -1,6 +1,6 @@
 'use client'
 
-import { TrendingUp, TrendingDown, AlertTriangle, Target } from 'lucide-react'
+import { TrendingUp, AlertTriangle, Target } from 'lucide-react'
 import { useCountUpCurrency } from '@/hooks/useCountUp'
 
 interface ProgressContextProps {

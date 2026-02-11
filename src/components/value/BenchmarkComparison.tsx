@@ -24,29 +24,28 @@ export function BenchmarkComparison({
   isFreeUser = false,
   onUpgrade,
 }: BenchmarkComparisonProps) {
-  const { percentile, topQuartileThreshold, quartile, message } = useMemo(() => {
+  const { percentile, quartile, message } = useMemo(() => {
     const range = industryMultipleHigh - industryMultipleLow
     if (range <= 0) {
-      return { percentile: 50, topQuartileThreshold: industryMultipleHigh, quartile: 'middle' as const, message: '' }
+      return { percentile: 50, quartile: 'middle' as const, message: '' }
     }
 
     const pct = Math.min(100, Math.max(0, ((currentMultiple - industryMultipleLow) / range) * 100))
-    const tqt = industryMultipleLow + range * 0.75
 
     let q: 'bottom' | 'middle' | 'top'
     let msg: string
     if (pct <= 25) {
       q = 'bottom'
-      msg = `You're in the bottom quartile. The median starts at ${(industryMultipleLow + range * 0.5).toFixed(1)}x.`
+      msg = `You're in the bottom quartile.`
     } else if (pct >= 75) {
       q = 'top'
       msg = `You're in the top quartile — outperforming most peers in your industry.`
     } else {
       q = 'middle'
-      msg = `You're in the middle range. Top quartile starts at ${tqt.toFixed(1)}x.`
+      msg = `You're in the middle range.`
     }
 
-    return { percentile: pct, topQuartileThreshold: tqt, quartile: q, message: msg }
+    return { percentile: pct, quartile: q, message: msg }
   }, [currentMultiple, industryMultipleLow, industryMultipleHigh])
 
   if (!hasAssessment) {
@@ -102,7 +101,7 @@ export function BenchmarkComparison({
               className="absolute inset-y-0 bg-emerald-200/70"
               style={{ left: '75%', width: '25%' }}
             />
-            {/* Current position marker */}
+            {/* Current position marker - positioned proportionally between min and max */}
             <div
               className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-5 w-5 rounded-full border-2 border-white shadow-md z-10"
               style={{
@@ -113,12 +112,20 @@ export function BenchmarkComparison({
           </div>
 
           {/* Labels */}
-          <div className="flex justify-between text-[11px] text-muted-foreground">
-            <span>{industryMultipleLow.toFixed(1)}x</span>
-            <span className="font-medium text-foreground">
+          <div className="relative text-[11px] text-muted-foreground">
+            <div className="flex justify-between">
+              <span>Min: {industryMultipleLow.toFixed(1)}x</span>
+              <span>Max: {industryMultipleHigh.toFixed(1)}x</span>
+            </div>
+            {/* Current position label - aligned with bead marker */}
+            <div
+              className="absolute -top-0.5 -translate-x-1/2 font-medium text-foreground whitespace-nowrap"
+              style={{
+                left: `${Math.min(100, Math.max(0, percentile))}%`,
+              }}
+            >
               You: {currentMultiple.toFixed(1)}x
-            </span>
-            <span>{industryMultipleHigh.toFixed(1)}x</span>
+            </div>
           </div>
         </div>
 

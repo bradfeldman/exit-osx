@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { exchangeCodeForTokens, getCompanyInfo } from '@/lib/integrations/quickbooks'
+import { syncQuickBooksData } from '@/lib/integrations/quickbooks/sync'
 import { verifySignedOAuthState } from '@/lib/security/oauth-state'
 import { encryptToken } from '@/lib/security/token-encryption'
 
@@ -139,19 +140,28 @@ export async function GET(request: NextRequest) {
         data: { providerCompanyName: qbCompanyInfo.companyName },
       })
     } catch (e) {
-      console.error('Failed to get QuickBooks company info:', e)
+      // SECURITY FIX (PROD-091 #6): Only log error message, not full object
+      const companyInfoErrMsg = e instanceof Error ? e.message : 'Unknown error'
+      console.error('[QuickBooks] Failed to get company info:', companyInfoErrMsg)
     }
 
-    // Note: sync is triggered client-side after redirect (QuickBooksCard detects qb_connected=true)
-    // Running it here as fire-and-forget gets killed by Vercel serverless timeout.
+    // Trigger initial sync as fire-and-forget (don't await)
+    // Client-side will also poll for sync completion
+    syncQuickBooksData(integration.id, 'initial').catch((err) => {
+      // SECURITY FIX (PROD-091 #6): Only log error message, not full object
+      const syncErrMsg = err instanceof Error ? err.message : 'Unknown error'
+      console.error('[QuickBooks] Background initial sync failed:', syncErrMsg)
+    })
 
     // Redirect back to financials page with success flag
     return NextResponse.redirect(
       new URL('/dashboard/financials/statements?tab=pnl&qb_connected=true', request.url)
     )
   } catch (error) {
-    console.error('QuickBooks callback error:', error)
+    // SECURITY FIX (PROD-091 #6): Only log error message, not full object
+    // which may contain token data from the OAuth exchange.
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('[QuickBooks] Callback error:', errorMessage)
     return NextResponse.redirect(
       new URL(`/dashboard/financials?qb_error=${encodeURIComponent(errorMessage)}`, request.url)
     )

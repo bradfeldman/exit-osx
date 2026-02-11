@@ -3,6 +3,7 @@ import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
 import { validateUploadedFile, handleApiError } from '@/lib/security'
+import { createDocumentUploadSignal } from '@/lib/signals/create-document-signal'
 import type { EvidenceCategory } from '@/lib/evidence/evidence-categories'
 import type { DataRoomCategory } from '@prisma/client'
 
@@ -114,6 +115,21 @@ export async function POST(
         lastUpdatedAt: new Date(),
         status: 'CURRENT',
       },
+    })
+
+    // Create document upload signal (non-blocking)
+    createDocumentUploadSignal({
+      companyId,
+      documentId: document.id,
+      documentName,
+      evidenceCategory,
+      expectedDocumentId: expectedDocumentId || null,
+      source: 'direct',
+      linkedTaskId: null,
+      mimeType: file.type || null,
+      fileSize: file.size || null,
+    }).catch((err) => {
+      console.error('[Signal] Failed to create document upload signal (non-blocking):', err)
     })
 
     return NextResponse.json({ document }, { status: 201 })

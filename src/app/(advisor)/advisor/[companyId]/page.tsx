@@ -159,7 +159,7 @@ export default function AdvisorClientPage() {
       title: 'Assessments',
       description: 'View company readiness assessments',
       icon: ClipboardCheck,
-      href: `/dashboard/assessments?company=${companyId}`,
+      href: `/dashboard/diagnosis?company=${companyId}`,
       enabled: hasPermission('assessments.company:view'),
     },
     {
@@ -183,7 +183,7 @@ export default function AdvisorClientPage() {
       title: 'Data Room',
       description: 'Access shared documents',
       icon: FileText,
-      href: `/dashboard/data-room?company=${companyId}`,
+      href: `/dashboard/deal-room?company=${companyId}`,
       enabled: hasPermission('dataroom.financial:view') || hasPermission('dataroom.legal:view'),
     },
     {

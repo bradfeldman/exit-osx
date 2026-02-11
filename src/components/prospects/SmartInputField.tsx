@@ -155,7 +155,7 @@ export function SmartInputField({
 
       <p className="text-xs text-muted-foreground">
         Paste an email signature, LinkedIn profile URL, or any text containing contact information.
-        We'll automatically extract names, emails, phone numbers, and company info.
+        We&apos;ll automatically extract names, emails, phone numbers, and company info.
       </p>
     </div>
   )

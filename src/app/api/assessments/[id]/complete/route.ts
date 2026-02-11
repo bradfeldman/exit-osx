@@ -5,16 +5,19 @@ import { generateTasksForCompany } from '@/lib/playbook/generate-tasks'
 import { generateAITasksForCompany } from '@/lib/dossier/ai-tasks'
 import { getIndustryMultiples, estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
 import { triggerDossierUpdate } from '@/lib/dossier/build-dossier'
-
-// Default category weights for BRI calculation (used if no custom weights set)
-const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
-  FINANCIAL: 0.25,
-  TRANSFERABILITY: 0.20,
-  OPERATIONAL: 0.20,
-  MARKET: 0.15,
-  LEGAL_TAX: 0.10,
-  PERSONAL: 0.10,
-}
+import {
+  ALPHA,
+  calculateCoreScore,
+  calculateValuation,
+  type CoreFactors,
+} from '@/lib/valuation/calculate-valuation'
+import {
+  type ScoringResponse,
+  deduplicateResponses,
+  calculateCategoryScores,
+  calculateWeightedBriScore,
+  getCategoryScore as getCatScore,
+} from '@/lib/valuation/bri-scoring'
 
 /**
  * Fetch BRI weights for a company
@@ -39,19 +42,8 @@ async function getBriWeightsForCompany(companyBriWeights: unknown): Promise<Reco
   }
 
   // 3. Fall back to defaults
+  const { DEFAULT_CATEGORY_WEIGHTS } = await import('@/lib/valuation/bri-scoring')
   return DEFAULT_CATEGORY_WEIGHTS
-}
-
-// Alpha constant for non-linear discount calculation
-// Controls buyer skepticism curve - higher = more skeptical
-// Recommended range: 1.3 - 1.6, default 1.4
-const ALPHA = 1.4
-
-interface CategoryScore {
-  category: string
-  totalPoints: number
-  earnedPoints: number
-  score: number // 0 to 1
 }
 
 export async function POST(
@@ -115,13 +107,16 @@ export async function POST(
     }
 
     // Check if all questions are answered
-    // Count questions — prefer company-specific AI questions, fall back to global
-    const aiQuestionCount = await prisma.question.count({
-      where: { companyId: assessment.companyId, isActive: true },
+    // PROD-014: Count BOTH seed questions (companyId=null) AND AI questions (companyId=companyId)
+    const totalQuestions = await prisma.question.count({
+      where: {
+        isActive: true,
+        OR: [
+          { companyId: assessment.companyId },
+          { companyId: null },
+        ],
+      },
     })
-    const totalQuestions = aiQuestionCount > 0
-      ? aiQuestionCount
-      : await prisma.question.count({ where: { isActive: true, companyId: null } })
     if (assessment.responses.length < totalQuestions) {
       return NextResponse.json(
         {
@@ -133,106 +128,49 @@ export async function POST(
       )
     }
 
-    // Calculate category scores
-    // Skip NOT_APPLICABLE responses - they don't count toward score
-    const categoryScores: CategoryScore[] = []
-    const scoresByCategory: Record<string, { total: number; earned: number }> = {}
+    // PROD-013 FIX: Gather the latest response per question across ALL assessments
+    // for this company, not just the responses on this single assessment.
+    // This prevents re-assessing one category from zeroing out others
+    // when responses are spread across multiple assessment records.
+    const allResponses = await prisma.assessmentResponse.findMany({
+      where: {
+        assessment: { companyId: assessment.companyId },
+      },
+      include: {
+        question: true,
+        selectedOption: true,
+        effectiveOption: true, // For Answer Upgrade System
+      },
+      orderBy: { updatedAt: 'desc' },
+    })
 
-    for (const response of assessment.responses) {
-      // Skip NOT_APPLICABLE responses - question doesn't apply to this business
-      if (response.confidenceLevel === 'NOT_APPLICABLE' || !response.selectedOption) {
-        continue
+    // Convert to ScoringResponse format for pure scoring functions
+    const scoringResponses: ScoringResponse[] = allResponses.map(r => {
+      const optionToUse = r.effectiveOption || r.selectedOption
+      return {
+        questionId: r.questionId,
+        briCategory: r.question.briCategory,
+        maxImpactPoints: Number(r.question.maxImpactPoints),
+        scoreValue: optionToUse ? Number(optionToUse.scoreValue) : null,
+        hasOption: !!optionToUse,
+        updatedAt: r.updatedAt,
       }
+    })
 
-      const category = response.question.briCategory
-      const maxPoints = Number(response.question.maxImpactPoints)
-      const scoreValue = Number(response.selectedOption.scoreValue)
-      const earnedPoints = maxPoints * scoreValue
-
-      if (!scoresByCategory[category]) {
-        scoresByCategory[category] = { total: 0, earned: 0 }
-      }
-      scoresByCategory[category].total += maxPoints
-      scoresByCategory[category].earned += earnedPoints
-    }
-
-    for (const [category, scores] of Object.entries(scoresByCategory)) {
-      categoryScores.push({
-        category,
-        totalPoints: scores.total,
-        earnedPoints: scores.earned,
-        score: scores.total > 0 ? scores.earned / scores.total : 0,
-      })
-    }
+    // Deduplicate to latest response per question, then calculate category scores
+    const dedupedResponses = deduplicateResponses(scoringResponses)
+    const categoryScores = calculateCategoryScores(dedupedResponses)
 
     // Fetch BRI weights (company-specific > global > defaults)
     const categoryWeights = await getBriWeightsForCompany(assessment.company.briWeights)
 
-    // Calculate weighted BRI score
-    let briScore = 0
-    for (const cs of categoryScores) {
-      const weight = categoryWeights[cs.category] || 0
-      briScore += cs.score * weight
-    }
+    // Calculate weighted BRI score using shared utility
+    const briScore = calculateWeightedBriScore(categoryScores, categoryWeights)
 
     // Calculate Core Score from company factors
     const coreFactors = assessment.company.coreFactors
-    let coreScore = 0.5 // Default if no core factors
-
-    if (coreFactors) {
-      // Simple scoring based on core factors
-      const factorScores: Record<string, Record<string, number>> = {
-        revenueSizeCategory: {
-          UNDER_500K: 0.2,
-          FROM_500K_TO_1M: 0.4,
-          FROM_1M_TO_3M: 0.6,
-          FROM_3M_TO_10M: 0.8,
-          FROM_10M_TO_25M: 0.9,
-          OVER_25M: 1.0,
-        },
-        revenueModel: {
-          PROJECT_BASED: 0.25,
-          TRANSACTIONAL: 0.5,
-          RECURRING_CONTRACTS: 0.75,
-          SUBSCRIPTION_SAAS: 1.0,
-        },
-        grossMarginProxy: {
-          LOW: 0.25,
-          MODERATE: 0.5,
-          GOOD: 0.75,
-          EXCELLENT: 1.0,
-        },
-        laborIntensity: {
-          VERY_HIGH: 0.25,
-          HIGH: 0.5,
-          MODERATE: 0.75,
-          LOW: 1.0,
-        },
-        assetIntensity: {
-          ASSET_HEAVY: 0.33,
-          MODERATE: 0.67,
-          ASSET_LIGHT: 1.0,
-        },
-        ownerInvolvement: {
-          CRITICAL: 0.0,
-          HIGH: 0.25,
-          MODERATE: 0.5,
-          LOW: 0.75,
-          MINIMAL: 1.0,
-        },
-      }
-
-      const scores = [
-        factorScores.revenueSizeCategory[coreFactors.revenueSizeCategory] || 0.5,
-        factorScores.revenueModel[coreFactors.revenueModel] || 0.5,
-        factorScores.grossMarginProxy[coreFactors.grossMarginProxy] || 0.5,
-        factorScores.laborIntensity[coreFactors.laborIntensity] || 0.5,
-        factorScores.assetIntensity[coreFactors.assetIntensity] || 0.5,
-        factorScores.ownerInvolvement[coreFactors.ownerInvolvement] || 0.5,
-      ]
-
-      coreScore = scores.reduce((a, b) => a + b, 0) / scores.length
-    }
+    // Use shared utility for Core Score (5 factors, NOT 6 - revenueSizeCategory excluded)
+    const coreScore = calculateCoreScore(coreFactors as CoreFactors | null)
 
     // Get industry multiples (needed for both EBITDA estimation and valuation)
     const multiples = await getIndustryMultiples(
@@ -272,31 +210,18 @@ export async function POST(
       adjustedEbitda = estimatedEbitda + addBacks + excessComp - deductions
     }
 
-    // Step 1: Core Score positions within industry range
-    // BaseMultiple = L + (CS / 100) × (H − L)
-    // coreScore is 0-1, so we use it directly
-    const baseMultiple = industryMultipleLow + coreScore * (industryMultipleHigh - industryMultipleLow)
+    // Use shared utility for consistent valuation calculation
+    const valuation = calculateValuation({
+      adjustedEbitda,
+      industryMultipleLow,
+      industryMultipleHigh,
+      coreScore,
+      briScore,
+    })
+    const { baseMultiple, discountFraction, finalMultiple, currentValue, potentialValue, valueGap } = valuation
 
-    // Step 2: Non-linear discount based on BRI
-    // DiscountFraction = (1 − BRI)^α where α = 1.4
-    // briScore is 0-1
-    const discountFraction = Math.pow(1 - briScore, ALPHA)
-
-    // Step 3: Final multiple with floor guarantee
-    // FinalMultiple = L + (BaseMultiple − L) × (1 − DiscountFraction)
-    // This guarantees FinalMultiple ≥ L (industry floor)
-    const finalMultiple = industryMultipleLow + (baseMultiple - industryMultipleLow) * (1 - discountFraction)
-
-    // Calculate valuations
-    const currentValue = adjustedEbitda * finalMultiple
-    const potentialValue = adjustedEbitda * baseMultiple
-    const valueGap = potentialValue - currentValue
-
-    // Get category-specific scores
-    const getCategoryScore = (cat: string) => {
-      const cs = categoryScores.find(c => c.category === cat)
-      return cs ? cs.score : 0
-    }
+    // Helper to get category score (uses imported utility)
+    const getCategoryScore = (cat: string) => getCatScore(categoryScores, cat)
 
     // Create valuation snapshot
     const snapshot = await prisma.valuationSnapshot.create({

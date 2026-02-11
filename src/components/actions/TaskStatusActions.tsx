@@ -8,6 +8,8 @@ interface TaskStatusActionsProps {
   taskId: string
   onComplete: () => void
   onBlock: (taskId: string, reason: string) => void
+  onDefer?: (taskId: string, deferredUntil: string, reason: string) => void
+  onNotApplicable?: (taskId: string) => void
   onDelegate?: (taskId: string, email: string) => void
   assignee: { name: string; role: string | null } | null
   isAssignedToCurrentUser: boolean
@@ -19,6 +21,8 @@ export function TaskStatusActions({
   taskId,
   onComplete,
   onBlock,
+  onDefer,
+  onNotApplicable,
   onDelegate,
   assignee,
   isAssignedToCurrentUser,
@@ -28,6 +32,9 @@ export function TaskStatusActions({
   const [showMenu, setShowMenu] = useState(false)
   const [showBlockInput, setShowBlockInput] = useState(false)
   const [blockReason, setBlockReason] = useState('')
+  const [showDeferInput, setShowDeferInput] = useState(false)
+  const [deferDate, setDeferDate] = useState('')
+  const [deferReason, setDeferReason] = useState('')
   const [showDelegateInput, setShowDelegateInput] = useState(false)
   const [delegateEmail, setDelegateEmail] = useState('')
   const [delegateStatus, setDelegateStatus] = useState<'idle' | 'sending' | 'sent'>('idle')
@@ -38,6 +45,56 @@ export function TaskStatusActions({
       onBlock(taskId, blockReason.trim())
       setShowBlockInput(false)
       setBlockReason('')
+    }
+  }
+
+  const handleDefer = async () => {
+    if (!deferDate) return
+
+    if (onDefer) {
+      onDefer(taskId, deferDate, deferReason.trim())
+      setShowDeferInput(false)
+      setDeferDate('')
+      setDeferReason('')
+      return
+    }
+
+    // Default: use the task API directly
+    try {
+      await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'DEFERRED',
+          deferredUntil: deferDate,
+          deferralReason: deferReason.trim() || 'Deferred',
+        }),
+      })
+      setShowDeferInput(false)
+      setDeferDate('')
+      setDeferReason('')
+      onRefresh?.()
+    } catch {
+      // Silently fail, user can retry
+    }
+  }
+
+  const handleNotApplicable = async () => {
+    if (onNotApplicable) {
+      onNotApplicable(taskId)
+      return
+    }
+
+    // Default: use the task API directly
+    try {
+      await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'NOT_APPLICABLE' }),
+      })
+      onRefresh?.()
+    } catch {
+      // Silently fail, user can retry
     }
   }
 
@@ -187,7 +244,10 @@ export function TaskStatusActions({
                 <button
                   type="button"
                   className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted/50 flex items-center gap-2"
-                  onClick={() => setShowMenu(false)}
+                  onClick={() => {
+                    setShowDeferInput(true)
+                    setShowMenu(false)
+                  }}
                 >
                   <Clock className="h-3.5 w-3.5" />
                   Defer
@@ -195,7 +255,10 @@ export function TaskStatusActions({
                 <button
                   type="button"
                   className="w-full px-3 py-2 text-left text-sm text-destructive hover:bg-muted/50 flex items-center gap-2"
-                  onClick={() => setShowMenu(false)}
+                  onClick={() => {
+                    handleNotApplicable()
+                    setShowMenu(false)
+                  }}
                 >
                   <XCircle className="h-3.5 w-3.5" />
                   Not Applicable
@@ -256,6 +319,44 @@ export function TaskStatusActions({
           >
             Cancel
           </Button>
+        </div>
+      )}
+
+      {showDeferInput && (
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={deferDate}
+              onChange={e => setDeferDate(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
+              className="flex-1 text-sm rounded-lg border border-border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--burnt-orange)]/30"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              placeholder="Reason (optional)"
+              value={deferReason}
+              onChange={e => setDeferReason(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleDefer()}
+              className="flex-1 text-sm rounded-lg border border-border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--burnt-orange)]/30"
+            />
+            <Button size="sm" onClick={handleDefer} disabled={!deferDate}>
+              Defer
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setShowDeferInput(false)
+                setDeferDate('')
+                setDeferReason('')
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
         </div>
       )}
 

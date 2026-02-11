@@ -610,13 +610,11 @@ function FinancialsContent() {
     const qbErrorParam = searchParams.get('qb_error')
 
     if (qbConnected === 'true') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setQbSuccess('QuickBooks connected successfully! Syncing your data...')
       window.history.replaceState({}, '', window.location.pathname)
       loadIntegrationData()
       loadPeriods()
     } else if (qbErrorParam) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setQbError(decodeURIComponent(qbErrorParam))
       window.history.replaceState({}, '', window.location.pathname)
     }

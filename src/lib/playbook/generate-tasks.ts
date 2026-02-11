@@ -6,14 +6,44 @@
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 import { getTemplatesForQuestion } from './task-templates'
-import { type RichTaskDescription } from './rich-task-description'
+import { type RichTaskDescription, hasRichDescription } from './rich-task-description'
 import { calculateTaskPriorityFromAttributes, initializeActionPlan } from '@/lib/tasks/action-plan'
+import { generateBuyerConsequences, type TaskForConsequence } from '@/lib/ai/buyer-consequences'
 
 // Use flexible types to handle Prisma Decimal
 type NumberLike = string | number | { toString(): string }
 
 // Issue tier types matching the Prisma enum
 type IssueTier = 'CRITICAL' | 'SIGNIFICANT' | 'OPTIMIZATION'
+
+/**
+ * Helper function to create TaskSubStep records from richDescription.subTasks
+ */
+async function createSubStepsForTask(taskId: string, richDescription: unknown) {
+  if (!hasRichDescription(richDescription)) return
+
+  const rd = richDescription as RichTaskDescription
+  if (!rd.subTasks || rd.subTasks.length === 0) return
+
+  const subStepsToCreate: Array<{ taskId: string; title: string; order: number }> = []
+  let orderIndex = 0
+
+  for (const group of rd.subTasks) {
+    for (const item of group.items) {
+      subStepsToCreate.push({
+        taskId,
+        title: item,
+        order: orderIndex++,
+      })
+    }
+  }
+
+  if (subStepsToCreate.length > 0) {
+    await prisma.taskSubStep.createMany({
+      data: subStepsToCreate,
+    })
+  }
+}
 
 // Value gap allocation by tier (based on M&A buyer risk analysis)
 const TIER_ALLOCATION: Record<IssueTier, number> = {
@@ -251,7 +281,7 @@ export async function generateTasksForCompany(
         task.estimatedHours
       )
 
-      await prisma.task.create({
+      const newTask = await prisma.task.create({
         data: {
           companyId,
           title: task.title,
@@ -276,6 +306,12 @@ export async function generateTasksForCompany(
           status: 'PENDING',
         },
       })
+
+      // Create sub-steps if richDescription has subTasks
+      if (task.richDescription) {
+        await createSubStepsForTask(newTask.id, task.richDescription)
+      }
+
       created++
     } catch (error) {
       console.error('Error creating task:', error)
@@ -285,6 +321,35 @@ export async function generateTasksForCompany(
 
   // Initialize action plan with top 15 priority tasks
   const actionPlanResult = await initializeActionPlan(companyId)
+
+  // PROD-058: Enrich template-based tasks with AI buyer consequences (non-blocking)
+  try {
+    const tasksNeedingConsequences = await prisma.task.findMany({
+      where: {
+        companyId,
+        status: 'PENDING',
+        buyerConsequence: null,
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        briCategory: true,
+        issueTier: true,
+        buyerConsequence: true,
+      },
+    })
+
+    if (tasksNeedingConsequences.length > 0) {
+      const consequenceResult = await generateBuyerConsequences(
+        companyId,
+        tasksNeedingConsequences as TaskForConsequence[]
+      )
+      console.log(`[TASK_ENGINE] Buyer consequences: ${consequenceResult.updated} enriched, ${consequenceResult.failed} fallback`)
+    }
+  } catch (error) {
+    console.error('[TASK_ENGINE] Buyer consequence enrichment failed (non-blocking):', error)
+  }
 
   console.log(`[TASK_ENGINE] Generated ${created} tasks for company ${companyId}`)
   console.log(`[TASK_ENGINE] Action plan: ${actionPlanResult.initialized} tasks, Queue: ${actionPlanResult.queued} tasks`)

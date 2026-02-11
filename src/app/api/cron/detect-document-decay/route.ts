@@ -1,19 +1,15 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createSignalWithLedgerEntry } from '@/lib/signals/create-signal'
+import { getDefaultConfidenceForChannel } from '@/lib/signals/confidence-scoring'
 import { generateNarrative } from '@/lib/value-ledger/narrative-templates'
+import { verifyCronAuth } from '@/lib/security/cron-auth'
 import type { TimeDecayData } from '@/lib/signals/types'
 
-const CRON_SECRET = process.env.CRON_SECRET
-
 export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization')
-
-  if (process.env.NODE_ENV === 'production' && CRON_SECRET) {
-    if (authHeader !== `Bearer ${CRON_SECRET}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-  }
+  // SECURITY FIX (PROD-060): Uses verifyCronAuth which fails closed when CRON_SECRET is not set.
+  const authError = verifyCronAuth(request)
+  if (authError) return authError
 
   try {
     const now = new Date()
@@ -70,11 +66,17 @@ export async function GET(request: Request) {
           : 0,
       }
 
+      // Escalate severity based on how overdue the document is
+      const severity = daysSinceUpdate > 180 ? 'HIGH' as const
+        : daysSinceUpdate > 90 ? 'MEDIUM' as const
+        : 'LOW' as const
+
       await createSignalWithLedgerEntry({
         companyId: doc.companyId,
         channel: 'TIME_DECAY',
         eventType: 'document_overdue',
-        severity: 'MEDIUM',
+        severity,
+        confidence: getDefaultConfidenceForChannel('TIME_DECAY'),
         title: `${doc.documentName} is overdue for update`,
         description: `Last updated ${daysSinceUpdate} days ago`,
         rawData: rawData as unknown as Record<string, unknown>,

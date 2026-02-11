@@ -9,27 +9,13 @@ function formatHoursToMinutes(hours: number | null): number | null {
   return hours * 60
 }
 
-function deriveSubSteps(
-  richDescription: unknown,
-  taskProgress: Record<string, unknown> | null
+function formatSubSteps(
+  subSteps: Array<{ id: string; title: string; completed: boolean; order: number }>
 ): { id: string; title: string; completed: boolean }[] {
-  if (!hasRichDescription(richDescription)) return []
-
-  const rd = richDescription as RichTaskDescription
-  if (!rd.subTasks || rd.subTasks.length === 0) return []
-
-  const steps = (taskProgress as { steps?: Record<string, boolean> } | null)?.steps ?? {}
-
-  return rd.subTasks.flatMap((subTask, groupIndex) =>
-    subTask.items.map((item, itemIndex) => {
-      const id = `${groupIndex}-${itemIndex}`
-      return {
-        id,
-        title: item,
-        completed: steps[id] ?? false,
-      }
-    })
-  )
+  // Return sub-steps sorted by order
+  return subSteps
+    .sort((a, b) => a.order - b.order)
+    .map(({ id, title, completed }) => ({ id, title, completed }))
 }
 
 function derivePrerequisiteHint(richDescription: unknown): string | null {
@@ -68,6 +54,19 @@ export async function GET(
     const now = new Date()
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
 
+    // Auto-resurface deferred tasks whose defer date has passed
+    await prisma.task.updateMany({
+      where: {
+        companyId,
+        status: 'DEFERRED',
+        deferredUntil: { lte: now },
+      },
+      data: {
+        status: 'PENDING',
+        deferredUntil: null,
+      },
+    })
+
     // Fetch all relevant tasks in one query
     const allTasks = await prisma.task.findMany({
       where: {
@@ -88,6 +87,10 @@ export async function GET(
         proofDocuments: {
           select: { id: true, documentName: true, createdAt: true },
           orderBy: { createdAt: 'desc' },
+        },
+        subSteps: {
+          select: { id: true, title: true, completed: true, order: true },
+          orderBy: { order: 'asc' },
         },
       },
       orderBy: [{ priorityRank: 'asc' }, { rawImpact: 'desc' }],
@@ -157,7 +160,7 @@ export async function GET(
 
     // Build active tasks (expanded)
     const activeTasksFormatted = activeTasks.map(task => {
-      const subSteps = deriveSubSteps(task.richDescription, task.taskProgress as Record<string, unknown> | null)
+      const subSteps = formatSubSteps(task.subSteps)
       const completedSteps = subSteps.filter(s => s.completed).length
 
       const daysInProgress = task.startedAt
@@ -264,12 +267,23 @@ export async function GET(
       lastUpdated: task.updatedAt.toISOString(),
     }))
 
+    // Build deferred tasks
+    const deferredFormatted = deferredTasks.map(task => ({
+      id: task.id,
+      title: task.title,
+      briCategory: task.briCategory,
+      normalizedValue: Number(task.normalizedValue),
+      deferredUntil: task.deferredUntil?.toISOString() ?? '',
+      deferralReason: task.deferralReason,
+    }))
+
     return NextResponse.json({
       summary,
       activeTasks: activeTasksFormatted,
       upNext: upNextFormatted,
       completedThisMonth: completedFormatted,
       waitingOnOthers: waitingFormatted,
+      deferredTasks: deferredFormatted,
       blockedTasks: blockedTasks.length,
       hasMoreInQueue: pendingTasks.length > 5,
       totalQueueSize: pendingTasks.length + blockedTasks.length,

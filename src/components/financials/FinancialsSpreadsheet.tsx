@@ -8,7 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import { fetchWithRetry } from '@/lib/fetch-with-retry'
 import { analytics } from '@/lib/analytics'
-import { Plus, Save, Check, Loader2, TrendingUp, TrendingDown, Minus, AlertCircle, Trash2, PlusCircle, MinusCircle, ChevronDown, ChevronRight, ArrowRight, X, DollarSign, Sparkles, Lightbulb } from 'lucide-react'
+import { Plus, Check, Loader2, TrendingUp, TrendingDown, Minus, AlertCircle, Trash2, PlusCircle, MinusCircle, ChevronDown, ChevronRight, ArrowRight, X, DollarSign, Sparkles, Lightbulb } from 'lucide-react'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import {
@@ -277,12 +277,13 @@ function calculatePnlDerivedValues(data: PeriodData): Partial<PeriodData> {
   const depreciation = data.depreciation ?? 0
   const amortization = data.amortization ?? 0
   const interestExpense = data.interestExpense ?? 0
+  const taxExpense = data.taxExpense ?? 0
 
   const grossProfit = grossRevenue - cogs
   const grossMarginPct = grossRevenue > 0 ? grossProfit / grossRevenue : 0
 
-  // EBITDA = Gross Profit - Operating Expenses + D + A + I (add back since they're in OpEx)
-  const ebitda = grossProfit - operatingExpenses + depreciation + amortization + interestExpense
+  // EBITDA = Gross Profit - Operating Expenses + D + A + I + T (add back since they're in OpEx)
+  const ebitda = grossProfit - operatingExpenses + depreciation + amortization + interestExpense + taxExpense
   const ebitdaMarginPct = grossRevenue > 0 ? ebitda / grossRevenue : 0
 
   // Adjusted EBITDA includes add-backs
@@ -642,7 +643,7 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
   const [periods, setPeriods] = useState<FinancialPeriod[]>([])
   const [data, setData] = useState<Record<string, PeriodData>>({})
   const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
+  const [_isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [error, setError] = useState<string | null>(null)
   const [periodToDelete, setPeriodToDelete] = useState<FinancialPeriod | null>(null)
@@ -671,7 +672,7 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
   const nextStepsTimeoutRef = useRef<NodeJS.Timeout>(undefined)
   const saveTimeoutRef = useRef<NodeJS.Timeout>(undefined)
   const pendingChangesRef = useRef<Map<string, { periodId: string; field: string; value: number }>>(new Map())
-  const pendingAdjustmentChangesRef = useRef<Map<string, { adjustmentId: string; periodId: string; amount: number }>>(new Map())
+  const _pendingAdjustmentChangesRef = useRef<Map<string, { adjustmentId: string; periodId: string; amount: number }>>(new Map())
 
   // Fetch periods and data
   const loadData = useCallback(async () => {
@@ -863,7 +864,7 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
               if (responseData.valuationImpact) {
                 lastValuationImpact = responseData.valuationImpact
               }
-            } catch (e) {
+            } catch (_e) {
               // Ignore parsing errors
             }
           }
@@ -1538,7 +1539,7 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Link href="/dashboard/value-builder">
+                <Link href="/dashboard">
                   <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
                     View Impact
                     <ArrowRight className="h-4 w-4 ml-1" />
@@ -1608,7 +1609,7 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                     <ArrowRight className="h-4 w-4 ml-1" />
                   </Button>
                 ) : (
-                  <Link href="/dashboard/value-builder">
+                  <Link href="/dashboard">
                     <Button size="sm" variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-100">
                       Value Builder
                       <ArrowRight className="h-4 w-4 ml-1" />

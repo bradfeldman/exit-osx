@@ -120,7 +120,6 @@ export function MarketDataPanel({
     if (open) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setLowInput(ebitdaMultipleLowOverride?.toString() || '')
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHighInput(ebitdaMultipleHighOverride?.toString() || '')
     }
   }, [open, ebitdaMultipleLowOverride, ebitdaMultipleHighOverride])

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { createClient } from '@/lib/supabase/server'
 import { ApprovalStatus, ActivityType } from '@prisma/client'
 import { validateSellerAccess } from '@/lib/contact-system/seller-projection'
 
@@ -23,8 +24,24 @@ export async function POST(
     const body = await request.json()
     const { buyerId, action, reason } = body
 
-    // TODO: Get actual user ID from auth
-    const userId = request.headers.get('x-user-id') || 'seller-user'
+    // SECURITY FIX (PROD-060): Was reading user ID from spoofable x-user-id header.
+    // Now uses proper Supabase auth to get the authenticated user.
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized', message: 'You must be logged in to access this resource' },
+        { status: 401 }
+      )
+    }
+    const dbUser = await prisma.user.findUnique({ where: { authId: user.id } })
+    if (!dbUser) {
+      return NextResponse.json(
+        { error: 'User not found', message: 'Your user account could not be found' },
+        { status: 404 }
+      )
+    }
+    const userId = dbUser.id
 
     // Validate seller access
     const access = await validateSellerAccess(userId, dealId)

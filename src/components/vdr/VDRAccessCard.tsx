@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from '@/lib/motion'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -9,7 +8,6 @@ import { cn } from '@/lib/utils'
 import {
   Lock,
   Unlock,
-  FileText,
   Key,
   Shield,
   CheckCircle,

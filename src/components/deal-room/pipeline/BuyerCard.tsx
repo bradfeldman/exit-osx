@@ -29,9 +29,20 @@ export interface PipelineBuyer {
 interface BuyerCardProps {
   buyer: PipelineBuyer
   onClick: (buyerId: string) => void
+  onChangeStage?: (buyerId: string) => void
+  isDragging?: boolean
+  onDragStart?: (e: React.DragEvent) => void
+  onDragEnd?: (e: React.DragEvent) => void
 }
 
-export function BuyerCard({ buyer, onClick }: BuyerCardProps) {
+export function BuyerCard({
+  buyer,
+  onClick,
+  onChangeStage,
+  isDragging = false,
+  onDragStart,
+  onDragEnd,
+}: BuyerCardProps) {
   const stageDate = new Date(buyer.stageUpdatedAt).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -39,11 +50,41 @@ export function BuyerCard({ buyer, onClick }: BuyerCardProps) {
 
   const offerAmount = buyer.loiAmount ?? buyer.ioiAmount
 
+  const handleClick = (e: React.MouseEvent) => {
+    // Shift+Click or touch hold opens stage picker
+    if (e.shiftKey && onChangeStage) {
+      e.preventDefault()
+      onChangeStage(buyer.id)
+    } else {
+      onClick(buyer.id)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Enter or Space opens detail panel
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onClick(buyer.id)
+    }
+    // 'M' for Move opens stage picker
+    if ((e.key === 'm' || e.key === 'M') && onChangeStage) {
+      e.preventDefault()
+      onChangeStage(buyer.id)
+    }
+  }
+
   return (
     <button
-      onClick={() => onClick(buyer.id)}
-      className="w-full rounded-lg bg-card border border-border/50 p-3 mb-2 cursor-pointer
-        hover:border-[var(--burnt-orange)]/30 hover:shadow-sm transition-all text-left relative"
+      draggable
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      className={`w-full rounded-lg bg-card border border-border/50 p-3 mb-2 cursor-move
+        hover:border-[var(--burnt-orange)]/30 hover:shadow-sm transition-all text-left relative
+        focus:outline-none focus:ring-2 focus:ring-[var(--burnt-orange)]/50 focus:ring-offset-2
+        ${isDragging ? 'opacity-50 scale-95' : ''}`}
+      aria-label={`${buyer.companyName} - drag to change stage, press M to move, or click to view details`}
     >
       <EngagementDot
         level={buyer.engagementLevel}

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import Link from 'next/link'
 import { motion, AnimatePresence } from '@/lib/motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -736,19 +735,40 @@ export default function PersonalFinancialStatementPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1.5">Current Age</label>
-              <Input
-                type="text"
-                inputMode="numeric"
-                value={currentAge !== null ? String(currentAge) : ''}
-                onChange={(e) => {
-                  const v = e.target.value.replace(/[^0-9]/g, '')
-                  if (!v) { setCurrentAge(null); return }
-                  setCurrentAge(Math.min(100, Math.max(18, parseInt(v))))
-                }}
-                placeholder="e.g. 52"
-                className="h-9"
-                disabled={!canEditPersonal}
-              />
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setCurrentAge(prev => prev ? Math.max(18, prev - 1) : null)}
+                  disabled={!canEditPersonal || !currentAge || currentAge <= 18}
+                  className="w-9 h-9 rounded-md border border-input hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 transition-colors flex items-center justify-center text-foreground font-medium"
+                >
+                  −
+                </button>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  value={currentAge !== null ? String(currentAge) : ''}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/[^0-9]/g, '')
+                    if (!v) { setCurrentAge(null); return }
+                    setCurrentAge(Math.min(100, Math.max(18, parseInt(v))))
+                  }}
+                  placeholder="e.g. 52"
+                  className="h-9 text-center"
+                  disabled={!canEditPersonal}
+                />
+                <button
+                  type="button"
+                  onClick={() => setCurrentAge(prev => prev ? Math.min(100, prev + 1) : 50)}
+                  disabled={!canEditPersonal || (currentAge !== null && currentAge >= 100)}
+                  className="w-9 h-9 rounded-md border border-input hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 transition-colors flex items-center justify-center text-foreground font-medium"
+                >
+                  +
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Used for retirement planning calculations
+              </p>
             </div>
           </div>
         </CollapsibleSection>

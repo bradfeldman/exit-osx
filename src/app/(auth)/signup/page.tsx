@@ -7,9 +7,8 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Eye, EyeOff, AlertTriangle, Loader2 } from 'lucide-react'
-import { secureSignup } from '@/app/actions/auth'
-import { createClient } from '@/lib/supabase/client'
+import { Loader2 } from 'lucide-react'
+import { sendMagicLink } from '@/app/actions/auth'
 import { getRedirectUrl, buildUrlWithRedirect, isInviteRedirect } from '@/lib/utils/redirect'
 import { type PlanTier } from '@/lib/pricing'
 import { analytics } from '@/lib/analytics'
@@ -39,13 +38,8 @@ function SignupPageContent() {
   const prefilledEmail = searchParams.get('email') || ''
   const teamName = searchParams.get('team') || ''
   const selectedPlanId = searchParams.get('plan') as PlanTier | null
-  const [name, setName] = useState('')
   const [email, setEmail] = useState(prefilledEmail)
-  const [password, setPassword] = useState('')
-  const [companyName, setCompanyName] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [warning, setWarning] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
   const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
@@ -83,7 +77,7 @@ function SignupPageContent() {
     if (success) {
       const timeToSubmit = Date.now() - pageLoadTime.current
       analytics.track('signup_complete', {
-        method: 'email',
+        method: 'magic_link',
       })
 
       analytics.track('signup_submit', {
@@ -109,16 +103,15 @@ function SignupPageContent() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    setWarning(null)
     setLoading(true)
 
     markSubmitted()
 
     try {
-      const result = await secureSignup(name, email, password, redirectUrl, selectedPlanId || undefined)
+      const result = await sendMagicLink(email, selectedPlanId || undefined)
 
       if (!result.success) {
-        const errorMsg = result.error || 'Unable to create account'
+        const errorMsg = result.error || 'Unable to send verification email'
         setError(errorMsg)
 
         analytics.track('signup_submit', {
@@ -127,15 +120,6 @@ function SignupPageContent() {
           errorType: errorMsg,
         })
         return
-      }
-
-      if (result.passwordWarning) {
-        setWarning(result.passwordWarning)
-      }
-
-      // Store company name for onboarding wizard to use
-      if (companyName.trim()) {
-        localStorage.setItem('pendingCompanyName', companyName.trim())
       }
 
       setSuccess(true)
@@ -152,7 +136,18 @@ function SignupPageContent() {
     }
   }
 
-  // SUCCESS STATE - Dan + Alex blended: calm reassurance + completion urgency
+  const handleResendMagicLink = async () => {
+    if (!email) return
+    setResendStatus('sending')
+    try {
+      const result = await sendMagicLink(email, selectedPlanId || undefined)
+      setResendStatus(result.success ? 'sent' : 'error')
+    } catch {
+      setResendStatus('error')
+    }
+  }
+
+  // SUCCESS STATE - Show "check your email" message
   if (success) {
     return (
       <div className="min-h-screen bg-background">
@@ -180,25 +175,32 @@ function SignupPageContent() {
 
         <main className="flex items-center justify-center px-4 py-12 md:py-20">
           <div className="w-full max-w-lg space-y-8">
-            {/* Progress Indicator - Humans finish what they start */}
+            {/* Progress Indicator */}
             <div className="flex items-center justify-center gap-2">
               <div className="flex items-center gap-1">
                 <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-sm font-medium">
                   <CheckIcon className="w-4 h-4" />
                 </div>
-                <span className="text-xs text-muted-foreground ml-1">Create</span>
+                <span className="text-xs text-muted-foreground ml-1">Email</span>
               </div>
               <div className="w-8 h-0.5 bg-primary"></div>
               <div className="flex items-center gap-1">
                 <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium animate-pulse">
                   2
                 </div>
-                <span className="text-xs text-foreground font-medium ml-1">Confirm</span>
+                <span className="text-xs text-foreground font-medium ml-1">Verify</span>
               </div>
               <div className="w-8 h-0.5 bg-border"></div>
               <div className="flex items-center gap-1">
                 <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
                   3
+                </div>
+                <span className="text-xs text-muted-foreground ml-1">Set Password</span>
+              </div>
+              <div className="w-8 h-0.5 bg-border"></div>
+              <div className="flex items-center gap-1">
+                <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
+                  4
                 </div>
                 <span className="text-xs text-muted-foreground ml-1">See Score</span>
               </div>
@@ -212,24 +214,24 @@ function SignupPageContent() {
 
               <h1 className="text-3xl md:text-4xl font-bold font-display text-foreground tracking-tight">
                 {isFromTaskInvite
-                  ? 'Almost There — Confirm Your Email'
-                  : "You're One Click Away From Your Exit Readiness Score"}
+                  ? 'Almost There -- Check Your Email'
+                  : 'Check Your Email to Continue'}
               </h1>
 
               <p className="text-muted-foreground">
-                We&apos;ve sent a confirmation link to
+                We sent a verification link to
               </p>
               <p className="text-lg font-semibold text-foreground">{email}</p>
               <p className="text-foreground">
-                Confirm your email to unlock your results.
+                Click the link in your email to set a password and start your exit readiness assessment.
               </p>
             </div>
 
-            {/* Value Reinforcement - Short, strong */}
+            {/* Value Reinforcement */}
             {isFromTaskInvite ? (
               <div className="bg-muted/50 rounded-xl p-6 space-y-3">
                 <p className="font-medium text-foreground text-sm">
-                  After confirming your email, you&apos;ll be able to:
+                  After verifying your email, you will be able to:
                 </p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
@@ -268,7 +270,7 @@ function SignupPageContent() {
               </div>
             )}
 
-            {/* Primary CTA - Open user's email provider */}
+            {/* Primary CTA - Open email provider */}
             <div className="space-y-4">
               {(() => {
                 const provider = getEmailProvider(email)
@@ -280,18 +282,18 @@ function SignupPageContent() {
                   >
                     <Button className="w-full h-12 text-base font-medium">
                       <MailIcon className="w-5 h-5 mr-2" />
-                      Open {provider.name} & See My Results
+                      Open {provider.name}
                     </Button>
                   </a>
                 ) : (
                   <Button className="w-full h-12 text-base font-medium" disabled variant="secondary">
                     <MailIcon className="w-5 h-5 mr-2" />
-                    Check Your Email & See My Results
+                    Check Your Email
                   </Button>
                 )
               })()}
 
-              {/* Secondary Action */}
+              {/* Secondary Action - Resend */}
               <div className="text-center text-sm text-muted-foreground">
                 {resendStatus === 'sent' ? (
                   <span className="text-emerald-700 font-medium">New email sent! Check your inbox.</span>
@@ -302,49 +304,27 @@ function SignupPageContent() {
                       type="button"
                       className="text-primary hover:underline font-medium disabled:opacity-50"
                       disabled={resendStatus === 'sending'}
-                      onClick={async () => {
-                        setResendStatus('sending')
-                        try {
-                          const supabase = createClient()
-                          const { error: resendError } = await supabase.auth.resend({
-                            type: 'signup',
-                            email,
-                          })
-                          setResendStatus(resendError ? 'error' : 'sent')
-                        } catch {
-                          setResendStatus('error')
-                        }
-                      }}
+                      onClick={handleResendMagicLink}
                     >
                       {resendStatus === 'sending' ? 'Sending...' : 'Resend email'}
                     </button>
-                    <span> · </span>
+                    <span> &middot; </span>
                     <span>Check spam</span>
                   </>
                 )}
                 {resendStatus === 'error' && (
-                  <p className="text-destructive mt-1">Failed to resend. Try signing up again.</p>
+                  <p className="text-destructive mt-1">Failed to resend. Please try again.</p>
                 )}
               </div>
             </div>
 
             {isFromInvite && (
               <div className="p-4 text-sm text-primary bg-primary/5 border border-primary/20 rounded-lg text-center">
-                <p className="font-medium">After verifying, you&apos;ll be redirected to accept your team invite.</p>
+                <p className="font-medium">After verifying, you will be redirected to accept your team invite.</p>
               </div>
             )}
 
-            {warning && (
-              <div className="p-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3 text-left">
-                <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium">Security Recommendation</p>
-                  <p className="mt-1 text-amber-600">{warning}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Trust Footer - No "Back to Sign In" */}
+            {/* Trust Footer */}
             <div className="text-center space-y-1 pt-4 border-t border-border">
               <p className="text-sm text-muted-foreground">No sales calls. No obligation.</p>
               <p className="text-sm text-muted-foreground">Just clarity.</p>
@@ -355,7 +335,7 @@ function SignupPageContent() {
     )
   }
 
-  // SIGNUP FORM - High conversion layout
+  // SIGNUP FORM - Email-only, magic link
   return (
     <div className="min-h-screen bg-background">
       {/* Minimal Header */}
@@ -401,7 +381,7 @@ function SignupPageContent() {
                     {teamName ? `You've been invited to join the ${teamName} team on Exit OSx.` : "You've been invited to collaborate on Exit OSx."}
                   </p>
                   <p className="text-foreground">
-                    Create your free account to view and work on your assigned task.
+                    Enter your email to create a free account and view your assigned task.
                   </p>
                 </>
               ) : (
@@ -415,7 +395,7 @@ function SignupPageContent() {
                     They lose it because of <span className="text-foreground font-medium">hidden risk</span>.
                   </p>
                   <p className="text-foreground">
-                    Exit OSx shows you where buyers will discount your company—and what to do about it—in minutes.
+                    Exit OSx shows you where buyers will discount your company -- and what to do about it -- in minutes.
                   </p>
                 </>
               )}
@@ -424,7 +404,7 @@ function SignupPageContent() {
             {/* Value Anchor - The money math */}
             <div className="bg-primary/5 border border-primary/20 rounded-xl p-6">
               <p className="text-lg text-foreground">
-                Even a <span className="font-semibold">0.3× multiple swing</span> on a $3M EBITDA business
+                Even a <span className="font-semibold">0.3x multiple swing</span> on a $3M EBITDA business
               </p>
               <p className="text-2xl font-bold text-primary mt-1">= $900,000</p>
               <p className="text-muted-foreground mt-2">This assessment costs $0.</p>
@@ -485,8 +465,11 @@ function SignupPageContent() {
                     ? `Create Account to Join ${teamName} Team`
                     : isFromInvite
                       ? 'Create Account to Join Team'
-                      : 'Create Your Free Account'}
+                      : 'Get Started Free'}
                 </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Enter your email and we&apos;ll send you a link to get started.
+                </p>
               </div>
 
               <form onSubmit={handleSignup} className="space-y-4">
@@ -495,22 +478,6 @@ function SignupPageContent() {
                     {error}
                   </div>
                 )}
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="John Smith"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    onFocus={() => handleFieldFocus('name')}
-                    onBlur={() => handleFieldBlur('name')}
-                    required
-                    disabled={loading}
-                    className="h-11"
-                  />
-                </div>
 
                 <div className="space-y-1.5">
                   <Label htmlFor="email">Email Address</Label>
@@ -525,80 +492,31 @@ function SignupPageContent() {
                     required
                     disabled={loading}
                     readOnly={!!prefilledEmail && isFromTaskInvite}
-                    className={`h-11 ${prefilledEmail && isFromTaskInvite ? 'bg-muted' : ''}`}
+                    className={`h-12 ${prefilledEmail && isFromTaskInvite ? 'bg-muted' : ''}`}
+                    autoComplete="email"
+                    autoFocus={!prefilledEmail}
                   />
-                  {prefilledEmail && isFromTaskInvite ? (
-                    <p className="text-xs text-muted-foreground">This email matches your invite.</p>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">We&apos;ll send your results here.</p>
-                  )}
+                  <p className="text-xs text-muted-foreground">We&apos;ll send a verification link to this address.</p>
                 </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="password">Create Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Min 8 characters"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      onFocus={() => handleFieldFocus('password')}
-                      onBlur={() => handleFieldBlur('password')}
-                      required
-                      disabled={loading}
-                      className="h-11 pr-11"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Secure. You&apos;re in control.</p>
-                </div>
-
-                {!isFromInvite && (
-                  <div className="space-y-1.5">
-                    <Label htmlFor="companyName">
-                      Company Name <span className="text-muted-foreground font-normal">(optional)</span>
-                    </Label>
-                    <Input
-                      id="companyName"
-                      type="text"
-                      placeholder="Your company name"
-                      value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
-                      onFocus={() => handleFieldFocus('companyName')}
-                      onBlur={() => handleFieldBlur('companyName')}
-                      disabled={loading}
-                      className="h-11"
-                    />
-                    <p className="text-xs text-muted-foreground">Used only to personalize your results.</p>
-                  </div>
-                )}
 
                 <Button
                   type="submit"
                   className="w-full h-12 text-base font-medium mt-2"
-                  disabled={loading}
+                  disabled={loading || !email}
                 >
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating account...
+                      Sending link...
                     </>
                   ) : isFromTaskInvite ? (
-                    'Create Account & View Task'
+                    'Send Verification Link'
                   ) : (
-                    'Reveal My Exit Risk Profile'
+                    'Get My Exit Risk Profile'
                   )}
                 </Button>
 
-                {/* Trust Microcopy - Critical for conversion */}
+                {/* Trust Microcopy */}
                 <div className="space-y-2 pt-2">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
@@ -642,7 +560,7 @@ function SignupPageContent() {
                 </div>
               </div>
               <p className="text-center text-xs text-muted-foreground">
-                Built for $1M–$100M businesses using real buyer diligence logic
+                Built for $1M-$100M businesses using real buyer diligence logic
               </p>
             </div>
           </div>

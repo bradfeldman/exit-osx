@@ -1,17 +1,12 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { sendTaskReminderEmail } from '@/lib/email/send-task-reminder-email'
-
-const CRON_SECRET = process.env.CRON_SECRET
+import { verifyCronAuth } from '@/lib/security/cron-auth'
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization')
-
-  if (process.env.NODE_ENV === 'production' && CRON_SECRET) {
-    if (authHeader !== `Bearer ${CRON_SECRET}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-  }
+  // SECURITY FIX (PROD-060): Uses verifyCronAuth which fails closed when CRON_SECRET is not set.
+  const authError = verifyCronAuth(request)
+  if (authError) return authError
 
   try {
     const now = new Date()

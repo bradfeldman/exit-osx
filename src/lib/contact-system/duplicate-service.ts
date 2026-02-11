@@ -13,7 +13,7 @@ import {
   mergePeople,
   type DuplicatePair,
 } from './identity-resolution'
-import type { CanonicalCompany, CanonicalPerson, DuplicateCandidate } from '@prisma/client'
+import type { CanonicalCompany, CanonicalPerson } from '@prisma/client'
 
 // ============================================
 // TYPES

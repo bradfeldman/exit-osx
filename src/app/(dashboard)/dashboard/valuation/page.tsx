@@ -75,7 +75,7 @@ export default function ValuationPage() {
 
   // Analytics tracking
   const hasTrackedPageView = useRef(false)
-  const previousAssumptions = useRef<DCFAssumptions | null>(null)
+  const _previousAssumptions = useRef<DCFAssumptions | null>(null)
 
   // Industry data (could be fetched from API based on company)
   const [industryData, setIndustryData] = useState({

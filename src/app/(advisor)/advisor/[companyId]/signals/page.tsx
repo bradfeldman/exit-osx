@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
@@ -36,6 +36,7 @@ interface Signal {
   confirmedAt: string | null
   confirmedByUserId: string | null
   resolutionStatus: string
+  resolutionNotes: string | null
   estimatedValueImpact: number | null
   createdAt: string
 }
@@ -143,7 +144,7 @@ export default function AdvisorSignalsPage() {
   }
 
   const pendingSignals = signals.filter(s => !s.userConfirmed && s.resolutionStatus === 'OPEN')
-  const reviewedSignals = signals.filter(s => s.userConfirmed || s.resolutionStatus !== 'OPEN')
+  const reviewedSignals = signals.filter(s => s.userConfirmed || s.resolutionStatus === 'ACKNOWLEDGED' || s.resolutionStatus === 'DISMISSED')
   const displayedSignals = tab === 'pending' ? pendingSignals : reviewedSignals
 
   return (
@@ -262,6 +263,18 @@ export default function AdvisorSignalsPage() {
                       <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
                         Confirmed
                       </Badge>
+                    )}
+                    {tab === 'reviewed' && signal.resolutionStatus === 'DISMISSED' && (
+                      <div className="flex flex-col items-end gap-1">
+                        <Badge className="bg-zinc-100 text-zinc-600 border-zinc-200">
+                          Dismissed
+                        </Badge>
+                        {signal.resolutionNotes && (
+                          <p className="text-[11px] text-muted-foreground max-w-[200px] text-right">
+                            {signal.resolutionNotes}
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
                 </CardContent>

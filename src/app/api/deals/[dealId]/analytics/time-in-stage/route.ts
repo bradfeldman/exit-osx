@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { DealStage } from '@prisma/client'
 
 type RouteParams = Promise<{ dealId: string }>
@@ -50,7 +51,7 @@ const KEY_STAGES: DealStage[] = [
   DealStage.DUE_DILIGENCE,
 ]
 
-interface StageTimeData {
+interface _StageTimeData {
   stage: DealStage
   durations: number[] // Days spent in this stage before moving on
 }
@@ -63,6 +64,10 @@ export async function GET(
   request: NextRequest,
   { params }: { params: RouteParams }
 ) {
+  // SECURITY FIX (PROD-060): Was completely unauthenticated — anyone could access deal analytics.
+  const result = await checkPermission('COMPANY_VIEW')
+  if (isAuthError(result)) return result.error
+
   try {
     const { dealId } = await params
 

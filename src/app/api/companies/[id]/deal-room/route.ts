@@ -60,16 +60,13 @@ export async function GET(
     const evidenceResult = calculateEvidenceScore(countsByCategory)
     const evidenceScore = evidenceResult.totalPercentage
 
-    const tierReady = company.organization.planTier === 'EXIT_READY'
     const evidenceReady = evidenceScore >= 70
-    const canActivate = tierReady && evidenceReady
+    const canActivate = evidenceReady
     const isActivated = !!company.dealRoomActivatedAt
 
     const activation = {
       evidenceReady,
       evidenceScore,
-      tierReady,
-      currentTier: company.organization.planTier,
       isActivated,
       activatedAt: company.dealRoomActivatedAt?.toISOString() ?? null,
       canActivate,

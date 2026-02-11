@@ -33,11 +33,19 @@ export async function GET(request: Request) {
 
       // Sync user to database (deferred to first dashboard load to avoid build issues)
       // The user sync will happen when they first access the dashboard
-      const response = NextResponse.redirect(`${origin}${next}`)
+      // Validate the 'next' redirect URL to prevent open redirect attacks.
+      // Only allow internal paths (starting with /) and no protocol/double-slash.
+      const sanitizedNext = (next.startsWith('/') && !next.startsWith('//') && !next.includes('://'))
+        ? next
+        : '/dashboard'
+
+      const response = NextResponse.redirect(`${origin}${sanitizedNext}`)
       response.cookies.set(SESSION_COOKIE_NAME, String(Date.now()), {
         path: '/',
         maxAge: SESSION_COOKIE_MAX_AGE,
         sameSite: 'lax',
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
       })
       return response
     }

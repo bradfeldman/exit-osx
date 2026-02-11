@@ -5,13 +5,11 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Progress } from '@/components/ui/progress'
-import { cn } from '@/lib/utils'
 import {
   Mail,
   Phone,
   Calendar,
   CheckCircle,
-  TrendingUp,
   BarChart3,
   Clock,
 } from 'lucide-react'

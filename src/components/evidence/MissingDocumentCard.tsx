@@ -32,7 +32,7 @@ export function MissingDocumentCard({
   importance,
   categoryLabel,
   onUploadSuccess,
-  onUploadClick,
+  onUploadClick: _onUploadClick,
 }: MissingDocumentCardProps) {
   const { selectedCompanyId } = useCompany()
   const fileInputRef = useRef<HTMLInputElement>(null)

@@ -61,10 +61,10 @@ export function SharpenDiagnosisBanner({ companyId, autoGenerate, onComplete }: 
           </div>
           <div>
             <h3 className="text-sm font-semibold text-foreground">
-              Sharpening your diagnosis...
+              Generating deeper questions...
             </h3>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Generating follow-up questions based on your completed actions.
+              Creating follow-up questions based on your completed actions.
             </p>
           </div>
         </div>
@@ -84,7 +84,7 @@ export function SharpenDiagnosisBanner({ companyId, autoGenerate, onComplete }: 
               {questionCount} new questions added
             </h3>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Review your updated categories to sharpen your scores.
+              Review your updated categories to refine your scores.
             </p>
           </div>
         </div>
@@ -129,7 +129,7 @@ export function SharpenDiagnosisBanner({ companyId, autoGenerate, onComplete }: 
           All questions answered
         </h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Unlock follow-up questions to sharpen your scores and surface hidden risks.
+          Unlock follow-up questions to refine your scores and surface hidden risks.
         </p>
       </div>
       <Button
@@ -139,7 +139,7 @@ export function SharpenDiagnosisBanner({ companyId, autoGenerate, onComplete }: 
         className="shrink-0 border-violet-300 text-violet-700 hover:bg-violet-50"
       >
         <Sparkles className="h-4 w-4 mr-1.5" />
-        Sharpen Diagnosis
+        Re-Assess
       </Button>
     </div>
   )

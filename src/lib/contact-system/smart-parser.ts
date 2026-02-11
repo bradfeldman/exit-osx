@@ -218,18 +218,6 @@ function extractEmailDomain(email: string): string | null {
   return match ? match[1].toLowerCase() : null
 }
 
-/**
- * Extract domain from URL.
- */
-function extractUrlDomain(url: string): string | null {
-  try {
-    const urlWithProtocol = url.startsWith('http') ? url : `https://${url}`
-    const parsed = new URL(urlWithProtocol)
-    return parsed.hostname.replace(/^www\./, '').toLowerCase()
-  } catch {
-    return null
-  }
-}
 
 // ============================================
 // MAIN PARSER

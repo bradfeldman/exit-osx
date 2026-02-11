@@ -29,7 +29,7 @@ export function UpgradeModal({
   feature,
   featureDisplayName,
 }: UpgradeModalProps) {
-  const { planTier, isTrialing, trialDaysRemaining, status } = useSubscription()
+  const { planTier, isTrialing, trialDaysRemaining, status: _status } = useSubscription()
 
   // Analytics tracking
   const modalOpenTime = useRef<number>(0)
@@ -78,7 +78,7 @@ export function UpgradeModal({
   const currentPlanData = getPlan(planTier)
 
   const isFoundation = planTier === 'foundation'
-  const isGrowth = planTier === 'growth'
+  const _isGrowth = planTier === 'growth'
 
   // Determine which plan to suggest based on current plan and required feature
   // If user needs Exit-Ready feature, suggest Exit-Ready

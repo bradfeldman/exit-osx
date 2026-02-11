@@ -35,17 +35,10 @@ export async function GET(request: Request) {
         }),
       ])
 
-      if (aiQuestions.length > 0) {
-        // Prefer company-specific questions per category, fall back to global
-        const aiCategories = new Set(aiQuestions.map(q => q.briCategory))
-        const fallbackQuestions = globalQuestions.filter(
-          q => !aiCategories.has(q.briCategory)
-        )
-        questions = [...aiQuestions, ...fallbackQuestions]
-      } else {
-        // No AI questions yet — use all global seed questions
-        questions = globalQuestions
-      }
+      // PROD-014: Include BOTH seed and AI questions. Seed (foundational) questions
+      // are shown first within each category, followed by AI (adaptive) questions.
+      // This enforces the Initial -> Adaptive flow ordering.
+      questions = [...globalQuestions, ...aiQuestions]
     } else {
       // No companyId — return all global seed questions (backward compatible)
       questions = await prisma.question.findMany({
@@ -57,11 +50,16 @@ export async function GET(request: Request) {
       })
     }
 
-    // Sort final list by category then displayOrder
+    // PROD-014: Sort by category, then seed questions first (companyId === null),
+    // then AI questions (companyId !== null), then by displayOrder within each group.
     questions.sort((a, b) => {
       if (a.briCategory !== b.briCategory) {
         return a.briCategory.localeCompare(b.briCategory)
       }
+      // Seed questions (companyId === null) come before AI questions
+      const aIsSeed = a.companyId === null ? 0 : 1
+      const bIsSeed = b.companyId === null ? 0 : 1
+      if (aIsSeed !== bIsSeed) return aIsSeed - bIsSeed
       return a.displayOrder - b.displayOrder
     })
 

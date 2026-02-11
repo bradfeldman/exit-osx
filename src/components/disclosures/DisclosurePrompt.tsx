@@ -154,7 +154,7 @@ export function DisclosurePrompt({ promptSet, onClose, onComplete }: DisclosureP
               {/* Progress */}
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg font-semibold text-zinc-900">Monthly Check-in</h3>
+                  <h3 className="text-lg font-semibold text-zinc-900">Quick Check</h3>
                   <span className="text-sm text-zinc-400">
                     {currentIndex + 1} of {totalQuestions}
                   </span>

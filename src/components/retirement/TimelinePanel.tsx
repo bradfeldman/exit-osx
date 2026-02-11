@@ -50,41 +50,57 @@ export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: T
         <div className="space-y-2">
           <div className="flex justify-between items-center">
             <Label className="text-sm text-gray-700">Retirement Age</Label>
-            <Input
-              type="text"
-              inputMode="numeric"
-              value={isEditingRetireAge ? retireAgeText : String(assumptions.retirementAge)}
-              onFocus={() => {
-                setRetireAgeText(String(assumptions.retirementAge))
-                setIsEditingRetireAge(true)
-              }}
-              onChange={(e) => {
-                setRetireAgeText(e.target.value.replace(/[^0-9]/g, ''))
-              }}
-              onBlur={() => {
-                setIsEditingRetireAge(false)
-                const num = Number(retireAgeText)
-                if (!retireAgeText || isNaN(num)) return
-                onAssumptionChange(
-                  'retirementAge',
-                  Math.max(assumptions.currentAge, Math.min(100, num))
-                )
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-              }}
-              className="w-20 h-8 text-sm text-right"
-            />
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => onAssumptionChange('retirementAge', Math.max(assumptions.currentAge, assumptions.retirementAge - 1))}
+                className="w-8 h-8 rounded-md border border-gray-300 hover:bg-gray-50 active:bg-gray-100 transition-colors flex items-center justify-center text-gray-600 font-medium"
+              >
+                −
+              </button>
+              <Input
+                type="text"
+                inputMode="numeric"
+                value={isEditingRetireAge ? retireAgeText : String(assumptions.retirementAge)}
+                onFocus={() => {
+                  setRetireAgeText(String(assumptions.retirementAge))
+                  setIsEditingRetireAge(true)
+                }}
+                onChange={(e) => {
+                  setRetireAgeText(e.target.value.replace(/[^0-9]/g, ''))
+                }}
+                onBlur={() => {
+                  setIsEditingRetireAge(false)
+                  const num = Number(retireAgeText)
+                  if (!retireAgeText || isNaN(num)) return
+                  onAssumptionChange(
+                    'retirementAge',
+                    Math.max(assumptions.currentAge, Math.min(100, num))
+                  )
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                }}
+                className="w-16 h-8 text-sm text-center"
+              />
+              <button
+                type="button"
+                onClick={() => onAssumptionChange('retirementAge', Math.min(100, assumptions.retirementAge + 1))}
+                className="w-8 h-8 rounded-md border border-gray-300 hover:bg-gray-50 active:bg-gray-100 transition-colors flex items-center justify-center text-gray-600 font-medium"
+              >
+                +
+              </button>
+            </div>
           </div>
           <Slider
             value={assumptions.retirementAge}
             onValueChange={(v) => onAssumptionChange('retirementAge', Math.max(assumptions.currentAge, v))}
-            min={50}
+            min={Math.max(50, assumptions.currentAge)}
             max={80}
             step={1}
           />
           <div className="flex justify-between text-xs text-gray-400">
-            <span>50</span>
+            <span>{Math.max(50, assumptions.currentAge)}</span>
             <span>SS Full: 67</span>
             <span>80</span>
           </div>
@@ -99,43 +115,60 @@ export function TimelinePanel({ assumptions, onAssumptionChange, simplified }: T
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <Label className="text-sm text-gray-700">Life Expectancy</Label>
-              <Input
-                type="text"
-                inputMode="numeric"
-                value={isEditingLifeExp ? lifeExpText : String(assumptions.lifeExpectancy)}
-                onFocus={() => {
-                  setLifeExpText(String(assumptions.lifeExpectancy))
-                  setIsEditingLifeExp(true)
-                }}
-                onChange={(e) => {
-                  setLifeExpText(e.target.value.replace(/[^0-9]/g, ''))
-                }}
-                onBlur={() => {
-                  setIsEditingLifeExp(false)
-                  const num = Number(lifeExpText)
-                  if (!lifeExpText || isNaN(num)) return
-                  onAssumptionChange(
-                    'lifeExpectancy',
-                    Math.max(assumptions.retirementAge, Math.min(110, num))
-                  )
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-                }}
-                className="w-20 h-8 text-sm text-right"
-              />
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => onAssumptionChange('lifeExpectancy', Math.max(assumptions.retirementAge, assumptions.lifeExpectancy - 1))}
+                  className="w-8 h-8 rounded-md border border-gray-300 hover:bg-gray-50 active:bg-gray-100 transition-colors flex items-center justify-center text-gray-600 font-medium"
+                >
+                  −
+                </button>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  value={isEditingLifeExp ? lifeExpText : String(assumptions.lifeExpectancy)}
+                  onFocus={() => {
+                    setLifeExpText(String(assumptions.lifeExpectancy))
+                    setIsEditingLifeExp(true)
+                  }}
+                  onChange={(e) => {
+                    setLifeExpText(e.target.value.replace(/[^0-9]/g, ''))
+                  }}
+                  onBlur={() => {
+                    setIsEditingLifeExp(false)
+                    const num = Number(lifeExpText)
+                    if (!lifeExpText || isNaN(num)) return
+                    onAssumptionChange(
+                      'lifeExpectancy',
+                      Math.max(assumptions.retirementAge, Math.min(110, num))
+                    )
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                  }}
+                  className="w-16 h-8 text-sm text-center"
+                />
+                <button
+                  type="button"
+                  onClick={() => onAssumptionChange('lifeExpectancy', Math.min(110, assumptions.lifeExpectancy + 1))}
+                  className="w-8 h-8 rounded-md border border-gray-300 hover:bg-gray-50 active:bg-gray-100 transition-colors flex items-center justify-center text-gray-600 font-medium"
+                >
+                  +
+                </button>
+              </div>
             </div>
             <Slider
               value={assumptions.lifeExpectancy}
               onValueChange={(v) => onAssumptionChange('lifeExpectancy', Math.max(assumptions.retirementAge, v))}
-              min={70}
+              min={Math.max(70, assumptions.retirementAge)}
               max={100}
               step={1}
             />
             <div className="flex justify-between text-xs text-gray-400">
-              <span>70</span>
+              <span>{Math.max(70, assumptions.retirementAge)}</span>
               {assumptions.lifeExpectancy !== getLifeExpectancy(assumptions.currentAge) ? (
                 <button
+                  type="button"
                   className="text-primary hover:underline"
                   onClick={() => onAssumptionChange('lifeExpectancy', getLifeExpectancy(assumptions.currentAge))}
                 >

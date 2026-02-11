@@ -57,7 +57,7 @@ export function AddParticipantModal({
   isOpen,
   onClose,
   dealId,
-  companyId,
+  companyId: _companyId,
   onCreated,
 }: AddParticipantModalProps) {
   const [activeTab, setActiveTab] = useState<'smart' | 'search' | 'manual'>('smart')
@@ -99,7 +99,7 @@ export function AddParticipantModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const { addParticipant, smartAdd } = useDealParticipants(dealId)
+  const { addParticipant, smartAdd: _smartAdd } = useDealParticipants(dealId)
 
   // Fetch buyers for the dropdown
   useEffect(() => {

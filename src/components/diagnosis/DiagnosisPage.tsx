@@ -6,11 +6,14 @@ import { useCompany } from '@/contexts/CompanyContext'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
 import { DiagnosisHeader } from './DiagnosisHeader'
+import { BRIRangeGauge } from './BRIRangeGauge'
 import { CategoryPanel } from './CategoryPanel'
 import { RiskDriversSection } from './RiskDriversSection'
 import { DiagnosisLoading } from './DiagnosisLoading'
 import { DiagnosisError } from './DiagnosisError'
 import { SharpenDiagnosisBanner } from './SharpenDiagnosisBanner'
+import { CadencePromptBanner } from './CadencePromptBanner'
+import { LowestConfidencePrompt } from './LowestConfidencePrompt'
 import { UpgradeModal } from '@/components/subscription/UpgradeModal'
 
 interface CategoryData {
@@ -20,6 +23,7 @@ interface CategoryData {
   scoreDecimal: number
   dollarImpact: number | null
   weight: number
+  isAssessed: boolean
   confidence: {
     dots: number
     label: string
@@ -76,6 +80,13 @@ export function DiagnosisPage() {
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
   const [sharpenActive, setSharpenActive] = useState(false)
   const sharpenConsumedRef = useRef(false)
+  const [cadencePrompt, setCadencePrompt] = useState<{
+    categoryId: string
+    categoryLabel: string
+    reason: string
+    urgency: 'low' | 'medium' | 'high'
+  } | null>(null)
+  const [cadenceNextDates, setCadenceNextDates] = useState<Record<string, string | null>>({})
 
   const fetchData = useCallback(async () => {
     if (!selectedCompanyId) return
@@ -110,9 +121,34 @@ export function DiagnosisPage() {
     }
   }, [selectedCompanyId])
 
+  // Fetch cadence data in parallel with diagnosis data
+  const fetchCadence = useCallback(async () => {
+    if (!selectedCompanyId) return
+    try {
+      const res = await fetch(`/api/companies/${selectedCompanyId}/assessment-cadence`)
+      if (res.ok) {
+        const cadenceData = await res.json()
+        if (cadenceData.topPrompt) {
+          setCadencePrompt(cadenceData.topPrompt)
+        } else {
+          setCadencePrompt(null)
+        }
+        // Build next-date map for per-category display
+        const nextDates: Record<string, string | null> = {}
+        for (const cat of cadenceData.categories ?? []) {
+          nextDates[cat.categoryId] = cat.nextPromptDate
+        }
+        setCadenceNextDates(nextDates)
+      }
+    } catch {
+      // Non-critical — cadence UI is supplementary
+    }
+  }, [selectedCompanyId])
+
   useEffect(() => {
     fetchData()
-  }, [fetchData])
+    fetchCadence()
+  }, [fetchData, fetchCadence])
 
   // Auto-expand category from URL query param (e.g., /dashboard/diagnosis?expand=FINANCIAL)
   useEffect(() => {
@@ -150,7 +186,7 @@ export function DiagnosisPage() {
     setExpandedCategory(category)
   }, [])
 
-  // Show "Sharpen Diagnosis" banner when all questions are answered and no unanswered AI questions exist
+  // Show "Re-Assess" banner when all questions are answered and no unanswered AI questions exist
   const allQuestionsAnswered = useMemo(() => {
     if (!data || data.categories.length === 0) return false
     return data.categories.every(
@@ -173,7 +209,30 @@ export function DiagnosisPage() {
           />
         </AnimatedItem>
 
-        {/* Sharpen Diagnosis Banner */}
+        {/* BRI Range Gauge */}
+        <AnimatedItem>
+          <BRIRangeGauge
+            briScore={data.briScore}
+            isEstimated={data.isEstimated}
+          />
+        </AnimatedItem>
+
+        {/* Cadence Prompt Banner — shown when cadence rules say it's time to re-assess */}
+        {cadencePrompt && selectedCompanyId && (
+          <AnimatedItem>
+            <CadencePromptBanner
+              prompt={cadencePrompt}
+              companyId={selectedCompanyId}
+              onExpand={(categoryId) => {
+                setExpandedCategory(categoryId)
+                setCadencePrompt(null)
+              }}
+              onDismiss={() => setCadencePrompt(null)}
+            />
+          </AnimatedItem>
+        )}
+
+        {/* Re-Assess Banner */}
         {(allQuestionsAnswered || sharpenActive) && (
           <AnimatedItem>
             <SharpenDiagnosisBanner
@@ -197,6 +256,7 @@ export function DiagnosisPage() {
                 label={cat.label}
                 score={cat.score}
                 dollarImpact={cat.dollarImpact}
+                isAssessed={cat.isAssessed}
                 confidence={cat.confidence}
                 isLowestConfidence={cat.isLowestConfidence}
                 assessmentId={data.assessmentId}
@@ -205,6 +265,7 @@ export function DiagnosisPage() {
                 isExpanded={expandedCategory === cat.category}
                 onExpand={() => setExpandedCategory(cat.category)}
                 onCollapse={() => setExpandedCategory(null)}
+                nextPromptDate={cadenceNextDates[cat.category] ?? null}
               />
             ))}
           </div>
@@ -217,6 +278,14 @@ export function DiagnosisPage() {
             hasAssessment={data.hasAssessment}
             isFreeUser={isFreeUser}
             onUpgrade={() => setUpgradeModalOpen(true)}
+            onExpandCategory={handleExpandCategory}
+          />
+        </AnimatedItem>
+
+        {/* Lowest Confidence Prompt — shown at bottom when one category needs more answers */}
+        <AnimatedItem>
+          <LowestConfidencePrompt
+            categories={data.categories}
             onExpandCategory={handleExpandCategory}
           />
         </AnimatedItem>

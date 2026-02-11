@@ -3,17 +3,20 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
+import { useExposure } from '@/contexts/ExposureContext'
 import { AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
 import { HeroSummaryBar } from './HeroSummaryBar'
 import { ActiveTaskCard } from './ActiveTaskCard'
 import { UpNextQueue } from './UpNextQueue'
 import { CompletedThisMonth } from './CompletedThisMonth'
 import { WaitingOnOthers } from './WaitingOnOthers'
+import { DeferredTasks } from './DeferredTasks'
 import { EmptyState } from './EmptyState'
 import { AllCompletedState } from './AllCompletedState'
 import { ActionsLoading } from './ActionsLoading'
 import { ActionsError } from './ActionsError'
 import { TaskCompletionDialog } from './TaskCompletionDialog'
+import { ViewOnlyBanner } from './ViewOnlyBanner'
 
 interface SubStep {
   id: string
@@ -99,6 +102,15 @@ interface WaitingTask {
   lastUpdated: string | null
 }
 
+interface DeferredTask {
+  id: string
+  title: string
+  briCategory: string
+  normalizedValue: number
+  deferredUntil: string
+  deferralReason: string | null
+}
+
 interface ActionsData {
   summary: {
     totalTasks: number
@@ -111,12 +123,14 @@ interface ActionsData {
   upNext: UpNextTask[]
   completedThisMonth: CompletedTask[]
   waitingOnOthers: WaitingTask[]
+  deferredTasks: DeferredTask[]
   hasMoreInQueue: boolean
   totalQueueSize: number
 }
 
 export function ActionsPage() {
   const { selectedCompanyId } = useCompany()
+  const { isViewing, isActing: _isActing } = useExposure()
   const searchParams = useSearchParams()
   const highlightTaskId = searchParams.get('taskId')
   const scrolledRef = useRef(false)
@@ -204,7 +218,7 @@ export function ActionsPage() {
       await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subStepProgress: { [stepId]: completed } }),
+        body: JSON.stringify({ subStepId: stepId, subStepCompleted: completed }),
       })
     } catch {
       // Revert on error
@@ -256,12 +270,47 @@ export function ActionsPage() {
     }
   }
 
+  const handleDeferTask = async (taskId: string, deferredUntil: string, reason: string) => {
+    try {
+      await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'DEFERRED',
+          deferredUntil,
+          deferralReason: reason || 'Deferred',
+        }),
+      })
+      fetchData()
+    } catch {
+      // Silently fail
+    }
+  }
+
+  const handleResumeTask = async (taskId: string) => {
+    try {
+      await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'PENDING',
+          deferredUntil: null,
+        }),
+      })
+      fetchData()
+    } catch {
+      // Silently fail
+    }
+  }
+
   if (isLoading) return <ActionsLoading />
   if (error || !data) return <ActionsError onRetry={fetchData} />
 
   const hasNoTasks = data.summary.totalTasks === 0 && data.completedThisMonth.length === 0
 
   if (hasNoTasks) return <EmptyState />
+
+  const showViewOnlyBanner = isViewing && data.activeTasks.length > 0
 
   return (
     <div className="max-w-[800px] mx-auto px-6 py-8">
@@ -275,6 +324,12 @@ export function ActionsPage() {
             valueRecoveredThisMonth={data.summary.valueRecoveredThisMonth}
           />
         </AnimatedItem>
+
+        {showViewOnlyBanner && (
+          <AnimatedItem>
+            <ViewOnlyBanner />
+          </AnimatedItem>
+        )}
 
         {allTasksCompleted && (
           <AnimatedItem>
@@ -293,7 +348,9 @@ export function ActionsPage() {
                 onSubStepToggle={handleSubStepToggle}
                 onComplete={() => handleCompleteTask(task)}
                 onBlock={handleBlockTask}
+                onDefer={handleDeferTask}
                 onRefresh={fetchData}
+                disabled={isViewing}
               />
             </div>
           </AnimatedItem>
@@ -306,6 +363,7 @@ export function ActionsPage() {
               hasMore={data.hasMoreInQueue}
               totalQueueSize={data.totalQueueSize}
               onStartTask={handleStartTask}
+              disabled={isViewing}
             />
           </AnimatedItem>
         )}
@@ -313,6 +371,12 @@ export function ActionsPage() {
         {data.waitingOnOthers.length > 0 && (
           <AnimatedItem>
             <WaitingOnOthers tasks={data.waitingOnOthers} />
+          </AnimatedItem>
+        )}
+
+        {data.deferredTasks && data.deferredTasks.length > 0 && (
+          <AnimatedItem>
+            <DeferredTasks tasks={data.deferredTasks} onResume={handleResumeTask} />
           </AnimatedItem>
         )}
 
