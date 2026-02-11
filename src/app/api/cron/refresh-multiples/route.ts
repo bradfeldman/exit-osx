@@ -231,7 +231,7 @@ export async function GET(request: Request) {
             await prisma.signal.create({
               data: {
                 companyId: company.id,
-                channel: 'SYSTEM',
+                channel: 'EXTERNAL',
                 category: 'MARKET',
                 eventType: 'MARKET_MULTIPLE_CHANGE',
                 severity,
