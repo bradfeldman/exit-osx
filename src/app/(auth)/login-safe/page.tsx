@@ -3,17 +3,15 @@
 import { useState, useCallback, Suspense, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Eye, EyeOff } from 'lucide-react'
 import { secureLogin } from '@/app/actions/auth'
 
 /**
  * TEMPORARY: Incremental rebuild of login page for iOS debugging.
- * Round 3a: Full UI WITHOUT analytics (removed trackPageView + useFormTracking).
- * If this works: analytics is the culprit.
+ * Round 3b: shadcn + Tailwind + Link, NO next/image, NO lucide icons.
+ * If this works: next/image or lucide is the culprit.
  */
 
 function SearchParamsReader({ onChange }: {
@@ -78,34 +76,12 @@ function LoginPageContent({ redirectUrl }: { redirectUrl: string }) {
 
   return (
     <div className="flex min-h-[100dvh] bg-background">
-      {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden flex-shrink-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
-        <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground">
-          <a href="https://exitosx.com" className="flex items-center gap-3">
-            <Image src="/logo-icon.png" alt="Exit OSx" width={40} height={40} className="h-10 w-10" />
-            <Image src="/wordmark.svg" alt="Exit OSx" width={120} height={34} className="h-8 w-auto brightness-0 invert" />
-          </a>
-          <div className="space-y-6">
-            <h1 className="text-4xl font-bold font-display leading-tight tracking-tight">
-              Build a Business<br />Buyers Want to Own
-            </h1>
-            <p className="text-lg opacity-90 max-w-md">
-              Get your valuation estimate, Buyer Readiness Score, and a personalized roadmap to maximize your exit outcome.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Right side - Login Form */}
+      {/* Right side - Login Form (no left branding panel, no images) */}
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-background min-h-[100dvh] lg:min-h-0">
         <div className="w-full max-w-md space-y-8 py-8">
-          {/* Mobile logo */}
-          <div className="lg:hidden text-center">
-            <a href="https://exitosx.com" className="inline-flex items-center gap-2">
-              <Image src="/logo-icon.png" alt="Exit OSx" width={32} height={32} className="h-8 w-8" />
-              <Image src="/wordmark.svg" alt="Exit OSx" width={100} height={28} className="h-6 w-auto" />
-            </a>
+          {/* Plain text logo instead of next/image */}
+          <div className="text-center">
+            <span className="text-2xl font-bold text-primary">Exit OSx</span>
           </div>
 
           <div className="text-center">
@@ -160,14 +136,15 @@ function LoginPageContent({ redirectUrl }: { redirectUrl: string }) {
                   autoComplete="current-password"
                   className="h-12 pr-12"
                 />
+                {/* Plain text toggle instead of lucide icons */}
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors -m-2 p-2 rounded-md"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors -m-2 p-2 rounded-md text-xs"
                   tabIndex={-1}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? 'Hide' : 'Show'}
                 </button>
               </div>
             </div>
