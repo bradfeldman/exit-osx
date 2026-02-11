@@ -61,7 +61,10 @@ export async function GET(request: NextRequest) {
       integration: integration || null,
     })
   } catch (error) {
-    console.error('Error getting QuickBooks status:', error)
+    // SECURITY FIX (PROD-091 #6): Only log the error message, not the full object
+    // which may contain DB query details or integration tokens.
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('[QuickBooks] Error getting status:', errorMessage)
     return NextResponse.json({ error: 'Failed to get integration status' }, { status: 500 })
   }
 }
@@ -172,7 +175,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
   } catch (error) {
-    console.error('Error in QuickBooks POST:', error)
+    // SECURITY FIX (PROD-091 #6): Only log the error message, not the full object
+    // which may contain financial data from QuickBooks sync operations.
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+    console.error('[QuickBooks] Error in POST:', errorMsg)
     return NextResponse.json({ error: 'Operation failed' }, { status: 500 })
   }
 }
@@ -210,7 +216,10 @@ export async function DELETE(request: NextRequest) {
         await revokeTokens(refreshToken)
       } catch (e) {
         // Log but don't block disconnect if revocation fails
-        console.error('Failed to revoke QuickBooks token:', e)
+        // SECURITY FIX (PROD-091 #6): Only log the error message — the full error
+        // object from Intuit's revocation endpoint may contain token fragments.
+        const revokeErrMsg = e instanceof Error ? e.message : 'Unknown error'
+        console.error('[QuickBooks] Failed to revoke token:', revokeErrMsg)
       }
     }
 
@@ -230,7 +239,9 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error disconnecting QuickBooks:', error)
+    // SECURITY FIX (PROD-091 #6): Only log the error message, not the full object.
+    const disconnectErrMsg = error instanceof Error ? error.message : 'Unknown error'
+    console.error('[QuickBooks] Error disconnecting:', disconnectErrMsg)
     return NextResponse.json({ error: 'Failed to disconnect' }, { status: 500 })
   }
 }

@@ -450,7 +450,7 @@ describe('Permissions Module', () => {
       for (const template of externalTemplates) {
         expect(template.defaultPermissions['team.members:manage']).toBe(false)
         expect(template.defaultPermissions['team.members:remove']).toBe(false)
-      })
+      }
     })
 
     it('only owner and ma_advisor can assign tasks', () => {

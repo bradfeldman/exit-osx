@@ -292,7 +292,8 @@ describe('TOTP (Two-Factor Authentication)', () => {
 
       expect(uri).toContain('otpauth://totp/')
       expect(uri).toContain(secret)
-      expect(uri).toContain('user@example.com')
+      // Email is URL-encoded in the URI
+      expect(uri).toContain('user%40example.com')
     })
 
     it('includes issuer parameter', () => {
@@ -300,7 +301,8 @@ describe('TOTP (Two-Factor Authentication)', () => {
       const uri = generateTotpUri(secret, 'user@example.com', 'ExitOSx')
 
       expect(uri).toContain('issuer=ExitOSx')
-      expect(uri).toContain('ExitOSx:user@example.com')
+      // Email is URL-encoded in the URI
+      expect(uri).toContain('ExitOSx:user%40example.com')
     })
 
     it('includes algorithm and digits', () => {
@@ -406,7 +408,16 @@ describe('Token Encryption', () => {
     it('throws on tampered ciphertext', () => {
       const token = 'test-token'
       const encrypted = encryptToken(token)
-      const tampered = encrypted.replace(/.$/, 'X')
+      // Tamper with the auth tag by flipping a bit in the middle
+      const parts = encrypted.split(':')
+      const authTag = parts[1]
+      // Change a character in the middle of the auth tag
+      const midpoint = Math.floor(authTag.length / 2)
+      const tamperedAuthTag = authTag.substring(0, midpoint) +
+        (authTag[midpoint] === 'A' ? 'B' : 'A') +
+        authTag.substring(midpoint + 1)
+      parts[1] = tamperedAuthTag
+      const tampered = parts.join(':')
 
       expect(() => decryptToken(tampered)).toThrow()
     })
@@ -474,9 +485,14 @@ describe('Token Encryption', () => {
       const token = 'important-oauth-token'
       const encrypted = encryptToken(token)
 
-      // Tamper with the middle component
+      // Tamper with the auth tag by flipping a bit
       const parts = encrypted.split(':')
-      parts[1] = parts[1].replace(/.$/, 'X')
+      const authTag = parts[1]
+      const midpoint = Math.floor(authTag.length / 2)
+      const tamperedAuthTag = authTag.substring(0, midpoint) +
+        (authTag[midpoint] === 'A' ? 'B' : 'A') +
+        authTag.substring(midpoint + 1)
+      parts[1] = tamperedAuthTag
       const tampered = parts.join(':')
 
       expect(() => decryptToken(tampered)).toThrow()

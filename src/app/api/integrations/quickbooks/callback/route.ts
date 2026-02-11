@@ -140,13 +140,17 @@ export async function GET(request: NextRequest) {
         data: { providerCompanyName: qbCompanyInfo.companyName },
       })
     } catch (e) {
-      console.error('Failed to get QuickBooks company info:', e)
+      // SECURITY FIX (PROD-091 #6): Only log error message, not full object
+      const companyInfoErrMsg = e instanceof Error ? e.message : 'Unknown error'
+      console.error('[QuickBooks] Failed to get company info:', companyInfoErrMsg)
     }
 
     // Trigger initial sync as fire-and-forget (don't await)
     // Client-side will also poll for sync completion
     syncQuickBooksData(integration.id, 'initial').catch((err) => {
-      console.error('Background initial sync failed:', err)
+      // SECURITY FIX (PROD-091 #6): Only log error message, not full object
+      const syncErrMsg = err instanceof Error ? err.message : 'Unknown error'
+      console.error('[QuickBooks] Background initial sync failed:', syncErrMsg)
     })
 
     // Redirect back to financials page with success flag
@@ -154,8 +158,10 @@ export async function GET(request: NextRequest) {
       new URL('/dashboard/financials/statements?tab=pnl&qb_connected=true', request.url)
     )
   } catch (error) {
-    console.error('QuickBooks callback error:', error)
+    // SECURITY FIX (PROD-091 #6): Only log error message, not full object
+    // which may contain token data from the OAuth exchange.
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('[QuickBooks] Callback error:', errorMessage)
     return NextResponse.redirect(
       new URL(`/dashboard/financials?qb_error=${encodeURIComponent(errorMessage)}`, request.url)
     )

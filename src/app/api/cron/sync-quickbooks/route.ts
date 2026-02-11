@@ -174,7 +174,9 @@ export async function GET(request: Request) {
       results,
     })
   } catch (error) {
-    console.error('[SyncQuickBooks] Cron error:', error)
+    // SECURITY FIX (PROD-091 #6): Only log error message, not full object
+    const cronErrorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('[SyncQuickBooks] Cron error:', cronErrorMessage)
     return NextResponse.json(
       // SECURITY FIX (PROD-060): Removed String(error) details from response
       { error: 'Failed to run QuickBooks sync cron' },
