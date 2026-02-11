@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, Suspense, useEffect, useRef } from 'react'
+import { useState, useCallback, Suspense, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -9,13 +9,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Eye, EyeOff } from 'lucide-react'
 import { secureLogin } from '@/app/actions/auth'
-import { analytics } from '@/lib/analytics'
-import { useFormTracking } from '@/lib/analytics/hooks'
 
 /**
  * TEMPORARY: Incremental rebuild of login page for iOS debugging.
- * Round 3: Full UI — shadcn, lucide, next/image, analytics, Tailwind.
- * Stripped: captcha, 2FA, lockout, resend, createClient, redirect utils.
+ * Round 3a: Full UI WITHOUT analytics (removed trackPageView + useFormTracking).
+ * If this works: analytics is the culprit.
  */
 
 function SearchParamsReader({ onChange }: {
@@ -56,39 +54,18 @@ function LoginPageContent({ redirectUrl }: { redirectUrl: string }) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  const pageLoadTime = useRef(Date.now())
-  const { handleFieldFocus, handleFieldBlur, markSubmitted } = useFormTracking({ formId: 'login' })
-
-  useEffect(() => {
-    analytics.trackPageView('login', {
-      entryPoint: document.referrer || 'direct',
-    })
-  }, [])
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setLoading(true)
-    markSubmitted()
 
     try {
       const result = await secureLogin(email, password)
 
       if (!result.success) {
-        analytics.track('form_field_error', {
-          formId: 'login',
-          fieldName: 'form',
-          errorType: 'auth_failure',
-          errorMessage: result.error || 'Invalid credentials',
-        })
         setError(result.error || 'Invalid email or password')
         return
       }
-
-      analytics.track('signup_submit', {
-        success: true,
-        timeToSubmit: Date.now() - pageLoadTime.current,
-      })
 
       router.replace(redirectUrl)
       router.refresh()
@@ -157,8 +134,6 @@ function LoginPageContent({ redirectUrl }: { redirectUrl: string }) {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onFocus={() => handleFieldFocus('email')}
-                onBlur={() => handleFieldBlur('email')}
                 required
                 disabled={loading}
                 autoComplete="email"
@@ -180,8 +155,6 @@ function LoginPageContent({ redirectUrl }: { redirectUrl: string }) {
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => handleFieldFocus('password')}
-                  onBlur={() => handleFieldBlur('password')}
                   required
                   disabled={loading}
                   autoComplete="current-password"
