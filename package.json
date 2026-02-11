@@ -9,6 +9,7 @@
     "lint": "eslint",
     "postinstall": "rm -rf node_modules/.prisma && prisma generate",
     "db:seed": "tsx prisma/seed.ts",
+    "test:seed": "tsx scripts/seed-test-data.ts",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
