@@ -11,6 +11,7 @@
 // force-refreshed with ?refresh=true.
 
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { findComparables, type CompanyProfile, type ComparableResult } from '@/lib/valuation/comparable-engine'
@@ -323,7 +324,7 @@ async function getCachedComparables(companyId: string): Promise<ComparableResult
 async function cacheComparables(companyId: string, result: ComparableResult): Promise<void> {
   try {
     // Prisma Json type expects a plain object, not a string
-    const value = JSON.parse(JSON.stringify(result)) as Record<string, unknown>
+    const value = JSON.parse(JSON.stringify(result)) as Prisma.InputJsonValue
     await prisma.systemSetting.upsert({
       where: { key: `${CACHE_KEY_PREFIX}${companyId}` },
       create: {
