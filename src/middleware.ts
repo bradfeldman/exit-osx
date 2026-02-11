@@ -121,6 +121,18 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const hostname = request.headers.get('host') || ''
 
+  // PROD-025: Redirect legacy routes to their new locations
+  const legacyRedirects: Record<string, string> = {
+    '/dashboard/playbook': '/dashboard/actions',
+    '/dashboard/action-plan': '/dashboard/actions',
+    '/dashboard/data-room': '/dashboard/evidence',
+    '/dashboard/contacts': '/dashboard/deal-room',
+  }
+  const redirectTarget = legacyRedirects[pathname]
+  if (redirectTarget) {
+    return NextResponse.redirect(new URL(redirectTarget, request.url), 301)
+  }
+
   // SECURITY FIX (PROD-091): Removed temporary DIAG logging that exposed user-agent
   // strings, cookie names, and routing decisions to console/log output in production.
 
