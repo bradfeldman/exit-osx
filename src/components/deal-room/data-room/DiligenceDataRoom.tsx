@@ -299,7 +299,7 @@ export function DiligenceDataRoom() {
     )
   }
 
-  if (error || !data) {
+  if (!selectedCompanyId || error || !data) {
     return (
       <div className="text-center py-12">
         <p className="text-sm text-muted-foreground">Failed to load data room.</p>

@@ -302,19 +302,19 @@ async function getCompanyContext(companyId: string): Promise<CompanyContext | nu
 
   if (!company) return null
 
-  // Get latest financial data
+  // Get latest financial data via income statement
   const latestFinancial = await prisma.financialPeriod.findFirst({
     where: { companyId },
-    orderBy: { periodEnd: 'desc' },
-    select: { revenue: true, adjustedEbitda: true },
+    orderBy: { endDate: 'desc' },
+    include: { incomeStatement: true },
   })
 
   return {
     name: company.name,
     industry: company.icbIndustry ?? 'Unknown',
     subSector: company.icbSubSector ?? 'Unknown',
-    annualRevenue: latestFinancial ? Number(latestFinancial.revenue) : 0,
-    annualEbitda: latestFinancial ? Number(latestFinancial.adjustedEbitda) : 0,
+    annualRevenue: latestFinancial?.incomeStatement ? Number(latestFinancial.incomeStatement.grossRevenue) : 0,
+    annualEbitda: latestFinancial?.incomeStatement ? Number(latestFinancial.incomeStatement.ebitda) : 0,
     businessDescription: company.businessDescription,
   }
 }

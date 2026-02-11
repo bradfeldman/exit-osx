@@ -528,7 +528,7 @@ async function logClassification(params: {
         companyId: params.companyId ?? null,
         generationType: 'business_classification',
         inputData: { description: params.description },
-        outputData: params.result as Record<string, unknown>,
+        outputData: JSON.parse(JSON.stringify(params.result ?? {})),
         modelUsed: params.usage ? 'claude-3-5-haiku-latest' : null,
         inputTokens: params.usage?.inputTokens ?? null,
         outputTokens: params.usage?.outputTokens ?? null,
