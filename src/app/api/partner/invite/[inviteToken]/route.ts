@@ -1,11 +1,21 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import {
+  applyRateLimit,
+  RATE_LIMIT_CONFIGS,
+  createRateLimitResponse,
+} from '@/lib/security'
 
 // GET — Validate invite token
+// SECURITY FIX (PROD-060): Added rate limiting to prevent token enumeration
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ inviteToken: string }> }
 ) {
+  const rateLimitResult = await applyRateLimit(request, RATE_LIMIT_CONFIGS.TOKEN)
+  if (!rateLimitResult.success) {
+    return createRateLimitResponse(rateLimitResult)
+  }
   const { inviteToken } = await params
 
   const partner = await prisma.accountabilityPartner.findUnique({
@@ -28,10 +38,15 @@ export async function GET(
 }
 
 // POST — Accept invite
+// SECURITY FIX (PROD-060): Added rate limiting
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ inviteToken: string }> }
 ) {
+  const rateLimitResult = await applyRateLimit(request, RATE_LIMIT_CONFIGS.TOKEN)
+  if (!rateLimitResult.success) {
+    return createRateLimitResponse(rateLimitResult)
+  }
   const { inviteToken } = await params
 
   const partner = await prisma.accountabilityPartner.findUnique({

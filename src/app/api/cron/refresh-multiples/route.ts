@@ -283,8 +283,8 @@ export async function GET(request: Request) {
     console.error('[RefreshMultiples] Cron error:', error)
     return NextResponse.json(
       {
+        // SECURITY FIX (PROD-060): Removed error.message from response
         error: 'Failed to run multiple refresh cron',
-        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     )

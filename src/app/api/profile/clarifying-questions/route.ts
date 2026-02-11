@@ -46,8 +46,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ questions: data.questions })
   } catch (error) {
     console.error('Error generating clarifying questions:', error)
+    // SECURITY FIX (PROD-060): Removed error.message from response to prevent leaking internal details
     const message = error instanceof Error ? error.message : 'Failed to generate questions'
-    // Check for specific error types
     if (message.includes('ANTHROPIC_API_KEY')) {
       return NextResponse.json(
         { error: 'AI service not configured. Please contact support.' },
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       )
     }
     return NextResponse.json(
-      { error: message },
+      { error: 'Failed to generate questions' },
       { status: 500 }
     )
   }

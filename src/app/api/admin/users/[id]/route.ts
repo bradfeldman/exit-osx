@@ -214,7 +214,8 @@ export async function DELETE(
     if (authError) {
       console.error('Failed to delete Supabase auth user:', authError)
       return NextResponse.json(
-        { error: 'Failed to delete user authentication', message: authError.message },
+        // SECURITY FIX (PROD-060): Removed authError.message from response
+        { error: 'Failed to delete user authentication' },
         { status: 500 }
       )
     }

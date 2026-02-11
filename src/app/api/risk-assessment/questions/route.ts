@@ -86,8 +86,9 @@ export async function POST(request: Request) {
       )
     }
 
+    // SECURITY FIX (PROD-060): Removed error.message from response to prevent leaking internal details
     return NextResponse.json(
-      { error: message },
+      { error: 'Failed to generate questions' },
       { status: 500 }
     )
   }

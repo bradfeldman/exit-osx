@@ -266,9 +266,9 @@ export async function POST() {
     })
   } catch (error) {
     console.error('Error syncing user:', error)
-    const message = error instanceof Error ? error.message : 'Unknown error'
+    // SECURITY FIX (PROD-060): Removed error.message from response to prevent leaking internal details
     return NextResponse.json(
-      { error: 'Failed to sync user', details: message },
+      { error: 'Failed to sync user' },
       { status: 500 }
     )
   }

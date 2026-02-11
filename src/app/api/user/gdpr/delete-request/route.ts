@@ -2,6 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { randomBytes } from 'crypto'
+import {
+  applyRateLimit,
+  RATE_LIMIT_CONFIGS,
+  createRateLimitResponse,
+} from '@/lib/security'
 
 // GET - Get current deletion request status
 export async function GET() {
@@ -47,7 +52,13 @@ export async function GET() {
 }
 
 // POST - Create a new deletion request
+// SECURITY FIX (PROD-060): Added per-route rate limiting for sensitive GDPR operation
 export async function POST(request: NextRequest) {
+  const rateLimitResult = await applyRateLimit(request, RATE_LIMIT_CONFIGS.SENSITIVE)
+  if (!rateLimitResult.success) {
+    return createRateLimitResponse(rateLimitResult)
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -106,14 +117,15 @@ export async function POST(request: NextRequest) {
 
     // TODO: Send confirmation email with the token
 
+    // SECURITY FIX (PROD-060): Removed confirmationToken from API response.
+    // The token should only be delivered via email to prevent token leakage.
     return NextResponse.json({
-      message: 'Deletion request created. Please confirm via email or use the confirmation token.',
+      message: 'Deletion request created. Please check your email for the confirmation link.',
       deletionRequest: {
         id: deletionRequest.id,
         status: deletionRequest.status,
         requestedAt: deletionRequest.requestedAt,
         scheduledFor: deletionRequest.scheduledFor,
-        confirmationToken: deletionRequest.confirmationToken,
       },
     })
   } catch (error) {

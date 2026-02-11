@@ -258,7 +258,7 @@ export async function POST(
     }, { status: 201 })
   } catch (error) {
     console.error('Error adding deal participant:', error)
-    const message = error instanceof Error ? error.message : 'Internal server error'
-    return NextResponse.json({ error: message }, { status: 500 })
+    // SECURITY FIX (PROD-060): Removed error.message from response to prevent leaking internal details
+    return NextResponse.json({ error: 'Failed to add participant' }, { status: 500 })
   }
 }

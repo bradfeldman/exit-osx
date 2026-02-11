@@ -110,9 +110,9 @@ export async function PUT(request: Request) {
     })
   } catch (error) {
     console.error('Error updating BRI weights:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    // SECURITY FIX (PROD-060): Removed error.message from response to prevent leaking internal details
     return NextResponse.json(
-      { error: `Failed to update BRI weights: ${errorMessage}` },
+      { error: 'Failed to update BRI weights' },
       { status: 500 }
     )
   }

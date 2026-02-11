@@ -56,6 +56,7 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Error checking questions:', error)
-    return NextResponse.json({ error: String(error) }, { status: 500 })
+    // SECURITY FIX (PROD-060): Removed String(error) to prevent leaking stack traces
+    return NextResponse.json({ error: 'Failed to check questions' }, { status: 500 })
   }
 }

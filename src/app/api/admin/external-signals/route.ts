@@ -68,7 +68,9 @@ export async function POST(request: Request) {
       })
       results.push({ success: true, signalId: signal.id })
     } catch (error) {
-      results.push({ success: false, error: String(error) })
+      // SECURITY FIX (PROD-060): Removed String(error) to prevent leaking stack traces
+      console.error('Error creating external signal:', error)
+      results.push({ success: false, error: 'Failed to create signal' })
     }
   }
 

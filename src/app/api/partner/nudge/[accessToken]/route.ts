@@ -1,12 +1,22 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { sendPartnerNudgeEmail } from '@/lib/email/send-partner-nudge-email'
+import {
+  applyRateLimit,
+  RATE_LIMIT_CONFIGS,
+  createRateLimitResponse,
+} from '@/lib/security'
 
 // POST — Send a nudge to the founder
+// SECURITY FIX (PROD-060): Added rate limiting to prevent abuse
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ accessToken: string }> }
 ) {
+  const rateLimitResult = await applyRateLimit(request, RATE_LIMIT_CONFIGS.SENSITIVE)
+  if (!rateLimitResult.success) {
+    return createRateLimitResponse(rateLimitResult)
+  }
   const { accessToken } = await params
 
   const partner = await prisma.accountabilityPartner.findUnique({

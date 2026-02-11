@@ -83,7 +83,8 @@ export async function GET(
   } catch (error) {
     console.error('Error searching company notes:', error)
     return NextResponse.json(
-      { error: 'Failed to search notes', details: error instanceof Error ? error.message : 'Unknown error' },
+      // SECURITY FIX (PROD-060): Removed error.message from response to prevent leaking internal details
+      { error: 'Failed to search notes' },
       { status: 500 }
     )
   }
