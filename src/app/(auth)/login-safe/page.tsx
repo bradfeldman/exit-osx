@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useCallback, Suspense, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { secureLogin } from '@/app/actions/auth'
 
 /**
  * TEMPORARY: Incremental rebuild of login page for iOS debugging.
- * Round 1: useSearchParams + Suspense pattern (most likely iOS culprit).
+ * Round 2: useRouter + form + server action import.
+ * If this loops: one of useRouter / form / secureLogin import is the culprit.
  */
 
 function SearchParamsReader({ onChange }: {
@@ -21,12 +23,32 @@ function SearchParamsReader({ onChange }: {
 }
 
 export default function LoginSafePage() {
-  const [count, setCount] = useState(0)
   const [params, setParams] = useState('loading...')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [status, setStatus] = useState('Ready')
+  const router = useRouter()
 
   const handleParams = useCallback((p: string) => {
     setParams(p)
   }, [])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setStatus('Logging in...')
+
+    try {
+      const result = await secureLogin(email, password)
+      if (result.success) {
+        setStatus('Success! Redirecting...')
+        router.replace('/dashboard')
+      } else {
+        setStatus(`Error: ${result.error || 'Unknown'}`)
+      }
+    } catch (err) {
+      setStatus(`Caught: ${err instanceof Error ? err.message : 'Unknown'}`)
+    }
+  }
 
   return (
     <div style={{ maxWidth: 400, margin: '80px auto', padding: 20, fontFamily: '-apple-system, sans-serif' }}>
@@ -34,23 +56,41 @@ export default function LoginSafePage() {
         <SearchParamsReader onChange={handleParams} />
       </Suspense>
 
-      <h1 style={{ fontSize: 24, marginBottom: 8 }}>Search Params Test</h1>
-      <p style={{ color: '#666', marginBottom: 16, fontSize: 14 }}>
-        Testing useSearchParams + Suspense pattern on iOS.
+      <h1 style={{ fontSize: 24, marginBottom: 8 }}>Login Safe (Round 2)</h1>
+      <p style={{ color: '#666', marginBottom: 8, fontSize: 14 }}>
+        useRouter + form + secureLogin server action.
       </p>
-      <p style={{ fontSize: 14, marginBottom: 16, fontFamily: 'monospace', background: '#f0f0f0', padding: 8 }}>
-        Params: {params}
+      <p style={{ fontSize: 12, marginBottom: 16, fontFamily: 'monospace', background: '#f0f0f0', padding: 8 }}>
+        Params: {params} | Status: {status}
       </p>
-      <p style={{ fontSize: 18, marginBottom: 16 }}>Count: {count}</p>
-      <button
-        onClick={() => setCount(c => c + 1)}
-        style={{
-          padding: '12px 24px', background: '#2563eb',
-          color: 'white', border: 'none', borderRadius: 8, fontSize: 16,
-        }}
-      >
-        Click me
-      </button>
+
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+          style={{ padding: 12, border: '1px solid #ccc', borderRadius: 8, fontSize: 16 }}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+          style={{ padding: 12, border: '1px solid #ccc', borderRadius: 8, fontSize: 16 }}
+        />
+        <button
+          type="submit"
+          style={{
+            padding: '12px 24px', background: '#2563eb',
+            color: 'white', border: 'none', borderRadius: 8, fontSize: 16,
+          }}
+        >
+          Sign In
+        </button>
+      </form>
     </div>
   )
 }
