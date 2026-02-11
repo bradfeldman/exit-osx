@@ -51,7 +51,7 @@ const KEY_STAGES: DealStage[] = [
   DealStage.DUE_DILIGENCE,
 ]
 
-interface StageTimeData {
+interface _StageTimeData {
   stage: DealStage
   durations: number[] // Days spent in this stage before moving on
 }

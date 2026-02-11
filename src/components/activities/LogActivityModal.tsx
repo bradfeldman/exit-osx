@@ -21,11 +21,9 @@ import {
 } from '@/components/ui/select'
 import { ActivityType } from '@prisma/client'
 import { ACTIVITY_TYPE_LABELS, ACTIVITY_TYPE_ICONS } from '@/lib/contact-system/constants'
-import { cn } from '@/lib/utils'
 import {
   Mail,
   MailOpen,
-  Phone,
   PhoneOutgoing,
   PhoneIncoming,
   Calendar,

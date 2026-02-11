@@ -332,7 +332,7 @@ export default function RetirementCalculatorPage() {
     }
   }
 
-  function restoreExcludedAsset(id: string) {
+  function _restoreExcludedAsset(id: string) {
     setExcludedAssetIds((prev) => prev.filter((i) => i !== id))
     // Re-import to restore the asset
     importFromPFS()

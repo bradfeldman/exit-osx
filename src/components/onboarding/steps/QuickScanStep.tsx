@@ -93,13 +93,13 @@ export interface QuickScanResults {
 }
 
 export function QuickScanStep({
-  companyName,
+  companyName: _companyName,
   onComplete,
   onSkip,
 }: QuickScanStepProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, boolean>>({})
-  const [canGoBack, setCanGoBack] = useState(false)
+  const [_canGoBack, _setCanGoBack] = useState(false)
 
   const currentQuestion = QUICK_SCAN_QUESTIONS[currentIndex]
   const progress = (Object.keys(answers).length / QUICK_SCAN_QUESTIONS.length) * 100
@@ -110,7 +110,7 @@ export function QuickScanStep({
       ...prev,
       [currentQuestion.id]: isYes,
     }))
-    setCanGoBack(true)
+    _setCanGoBack(true)
 
     // Move to next question after a brief delay
     setTimeout(() => {

@@ -25,7 +25,7 @@ interface ContactsViewProps {
 
 type CategoryFilter = 'ALL' | 'PROSPECT' | 'MANAGEMENT' | 'ADVISOR' | 'OTHER'
 
-export function ContactsView({ dealId, companyId }: ContactsViewProps) {
+export function ContactsView({ dealId, companyId: _companyId }: ContactsViewProps) {
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('ALL')
   const [companyFilter, setCompanyFilter] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -48,7 +48,7 @@ export function ContactsView({ dealId, companyId }: ContactsViewProps) {
     [selectedParticipantId, participants]
   )
 
-  const total = participants.length
+  const _total = participants.length
   const categoryTotal =
     categoryCounts.PROSPECT + categoryCounts.MANAGEMENT + categoryCounts.ADVISOR + categoryCounts.OTHER
 

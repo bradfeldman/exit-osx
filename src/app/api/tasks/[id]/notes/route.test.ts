@@ -168,7 +168,7 @@ describe('/api/tasks/[id]/notes', () => {
       })
       const params = Promise.resolve({ id: mockTaskId })
       const response = await POST(request, { params })
-      const data = await response.json()
+      void await response.json()
 
       expect(response.status).toBe(201)
       expect(prisma.taskNote.create).toHaveBeenCalledWith(

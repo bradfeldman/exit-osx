@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from '@/lib/motion'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { Clock, TrendingUp, TrendingDown, Minus } from 'lucide-react'

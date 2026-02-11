@@ -197,8 +197,8 @@ describe('Valuation Calculations', () => {
 
       it('has correct score ranges for each factor', () => {
         // Every factor score should be between 0 and 1
-        for (const [factor, scores] of Object.entries(CORE_FACTOR_SCORES)) {
-          for (const [level, value] of Object.entries(scores)) {
+        for (const [_factor, scores] of Object.entries(CORE_FACTOR_SCORES)) {
+          for (const [_level, value] of Object.entries(scores)) {
             expect(value).toBeGreaterThanOrEqual(0)
             expect(value).toBeLessThanOrEqual(1)
           }
@@ -1467,7 +1467,7 @@ describe('Valuation Calculations', () => {
         OVER_25M: 1.00,
       }
 
-      const factors: CoreFactors = {
+      const _factors: CoreFactors = {
         revenueModel: 'SUBSCRIPTION_SAAS',    // 1.0
         grossMarginProxy: 'EXCELLENT',         // 1.0
         laborIntensity: 'LOW',                 // 1.0
@@ -1475,7 +1475,7 @@ describe('Valuation Calculations', () => {
         ownerInvolvement: 'MINIMAL',           // 1.0
       }
 
-      const correctScore = calculateCoreScore(factors) // 5/5 = 1.0
+      const correctScore = calculateCoreScore(_factors) // 5/5 = 1.0
 
       // Simulate the OLD 6-factor bug for a small company
       const revSizeScore = REVENUE_SIZE_SCORES['UNDER_500K'] // 0.20

@@ -12,11 +12,11 @@ import { DocumentStatus } from '@prisma/client'
 
 describe('DocumentStatus Enum', () => {
   it('should only have CURRENT, NEEDS_UPDATE, and OVERDUE values', () => {
-    const validStatuses = ['CURRENT', 'NEEDS_UPDATE', 'OVERDUE']
+    const _validStatuses = ['CURRENT', 'NEEDS_UPDATE', 'OVERDUE']
     const actualStatuses = Object.values(DocumentStatus)
 
     expect(actualStatuses).toHaveLength(3)
-    expect(actualStatuses.sort()).toEqual(validStatuses.sort())
+    expect(actualStatuses.sort()).toEqual(_validStatuses.sort())
   })
 
   it('should have CURRENT status', () => {
@@ -78,7 +78,7 @@ describe('DocumentStatus Enum', () => {
 
     it('should not accept invalid status strings', () => {
       // This test verifies TypeScript would catch invalid statuses at compile time
-      const validStatuses: DocumentStatus[] = [
+      const _validStatuses: DocumentStatus[] = [
         DocumentStatus.CURRENT,
         DocumentStatus.NEEDS_UPDATE,
         DocumentStatus.OVERDUE,

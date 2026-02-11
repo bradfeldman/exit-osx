@@ -232,7 +232,7 @@ describe('TimelinePanel - Age Input UX (PROD-045)', () => {
       const incrementButton = retirementAgeSection?.querySelector('button:last-of-type') as HTMLElement
 
       // Button should be at least 32x32px (8 * 4 = 32px from w-8 h-8)
-      const styles = window.getComputedStyle(incrementButton)
+      void window.getComputedStyle(incrementButton)
       expect(incrementButton.className).toContain('w-8')
       expect(incrementButton.className).toContain('h-8')
     })

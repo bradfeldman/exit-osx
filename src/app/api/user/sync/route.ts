@@ -5,18 +5,6 @@ import { getGravatarUrl } from '@/lib/utils/gravatar'
 import { PlanTier, SubscriptionStatus, BillingCycle } from '@prisma/client'
 import { serverAnalytics } from '@/lib/analytics/server'
 
-// Map plan ID to Prisma PlanTier enum
-function getPlanTier(planId: string): PlanTier {
-  switch (planId) {
-    case 'growth':
-      return 'GROWTH'
-    case 'exit-ready':
-      return 'EXIT_READY'
-    default:
-      return 'FOUNDATION'
-  }
-}
-
 // Get subscription config for new users
 // All new signups get EXIT_READY tier with a 14-day trial, regardless of selected plan
 function getSubscriptionConfig(_planId: string): {

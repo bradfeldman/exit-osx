@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   generateFallbackConsequence,
   type TaskForConsequence,
-  type CompanyContext,
 } from '@/lib/ai/buyer-consequences'
 
 // ─── Mock Dependencies ──────────────────────────────────────────────────

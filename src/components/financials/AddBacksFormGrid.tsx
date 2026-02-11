@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Plus, Trash2, TrendingUp, TrendingDown, Calculator, Loader2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { fetchWithRetry } from '@/lib/fetch-with-retry'
 import {
   CalcCell,
@@ -13,7 +12,6 @@ import {
   FormRow,
   formatInputValue,
   parseInputValue,
-  formatCurrency,
   type FinancialPeriod,
 } from './form-grid-shared'
 

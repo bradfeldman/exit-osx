@@ -120,7 +120,7 @@ describe('score-calculator', () => {
 
     it('weights sum to 1.0', () => {
       // Verify evidence categories weights sum correctly
-      const result = calculateEvidenceScore(emptyCategories)
+      void calculateEvidenceScore(emptyCategories)
       // If all categories were 100%, total should be 100
       // This verifies via the formula: sum(weight_i * 100) = 100
       const fullResult = calculateEvidenceScore({

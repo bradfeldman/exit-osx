@@ -6,7 +6,7 @@ import { BuyerType, ApprovalStatus, DealStage } from '@prisma/client'
 type RouteParams = Promise<{ dealId: string }>
 
 // Human-readable buyer type labels
-const BUYER_TYPE_LABELS: Record<BuyerType, string> = {
+const _BUYER_TYPE_LABELS: Record<BuyerType, string> = {
   [BuyerType.STRATEGIC]: 'Strategic',
   [BuyerType.FINANCIAL]: 'Financial',
   [BuyerType.INDIVIDUAL]: 'Individual',

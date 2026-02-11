@@ -18,7 +18,6 @@ import {
   Clock,
   User,
   File,
-  ExternalLink,
 } from 'lucide-react'
 
 interface VDRActivity {

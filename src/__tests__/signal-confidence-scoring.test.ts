@@ -5,8 +5,6 @@ import {
   getUpgradedConfidence,
   getDowngradedConfidence,
   getDefaultConfidenceForChannel,
-  CONFIDENCE_UPGRADE_MAP,
-  CONFIDENCE_DOWNGRADE_MAP,
 } from '@/lib/signals/confidence-scoring'
 
 // ---------------------------------------------------------------------------
@@ -139,7 +137,7 @@ describe('getUpgradedConfidence', () => {
       'CONFIDENT',
       'VERIFIED',
     ]
-    const multiplierOrder = levels.map(l => CONFIDENCE_MULTIPLIERS[l])
+    const _multiplierOrder = levels.map(l => CONFIDENCE_MULTIPLIERS[l])
 
     for (const level of levels) {
       const upgraded = getUpgradedConfidence(level)

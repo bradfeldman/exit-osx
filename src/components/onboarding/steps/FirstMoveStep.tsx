@@ -5,8 +5,6 @@ import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import {
   Loader2,
-  Clock,
-  TrendingUp,
   ArrowRight,
 } from 'lucide-react'
 
@@ -139,7 +137,7 @@ export function FirstMoveStep({
   }
 
   const estimatedMinutes = (firstTask.estimatedHours || 1) * 60
-  const briChange = Math.min(100, riskResults.briScore + 6)
+  const _briChange = Math.min(100, riskResults.briScore + 6)
 
   return (
     <div className="space-y-6">

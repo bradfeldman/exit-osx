@@ -11,11 +11,8 @@ import {
   User,
   Building2,
   Mail,
-  Linkedin,
-  Phone,
   Loader2,
   Plus,
-  Check,
 } from 'lucide-react'
 
 interface SearchResult {

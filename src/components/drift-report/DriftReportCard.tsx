@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
-import { TrendingUp, TrendingDown, Minus, ArrowRight } from 'lucide-react'
+import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react'
 
 interface DriftReportCardProps {
   report: {

@@ -29,7 +29,7 @@ export function CompanyBasicsStep({
   businessDescription,
   icbIndustry,
   icbSuperSector,
-  icbSector,
+  icbSector: _icbSector,
   icbSubSector,
   updateState,
 }: CompanyBasicsStepProps) {

@@ -12,7 +12,7 @@
  */
 
 import { prisma } from '@/lib/prisma'
-import type { CanonicalCompany, CanonicalPerson, DataQuality } from '@prisma/client'
+import type { CanonicalCompany, CanonicalPerson } from '@prisma/client'
 
 // ============================================
 // TYPES
@@ -599,7 +599,7 @@ export async function findDuplicatePeople(
   }
 
   // Check exact name matches
-  for (const [name, group] of byName) {
+  for (const [_name, group] of byName) {
     if (group.length > 1) {
       for (let i = 0; i < group.length; i++) {
         for (let j = i + 1; j < group.length; j++) {

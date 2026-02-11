@@ -11,7 +11,6 @@
 
 import { generateJSON } from '@/lib/ai/anthropic'
 import { prisma } from '@/lib/prisma'
-import type { BriCategory } from '@prisma/client'
 
 // ─── Types ──────────────────────────────────────────────────────────────
 

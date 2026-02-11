@@ -13,7 +13,7 @@ import {
   type SectionTimestamps,
   type SectionDataForMeta,
 } from '../section-meta'
-import type { IdentitySection, AssessmentSection, ValuationSection, TasksSection, EvidenceSection, SignalsSection, EngagementSection } from '@/lib/dossier/types'
+import type { AssessmentSection, TasksSection, EvidenceSection } from '@/lib/dossier/types'
 import type { NAFlagsSection, DisclosuresSection, NotesSection } from '../types'
 
 // ---------------------------------------------------------------------------

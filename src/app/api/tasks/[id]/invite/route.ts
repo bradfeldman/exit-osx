@@ -100,7 +100,7 @@ export async function POST(
     }
 
     // Check if invite already exists
-    const existingInvite = await prisma.taskInvite.findUnique({
+    const _existingInvite = await prisma.taskInvite.findUnique({
       where: {
         taskId_email: {
           taskId,

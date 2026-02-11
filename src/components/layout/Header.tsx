@@ -54,7 +54,7 @@ export function Header({ user }: HeaderProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const router = useRouter()
   const supabase = createClient()
-  const { planTier, isTrialing, trialDaysRemaining, isLoading: subscriptionLoading } = useSubscription()
+  const { planTier, isTrialing: _isTrialing, trialDaysRemaining: _trialDaysRemaining, isLoading: subscriptionLoading } = useSubscription()
 
   const handleSignOut = async () => {
     setLoading(true)

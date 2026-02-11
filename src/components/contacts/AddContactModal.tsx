@@ -29,7 +29,6 @@ import {
   Search,
   Mail,
   Phone,
-  Building2,
   Linkedin,
   Loader2,
   AlertCircle,

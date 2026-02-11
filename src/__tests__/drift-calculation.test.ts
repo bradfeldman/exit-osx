@@ -10,7 +10,6 @@ import {
   SIGNAL_THRESHOLDS,
   type SnapshotData,
   type DriftCalculationInputs,
-  type CategoryChange,
   type SignalsSummary,
 } from '@/lib/drift/calculate-drift'
 
@@ -51,7 +50,7 @@ const DECLINED_SNAPSHOT: SnapshotData = {
   briPersonal: 0.55,
 }
 
-const SEVERELY_DECLINED_SNAPSHOT: SnapshotData = {
+const _SEVERELY_DECLINED_SNAPSHOT: SnapshotData = {
   briScore: 0.53,
   currentValue: 580000,
   briFinancial: 0.50,

@@ -24,7 +24,7 @@ export function BenchmarkComparison({
   isFreeUser = false,
   onUpgrade,
 }: BenchmarkComparisonProps) {
-  const { percentile, topQuartileThreshold, quartile, message } = useMemo(() => {
+  const { percentile, topQuartileThreshold: _topQuartileThreshold, quartile, message } = useMemo(() => {
     const range = industryMultipleHigh - industryMultipleLow
     if (range <= 0) {
       return { percentile: 50, topQuartileThreshold: industryMultipleHigh, quartile: 'middle' as const, message: '' }

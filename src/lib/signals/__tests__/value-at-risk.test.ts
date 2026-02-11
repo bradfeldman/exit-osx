@@ -11,8 +11,7 @@ import {
   TREND_STABILITY_THRESHOLD,
   type ValueAtRiskSignal,
 } from '../value-at-risk'
-import { CONFIDENCE_MULTIPLIERS } from '../confidence-scoring'
-import type { ConfidenceLevel, SignalSeverity, BriCategory } from '@prisma/client'
+import type { BriCategory } from '@prisma/client'
 
 // ---------------------------------------------------------------------------
 // Test helpers

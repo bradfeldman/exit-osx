@@ -7,7 +7,6 @@ import {
   computeNextPromptDate,
   CADENCE_CONFIG,
   type CadenceInput,
-  type CadencePreference,
 } from '@/lib/assessment/cadence-rules'
 
 // ---------------------------------------------------------------------------

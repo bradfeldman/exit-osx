@@ -10,16 +10,6 @@ interface WeeklyCheckinEmailParams {
   weeksSinceLastUpdate: number
 }
 
-function formatCurrency(value: number): string {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`
-  }
-  if (value >= 1000) {
-    return `$${Math.round(value / 1000).toLocaleString()}K`
-  }
-  return `$${value.toLocaleString()}`
-}
-
 /**
  * Sends the weekly check-in email.
  * "Quick check — has anything changed this week?"

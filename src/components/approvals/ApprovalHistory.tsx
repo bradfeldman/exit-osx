@@ -13,7 +13,6 @@ import {
   XCircle,
   Pause,
   Clock,
-  RotateCcw,
   History,
   User,
 } from 'lucide-react'

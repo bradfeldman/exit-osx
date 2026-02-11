@@ -90,7 +90,7 @@ export function useIdleTimeout(): UseIdleTimeoutReturn {
   }, [])
 
   const startCountdown = useCallback(() => {
-    const warningDuration = SESSION_TIMEOUT_MS - SESSION_WARNING_MS
+    const _warningDuration = SESSION_TIMEOUT_MS - SESSION_WARNING_MS
     const logoutTime = lastActivityRef.current + SESSION_TIMEOUT_MS
 
     setShowWarning(true)

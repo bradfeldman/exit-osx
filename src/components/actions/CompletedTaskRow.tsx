@@ -21,7 +21,7 @@ interface CompletedTaskRowProps {
   hasEvidence?: boolean
 }
 
-export function CompletedTaskRow({ title, completedValue, completedAt, completionNotes, hasEvidence = false }: CompletedTaskRowProps) {
+export function CompletedTaskRow({ title, completedValue, completedAt, completionNotes, hasEvidence: _hasEvidence = false }: CompletedTaskRowProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const hasNotes = completionNotes && completionNotes.trim().length > 0
 

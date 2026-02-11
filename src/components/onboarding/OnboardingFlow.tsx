@@ -87,15 +87,15 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     potentialValue: number
     valueGap: number
   } | null>(null)
-  const [riskQuestionAnswers, setRiskQuestionAnswers] = useState<Record<string, string>>({})
-  const [generatedTasks, setGeneratedTasks] = useState<Array<{
+  const [_riskQuestionAnswers, _setRiskQuestionAnswers] = useState<Record<string, string>>({})
+  const [_generatedTasks, _setGeneratedTasks] = useState<Array<{
     id: string
     title: string
     description: string
     category: string
     estimatedValue: number
   }>>([])
-  const [assessmentId, setAssessmentId] = useState<string | null>(null)
+  const [_assessmentId, _setAssessmentId] = useState<string | null>(null)
 
   // Store companyId in state + sessionStorage for tab refresh resilience
   const [createdCompanyId, setCreatedCompanyId] = useState<string | null>(() => {

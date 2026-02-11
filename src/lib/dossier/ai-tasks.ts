@@ -1,8 +1,7 @@
 import { prisma } from '@/lib/prisma'
-import { Prisma } from '@prisma/client'
 import { generateJSON } from '@/lib/ai/anthropic'
 import { getCurrentDossier } from './build-dossier'
-import type { CompanyDossierContent, TaskGenerationResult, AIGeneratedTask } from './types'
+import type { CompanyDossierContent, TaskGenerationResult } from './types'
 import type { BriCategory } from '@prisma/client'
 import { calculateTaskPriorityFromAttributes, initializeActionPlan } from '@/lib/tasks/action-plan'
 

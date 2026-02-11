@@ -15,11 +15,8 @@ import {
   calculateSpreadFactor,
   roundMultiple,
   SIZE_DISCOUNTS,
-  GROWTH_TIERS,
-  MARGIN_TIERS,
   CONCENTRATION_THRESHOLDS,
   OWNER_DEPENDENCY_MAX_DISCOUNT,
-  RECURRING_REVENUE_PREMIUMS,
   type AdjustmentProfile,
   type AdjustmentResult,
 } from '@/lib/valuation/multiple-adjustments'

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
-import { DealStage, ApprovalStatus } from '@prisma/client'
+import { DealStage } from '@prisma/client'
 
 type RouteParams = Promise<{ dealId: string }>
 
@@ -66,7 +66,7 @@ const STAGE_LABELS: Record<DealStage, string> = {
   [DealStage.TERMINATED]: 'Terminated',
 }
 
-interface ExitData {
+interface _ExitData {
   buyer: {
     id: string
     createdAt: Date

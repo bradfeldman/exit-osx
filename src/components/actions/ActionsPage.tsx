@@ -130,7 +130,7 @@ interface ActionsData {
 
 export function ActionsPage() {
   const { selectedCompanyId } = useCompany()
-  const { isViewing, isActing } = useExposure()
+  const { isViewing, isActing: _isActing } = useExposure()
   const searchParams = useSearchParams()
   const highlightTaskId = searchParams.get('taskId')
   const scrolledRef = useRef(false)
