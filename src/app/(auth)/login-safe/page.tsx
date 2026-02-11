@@ -1,20 +1,45 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback, Suspense, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 /**
- * TEMPORARY: Absolute minimal client component for iOS debugging.
- * If this page loops: the issue is with ANY client component on this iOS version.
- * If this page works: the issue is with forms, server actions, or useRouter.
+ * TEMPORARY: Incremental rebuild of login page for iOS debugging.
+ * Round 1: useSearchParams + Suspense pattern (most likely iOS culprit).
  */
+
+function SearchParamsReader({ onChange }: {
+  onChange: (params: string) => void
+}) {
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    onChange(searchParams.toString() || '(none)')
+  }, [searchParams, onChange])
+
+  return null
+}
+
 export default function LoginSafePage() {
   const [count, setCount] = useState(0)
+  const [params, setParams] = useState('loading...')
+
+  const handleParams = useCallback((p: string) => {
+    setParams(p)
+  }, [])
 
   return (
     <div style={{ maxWidth: 400, margin: '80px auto', padding: 20, fontFamily: '-apple-system, sans-serif' }}>
-      <h1 style={{ fontSize: 24, marginBottom: 8 }}>Client Component Test</h1>
-      <p style={{ color: '#666', marginBottom: 24, fontSize: 14 }}>
-        If you can see this AND click the button, client components work on your device.
+      <Suspense fallback={null}>
+        <SearchParamsReader onChange={handleParams} />
+      </Suspense>
+
+      <h1 style={{ fontSize: 24, marginBottom: 8 }}>Search Params Test</h1>
+      <p style={{ color: '#666', marginBottom: 16, fontSize: 14 }}>
+        Testing useSearchParams + Suspense pattern on iOS.
+      </p>
+      <p style={{ fontSize: 14, marginBottom: 16, fontFamily: 'monospace', background: '#f0f0f0', padding: 8 }}>
+        Params: {params}
       </p>
       <p style={{ fontSize: 18, marginBottom: 16 }}>Count: {count}</p>
       <button
