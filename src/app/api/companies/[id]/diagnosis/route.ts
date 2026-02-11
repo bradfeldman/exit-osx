@@ -7,16 +7,10 @@ import {
   type BRICategory,
 } from '@/lib/constants/bri-categories'
 import { calculateCategoryValueGaps } from '@/lib/valuation/value-gap-attribution'
+import { DEFAULT_BRI_WEIGHTS } from '@/lib/bri-weights'
 
-// BRI weights matching the assessment system
-const BRI_WEIGHTS: Record<string, number> = {
-  FINANCIAL: 0.25,
-  TRANSFERABILITY: 0.20,
-  OPERATIONAL: 0.20,
-  MARKET: 0.15,
-  LEGAL_TAX: 0.10,
-  PERSONAL: 0.10,
-}
+// BRI weights from shared source (PROD-010 audit: previously hardcoded, now imported for consistency)
+const BRI_WEIGHTS: Record<string, number> = DEFAULT_BRI_WEIGHTS
 
 // Buyer explanations for bridge categories (same as dashboard route)
 const BUYER_EXPLANATIONS: Record<string, string> = {

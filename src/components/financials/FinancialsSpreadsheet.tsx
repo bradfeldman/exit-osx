@@ -277,12 +277,13 @@ function calculatePnlDerivedValues(data: PeriodData): Partial<PeriodData> {
   const depreciation = data.depreciation ?? 0
   const amortization = data.amortization ?? 0
   const interestExpense = data.interestExpense ?? 0
+  const taxExpense = data.taxExpense ?? 0
 
   const grossProfit = grossRevenue - cogs
   const grossMarginPct = grossRevenue > 0 ? grossProfit / grossRevenue : 0
 
-  // EBITDA = Gross Profit - Operating Expenses + D + A + I (add back since they're in OpEx)
-  const ebitda = grossProfit - operatingExpenses + depreciation + amortization + interestExpense
+  // EBITDA = Gross Profit - Operating Expenses + D + A + I + T (add back since they're in OpEx)
+  const ebitda = grossProfit - operatingExpenses + depreciation + amortization + interestExpense + taxExpense
   const ebitdaMarginPct = grossRevenue > 0 ? ebitda / grossRevenue : 0
 
   // Adjusted EBITDA includes add-backs

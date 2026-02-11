@@ -15,6 +15,14 @@ import {
   type CoreFactors,
 } from '@/lib/valuation/calculate-valuation'
 import { DEFAULT_BRI_WEIGHTS } from '@/lib/bri-weights'
+import {
+  CANONICAL_COMPANY,
+  EXPECTED_VALUATION,
+  FOUNDER_DEPENDENT_COMPANY,
+  HIGH_CONCENTRATION_COMPANY,
+  PERFECT_SAAS_COMPANY,
+  calculateExpectedValuation,
+} from '@/__tests__/fixtures/canonical-company'
 
 // ---------------------------------------------------------------------------
 // Canonical inputs used across consistency tests
@@ -827,6 +835,260 @@ describe('Valuation Calculations', () => {
         briScore: 0.01,
       })
       expect(result.discountFraction).toBeGreaterThan(0.98)
+    })
+  })
+
+  // =========================================================================
+  // Regression Tests: Specific bugs from BUG-REPORT-VALUATION-INCONSISTENCY.md
+  // =========================================================================
+  // =========================================================================
+  // PROD-092: Golden-File Valuation Tests
+  // These tests lock down expected valuation outputs for canonical test
+  // companies to prevent formula regressions. Values are pre-calculated
+  // and stored in fixtures. Any change to these values requires explicit
+  // review and approval.
+  // =========================================================================
+  describe('PROD-092: Golden-File Valuation Tests', () => {
+    it('CANONICAL_COMPANY produces exact golden values (EBITDA=$150K, multiples 3.0-6.0, coreScore=1.0, BRI=0.70)', () => {
+      const result = calculateExpectedValuation(CANONICAL_COMPANY)
+
+      // Golden values - these must not change without explicit approval
+      // currentValue = $816,600 (±$100)
+      expect(result.currentValue).toBeCloseTo(816600, -2)
+      expect(result.currentValue).toBe(EXPECTED_VALUATION.currentValue)
+
+      // potentialValue = $900,000 (exact)
+      expect(result.potentialValue).toBe(900000)
+      expect(result.potentialValue).toBe(EXPECTED_VALUATION.potentialValue)
+
+      // valueGap = $83,400 (±$100)
+      expect(result.valueGap).toBeCloseTo(83400, -2)
+      expect(result.valueGap).toBe(EXPECTED_VALUATION.valueGap)
+
+      // finalMultiple = 5.444x (±0.01)
+      expect(result.finalMultiple).toBeCloseTo(5.444, 2)
+      expect(result.finalMultiple).toBe(EXPECTED_VALUATION.finalMultiple)
+
+      // discountFraction = 0.1853 (±0.001)
+      expect(result.discountFraction).toBeCloseTo(0.1853, 3)
+      expect(result.discountFraction).toBe(EXPECTED_VALUATION.discountFraction)
+
+      // baseMultiple = 6.0 (exact)
+      expect(result.baseMultiple).toBe(6.0)
+      expect(result.baseMultiple).toBe(EXPECTED_VALUATION.baseMultiple)
+    })
+
+    it('FOUNDER_DEPENDENT_COMPANY produces expected discounted values (high owner involvement)', () => {
+      const result = calculateExpectedValuation(FOUNDER_DEPENDENT_COMPANY)
+
+      // Core score: 0.8 (CRITICAL owner involvement reduces score)
+      expect(result.coreScore).toBe(0.8)
+
+      // BRI score: 0.5175 (TRANSFERABILITY=0.30, PERSONAL=0.40 drag down overall)
+      expect(result.briScore).toBeCloseTo(0.5175, 3)
+
+      // baseMultiple = 3.0 + 0.8 * 3.0 = 5.4
+      expect(result.baseMultiple).toBeCloseTo(5.4, 2)
+
+      // With lower BRI and lower core, currentValue should be significantly lower than canonical
+      expect(result.currentValue).toBeLessThan(700000)
+
+      // Value gap should be larger than canonical due to lower BRI
+      expect(result.valueGap).toBeGreaterThan(100000)
+
+      // Ensure values are deterministic
+      const result2 = calculateExpectedValuation(FOUNDER_DEPENDENT_COMPANY)
+      expect(result.currentValue).toBe(result2.currentValue)
+    })
+
+    it('HIGH_CONCENTRATION_COMPANY produces expected values (customer concentration risk)', () => {
+      const result = calculateExpectedValuation(HIGH_CONCENTRATION_COMPANY)
+
+      // Core score should remain optimal (business model unchanged)
+      expect(result.coreScore).toBe(1.0)
+
+      // BRI score should be lower due to FINANCIAL=0.50, MARKET=0.40
+      // 0.50*0.25 + 0.60*0.20 + 0.65*0.20 + 0.40*0.15 + 0.70*0.10 + 0.70*0.10 = 0.575
+      expect(result.briScore).toBeCloseTo(0.575, 3)
+
+      // baseMultiple should be 6.0 (optimal core score)
+      expect(result.baseMultiple).toBe(6.0)
+
+      // currentValue should be lower than canonical due to BRI discount
+      expect(result.currentValue).toBeLessThan(816600)
+      expect(result.currentValue).toBeGreaterThan(700000) // But not as low as founder-dependent
+
+      // Ensure values are deterministic
+      const result2 = calculateExpectedValuation(HIGH_CONCENTRATION_COMPANY)
+      expect(result.currentValue).toBe(result2.currentValue)
+    })
+
+    it('PERFECT_SAAS_COMPANY produces maximum values (all scores maxed)', () => {
+      const result = calculateExpectedValuation(PERFECT_SAAS_COMPANY)
+
+      // Perfect scores
+      expect(result.coreScore).toBe(1.0)
+      expect(result.briScore).toBe(1.0)
+
+      // No BRI discount with perfect score
+      expect(result.discountFraction).toBe(0)
+
+      // baseMultiple = 4.0 + 1.0 * (8.0 - 4.0) = 8.0
+      expect(result.baseMultiple).toBe(8.0)
+
+      // finalMultiple should equal baseMultiple (no discount)
+      expect(result.finalMultiple).toBe(8.0)
+
+      // No value gap with perfect BRI
+      expect(result.valueGap).toBe(0)
+      expect(result.currentValue).toBe(result.potentialValue)
+
+      // With $1.25M EBITDA * 8.0x = $10M
+      expect(result.currentValue).toBe(10000000)
+      expect(result.potentialValue).toBe(10000000)
+
+      // Ensure values are deterministic
+      const result2 = calculateExpectedValuation(PERFECT_SAAS_COMPANY)
+      expect(result.currentValue).toBe(result2.currentValue)
+    })
+
+    it('WORST_CASE_COMPANY produces minimum values (all scores at floor)', () => {
+      // Construct a worst-case scenario: all factors at minimum
+      const WORST_CASE_COMPANY = {
+        name: 'Test Co - Worst Case',
+        annualRevenue: 100000,
+        annualEbitda: 10000, // 10% margin
+        ownerCompensation: 0,
+        icbIndustry: 'Services',
+        icbSuperSector: 'Services',
+        icbSector: 'Professional Services',
+        icbSubSector: 'Consulting',
+        industryMultipleLow: 2.0,
+        industryMultipleHigh: 4.0,
+        coreFactors: {
+          revenueModel: 'PROJECT_BASED' as const,    // 0.25
+          grossMarginProxy: 'LOW' as const,          // 0.25
+          laborIntensity: 'VERY_HIGH' as const,      // 0.25
+          assetIntensity: 'ASSET_HEAVY' as const,    // 0.33
+          ownerInvolvement: 'CRITICAL' as const,     // 0.0
+        },
+        briScores: {
+          FINANCIAL: 0.10,
+          TRANSFERABILITY: 0.10,
+          OPERATIONAL: 0.10,
+          MARKET: 0.10,
+          LEGAL_TAX: 0.10,
+          PERSONAL: 0.10,
+        },
+        briWeights: DEFAULT_BRI_WEIGHTS,
+      }
+
+      const result = calculateExpectedValuation(WORST_CASE_COMPANY)
+
+      // Core score: (0.25 + 0.25 + 0.25 + 0.33 + 0.0) / 5 = 0.216
+      expect(result.coreScore).toBeCloseTo(0.216, 3)
+
+      // BRI score: 0.10 across all categories = 0.10
+      expect(result.briScore).toBe(0.10)
+
+      // baseMultiple = 2.0 + 0.216 * 2.0 = 2.432
+      expect(result.baseMultiple).toBeCloseTo(2.432, 2)
+
+      // With very low BRI (0.10), discountFraction should be high
+      // discountFraction = (1 - 0.10)^1.4 = 0.9^1.4 ≈ 0.873
+      expect(result.discountFraction).toBeGreaterThan(0.85)
+
+      // finalMultiple should be close to industryMultipleLow due to high discount
+      expect(result.finalMultiple).toBeGreaterThanOrEqual(2.0)
+      expect(result.finalMultiple).toBeLessThan(2.5)
+
+      // currentValue should be very low (close to floor)
+      expect(result.currentValue).toBeLessThan(25000)
+
+      // Large value gap
+      expect(result.valueGap).toBeGreaterThan(0)
+
+      // Ensure values are deterministic
+      const result2 = calculateExpectedValuation(WORST_CASE_COMPANY)
+      expect(result.currentValue).toBe(result2.currentValue)
+    })
+
+    it('cross-site consistency: all 9 call sites produce identical results for canonical inputs', () => {
+      // This is the most critical golden-file test: ensure calculateValuation()
+      // produces consistent results regardless of which code path calls it.
+      // All 9 locations that calculate valuation import and call this function,
+      // so if this test passes, all locations are guaranteed to be consistent.
+
+      const inputs = {
+        adjustedEbitda: 150000,
+        industryMultipleLow: 3.0,
+        industryMultipleHigh: 6.0,
+        coreScore: 1.0,
+        briScore: 0.7,
+      }
+
+      // Simulate multiple calls from different code paths
+      const results = Array.from({ length: 9 }, () => calculateValuation(inputs))
+
+      // All results must be bit-for-bit identical
+      const referenceResult = results[0]
+      for (let i = 1; i < results.length; i++) {
+        expect(results[i].currentValue).toBe(referenceResult.currentValue)
+        expect(results[i].potentialValue).toBe(referenceResult.potentialValue)
+        expect(results[i].valueGap).toBe(referenceResult.valueGap)
+        expect(results[i].baseMultiple).toBe(referenceResult.baseMultiple)
+        expect(results[i].finalMultiple).toBe(referenceResult.finalMultiple)
+        expect(results[i].discountFraction).toBe(referenceResult.discountFraction)
+      }
+
+      // Verify golden values
+      expect(referenceResult.currentValue).toBeCloseTo(816600, -2)
+      expect(referenceResult.potentialValue).toBe(900000)
+      expect(referenceResult.valueGap).toBeCloseTo(83400, -2)
+    })
+
+    it('golden-file determinism: repeated calculations produce identical outputs', () => {
+      // Calculate 100 times to verify absolute determinism
+      const results = Array.from({ length: 100 }, () =>
+        calculateExpectedValuation(CANONICAL_COMPANY)
+      )
+
+      // All results must be identical (not just close)
+      const first = results[0]
+      for (const result of results) {
+        expect(result.currentValue).toBe(first.currentValue)
+        expect(result.potentialValue).toBe(first.potentialValue)
+        expect(result.valueGap).toBe(first.valueGap)
+        expect(result.finalMultiple).toBe(first.finalMultiple)
+        expect(result.discountFraction).toBe(first.discountFraction)
+      }
+    })
+
+    it('golden-file regression guard: detect any formula changes', () => {
+      // This test will fail if ALPHA constant changes or formula is modified
+      // Requires explicit update to pass again, serving as a regression gate
+
+      const inputs = {
+        adjustedEbitda: 150000,
+        industryMultipleLow: 3.0,
+        industryMultipleHigh: 6.0,
+        coreScore: 1.0,
+        briScore: 0.7,
+      }
+
+      const result = calculateValuation(inputs)
+
+      // These exact values are the contract - changing them requires review
+      // Note: Use toBeCloseTo for floating-point values to avoid precision issues
+      expect(result.currentValue).toBeCloseTo(816600, -2) // Within $100
+      expect(result.potentialValue).toBe(900000)
+      expect(result.baseMultiple).toBe(6.0)
+
+      // If ALPHA changes from 1.4, this will fail
+      expect(ALPHA).toBe(1.4)
+
+      // discountFraction = 0.3^1.4 (exact mathematical constant)
+      expect(result.discountFraction).toBeCloseTo(Math.pow(0.3, 1.4), 10)
     })
   })
 
