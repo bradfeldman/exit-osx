@@ -168,7 +168,7 @@ export async function trackServerEvent(
  */
 export async function trackSignupInitiated(params: {
   email: string  // Will be hashed
-  method: 'email' | 'google' | 'github'
+  method: 'email' | 'google' | 'github' | 'magic_link'
 }): Promise<void> {
   // Hash email for privacy
   const hashedEmail = await hashEmail(params.email)
