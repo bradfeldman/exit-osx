@@ -11,16 +11,13 @@ import {
   calculateValuation,
   type CoreFactors,
 } from '@/lib/valuation/calculate-valuation'
-
-// Default category weights for BRI calculation (used if no custom weights set)
-const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
-  FINANCIAL: 0.25,
-  TRANSFERABILITY: 0.20,
-  OPERATIONAL: 0.20,
-  MARKET: 0.15,
-  LEGAL_TAX: 0.10,
-  PERSONAL: 0.10,
-}
+import {
+  type ScoringResponse,
+  deduplicateResponses,
+  calculateCategoryScores,
+  calculateWeightedBriScore,
+  getCategoryScore as getCatScore,
+} from '@/lib/valuation/bri-scoring'
 
 /**
  * Fetch BRI weights for a company
@@ -45,16 +42,8 @@ async function getBriWeightsForCompany(companyBriWeights: unknown): Promise<Reco
   }
 
   // 3. Fall back to defaults
+  const { DEFAULT_CATEGORY_WEIGHTS } = await import('@/lib/valuation/bri-scoring')
   return DEFAULT_CATEGORY_WEIGHTS
-}
-
-// ALPHA imported from @/lib/valuation/calculate-valuation
-
-interface CategoryScore {
-  category: string
-  totalPoints: number
-  earnedPoints: number
-  score: number // 0 to 1
 }
 
 export async function POST(
@@ -118,13 +107,16 @@ export async function POST(
     }
 
     // Check if all questions are answered
-    // Count questions — prefer company-specific AI questions, fall back to global
-    const aiQuestionCount = await prisma.question.count({
-      where: { companyId: assessment.companyId, isActive: true },
+    // PROD-014: Count BOTH seed questions (companyId=null) AND AI questions (companyId=companyId)
+    const totalQuestions = await prisma.question.count({
+      where: {
+        isActive: true,
+        OR: [
+          { companyId: assessment.companyId },
+          { companyId: null },
+        ],
+      },
     })
-    const totalQuestions = aiQuestionCount > 0
-      ? aiQuestionCount
-      : await prisma.question.count({ where: { isActive: true, companyId: null } })
     if (assessment.responses.length < totalQuestions) {
       return NextResponse.json(
         {
@@ -136,47 +128,44 @@ export async function POST(
       )
     }
 
-    // Calculate category scores
-    // Skip NOT_APPLICABLE responses - they don't count toward score
-    const categoryScores: CategoryScore[] = []
-    const scoresByCategory: Record<string, { total: number; earned: number }> = {}
+    // PROD-013 FIX: Gather the latest response per question across ALL assessments
+    // for this company, not just the responses on this single assessment.
+    // This prevents re-assessing one category from zeroing out others
+    // when responses are spread across multiple assessment records.
+    const allResponses = await prisma.assessmentResponse.findMany({
+      where: {
+        assessment: { companyId: assessment.companyId },
+      },
+      include: {
+        question: true,
+        selectedOption: true,
+        effectiveOption: true, // For Answer Upgrade System
+      },
+      orderBy: { updatedAt: 'desc' },
+    })
 
-    for (const response of assessment.responses) {
-      // Skip NOT_APPLICABLE responses - question doesn't apply to this business
-      if (response.confidenceLevel === 'NOT_APPLICABLE' || !response.selectedOption) {
-        continue
+    // Convert to ScoringResponse format for pure scoring functions
+    const scoringResponses: ScoringResponse[] = allResponses.map(r => {
+      const optionToUse = r.effectiveOption || r.selectedOption
+      return {
+        questionId: r.questionId,
+        briCategory: r.question.briCategory,
+        maxImpactPoints: Number(r.question.maxImpactPoints),
+        scoreValue: optionToUse ? Number(optionToUse.scoreValue) : null,
+        hasOption: !!optionToUse,
+        updatedAt: r.updatedAt,
       }
+    })
 
-      const category = response.question.briCategory
-      const maxPoints = Number(response.question.maxImpactPoints)
-      const scoreValue = Number(response.selectedOption.scoreValue)
-      const earnedPoints = maxPoints * scoreValue
-
-      if (!scoresByCategory[category]) {
-        scoresByCategory[category] = { total: 0, earned: 0 }
-      }
-      scoresByCategory[category].total += maxPoints
-      scoresByCategory[category].earned += earnedPoints
-    }
-
-    for (const [category, scores] of Object.entries(scoresByCategory)) {
-      categoryScores.push({
-        category,
-        totalPoints: scores.total,
-        earnedPoints: scores.earned,
-        score: scores.total > 0 ? scores.earned / scores.total : 0,
-      })
-    }
+    // Deduplicate to latest response per question, then calculate category scores
+    const dedupedResponses = deduplicateResponses(scoringResponses)
+    const categoryScores = calculateCategoryScores(dedupedResponses)
 
     // Fetch BRI weights (company-specific > global > defaults)
     const categoryWeights = await getBriWeightsForCompany(assessment.company.briWeights)
 
-    // Calculate weighted BRI score
-    let briScore = 0
-    for (const cs of categoryScores) {
-      const weight = categoryWeights[cs.category] || 0
-      briScore += cs.score * weight
-    }
+    // Calculate weighted BRI score using shared utility
+    const briScore = calculateWeightedBriScore(categoryScores, categoryWeights)
 
     // Calculate Core Score from company factors
     const coreFactors = assessment.company.coreFactors
@@ -231,11 +220,8 @@ export async function POST(
     })
     const { baseMultiple, discountFraction, finalMultiple, currentValue, potentialValue, valueGap } = valuation
 
-    // Get category-specific scores
-    const getCategoryScore = (cat: string) => {
-      const cs = categoryScores.find(c => c.category === cat)
-      return cs ? cs.score : 0
-    }
+    // Helper to get category score (uses imported utility)
+    const getCategoryScore = (cat: string) => getCatScore(categoryScores, cat)
 
     // Create valuation snapshot
     const snapshot = await prisma.valuationSnapshot.create({

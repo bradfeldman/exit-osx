@@ -19,25 +19,14 @@ import {
   calculateValuation,
   type CoreFactors,
 } from '@/lib/valuation/calculate-valuation'
-
-// Default category weights for BRI calculation
-const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
-  FINANCIAL: 0.25,
-  TRANSFERABILITY: 0.20,
-  OPERATIONAL: 0.20,
-  MARKET: 0.15,
-  LEGAL_TAX: 0.10,
-  PERSONAL: 0.10,
-}
-
-// ALPHA imported from @/lib/valuation/calculate-valuation
-
-interface CategoryScore {
-  category: string
-  totalPoints: number
-  earnedPoints: number
-  score: number
-}
+import {
+  DEFAULT_CATEGORY_WEIGHTS,
+  type ScoringResponse,
+  deduplicateResponses,
+  calculateCategoryScores,
+  calculateWeightedBriScore,
+  getCategoryScore as getCatScore,
+} from '@/lib/valuation/bri-scoring'
 
 /**
  * Fetch BRI weights for a company
@@ -147,21 +136,19 @@ export async function POST(
     // Step 1: Gather ALL responses for BRI calculation
     // ========================================
 
-    // Get initial assessment responses
-    const initialAssessment = await prisma.assessment.findFirst({
+    // PROD-013 FIX: Gather the latest response per question across ALL initial
+    // assessments for this company (not just the single latest completed one).
+    // This prevents re-assessing one category from zeroing out others.
+    const allInitialResponses = await prisma.assessmentResponse.findMany({
       where: {
-        companyId: company.id,
-        completedAt: { not: null }
+        assessment: { companyId: company.id },
       },
       include: {
-        responses: {
-          include: {
-            question: true,
-            selectedOption: true,
-          }
-        }
+        question: true,
+        selectedOption: true,
+        effectiveOption: true, // For Answer Upgrade System
       },
-      orderBy: { completedAt: 'desc' }
+      orderBy: { updatedAt: 'desc' },
     })
 
     // Get all completed project assessment responses (including this one)
@@ -183,34 +170,23 @@ export async function POST(
       }
     })
 
-    // Build a map of question -> best response
-    // Project assessment responses override initial assessment responses
-    // More recent project assessments override older ones
-    const responseMap = new Map<string, {
-      category: string
-      maxPoints: number
-      scoreValue: number
-      earnedPoints: number
-    }>()
-
-    // First, add initial assessment responses
-    if (initialAssessment) {
-      for (const response of initialAssessment.responses) {
-        // Skip NOT_APPLICABLE responses (they don't have a selected option)
-        if (!response.selectedOption) continue
-
-        const maxPoints = Number(response.question.maxImpactPoints)
-        const scoreValue = Number(response.selectedOption.scoreValue)
-        responseMap.set(response.questionId, {
-          category: response.question.briCategory,
-          maxPoints,
-          scoreValue,
-          earnedPoints: maxPoints * scoreValue,
-        })
+    // Build initial assessment scoring responses using shared types
+    // Pre-sorted by updatedAt desc from the query
+    const initialScoringResponses: ScoringResponse[] = allInitialResponses.map(r => {
+      const optionToUse = r.effectiveOption || r.selectedOption
+      return {
+        questionId: r.questionId,
+        briCategory: r.question.briCategory,
+        maxImpactPoints: Number(r.question.maxImpactPoints),
+        scoreValue: optionToUse ? Number(optionToUse.scoreValue) : null,
+        hasOption: !!optionToUse,
+        updatedAt: r.updatedAt,
       }
-    }
+    })
 
-    // Then, overlay project assessment responses (they use effectiveOptionId for task-upgraded answers)
+    // Build project assessment scoring responses
+    // Project assessment responses override initial assessment responses
+    const projectScoringResponses: ScoringResponse[] = []
     for (const pa of allProjectAssessments) {
       for (const response of pa.responses) {
         // Use effectiveOptionId if available (task completion may have upgraded the answer)
@@ -218,43 +194,29 @@ export async function POST(
           ? await prisma.projectQuestionOption.findUnique({ where: { id: response.effectiveOptionId } })
           : response.selectedOption
 
-        if (effectiveOption) {
-          const scoreValue = Number(effectiveOption.scoreValue)
+        projectScoringResponses.push({
+          questionId: response.questionId,
+          briCategory: response.question.briCategory,
           // Project questions don't have maxImpactPoints, use 1.0 as weight
-          const maxPoints = 1.0
-          responseMap.set(response.questionId, {
-            category: response.question.briCategory,
-            maxPoints,
-            scoreValue,
-            earnedPoints: maxPoints * scoreValue,
-          })
-        }
+          maxImpactPoints: 1.0,
+          scoreValue: effectiveOption ? Number(effectiveOption.scoreValue) : null,
+          hasOption: !!effectiveOption,
+          // Use a future date to ensure project responses override initial ones
+          updatedAt: response.updatedAt ?? new Date(),
+        })
       }
     }
+
+    // Combine: project responses first (they override), then initial responses
+    // deduplicateResponses keeps the first occurrence per questionId
+    const allScoringResponses = [...projectScoringResponses, ...initialScoringResponses]
+    const dedupedResponses = deduplicateResponses(allScoringResponses)
 
     // ========================================
     // Step 2: Calculate category scores
     // ========================================
 
-    const scoresByCategory: Record<string, { total: number; earned: number }> = {}
-
-    for (const [, data] of responseMap) {
-      if (!scoresByCategory[data.category]) {
-        scoresByCategory[data.category] = { total: 0, earned: 0 }
-      }
-      scoresByCategory[data.category].total += data.maxPoints
-      scoresByCategory[data.category].earned += data.earnedPoints
-    }
-
-    const categoryScores: CategoryScore[] = []
-    for (const [category, scores] of Object.entries(scoresByCategory)) {
-      categoryScores.push({
-        category,
-        totalPoints: scores.total,
-        earnedPoints: scores.earned,
-        score: scores.total > 0 ? scores.earned / scores.total : 0,
-      })
-    }
+    const categoryScores = calculateCategoryScores(dedupedResponses)
 
     // ========================================
     // Step 3: Calculate BRI Score
@@ -262,11 +224,7 @@ export async function POST(
 
     const categoryWeights = await getBriWeightsForCompany(company.briWeights)
 
-    let briScore = 0
-    for (const cs of categoryScores) {
-      const weight = categoryWeights[cs.category] || 0
-      briScore += cs.score * weight
-    }
+    const briScore = calculateWeightedBriScore(categoryScores, categoryWeights)
 
     // ========================================
     // Step 4: Calculate Core Score
@@ -321,11 +279,8 @@ export async function POST(
     })
     const { baseMultiple, discountFraction, finalMultiple, currentValue, potentialValue, valueGap } = valuation
 
-    // Helper to get category score
-    const getCategoryScore = (cat: string) => {
-      const cs = categoryScores.find(c => c.category === cat)
-      return cs ? cs.score : 0
-    }
+    // Helper to get category score (uses imported utility)
+    const getCategoryScore = (cat: string) => getCatScore(categoryScores, cat)
 
     // ========================================
     // Step 6: Create new valuation snapshot
