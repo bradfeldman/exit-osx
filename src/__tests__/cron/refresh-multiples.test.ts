@@ -108,6 +108,7 @@ describe('Refresh Multiples Cron Job', () => {
     })
 
     // Mock signal creation
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(prisma.signal.create).mockResolvedValue({} as any)
 
     const request = new Request('http://localhost/api/cron/refresh-multiples')
@@ -184,11 +185,12 @@ describe('Refresh Multiples Cron Job', () => {
       companyId: company.id,
       companyName: company.name,
     })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(prisma.signal.create).mockResolvedValue({} as any)
 
     const request = new Request('http://localhost/api/cron/refresh-multiples')
     const response = await GET(request)
-    const data = await response.json()
+    const _data = await response.json()
 
     expect(response.status).toBe(200)
     expect(prisma.signal.create).toHaveBeenCalledWith(
@@ -440,6 +442,7 @@ describe('Refresh Multiples Cron Job', () => {
 
     vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple1, newMultiple2])
     vi.mocked(prisma.industryMultiple.findFirst)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .mockImplementation(async (args: any) => {
         if (args?.where?.icbSubSector === subsector1) return oldMultiple1
         if (args?.where?.icbSubSector === subsector2) return oldMultiple2
@@ -457,6 +460,7 @@ describe('Refresh Multiples Cron Job', () => {
       companyId: 'company-1',
       companyName: 'Test',
     })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(prisma.signal.create).mockResolvedValue({} as any)
 
     const request = new Request('http://localhost/api/cron/refresh-multiples')

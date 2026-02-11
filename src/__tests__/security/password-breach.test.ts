@@ -5,6 +5,7 @@
  * SECURITY: Prevents use of compromised passwords
  */
 
+import crypto from 'crypto'
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import {
   checkPasswordBreach,
@@ -48,7 +49,7 @@ describe('Password Breach Checking', () => {
 
     it('returns breached with count for compromised password', async () => {
       const password = 'password123'
-      const hash = require('crypto').createHash('sha1').update(password).digest('hex').toUpperCase()
+      const hash = crypto.createHash('sha1').update(password).digest('hex').toUpperCase()
       const suffix = hash.substring(5)
 
       mockFetch.mockResolvedValue({
@@ -64,7 +65,7 @@ describe('Password Breach Checking', () => {
 
     it('uses k-Anonymity (only sends first 5 chars of hash)', async () => {
       const password = 'TestPassword'
-      const hash = require('crypto').createHash('sha1').update(password).digest('hex').toUpperCase()
+      const hash = crypto.createHash('sha1').update(password).digest('hex').toUpperCase()
       const prefix = hash.substring(0, 5)
 
       mockFetch.mockResolvedValue({
@@ -120,7 +121,7 @@ describe('Password Breach Checking', () => {
 
     it('handles case-insensitive hash matching', async () => {
       const password = 'test'
-      const hash = require('crypto').createHash('sha1').update(password).digest('hex')
+      const hash = crypto.createHash('sha1').update(password).digest('hex')
       const suffix = hash.substring(5).toUpperCase()
 
       mockFetch.mockResolvedValue({
@@ -146,7 +147,7 @@ describe('Password Breach Checking', () => {
 
     it('trims whitespace from hash suffix', async () => {
       const password = 'test'
-      const hash = require('crypto').createHash('sha1').update(password).digest('hex').toUpperCase()
+      const hash = crypto.createHash('sha1').update(password).digest('hex').toUpperCase()
       const suffix = hash.substring(5)
 
       mockFetch.mockResolvedValue({
@@ -269,7 +270,7 @@ describe('Password Breach Checking', () => {
 
     it('rejects breached passwords seen > 10 times', async () => {
       const password = 'testpass1234' // 12 characters to meet length requirement
-      const hash = require('crypto').createHash('sha1').update(password).digest('hex').toUpperCase()
+      const hash = crypto.createHash('sha1').update(password).digest('hex').toUpperCase()
       const suffix = hash.substring(5)
 
       mockFetch.mockResolvedValue({
@@ -285,7 +286,7 @@ describe('Password Breach Checking', () => {
 
     it('accepts breached passwords seen <= 10 times', async () => {
       const password = 'RarePassword123!'
-      const hash = require('crypto').createHash('sha1').update(password).digest('hex').toUpperCase()
+      const hash = crypto.createHash('sha1').update(password).digest('hex').toUpperCase()
       const suffix = hash.substring(5)
 
       mockFetch.mockResolvedValue({
@@ -308,7 +309,7 @@ describe('Password Breach Checking', () => {
   describe('getPasswordWarning', () => {
     it('returns warning for passwords breached > 100 times', async () => {
       const password = 'test'
-      const hash = require('crypto').createHash('sha1').update(password).digest('hex').toUpperCase()
+      const hash = crypto.createHash('sha1').update(password).digest('hex').toUpperCase()
       const suffix = hash.substring(5)
 
       mockFetch.mockResolvedValue({
@@ -324,7 +325,7 @@ describe('Password Breach Checking', () => {
 
     it('returns warning for passwords breached 1-100 times', async () => {
       const password = 'test'
-      const hash = require('crypto').createHash('sha1').update(password).digest('hex').toUpperCase()
+      const hash = crypto.createHash('sha1').update(password).digest('hex').toUpperCase()
       const suffix = hash.substring(5)
 
       mockFetch.mockResolvedValue({

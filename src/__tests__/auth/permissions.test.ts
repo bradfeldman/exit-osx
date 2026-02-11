@@ -19,9 +19,8 @@ import {
   parsePermission,
   getModulePermissions,
   isSensitivePermission,
-  type Permission,
-  type GranularPermission,
 } from '@/lib/auth/permissions'
+import type { Permission, GranularPermission } from '@/lib/auth/permissions'
 import { UserRole } from '@prisma/client'
 
 describe('Permissions Module', () => {
@@ -416,6 +415,7 @@ describe('Permissions Module', () => {
         )
 
         expect(hasNoEditAccess).toBe(true)
+      })
     })
   })
 
