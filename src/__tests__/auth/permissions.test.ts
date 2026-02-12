@@ -21,10 +21,10 @@ import {
   isSensitivePermission,
 } from '@/lib/auth/permissions'
 import type { Permission, GranularPermission } from '@/lib/auth/permissions'
-import { UserRole } from '@prisma/client'
+import type { WorkspaceRole } from '@/lib/auth/workspace-roles'
 
 describe('Permissions Module', () => {
-  describe('PERMISSIONS (Legacy RBAC)', () => {
+  describe('PERMISSIONS (Workspace RBAC)', () => {
     it('has all core permission categories defined', () => {
       expect(PERMISSIONS.COMPANY_CREATE).toBeDefined()
       expect(PERMISSIONS.COMPANY_UPDATE).toBeDefined()
@@ -35,142 +35,173 @@ describe('Permissions Module', () => {
       expect(PERMISSIONS.ORG_MANAGE_MEMBERS).toBeDefined()
     })
 
-    it('SUPER_ADMIN has all permissions', () => {
+    it('OWNER has all permissions', () => {
       const permissions = Object.keys(PERMISSIONS) as Permission[]
 
       for (const permission of permissions) {
-        expect(hasPermission('SUPER_ADMIN', permission)).toBe(true)
+        expect(hasPermission('OWNER', permission)).toBe(true)
       }
     })
 
-    it('VIEWER has only view permissions', () => {
-      expect(hasPermission('VIEWER', 'COMPANY_VIEW')).toBe(true)
-      expect(hasPermission('VIEWER', 'ASSESSMENT_VIEW')).toBe(true)
-      expect(hasPermission('VIEWER', 'TASK_VIEW')).toBe(true)
+    it('MEMBER has view and update permissions but not admin permissions', () => {
+      expect(hasPermission('MEMBER', 'COMPANY_VIEW')).toBe(true)
+      expect(hasPermission('MEMBER', 'ASSESSMENT_VIEW')).toBe(true)
+      expect(hasPermission('MEMBER', 'TASK_VIEW')).toBe(true)
+      expect(hasPermission('MEMBER', 'TASK_UPDATE')).toBe(true)
 
-      expect(hasPermission('VIEWER', 'COMPANY_CREATE')).toBe(false)
-      expect(hasPermission('VIEWER', 'COMPANY_UPDATE')).toBe(false)
-      expect(hasPermission('VIEWER', 'TASK_UPDATE')).toBe(false)
+      expect(hasPermission('MEMBER', 'TASK_ASSIGN')).toBe(false)
+      expect(hasPermission('MEMBER', 'COMPANY_CREATE')).toBe(false)
+      expect(hasPermission('MEMBER', 'ORG_MANAGE_MEMBERS')).toBe(false)
     })
 
-    it('MEMBER can update tasks but not assign them', () => {
-      expect(hasPermission('MEMBER', 'TASK_UPDATE')).toBe(true)
+    it('BILLING has same access as MEMBER for most operations', () => {
+      expect(hasPermission('BILLING', 'TASK_UPDATE')).toBe(true)
+      expect(hasPermission('BILLING', 'COMPANY_VIEW')).toBe(true)
+      expect(hasPermission('BILLING', 'ASSESSMENT_CREATE')).toBe(true)
+
+      expect(hasPermission('BILLING', 'TASK_ASSIGN')).toBe(false)
+      expect(hasPermission('BILLING', 'ORG_MANAGE_MEMBERS')).toBe(false)
+    })
+
+    it('only OWNER and ADMIN can assign tasks', () => {
+      expect(hasPermission('OWNER', 'TASK_ASSIGN')).toBe(true)
+      expect(hasPermission('ADMIN', 'TASK_ASSIGN')).toBe(true)
+      expect(hasPermission('BILLING', 'TASK_ASSIGN')).toBe(false)
       expect(hasPermission('MEMBER', 'TASK_ASSIGN')).toBe(false)
     })
 
-    it('TEAM_LEADER can assign tasks', () => {
-      expect(hasPermission('TEAM_LEADER', 'TASK_ASSIGN')).toBe(true)
-      expect(hasPermission('TEAM_LEADER', 'TASK_UPDATE')).toBe(true)
-    })
-
-    it('only SUPER_ADMIN can delete organization', () => {
-      expect(hasPermission('SUPER_ADMIN', 'ORG_DELETE')).toBe(true)
+    it('only OWNER can delete workspace', () => {
+      expect(hasPermission('OWNER', 'ORG_DELETE')).toBe(true)
       expect(hasPermission('ADMIN', 'ORG_DELETE')).toBe(false)
-      expect(hasPermission('TEAM_LEADER', 'ORG_DELETE')).toBe(false)
+      expect(hasPermission('BILLING', 'ORG_DELETE')).toBe(false)
+      expect(hasPermission('MEMBER', 'ORG_DELETE')).toBe(false)
     })
 
-    it('only SUPER_ADMIN and ADMIN can manage members', () => {
-      expect(hasPermission('SUPER_ADMIN', 'ORG_MANAGE_MEMBERS')).toBe(true)
+    it('only OWNER and ADMIN can manage members', () => {
+      expect(hasPermission('OWNER', 'ORG_MANAGE_MEMBERS')).toBe(true)
       expect(hasPermission('ADMIN', 'ORG_MANAGE_MEMBERS')).toBe(true)
-      expect(hasPermission('TEAM_LEADER', 'ORG_MANAGE_MEMBERS')).toBe(false)
+      expect(hasPermission('BILLING', 'ORG_MANAGE_MEMBERS')).toBe(false)
+      expect(hasPermission('MEMBER', 'ORG_MANAGE_MEMBERS')).toBe(false)
     })
   })
 
   describe('getPermissionsForRole', () => {
-    it('returns all permissions for SUPER_ADMIN', () => {
-      const permissions = getPermissionsForRole('SUPER_ADMIN')
+    it('returns all permissions for OWNER', () => {
+      const permissions = getPermissionsForRole('OWNER')
       const allPermissions = Object.keys(PERMISSIONS)
 
       expect(permissions.length).toBe(allPermissions.length)
     })
 
     it('returns empty array for invalid role', () => {
-      const permissions = getPermissionsForRole('INVALID' as UserRole)
+      const permissions = getPermissionsForRole('INVALID' as WorkspaceRole)
 
       expect(permissions).toEqual([])
     })
 
-    it('returns subset for VIEWER', () => {
-      const permissions = getPermissionsForRole('VIEWER')
+    it('returns subset for MEMBER', () => {
+      const permissions = getPermissionsForRole('MEMBER')
 
       expect(permissions.length).toBeGreaterThan(0)
       expect(permissions.length).toBeLessThan(Object.keys(PERMISSIONS).length)
-      expect(permissions.every(p => p.includes('VIEW'))).toBe(true)
+      // Member has view permissions and some update permissions
+      expect(permissions.some(p => p.includes('VIEW'))).toBe(true)
+    })
+
+    it('BILLING has slightly fewer permissions than MEMBER', () => {
+      const billingPerms = getPermissionsForRole('BILLING')
+      const memberPerms = getPermissionsForRole('MEMBER')
+
+      // BILLING cannot update companies, but MEMBER can
+      expect(billingPerms.length).toBe(memberPerms.length - 1)
+      expect(billingPerms.includes('COMPANY_UPDATE' as Permission)).toBe(false)
+      expect(memberPerms.includes('COMPANY_UPDATE' as Permission)).toBe(true)
+
+      // But BILLING has most of the same view/update permissions otherwise
+      expect(billingPerms.includes('TASK_UPDATE' as Permission)).toBe(true)
+      expect(billingPerms.includes('ASSESSMENT_CREATE' as Permission)).toBe(true)
     })
   })
 
   describe('ROLE_HIERARCHY', () => {
-    it('has all user roles defined', () => {
-      expect(ROLE_HIERARCHY.SUPER_ADMIN).toBeDefined()
+    it('has all workspace roles defined', () => {
+      expect(ROLE_HIERARCHY.OWNER).toBeDefined()
       expect(ROLE_HIERARCHY.ADMIN).toBeDefined()
-      expect(ROLE_HIERARCHY.TEAM_LEADER).toBeDefined()
+      expect(ROLE_HIERARCHY.BILLING).toBeDefined()
       expect(ROLE_HIERARCHY.MEMBER).toBeDefined()
-      expect(ROLE_HIERARCHY.VIEWER).toBeDefined()
     })
 
     it('has correct hierarchy order', () => {
-      expect(ROLE_HIERARCHY.SUPER_ADMIN).toBeGreaterThan(ROLE_HIERARCHY.ADMIN)
-      expect(ROLE_HIERARCHY.ADMIN).toBeGreaterThan(ROLE_HIERARCHY.TEAM_LEADER)
-      expect(ROLE_HIERARCHY.TEAM_LEADER).toBeGreaterThan(ROLE_HIERARCHY.MEMBER)
-      expect(ROLE_HIERARCHY.MEMBER).toBeGreaterThan(ROLE_HIERARCHY.VIEWER)
+      expect(ROLE_HIERARCHY.OWNER).toBeGreaterThan(ROLE_HIERARCHY.ADMIN)
+      expect(ROLE_HIERARCHY.ADMIN).toBeGreaterThan(ROLE_HIERARCHY.BILLING)
+      expect(ROLE_HIERARCHY.BILLING).toBeGreaterThan(ROLE_HIERARCHY.MEMBER)
     })
 
-    it('SUPER_ADMIN is highest level', () => {
+    it('OWNER is highest level', () => {
       const levels = Object.values(ROLE_HIERARCHY)
       const maxLevel = Math.max(...levels)
 
-      expect(ROLE_HIERARCHY.SUPER_ADMIN).toBe(maxLevel)
+      expect(ROLE_HIERARCHY.OWNER).toBe(maxLevel)
     })
 
-    it('VIEWER is lowest level', () => {
+    it('MEMBER is lowest level', () => {
       const levels = Object.values(ROLE_HIERARCHY)
       const minLevel = Math.min(...levels)
 
-      expect(ROLE_HIERARCHY.VIEWER).toBe(minLevel)
+      expect(ROLE_HIERARCHY.MEMBER).toBe(minLevel)
     })
   })
 
   describe('isRoleAtLeast', () => {
-    it('SUPER_ADMIN is at least any role', () => {
-      expect(isRoleAtLeast('SUPER_ADMIN', 'SUPER_ADMIN')).toBe(true)
-      expect(isRoleAtLeast('SUPER_ADMIN', 'ADMIN')).toBe(true)
-      expect(isRoleAtLeast('SUPER_ADMIN', 'MEMBER')).toBe(true)
-      expect(isRoleAtLeast('SUPER_ADMIN', 'VIEWER')).toBe(true)
+    it('OWNER is at least any role', () => {
+      expect(isRoleAtLeast('OWNER', 'OWNER')).toBe(true)
+      expect(isRoleAtLeast('OWNER', 'ADMIN')).toBe(true)
+      expect(isRoleAtLeast('OWNER', 'BILLING')).toBe(true)
+      expect(isRoleAtLeast('OWNER', 'MEMBER')).toBe(true)
     })
 
-    it('VIEWER is not at least higher roles', () => {
-      expect(isRoleAtLeast('VIEWER', 'SUPER_ADMIN')).toBe(false)
-      expect(isRoleAtLeast('VIEWER', 'ADMIN')).toBe(false)
-      expect(isRoleAtLeast('VIEWER', 'MEMBER')).toBe(false)
+    it('MEMBER is not at least higher roles', () => {
+      expect(isRoleAtLeast('MEMBER', 'OWNER')).toBe(false)
+      expect(isRoleAtLeast('MEMBER', 'ADMIN')).toBe(false)
+      expect(isRoleAtLeast('MEMBER', 'BILLING')).toBe(false)
     })
 
     it('role is at least itself', () => {
       expect(isRoleAtLeast('ADMIN', 'ADMIN')).toBe(true)
       expect(isRoleAtLeast('MEMBER', 'MEMBER')).toBe(true)
+      expect(isRoleAtLeast('BILLING', 'BILLING')).toBe(true)
     })
 
-    it('TEAM_LEADER is at least MEMBER but not ADMIN', () => {
-      expect(isRoleAtLeast('TEAM_LEADER', 'MEMBER')).toBe(true)
-      expect(isRoleAtLeast('TEAM_LEADER', 'VIEWER')).toBe(true)
-      expect(isRoleAtLeast('TEAM_LEADER', 'ADMIN')).toBe(false)
+    it('BILLING is at least MEMBER but not ADMIN', () => {
+      expect(isRoleAtLeast('BILLING', 'MEMBER')).toBe(true)
+      expect(isRoleAtLeast('BILLING', 'ADMIN')).toBe(false)
+      expect(isRoleAtLeast('BILLING', 'OWNER')).toBe(false)
+    })
+
+    it('ADMIN is at least BILLING and MEMBER but not OWNER', () => {
+      expect(isRoleAtLeast('ADMIN', 'BILLING')).toBe(true)
+      expect(isRoleAtLeast('ADMIN', 'MEMBER')).toBe(true)
+      expect(isRoleAtLeast('ADMIN', 'OWNER')).toBe(false)
     })
   })
 
   describe('getRoleDisplayName and getRoleDescription', () => {
     it('returns display names for all roles', () => {
-      expect(getRoleDisplayName('SUPER_ADMIN')).toBe('Super Admin')
+      expect(getRoleDisplayName('OWNER')).toBe('Owner')
       expect(getRoleDisplayName('ADMIN')).toBe('Admin')
-      expect(getRoleDisplayName('TEAM_LEADER')).toBe('Team Leader')
+      expect(getRoleDisplayName('BILLING')).toBe('Billing')
       expect(getRoleDisplayName('MEMBER')).toBe('Member')
-      expect(getRoleDisplayName('VIEWER')).toBe('Viewer')
     })
 
     it('returns descriptions for all roles', () => {
-      const description = getRoleDescription('SUPER_ADMIN')
-      expect(description).toContain('Full access')
+      const ownerDesc = getRoleDescription('OWNER')
+      expect(ownerDesc).toContain('Full access')
 
-      const viewerDesc = getRoleDescription('VIEWER')
-      expect(viewerDesc).toContain('Read-only')
+      const billingDesc = getRoleDescription('BILLING')
+      expect(billingDesc).toContain('billing')
+
+      const memberDesc = getRoleDescription('MEMBER')
+      expect(memberDesc).toContain('assessments')
     })
   })
 

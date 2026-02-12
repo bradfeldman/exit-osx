@@ -1,36 +1,36 @@
 // Role-Based Access Control (RBAC) Permission Definitions
 // Maps roles to allowed actions across the application
 
-import { UserRole } from '@prisma/client'
+import type { WorkspaceRole } from './workspace-roles'
 
 // ============================================
-// LEGACY PERMISSIONS (for backward compatibility)
+// WORKSPACE PERMISSIONS
 // ============================================
 
-// Permission definitions - which roles can perform each action
+// Permission definitions - which workspace roles can perform each action
 export const PERMISSIONS = {
   // Company operations
-  COMPANY_CREATE: ['SUPER_ADMIN', 'ADMIN'] as const,
-  COMPANY_UPDATE: ['SUPER_ADMIN', 'ADMIN', 'TEAM_LEADER'] as const,
-  COMPANY_DELETE: ['SUPER_ADMIN', 'ADMIN'] as const,
-  COMPANY_VIEW: ['SUPER_ADMIN', 'ADMIN', 'TEAM_LEADER', 'MEMBER', 'VIEWER'] as const,
+  COMPANY_CREATE: ['OWNER', 'ADMIN'] as const,
+  COMPANY_UPDATE: ['OWNER', 'ADMIN', 'MEMBER'] as const,
+  COMPANY_DELETE: ['OWNER', 'ADMIN'] as const,
+  COMPANY_VIEW: ['OWNER', 'ADMIN', 'BILLING', 'MEMBER'] as const,
 
   // Assessment operations
-  ASSESSMENT_CREATE: ['SUPER_ADMIN', 'ADMIN', 'TEAM_LEADER', 'MEMBER'] as const,
-  ASSESSMENT_COMPLETE: ['SUPER_ADMIN', 'ADMIN', 'TEAM_LEADER', 'MEMBER'] as const,
-  ASSESSMENT_VIEW: ['SUPER_ADMIN', 'ADMIN', 'TEAM_LEADER', 'MEMBER', 'VIEWER'] as const,
+  ASSESSMENT_CREATE: ['OWNER', 'ADMIN', 'BILLING', 'MEMBER'] as const,
+  ASSESSMENT_COMPLETE: ['OWNER', 'ADMIN', 'BILLING', 'MEMBER'] as const,
+  ASSESSMENT_VIEW: ['OWNER', 'ADMIN', 'BILLING', 'MEMBER'] as const,
 
   // Task operations
-  TASK_UPDATE: ['SUPER_ADMIN', 'ADMIN', 'TEAM_LEADER', 'MEMBER'] as const,
-  TASK_ASSIGN: ['SUPER_ADMIN', 'ADMIN', 'TEAM_LEADER'] as const,
-  TASK_VIEW: ['SUPER_ADMIN', 'ADMIN', 'TEAM_LEADER', 'MEMBER', 'VIEWER'] as const,
+  TASK_UPDATE: ['OWNER', 'ADMIN', 'BILLING', 'MEMBER'] as const,
+  TASK_ASSIGN: ['OWNER', 'ADMIN'] as const,
+  TASK_VIEW: ['OWNER', 'ADMIN', 'BILLING', 'MEMBER'] as const,
 
-  // Organization management
-  ORG_VIEW: ['SUPER_ADMIN', 'ADMIN', 'TEAM_LEADER', 'MEMBER', 'VIEWER'] as const,
-  ORG_MANAGE_MEMBERS: ['SUPER_ADMIN', 'ADMIN'] as const,
-  ORG_INVITE_USERS: ['SUPER_ADMIN', 'ADMIN', 'TEAM_LEADER'] as const,
-  ORG_UPDATE_ROLES: ['SUPER_ADMIN', 'ADMIN'] as const,
-  ORG_DELETE: ['SUPER_ADMIN'] as const,
+  // Workspace management (formerly Organization)
+  ORG_VIEW: ['OWNER', 'ADMIN', 'BILLING', 'MEMBER'] as const,
+  ORG_MANAGE_MEMBERS: ['OWNER', 'ADMIN'] as const,
+  ORG_INVITE_USERS: ['OWNER', 'ADMIN'] as const,
+  ORG_UPDATE_ROLES: ['OWNER', 'ADMIN'] as const,
+  ORG_DELETE: ['OWNER'] as const,
 } as const
 
 export type Permission = keyof typeof PERMISSIONS
@@ -38,7 +38,7 @@ export type Permission = keyof typeof PERMISSIONS
 /**
  * Check if a role has a specific permission
  */
-export function hasPermission(role: UserRole, permission: Permission): boolean {
+export function hasPermission(role: WorkspaceRole, permission: Permission): boolean {
   const allowedRoles = PERMISSIONS[permission]
   return (allowedRoles as readonly string[]).includes(role)
 }
@@ -46,7 +46,7 @@ export function hasPermission(role: UserRole, permission: Permission): boolean {
 /**
  * Get all permissions for a role
  */
-export function getPermissionsForRole(role: UserRole): Permission[] {
+export function getPermissionsForRole(role: WorkspaceRole): Permission[] {
   const permissions: Permission[] = []
   for (const [permission, roles] of Object.entries(PERMISSIONS)) {
     if ((roles as readonly string[]).includes(role)) {
@@ -59,31 +59,29 @@ export function getPermissionsForRole(role: UserRole): Permission[] {
 /**
  * Role hierarchy - higher roles include permissions of lower roles
  */
-export const ROLE_HIERARCHY: Record<UserRole, number> = {
-  SUPER_ADMIN: 5,
-  ADMIN: 4,
-  TEAM_LEADER: 3,
-  MEMBER: 2,
-  VIEWER: 1,
+export const ROLE_HIERARCHY: Record<WorkspaceRole, number> = {
+  OWNER: 4,
+  ADMIN: 3,
+  BILLING: 2,
+  MEMBER: 1,
 }
 
 /**
  * Check if one role is higher or equal in hierarchy to another
  */
-export function isRoleAtLeast(userRole: UserRole, requiredRole: UserRole): boolean {
+export function isRoleAtLeast(userRole: WorkspaceRole, requiredRole: WorkspaceRole): boolean {
   return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[requiredRole]
 }
 
 /**
  * Get display name for a role
  */
-export function getRoleDisplayName(role: UserRole): string {
-  const displayNames: Record<UserRole, string> = {
-    SUPER_ADMIN: 'Super Admin',
+export function getRoleDisplayName(role: WorkspaceRole): string {
+  const displayNames: Record<WorkspaceRole, string> = {
+    OWNER: 'Owner',
     ADMIN: 'Admin',
-    TEAM_LEADER: 'Team Leader',
+    BILLING: 'Billing',
     MEMBER: 'Member',
-    VIEWER: 'Viewer',
   }
   return displayNames[role]
 }
@@ -91,13 +89,12 @@ export function getRoleDisplayName(role: UserRole): string {
 /**
  * Get description for a role
  */
-export function getRoleDescription(role: UserRole): string {
-  const descriptions: Record<UserRole, string> = {
-    SUPER_ADMIN: 'Full access to all features and organization management',
+export function getRoleDescription(role: WorkspaceRole): string {
+  const descriptions: Record<WorkspaceRole, string> = {
+    OWNER: 'Full access to all features and workspace management',
     ADMIN: 'Can manage companies, assessments, and team members',
-    TEAM_LEADER: 'Can create assessments, manage tasks, and invite members',
+    BILLING: 'Can manage subscription and billing',
     MEMBER: 'Can complete assessments and update tasks',
-    VIEWER: 'Read-only access to view data',
   }
   return descriptions[role]
 }

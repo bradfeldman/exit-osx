@@ -6,8 +6,6 @@ import {
   RATE_LIMIT_CONFIGS,
   createRateLimitResponse,
 } from '@/lib/security'
-import { USER_ROLE_TO_WORKSPACE_ROLE } from '@/lib/auth/workspace-roles'
-import type { WorkspaceRole } from '@prisma/client'
 
 // POST - Accept an invite
 export async function POST(
@@ -125,7 +123,7 @@ export async function POST(
       data: {
         workspaceId: invite.workspaceId,
         userId: dbUser.id,
-        workspaceRole: (USER_ROLE_TO_WORKSPACE_ROLE[invite.role] || 'MEMBER') as WorkspaceRole,
+        workspaceRole: invite.role,
         functionalCategories: invite.functionalCategories,
         roleTemplateId: invite.roleTemplateId,
         isExternalAdvisor: invite.isExternalAdvisor,

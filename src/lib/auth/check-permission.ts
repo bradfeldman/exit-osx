@@ -12,7 +12,6 @@ import { Permission, hasPermission } from './permissions'
 import type { CompanyRole } from './company-roles'
 import type { WorkspaceRole } from './workspace-roles'
 import { hasCompanyPermission } from './company-roles'
-import type { UserRole } from '@prisma/client'
 
 export interface AuthContext {
   user: {
@@ -44,18 +43,6 @@ export interface AuthError {
 }
 
 export type AuthResult = AuthSuccess | AuthError
-
-// ---------------------------------------------------------------------------
-// WorkspaceRole to UserRole mapping (for legacy permission checks)
-// TODO: Migrate PERMISSIONS constant to use WorkspaceRole directly
-// ---------------------------------------------------------------------------
-
-const WORKSPACE_ROLE_TO_USER_ROLE: Record<WorkspaceRole, UserRole> = {
-  OWNER: 'SUPER_ADMIN',
-  ADMIN: 'ADMIN',
-  BILLING: 'MEMBER',
-  MEMBER: 'MEMBER',
-}
 
 // ---------------------------------------------------------------------------
 // Permission-to-CompanyRole capability mapping
@@ -244,10 +231,8 @@ export async function checkPermission(
   const workspaceRole = workspaceMember.workspaceRole as WorkspaceRole
 
   if (!permissionGrantedByCompanyRole) {
-    // Map WorkspaceRole to UserRole for legacy permission check
-    // TODO: Migrate PERMISSIONS constant to use WorkspaceRole directly
-    const mappedRole = WORKSPACE_ROLE_TO_USER_ROLE[workspaceRole]
-    if (!hasPermission(mappedRole, permission)) {
+    // Check permission directly using WorkspaceRole
+    if (!hasPermission(workspaceRole, permission)) {
       return {
         error: NextResponse.json(
           {

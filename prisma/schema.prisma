@@ -137,7 +137,7 @@ model WorkspaceInvite {
   id                   String               @id @default(cuid())
   workspaceId          String               @map("workspace_id")
   email                String
-  role                 UserRole             @default(MEMBER)
+  role                 WorkspaceRole        @default(MEMBER)
   functionalCategories FunctionalCategory[] @map("functional_categories")
   invitedBy            String               @map("invited_by")
   token                String               @unique @default(cuid())
@@ -1652,14 +1652,6 @@ model CompanyInvite {
   @@unique([companyId, email])
   @@index([token])
   @@map("company_invites")
-}
-
-enum UserRole {
-  SUPER_ADMIN
-  ADMIN
-  TEAM_LEADER
-  MEMBER
-  VIEWER
 }
 
 enum FunctionalCategory {

@@ -10,7 +10,11 @@
  * billing, member management, workspace settings, etc.
  */
 
-import type { UserRole } from '@prisma/client'
+/**
+ * Legacy UserRole type (removed from Prisma schema, kept here for mapping functions).
+ * This type is used only for the USER_ROLE_TO_WORKSPACE_ROLE migration mapping.
+ */
+export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'TEAM_LEADER' | 'MEMBER' | 'VIEWER'
 
 /**
  * Local type definition matching the Prisma WorkspaceRole enum.
@@ -42,6 +46,10 @@ export const WORKSPACE_ROLE_HIERARCHY: Record<string, number> = {
  * Maps each legacy UserRole value to its equivalent WorkspaceRole.
  * Used during the data migration phase (Phase 2+) to populate the new
  * WorkspaceRole column on OrganizationUser.
+ *
+ * NOTE: UserRole enum has been removed from the Prisma schema as of
+ * migration 20260212000000_invite_role_to_workspace_role. This mapping
+ * is kept for backward compatibility with any legacy code.
  *
  * Rationale:
  * - SUPER_ADMIN was the owner-equivalent role.

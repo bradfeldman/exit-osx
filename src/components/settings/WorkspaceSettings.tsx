@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { UserAvatar } from '@/components/ui/user-avatar'
-import { UserRole, FunctionalCategory, WorkspaceRole } from '@prisma/client'
+import { FunctionalCategory, WorkspaceRole } from '@prisma/client'
 import {
   Crown,
   Briefcase,
@@ -47,8 +47,7 @@ import { cn } from '@/lib/utils'
 // Types
 interface Member {
   id: string
-  role: UserRole // Legacy - still used by invites
-  workspaceRole: WorkspaceRole // New role system
+  workspaceRole: WorkspaceRole
   functionalCategories: FunctionalCategory[]
   joinedAt: string
   isExternalAdvisor: boolean
@@ -70,7 +69,7 @@ interface Invite {
   id: string
   token: string
   email: string
-  role: UserRole
+  role: WorkspaceRole
   functionalCategories: FunctionalCategory[]
   createdAt: string
   expiresAt: string
@@ -86,8 +85,7 @@ interface Invite {
 interface Workspace {
   id: string
   name: string
-  currentUserRole: UserRole // Legacy
-  currentUserWorkspaceRole: WorkspaceRole // New
+  currentUserWorkspaceRole: WorkspaceRole
   currentUserId: string
   members: Member[]
   invites: Invite[]

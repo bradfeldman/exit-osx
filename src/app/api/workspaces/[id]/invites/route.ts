@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
-import { UserRole, FunctionalCategory } from '@prisma/client'
+import { WorkspaceRole, FunctionalCategory } from '@prisma/client'
 import { GRANULAR_PERMISSIONS } from '@/lib/auth/permissions'
 import { Resend } from 'resend'
 
@@ -106,7 +106,7 @@ export async function POST(
     }
 
     // Verify valid role
-    const validRoles: UserRole[] = ['ADMIN', 'TEAM_LEADER', 'MEMBER', 'VIEWER']
+    const validRoles: WorkspaceRole[] = ['OWNER', 'ADMIN', 'BILLING', 'MEMBER']
     if (!validRoles.includes(role)) {
       return NextResponse.json(
         { error: 'Invalid role' },
