@@ -892,7 +892,7 @@ export function WorkspaceSettings() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {canManageMembers && member.role !== 'SUPER_ADMIN' ? (
+                      {canManageMembers && member.workspaceRole !== 'OWNER' ? (
                         <Select
                           value={affiliation}
                           onValueChange={(value) => handleAffiliationChange(member.user.id, value as Affiliation)}
@@ -932,7 +932,7 @@ export function WorkspaceSettings() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {canManageMembers && member.role !== 'SUPER_ADMIN' ? (
+                      {canManageMembers && member.workspaceRole !== 'OWNER' ? (
                         <Button
                           variant="outline"
                           size="sm"
@@ -942,7 +942,7 @@ export function WorkspaceSettings() {
                         </Button>
                       ) : (
                         <span className="text-muted-foreground text-sm">
-                          {member.role === 'SUPER_ADMIN' || member.role === 'ADMIN' ? 'Full Access' : 'Default'}
+                          {member.workspaceRole === 'OWNER' || member.workspaceRole === 'ADMIN' ? 'Full Access' : 'Default'}
                         </span>
                       )}
                     </TableCell>
@@ -962,7 +962,7 @@ export function WorkspaceSettings() {
                         </Button>
                       ) : (
                         // Admins can remove other members
-                        canManageMembers && member.role !== 'SUPER_ADMIN' && (
+                        canManageMembers && member.workspaceRole !== 'OWNER' && (
                           <Button
                             variant="ghost"
                             size="sm"

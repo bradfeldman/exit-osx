@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
-import { UserRole, FunctionalCategory, WorkspaceRole } from '@prisma/client'
+import { FunctionalCategory, WorkspaceRole } from '@prisma/client'
 
 // GET - List workspace members
 export async function GET(
@@ -66,7 +66,7 @@ export async function PATCH(
   const { auth } = result
 
   try {
-    const { userId, role, workspaceRole, functionalCategories } = await request.json()
+    const { userId, workspaceRole, functionalCategories } = await request.json()
 
     if (!userId) {
       return NextResponse.json(
@@ -77,33 +77,11 @@ export async function PATCH(
 
     // Build update data object
     const updateData: {
-      role?: UserRole
       workspaceRole?: WorkspaceRole
       functionalCategories?: FunctionalCategory[]
     } = {}
 
-    // Validate and add legacy role if provided (for backwards compatibility)
-    if (role !== undefined) {
-      const validRoles: UserRole[] = ['ADMIN', 'TEAM_LEADER', 'MEMBER', 'VIEWER']
-      if (!validRoles.includes(role)) {
-        return NextResponse.json(
-          { error: 'Invalid role' },
-          { status: 400 }
-        )
-      }
-
-      // Prevent changing your own role
-      if (userId === auth.user.id) {
-        return NextResponse.json(
-          { error: 'You cannot change your own role' },
-          { status: 400 }
-        )
-      }
-
-      updateData.role = role
-    }
-
-    // Validate and add workspaceRole if provided (new role system)
+    // Validate and add workspaceRole if provided
     if (workspaceRole !== undefined) {
       const validRoles: WorkspaceRole[] = ['OWNER', 'ADMIN', 'BILLING', 'MEMBER']
       if (!validRoles.includes(workspaceRole)) {

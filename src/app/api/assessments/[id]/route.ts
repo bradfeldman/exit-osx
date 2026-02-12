@@ -102,7 +102,7 @@ export async function DELETE(
             workspace: {
               include: {
                 members: {
-                  where: { user: { authId: user.id }, role: 'ADMIN' },
+                  where: { user: { authId: user.id }, workspaceRole: 'ADMIN' },
                 },
               },
             },

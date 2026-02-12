@@ -136,9 +136,9 @@ export async function POST(request: Request) {
       )
     }
 
-    // Find a workspace where user has ADMIN or SUPER_ADMIN role (can create companies)
+    // Find a workspace where user has OWNER or ADMIN role (can create companies)
     let targetWorkspace = dbUser.workspaces.find(
-      wm => wm.role === 'ADMIN' || wm.role === 'SUPER_ADMIN'
+      wm => wm.workspaceRole === 'OWNER' || wm.workspaceRole === 'ADMIN'
     )
 
     // If user doesn't have a workspace where they can create companies, create one for them
@@ -154,7 +154,7 @@ export async function POST(request: Request) {
           members: {
             create: {
               userId: dbUser.id,
-              role: 'ADMIN',
+              workspaceRole: 'OWNER',
             }
           }
         }

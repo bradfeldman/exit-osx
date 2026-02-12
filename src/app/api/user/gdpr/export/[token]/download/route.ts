@@ -120,7 +120,7 @@ async function generateExportData(
         createdAt: true,
         workspaces: {
           select: {
-            role: true,
+            workspaceRole: true,
             functionalCategories: true,
             joinedAt: true,
             workspace: {

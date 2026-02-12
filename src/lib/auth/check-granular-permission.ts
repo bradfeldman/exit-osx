@@ -59,10 +59,10 @@ export async function resolveUserPermissions(
     const templateDefaults = workspaceMember.roleTemplate.defaultPermissions as Record<string, boolean>
     permissions = { ...templateDefaults } as Record<GranularPermission, boolean>
   } else if (workspaceMember.roleTemplateId === null) {
-    // ADMIN and SUPER_ADMIN roles get full owner permissions without explicit template
+    // OWNER and ADMIN roles get full owner permissions without explicit template
     // These are typically the account owner who created the workspace
     // MEMBER roles must have an explicit role template assigned
-    if (workspaceMember.role === 'SUPER_ADMIN' || workspaceMember.role === 'ADMIN') {
+    if (workspaceMember.workspaceRole === 'OWNER' || workspaceMember.workspaceRole === 'ADMIN') {
       const ownerTemplate = ROLE_TEMPLATES.owner
       permissions = { ...ownerTemplate.defaultPermissions }
     }

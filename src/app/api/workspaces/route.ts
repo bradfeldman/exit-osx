@@ -73,7 +73,7 @@ export async function GET() {
       const currentMember = workspace.members.find(m => m.userId === auth.user.id)
       return {
         ...workspace,
-        currentUserRole: currentMember?.role, // Legacy
+        currentUserRole: currentMember?.workspaceRole, // Legacy
         currentUserWorkspaceRole: currentMember?.workspaceRole, // New
         currentUserId: auth.user.id,
       }

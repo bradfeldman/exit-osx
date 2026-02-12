@@ -191,7 +191,7 @@ async function processExportRequest(
           createdAt: true,
           workspaces: {
             select: {
-              role: true,
+              workspaceRole: true,
               functionalCategories: true,
               joinedAt: true,
               workspace: {

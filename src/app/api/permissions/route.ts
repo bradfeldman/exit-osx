@@ -43,7 +43,7 @@ export async function GET(request: Request) {
     })
 
     // If user is workspace owner (SUPER_ADMIN/ADMIN) and on Exit-Ready tier, grant all permissions
-    const isOwnerRole = workspaceMember?.role === 'SUPER_ADMIN' || workspaceMember?.role === 'ADMIN'
+    const isOwnerRole = workspaceMember?.workspaceRole === 'OWNER' || workspaceMember?.workspaceRole === 'ADMIN'
     const isComped = workspaceMember?.user.userType === 'COMPED'
     const isExitReadyOrComped = workspaceMember?.workspace.planTier === 'EXIT_READY' || isComped
     const hasActiveSubscription = workspaceMember?.workspace.subscriptionStatus !== 'CANCELLED' && workspaceMember?.workspace.subscriptionStatus !== 'EXPIRED'

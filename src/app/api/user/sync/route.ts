@@ -211,7 +211,7 @@ export async function POST() {
         avatarUrl,
         workspaces: {
           create: {
-            role: 'ADMIN',
+            workspaceRole: 'OWNER',
             workspace: {
               create: {
                 name: user.user_metadata?.name

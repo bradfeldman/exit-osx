@@ -21,7 +21,7 @@ export async function GET() {
         isSuperAdmin: true,
         workspaces: {
           select: {
-            role: true,
+            workspaceRole: true,
             workspaceId: true,
             workspace: {
               select: {

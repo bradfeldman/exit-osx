@@ -3,10 +3,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useCompany } from './CompanyContext'
 
-type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'TEAM_LEADER' | 'MEMBER' | 'VIEWER'
+type WorkspaceRole = 'OWNER' | 'ADMIN' | 'BILLING' | 'MEMBER'
 
 interface WorkspaceMembership {
-  role: UserRole
+  workspaceRole: WorkspaceRole
   workspaceId: string
   workspace: {
     id: string
@@ -27,7 +27,7 @@ interface UserRoleContextType {
   user: CurrentUser | null
   isLoading: boolean
   isSuperAdmin: boolean
-  currentWorkspaceRole: UserRole | null
+  currentWorkspaceRole: WorkspaceRole | null
   isWorkspaceAdmin: boolean
   refreshUser: () => Promise<void>
 }
@@ -62,7 +62,7 @@ export function UserRoleProvider({ children }: { children: ReactNode }) {
   }, [])
 
   // Find the workspace for the currently selected company
-  const getCurrentWorkspaceRole = (): UserRole | null => {
+  const getCurrentWorkspaceRole = (): WorkspaceRole | null => {
     if (!user || !selectedCompanyId) return null
 
     // Find the company to get its workspaceId
@@ -72,12 +72,12 @@ export function UserRoleProvider({ children }: { children: ReactNode }) {
     // This requires the company to have workspaceId - we may need to fetch it
     // For now, assume the first workspace (most users have one workspace)
     const membership = user.workspaces[0]
-    return membership?.role || null
+    return membership?.workspaceRole || null
   }
 
   const currentWorkspaceRole = getCurrentWorkspaceRole()
   const isSuperAdmin = user?.isSuperAdmin || false
-  const isWorkspaceAdmin = currentWorkspaceRole === 'ADMIN' || currentWorkspaceRole === 'SUPER_ADMIN' || isSuperAdmin
+  const isWorkspaceAdmin = currentWorkspaceRole === 'OWNER' || currentWorkspaceRole === 'ADMIN' || isSuperAdmin
 
   return (
     <UserRoleContext.Provider

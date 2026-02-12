@@ -151,7 +151,6 @@ export async function POST(
         data: {
           workspaceId: invite.task.company.workspaceId,
           userId: dbUser.id,
-          role: 'MEMBER',
           workspaceRole: 'MEMBER',
         },
       })

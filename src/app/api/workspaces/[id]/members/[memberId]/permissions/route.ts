@@ -51,7 +51,7 @@ export async function GET(request: Request, { params }: RouteParams) {
     return NextResponse.json({
       memberId: workspaceMember.id,
       user: workspaceMember.user,
-      role: workspaceMember.role,
+      role: workspaceMember.workspaceRole,
       isExternalAdvisor: workspaceMember.isExternalAdvisor,
       roleTemplate: workspaceMember.roleTemplate
         ? {
@@ -190,7 +190,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     return NextResponse.json({
       memberId: updatedWorkspaceMember!.id,
       user: updatedWorkspaceMember!.user,
-      role: updatedWorkspaceMember!.role,
+      role: updatedWorkspaceMember!.workspaceRole,
       isExternalAdvisor: updatedWorkspaceMember!.isExternalAdvisor,
       roleTemplate: updatedWorkspaceMember!.roleTemplate
         ? {
