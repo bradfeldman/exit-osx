@@ -73,7 +73,7 @@ export async function sendMagicLinkEmail({ email, magicLinkUrl }: SendMagicLinkE
                 <tr>
                   <td style="padding: 20px 24px;">
                     <p style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #3D3D3D;">
-                      After setup, you will get:
+                      After a quick onboarding (about 5 minutes), you will get:
                     </p>
                     <p style="margin: 0 0 6px 0; font-size: 14px; line-height: 1.5; color: #666666;">
                       &#10003; Your Exit Readiness Score

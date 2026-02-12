@@ -242,7 +242,7 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
         {/* Decorative elements */}
         <div className="absolute top-20 right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
         <div className="absolute bottom-20 left-10 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
-        <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground">
+        <div className="relative z-10 flex flex-col p-12 text-primary-foreground">
           <a href="https://exitosx.com" className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-icon.png" alt="Exit OSx" width={40} height={40} className="h-10 w-10" />
@@ -250,7 +250,7 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
             <img src="/wordmark.svg" alt="Exit OSx" width={120} height={34} className="h-8 w-auto brightness-0 invert" />
           </a>
 
-          <div className="space-y-6">
+          <div className="space-y-6 mt-auto mb-auto">
             <h1 className="text-4xl font-bold font-display leading-tight tracking-tight">
               Build a Business<br />Buyers Want to Own
             </h1>
@@ -275,7 +275,6 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
               ))}
             </div>
           </div>
-
         </div>
       </div>
 

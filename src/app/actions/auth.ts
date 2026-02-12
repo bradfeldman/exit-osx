@@ -373,10 +373,12 @@ export async function sendMagicLink(
         return { success: true }
       }
 
-      securityLogger.error('auth.magic_link_failed', 'Magic link send failed', {
+      const errorDetails = error as unknown as { message: string; code?: string; status?: number }
+      securityLogger.error('auth.magic_link_failed', `Magic link send failed: ${error.message}`, {
         ipAddress,
-        metadata: { error: error.message },
+        metadata: { error: error.message, errorCode: errorDetails.code, errorStatus: errorDetails.status },
       })
+      console.error('[Auth] signInWithOtp failed:', { message: error.message, code: errorDetails.code, status: errorDetails.status })
 
       return { success: false, error: 'Unable to send verification email. Please try again.' }
     }

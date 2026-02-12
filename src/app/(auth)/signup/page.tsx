@@ -141,6 +141,10 @@ function SignupPageContent() {
     try {
       const result = await sendMagicLink(email, selectedPlanId || undefined)
       setResendStatus(result.success ? 'sent' : 'error')
+      // Auto-reset after 5 seconds so they can resend again if needed
+      if (result.success) {
+        setTimeout(() => setResendStatus('idle'), 5000)
+      }
     } catch {
       setResendStatus('error')
     }
@@ -297,17 +301,25 @@ function SignupPageContent() {
               {/* Secondary Action - Resend */}
               <div className="text-center text-sm text-muted-foreground">
                 {resendStatus === 'sent' ? (
-                  <span className="text-emerald-700 font-medium">New email sent! Check your inbox.</span>
+                  <span className="inline-flex items-center gap-1.5 text-emerald-700 font-medium">
+                    <CheckIcon className="w-4 h-4" />
+                    New email sent! Check your inbox.
+                  </span>
                 ) : (
                   <>
                     <span>Didn&apos;t receive it? </span>
                     <button
                       type="button"
-                      className="text-primary hover:underline font-medium disabled:opacity-50"
+                      className="text-primary hover:underline font-medium disabled:opacity-50 inline-flex items-center gap-1"
                       disabled={resendStatus === 'sending'}
                       onClick={handleResendMagicLink}
                     >
-                      {resendStatus === 'sending' ? 'Sending...' : 'Resend email'}
+                      {resendStatus === 'sending' ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          Sending...
+                        </>
+                      ) : 'Resend email'}
                     </button>
                     <span> &middot; </span>
                     <span>Check spam</span>
