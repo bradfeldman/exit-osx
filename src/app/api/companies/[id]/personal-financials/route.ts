@@ -163,7 +163,6 @@ export async function PUT(request: Request, { params }: RouteParams) {
       },
       create: {
         userId,
-        workspaceId: company.workspaceId,
         retirementAccounts: retirementAccounts || null,
         totalRetirement: totalRetirement !== undefined ? totalRetirement : null,
         personalAssets: personalAssets || null,
