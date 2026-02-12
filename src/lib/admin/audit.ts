@@ -13,11 +13,16 @@ export type AuditAction =
   | 'user.password_reset'
   | 'user.force_logout'
   | 'user.delete'
-  // Organization actions
+  // Organization actions (legacy — kept for existing audit logs)
   | 'organization.view'
   | 'organization.update'
   | 'organization.member_add'
   | 'organization.member_remove'
+  // Workspace actions
+  | 'workspace.view'
+  | 'workspace.update'
+  | 'workspace.member_add'
+  | 'workspace.member_remove'
   // Impersonation actions
   | 'impersonate.start'
   | 'impersonate.end'
@@ -35,6 +40,7 @@ export type AuditAction =
 export type TargetType =
   | 'User'
   | 'Organization'
+  | 'Workspace'
   | 'SupportTicket'
   | 'ImpersonationSession'
   | 'System'
