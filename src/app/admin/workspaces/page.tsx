@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { OrgTable } from '@/components/admin/OrgTable'
+import { WorkspaceTable } from '@/components/admin/WorkspaceTable'
 
 async function getWorkspaces() {
   const limit = 20
@@ -12,7 +12,7 @@ async function getWorkspaces() {
         createdAt: true,
         _count: {
           select: {
-            users: true,
+            members: true,
             companies: true,
           },
         },
@@ -57,7 +57,7 @@ export default async function AdminWorkspacesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <OrgTable initialOrganizations={workspaces} initialPagination={pagination} />
+          <WorkspaceTable initialWorkspaces={workspaces} initialPagination={pagination} />
         </CardContent>
       </Card>
     </div>

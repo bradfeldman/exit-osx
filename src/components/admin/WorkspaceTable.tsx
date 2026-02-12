@@ -14,18 +14,18 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Search, ChevronLeft, ChevronRight, Building2 } from 'lucide-react'
 
-interface Organization {
+interface Workspace {
   id: string
   name: string
   createdAt: string
   _count: {
-    users: number
+    members: number
     companies: number
   }
 }
 
-interface OrgTableProps {
-  initialOrganizations: Organization[]
+interface WorkspaceTableProps {
+  initialWorkspaces: Workspace[]
   initialPagination: {
     page: number
     limit: number
@@ -34,13 +34,13 @@ interface OrgTableProps {
   }
 }
 
-export function OrgTable({ initialOrganizations, initialPagination }: OrgTableProps) {
-  const [organizations, setOrganizations] = useState(initialOrganizations)
+export function WorkspaceTable({ initialWorkspaces, initialPagination }: WorkspaceTableProps) {
+  const [workspaces, setWorkspaces] = useState(initialWorkspaces)
   const [pagination, setPagination] = useState(initialPagination)
   const [search, setSearch] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchOrganizations = async (page: number, searchQuery: string) => {
+  const fetchWorkspaces = async (page: number, searchQuery: string) => {
     setIsLoading(true)
     try {
       const params = new URLSearchParams({
@@ -51,13 +51,13 @@ export function OrgTable({ initialOrganizations, initialPagination }: OrgTablePr
         params.set('search', searchQuery)
       }
 
-      const response = await fetch(`/api/admin/organizations?${params}`)
+      const response = await fetch(`/api/admin/workspaces?${params}`)
       const data = await response.json()
 
-      setOrganizations(data.organizations)
+      setWorkspaces(data.workspaces)
       setPagination(data.pagination)
     } catch (error) {
-      console.error('Failed to fetch organizations:', error)
+      console.error('Failed to fetch workspaces:', error)
     } finally {
       setIsLoading(false)
     }
@@ -65,11 +65,11 @@ export function OrgTable({ initialOrganizations, initialPagination }: OrgTablePr
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    fetchOrganizations(1, search)
+    fetchWorkspaces(1, search)
   }
 
   const handlePageChange = (newPage: number) => {
-    fetchOrganizations(newPage, search)
+    fetchWorkspaces(newPage, search)
   }
 
   return (
@@ -79,7 +79,7 @@ export function OrgTable({ initialOrganizations, initialPagination }: OrgTablePr
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search by organization name..."
+            placeholder="Search by workspace name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -94,7 +94,7 @@ export function OrgTable({ initialOrganizations, initialPagination }: OrgTablePr
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Organization</TableHead>
+              <TableHead>Workspace</TableHead>
               <TableHead>Members</TableHead>
               <TableHead>Companies</TableHead>
               <TableHead>Created</TableHead>
@@ -102,26 +102,26 @@ export function OrgTable({ initialOrganizations, initialPagination }: OrgTablePr
             </TableRow>
           </TableHeader>
           <TableBody>
-            {organizations.length === 0 ? (
+            {workspaces.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center text-muted-foreground">
-                  No organizations found
+                  No workspaces found
                 </TableCell>
               </TableRow>
             ) : (
-              organizations.map((org) => (
-                <TableRow key={org.id}>
+              workspaces.map((ws) => (
+                <TableRow key={ws.id}>
                   <TableCell>
-                    <div className="font-medium">{org.name}</div>
+                    <div className="font-medium">{ws.name}</div>
                   </TableCell>
-                  <TableCell>{org._count.users}</TableCell>
-                  <TableCell>{org._count.companies}</TableCell>
+                  <TableCell>{ws._count.members}</TableCell>
+                  <TableCell>{ws._count.companies}</TableCell>
                   <TableCell>
-                    {new Date(org.createdAt).toLocaleDateString()}
+                    {new Date(ws.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
                     <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/admin/organizations/${org.id}`}>
+                      <Link href={`/admin/workspaces/${ws.id}`}>
                         <Building2 className="h-4 w-4" />
                       </Link>
                     </Button>
@@ -138,7 +138,7 @@ export function OrgTable({ initialOrganizations, initialPagination }: OrgTablePr
         <p className="text-sm text-muted-foreground">
           Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
           {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
-          {pagination.total} organizations
+          {pagination.total} workspaces
         </p>
         <div className="flex gap-2">
           <Button

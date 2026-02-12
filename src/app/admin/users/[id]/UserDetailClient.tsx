@@ -24,12 +24,12 @@ interface UserDetailClientProps {
     updatedAt: string
     workspaces: Array<{
       id: string
-      role: string
+      workspaceRole: string
       joinedAt: string
       workspace: {
         id: string
         name: string
-        _count: { users: number; companies: number }
+        _count: { members: number; companies: number }
       }
     }>
     auditLogs: Array<{
@@ -120,7 +120,7 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
 
   const isDeleteEnabled = deleteConfirmation === user.email
 
-  const soleWorkspaces = user.workspaces.filter(wu => wu.workspace._count.users === 1)
+  const soleWorkspaces = user.workspaces.filter(wu => wu.workspace._count.members === 1)
 
   const hasChanges =
     name !== (user.name || '') ||
@@ -301,7 +301,7 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
                           Joined {new Date(wu.joinedAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <Badge>{wu.role}</Badge>
+                      <Badge>{wu.workspaceRole}</Badge>
                     </div>
                   ))}
                 </div>
