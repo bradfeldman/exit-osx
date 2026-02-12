@@ -281,7 +281,7 @@ export function CompanyTeam({ companyId }: CompanyTeamProps) {
                               <UserAvatar
                                 email={member.user.email}
                                 name={member.user.name || undefined}
-                                size="xs"
+                                size="sm"
                               />
                               <div className="flex flex-col">
                                 <span>{member.user.name || 'No name'}</span>
