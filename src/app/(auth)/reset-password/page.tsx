@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -103,14 +102,16 @@ export default function ResetPasswordPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
         <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground">
           <Link href="/" className="flex items-center gap-3">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/logo-icon.png"
               alt="Exit OSx"
               width={40}
               height={40}
               className="h-10 w-10"
             />
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/wordmark.svg"
               alt="Exit OSx"
               width={120}
@@ -137,14 +138,16 @@ export default function ResetPasswordPage() {
           {/* Mobile logo */}
           <div className="lg:hidden text-center">
             <Link href="/" className="inline-flex items-center gap-2">
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src="/logo-icon.png"
                 alt="Exit OSx"
                 width={32}
                 height={32}
                 className="h-8 w-8"
               />
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src="/wordmark.svg"
                 alt="Exit OSx"
                 width={100}

@@ -3,7 +3,6 @@
 import { useState, Suspense, useEffect, useRef, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -155,14 +154,16 @@ function SignupPageContent() {
         <header className="border-b border-border">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <a href="https://exitosx.com" className="inline-flex items-center gap-2">
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src="/logo.webp"
                 alt="Exit OSx"
                 width={32}
                 height={32}
                 className="h-8 w-8"
               />
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src="/wordmark.svg"
                 alt="Exit OSx"
                 width={100}
@@ -342,14 +343,16 @@ function SignupPageContent() {
       <header className="border-b border-border">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <a href="https://exitosx.com" className="inline-flex items-center gap-2">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/logo.webp"
               alt="Exit OSx"
               width={32}
               height={32}
               className="h-8 w-8"
             />
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/wordmark.svg"
               alt="Exit OSx"
               width={100}
