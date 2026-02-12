@@ -1,12 +1,12 @@
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { OrgDetailClient } from './OrgDetailClient'
+import { WorkspaceDetailClient } from './WorkspaceDetailClient'
 
 async function getWorkspace(id: string) {
   const workspace = await prisma.workspace.findUnique({
     where: { id },
     include: {
-      users: {
+      members: {
         include: {
           user: {
             select: {
@@ -52,9 +52,9 @@ export default async function WorkspaceDetailPage({
     createdAt: workspace.createdAt.toISOString(),
     updatedAt: workspace.updatedAt.toISOString(),
     trialEndsAt: workspace.trialEndsAt?.toISOString() ?? null,
-    users: workspace.users.map(wu => ({
-      ...wu,
-      joinedAt: wu.joinedAt.toISOString(),
+    members: workspace.members.map(wm => ({
+      ...wm,
+      joinedAt: wm.joinedAt.toISOString(),
     })),
     companies: workspace.companies.map(company => ({
       ...company,
@@ -63,5 +63,5 @@ export default async function WorkspaceDetailPage({
     })),
   }
 
-  return <OrgDetailClient organization={serializedWorkspace} />
+  return <WorkspaceDetailClient workspace={serializedWorkspace} />
 }
