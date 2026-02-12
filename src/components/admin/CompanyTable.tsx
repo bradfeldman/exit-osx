@@ -19,7 +19,7 @@ interface Company {
   name: string
   createdAt: string
   updatedAt: string
-  organization: {
+  workspace: {
     id: string
     name: string
     planTier: string
@@ -147,14 +147,14 @@ export function CompanyTable({ initialCompanies, initialPagination }: CompanyTab
               </TableRow>
             ) : (
               companies.map((company) => {
-                const tierCfg = planTierConfig[company.organization.planTier]
+                const tierCfg = planTierConfig[company.workspace.planTier]
                 const weeks = weeksSinceCreation(company.createdAt)
 
                 return (
                   <TableRow key={company.id}>
                     <TableCell>
                       <div className="font-medium">{company.name}</div>
-                      <div className="text-sm text-muted-foreground">{company.organization.name}</div>
+                      <div className="text-sm text-muted-foreground">{company.workspace.name}</div>
                     </TableCell>
                     <TableCell>
                       {tierCfg ? (
@@ -162,7 +162,7 @@ export function CompanyTable({ initialCompanies, initialPagination }: CompanyTab
                           {tierCfg.label}
                         </Badge>
                       ) : (
-                        <Badge variant="outline">{company.organization.planTier}</Badge>
+                        <Badge variant="outline">{company.workspace.planTier}</Badge>
                       )}
                     </TableCell>
                     <TableCell>

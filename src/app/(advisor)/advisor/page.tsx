@@ -23,8 +23,8 @@ import {
 } from 'lucide-react'
 
 interface Client {
-  organizationId: string
-  organizationName: string
+  workspaceId: string
+  workspaceName: string
   companyId: string
   companyName: string
   roleTemplateSlug?: string
@@ -111,7 +111,7 @@ export default function AdvisorDashboardPage() {
     const query = searchQuery.toLowerCase()
     return (
       client.companyName.toLowerCase().includes(query) ||
-      client.organizationName.toLowerCase().includes(query) ||
+      client.workspaceName.toLowerCase().includes(query) ||
       client.company?.icbIndustry?.toLowerCase().includes(query) ||
       client.company?.icbSector?.toLowerCase().includes(query)
     )
@@ -273,7 +273,7 @@ export default function AdvisorDashboardPage() {
                           <div>
                             <h3 className="font-semibold">{client.companyName}</h3>
                             <p className="text-sm text-muted-foreground">
-                              {client.organizationName}
+                              {client.workspaceName}
                             </p>
                           </div>
                           {client.roleTemplateSlug && (

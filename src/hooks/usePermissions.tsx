@@ -11,7 +11,7 @@ interface Permission {
 
 interface PermissionData {
   userId: string
-  organizationId: string
+  workspaceId: string
   companyId?: string
   roleTemplate?: string
   hasCustomOverrides: boolean

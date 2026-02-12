@@ -175,6 +175,17 @@ export function getUpgradeMessage(feature: string): string {
 }
 
 /**
+ * Company limits by plan tier
+ * Foundation and Growth: 1 company
+ * Exit-Ready: up to 3 companies
+ */
+export const COMPANY_LIMITS: Record<PlanTier, number> = {
+  'foundation': 1,
+  'growth': 1,
+  'exit-ready': 3,
+} as const
+
+/**
  * Team member limits by plan
  */
 export const TEAM_MEMBER_LIMITS: Record<PlanTier, number> = {

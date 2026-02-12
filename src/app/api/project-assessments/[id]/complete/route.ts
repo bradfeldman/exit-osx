@@ -106,9 +106,9 @@ export async function POST(
     const dbUser = await prisma.user.findUnique({
       where: { authId: user.id },
       include: {
-        organizations: {
+        workspaces: {
           include: {
-            organization: {
+            workspace: {
               include: { companies: { where: { id: assessment.companyId } } }
             }
           }
@@ -116,8 +116,8 @@ export async function POST(
       }
     })
 
-    const hasAccess = dbUser?.organizations.some(
-      org => org.organization.companies.length > 0
+    const hasAccess = dbUser?.workspaces.some(
+      ws => ws.workspace.companies.length > 0
     )
 
     if (!hasAccess || !dbUser) {

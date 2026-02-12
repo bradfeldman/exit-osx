@@ -11,7 +11,7 @@ async function getCompanies() {
         name: true,
         createdAt: true,
         updatedAt: true,
-        organization: {
+        workspace: {
           select: {
             id: true,
             name: true,
@@ -49,12 +49,12 @@ async function getCompanies() {
   ])
 
   const enriched = companies.map((company) => {
-    const orgUsers = company.organization.users
-    const memberCount = orgUsers.length
+    const workspaceUsers = company.workspace.users
+    const memberCount = workspaceUsers.length
 
     let lastLogin: string | null = null
-    for (const ou of orgUsers) {
-      const session = ou.user.sessions[0]
+    for (const wu of workspaceUsers) {
+      const session = wu.user.sessions[0]
       if (session) {
         if (!lastLogin || session.lastActiveAt.toISOString() > lastLogin) {
           lastLogin = session.lastActiveAt.toISOString()
@@ -67,11 +67,11 @@ async function getCompanies() {
       name: company.name,
       createdAt: company.createdAt.toISOString(),
       updatedAt: company.updatedAt.toISOString(),
-      organization: {
-        id: company.organization.id,
-        name: company.organization.name,
-        planTier: company.organization.planTier,
-        subscriptionStatus: company.organization.subscriptionStatus,
+      workspace: {
+        id: company.workspace.id,
+        name: company.workspace.name,
+        planTier: company.workspace.planTier,
+        subscriptionStatus: company.workspace.subscriptionStatus,
       },
       memberCount,
       lastLogin,

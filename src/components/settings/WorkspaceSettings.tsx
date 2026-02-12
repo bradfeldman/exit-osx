@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { UserAvatar } from '@/components/ui/user-avatar'
-import { UserRole, FunctionalCategory } from '@prisma/client'
+import { UserRole, FunctionalCategory, WorkspaceRole } from '@prisma/client'
 import {
   Crown,
   Briefcase,
@@ -47,7 +47,8 @@ import { cn } from '@/lib/utils'
 // Types
 interface Member {
   id: string
-  role: UserRole
+  role: UserRole // Legacy - still used by invites
+  workspaceRole: WorkspaceRole // New role system
   functionalCategories: FunctionalCategory[]
   joinedAt: string
   isExternalAdvisor: boolean
@@ -82,10 +83,11 @@ interface Invite {
   } | null
 }
 
-interface Organization {
+interface Workspace {
   id: string
   name: string
-  currentUserRole: UserRole
+  currentUserRole: UserRole // Legacy
+  currentUserWorkspaceRole: WorkspaceRole // New
   currentUserId: string
   users: Member[]
   invites: Invite[]
@@ -311,6 +313,20 @@ const roleLabels: Record<'ADMIN' | 'MEMBER', string> = {
   MEMBER: 'Member',
 }
 
+const workspaceRoleLabels: Record<WorkspaceRole, string> = {
+  OWNER: 'Owner',
+  ADMIN: 'Admin',
+  BILLING: 'Billing',
+  MEMBER: 'Member',
+}
+
+const workspaceRoleDescriptions: Record<WorkspaceRole, string> = {
+  OWNER: 'Full control, billing, member management',
+  ADMIN: 'Member management, all features',
+  BILLING: 'Billing and subscription management',
+  MEMBER: 'Standard access to assigned companies',
+}
+
 const permissionLevelIcons: Record<PermissionLevel, React.ElementType> = {
   edit: Pencil,
   view: Eye,
@@ -323,8 +339,8 @@ const permissionLevelLabels: Record<PermissionLevel, string> = {
   hide: 'Hide',
 }
 
-export function OrganizationSettings() {
-  const [organization, setOrganization] = useState<Organization | null>(null)
+export function WorkspaceSettings() {
+  const [workspace, setWorkspace] = useState<Workspace | null>(null)
   const [loading, setLoading] = useState(true)
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
   const [permissionsDialogOpen, setPermissionsDialogOpen] = useState(false)
@@ -346,7 +362,7 @@ export function OrganizationSettings() {
   const [roleTemplates, setRoleTemplates] = useState<RoleTemplate[]>([])
 
   useEffect(() => {
-    loadOrganization()
+    loadWorkspace()
     loadRoleTemplates()
   }, [])
 
@@ -355,17 +371,17 @@ export function OrganizationSettings() {
     setInvitePagePermissions(getDefaultPermissionsForAffiliation(inviteAffiliation))
   }, [inviteAffiliation])
 
-  async function loadOrganization() {
+  async function loadWorkspace() {
     try {
-      const response = await fetch('/api/organizations')
+      const response = await fetch('/api/workspaces')
       if (response.ok) {
         const data = await response.json()
-        if (data.organizations.length > 0) {
-          setOrganization(data.organizations[0])
+        if (data.workspaces.length > 0) {
+          setWorkspace(data.workspaces[0])
         }
       }
     } catch (error) {
-      console.error('Failed to load organization:', error)
+      console.error('Failed to load workspace:', error)
     } finally {
       setLoading(false)
     }
@@ -394,7 +410,7 @@ export function OrganizationSettings() {
   }
 
   async function handleInvite() {
-    if (!organization || !inviteEmail) return
+    if (!workspace || !inviteEmail) return
 
     setInviting(true)
     setInviteError(null)
@@ -413,7 +429,7 @@ export function OrganizationSettings() {
       const customPermsArray = Object.entries(granularPermissions)
         .map(([permission, granted]) => ({ permission, granted }))
 
-      const response = await fetch(`/api/organizations/${organization.id}/invites`, {
+      const response = await fetch(`/api/workspaces/${workspace.id}/invites`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -434,7 +450,7 @@ export function OrganizationSettings() {
       }
 
       setInviteUrl(data.invite.inviteUrl)
-      loadOrganization()
+      loadWorkspace()
     } catch {
       setInviteError('Failed to send invite')
     } finally {
@@ -443,64 +459,68 @@ export function OrganizationSettings() {
   }
 
   async function handleAffiliationChange(userId: string, affiliation: Affiliation) {
-    if (!organization) return
+    if (!workspace) return
 
     const { categories, isExternal } = affiliationToData(affiliation)
 
     try {
       // Update functional categories
-      await fetch(`/api/organizations/${organization.id}/members`, {
+      await fetch(`/api/workspaces/${workspace.id}/members`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, functionalCategories: categories }),
       })
 
       // Update external advisor flag via permissions endpoint
-      const member = organization.users.find(m => m.user.id === userId)
+      const member = workspace.users.find(m => m.user.id === userId)
       if (member) {
-        await fetch(`/api/organizations/${organization.id}/members/${member.id}/permissions`, {
+        await fetch(`/api/workspaces/${workspace.id}/members/${member.id}/permissions`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ isExternalAdvisor: isExternal }),
         })
       }
 
-      loadOrganization()
+      loadWorkspace()
     } catch (error) {
       console.error('Failed to update affiliation:', error)
     }
   }
 
-  async function handleRoleChange(userId: string, newRole: 'ADMIN' | 'MEMBER') {
-    if (!organization) return
+  async function handleRoleChange(userId: string, newRole: WorkspaceRole) {
+    if (!workspace) return
 
     try {
-      const response = await fetch(`/api/organizations/${organization.id}/members`, {
+      const response = await fetch(`/api/workspaces/${workspace.id}/members`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, role: newRole }),
+        body: JSON.stringify({ userId, workspaceRole: newRole }),
       })
 
       if (response.ok) {
-        loadOrganization()
+        loadWorkspace()
+      } else {
+        const data = await response.json()
+        alert(data.error || 'Failed to update role')
       }
     } catch (error) {
       console.error('Failed to update role:', error)
+      alert('Failed to update role')
     }
   }
 
   async function handleRemoveMember(userId: string) {
-    if (!organization) return
+    if (!workspace) return
     if (!confirm('Are you sure you want to remove this member?')) return
 
     try {
       const response = await fetch(
-        `/api/organizations/${organization.id}/members?userId=${userId}`,
+        `/api/workspaces/${workspace.id}/members?userId=${userId}`,
         { method: 'DELETE' }
       )
 
       if (response.ok) {
-        loadOrganization()
+        loadWorkspace()
       }
     } catch (error) {
       console.error('Failed to remove member:', error)
@@ -508,16 +528,16 @@ export function OrganizationSettings() {
   }
 
   async function handleCancelInvite(inviteId: string) {
-    if (!organization) return
+    if (!workspace) return
 
     try {
       const response = await fetch(
-        `/api/organizations/${organization.id}/invites?inviteId=${inviteId}`,
+        `/api/workspaces/${workspace.id}/invites?inviteId=${inviteId}`,
         { method: 'DELETE' }
       )
 
       if (response.ok) {
-        loadOrganization()
+        loadWorkspace()
       }
     } catch (error) {
       console.error('Failed to cancel invite:', error)
@@ -533,12 +553,12 @@ export function OrganizationSettings() {
   }
 
   async function handleLeaveTeam() {
-    if (!organization) return
+    if (!workspace) return
     if (!confirm('Are you sure you want to leave this team? You will lose access to all shared data.')) return
 
     try {
       const response = await fetch(
-        `/api/organizations/${organization.id}/members?userId=${organization.currentUserId}`,
+        `/api/workspaces/${workspace.id}/members?userId=${workspace.currentUserId}`,
         { method: 'DELETE' }
       )
 
@@ -560,8 +580,8 @@ export function OrganizationSettings() {
     setPermissionsDialogOpen(true)
   }
 
-  const canManageMembers = organization?.currentUserRole === 'ADMIN' || organization?.currentUserRole === 'SUPER_ADMIN'
-  const canInvite = canManageMembers || organization?.currentUserRole === 'TEAM_LEADER'
+  const canManageMembers = workspace?.currentUserWorkspaceRole === 'ADMIN' || workspace?.currentUserWorkspaceRole === 'OWNER'
+  const canInvite = canManageMembers
 
   if (loading) {
     return (
@@ -573,11 +593,11 @@ export function OrganizationSettings() {
     )
   }
 
-  if (!organization) {
+  if (!workspace) {
     return (
       <Card>
         <CardContent className="py-8 text-center text-muted-foreground">
-          No organization found
+          No workspace found
         </CardContent>
       </Card>
     )
@@ -591,7 +611,7 @@ export function OrganizationSettings() {
           <div>
             <CardTitle>Exit Team</CardTitle>
             <CardDescription>
-              {organization.users.length} member{organization.users.length !== 1 ? 's' : ''} in {organization.name}
+              {workspace.users.length} member{workspace.users.length !== 1 ? 's' : ''} in {workspace.name}
             </CardDescription>
           </div>
           {canInvite && (
@@ -805,10 +825,10 @@ export function OrganizationSettings() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {organization.users.map((member) => {
+              {workspace.users.map((member) => {
                 const affiliation = dataToAffiliation(member.functionalCategories, member.isExternalAdvisor)
                 const AffiliationIcon = affiliationIcons[affiliation]
-                const displayRole = member.role === 'SUPER_ADMIN' || member.role === 'ADMIN' ? 'ADMIN' : 'MEMBER'
+                const isOwner = member.workspaceRole === 'OWNER'
 
                 return (
                   <TableRow key={member.id}>
@@ -830,22 +850,44 @@ export function OrganizationSettings() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {canManageMembers && member.role !== 'SUPER_ADMIN' ? (
+                      {canManageMembers && !isOwner ? (
                         <Select
-                          value={displayRole}
-                          onValueChange={(value) => handleRoleChange(member.user.id, value as 'ADMIN' | 'MEMBER')}
+                          value={member.workspaceRole}
+                          onValueChange={(value) => handleRoleChange(member.user.id, value as WorkspaceRole)}
                         >
-                          <SelectTrigger className="w-[100px]">
+                          <SelectTrigger className="w-[120px]">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="ADMIN">Admin</SelectItem>
-                            <SelectItem value="MEMBER">Member</SelectItem>
+                            <SelectItem value="ADMIN">
+                              <div className="flex flex-col">
+                                <span>Admin</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {workspaceRoleDescriptions.ADMIN}
+                                </span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="BILLING">
+                              <div className="flex flex-col">
+                                <span>Billing</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {workspaceRoleDescriptions.BILLING}
+                                </span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="MEMBER">
+                              <div className="flex flex-col">
+                                <span>Member</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {workspaceRoleDescriptions.MEMBER}
+                                </span>
+                              </div>
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       ) : (
-                        <Badge variant={member.role === 'SUPER_ADMIN' || member.role === 'ADMIN' ? 'default' : 'secondary'}>
-                          {roleLabels[displayRole]}
+                        <Badge variant={isOwner || member.workspaceRole === 'ADMIN' ? 'default' : 'secondary'}>
+                          {workspaceRoleLabels[member.workspaceRole]}
                         </Badge>
                       )}
                     </TableCell>
@@ -908,7 +950,7 @@ export function OrganizationSettings() {
                       {new Date(member.joinedAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                      {member.user.id === organization?.currentUserId ? (
+                      {member.user.id === workspace?.currentUserId ? (
                         // Current user can leave (unless they're the only admin)
                         <Button
                           variant="ghost"
@@ -941,12 +983,12 @@ export function OrganizationSettings() {
       </Card>
 
       {/* Pending Invites */}
-      {canInvite && organization.invites.length > 0 && (
+      {canInvite && workspace.invites.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Pending Invites</CardTitle>
             <CardDescription>
-              {organization.invites.length} pending invite{organization.invites.length !== 1 ? 's' : ''}
+              {workspace.invites.length} pending invite{workspace.invites.length !== 1 ? 's' : ''}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -961,7 +1003,7 @@ export function OrganizationSettings() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {organization.invites.map((invite) => {
+                {workspace.invites.map((invite) => {
                   const affiliation = dataToAffiliation(invite.functionalCategories, invite.isExternalAdvisor)
                   const AffiliationIcon = affiliationIcons[affiliation]
                   const displayRole = invite.role === 'ADMIN' ? 'ADMIN' : 'MEMBER'
@@ -1038,12 +1080,12 @@ export function OrganizationSettings() {
           </DialogHeader>
           {selectedMember && (
             <MemberPermissionsEditor
-              organizationId={organization.id}
+              workspaceId={workspace.id}
               member={selectedMember}
               roleTemplates={roleTemplates}
               onClose={() => {
                 setPermissionsDialogOpen(false)
-                loadOrganization()
+                loadWorkspace()
               }}
             />
           )}
@@ -1055,12 +1097,12 @@ export function OrganizationSettings() {
 
 // Simplified permissions editor component
 function MemberPermissionsEditor({
-  organizationId,
+  workspaceId,
   member,
   roleTemplates,
   onClose,
 }: {
-  organizationId: string
+  workspaceId: string
   member: Member
   roleTemplates: RoleTemplate[]
   onClose: () => void
@@ -1077,7 +1119,7 @@ function MemberPermissionsEditor({
   async function loadPermissions() {
     try {
       const response = await fetch(
-        `/api/organizations/${organizationId}/members/${member.id}/permissions`
+        `/api/workspaces/${workspaceId}/members/${member.id}/permissions`
       )
       if (response.ok) {
         const data = await response.json()
@@ -1131,7 +1173,7 @@ function MemberPermissionsEditor({
         .map(([permission, granted]) => ({ permission, granted }))
 
       await fetch(
-        `/api/organizations/${organizationId}/members/${member.id}/permissions`,
+        `/api/workspaces/${workspaceId}/members/${member.id}/permissions`,
         {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },

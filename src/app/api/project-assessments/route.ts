@@ -36,9 +36,9 @@ export async function GET(request: NextRequest) {
   const dbUser = await prisma.user.findUnique({
     where: { authId: user.id },
     include: {
-      organizations: {
+      workspaces: {
         include: {
-          organization: {
+          workspace: {
             include: { companies: { where: { id: companyId } } }
           }
         }
@@ -46,8 +46,8 @@ export async function GET(request: NextRequest) {
     }
   })
 
-  const hasAccess = dbUser?.organizations.some(
-    org => org.organization.companies.length > 0
+  const hasAccess = dbUser?.workspaces.some(
+    ws => ws.workspace.companies.length > 0
   )
 
   if (!hasAccess) {
@@ -124,9 +124,9 @@ export async function POST(request: NextRequest) {
   const dbUser = await prisma.user.findUnique({
     where: { authId: user.id },
     include: {
-      organizations: {
+      workspaces: {
         include: {
-          organization: {
+          workspace: {
             include: { companies: { where: { id: companyId } } }
           }
         }
@@ -134,8 +134,8 @@ export async function POST(request: NextRequest) {
     }
   })
 
-  const hasAccess = dbUser?.organizations.some(
-    org => org.organization.companies.length > 0
+  const hasAccess = dbUser?.workspaces.some(
+    ws => ws.workspace.companies.length > 0
   )
 
   if (!hasAccess) {

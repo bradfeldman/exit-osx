@@ -23,17 +23,17 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check organization's subscription tier and user's role
+    // Check workspace's subscription tier and user's role
     // Exit-Ready tier owners get all permissions automatically
-    const orgUser = await prisma.organizationUser.findUnique({
-      where: { id: context.organizationUserId },
+    const workspaceMember = await prisma.workspaceMember.findUnique({
+      where: { id: context.workspaceMemberId },
       include: {
         user: {
           select: {
             userType: true,
           },
         },
-        organization: {
+        workspace: {
           select: {
             planTier: true,
             subscriptionStatus: true,
@@ -42,14 +42,14 @@ export async function GET(request: Request) {
       },
     })
 
-    // If user is organization owner (SUPER_ADMIN/ADMIN) and on Exit-Ready tier, grant all permissions
-    const isOwnerRole = orgUser?.role === 'SUPER_ADMIN' || orgUser?.role === 'ADMIN'
-    const isComped = orgUser?.user.userType === 'COMPED'
-    const isExitReadyOrComped = orgUser?.organization.planTier === 'EXIT_READY' || isComped
-    const hasActiveSubscription = orgUser?.organization.subscriptionStatus !== 'CANCELLED' && orgUser?.organization.subscriptionStatus !== 'EXPIRED'
+    // If user is workspace owner (SUPER_ADMIN/ADMIN) and on Exit-Ready tier, grant all permissions
+    const isOwnerRole = workspaceMember?.role === 'SUPER_ADMIN' || workspaceMember?.role === 'ADMIN'
+    const isComped = workspaceMember?.user.userType === 'COMPED'
+    const isExitReadyOrComped = workspaceMember?.workspace.planTier === 'EXIT_READY' || isComped
+    const hasActiveSubscription = workspaceMember?.workspace.subscriptionStatus !== 'CANCELLED' && workspaceMember?.workspace.subscriptionStatus !== 'EXPIRED'
 
     // Resolve all permissions for this user
-    let resolved = await resolveUserPermissions(context.organizationUserId)
+    let resolved = await resolveUserPermissions(context.workspaceMemberId)
 
     // Override permissions for Exit-Ready owners
     if (isOwnerRole && isExitReadyOrComped && hasActiveSubscription) {
@@ -73,7 +73,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       userId: context.userId,
-      organizationId: context.organizationId,
+      workspaceId: context.workspaceId,
       companyId: context.companyId,
       roleTemplate: resolved.templateSlug,
       hasCustomOverrides: resolved.hasCustomOverrides,

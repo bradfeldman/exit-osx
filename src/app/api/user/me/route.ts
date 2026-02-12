@@ -19,11 +19,11 @@ export async function GET() {
         name: true,
         avatarUrl: true,
         isSuperAdmin: true,
-        organizations: {
+        workspaces: {
           select: {
             role: true,
-            organizationId: true,
-            organization: {
+            workspaceId: true,
+            workspace: {
               select: {
                 id: true,
                 name: true,

@@ -39,7 +39,7 @@ export async function POST(
       include: {
         company: {
           include: {
-            organization: {
+            workspace: {
               include: {
                 users: {
                   where: { user: { authId: user.id } },
@@ -56,14 +56,14 @@ export async function POST(
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }
 
-    if (task.company.organization.users.length === 0) {
+    if (task.company.workspace.users.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     // Check if user is already a team member
-    const existingTeamMember = await prisma.organizationUser.findFirst({
+    const existingTeamMember = await prisma.workspaceMember.findFirst({
       where: {
-        organizationId: task.company.organizationId,
+        workspaceId: task.company.workspaceId,
         user: { email: email.toLowerCase() },
       },
       include: { user: true },
@@ -227,7 +227,7 @@ export async function DELETE(
       include: {
         company: {
           include: {
-            organization: {
+            workspace: {
               include: {
                 users: {
                   where: { user: { authId: user.id } },
@@ -239,7 +239,7 @@ export async function DELETE(
       },
     })
 
-    if (!task || task.company.organization.users.length === 0) {
+    if (!task || task.company.workspace.users.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 

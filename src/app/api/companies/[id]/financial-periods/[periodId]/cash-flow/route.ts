@@ -170,7 +170,7 @@ export async function GET(
     const company = await prisma.company.findUnique({
       where: { id: companyId },
       include: {
-        organization: {
+        workspace: {
           include: {
             users: {
               where: { user: { authId: user.id } }
@@ -184,7 +184,7 @@ export async function GET(
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
-    if (company.organization.users.length === 0) {
+    if (company.workspace.users.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
@@ -374,7 +374,7 @@ export async function PUT(
     const company = await prisma.company.findUnique({
       where: { id: companyId },
       include: {
-        organization: {
+        workspace: {
           include: {
             users: {
               where: { user: { authId: user.id } }
@@ -388,7 +388,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
-    if (company.organization.users.length === 0) {
+    if (company.workspace.users.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 

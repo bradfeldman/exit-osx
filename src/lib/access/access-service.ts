@@ -105,7 +105,14 @@ export async function isUserSubscribingOwner(userId: string, companyId: string):
 }
 
 /**
- * Check if a user can access a company (as owner, staff, or org member)
+ * Check if a user can access a company (as owner, staff, company member, or workspace member)
+ *
+ * Phase 3 — Dual-Read: CompanyMember is checked as an additional access path.
+ * Access is granted if ANY of these conditions are met:
+ * 1. Active CompanyOwnership record
+ * 2. Active CompanyStaffAccess record
+ * 3. CompanyMember record (new model — any role grants access)
+ * 4. WorkspaceMember membership in the company's workspace
  */
 export async function canUserAccessCompany(userId: string, companyId: string): Promise<boolean> {
   // Check ownership
@@ -130,23 +137,34 @@ export async function canUserAccessCompany(userId: string, companyId: string): P
     return true
   }
 
-  // Check organization membership
+  // Check CompanyMember (new model — Phase 3 dual-read)
+  const companyMember = await prisma.companyMember.findUnique({
+    where: {
+      companyId_userId: { companyId, userId },
+    },
+  })
+
+  if (companyMember) {
+    return true
+  }
+
+  // Check workspace membership
   const company = await prisma.company.findUnique({
     where: { id: companyId },
-    select: { organizationId: true },
+    select: { workspaceId: true },
   })
 
   if (company) {
-    const orgMember = await prisma.organizationUser.findUnique({
+    const workspaceMember = await prisma.workspaceMember.findUnique({
       where: {
-        organizationId_userId: {
-          organizationId: company.organizationId,
+        workspaceId_userId: {
+          workspaceId: company.workspaceId,
           userId,
         },
       },
     })
 
-    if (orgMember) {
+    if (workspaceMember) {
       return true
     }
   }
@@ -165,11 +183,11 @@ export async function getCompanyPlanTier(companyId: string): Promise<PlanTier> {
     return 'exit-ready'
   }
 
-  // Get the company to find its organization
+  // Get the company to find its workspace
   const company = await prisma.company.findUnique({
     where: { id: companyId },
     include: {
-      organization: true,
+      workspace: true,
     },
   })
 
@@ -177,8 +195,8 @@ export async function getCompanyPlanTier(companyId: string): Promise<PlanTier> {
     return 'foundation'
   }
 
-  // Use organization's plan tier (this maintains backward compatibility)
-  return toPricingPlanTier(company.organization.planTier)
+  // Use workspace's plan tier (this maintains backward compatibility)
+  return toPricingPlanTier(company.workspace.planTier)
 }
 
 /**
@@ -207,7 +225,7 @@ export async function canAccessCompanyFeature(
  * Personal features require:
  * 1. Being an owner of the company, OR
  * 2. Being staff with the specific feature grant, OR
- * 3. Being an org member with the specific permission grant
+ * 3. Being a workspace member with the specific permission grant
  */
 export async function canAccessPersonalFeature(
   userId: string,
@@ -262,17 +280,17 @@ export async function canAccessPersonalFeature(
     return staffAccess[fieldKey] === true
   }
 
-  // Check organization membership with permission grants
+  // Check workspace membership with permission grants
   const company = await prisma.company.findUnique({
     where: { id: companyId },
-    select: { organizationId: true },
+    select: { workspaceId: true },
   })
 
   if (company) {
-    const orgMember = await prisma.organizationUser.findUnique({
+    const workspaceMember = await prisma.workspaceMember.findUnique({
       where: {
-        organizationId_userId: {
-          organizationId: company.organizationId,
+        workspaceId_userId: {
+          workspaceId: company.workspaceId,
           userId,
         },
       },
@@ -281,7 +299,7 @@ export async function canAccessPersonalFeature(
       },
     })
 
-    if (orgMember) {
+    if (workspaceMember) {
       // Check if the company's plan includes this feature
       const planTier = await getCompanyPlanTier(companyId)
       if (!canAccessPlanFeature(planTier, feature)) {
@@ -296,7 +314,7 @@ export async function canAccessPersonalFeature(
       }
 
       const patterns = permissionPatterns[feature as PersonalFeature]
-      return orgMember.customPermissions.some(
+      return workspaceMember.customPermissions.some(
         p => p.granted && patterns.includes(p.permission)
       )
     }
@@ -321,6 +339,8 @@ export function getPersonalFeatures(): readonly string[] {
 
 /**
  * Get all companies a user can access with their role info
+ *
+ * Phase 3: Also queries CompanyMember records for additional company access.
  */
 export async function getUserAccessibleCompanies(userId: string): Promise<CompanyWithRole[]> {
   // Get owned companies
@@ -345,13 +365,23 @@ export async function getUserAccessibleCompanies(userId: string): Promise<Compan
     },
   })
 
-  // Get companies from organizations the user is a member of
-  const orgMemberships = await prisma.organizationUser.findMany({
+  // Get CompanyMember records (new model — Phase 3)
+  const companyMembers = await prisma.companyMember.findMany({
     where: {
       userId,
     },
     include: {
-      organization: {
+      company: true,
+    },
+  })
+
+  // Get companies from workspaces the user is a member of
+  const workspaceMemberships = await prisma.workspaceMember.findMany({
+    where: {
+      userId,
+    },
+    include: {
+      workspace: {
         include: {
           companies: true,
         },
@@ -389,16 +419,34 @@ export async function getUserAccessibleCompanies(userId: string): Promise<Compan
     })
   }
 
-  // Add organization member companies (if not already added)
-  for (const membership of orgMemberships) {
-    for (const company of membership.organization.companies) {
+  // Add CompanyMember companies (if not already added via ownership/staff)
+  for (const member of companyMembers) {
+    if (member.company.deletedAt) continue
+    if (companies.some(c => c.id === member.company.id)) continue
+
+    // Map CompanyRole to the legacy role concept for backward compatibility
+    // LEAD members are treated as owners, CONTRIBUTOR/VIEWER as staff
+    const role = member.role === 'LEAD' ? 'owner' : 'staff'
+
+    companies.push({
+      id: member.company.id,
+      name: member.company.name,
+      role,
+      isSubscribingOwner: false,
+      status: 'ACTIVE',
+    })
+  }
+
+  // Add workspace member companies (if not already added)
+  for (const membership of workspaceMemberships) {
+    for (const company of membership.workspace.companies) {
       if (company.deletedAt) continue
       if (companies.some(c => c.id === company.id)) continue
 
       companies.push({
         id: company.id,
         name: company.name,
-        role: 'staff', // Org members are treated as staff
+        role: 'staff', // Workspace members are treated as staff
         isSubscribingOwner: false,
         status: 'ACTIVE',
       })
@@ -428,6 +476,8 @@ function mapPermissionsToStaffAccess(
 
 /**
  * Get user's access info for a specific company
+ *
+ * Phase 3: Also checks CompanyMember as an access path between staff and org membership.
  */
 export async function getUserAccessInfo(
   userId: string,
@@ -480,19 +530,39 @@ export async function getUserAccessInfo(
     }
   }
 
-  // Check organization membership (org-level staff via invite)
-  // Get the company's organization
+  // Check CompanyMember (new model — Phase 3 dual-read)
+  const companyMember = await prisma.companyMember.findUnique({
+    where: {
+      companyId_userId: { companyId, userId },
+    },
+  })
+
+  if (companyMember) {
+    const planTier = await getCompanyPlanTier(companyId)
+    // Map CompanyRole to legacy role concept
+    const role = companyMember.role === 'LEAD' ? 'owner' : 'staff'
+    return {
+      userId,
+      userType: user.userType,
+      companyId,
+      role,
+      planTier,
+    }
+  }
+
+  // Check workspace membership (workspace-level staff via invite)
+  // Get the company's workspace
   const company = await prisma.company.findUnique({
     where: { id: companyId },
-    select: { organizationId: true },
+    select: { workspaceId: true },
   })
 
   if (company) {
-    // Check if user is a member of this organization
-    const orgMember = await prisma.organizationUser.findUnique({
+    // Check if user is a member of this workspace
+    const workspaceMember = await prisma.workspaceMember.findUnique({
       where: {
-        organizationId_userId: {
-          organizationId: company.organizationId,
+        workspaceId_userId: {
+          workspaceId: company.workspaceId,
           userId,
         },
       },
@@ -501,16 +571,16 @@ export async function getUserAccessInfo(
       },
     })
 
-    if (orgMember) {
+    if (workspaceMember) {
       const planTier = await getCompanyPlanTier(companyId)
       // Map MemberPermission to staffAccess format
-      const memberStaffAccess = mapPermissionsToStaffAccess(orgMember.customPermissions)
+      const memberStaffAccess = mapPermissionsToStaffAccess(workspaceMember.customPermissions)
 
       return {
         userId,
         userType: user.userType,
         companyId,
-        role: 'staff', // Org members who aren't owners are treated as staff
+        role: 'staff', // Workspace members who aren't owners are treated as staff
         planTier,
         staffAccess: memberStaffAccess,
       }

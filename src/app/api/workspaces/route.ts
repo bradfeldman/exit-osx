@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 
-// GET - List user's organizations
+// GET - List user's workspaces
 export async function GET() {
   const result = await checkPermission('ORG_VIEW')
   if (isAuthError(result)) return result.error
@@ -10,12 +10,12 @@ export async function GET() {
   const { auth } = result
 
   try {
-    const organizations = await prisma.organization.findMany({
+    const workspaces = await prisma.workspace.findMany({
       where: {
-        users: { some: { userId: auth.user.id } }
+        members: { some: { userId: auth.user.id } }
       },
       include: {
-        users: {
+        members: {
           include: {
             user: {
               select: {
@@ -69,17 +69,21 @@ export async function GET() {
     })
 
     // Transform to include user role and user ID in response
-    const orgsWithRoles = organizations.map(org => ({
-      ...org,
-      currentUserRole: org.users.find(u => u.userId === auth.user.id)?.role,
-      currentUserId: auth.user.id,
-    }))
+    const workspacesWithRoles = workspaces.map(workspace => {
+      const currentMember = workspace.members.find(m => m.userId === auth.user.id)
+      return {
+        ...workspace,
+        currentUserRole: currentMember?.role, // Legacy
+        currentUserWorkspaceRole: currentMember?.workspaceRole, // New
+        currentUserId: auth.user.id,
+      }
+    })
 
-    return NextResponse.json({ organizations: orgsWithRoles })
+    return NextResponse.json({ workspaces: workspacesWithRoles })
   } catch (error) {
-    console.error('Error fetching organizations:', error)
+    console.error('Error fetching workspaces:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch organizations' },
+      { error: 'Failed to fetch workspaces' },
       { status: 500 }
     )
   }

@@ -1,4 +1,4 @@
-// PATCH /api/organizations/[id]/members/[memberId]/permissions - Update member permissions
+// PATCH /api/workspaces/[id]/members/[memberId]/permissions - Update member permissions
 // Allows setting role template and custom permission overrides
 
 import { NextResponse } from 'next/server'
@@ -20,13 +20,13 @@ export async function GET(request: Request, { params }: RouteParams) {
     const result = await checkPermission('ORG_VIEW')
     if (isAuthError(result)) return result.error
 
-    const { id: organizationId, memberId } = await params
+    const { id: workspaceId, memberId } = await params
 
-    // Verify the member belongs to this organization
-    const orgUser = await prisma.organizationUser.findFirst({
+    // Verify the member belongs to this workspace
+    const workspaceMember = await prisma.workspaceMember.findFirst({
       where: {
         id: memberId,
-        organizationId,
+        workspaceId,
       },
       include: {
         user: {
@@ -41,7 +41,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       },
     })
 
-    if (!orgUser) {
+    if (!workspaceMember) {
       return NextResponse.json({ error: 'Member not found' }, { status: 404 })
     }
 
@@ -49,18 +49,18 @@ export async function GET(request: Request, { params }: RouteParams) {
     const resolved = await resolveUserPermissions(memberId)
 
     return NextResponse.json({
-      memberId: orgUser.id,
-      user: orgUser.user,
-      role: orgUser.role,
-      isExternalAdvisor: orgUser.isExternalAdvisor,
-      roleTemplate: orgUser.roleTemplate
+      memberId: workspaceMember.id,
+      user: workspaceMember.user,
+      role: workspaceMember.role,
+      isExternalAdvisor: workspaceMember.isExternalAdvisor,
+      roleTemplate: workspaceMember.roleTemplate
         ? {
-            id: orgUser.roleTemplate.id,
-            slug: orgUser.roleTemplate.slug,
-            name: orgUser.roleTemplate.name,
+            id: workspaceMember.roleTemplate.id,
+            slug: workspaceMember.roleTemplate.slug,
+            name: workspaceMember.roleTemplate.name,
           }
         : null,
-      customPermissions: orgUser.customPermissions.map((p) => ({
+      customPermissions: workspaceMember.customPermissions.map((p) => ({
         permission: p.permission,
         granted: p.granted,
       })),
@@ -81,18 +81,18 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     const result = await checkPermission('ORG_MANAGE_MEMBERS')
     if (isAuthError(result)) return result.error
 
-    const { id: organizationId, memberId } = await params
+    const { id: workspaceId, memberId } = await params
     const body = await request.json()
 
-    // Verify the member belongs to this organization
-    const orgUser = await prisma.organizationUser.findFirst({
+    // Verify the member belongs to this workspace
+    const workspaceMember = await prisma.workspaceMember.findFirst({
       where: {
         id: memberId,
-        organizationId,
+        workspaceId,
       },
     })
 
-    if (!orgUser) {
+    if (!workspaceMember) {
       return NextResponse.json({ error: 'Member not found' }, { status: 404 })
     }
 
@@ -129,7 +129,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       }
     }
 
-    // Update organization user
+    // Update workspace member
     const updateData: {
       roleTemplateId?: string | null
       isExternalAdvisor?: boolean
@@ -144,7 +144,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     }
 
     if (Object.keys(updateData).length > 0) {
-      await prisma.organizationUser.update({
+      await prisma.workspaceMember.update({
         where: { id: memberId },
         data: updateData,
       })
@@ -154,14 +154,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     if (customPermissions) {
       // Delete existing custom permissions
       await prisma.memberPermission.deleteMany({
-        where: { organizationUserId: memberId },
+        where: { workspaceMemberId: memberId },
       })
 
       // Create new custom permissions
       if (customPermissions.length > 0) {
         await prisma.memberPermission.createMany({
           data: customPermissions.map((p) => ({
-            organizationUserId: memberId,
+            workspaceMemberId: memberId,
             permission: p.permission,
             granted: p.granted,
           })),
@@ -172,7 +172,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     // Return updated permissions
     const resolved = await resolveUserPermissions(memberId)
 
-    const updatedOrgUser = await prisma.organizationUser.findUnique({
+    const updatedWorkspaceMember = await prisma.workspaceMember.findUnique({
       where: { id: memberId },
       include: {
         user: {
@@ -188,18 +188,18 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     })
 
     return NextResponse.json({
-      memberId: updatedOrgUser!.id,
-      user: updatedOrgUser!.user,
-      role: updatedOrgUser!.role,
-      isExternalAdvisor: updatedOrgUser!.isExternalAdvisor,
-      roleTemplate: updatedOrgUser!.roleTemplate
+      memberId: updatedWorkspaceMember!.id,
+      user: updatedWorkspaceMember!.user,
+      role: updatedWorkspaceMember!.role,
+      isExternalAdvisor: updatedWorkspaceMember!.isExternalAdvisor,
+      roleTemplate: updatedWorkspaceMember!.roleTemplate
         ? {
-            id: updatedOrgUser!.roleTemplate.id,
-            slug: updatedOrgUser!.roleTemplate.slug,
-            name: updatedOrgUser!.roleTemplate.name,
+            id: updatedWorkspaceMember!.roleTemplate.id,
+            slug: updatedWorkspaceMember!.roleTemplate.slug,
+            name: updatedWorkspaceMember!.roleTemplate.name,
           }
         : null,
-      customPermissions: updatedOrgUser!.customPermissions.map((p) => ({
+      customPermissions: updatedWorkspaceMember!.customPermissions.map((p) => ({
         permission: p.permission,
         granted: p.granted,
       })),
@@ -220,23 +220,23 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     const result = await checkPermission('ORG_MANAGE_MEMBERS')
     if (isAuthError(result)) return result.error
 
-    const { id: organizationId, memberId } = await params
+    const { id: workspaceId, memberId } = await params
 
-    // Verify the member belongs to this organization
-    const orgUser = await prisma.organizationUser.findFirst({
+    // Verify the member belongs to this workspace
+    const workspaceMember = await prisma.workspaceMember.findFirst({
       where: {
         id: memberId,
-        organizationId,
+        workspaceId,
       },
     })
 
-    if (!orgUser) {
+    if (!workspaceMember) {
       return NextResponse.json({ error: 'Member not found' }, { status: 404 })
     }
 
     // Delete all custom permissions
     await prisma.memberPermission.deleteMany({
-      where: { organizationUserId: memberId },
+      where: { workspaceMemberId: memberId },
     })
 
     return NextResponse.json({ success: true })

@@ -5,10 +5,10 @@ import { useCompany } from './CompanyContext'
 
 type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'TEAM_LEADER' | 'MEMBER' | 'VIEWER'
 
-interface OrganizationMembership {
+interface WorkspaceMembership {
   role: UserRole
-  organizationId: string
-  organization: {
+  workspaceId: string
+  workspace: {
     id: string
     name: string
   }
@@ -20,15 +20,15 @@ interface CurrentUser {
   name: string | null
   avatarUrl: string | null
   isSuperAdmin: boolean
-  organizations: OrganizationMembership[]
+  workspaces: WorkspaceMembership[]
 }
 
 interface UserRoleContextType {
   user: CurrentUser | null
   isLoading: boolean
   isSuperAdmin: boolean
-  currentOrgRole: UserRole | null
-  isOrgAdmin: boolean
+  currentWorkspaceRole: UserRole | null
+  isWorkspaceAdmin: boolean
   refreshUser: () => Promise<void>
 }
 
@@ -61,23 +61,23 @@ export function UserRoleProvider({ children }: { children: ReactNode }) {
     loadUser()
   }, [])
 
-  // Find the organization for the currently selected company
-  const getCurrentOrgRole = (): UserRole | null => {
+  // Find the workspace for the currently selected company
+  const getCurrentWorkspaceRole = (): UserRole | null => {
     if (!user || !selectedCompanyId) return null
 
-    // Find the company to get its organizationId
+    // Find the company to get its workspaceId
     const selectedCompany = companies.find(c => c.id === selectedCompanyId)
     if (!selectedCompany) return null
 
-    // This requires the company to have organizationId - we may need to fetch it
-    // For now, assume the first organization (most users have one org)
-    const membership = user.organizations[0]
+    // This requires the company to have workspaceId - we may need to fetch it
+    // For now, assume the first workspace (most users have one workspace)
+    const membership = user.workspaces[0]
     return membership?.role || null
   }
 
-  const currentOrgRole = getCurrentOrgRole()
+  const currentWorkspaceRole = getCurrentWorkspaceRole()
   const isSuperAdmin = user?.isSuperAdmin || false
-  const isOrgAdmin = currentOrgRole === 'ADMIN' || currentOrgRole === 'SUPER_ADMIN' || isSuperAdmin
+  const isWorkspaceAdmin = currentWorkspaceRole === 'ADMIN' || currentWorkspaceRole === 'SUPER_ADMIN' || isSuperAdmin
 
   return (
     <UserRoleContext.Provider
@@ -85,8 +85,8 @@ export function UserRoleProvider({ children }: { children: ReactNode }) {
         user,
         isLoading,
         isSuperAdmin,
-        currentOrgRole,
-        isOrgAdmin,
+        currentWorkspaceRole,
+        isWorkspaceAdmin,
         refreshUser: loadUser,
       }}
     >

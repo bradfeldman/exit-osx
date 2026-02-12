@@ -35,8 +35,8 @@ interface TicketDetailClientProps {
       email: string
       name: string | null
       avatarUrl: string | null
-      organizations: Array<{
-        organization: {
+      workspaces: Array<{
+        workspace: {
           id: string
           name: string
         }
@@ -259,17 +259,17 @@ export function TicketDetailClient({ ticket, admins }: TicketDetailClientProps) 
                     <p className="font-medium">{ticket.user.name || 'No name'}</p>
                     <p className="text-sm text-muted-foreground">{ticket.user.email}</p>
                   </div>
-                  {ticket.user.organizations.length > 0 && (
+                  {ticket.user.workspaces.length > 0 && (
                     <div>
-                      <p className="text-sm text-muted-foreground">Organizations:</p>
+                      <p className="text-sm text-muted-foreground">Workspaces:</p>
                       <ul className="text-sm">
-                        {ticket.user.organizations.map((ou) => (
-                          <li key={ou.organization.id}>
+                        {ticket.user.workspaces.map((wu) => (
+                          <li key={wu.workspace.id}>
                             <Link
-                              href={`/admin/organizations/${ou.organization.id}`}
+                              href={`/admin/workspaces/${wu.workspace.id}`}
                               className="hover:underline"
                             >
-                              {ou.organization.name}
+                              {wu.workspace.name}
                             </Link>
                           </li>
                         ))}

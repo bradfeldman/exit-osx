@@ -128,19 +128,19 @@ export async function generateAITasksForCompany(
     select: {
       businessDescription: true,
       icbSubSector: true,
-      organizationId: true,
+      workspaceId: true,
     },
   })
 
   // Check for single user (auto-assign)
   let defaultAssigneeId: string | null = null
   if (company) {
-    const orgUsers = await prisma.organizationUser.findMany({
-      where: { organizationId: company.organizationId },
+    const workspaceMembers = await prisma.workspaceMember.findMany({
+      where: { workspaceId: company.workspaceId },
       select: { userId: true },
     })
-    if (orgUsers.length === 1) {
-      defaultAssigneeId = orgUsers[0].userId
+    if (workspaceMembers.length === 1) {
+      defaultAssigneeId = workspaceMembers[0].userId
     }
   }
 

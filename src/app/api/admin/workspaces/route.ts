@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
       }
     : {}
 
-  const [organizations, total] = await Promise.all([
-    prisma.organization.findMany({
+  const [workspaces, total] = await Promise.all([
+    prisma.workspace.findMany({
       where,
       select: {
         id: true,
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
         updatedAt: true,
         _count: {
           select: {
-            users: true,
+            members: true,
             companies: true,
           },
         },
@@ -40,11 +40,11 @@ export async function GET(request: NextRequest) {
       skip,
       take: limit,
     }),
-    prisma.organization.count({ where }),
+    prisma.workspace.count({ where }),
   ])
 
   return NextResponse.json({
-    organizations,
+    workspaces,
     pagination: {
       page,
       limit,

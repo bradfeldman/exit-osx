@@ -8,7 +8,7 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model Organization {
+model Workspace {
   id                   String               @id @default(cuid())
   name                 String
   createdAt            DateTime             @default(now()) @map("created_at")
@@ -21,11 +21,10 @@ model Organization {
   trialEndsAt          DateTime?            @map("trial_ends_at")
   trialStartedAt       DateTime?            @map("trial_started_at")
   companies            Company[]
-  invites              OrganizationInvite[]
-  users                OrganizationUser[]
-  personalFinancials   PersonalFinancials?
+  invites              WorkspaceInvite[]
+  members              WorkspaceMember[]
 
-  @@map("organizations")
+  @@map("workspaces")
 }
 
 model User {
@@ -48,8 +47,8 @@ model User {
   dataRoomNotifications    DataRoomNotification[]    @relation("NotificationRecipient")
   impersonationsAsAdmin    ImpersonationSession[]    @relation("ImpersonationAdmin")
   impersonationsAsTarget   ImpersonationSession[]    @relation("ImpersonationTarget")
-  sentInvites              OrganizationInvite[]
-  organizations            OrganizationUser[]
+  sentInvites              WorkspaceInvite[]
+  workspaces               WorkspaceMember[]
   ticketsAssigned          SupportTicket[]           @relation("TicketAssignee")
   ticketsCreated           SupportTicket[]           @relation("TicketUser")
   taskAssignments          TaskAssignment[]
@@ -72,6 +71,9 @@ model User {
   accountabilityPartners   AccountabilityPartner[]
   emailPreference          EmailPreference?
   emailLogs                EmailLog[]
+  companyMembers           CompanyMember[]
+  companyMemberAssignments CompanyMember[]            @relation("CompanyMemberAssigner")
+  personalFinancials       PersonalFinancials?
 
   @@map("users")
 }
@@ -113,27 +115,27 @@ model UserSession {
   @@map("user_sessions")
 }
 
-model OrganizationUser {
+model WorkspaceMember {
   id                   String               @id @default(cuid())
-  organizationId       String               @map("organization_id")
+  workspaceId          String               @map("workspace_id")
   userId               String               @map("user_id")
-  role                 UserRole             @default(MEMBER)
+  workspaceRole        WorkspaceRole        @default(MEMBER) @map("workspace_role")
   functionalCategories FunctionalCategory[] @map("functional_categories")
   joinedAt             DateTime             @default(now()) @map("joined_at")
   isExternalAdvisor    Boolean              @default(false) @map("is_external_advisor")
   roleTemplateId       String?              @map("role_template_id")
   customPermissions    MemberPermission[]
-  organization         Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  workspace            Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   roleTemplate         RoleTemplate?        @relation(fields: [roleTemplateId], references: [id])
   user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([organizationId, userId])
-  @@map("organization_users")
+  @@unique([workspaceId, userId])
+  @@map("workspace_members")
 }
 
-model OrganizationInvite {
+model WorkspaceInvite {
   id                   String               @id @default(cuid())
-  organizationId       String               @map("organization_id")
+  workspaceId          String               @map("workspace_id")
   email                String
   role                 UserRole             @default(MEMBER)
   functionalCategories FunctionalCategory[] @map("functional_categories")
@@ -146,16 +148,16 @@ model OrganizationInvite {
   isExternalAdvisor    Boolean              @default(false) @map("is_external_advisor")
   roleTemplateId       String?              @map("role_template_id")
   inviter              User                 @relation(fields: [invitedBy], references: [id])
-  organization         Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  workspace            Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   roleTemplate         RoleTemplate?        @relation(fields: [roleTemplateId], references: [id])
 
-  @@unique([organizationId, email])
-  @@map("organization_invites")
+  @@unique([workspaceId, email])
+  @@map("workspace_invites")
 }
 
 model Company {
   id                       String                       @id @default(cuid())
-  organizationId           String                       @map("organization_id")
+  workspaceId              String                       @map("workspace_id")
   name                     String
   icbIndustry              String                       @map("icb_industry")
   icbSuperSector           String                       @map("icb_super_sector")
@@ -176,7 +178,7 @@ model Company {
   profileQuestionsAnswered Json?                        @map("profile_questions_answered")
   assessments              Assessment[]
   buyerProspects           BuyerProspect[]
-  organization             Organization                 @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  workspace                Workspace                    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   questionPriorities       CompanyQuestionPriority[]
   coreFactors              CoreFactors?
   dataRoomDocuments        DataRoomDocument[]
@@ -196,6 +198,7 @@ model Company {
   staffAccess              CompanyStaffAccess[]
   accessRequests           AccessRequest[]
   companyInvites           CompanyInvite[]
+  members                  CompanyMember[]
   // Contact System - deals where this company is the seller
   deals                    Deal[]
   // Deal Room
@@ -233,20 +236,20 @@ model RoleTemplate {
   isBuiltIn          Boolean              @default(true) @map("is_built_in")
   createdAt          DateTime             @default(now()) @map("created_at")
   updatedAt          DateTime             @updatedAt @map("updated_at")
-  invites            OrganizationInvite[]
-  members            OrganizationUser[]
+  invites            WorkspaceInvite[]
+  members            WorkspaceMember[]
 
   @@map("role_templates")
 }
 
 model MemberPermission {
-  id                 String           @id @default(cuid())
-  organizationUserId String           @map("organization_user_id")
+  id                 String          @id @default(cuid())
+  workspaceMemberId  String          @map("organization_user_id")
   permission         String
   granted            Boolean
-  organizationUser   OrganizationUser @relation(fields: [organizationUserId], references: [id], onDelete: Cascade)
+  workspaceMember    WorkspaceMember @relation(fields: [workspaceMemberId], references: [id], onDelete: Cascade)
 
-  @@unique([organizationUserId, permission])
+  @@unique([workspaceMemberId, permission])
   @@map("member_permissions")
 }
 
@@ -263,21 +266,21 @@ model AdvisorProfile {
 }
 
 model PersonalFinancials {
-  id                  String       @id @default(cuid())
-  retirementAccounts  Json?        @map("retirement_accounts")
-  totalRetirement     Decimal?     @map("total_retirement") @db.Decimal(15, 2)
-  personalAssets      Json?        @map("personal_assets")
-  personalLiabilities Json?        @map("personal_liabilities")
-  netWorth            Decimal?     @map("net_worth") @db.Decimal(15, 2)
-  exitGoalAmount      Decimal?     @map("exit_goal_amount") @db.Decimal(15, 2)
-  retirementAge       Int?         @map("retirement_age")
-  currentAge          Int?         @map("current_age")
-  businessOwnership   Json?        @map("business_ownership")
+  id                  String   @id @default(cuid())
+  retirementAccounts  Json?    @map("retirement_accounts")
+  totalRetirement     Decimal? @map("total_retirement") @db.Decimal(15, 2)
+  personalAssets      Json?    @map("personal_assets")
+  personalLiabilities Json?    @map("personal_liabilities")
+  netWorth            Decimal? @map("net_worth") @db.Decimal(15, 2)
+  exitGoalAmount      Decimal? @map("exit_goal_amount") @db.Decimal(15, 2)
+  retirementAge       Int?     @map("retirement_age")
+  currentAge          Int?     @map("current_age")
+  businessOwnership   Json?    @map("business_ownership")
   notes               String?
-  createdAt           DateTime     @default(now()) @map("created_at")
-  updatedAt           DateTime     @updatedAt @map("updated_at")
-  organizationId      String       @unique @map("organization_id")
-  organization        Organization @relation(fields: [organizationId], references: [id])
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+  userId              String   @unique @map("user_id")
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("personal_financials")
 }
@@ -1615,6 +1618,23 @@ model Alert {
   @@map("alerts")
 }
 
+model CompanyMember {
+  id           String      @id @default(cuid())
+  companyId    String      @map("company_id")
+  userId       String      @map("user_id")
+  role         CompanyRole @default(CONTRIBUTOR)
+  assignedById String?     @map("assigned_by_id")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  company      Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedBy   User?       @relation("CompanyMemberAssigner", fields: [assignedById], references: [id])
+
+  @@unique([companyId, userId])
+  @@index([userId])
+  @@map("company_members")
+}
+
 model CompanyInvite {
   id               String            @id @default(cuid())
   companyId        String            @map("company_id")
@@ -2130,6 +2150,19 @@ enum CompanyMemberStatus {
 enum CompanyInviteType {
   STAFF
   GUEST_OWNER
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  BILLING
+  MEMBER
+}
+
+enum CompanyRole {
+  LEAD
+  CONTRIBUTOR
+  VIEWER
 }
 
 // ============================================

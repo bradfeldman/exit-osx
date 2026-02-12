@@ -21,6 +21,8 @@ export async function POST(
       contactEmail,
       contactTitle,
       notes,
+      tier = 'B_TIER',
+      tags = [],
     } = body
 
     if (!companyName || !contactName || !contactEmail) {
@@ -102,6 +104,8 @@ export async function POST(
         dealId: deal.id,
         canonicalCompanyId: canonicalCompany.id,
         currentStage: 'IDENTIFIED',
+        tier,
+        tags,
         internalNotes: notes ?? null,
         createdByUserId: auth.user.id,
       },

@@ -1,11 +1,18 @@
 // Authorization helper for API routes
 // Provides a consistent way to check permissions across all endpoints
+//
+// Permission System:
+// - CompanyMember provides company-level permissions (LEAD/CONTRIBUTOR/VIEWER)
+// - WorkspaceMember provides workspace-level permissions (OWNER/ADMIN/BILLING/MEMBER)
 
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { Permission, hasPermission } from './permissions'
-import { UserRole } from '@prisma/client'
+import type { CompanyRole } from './company-roles'
+import type { WorkspaceRole } from './workspace-roles'
+import { hasCompanyPermission } from './company-roles'
+import type { UserRole } from '@prisma/client'
 
 export interface AuthContext {
   user: {
@@ -15,9 +22,16 @@ export interface AuthContext {
     name: string | null
     avatarUrl: string | null
   }
-  organizationUser: {
-    organizationId: string
-    role: UserRole
+  workspaceMember: {
+    workspaceId: string
+    workspaceRole: WorkspaceRole
+  }
+  /**
+   * Present when a companyId was provided AND a CompanyMember record exists
+   * for this user+company. Authoritative for company-level permissions.
+   */
+  companyMember?: {
+    role: CompanyRole
   }
 }
 
@@ -31,9 +45,67 @@ export interface AuthError {
 
 export type AuthResult = AuthSuccess | AuthError
 
+// ---------------------------------------------------------------------------
+// WorkspaceRole to UserRole mapping (for legacy permission checks)
+// TODO: Migrate PERMISSIONS constant to use WorkspaceRole directly
+// ---------------------------------------------------------------------------
+
+const WORKSPACE_ROLE_TO_USER_ROLE: Record<WorkspaceRole, UserRole> = {
+  OWNER: 'SUPER_ADMIN',
+  ADMIN: 'ADMIN',
+  BILLING: 'MEMBER',
+  MEMBER: 'MEMBER',
+}
+
+// ---------------------------------------------------------------------------
+// Permission-to-CompanyRole capability mapping
+// Maps legacy Permission names to the coarse-grained CompanyRole capabilities
+// used for the dual-read check.
+// ---------------------------------------------------------------------------
+
+type CompanyCapability = 'view' | 'edit' | 'manageTeam' | 'manageSettings' | 'delete'
+
+/**
+ * Maps a legacy Permission string to the CompanyRole capability it requires.
+ * Permissions that are purely workspace-level (ORG_*) return undefined
+ * because they are not governed by CompanyRole.
+ */
+const PERMISSION_TO_CAPABILITY: Partial<Record<Permission, CompanyCapability>> = {
+  // Company operations
+  COMPANY_VIEW: 'view',
+  COMPANY_UPDATE: 'edit',
+  COMPANY_CREATE: 'manageSettings', // Creating a company requires workspace-level authority
+  COMPANY_DELETE: 'delete',
+
+  // Assessment operations
+  ASSESSMENT_VIEW: 'view',
+  ASSESSMENT_CREATE: 'edit',
+  ASSESSMENT_COMPLETE: 'edit',
+
+  // Task operations
+  TASK_VIEW: 'view',
+  TASK_UPDATE: 'edit',
+  TASK_ASSIGN: 'manageTeam',
+
+  // Workspace operations are workspace-level, not company-level.
+  // They fall through to the legacy WorkspaceMember check.
+  // ORG_VIEW: undefined,
+  // ORG_MANAGE_MEMBERS: undefined,
+  // ORG_INVITE_USERS: undefined,
+  // ORG_UPDATE_ROLES: undefined,
+  // ORG_DELETE: undefined,
+}
+
 /**
  * Check if the current user has a specific permission
  * Optionally verify access to a specific company
+ *
+ * Permission Strategy:
+ * 1. Authenticate and load the user + workspace membership
+ * 2. When a companyId is provided, query CompanyMember for that user+company
+ * 3. If a CompanyMember record exists, check permission against CompanyRole first
+ * 4. For workspace-level permissions, check WorkspaceRole
+ * 5. The returned AuthContext includes workspaceMember (always) and companyMember (when applicable)
  *
  * @param permission - The permission to check
  * @param companyId - Optional company ID to verify access to
@@ -55,13 +127,13 @@ export async function checkPermission(
     }
   }
 
-  // Get user with organization memberships
+  // Get user with workspace memberships
   const dbUser = await prisma.user.findUnique({
     where: { authId: user.id },
     include: {
-      organizations: {
+      workspaces: {
         include: {
-          organization: companyId
+          workspace: companyId
             ? {
                 include: {
                   companies: {
@@ -85,28 +157,28 @@ export async function checkPermission(
     }
   }
 
-  if (dbUser.organizations.length === 0) {
+  if (dbUser.workspaces.length === 0) {
     return {
       error: NextResponse.json(
-        { error: 'No organization', message: 'You are not a member of any organization' },
+        { error: 'No workspace', message: 'You are not a member of any workspace' },
         { status: 403 }
       )
     }
   }
 
-  // Find relevant org membership
-  let orgUser = dbUser.organizations[0]
+  // Find relevant workspace membership
+  let workspaceMember = dbUser.workspaces[0]
 
-  // If a companyId is specified, find the org that contains that company
+  // If a companyId is specified, find the workspace that contains that company
   if (companyId) {
-    const orgWithCompany = dbUser.organizations.find(
-      ou => {
-        const org = ou.organization as { companies?: { id: string }[] }
-        return org.companies && org.companies.length > 0
+    const workspaceWithCompany = dbUser.workspaces.find(
+      wm => {
+        const workspace = wm.workspace as { companies?: { id: string }[] }
+        return workspace.companies && workspace.companies.length > 0
       }
     )
 
-    if (!orgWithCompany) {
+    if (!workspaceWithCompany) {
       return {
         error: NextResponse.json(
           { error: 'Access denied', message: 'You do not have access to this company' },
@@ -115,20 +187,77 @@ export async function checkPermission(
       }
     }
 
-    orgUser = orgWithCompany
+    workspaceMember = workspaceWithCompany
   }
 
-  // Check if user has the required permission
-  if (!hasPermission(orgUser.role, permission)) {
-    return {
-      error: NextResponse.json(
-        {
-          error: 'Insufficient permissions',
-          message: `Your role (${orgUser.role}) does not have permission to perform this action`,
-          required: permission,
-        },
-        { status: 403 }
-      )
+  // ---------------------------------------------------------------------------
+  // Company-level permission check (CompanyMember)
+  // ---------------------------------------------------------------------------
+
+  let companyMemberRole: CompanyRole | undefined
+  let permissionGrantedByCompanyRole = false
+
+  if (companyId) {
+    const companyMember = await prisma.companyMember.findUnique({
+      where: {
+        companyId_userId: { companyId, userId: dbUser.id },
+      },
+      select: { role: true },
+    })
+
+    if (companyMember) {
+      companyMemberRole = companyMember.role as CompanyRole
+
+      // Check if this permission maps to a CompanyRole capability
+      const requiredCapability = PERMISSION_TO_CAPABILITY[permission]
+
+      if (requiredCapability) {
+        // CompanyMember can answer this permission check authoritatively
+        permissionGrantedByCompanyRole = hasCompanyPermission(companyMemberRole, requiredCapability)
+
+        if (!permissionGrantedByCompanyRole) {
+          return {
+            error: NextResponse.json(
+              {
+                error: 'Insufficient permissions',
+                message: `Your company role (${companyMemberRole}) does not have permission to perform this action`,
+                required: permission,
+              },
+              { status: 403 }
+            )
+          }
+        }
+      }
+      // If requiredCapability is undefined, this is a workspace-level permission.
+      // Fall through to workspace check below.
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Workspace-level permission check (WorkspaceMember)
+  // Runs when:
+  // - No companyId was provided (workspace-level request)
+  // - No CompanyMember record exists
+  // - The permission is workspace-level (not mapped to CompanyRole capability)
+  // ---------------------------------------------------------------------------
+
+  const workspaceRole = workspaceMember.workspaceRole as WorkspaceRole
+
+  if (!permissionGrantedByCompanyRole) {
+    // Map WorkspaceRole to UserRole for legacy permission check
+    // TODO: Migrate PERMISSIONS constant to use WorkspaceRole directly
+    const mappedRole = WORKSPACE_ROLE_TO_USER_ROLE[workspaceRole]
+    if (!hasPermission(mappedRole, permission)) {
+      return {
+        error: NextResponse.json(
+          {
+            error: 'Insufficient permissions',
+            message: `Your workspace role (${workspaceRole}) does not have permission to perform this action`,
+            required: permission,
+          },
+          { status: 403 }
+        )
+      }
     }
   }
 
@@ -141,10 +270,11 @@ export async function checkPermission(
         name: dbUser.name,
         avatarUrl: dbUser.avatarUrl,
       },
-      organizationUser: {
-        organizationId: orgUser.organizationId,
-        role: orgUser.role,
+      workspaceMember: {
+        workspaceId: workspaceMember.workspaceId,
+        workspaceRole,
       },
+      ...(companyMemberRole ? { companyMember: { role: companyMemberRole } } : {}),
     },
   }
 }

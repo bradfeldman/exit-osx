@@ -12,18 +12,18 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: organizationId } = await params
+  const { id: workspaceId } = await params
   const result = await checkPermission('ORG_INVITE_USERS')
   if (isAuthError(result)) return result.error
 
   const { auth } = result
 
   try {
-    // Verify user is member of this organization
-    const membership = await prisma.organizationUser.findUnique({
+    // Verify user is member of this workspace
+    const membership = await prisma.workspaceMember.findUnique({
       where: {
-        organizationId_userId: {
-          organizationId,
+        workspaceId_userId: {
+          workspaceId,
           userId: auth.user.id,
         }
       }
@@ -33,9 +33,9 @@ export async function GET(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    const invites = await prisma.organizationInvite.findMany({
+    const invites = await prisma.workspaceInvite.findMany({
       where: {
-        organizationId,
+        workspaceId,
         acceptedAt: null,
       },
       include: {
@@ -73,7 +73,7 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: organizationId } = await params
+  const { id: workspaceId } = await params
   const result = await checkPermission('ORG_INVITE_USERS')
   if (isAuthError(result)) return result.error
 
@@ -176,24 +176,24 @@ export async function POST(
     const existingUser = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
       include: {
-        organizations: {
-          where: { organizationId }
+        workspaces: {
+          where: { workspaceId }
         }
       }
     })
 
-    if (existingUser && existingUser.organizations.length > 0) {
+    if (existingUser && existingUser.workspaces.length > 0) {
       return NextResponse.json(
-        { error: 'User is already a member of this organization' },
+        { error: 'User is already a member of this workspace' },
         { status: 400 }
       )
     }
 
     // Check if there's already a pending invite
-    const existingInvite = await prisma.organizationInvite.findUnique({
+    const existingInvite = await prisma.workspaceInvite.findUnique({
       where: {
-        organizationId_email: {
-          organizationId,
+        workspaceId_email: {
+          workspaceId,
           email: email.toLowerCase(),
         }
       }
@@ -210,9 +210,9 @@ export async function POST(
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 7)
 
-    const invite = await prisma.organizationInvite.create({
+    const invite = await prisma.workspaceInvite.create({
       data: {
-        organizationId,
+        workspaceId,
         email: email.toLowerCase(),
         role,
         functionalCategories: functionalCategories as FunctionalCategory[],
@@ -223,7 +223,7 @@ export async function POST(
         isExternalAdvisor,
       },
       include: {
-        organization: { select: { name: true } },
+        workspace: { select: { name: true } },
         inviter: { select: { name: true, email: true } },
         roleTemplate: { select: { id: true, slug: true, name: true } }
       }
@@ -235,13 +235,13 @@ export async function POST(
     // Get primary company name for better UX in email
     const primaryCompany = await prisma.company.findFirst({
       where: {
-        organizationId,
+        workspaceId,
         deletedAt: null,
       },
       orderBy: { createdAt: 'asc' },
       select: { name: true },
     })
-    const displayName = primaryCompany?.name || invite.organization.name
+    const displayName = primaryCompany?.name || invite.workspace.name
 
     // Send email notification with invite link
     let emailSent = false
@@ -457,7 +457,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: organizationId } = await params
+  const { id: workspaceId } = await params
   const result = await checkPermission('ORG_INVITE_USERS')
   if (isAuthError(result)) return result.error
 
@@ -472,11 +472,11 @@ export async function DELETE(
       )
     }
 
-    // Verify invite belongs to this organization
-    const invite = await prisma.organizationInvite.findFirst({
+    // Verify invite belongs to this workspace
+    const invite = await prisma.workspaceInvite.findFirst({
       where: {
         id: inviteId,
-        organizationId,
+        workspaceId,
       }
     })
 
@@ -487,7 +487,7 @@ export async function DELETE(
       )
     }
 
-    await prisma.organizationInvite.delete({
+    await prisma.workspaceInvite.delete({
       where: { id: inviteId }
     })
 

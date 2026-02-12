@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     const company = await prisma.company.findUnique({
       where: { id: companyId },
       include: {
-        organization: true,
+        workspace: true,
         valuationSnapshots: {
           orderBy: { createdAt: 'desc' },
           take: 1,
@@ -77,9 +77,9 @@ export async function POST(request: Request) {
     }
 
     // Verify user has access to this company
-    const hasAccess = await prisma.organizationUser.findFirst({
+    const hasAccess = await prisma.workspaceMember.findFirst({
       where: {
-        organizationId: company.organizationId,
+        workspaceId: company.workspaceId,
         userId: currentUser.id,
       },
     })

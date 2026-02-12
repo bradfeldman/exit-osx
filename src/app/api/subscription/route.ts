@@ -16,15 +16,15 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const companyId = searchParams.get('companyId')
 
-    // Get user with their organization's subscription info
+    // Get user with their workspace's subscription info
     const dbUser = await prisma.user.findUnique({
       where: { authId: user.id },
       select: {
         id: true,
         userType: true,
-        organizations: {
+        workspaces: {
           select: {
-            organization: {
+            workspace: {
               select: {
                 id: true,
                 name: true,
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
                 stripeSubscriptionId: true,
                 _count: {
                   select: {
-                    users: true,
+                    members: true,
                   }
                 }
               }
@@ -51,15 +51,15 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Determine which organization to use for subscription info
-    let org
+    // Determine which workspace to use for subscription info
+    let workspace
 
     if (companyId) {
-      // If companyId is provided, use that company's organization
+      // If companyId is provided, use that company's workspace
       const company = await prisma.company.findUnique({
         where: { id: companyId },
         select: {
-          organization: {
+          workspace: {
             select: {
               id: true,
               name: true,
@@ -72,7 +72,7 @@ export async function GET(request: Request) {
               stripeSubscriptionId: true,
               _count: {
                 select: {
-                  users: true,
+                  members: true,
                 }
               }
             }
@@ -81,37 +81,37 @@ export async function GET(request: Request) {
       })
 
       if (company) {
-        org = company.organization
+        workspace = company.workspace
       }
     }
 
-    // Fallback to user's first organization if no company provided or company not found
-    if (!org) {
-      const orgMembership = dbUser.organizations[0]
-      if (!orgMembership) {
-        return NextResponse.json({ error: 'No organization found' }, { status: 404 })
+    // Fallback to user's first workspace if no company provided or company not found
+    if (!workspace) {
+      const workspaceMembership = dbUser.workspaces[0]
+      if (!workspaceMembership) {
+        return NextResponse.json({ error: 'No workspace found' }, { status: 404 })
       }
-      org = orgMembership.organization
+      workspace = workspaceMembership.workspace
     }
 
     const now = new Date()
 
     // Calculate trial days remaining
     let trialDaysRemaining: number | null = null
-    const isTrialing = org.subscriptionStatus === 'TRIALING'
+    const isTrialing = workspace.subscriptionStatus === 'TRIALING'
 
-    if (isTrialing && org.trialEndsAt) {
-      const msRemaining = org.trialEndsAt.getTime() - now.getTime()
+    if (isTrialing && workspace.trialEndsAt) {
+      const msRemaining = workspace.trialEndsAt.getTime() - now.getTime()
       trialDaysRemaining = Math.max(0, Math.ceil(msRemaining / (1000 * 60 * 60 * 24)))
     }
 
     // Check if trial has expired but status hasn't been updated
-    const trialExpired = isTrialing && org.trialEndsAt && org.trialEndsAt < now
+    const trialExpired = isTrialing && workspace.trialEndsAt && workspace.trialEndsAt < now
 
     // Get company-specific access info if companyId provided
     let userRole: 'subscribing_owner' | 'owner' | 'staff' | undefined
     let staffAccess: { hasPFSAccess: boolean; hasRetirementAccess: boolean; hasLoansAccess: boolean } | undefined
-    let effectivePlanTier = org.planTier.toLowerCase().replace('_', '-') as 'foundation' | 'growth' | 'exit-ready'
+    let effectivePlanTier = workspace.planTier.toLowerCase().replace('_', '-') as 'foundation' | 'growth' | 'exit-ready'
 
     if (companyId) {
       const accessInfo = await getUserAccessInfo(dbUser.id, companyId)
@@ -128,17 +128,17 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       subscription: {
-        organizationId: org.id,
-        organizationName: org.name,
+        workspaceId: workspace.id,
+        workspaceName: workspace.name,
         planTier: isComped ? 'exit-ready' : effectivePlanTier,
-        status: trialExpired ? 'EXPIRED' : org.subscriptionStatus,
-        billingCycle: org.billingCycle,
+        status: trialExpired ? 'EXPIRED' : workspace.subscriptionStatus,
+        billingCycle: workspace.billingCycle,
         isTrialing: isTrialing && !trialExpired,
-        trialStartedAt: org.trialStartedAt,
-        trialEndsAt: org.trialEndsAt,
+        trialStartedAt: workspace.trialStartedAt,
+        trialEndsAt: workspace.trialEndsAt,
         trialDaysRemaining: trialExpired ? 0 : trialDaysRemaining,
-        teamMemberCount: org._count.users,
-        hasStripeSubscription: !!org.stripeSubscriptionId,
+        teamMemberCount: workspace._count.members,
+        hasStripeSubscription: !!workspace.stripeSubscriptionId,
         // New company-based access fields
         userRole,
         staffAccess,

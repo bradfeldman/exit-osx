@@ -37,7 +37,7 @@ export async function POST(
     const existingTask = await prisma.task.findUnique({
       where: { id },
       include: {
-        company: { select: { id: true, organizationId: true } },
+        company: { select: { id: true, workspaceId: true } },
       },
     })
 

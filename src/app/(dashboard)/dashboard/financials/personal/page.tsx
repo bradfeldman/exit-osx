@@ -770,6 +770,50 @@ export default function PersonalFinancialStatementPage() {
                 Used for retirement planning calculations
               </p>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1.5">Retirement Age</label>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const minAge = currentAge ? currentAge + 5 : 30
+                    setRetirementAge(prev => prev ? Math.max(minAge, prev - 1) : null)
+                  }}
+                  disabled={!canEditPersonal || !retirementAge || (currentAge && retirementAge <= currentAge + 5) || (!currentAge && retirementAge <= 30)}
+                  className="w-9 h-9 rounded-md border border-input hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 transition-colors flex items-center justify-center text-foreground font-medium"
+                >
+                  −
+                </button>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  value={retirementAge !== null ? String(retirementAge) : ''}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/[^0-9]/g, '')
+                    if (!v) { setRetirementAge(null); return }
+                    const minAge = currentAge ? currentAge + 5 : 30
+                    setRetirementAge(Math.min(85, Math.max(minAge, parseInt(v))))
+                  }}
+                  placeholder="e.g. 65"
+                  className="h-9 text-center"
+                  disabled={!canEditPersonal}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const minAge = currentAge ? currentAge + 5 : 30
+                    setRetirementAge(prev => prev ? Math.min(85, prev + 1) : 65)
+                  }}
+                  disabled={!canEditPersonal || (retirementAge !== null && retirementAge >= 85)}
+                  className="w-9 h-9 rounded-md border border-input hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 transition-colors flex items-center justify-center text-foreground font-medium"
+                >
+                  +
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Target age for retirement planning
+              </p>
+            </div>
           </div>
         </CollapsibleSection>
       </div>

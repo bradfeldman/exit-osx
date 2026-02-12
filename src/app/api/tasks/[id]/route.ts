@@ -35,7 +35,7 @@ export async function GET(
           select: {
             id: true,
             name: true,
-            organizationId: true,
+            workspaceId: true,
           },
         },
         assignments: {
@@ -118,7 +118,7 @@ export async function PATCH(
         company: {
           select: {
             id: true,
-            organizationId: true,
+            workspaceId: true,
           },
         },
       },
@@ -201,9 +201,9 @@ export async function PATCH(
     if (primaryAssigneeId !== undefined) {
       // Verify the user is part of the company's organization
       if (primaryAssigneeId) {
-        const isTeamMember = await prisma.organizationUser.findFirst({
+        const isTeamMember = await prisma.workspaceMember.findFirst({
           where: {
-            organizationId: existingTask.company.organizationId,
+            workspaceId: existingTask.company.workspaceId,
             userId: primaryAssigneeId,
           },
         })
@@ -222,9 +222,9 @@ export async function PATCH(
     if (assigneeIds !== undefined) {
       // Verify all assignees are team members
       if (assigneeIds.length > 0) {
-        const teamMembers = await prisma.organizationUser.findMany({
+        const teamMembers = await prisma.workspaceMember.findMany({
           where: {
-            organizationId: existingTask.company.organizationId,
+            workspaceId: existingTask.company.workspaceId,
             userId: { in: assigneeIds },
           },
         })

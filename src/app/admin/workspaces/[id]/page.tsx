@@ -2,8 +2,8 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { OrgDetailClient } from './OrgDetailClient'
 
-async function getOrganization(id: string) {
-  const organization = await prisma.organization.findUnique({
+async function getWorkspace(id: string) {
+  const workspace = await prisma.workspace.findUnique({
     where: { id },
     include: {
       users: {
@@ -31,37 +31,37 @@ async function getOrganization(id: string) {
     },
   })
 
-  return organization
+  return workspace
 }
 
-export default async function OrgDetailPage({
+export default async function WorkspaceDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const organization = await getOrganization(id)
+  const workspace = await getWorkspace(id)
 
-  if (!organization) {
+  if (!workspace) {
     notFound()
   }
 
   // Serialize dates for client component
-  const serializedOrg = {
-    ...organization,
-    createdAt: organization.createdAt.toISOString(),
-    updatedAt: organization.updatedAt.toISOString(),
-    trialEndsAt: organization.trialEndsAt?.toISOString() ?? null,
-    users: organization.users.map(ou => ({
-      ...ou,
-      joinedAt: ou.joinedAt.toISOString(),
+  const serializedWorkspace = {
+    ...workspace,
+    createdAt: workspace.createdAt.toISOString(),
+    updatedAt: workspace.updatedAt.toISOString(),
+    trialEndsAt: workspace.trialEndsAt?.toISOString() ?? null,
+    users: workspace.users.map(wu => ({
+      ...wu,
+      joinedAt: wu.joinedAt.toISOString(),
     })),
-    companies: organization.companies.map(company => ({
+    companies: workspace.companies.map(company => ({
       ...company,
       annualRevenue: company.annualRevenue.toString(),
       createdAt: company.createdAt.toISOString(),
     })),
   }
 
-  return <OrgDetailClient organization={serializedOrg} />
+  return <OrgDetailClient organization={serializedWorkspace} />
 }

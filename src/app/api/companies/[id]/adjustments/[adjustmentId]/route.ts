@@ -19,7 +19,7 @@ export async function DELETE(
     const company = await prisma.company.findUnique({
       where: { id: companyId },
       include: {
-        organization: {
+        workspace: {
           include: {
             users: {
               where: {
@@ -35,7 +35,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
-    if (company.organization.users.length === 0) {
+    if (company.workspace.users.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 

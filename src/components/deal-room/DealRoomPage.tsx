@@ -8,6 +8,7 @@ import { DealRoomTabs, type DealRoomTab } from './DealRoomTabs'
 import { PipelineView } from './pipeline/PipelineView'
 import { BuyerDetailPanel } from './pipeline/BuyerDetailPanel'
 import { DiligenceDataRoom } from './data-room/DiligenceDataRoom'
+import { VirtualDataRoom } from './data-room/VirtualDataRoom'
 import { ActivityFeed } from './activity/ActivityFeed'
 import { ContactsView } from './contacts/ContactsView'
 import { DealRoomLoading } from './DealRoomLoading'
@@ -243,7 +244,7 @@ export function DealRoomPage() {
       )}
 
       {activeTab === 'data-room' && (
-        <DiligenceDataRoom />
+        <VirtualDataRoom />
       )}
 
       {activeTab === 'activity' && selectedCompanyId && (

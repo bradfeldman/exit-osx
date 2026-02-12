@@ -15,10 +15,10 @@ export async function GET(
 
   const { id } = await params
 
-  const organization = await prisma.organization.findUnique({
+  const workspace = await prisma.workspace.findUnique({
     where: { id },
     include: {
-      users: {
+      members: {
         include: {
           user: {
             select: {
@@ -43,17 +43,17 @@ export async function GET(
     },
   })
 
-  if (!organization) {
+  if (!workspace) {
     return NextResponse.json(
-      { error: 'Not found', message: 'Organization not found' },
+      { error: 'Not found', message: 'Workspace not found' },
       { status: 404 }
     )
   }
 
   // Log the view action
-  await logAdminAction(result.admin, 'organization.view', 'Organization', organization.id)
+  await logAdminAction(result.admin, 'workspace.view', 'Workspace', workspace.id)
 
-  return NextResponse.json({ organization })
+  return NextResponse.json({ workspace })
 }
 
 export async function PATCH(
@@ -66,8 +66,8 @@ export async function PATCH(
   const { id } = await params
   const body = await request.json()
 
-  // Get current org state
-  const currentOrg = await prisma.organization.findUnique({
+  // Get current workspace state
+  const currentWorkspace = await prisma.workspace.findUnique({
     where: { id },
     select: {
       name: true,
@@ -77,9 +77,9 @@ export async function PATCH(
     },
   })
 
-  if (!currentOrg) {
+  if (!currentWorkspace) {
     return NextResponse.json(
-      { error: 'Not found', message: 'Organization not found' },
+      { error: 'Not found', message: 'Workspace not found' },
       { status: 404 }
     )
   }
@@ -88,13 +88,13 @@ export async function PATCH(
   const changes: Record<string, { from: unknown; to: unknown }> = {}
 
   // Simple string fields
-  if ('name' in body && body.name !== currentOrg.name) {
+  if ('name' in body && body.name !== currentWorkspace.name) {
     updateData.name = body.name
-    changes.name = { from: currentOrg.name, to: body.name }
+    changes.name = { from: currentWorkspace.name, to: body.name }
   }
 
   // Plan tier (validated against enum)
-  if ('planTier' in body && body.planTier !== currentOrg.planTier) {
+  if ('planTier' in body && body.planTier !== currentWorkspace.planTier) {
     if (!VALID_PLAN_TIERS.has(body.planTier)) {
       return NextResponse.json(
         { error: 'Invalid value', message: `planTier must be one of: ${[...VALID_PLAN_TIERS].join(', ')}` },
@@ -102,11 +102,11 @@ export async function PATCH(
       )
     }
     updateData.planTier = body.planTier
-    changes.planTier = { from: currentOrg.planTier, to: body.planTier }
+    changes.planTier = { from: currentWorkspace.planTier, to: body.planTier }
   }
 
   // Subscription status (validated against enum)
-  if ('subscriptionStatus' in body && body.subscriptionStatus !== currentOrg.subscriptionStatus) {
+  if ('subscriptionStatus' in body && body.subscriptionStatus !== currentWorkspace.subscriptionStatus) {
     if (!VALID_SUBSCRIPTION_STATUSES.has(body.subscriptionStatus)) {
       return NextResponse.json(
         { error: 'Invalid value', message: `subscriptionStatus must be one of: ${[...VALID_SUBSCRIPTION_STATUSES].join(', ')}` },
@@ -114,7 +114,7 @@ export async function PATCH(
       )
     }
     updateData.subscriptionStatus = body.subscriptionStatus
-    changes.subscriptionStatus = { from: currentOrg.subscriptionStatus, to: body.subscriptionStatus }
+    changes.subscriptionStatus = { from: currentWorkspace.subscriptionStatus, to: body.subscriptionStatus }
   }
 
   // Trial end date (null to clear, ISO string to set)
@@ -127,14 +127,14 @@ export async function PATCH(
       )
     }
     updateData.trialEndsAt = newVal
-    changes.trialEndsAt = { from: currentOrg.trialEndsAt, to: newVal }
+    changes.trialEndsAt = { from: currentWorkspace.trialEndsAt, to: newVal }
   }
 
   if (Object.keys(updateData).length === 0) {
-    return NextResponse.json({ organization: currentOrg, message: 'No changes made' })
+    return NextResponse.json({ workspace: currentWorkspace, message: 'No changes made' })
   }
 
-  const organization = await prisma.organization.update({
+  const workspace = await prisma.workspace.update({
     where: { id },
     data: updateData,
     select: {
@@ -148,7 +148,7 @@ export async function PATCH(
   })
 
   // Log the update action
-  await logAdminAction(result.admin, 'organization.update', 'Organization', organization.id, { changes })
+  await logAdminAction(result.admin, 'workspace.update', 'Workspace', workspace.id, { changes })
 
-  return NextResponse.json({ organization })
+  return NextResponse.json({ workspace })
 }

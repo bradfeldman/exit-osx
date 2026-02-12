@@ -41,9 +41,9 @@ export async function POST() {
     let existingUser = await prisma.user.findUnique({
       where: { authId: user.id },
       include: {
-        organizations: {
+        workspaces: {
           include: {
-            organization: {
+            workspace: {
               include: {
                 companies: true
               }
@@ -58,9 +58,9 @@ export async function POST() {
       existingUser = await prisma.user.findUnique({
         where: { email: user.email },
         include: {
-          organizations: {
+          workspaces: {
             include: {
-              organization: {
+              workspace: {
                 include: {
                   companies: true
                 }
@@ -76,9 +76,9 @@ export async function POST() {
           where: { id: existingUser.id },
           data: { authId: user.id },
           include: {
-            organizations: {
+            workspaces: {
               include: {
-                organization: {
+                workspace: {
                   include: {
                     companies: true
                   }
@@ -96,13 +96,13 @@ export async function POST() {
 
     if (existingUser) {
       // Check for pending invites for this user's email
-      const pendingInvite = await prisma.organizationInvite.findFirst({
+      const pendingInvite = await prisma.workspaceInvite.findFirst({
         where: {
           email: { equals: user.email!, mode: 'insensitive' },
           acceptedAt: null,
           expiresAt: { gt: new Date() }
         },
-        select: { token: true, organization: { select: { name: true } } }
+        select: { token: true, workspace: { select: { name: true } } }
       })
 
       // Update avatar URL if missing
@@ -113,9 +113,9 @@ export async function POST() {
             avatarUrl: user.user_metadata?.avatar_url || getGravatarUrl(user.email!, { size: 200 })
           },
           include: {
-            organizations: {
+            workspaces: {
               include: {
-                organization: {
+                workspace: {
                   include: {
                     companies: true
                   }
@@ -129,7 +129,7 @@ export async function POST() {
           isNew: false,
           pendingInvite: pendingInvite ? {
             token: pendingInvite.token,
-            organizationName: pendingInvite.organization.name
+            workspaceName: pendingInvite.workspace.name
           } : null
         })
       }
@@ -139,7 +139,7 @@ export async function POST() {
         isNew: false,
         pendingInvite: pendingInvite ? {
           token: pendingInvite.token,
-          organizationName: pendingInvite.organization.name
+          workspaceName: pendingInvite.workspace.name
         } : null
       })
     }
@@ -148,18 +148,18 @@ export async function POST() {
     const avatarUrl = user.user_metadata?.avatar_url || getGravatarUrl(user.email!, { size: 200 })
 
     // Check for pending invites BEFORE creating user
-    // If user has a pending invite, don't create a personal organization
-    const pendingInvite = await prisma.organizationInvite.findFirst({
+    // If user has a pending invite, don't create a personal workspace
+    const pendingInvite = await prisma.workspaceInvite.findFirst({
       where: {
         email: { equals: user.email!, mode: 'insensitive' },
         acceptedAt: null,
         expiresAt: { gt: new Date() }
       },
-      select: { token: true, organization: { select: { name: true } } }
+      select: { token: true, workspace: { select: { name: true } } }
     })
 
-    // If user has a pending invite, create user WITHOUT a personal organization
-    // They will be added to the invited organization when they accept the invite
+    // If user has a pending invite, create user WITHOUT a personal workspace
+    // They will be added to the invited workspace when they accept the invite
     if (pendingInvite) {
       const newUser = await prisma.user.create({
         data: {
@@ -167,12 +167,12 @@ export async function POST() {
           email: user.email!,
           name: user.user_metadata?.name || user.user_metadata?.full_name,
           avatarUrl,
-          // No organizations created - user will join via invite acceptance
+          // No workspaces created - user will join via invite acceptance
         },
         include: {
-          organizations: {
+          workspaces: {
             include: {
-              organization: {
+              workspace: {
                 include: {
                   companies: true
                 }
@@ -193,12 +193,12 @@ export async function POST() {
         isNew: true,
         pendingInvite: {
           token: pendingInvite.token,
-          organizationName: pendingInvite.organization.name
+          workspaceName: pendingInvite.workspace.name
         }
       })
     }
 
-    // No pending invite - create user with a default personal organization
+    // No pending invite - create user with a default personal workspace
     // Get selected plan from user metadata (set during signup)
     const selectedPlan = user.user_metadata?.selected_plan || 'foundation'
     const subscriptionConfig = getSubscriptionConfig(selectedPlan)
@@ -209,14 +209,14 @@ export async function POST() {
         email: user.email!,
         name: user.user_metadata?.name || user.user_metadata?.full_name,
         avatarUrl,
-        organizations: {
+        workspaces: {
           create: {
             role: 'ADMIN',
-            organization: {
+            workspace: {
               create: {
                 name: user.user_metadata?.name
-                  ? `${user.user_metadata.name}'s Organization`
-                  : 'My Organization',
+                  ? `${user.user_metadata.name}'s Workspace`
+                  : 'My Workspace',
                 // Apply subscription configuration based on selected plan
                 planTier: subscriptionConfig.planTier,
                 subscriptionStatus: subscriptionConfig.subscriptionStatus,
@@ -229,9 +229,9 @@ export async function POST() {
         }
       },
       include: {
-        organizations: {
+        workspaces: {
           include: {
-            organization: {
+            workspace: {
               include: {
                 companies: true
               }

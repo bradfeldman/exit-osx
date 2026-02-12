@@ -3,7 +3,7 @@
 import { Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { OrganizationSettings } from '@/components/settings/OrganizationSettings'
+import { WorkspaceSettings } from '@/components/settings/WorkspaceSettings'
 import { BillingSettings } from '@/components/settings/BillingSettings'
 import { CompanySettings } from '@/components/settings/CompanySettings'
 import { UserSettings } from '@/components/settings/UserSettings'
@@ -52,7 +52,7 @@ export function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="team">
-          <OrganizationSettings />
+          <WorkspaceSettings />
         </TabsContent>
 
         <TabsContent value="billing">

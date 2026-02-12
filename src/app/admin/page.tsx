@@ -8,7 +8,7 @@ async function getDashboardData() {
   try {
     const [
       userCount,
-      orgCount,
+      workspaceCount,
       openTicketCount,
       recentActivityCount,
       companyCount,
@@ -17,7 +17,7 @@ async function getDashboardData() {
       recentTickets,
     ] = await Promise.all([
       prisma.user.count(),
-      prisma.organization.count(),
+      prisma.workspace.count(),
       prisma.supportTicket.count({
         where: { status: { in: ['open', 'in_progress', 'waiting'] } },
       }),
@@ -27,16 +27,16 @@ async function getDashboardData() {
         },
       }),
       prisma.company.count({ where: { deletedAt: null } }),
-      prisma.organization.count({ where: { subscriptionStatus: 'TRIALING' } }),
+      prisma.workspace.count({ where: { subscriptionStatus: 'TRIALING' } }),
       prisma.user.findMany({
         select: {
           id: true,
           name: true,
           email: true,
           createdAt: true,
-          organizations: {
+          workspaces: {
             select: {
-              organization: {
+              workspace: {
                 select: { planTier: true },
               },
             },
@@ -62,7 +62,7 @@ async function getDashboardData() {
 
     return {
       userCount,
-      orgCount,
+      workspaceCount,
       openTicketCount,
       recentActivityCount,
       companyCount,
@@ -74,7 +74,7 @@ async function getDashboardData() {
     console.error('Error fetching admin dashboard data:', error)
     return {
       userCount: 0,
-      orgCount: 0,
+      workspaceCount: 0,
       openTicketCount: 0,
       recentActivityCount: 0,
       companyCount: 0,
@@ -96,7 +96,7 @@ export default async function AdminDashboard() {
 
   const stats = [
     { label: 'Total Users', value: data.userCount, icon: Users },
-    { label: 'Organizations', value: data.orgCount, icon: Building2 },
+    { label: 'Workspaces', value: data.workspaceCount, icon: Building2 },
     { label: 'Open Tickets', value: data.openTicketCount, icon: Ticket },
     { label: 'Activity (24h)', value: data.recentActivityCount, icon: Activity },
     { label: 'Companies', value: data.companyCount, icon: Building },
@@ -152,7 +152,7 @@ export default async function AdminDashboard() {
             ) : (
               <div className="space-y-3">
                 {data.recentUsers.map((user) => {
-                  const tier = user.organizations[0]?.organization.planTier
+                  const tier = user.workspaces[0]?.workspace.planTier
                   return (
                     <Link
                       key={user.id}

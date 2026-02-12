@@ -25,10 +25,10 @@ export async function POST(
 
   try {
     // Find the invite
-    const invite = await prisma.organizationInvite.findUnique({
+    const invite = await prisma.workspaceInvite.findUnique({
       where: { token },
       include: {
-        organization: {
+        workspace: {
           select: {
             id: true,
             name: true,
@@ -94,10 +94,10 @@ export async function POST(
     }
 
     // Check if user is already a member
-    const existingMembership = await prisma.organizationUser.findUnique({
+    const existingMembership = await prisma.workspaceMember.findUnique({
       where: {
-        organizationId_userId: {
-          organizationId: invite.organizationId,
+        workspaceId_userId: {
+          workspaceId: invite.workspaceId,
           userId: dbUser.id,
         }
       }
@@ -105,23 +105,23 @@ export async function POST(
 
     if (existingMembership) {
       // Mark invite as accepted and return
-      await prisma.organizationInvite.update({
+      await prisma.workspaceInvite.update({
         where: { id: invite.id },
         data: { acceptedAt: new Date() }
       })
 
       return NextResponse.json({
         success: true,
-        message: 'You are already a member of this organization',
-        organization: invite.organization,
+        message: 'You are already a member of this workspace',
+        workspace: invite.workspace,
       })
     }
 
-    // Add user to organization and mark invite as accepted
-    // First create the organization user
-    const orgUser = await prisma.organizationUser.create({
+    // Add user to workspace and mark invite as accepted
+    // First create the workspace member
+    const workspaceMember = await prisma.workspaceMember.create({
       data: {
-        organizationId: invite.organizationId,
+        workspaceId: invite.workspaceId,
         userId: dbUser.id,
         role: invite.role,
         functionalCategories: invite.functionalCategories,
@@ -136,7 +136,7 @@ export async function POST(
       if (customPerms.length > 0) {
         await prisma.memberPermission.createMany({
           data: customPerms.map((p) => ({
-            organizationUserId: orgUser.id,
+            workspaceMemberId: workspaceMember.id,
             permission: p.permission,
             granted: p.granted,
           })),
@@ -145,7 +145,7 @@ export async function POST(
     }
 
     // Mark invite as accepted
-    await prisma.organizationInvite.update({
+    await prisma.workspaceInvite.update({
       where: { id: invite.id },
       data: { acceptedAt: new Date() }
     })
@@ -167,12 +167,12 @@ export async function POST(
     }
 
     // Use company name if available for better UX
-    const displayName = invite.organization.companies[0]?.name || invite.organization.name
+    const displayName = invite.workspace.companies[0]?.name || invite.workspace.name
 
     return NextResponse.json({
       success: true,
       message: `You have joined ${displayName}`,
-      organization: invite.organization,
+      workspace: invite.workspace,
     })
   } catch (error) {
     console.error('Error accepting invite:', error)
@@ -202,10 +202,10 @@ export async function GET(
   console.log('[Invite API] Looking up token:', token?.substring(0, 10) + '...')
 
   try {
-    const invite = await prisma.organizationInvite.findUnique({
+    const invite = await prisma.workspaceInvite.findUnique({
       where: { token },
       include: {
-        organization: {
+        workspace: {
           select: {
             name: true,
             companies: {
@@ -222,7 +222,7 @@ export async function GET(
     })
 
     // DEBUG: Log result
-    console.log('[Invite API] Invite found:', !!invite, invite ? `(org: ${invite.organization.name})` : '')
+    console.log('[Invite API] Invite found:', !!invite, invite ? `(workspace: ${invite.workspace.name})` : '')
 
     // SECURITY: Return generic error to prevent token enumeration
     // Don't reveal whether token exists, is expired, or was already used
@@ -247,8 +247,8 @@ export async function GET(
       select: { id: true }
     })
 
-    // Get the primary company name (first company in org) for better UX
-    const primaryCompanyName = invite.organization.companies[0]?.name
+    // Get the primary company name (first company in workspace) for better UX
+    const primaryCompanyName = invite.workspace.companies[0]?.name
 
     return NextResponse.json({
       invite: {
@@ -256,8 +256,8 @@ export async function GET(
         // Don't expose full email to prevent info leakage
         emailHint: invite.email.replace(/(.{2})(.*)(@.*)/, '$1***$3'),
         role: invite.role,
-        organizationName: invite.organization.name,
-        // Show company name if available, otherwise fall back to org name
+        workspaceName: invite.workspace.name,
+        // Show company name if available, otherwise fall back to workspace name
         companyName: primaryCompanyName || null,
         inviterName: invite.inviter.name || 'A team member',
         roleTemplate: invite.roleTemplate ? { name: invite.roleTemplate.name, icon: invite.roleTemplate.icon } : null,

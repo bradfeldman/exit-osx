@@ -2,10 +2,10 @@ import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { OrgTable } from '@/components/admin/OrgTable'
 
-async function getOrganizations() {
+async function getWorkspaces() {
   const limit = 20
-  const [organizations, total] = await Promise.all([
-    prisma.organization.findMany({
+  const [workspaces, total] = await Promise.all([
+    prisma.workspace.findMany({
       select: {
         id: true,
         name: true,
@@ -20,13 +20,13 @@ async function getOrganizations() {
       orderBy: { createdAt: 'desc' },
       take: limit,
     }),
-    prisma.organization.count(),
+    prisma.workspace.count(),
   ])
 
   return {
-    organizations: organizations.map(org => ({
-      ...org,
-      createdAt: org.createdAt.toISOString(),
+    workspaces: workspaces.map(workspace => ({
+      ...workspace,
+      createdAt: workspace.createdAt.toISOString(),
     })),
     pagination: {
       page: 1,
@@ -37,27 +37,27 @@ async function getOrganizations() {
   }
 }
 
-export default async function AdminOrganizationsPage() {
-  const { organizations, pagination } = await getOrganizations()
+export default async function AdminWorkspacesPage() {
+  const { workspaces, pagination } = await getWorkspaces()
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Organizations</h1>
+        <h1 className="text-2xl font-bold">Workspaces</h1>
         <p className="text-muted-foreground">
-          Manage organizations and their members
+          Manage workspaces and their members
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All Organizations</CardTitle>
+          <CardTitle>All Workspaces</CardTitle>
           <CardDescription>
-            {pagination.total} organizations in the system
+            {pagination.total} workspaces in the system
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <OrgTable initialOrganizations={organizations} initialPagination={pagination} />
+          <OrgTable initialOrganizations={workspaces} initialPagination={pagination} />
         </CardContent>
       </Card>
     </div>

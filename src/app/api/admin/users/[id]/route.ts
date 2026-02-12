@@ -15,9 +15,9 @@ export async function GET(
   const user = await prisma.user.findUnique({
     where: { id },
     include: {
-      organizations: {
+      workspaces: {
         include: {
-          organization: {
+          workspace: {
             select: {
               id: true,
               name: true,
@@ -185,18 +185,18 @@ export async function DELETE(
     )
   }
 
-  // Find orgs where this user is the sole member — these become orphaned after deletion
-  const userOrgs = await prisma.organization.findMany({
+  // Find workspaces where this user is the sole member — these become orphaned after deletion
+  const userWorkspaces = await prisma.workspace.findMany({
     where: {
-      users: { some: { userId: id } },
+      members: { some: { userId: id } },
     },
     select: {
       id: true,
       name: true,
-      _count: { select: { users: true } },
+      _count: { select: { members: true } },
     },
   })
-  const orgsToDelete = userOrgs.filter(org => org._count.users === 1)
+  const workspacesToDelete = userWorkspaces.filter(ws => ws._count.members === 1)
 
   try {
     // Log before deletion (so we capture the user info)
@@ -204,7 +204,7 @@ export async function DELETE(
       deletedEmail: user.email,
       deletedName: user.name,
       reason: reason || null,
-      deletedOrganizations: orgsToDelete.map(o => ({ id: o.id, name: o.name })),
+      deletedWorkspaces: workspacesToDelete.map(ws => ({ id: ws.id, name: ws.name })),
     })
 
     // Delete from Supabase Auth first (using service role client)
@@ -225,11 +225,11 @@ export async function DELETE(
       where: { id },
     })
 
-    // Delete orphaned orgs (sole-member orgs now have zero members)
-    // Organization → Company has onDelete: Cascade, so companies are auto-deleted
-    if (orgsToDelete.length > 0) {
-      await prisma.organization.deleteMany({
-        where: { id: { in: orgsToDelete.map(o => o.id) } },
+    // Delete orphaned workspaces (sole-member workspaces now have zero members)
+    // Workspace → Company has onDelete: Cascade, so companies are auto-deleted
+    if (workspacesToDelete.length > 0) {
+      await prisma.workspace.deleteMany({
+        where: { id: { in: workspacesToDelete.map(ws => ws.id) } },
       })
     }
 

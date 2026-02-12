@@ -136,22 +136,23 @@ export async function POST(
       })
     }
 
-    // Add user to the organization if not already a member
-    const existingMembership = await prisma.organizationUser.findUnique({
+    // Add user to the workspace if not already a member
+    const existingMembership = await prisma.workspaceMember.findUnique({
       where: {
-        organizationId_userId: {
-          organizationId: invite.task.company.organizationId,
+        workspaceId_userId: {
+          workspaceId: invite.task.company.workspaceId,
           userId: dbUser.id,
         },
       },
     })
 
     if (!existingMembership) {
-      await prisma.organizationUser.create({
+      await prisma.workspaceMember.create({
         data: {
-          organizationId: invite.task.company.organizationId,
+          workspaceId: invite.task.company.workspaceId,
           userId: dbUser.id,
           role: 'MEMBER',
+          workspaceRole: 'MEMBER',
         },
       })
     }

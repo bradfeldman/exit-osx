@@ -1,8 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface AddBuyerFormProps {
   onAdd: (data: {
@@ -11,6 +19,8 @@ interface AddBuyerFormProps {
     contactName: string
     contactEmail: string
     notes?: string
+    tier: string
+    tags: string[]
   }) => void
   isAdding: boolean
 }
@@ -22,6 +32,9 @@ export function AddBuyerForm({ onAdd, isAdding }: AddBuyerFormProps) {
   const [contactName, setContactName] = useState('')
   const [contactEmail, setContactEmail] = useState('')
   const [notes, setNotes] = useState('')
+  const [tier, setTier] = useState('B_TIER')
+  const [tags, setTags] = useState<string[]>([])
+  const [tagInput, setTagInput] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const validate = () => {
@@ -34,6 +47,25 @@ export function AddBuyerForm({ onAdd, isAdding }: AddBuyerFormProps) {
     return Object.keys(newErrors).length === 0
   }
 
+  const handleAddTag = () => {
+    const trimmedTag = tagInput.trim()
+    if (trimmedTag && !tags.includes(trimmedTag)) {
+      setTags([...tags, trimmedTag])
+      setTagInput('')
+    }
+  }
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove))
+  }
+
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleAddTag()
+    }
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!validate()) return
@@ -44,12 +76,17 @@ export function AddBuyerForm({ onAdd, isAdding }: AddBuyerFormProps) {
       contactName: contactName.trim(),
       contactEmail: contactEmail.trim(),
       notes: notes.trim() || undefined,
+      tier,
+      tags,
     })
 
     setCompanyName('')
     setContactName('')
     setContactEmail('')
     setNotes('')
+    setTier('B_TIER')
+    setTags([])
+    setTagInput('')
     setIsOpen(false)
   }
 
@@ -97,6 +134,54 @@ export function AddBuyerForm({ onAdd, isAdding }: AddBuyerFormProps) {
           <option value="MANAGEMENT">Management</option>
           <option value="OTHER">Other</option>
         </select>
+      </div>
+
+      <div>
+        <Select value={tier} onValueChange={setTier}>
+          <SelectTrigger className="w-full text-sm h-8 border-b border-border/50 rounded-none border-x-0 border-t-0 shadow-none focus:border-[var(--burnt-orange)] focus:ring-0 px-0">
+            <SelectValue placeholder="Select tier" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="A_TIER">A-Tier (Strategic Fit)</SelectItem>
+            <SelectItem value="B_TIER">B-Tier (Good Potential)</SelectItem>
+            <SelectItem value="C_TIER">C-Tier (Worth Exploring)</SelectItem>
+            <SelectItem value="D_TIER">D-Tier (Long Shot)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <div className="flex gap-2 mb-1">
+          <input
+            type="text"
+            placeholder="Add tags (press Enter)..."
+            value={tagInput}
+            onChange={e => setTagInput(e.target.value)}
+            onKeyDown={handleTagInputKeyDown}
+            onBlur={handleAddTag}
+            className="flex-1 text-sm bg-transparent border-b border-border/50 pb-1 focus:outline-none focus:border-[var(--burnt-orange)] text-foreground placeholder:text-muted-foreground"
+          />
+        </div>
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {tags.map(tag => (
+              <Badge
+                key={tag}
+                variant="secondary"
+                className="text-xs pl-2 pr-1 py-0.5 gap-1"
+              >
+                {tag}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveTag(tag)}
+                  className="hover:bg-muted-foreground/20 rounded-full p-0.5 transition-colors"
+                >
+                  <X className="w-2.5 h-2.5" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex gap-2">

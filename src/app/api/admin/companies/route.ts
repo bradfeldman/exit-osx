@@ -29,13 +29,13 @@ export async function GET(request: NextRequest) {
         name: true,
         createdAt: true,
         updatedAt: true,
-        organization: {
+        workspace: {
           select: {
             id: true,
             name: true,
             planTier: true,
             subscriptionStatus: true,
-            users: {
+            members: {
               select: {
                 user: {
                   select: {
@@ -69,13 +69,13 @@ export async function GET(request: NextRequest) {
 
   // Compute member count and last login from nested data
   const enriched = companies.map((company) => {
-    const orgUsers = company.organization.users
-    const memberCount = orgUsers.length
+    const workspaceMembers = company.workspace.members
+    const memberCount = workspaceMembers.length
 
-    // Find the most recent session across all org users
+    // Find the most recent session across all workspace members
     let lastLogin: string | null = null
-    for (const ou of orgUsers) {
-      const session = ou.user.sessions[0]
+    for (const member of workspaceMembers) {
+      const session = member.user.sessions[0]
       if (session) {
         if (!lastLogin || session.lastActiveAt.toISOString() > lastLogin) {
           lastLogin = session.lastActiveAt.toISOString()
@@ -88,11 +88,11 @@ export async function GET(request: NextRequest) {
       name: company.name,
       createdAt: company.createdAt.toISOString(),
       updatedAt: company.updatedAt.toISOString(),
-      organization: {
-        id: company.organization.id,
-        name: company.organization.name,
-        planTier: company.organization.planTier,
-        subscriptionStatus: company.organization.subscriptionStatus,
+      workspace: {
+        id: company.workspace.id,
+        name: company.workspace.name,
+        planTier: company.workspace.planTier,
+        subscriptionStatus: company.workspace.subscriptionStatus,
       },
       memberCount,
       lastLogin,

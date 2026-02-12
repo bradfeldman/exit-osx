@@ -10,8 +10,8 @@ export async function GET(request: Request) {
   try {
     const now = new Date()
 
-    // Find all organizations with expired trials
-    const expiredTrials = await prisma.organization.findMany({
+    // Find all workspaces with expired trials
+    const expiredTrials = await prisma.workspace.findMany({
       where: {
         subscriptionStatus: 'TRIALING',
         trialEndsAt: {
@@ -35,10 +35,10 @@ export async function GET(request: Request) {
     }
 
     // Downgrade expired trials to Foundation
-    const result = await prisma.organization.updateMany({
+    const result = await prisma.workspace.updateMany({
       where: {
         id: {
-          in: expiredTrials.map(org => org.id)
+          in: expiredTrials.map(workspace => workspace.id)
         }
       },
       data: {
@@ -49,14 +49,14 @@ export async function GET(request: Request) {
       }
     })
 
-    console.log(`[Cron] Downgraded ${result.count} organizations from trial to Foundation:`,
-      expiredTrials.map(org => ({ id: org.id, name: org.name, trialEndsAt: org.trialEndsAt }))
+    console.log(`[Cron] Downgraded ${result.count} workspaces from trial to Foundation:`,
+      expiredTrials.map(workspace => ({ id: workspace.id, name: workspace.name, trialEndsAt: workspace.trialEndsAt }))
     )
 
     return NextResponse.json({
       message: `Downgraded ${result.count} expired trials to Foundation`,
       processed: result.count,
-      organizations: expiredTrials.map(org => org.name)
+      workspaces: expiredTrials.map(workspace => workspace.name)
     })
 
   } catch (error) {

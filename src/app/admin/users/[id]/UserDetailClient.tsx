@@ -22,11 +22,11 @@ interface UserDetailClientProps {
     isSuperAdmin: boolean
     createdAt: string
     updatedAt: string
-    organizations: Array<{
+    workspaces: Array<{
       id: string
       role: string
       joinedAt: string
-      organization: {
+      workspace: {
         id: string
         name: string
         _count: { users: number; companies: number }
@@ -120,7 +120,7 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
 
   const isDeleteEnabled = deleteConfirmation === user.email
 
-  const soleOrgs = user.organizations.filter(ou => ou.organization._count.users === 1)
+  const soleWorkspaces = user.workspaces.filter(wu => wu.workspace._count.users === 1)
 
   const hasChanges =
     name !== (user.name || '') ||
@@ -151,8 +151,8 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
       <Tabs defaultValue="profile">
         <TabsList>
           <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="organizations">
-            Organizations ({user.organizations.length})
+          <TabsTrigger value="workspaces">
+            Workspaces ({user.workspaces.length})
           </TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
           <TabsTrigger value="tickets">Tickets</TabsTrigger>
@@ -270,38 +270,38 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
           )}
         </TabsContent>
 
-        <TabsContent value="organizations">
+        <TabsContent value="workspaces">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
-                Organizations
+                Workspaces
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {user.organizations.length === 0 ? (
+              {user.workspaces.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  User is not a member of any organization
+                  User is not a member of any workspace
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {user.organizations.map((ou) => (
+                  {user.workspaces.map((wu) => (
                     <div
-                      key={ou.id}
+                      key={wu.id}
                       className="flex items-center justify-between border-b pb-3 last:border-0"
                     >
                       <div>
                         <Link
-                          href={`/admin/organizations/${ou.organization.id}`}
+                          href={`/admin/workspaces/${wu.workspace.id}`}
                           className="font-medium hover:underline"
                         >
-                          {ou.organization.name}
+                          {wu.workspace.name}
                         </Link>
                         <p className="text-sm text-muted-foreground">
-                          Joined {new Date(ou.joinedAt).toLocaleDateString()}
+                          Joined {new Date(wu.joinedAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <Badge>{ou.role}</Badge>
+                      <Badge>{wu.role}</Badge>
                     </div>
                   ))}
                 </div>
@@ -412,25 +412,25 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
               </p>
             </div>
 
-            {soleOrgs.length > 0 && (
+            {soleWorkspaces.length > 0 && (
               <div className="rounded-md border border-amber-200 bg-amber-50 p-4">
                 <div className="flex gap-3">
                   <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
                   <div className="text-sm text-amber-800">
                     <p className="font-medium">
-                      The following organizations will also be permanently deleted because
+                      The following workspaces will also be permanently deleted because
                       this user is the only member:
                     </p>
                     <ul className="mt-2 list-disc list-inside space-y-1">
-                      {soleOrgs.map(ou => (
-                        <li key={ou.organization.id}>
-                          {ou.organization.name} ({ou.organization._count.companies}{' '}
-                          {ou.organization._count.companies === 1 ? 'company' : 'companies'})
+                      {soleWorkspaces.map(wu => (
+                        <li key={wu.workspace.id}>
+                          {wu.workspace.name} ({wu.workspace._count.companies}{' '}
+                          {wu.workspace._count.companies === 1 ? 'company' : 'companies'})
                         </li>
                       ))}
                     </ul>
                     <p className="mt-2">
-                      All companies, assessments, evidence, and data within these organizations
+                      All companies, assessments, evidence, and data within these workspaces
                       will be permanently deleted.
                     </p>
                   </div>

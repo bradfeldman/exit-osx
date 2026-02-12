@@ -1,25 +1,25 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
-import { UserRole, FunctionalCategory } from '@prisma/client'
+import { UserRole, FunctionalCategory, WorkspaceRole } from '@prisma/client'
 
-// GET - List organization members
+// GET - List workspace members
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: organizationId } = await params
+  const { id: workspaceId } = await params
   const result = await checkPermission('ORG_VIEW')
   if (isAuthError(result)) return result.error
 
   const { auth } = result
 
   try {
-    // Verify user is member of this organization
-    const membership = await prisma.organizationUser.findUnique({
+    // Verify user is member of this workspace
+    const membership = await prisma.workspaceMember.findUnique({
       where: {
-        organizationId_userId: {
-          organizationId,
+        workspaceId_userId: {
+          workspaceId,
           userId: auth.user.id,
         }
       }
@@ -29,8 +29,8 @@ export async function GET(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    const members = await prisma.organizationUser.findMany({
-      where: { organizationId },
+    const members = await prisma.workspaceMember.findMany({
+      where: { workspaceId },
       include: {
         user: {
           select: {
@@ -59,14 +59,14 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: organizationId } = await params
+  const { id: workspaceId } = await params
   const result = await checkPermission('ORG_UPDATE_ROLES')
   if (isAuthError(result)) return result.error
 
   const { auth } = result
 
   try {
-    const { userId, role, functionalCategories } = await request.json()
+    const { userId, role, workspaceRole, functionalCategories } = await request.json()
 
     if (!userId) {
       return NextResponse.json(
@@ -76,9 +76,13 @@ export async function PATCH(
     }
 
     // Build update data object
-    const updateData: { role?: UserRole; functionalCategories?: FunctionalCategory[] } = {}
+    const updateData: {
+      role?: UserRole
+      workspaceRole?: WorkspaceRole
+      functionalCategories?: FunctionalCategory[]
+    } = {}
 
-    // Validate and add role if provided
+    // Validate and add legacy role if provided (for backwards compatibility)
     if (role !== undefined) {
       const validRoles: UserRole[] = ['ADMIN', 'TEAM_LEADER', 'MEMBER', 'VIEWER']
       if (!validRoles.includes(role)) {
@@ -97,6 +101,52 @@ export async function PATCH(
       }
 
       updateData.role = role
+    }
+
+    // Validate and add workspaceRole if provided (new role system)
+    if (workspaceRole !== undefined) {
+      const validRoles: WorkspaceRole[] = ['OWNER', 'ADMIN', 'BILLING', 'MEMBER']
+      if (!validRoles.includes(workspaceRole)) {
+        return NextResponse.json(
+          { error: 'Invalid workspace role' },
+          { status: 400 }
+        )
+      }
+
+      // Prevent changing your own role
+      if (userId === auth.user.id) {
+        return NextResponse.json(
+          { error: 'You cannot change your own role' },
+          { status: 400 }
+        )
+      }
+
+      // Prevent removing the last OWNER
+      if (workspaceRole !== 'OWNER') {
+        const targetMember = await prisma.workspaceMember.findUnique({
+          where: {
+            workspaceId_userId: { workspaceId, userId },
+          },
+        })
+
+        if (targetMember?.workspaceRole === 'OWNER') {
+          const ownerCount = await prisma.workspaceMember.count({
+            where: {
+              workspaceId,
+              workspaceRole: 'OWNER',
+            },
+          })
+
+          if (ownerCount === 1) {
+            return NextResponse.json(
+              { error: 'Workspace must have at least one Owner. Transfer ownership first.' },
+              { status: 400 }
+            )
+          }
+        }
+      }
+
+      updateData.workspaceRole = workspaceRole
     }
 
     // Validate and add functionalCategories if provided
@@ -126,16 +176,16 @@ export async function PATCH(
     // Ensure we have something to update
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json(
-        { error: 'Either role or functionalCategories must be provided' },
+        { error: 'At least one field must be provided' },
         { status: 400 }
       )
     }
 
     // Update member
-    const updated = await prisma.organizationUser.update({
+    const updated = await prisma.workspaceMember.update({
       where: {
-        organizationId_userId: {
-          organizationId,
+        workspaceId_userId: {
+          workspaceId,
           userId,
         }
       },
@@ -162,12 +212,12 @@ export async function PATCH(
   }
 }
 
-// DELETE - Remove member from organization (or leave if removing self)
+// DELETE - Remove member from workspace (or leave if removing self)
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: organizationId } = await params
+  const { id: workspaceId } = await params
 
   const { searchParams } = new URL(request.url)
   const userId = searchParams.get('userId')
@@ -198,41 +248,41 @@ export async function DELETE(
     }
 
     try {
-      // Check that there will still be at least one admin if user is an admin
-      const membership = await prisma.organizationUser.findUnique({
+      // Check that there will still be at least one owner/admin if user is one
+      const membership = await prisma.workspaceMember.findUnique({
         where: {
-          organizationId_userId: { organizationId, userId }
+          workspaceId_userId: { workspaceId, userId }
         }
       })
 
-      if (membership?.role === 'ADMIN') {
-        const remainingAdmins = await prisma.organizationUser.count({
+      if (membership?.workspaceRole === 'OWNER' || membership?.workspaceRole === 'ADMIN') {
+        const remainingAdmins = await prisma.workspaceMember.count({
           where: {
-            organizationId,
-            role: 'ADMIN',
+            workspaceId,
+            workspaceRole: { in: ['OWNER', 'ADMIN'] },
             userId: { not: userId }
           }
         })
 
         if (remainingAdmins === 0) {
           return NextResponse.json(
-            { error: 'You cannot leave as the only admin. Please promote another member to admin first.' },
+            { error: 'You cannot leave as the only owner/admin. Please promote another member first.' },
             { status: 400 }
           )
         }
       }
 
-      await prisma.organizationUser.delete({
+      await prisma.workspaceMember.delete({
         where: {
-          organizationId_userId: { organizationId, userId }
+          workspaceId_userId: { workspaceId, userId }
         }
       })
 
       return NextResponse.json({ success: true, left: true })
     } catch (error) {
-      console.error('Error leaving organization:', error)
+      console.error('Error leaving workspace:', error)
       return NextResponse.json(
-        { error: 'Failed to leave organization' },
+        { error: 'Failed to leave workspace' },
         { status: 500 }
       )
     }
@@ -252,25 +302,25 @@ export async function DELETE(
         )
       }
 
-      // Check that there will still be at least one admin
-      const admins = await prisma.organizationUser.count({
+      // Check that there will still be at least one owner/admin
+      const admins = await prisma.workspaceMember.count({
         where: {
-          organizationId,
-          role: 'ADMIN',
+          workspaceId,
+          workspaceRole: { in: ['OWNER', 'ADMIN'] },
           userId: { not: userId }
         }
       })
 
       if (admins === 0) {
         return NextResponse.json(
-          { error: 'Organization must have at least one admin' },
+          { error: 'Workspace must have at least one owner or admin' },
           { status: 400 }
         )
       }
 
-      await prisma.organizationUser.delete({
+      await prisma.workspaceMember.delete({
         where: {
-          organizationId_userId: { organizationId, userId }
+          workspaceId_userId: { workspaceId, userId }
         }
       })
 

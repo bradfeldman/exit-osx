@@ -80,7 +80,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   const company = await prisma.company.findUnique({
     where: { id: companyId },
     include: {
-      organization: {
+      workspace: {
         include: {
           users: { where: { user: { authId: user.id } } }
         }
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
   })
 
-  if (!company || company.organization.users.length === 0) {
+  if (!company || company.workspace.users.length === 0) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

@@ -4,6 +4,7 @@ import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { getUserAccessibleCompanies } from '@/lib/access'
 import { createClient } from '@/lib/supabase/server'
 import { serverAnalytics } from '@/lib/analytics/server'
+import { COMPANY_LIMITS, type PlanTier } from '@/lib/pricing'
 
 export async function GET() {
   const result = await checkPermission('COMPANY_VIEW')
@@ -12,12 +13,12 @@ export async function GET() {
   const { auth } = result
 
   try {
-    // Get active (non-deleted) companies from the user's organization (legacy)
-    const orgCompanies = await prisma.company.findMany({
+    // Get active (non-deleted) companies from the user's workspace (legacy)
+    const workspaceCompanies = await prisma.company.findMany({
       where: {
         deletedAt: null, // Exclude soft-deleted companies
-        organization: {
-          users: {
+        workspace: {
+          members: {
             some: { userId: auth.user.id }
           }
         }
@@ -36,7 +37,7 @@ export async function GET() {
     const accessibleCompanies = await getUserAccessibleCompanies(auth.user.id)
 
     // Merge role info into companies
-    const companies = orgCompanies.map(company => {
+    const companies = workspaceCompanies.map(company => {
       const accessInfo = accessibleCompanies.find(c => c.id === company.id)
       return {
         ...company,
@@ -46,7 +47,7 @@ export async function GET() {
       }
     })
 
-    // Also include companies from new ownership model that might not be in org
+    // Also include companies from new ownership model that might not be in workspace
     for (const accessCompany of accessibleCompanies) {
       if (!companies.some(c => c.id === accessCompany.id)) {
         const company = await prisma.company.findUnique({
@@ -122,8 +123,8 @@ export async function POST(request: Request) {
     const dbUser = await prisma.user.findUnique({
       where: { authId: supabaseUser.id },
       include: {
-        organizations: {
-          include: { organization: true }
+        workspaces: {
+          include: { workspace: true }
         }
       }
     })
@@ -135,22 +136,22 @@ export async function POST(request: Request) {
       )
     }
 
-    // Find an organization where user has ADMIN or SUPER_ADMIN role (can create companies)
-    let targetOrg = dbUser.organizations.find(
-      ou => ou.role === 'ADMIN' || ou.role === 'SUPER_ADMIN'
+    // Find a workspace where user has ADMIN or SUPER_ADMIN role (can create companies)
+    let targetWorkspace = dbUser.workspaces.find(
+      wm => wm.role === 'ADMIN' || wm.role === 'SUPER_ADMIN'
     )
 
-    // If user doesn't have an org where they can create companies, create one for them
-    if (!targetOrg) {
-      // Create a new personal organization for this user
-      const newOrg = await prisma.organization.create({
+    // If user doesn't have a workspace where they can create companies, create one for them
+    if (!targetWorkspace) {
+      // Create a new personal workspace for this user
+      const newWorkspace = await prisma.workspace.create({
         data: {
           name: dbUser.name
-            ? `${dbUser.name}'s Organization`
-            : 'My Organization',
+            ? `${dbUser.name}'s Workspace`
+            : 'My Workspace',
           planTier: 'FOUNDATION',
           subscriptionStatus: 'ACTIVE',
-          users: {
+          members: {
             create: {
               userId: dbUser.id,
               role: 'ADMIN',
@@ -159,26 +160,46 @@ export async function POST(request: Request) {
         }
       })
 
-      // Fetch the org user relationship we just created
-      const newOrgUser = await prisma.organizationUser.findFirst({
+      // Fetch the workspace member relationship we just created
+      const newWorkspaceMember = await prisma.workspaceMember.findFirst({
         where: {
-          organizationId: newOrg.id,
+          workspaceId: newWorkspace.id,
           userId: dbUser.id,
         },
-        include: { organization: true }
+        include: { workspace: true }
       })
 
-      if (!newOrgUser) {
-        throw new Error('Failed to create organization membership')
+      if (!newWorkspaceMember) {
+        throw new Error('Failed to create workspace membership')
       }
 
-      targetOrg = newOrgUser
+      targetWorkspace = newWorkspaceMember
     }
 
-    // Create the company in the target organization
+    // Enforce company limit based on workspace plan tier
+    const workspacePlanTier = targetWorkspace.workspace
+      ? targetWorkspace.workspace.planTier.toLowerCase().replace('_', '-') as PlanTier
+      : 'foundation' as PlanTier
+    const companyLimit = COMPANY_LIMITS[workspacePlanTier] ?? 1
+
+    const activeCompanyCount = await prisma.company.count({
+      where: {
+        workspaceId: targetWorkspace.workspaceId,
+        deletedAt: null,
+      },
+    })
+
+    if (activeCompanyCount >= companyLimit) {
+      return NextResponse.json(
+        { error: 'Company limit reached for your plan' },
+        { status: 403 }
+      )
+    }
+
+    // Create the company in the target workspace
     const company = await prisma.company.create({
       data: {
-        organizationId: targetOrg.organizationId,
+        workspaceId: targetWorkspace.workspaceId,
         name,
         icbIndustry,
         icbSuperSector,

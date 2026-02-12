@@ -189,12 +189,12 @@ async function processExportRequest(
           name: true,
           avatarUrl: true,
           createdAt: true,
-          organizations: {
+          workspaces: {
             select: {
               role: true,
               functionalCategories: true,
               joinedAt: true,
-              organization: {
+              workspace: {
                 select: {
                   name: true,
                   createdAt: true,
@@ -208,15 +208,15 @@ async function processExportRequest(
     }
 
     if (options.includeCompanies) {
-      const organizations = await prisma.organizationUser.findMany({
+      const memberships = await prisma.workspaceMember.findMany({
         where: { userId },
-        select: { organizationId: true },
+        select: { workspaceId: true },
       })
-      const orgIds = organizations.map((o) => o.organizationId)
+      const wsIds = memberships.map((m) => m.workspaceId)
 
       const companies = await prisma.company.findMany({
         where: {
-          organizationId: { in: orgIds },
+          workspaceId: { in: wsIds },
           deletedAt: null,
         },
         select: {
@@ -256,14 +256,14 @@ async function processExportRequest(
     }
 
     if (options.includeAssessments) {
-      const organizations = await prisma.organizationUser.findMany({
+      const memberships = await prisma.workspaceMember.findMany({
         where: { userId },
-        select: { organizationId: true },
+        select: { workspaceId: true },
       })
-      const orgIds = organizations.map((o) => o.organizationId)
+      const wsIds = memberships.map((m) => m.workspaceId)
 
       const companies = await prisma.company.findMany({
-        where: { organizationId: { in: orgIds } },
+        where: { workspaceId: { in: wsIds } },
         select: { id: true },
       })
       const companyIds = companies.map((c) => c.id)

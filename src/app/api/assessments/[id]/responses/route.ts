@@ -46,7 +46,7 @@ export async function POST(
       include: {
         company: {
           include: {
-            organization: {
+            workspace: {
               include: {
                 users: {
                   where: { user: { authId: user.id } },
@@ -62,7 +62,7 @@ export async function POST(
       return NextResponse.json({ error: 'Assessment not found' }, { status: 404 })
     }
 
-    if (assessment.company.organization.users.length === 0) {
+    if (assessment.company.workspace.users.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
@@ -143,7 +143,7 @@ export async function GET(
       include: {
         company: {
           include: {
-            organization: {
+            workspace: {
               include: {
                 users: {
                   where: { user: { authId: user.id } },
@@ -155,7 +155,7 @@ export async function GET(
       },
     })
 
-    if (!assessment || assessment.company.organization.users.length === 0) {
+    if (!assessment || assessment.company.workspace.users.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 

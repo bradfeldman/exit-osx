@@ -15,8 +15,8 @@ interface StaffAccessGrants {
 }
 
 interface SubscriptionData {
-  organizationId: string
-  organizationName: string
+  workspaceId: string
+  workspaceName: string
   planTier: PlanTier
   status: SubscriptionStatus
   billingCycle: BillingCycle

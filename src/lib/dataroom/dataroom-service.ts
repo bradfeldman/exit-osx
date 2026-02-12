@@ -492,18 +492,18 @@ export async function notifyTeamMembers(params: {
   questionId?: string
   folderId?: string
 }) {
-  // Get company and find organization
+  // Get company and find workspace
   const company = await prisma.company.findUnique({
     where: { id: params.companyId },
-    select: { organizationId: true },
+    select: { workspaceId: true },
   })
 
-  if (!company?.organizationId) return []
+  if (!company?.workspaceId) return []
 
-  // Get all organization members except the actor
-  const orgUsers = await prisma.organizationUser.findMany({
+  // Get all workspace members except the actor
+  const workspaceMembers = await prisma.workspaceMember.findMany({
     where: {
-      organizationId: company.organizationId,
+      workspaceId: company.workspaceId,
       userId: params.actorUserId ? { not: params.actorUserId } : undefined,
     },
     select: { userId: true },
@@ -511,10 +511,10 @@ export async function notifyTeamMembers(params: {
 
   // Create notifications for all team members
   const notifications = await Promise.all(
-    orgUsers.map((orgUser) =>
+    workspaceMembers.map((workspaceMember) =>
       createNotification({
         dataRoomId: params.dataRoomId,
-        recipientUserId: orgUser.userId,
+        recipientUserId: workspaceMember.userId,
         type: params.type,
         title: params.title,
         message: params.message,

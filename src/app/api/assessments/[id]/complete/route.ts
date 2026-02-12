@@ -65,7 +65,7 @@ export async function POST(
       include: {
         company: {
           include: {
-            organization: {
+            workspace: {
               include: {
                 users: {
                   where: { user: { authId: user.id } },
@@ -92,12 +92,12 @@ export async function POST(
       return NextResponse.json({ error: 'Assessment not found' }, { status: 404 })
     }
 
-    if (assessment.company.organization.users.length === 0) {
+    if (assessment.company.workspace.users.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     // Get the database user ID for tracking who completed the assessment
-    const dbUserId = assessment.company.organization.users[0].user.id
+    const dbUserId = assessment.company.workspace.users[0].user.id
 
     if (assessment.completedAt) {
       return NextResponse.json(

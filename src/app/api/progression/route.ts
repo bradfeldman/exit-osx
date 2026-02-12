@@ -31,6 +31,12 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // Resolve internal user ID from Supabase auth ID
+    const dbUser = await prisma.user.findUnique({
+      where: { authId: user.id },
+      select: { id: true },
+    })
+
     // Fetch all progression-related data in parallel
     const [
       latestSnapshot,
@@ -79,19 +85,13 @@ export async function GET(request: NextRequest) {
         },
       }),
 
-      // Check for personal financials (linked through company's organization)
-      prisma.company.findUnique({
-        where: { id: companyId },
-        select: {
-          organization: {
-            select: {
-              personalFinancials: {
-                select: { id: true },
-              },
-            },
-          },
-        },
-      }),
+      // Check for personal financials (user-scoped)
+      dbUser
+        ? prisma.personalFinancials.findUnique({
+            where: { userId: dbUser.id },
+            select: { id: true },
+          })
+        : Promise.resolve(null),
 
       // Get distinct BRI categories that have at least one assessment response
       // This tells us which of the 6 categories have been assessed
@@ -129,8 +129,8 @@ export async function GET(request: NextRequest) {
     // Check for DCF valuation data
     const hasDcfValuation = latestSnapshot !== null
 
-    // Determine if user has personal financials
-    const hasPersonalFinancials = personalFinancialsExists?.organization?.personalFinancials !== null
+    // Determine if user has personal financials (user-scoped)
+    const hasPersonalFinancials = personalFinancialsExists !== null
 
     // Business financials unlocked if structured data OR uploaded evidence exists
     const hasBusinessFinancials = financialPeriodCount > 0 || financialEvidenceCount > 0

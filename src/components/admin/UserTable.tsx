@@ -21,8 +21,8 @@ interface User {
   name: string | null
   isSuperAdmin: boolean
   createdAt: string
-  organizations: Array<{
-    organization: {
+  workspaces: Array<{
+    workspace: {
       planTier: string
       subscriptionStatus: string
     }
@@ -130,9 +130,9 @@ export function UserTable({ initialUsers, initialPagination }: UserTableProps) {
               </TableRow>
             ) : (
               users.map((user) => {
-                const org = user.organizations[0]?.organization
-                const tierCfg = org ? planTierConfig[org.planTier] : null
-                const statusCfg = org ? statusConfig[org.subscriptionStatus] : null
+                const workspace = user.workspaces[0]?.workspace
+                const tierCfg = workspace ? planTierConfig[workspace.planTier] : null
+                const statusCfg = workspace ? statusConfig[workspace.subscriptionStatus] : null
 
                 return (
                   <TableRow

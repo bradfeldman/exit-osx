@@ -50,9 +50,9 @@ export async function POST(
     const dbUser = await prisma.user.findUnique({
       where: { authId: user.id },
       include: {
-        organizations: {
+        workspaces: {
           include: {
-            organization: {
+            workspace: {
               include: { companies: { where: { id: companyId } } }
             }
           }
@@ -60,18 +60,18 @@ export async function POST(
       }
     })
 
-    const hasAccess = dbUser?.organizations.some(
-      org => org.organization.companies.length > 0
+    const hasAccess = dbUser?.workspaces.some(
+      ws => ws.workspace.companies.length > 0
     )
 
     if (!hasAccess || !dbUser) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Get the company's organization to check user count
+    // Get the company's workspace to check user count
     const _company = await prisma.company.findUnique({
       where: { id: companyId },
-      select: { organizationId: true },
+      select: { workspaceId: true },
     })
 
     // Determine default assignee
