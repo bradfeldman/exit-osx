@@ -9,7 +9,7 @@ import type { CompanyFormData } from '@/components/company/CompanySetupWizard'
 import { IndustryPreviewStep } from './steps/IndustryPreviewStep'
 import { QuickScanStep, type QuickScanResults } from './steps/QuickScanStep'
 import { RiskResultsStep } from './steps/RiskResultsStep'
-import { FirstMoveStep } from './steps/FirstMoveStep'
+import { DeepDiveStep } from './steps/DeepDiveStep'
 import { useCompany } from '@/contexts/CompanyContext'
 import { Button } from '@/components/ui/button'
 import { DEFAULT_BRI_WEIGHTS } from '@/lib/bri-weights'
@@ -24,7 +24,7 @@ const STEPS = [
   { id: 3, key: 'preview', title: 'Value Range' },          // Valuation preview (creates company)
   { id: 4, key: 'quickscan', title: 'Buyer Scan' },         // 8 binary buyer-neutral questions
   { id: 5, key: 'results', title: 'Risk Results' },         // Show value gap + breakdown
-  { id: 6, key: 'firstmove', title: 'First Move' },         // Single highest-ROI task
+  { id: 6, key: 'deepdive', title: 'Deep Dive' },             // Optional 6-category deep assessment
 ]
 
 const initialFormData: CompanyFormData = {
@@ -451,7 +451,7 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
 
     setRiskResults(riskResultsData)
 
-    // Create snapshot IMMEDIATELY so it exists when tasks are generated in FirstMoveStep
+    // Create snapshot IMMEDIATELY so it exists when tasks are generated in DeepDiveStep
     // This is critical for accurate task value calculations
     if (createdCompanyId) {
       try {
@@ -474,10 +474,11 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     goToStep(5) // Go to Risk Results step
   }
 
-  const handleComplete = async (taskId?: string) => {
-    console.log('[ONBOARDING] handleComplete called, createdCompanyId:', createdCompanyId, 'riskResults:', riskResults, 'taskId:', taskId)
+  const handleComplete = async () => {
+    console.log('[ONBOARDING] handleComplete called, createdCompanyId:', createdCompanyId, 'riskResults:', !!riskResults)
 
     // Note: Snapshot was already created in handleQuickScanComplete for task value calculation
+    // Tasks are generated in DeepDiveStep before this is called
     // We just need to send the completion email here
     if (createdCompanyId && riskResults) {
       console.log('[ONBOARDING] Completing onboarding with values:', {
@@ -521,19 +522,8 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
       }).catch(err => {
         console.error('Failed to send onboarding email:', err)
       })
-
-      // Mark the task as IN_PROGRESS (non-blocking)
-      if (taskId) {
-        fetch(`/api/tasks/${taskId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'IN_PROGRESS' }),
-        }).catch(err => {
-          console.error('Failed to start task:', err)
-        })
-      }
     } else {
-      console.warn('[ONBOARDING] Skipping snapshot creation - missing data:', {
+      console.warn('[ONBOARDING] Skipping email - missing data:', {
         hasCompanyId: !!createdCompanyId,
         hasRiskResults: !!riskResults,
       })
@@ -546,12 +536,8 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     sessionStorage.removeItem('onboarding_formData')
     sessionStorage.removeItem('onboarding_businessDescription')
 
-    // Navigate to Actions page with the task if available, otherwise dashboard
-    if (taskId) {
-      router.push(`/dashboard/actions?taskId=${taskId}`)
-    } else {
-      router.push('/dashboard')
-    }
+    // Navigate to dashboard — PlatformTour auto-triggers there and ends with "See Your First Move" → Actions
+    router.push('/dashboard')
   }
 
   const canProceed = () => {
@@ -573,7 +559,7 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
       case 5:
         return !!riskResults // Need risk results to proceed
       case 6:
-        return true // Can complete from first move
+        return true // Deep dive is always skippable
       default:
         return false
     }
@@ -638,11 +624,10 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
         ) : null
       case 6:
         return createdCompanyId && riskResults ? (
-          <FirstMoveStep
+          <DeepDiveStep
             companyId={createdCompanyId}
-            companyName={formData.name}
             riskResults={riskResults}
-            onComplete={handleComplete}
+            onFinish={() => handleComplete()}
           />
         ) : null
       default:

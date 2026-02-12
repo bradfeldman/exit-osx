@@ -15,6 +15,7 @@ import {
   Landmark,
   Rocket,
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { analytics } from '@/lib/analytics'
 import { useExposure } from '@/contexts/ExposureContext'
 import type { LucideIcon } from 'lucide-react'
@@ -103,11 +104,11 @@ const TOUR_STEPS: TourStep[] = [
     highlightId: 'capital',
   },
   {
-    id: 'ready',
+    id: 'first-move',
     icon: Rocket,
-    heading: "You're Ready",
+    heading: 'See Your First Move',
     description:
-      'Start with your first action, explore your diagnosis, or dive into the numbers. Every step moves the needle on your exit value.',
+      'Your personalized action plan is ready. Each task targets a specific value gap — starting with the highest-impact move.',
   },
 ]
 
@@ -249,6 +250,7 @@ interface PlatformTourProps {
 }
 
 export function PlatformTour({ open, onComplete }: PlatformTourProps) {
+  const router = useRouter()
   const [currentStep, setCurrentStep] = useState(0)
   const [direction, setDirection] = useState(1)
   const hasTrackedStart = useRef(false)
@@ -273,6 +275,7 @@ export function PlatformTour({ open, onComplete }: PlatformTourProps) {
       analytics.track('tour_completed', { stepsViewed: currentStep + 1 })
       await completeTour()
       onComplete()
+      router.push('/dashboard/actions')
     } else {
       setCurrentStep((s) => s + 1)
     }
@@ -369,7 +372,7 @@ export function PlatformTour({ open, onComplete }: PlatformTourProps) {
             )}
           </div>
           <Button size="sm" onClick={handleNext}>
-            {isLast ? 'Get Started' : 'Next'}
+            {isLast ? 'See Your First Move' : 'Next'}
           </Button>
         </div>
       </DialogContent>
