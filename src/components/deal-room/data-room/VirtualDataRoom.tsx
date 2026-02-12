@@ -65,11 +65,6 @@ interface DataRoomDocument {
   } | null
 }
 
-interface DocumentViewStats {
-  viewCount: number
-  lastViewedAt: string | null
-}
-
 // --- Category Config ---
 
 const CATEGORY_CONFIG: Record<

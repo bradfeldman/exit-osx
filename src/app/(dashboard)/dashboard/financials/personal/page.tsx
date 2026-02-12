@@ -801,7 +801,6 @@ export default function PersonalFinancialStatementPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    const minAge = currentAge ? currentAge + 5 : 30
                     setRetirementAge(prev => prev ? Math.min(85, prev + 1) : 65)
                   }}
                   disabled={!canEditPersonal || (retirementAge !== null && retirementAge >= 85)}

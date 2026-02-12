@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   Table,
   TableBody,
@@ -126,7 +125,7 @@ export function CompanyTeam({ companyId }: CompanyTeamProps) {
         const data = await response.json()
         if (data.workspaces.length > 0) {
           const workspace = data.workspaces[0]
-          setWorkspaceMembers(workspace.users.map((u: any) => ({
+          setWorkspaceMembers(workspace.users.map((u: { id: string; user: { id: string; name: string | null; email: string; avatarUrl: string | null } }) => ({
             id: u.id,
             user: u.user,
           })))
@@ -213,7 +212,7 @@ export function CompanyTeam({ companyId }: CompanyTeamProps) {
         const data = await response.json()
         setAddError(data.error || 'Failed to add member')
       }
-    } catch (error) {
+    } catch {
       setAddError('Failed to add member')
     } finally {
       setAdding(false)
