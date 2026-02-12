@@ -1,6 +1,39 @@
--- Phase 5: Rename Organization -> Workspace
--- This migration renames tables, columns, indexes, constraints, and RLS policies.
+-- Phase 1 + Phase 5: Create new enums/models, then Rename Organization -> Workspace
+-- This migration creates new role enums and CompanyMember model, then
+-- renames tables, columns, indexes, constraints, and RLS policies.
 -- PostgreSQL table renames are metadata-only operations (near-instant, no data movement).
+
+-- ============================================================
+-- 0. CREATE NEW ENUMS AND TABLES (Phase 1)
+-- ============================================================
+
+-- Create WorkspaceRole enum
+CREATE TYPE "WorkspaceRole" AS ENUM ('OWNER', 'ADMIN', 'BILLING', 'MEMBER');
+
+-- Create CompanyRole enum
+CREATE TYPE "CompanyRole" AS ENUM ('LEAD', 'CONTRIBUTOR', 'VIEWER');
+
+-- Create CompanyMember table
+CREATE TABLE "company_members" (
+    "id" TEXT NOT NULL,
+    "company_id" TEXT NOT NULL,
+    "user_id" TEXT NOT NULL,
+    "role" "CompanyRole" NOT NULL DEFAULT 'CONTRIBUTOR',
+    "assigned_by_id" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "company_members_pkey" PRIMARY KEY ("id")
+);
+
+-- Create indexes
+CREATE UNIQUE INDEX "company_members_company_id_user_id_key" ON "company_members"("company_id", "user_id");
+CREATE INDEX "company_members_user_id_idx" ON "company_members"("user_id");
+
+-- Add foreign keys
+ALTER TABLE "company_members" ADD CONSTRAINT "company_members_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "companies"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "company_members" ADD CONSTRAINT "company_members_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "company_members" ADD CONSTRAINT "company_members_assigned_by_id_fkey" FOREIGN KEY ("assigned_by_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- ============================================================
 -- 1. RENAME TABLES
@@ -22,6 +55,9 @@ ALTER TABLE "companies" RENAME COLUMN "organization_id" TO "workspace_id";
 -- 3. DROP organization_id FROM personal_financials
 --    (Already optional from Phase 4 PFS re-scope to user)
 -- ============================================================
+
+-- Drop RLS policy that depends on organization_id BEFORE dropping the column
+DROP POLICY IF EXISTS "personal_fin_select" ON "personal_financials";
 
 -- Drop the FK constraint first if it exists
 ALTER TABLE "personal_financials" DROP CONSTRAINT IF EXISTS "personal_financials_organization_id_fkey";
