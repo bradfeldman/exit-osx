@@ -315,8 +315,11 @@ interface MagicLinkResult {
 
 /**
  * Server action for magic-link signup.
- * Creates a Supabase user with signInWithOtp (no password), then sends a branded
- * email via Resend with a link to the activation page.
+ * Uses Supabase admin.generateLink() to create a magic link token, then sends
+ * a branded email via Resend with links through our own domain (app.exitosx.com).
+ *
+ * This avoids Supabase's built-in email which links to supabase.co, causing
+ * Gmail to auto-delete emails due to sender/link domain mismatch.
  *
  * SECURITY:
  * - Uses timing-safe responses to prevent email enumeration
@@ -341,45 +344,59 @@ export async function sendMagicLink(
     }
 
     const { sendAccountExistsEmail } = await import('@/lib/email/send-account-exists-email')
+    const { sendMagicLinkEmail } = await import('@/lib/email/send-magic-link-email')
+    const { createServiceClient } = await import('@/lib/supabase/server')
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.exitosx.com'
 
-    // Use Supabase signInWithOtp to create the user and generate a magic link token.
-    // The emailRedirectTo points to our auth/callback route, which will redirect to /activate.
-    const supabase = await createClient()
-    const { error } = await supabase.auth.signInWithOtp({
+    // Use admin API to generate a magic link without sending an email.
+    // This gives us the token so we can send our own branded email via Resend
+    // with links through our domain (avoiding Gmail spam filters).
+    const adminClient = createServiceClient()
+    const { data, error } = await adminClient.auth.admin.generateLink({
+      type: 'magiclink',
       email: normalizedEmail,
       options: {
         data: {
           selected_plan: selectedPlan || 'foundation',
           signup_method: 'magic_link',
         },
-        // Supabase will append the token to this URL as query params
-        emailRedirectTo: `${baseUrl}/auth/callback?next=/activate`,
-        // shouldCreateUser ensures new users are created if they don't exist
-        shouldCreateUser: true,
+        redirectTo: `${baseUrl}/auth/callback?next=/activate`,
       },
     })
 
     if (error) {
       // Check if user already exists with a password
-      // Supabase may return various error messages for existing users
       if (error.message.includes('already registered') || error.message.includes('already been registered')) {
-        // Send account-exists email (non-blocking, always return success for enumeration protection)
         sendAccountExistsEmail({ email: normalizedEmail }).catch((err) => {
           console.error('[Auth] Failed to send account exists email:', err)
         })
-
         return { success: true }
       }
 
       const errorDetails = error as unknown as { message: string; code?: string; status?: number }
-      securityLogger.error('auth.magic_link_failed', `Magic link send failed: ${error.message}`, {
+      securityLogger.error('auth.magic_link_failed', `Magic link generate failed: ${error.message}`, {
         ipAddress,
         metadata: { error: error.message, errorCode: errorDetails.code, errorStatus: errorDetails.status },
       })
-      console.error('[Auth] signInWithOtp failed:', { message: error.message, code: errorDetails.code, status: errorDetails.status })
+      console.error('[Auth] admin.generateLink failed:', { message: error.message, code: errorDetails.code, status: errorDetails.status })
 
+      return { success: false, error: 'Unable to send verification email. Please try again.' }
+    }
+
+    // Build verification URL through our own domain
+    const tokenHash = data.properties?.hashed_token
+    if (!tokenHash) {
+      console.error('[Auth] generateLink returned no hashed_token')
+      return { success: false, error: 'Unable to send verification email. Please try again.' }
+    }
+
+    const magicLinkUrl = `${baseUrl}/auth/confirm?token_hash=${encodeURIComponent(tokenHash)}&type=magiclink&next=/activate`
+
+    // Send branded email via Resend (all links point to app.exitosx.com)
+    const emailResult = await sendMagicLinkEmail({ email: normalizedEmail, magicLinkUrl })
+    if (!emailResult.success) {
+      console.error('[Auth] Failed to send magic link email via Resend:', emailResult.error)
       return { success: false, error: 'Unable to send verification email. Please try again.' }
     }
 
