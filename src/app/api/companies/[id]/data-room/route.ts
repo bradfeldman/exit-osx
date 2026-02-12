@@ -85,8 +85,8 @@ export async function GET(
       where: {
         id: companyId,
         deletedAt: null,
-        organization: {
-          users: {
+        workspace: {
+          members: {
             some: {
               user: { authId: user.id }
             }
@@ -212,8 +212,8 @@ export async function POST(
       where: {
         id: companyId,
         deletedAt: null,
-        organization: {
-          users: {
+        workspace: {
+          members: {
             some: {
               user: { authId: user.id }
             }

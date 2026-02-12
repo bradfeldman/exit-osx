@@ -25,11 +25,11 @@ export async function GET(
     const now = new Date()
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
-    // Fetch company with org tier info
+    // Fetch company with workspace tier info
     const company = await prisma.company.findUnique({
       where: { id: companyId },
       include: {
-        organization: { select: { planTier: true } },
+        workspace: { select: { planTier: true } },
       },
     })
 

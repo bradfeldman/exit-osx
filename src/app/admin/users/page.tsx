@@ -12,9 +12,9 @@ async function getUsers() {
         name: true,
         isSuperAdmin: true,
         createdAt: true,
-        organizations: {
+        workspaces: {
           select: {
-            organization: {
+            workspace: {
               select: {
                 planTier: true,
                 subscriptionStatus: true,

@@ -22,7 +22,7 @@ export async function GET(
           include: {
             workspace: {
               include: {
-                users: {
+                members: {
                   where: { user: { authId: user.id } },
                 },
               },
@@ -48,7 +48,7 @@ export async function GET(
       return NextResponse.json({ error: 'Assessment not found' }, { status: 404 })
     }
 
-    if (assessment.company.workspace.users.length === 0) {
+    if (assessment.company.workspace.members.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
@@ -99,9 +99,9 @@ export async function DELETE(
       include: {
         company: {
           include: {
-            organization: {
+            workspace: {
               include: {
-                users: {
+                members: {
                   where: { user: { authId: user.id }, role: 'ADMIN' },
                 },
               },
@@ -115,7 +115,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Assessment not found' }, { status: 404 })
     }
 
-    if (assessment.company.workspace.users.length === 0) {
+    if (assessment.company.workspace.members.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 

@@ -25,9 +25,9 @@ export async function GET(
     const company = await prisma.company.findUnique({
       where: { id: companyId },
       include: {
-        organization: {
+        workspace: {
           include: {
-            users: {
+            members: {
               where: { user: { authId: user.id } }
             }
           }
@@ -39,7 +39,7 @@ export async function GET(
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
-    if (company.organization.users.length === 0) {
+    if (company.workspace.members.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
@@ -174,9 +174,9 @@ export async function POST(
     const company = await prisma.company.findUnique({
       where: { id: companyId },
       include: {
-        organization: {
+        workspace: {
           include: {
-            users: {
+            members: {
               where: { user: { authId: user.id } },
               include: {
                 user: { select: { id: true } }
@@ -191,11 +191,11 @@ export async function POST(
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
-    if (company.organization.users.length === 0) {
+    if (company.workspace.members.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    const dbUserId = company.organization.users[0].user.id
+    const dbUserId = company.workspace.members[0].user.id
 
     // Get the latest completed assessment
     const latestAssessment = await prisma.assessment.findFirst({

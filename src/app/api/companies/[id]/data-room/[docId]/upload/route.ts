@@ -33,8 +33,8 @@ export async function POST(
         companyId,
         company: {
           deletedAt: null,
-          organization: {
-            users: {
+          workspace: {
+            members: {
               some: {
                 user: { authId: user.id }
               }

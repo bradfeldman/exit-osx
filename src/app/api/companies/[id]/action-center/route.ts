@@ -82,13 +82,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     include: {
       workspace: {
         include: {
-          users: { where: { user: { authId: user.id } } }
+          members: { where: { user: { authId: user.id } } }
         }
       }
     }
   })
 
-  if (!company || company.workspace.users.length === 0) {
+  if (!company || company.workspace.members.length === 0) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

@@ -51,7 +51,7 @@ describe('/api/tasks/[id]/notes', () => {
 
       vi.mocked(prisma.task.findUnique).mockResolvedValue(mockTask as never)
       vi.mocked(checkPermissionModule.checkPermission).mockResolvedValue({
-        auth: { user: { id: mockUserId }, organizationUser: { organizationId: 'org_123' } },
+        auth: { user: { id: mockUserId }, workspaceMember: { workspaceId: 'org_123' } },
       } as never)
       vi.mocked(checkPermissionModule.isAuthError).mockReturnValue(false)
       vi.mocked(prisma.taskNote.findMany).mockResolvedValue(mockNotes as never)
@@ -99,7 +99,7 @@ describe('/api/tasks/[id]/notes', () => {
 
       vi.mocked(prisma.task.findUnique).mockResolvedValue(mockTask as never)
       vi.mocked(checkPermissionModule.checkPermission).mockResolvedValue({
-        auth: { user: { id: mockUserId }, organizationUser: { organizationId: 'org_123' } },
+        auth: { user: { id: mockUserId }, workspaceMember: { workspaceId: 'org_123' } },
       } as never)
       vi.mocked(checkPermissionModule.isAuthError).mockReturnValue(false)
       vi.mocked(prisma.taskNote.create).mockResolvedValue(mockNote as never)
@@ -122,7 +122,7 @@ describe('/api/tasks/[id]/notes', () => {
 
       vi.mocked(prisma.task.findUnique).mockResolvedValue(mockTask as never)
       vi.mocked(checkPermissionModule.checkPermission).mockResolvedValue({
-        auth: { user: { id: mockUserId }, organizationUser: { organizationId: 'org_123' } },
+        auth: { user: { id: mockUserId }, workspaceMember: { workspaceId: 'org_123' } },
       } as never)
       vi.mocked(checkPermissionModule.isAuthError).mockReturnValue(false)
 
@@ -157,7 +157,7 @@ describe('/api/tasks/[id]/notes', () => {
 
       vi.mocked(prisma.task.findUnique).mockResolvedValue(mockTask as never)
       vi.mocked(checkPermissionModule.checkPermission).mockResolvedValue({
-        auth: { user: { id: mockUserId }, organizationUser: { organizationId: 'org_123' } },
+        auth: { user: { id: mockUserId }, workspaceMember: { workspaceId: 'org_123' } },
       } as never)
       vi.mocked(checkPermissionModule.isAuthError).mockReturnValue(false)
       vi.mocked(prisma.taskNote.create).mockResolvedValue(mockNote as never)

@@ -38,8 +38,8 @@ export async function GET() {
     const companies = await prisma.company.findMany({
       where: {
         deletedAt: null,
-        organization: {
-          users: {
+        workspace: {
+          members: {
             some: { user: { authId: user.id } }
           }
         }

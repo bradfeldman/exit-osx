@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 
 vi.mock('@/lib/auth/check-permission', () => ({
   checkPermission: vi.fn().mockResolvedValue({
-    auth: { user: { id: 'user1' }, organizationUser: { organizationId: 'org1' } },
+    auth: { user: { id: 'user1' }, workspaceMember: { workspaceId: 'org1' } },
   }),
   isAuthError: vi.fn().mockReturnValue(false),
 }))

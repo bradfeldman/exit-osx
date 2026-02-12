@@ -89,7 +89,7 @@ interface Workspace {
   currentUserRole: UserRole // Legacy
   currentUserWorkspaceRole: WorkspaceRole // New
   currentUserId: string
-  users: Member[]
+  members: Member[]
   invites: Invite[]
 }
 
@@ -472,7 +472,7 @@ export function WorkspaceSettings() {
       })
 
       // Update external advisor flag via permissions endpoint
-      const member = workspace.users.find(m => m.user.id === userId)
+      const member = workspace.members.find(m => m.user.id === userId)
       if (member) {
         await fetch(`/api/workspaces/${workspace.id}/members/${member.id}/permissions`, {
           method: 'PATCH',
@@ -611,7 +611,7 @@ export function WorkspaceSettings() {
           <div>
             <CardTitle>Exit Team</CardTitle>
             <CardDescription>
-              {workspace.users.length} member{workspace.users.length !== 1 ? 's' : ''} in {workspace.name}
+              {workspace.members.length} member{workspace.members.length !== 1 ? 's' : ''} in {workspace.name}
             </CardDescription>
           </div>
           {canInvite && (
@@ -825,7 +825,7 @@ export function WorkspaceSettings() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {workspace.users.map((member) => {
+              {workspace.members.map((member) => {
                 const affiliation = dataToAffiliation(member.functionalCategories, member.isExternalAdvisor)
                 const AffiliationIcon = affiliationIcons[affiliation]
                 const isOwner = member.workspaceRole === 'OWNER'

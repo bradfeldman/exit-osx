@@ -125,7 +125,7 @@ export function CompanyTeam({ companyId }: CompanyTeamProps) {
         const data = await response.json()
         if (data.workspaces.length > 0) {
           const workspace = data.workspaces[0]
-          setWorkspaceMembers(workspace.users.map((u: { id: string; user: { id: string; name: string | null; email: string; avatarUrl: string | null } }) => ({
+          setWorkspaceMembers(workspace.members.map((u: { id: string; user: { id: string; name: string | null; email: string; avatarUrl: string | null } }) => ({
             id: u.id,
             user: u.user,
           })))

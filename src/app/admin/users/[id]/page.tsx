@@ -6,14 +6,14 @@ async function getUser(id: string) {
   const user = await prisma.user.findUnique({
     where: { id },
     include: {
-      organizations: {
+      workspaces: {
         include: {
-          organization: {
+          workspace: {
             select: {
               id: true,
               name: true,
               _count: {
-                select: { users: true, companies: true },
+                select: { members: true, companies: true },
               },
             },
           },
@@ -86,7 +86,7 @@ export default async function UserDetailPage({
       ...ticket,
       createdAt: ticket.createdAt.toISOString(),
     })),
-    organizations: user.organizations.map(ou => ({
+    workspaces: user.workspaces.map(ou => ({
       ...ou,
       joinedAt: ou.joinedAt.toISOString(),
     })),

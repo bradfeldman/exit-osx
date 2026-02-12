@@ -20,9 +20,9 @@ export async function GET(
           email: true,
           name: true,
           avatarUrl: true,
-          organizations: {
+          workspaces: {
             select: {
-              organization: {
+              workspace: {
                 select: { id: true, name: true },
               },
             },

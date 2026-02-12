@@ -41,7 +41,7 @@ export async function POST(
           include: {
             workspace: {
               include: {
-                users: {
+                members: {
                   where: { user: { authId: user.id } },
                   include: { user: true },
                 },
@@ -56,7 +56,7 @@ export async function POST(
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }
 
-    if (task.company.workspace.users.length === 0) {
+    if (task.company.workspace.members.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
@@ -229,7 +229,7 @@ export async function DELETE(
           include: {
             workspace: {
               include: {
-                users: {
+                members: {
                   where: { user: { authId: user.id } },
                 },
               },
@@ -239,7 +239,7 @@ export async function DELETE(
       },
     })
 
-    if (!task || task.company.workspace.users.length === 0) {
+    if (!task || task.company.workspace.members.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 

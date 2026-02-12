@@ -40,8 +40,8 @@ export async function GET(
         companyId,
         company: {
           deletedAt: null,
-          organization: {
-            users: {
+          workspace: {
+            members: {
               some: {
                 user: { authId: user.id }
               }
@@ -84,8 +84,8 @@ export async function PATCH(
         companyId,
         company: {
           deletedAt: null,
-          organization: {
-            users: {
+          workspace: {
+            members: {
               some: {
                 user: { authId: user.id }
               }
@@ -184,8 +184,8 @@ export async function DELETE(
         companyId,
         company: {
           deletedAt: null,
-          organization: {
-            users: {
+          workspace: {
+            members: {
               some: {
                 user: { authId: user.id }
               }

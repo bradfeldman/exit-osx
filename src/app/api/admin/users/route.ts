@@ -35,9 +35,9 @@ export async function GET(request: NextRequest) {
         isSuperAdmin: true,
         createdAt: true,
         updatedAt: true,
-        organizations: {
+        workspaces: {
           select: {
-            organization: {
+            workspace: {
               select: {
                 planTier: true,
                 subscriptionStatus: true,

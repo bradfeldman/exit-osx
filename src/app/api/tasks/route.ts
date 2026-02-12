@@ -57,7 +57,7 @@ export async function GET(request: Request) {
       include: {
         workspace: {
           include: {
-            users: {
+            members: {
               where: { user: { authId: user.id } },
             },
           },
@@ -65,7 +65,7 @@ export async function GET(request: Request) {
       },
     })
 
-    if (!company || company.workspace.users.length === 0) {
+    if (!company || company.workspace.members.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 

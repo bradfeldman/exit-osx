@@ -17,7 +17,7 @@ async function getCompanies() {
             name: true,
             planTier: true,
             subscriptionStatus: true,
-            users: {
+            members: {
               select: {
                 user: {
                   select: {
@@ -49,11 +49,11 @@ async function getCompanies() {
   ])
 
   const enriched = companies.map((company) => {
-    const workspaceUsers = company.workspace.users
-    const memberCount = workspaceUsers.length
+    const workspaceMembers = company.workspace.members
+    const memberCount = workspaceMembers.length
 
     let lastLogin: string | null = null
-    for (const wu of workspaceUsers) {
+    for (const wu of workspaceMembers) {
       const session = wu.user.sessions[0]
       if (session) {
         if (!lastLogin || session.lastActiveAt.toISOString() > lastLogin) {

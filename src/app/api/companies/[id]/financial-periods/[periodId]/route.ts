@@ -22,7 +22,7 @@ export async function GET(
       include: {
         workspace: {
           include: {
-            users: {
+            members: {
               where: { user: { authId: user.id } }
             }
           }
@@ -34,7 +34,7 @@ export async function GET(
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
-    if (company.workspace.users.length === 0) {
+    if (company.workspace.members.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
@@ -153,7 +153,7 @@ export async function PUT(
       include: {
         workspace: {
           include: {
-            users: {
+            members: {
               where: { user: { authId: user.id } }
             }
           }
@@ -165,7 +165,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
-    if (company.workspace.users.length === 0) {
+    if (company.workspace.members.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
@@ -230,7 +230,7 @@ export async function DELETE(
       include: {
         workspace: {
           include: {
-            users: {
+            members: {
               where: { user: { authId: user.id } }
             }
           }
@@ -242,7 +242,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
-    if (company.workspace.users.length === 0) {
+    if (company.workspace.members.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 

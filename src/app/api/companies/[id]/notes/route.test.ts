@@ -55,7 +55,7 @@ describe('/api/companies/[id]/notes', () => {
       ]
 
       vi.mocked(checkPermissionModule.checkPermission).mockResolvedValue({
-        auth: { user: { id: mockUserId }, organizationUser: { organizationId: 'org_123' } },
+        auth: { user: { id: mockUserId }, workspaceMember: { workspaceId: 'org_123' } },
       } as never)
       vi.mocked(checkPermissionModule.isAuthError).mockReturnValue(false)
       vi.mocked(prisma.taskNote.findMany).mockResolvedValue(mockNotes as never)
@@ -74,7 +74,7 @@ describe('/api/companies/[id]/notes', () => {
 
     it('should filter notes by search query', async () => {
       vi.mocked(checkPermissionModule.checkPermission).mockResolvedValue({
-        auth: { user: { id: mockUserId }, organizationUser: { organizationId: 'org_123' } },
+        auth: { user: { id: mockUserId }, workspaceMember: { workspaceId: 'org_123' } },
       } as never)
       vi.mocked(checkPermissionModule.isAuthError).mockReturnValue(false)
       vi.mocked(prisma.taskNote.findMany).mockResolvedValue([] as never)
@@ -98,7 +98,7 @@ describe('/api/companies/[id]/notes', () => {
 
     it('should filter notes by noteType', async () => {
       vi.mocked(checkPermissionModule.checkPermission).mockResolvedValue({
-        auth: { user: { id: mockUserId }, organizationUser: { organizationId: 'org_123' } },
+        auth: { user: { id: mockUserId }, workspaceMember: { workspaceId: 'org_123' } },
       } as never)
       vi.mocked(checkPermissionModule.isAuthError).mockReturnValue(false)
       vi.mocked(prisma.taskNote.findMany).mockResolvedValue([] as never)
@@ -119,7 +119,7 @@ describe('/api/companies/[id]/notes', () => {
 
     it('should respect limit parameter', async () => {
       vi.mocked(checkPermissionModule.checkPermission).mockResolvedValue({
-        auth: { user: { id: mockUserId }, organizationUser: { organizationId: 'org_123' } },
+        auth: { user: { id: mockUserId }, workspaceMember: { workspaceId: 'org_123' } },
       } as never)
       vi.mocked(checkPermissionModule.isAuthError).mockReturnValue(false)
       vi.mocked(prisma.taskNote.findMany).mockResolvedValue([] as never)
@@ -138,7 +138,7 @@ describe('/api/companies/[id]/notes', () => {
 
     it('should default limit to 50', async () => {
       vi.mocked(checkPermissionModule.checkPermission).mockResolvedValue({
-        auth: { user: { id: mockUserId }, organizationUser: { organizationId: 'org_123' } },
+        auth: { user: { id: mockUserId }, workspaceMember: { workspaceId: 'org_123' } },
       } as never)
       vi.mocked(checkPermissionModule.isAuthError).mockReturnValue(false)
       vi.mocked(prisma.taskNote.findMany).mockResolvedValue([] as never)

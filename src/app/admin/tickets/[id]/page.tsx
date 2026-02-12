@@ -12,9 +12,9 @@ async function getTicket(id: string) {
           email: true,
           name: true,
           avatarUrl: true,
-          organizations: {
+          workspaces: {
             select: {
-              organization: {
+              workspace: {
                 select: { id: true, name: true },
               },
             },

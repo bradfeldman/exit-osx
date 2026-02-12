@@ -65,9 +65,9 @@ export async function GET(request: NextRequest) {
     const dbUser = await prisma.user.findUnique({
       where: { authId: user.id },
       include: {
-        organizations: {
+        workspaces: {
           include: {
-            organization: {
+            workspace: {
               include: {
                 companies: {
                   where: { id: companyId },
@@ -79,8 +79,8 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    const hasAccess = dbUser?.organizations.some(
-      (ou) => ou.organization.companies.length > 0
+    const hasAccess = dbUser?.workspaces.some(
+      (wm) => wm.workspace.companies.length > 0
     )
 
     if (!hasAccess) {

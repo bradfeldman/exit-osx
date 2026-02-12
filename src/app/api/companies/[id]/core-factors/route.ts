@@ -20,9 +20,9 @@ export async function GET(
     const company = await prisma.company.findUnique({
       where: { id: companyId },
       include: {
-        organization: {
+        workspace: {
           include: {
-            users: {
+            members: {
               where: { user: { authId: user.id } }
             }
           }
@@ -35,7 +35,7 @@ export async function GET(
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
-    if (company.organization.users.length === 0) {
+    if (company.workspace.members.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
@@ -76,9 +76,9 @@ export async function PUT(
     const company = await prisma.company.findUnique({
       where: { id: companyId },
       include: {
-        organization: {
+        workspace: {
           include: {
-            users: {
+            members: {
               where: {
                 user: { authId: user.id }
               },
@@ -95,11 +95,11 @@ export async function PUT(
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
-    if (company.organization.users.length === 0) {
+    if (company.workspace.members.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    const dbUserId = company.organization.users[0].user.id
+    const dbUserId = company.workspace.members[0].user.id
 
     // Build update object with only defined values
     const updateData: Record<string, string> = {}

@@ -42,7 +42,7 @@ export async function GET(request: Request, { params }: RouteParams) {
         id: companyId,
         deletedAt: null,
         workspace: {
-          users: {
+          members: {
             some: { userId: auth.auth.user.id }
           }
         }
@@ -117,7 +117,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
         id: companyId,
         deletedAt: null,
         workspace: {
-          users: {
+          members: {
             some: { userId: auth.auth.user.id }
           }
         }

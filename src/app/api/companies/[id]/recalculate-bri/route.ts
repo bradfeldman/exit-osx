@@ -27,7 +27,7 @@ export async function POST(
       include: {
         workspace: {
           include: {
-            users: {
+            members: {
               where: { user: { authId: user.id } },
               include: {
                 user: { select: { id: true } }
@@ -42,11 +42,11 @@ export async function POST(
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
-    if (company.workspace.users.length === 0) {
+    if (company.workspace.members.length === 0) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    const dbUserId = company.workspace.users[0].user.id
+    const dbUserId = company.workspace.members[0].user.id
 
     // Recalculate snapshot with current BRI scores
     const result = await recalculateSnapshotForCompany(
