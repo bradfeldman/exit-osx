@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -131,14 +130,16 @@ export default function ActivatePage() {
         <div className="absolute bottom-20 left-10 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
         <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground">
           <a href="https://exitosx.com" className="flex items-center gap-3">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/logo-icon.png"
               alt="Exit OSx"
               width={40}
               height={40}
               className="h-10 w-10"
             />
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/wordmark.svg"
               alt="Exit OSx"
               width={120}
@@ -178,14 +179,16 @@ export default function ActivatePage() {
           {/* Mobile logo */}
           <div className="lg:hidden text-center">
             <a href="https://exitosx.com" className="inline-flex items-center gap-2">
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src="/logo-icon.png"
                 alt="Exit OSx"
                 width={32}
                 height={32}
                 className="h-8 w-8"
               />
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src="/wordmark.svg"
                 alt="Exit OSx"
                 width={100}
