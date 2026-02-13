@@ -10,6 +10,7 @@ import {
   type CoreFactors,
 } from './calculate-valuation'
 import { calculateAutoDCF } from './auto-dcf'
+import { renormalizeTaskValues } from '@/lib/playbook/generate-tasks'
 import {
   DEFAULT_CATEGORY_WEIGHTS,
   type ScoringResponse,
@@ -314,6 +315,16 @@ export async function recalculateSnapshotForCompany(
         ...dcfData,
       },
     })
+
+    // Renormalize task values against updated value gap
+    try {
+      const renormResult = await renormalizeTaskValues(companyId, Number(valueGap))
+      if (renormResult.updated > 0) {
+        console.log(`[SNAPSHOT] Renormalized ${renormResult.updated} task values for company ${companyId}`)
+      }
+    } catch (renormError) {
+      console.error(`[SNAPSHOT] Task renormalization failed (non-fatal):`, renormError)
+    }
 
     return {
       success: true,
