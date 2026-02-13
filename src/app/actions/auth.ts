@@ -385,23 +385,17 @@ export async function sendMagicLink(
     }
 
     // Build verification URL through our own domain.
-    // We pass the raw token from the action_link URL. The confirm page
-    // (client-side JS) redirects to Supabase's /auth/v1/verify which
-    // handles all token types including PKCE, then redirects to /auth/callback.
-    const actionLink = data.properties?.action_link
-    if (!actionLink) {
-      console.error('[Auth] generateLink returned no action_link')
+    // We use the hashed_token (not raw token) so the confirm page can call
+    // supabase.auth.verifyOtp() directly on the client, avoiding the redirect
+    // through Supabase's /auth/v1/verify which uses implicit flow (tokens in
+    // URL hash fragments that server-side routes can't read).
+    const hashedToken = data.properties?.hashed_token
+    if (!hashedToken) {
+      console.error('[Auth] generateLink returned no hashed_token:', JSON.stringify(data.properties))
       return { success: false, error: 'Unable to send verification email. Please try again.' }
     }
 
-    const actionUrl = new URL(actionLink)
-    const rawToken = actionUrl.searchParams.get('token')
-    if (!rawToken) {
-      console.error('[Auth] action_link has no token param:', actionLink)
-      return { success: false, error: 'Unable to send verification email. Please try again.' }
-    }
-
-    const magicLinkUrl = `${baseUrl}/auth/confirm?token=${encodeURIComponent(rawToken)}&type=magiclink&next=/activate`
+    const magicLinkUrl = `${baseUrl}/auth/confirm?token_hash=${encodeURIComponent(hashedToken)}&type=magiclink&next=/activate`
 
     // Send branded email via Resend (all links point to app.exitosx.com)
     const emailResult = await sendMagicLinkEmail({ email: normalizedEmail, magicLinkUrl })
@@ -518,4 +512,20 @@ async function verifyCaptcha(token: string): Promise<boolean> {
     })
     return false
   }
+}
+
+/**
+ * Server action to mark the session as active after client-side auth completes.
+ * Sets the SESSION_COOKIE_NAME so middleware doesn't treat the session as stale
+ * when the user navigates to a protected route.
+ */
+export async function completeAuthCallback() {
+  const cookieStore = await cookies()
+  cookieStore.set(SESSION_COOKIE_NAME, String(Date.now()), {
+    path: '/',
+    maxAge: SESSION_COOKIE_MAX_AGE,
+    sameSite: 'lax',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+  })
 }
