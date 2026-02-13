@@ -142,7 +142,10 @@ export async function GET(request: NextRequest) {
         assessedCategorySet.add(response.question.briCategory)
       }
     }
-    const hasAssessment = assessedCategorySet.size > 0
+    // Count as assessed if formal assessment responses exist OR onboarding
+    // created a valuation snapshot (onboarding risk assessment is client-side
+    // and doesn't create AssessmentResponse records)
+    const hasAssessment = assessedCategorySet.size > 0 || latestSnapshot !== null
     const hasFullAssessment = ALL_BRI_CATEGORIES.every(cat => assessedCategorySet.has(cat))
     const assessedCategoryCount = assessedCategorySet.size
 
