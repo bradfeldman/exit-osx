@@ -228,14 +228,21 @@ export function ActionsPage() {
 
   const handleStartTask = async (taskId: string) => {
     try {
-      await fetch(`/api/tasks/${taskId}`, {
+      const response = await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'IN_PROGRESS' }),
       })
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}))
+        console.error('Start task failed:', response.status, err)
+        alert(err.message || `Failed to start task (${response.status})`)
+        return
+      }
       fetchData()
-    } catch {
-      // Silently fail, user can retry
+    } catch (err) {
+      console.error('Start task error:', err)
+      alert('Could not start task. Please check your connection.')
     }
   }
 
