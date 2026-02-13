@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Loader2 } from 'lucide-react'
@@ -13,77 +13,100 @@ import { completeAuthCallback } from '@/app/actions/auth'
  * Email links point to app.exitosx.com/auth/confirm to avoid Gmail spam filters
  * (domain mismatch between sender and link). This page uses verifyOtp() to
  * verify the token directly with Supabase on the client, establishing a session
- * without any redirect chain. This avoids the implicit flow issue where Supabase
- * returns tokens in URL hash fragments that server-side routes can't read.
+ * without any redirect chain.
+ *
+ * IMPORTANT: 'magiclink' type is deprecated in Supabase verifyOtp().
+ * We now use 'email' type instead. The URL param type=email is set by the
+ * server action that generates the magic link.
+ *
+ * Anti-prefetch: Email security scanners can pre-fetch links and consume OTP
+ * tokens before the real user clicks. We require a user-initiated click to
+ * verify, preventing automated scanners from consuming the token.
  */
 
 function ConfirmContent() {
   const searchParams = useSearchParams()
-  const [status, setStatus] = useState<'loading' | 'expired' | 'error'>('loading')
+  const [status, setStatus] = useState<'ready' | 'verifying' | 'expired' | 'error'>('ready')
 
   const tokenHash = searchParams.get('token_hash')
   const token = searchParams.get('token')
-  const type = searchParams.get('type') ?? 'magiclink'
+  // Default to 'email' — 'magiclink' and 'signup' are deprecated in verifyOtp()
+  const rawType = searchParams.get('type') ?? 'email'
+  // Map deprecated types to 'email'
+  const type = (rawType === 'magiclink' || rawType === 'signup') ? 'email' : rawType
   const next = searchParams.get('next') ?? '/activate'
 
   const hasToken = !!(token || tokenHash)
 
-  useEffect(() => {
+  // Sanitize redirect
+  const sanitizedNext = (next.startsWith('/') && !next.startsWith('//') && !next.includes('://'))
+    ? next
+    : '/activate'
+
+  const verify = useCallback(async () => {
     if (!hasToken) return
+    setStatus('verifying')
 
-    // Sanitize redirect
-    const sanitizedNext = (next.startsWith('/') && !next.startsWith('//') && !next.includes('://'))
-      ? next
-      : '/activate'
+    const supabase = createClient()
 
-    async function verify() {
-      const supabase = createClient()
+    if (tokenHash) {
+      const { error } = await supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: type as 'email' | 'recovery' | 'invite' | 'email_change',
+      })
 
-      if (tokenHash) {
-        // Preferred flow: verify the hashed token directly via Supabase client.
-        // This POSTs to Supabase and returns session data in the response body,
-        // avoiding the redirect-based implicit flow entirely.
-        const { error } = await supabase.auth.verifyOtp({
-          token_hash: tokenHash,
-          type: type as 'magiclink' | 'signup' | 'email',
-        })
-
-        if (error) {
-          console.error('[Auth Confirm] verifyOtp failed:', error.message)
-          if (error.message?.includes('expired') || error.message?.includes('invalid')) {
-            setStatus('expired')
-          } else {
-            setStatus('error')
-          }
-          return
+      if (error) {
+        console.error('[Auth Confirm] verifyOtp failed:', error.message)
+        if (error.message?.includes('expired') || error.message?.includes('invalid')) {
+          setStatus('expired')
+        } else {
+          setStatus('error')
         }
-
-        // Session established — set activity cookie so middleware doesn't
-        // treat this as a stale session on the next navigation
-        await completeAuthCallback()
-        window.location.href = sanitizedNext
         return
       }
 
-      if (token) {
-        // Legacy fallback: raw token from older email links.
-        // Redirect to Supabase's verify endpoint which handles verification
-        // and redirects to /auth/callback. The callback page handles both
-        // PKCE (code in query) and implicit (tokens in hash) flows.
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-        if (!supabaseUrl) {
-          setStatus('error')
-          return
-        }
+      // Session established — set activity cookie so middleware doesn't
+      // treat this as a stale session on the next navigation
+      await completeAuthCallback()
+      window.location.href = sanitizedNext
+      return
+    }
 
-        const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(sanitizedNext)}`
-        const verifyUrl = `${supabaseUrl}/auth/v1/verify?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}&redirect_to=${encodeURIComponent(callbackUrl)}`
-        window.location.href = verifyUrl
+    if (token) {
+      // Legacy fallback: raw token from older email links.
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      if (!supabaseUrl) {
+        setStatus('error')
+        return
+      }
+
+      const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(sanitizedNext)}`
+      const verifyUrl = `${supabaseUrl}/auth/v1/verify?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}&redirect_to=${encodeURIComponent(callbackUrl)}`
+      window.location.href = verifyUrl
+    }
+  }, [hasToken, tokenHash, token, type, sanitizedNext])
+
+  // Auto-verify if user interacted (clicked from email = page is fresh)
+  // We use a brief delay so the page renders the "confirm" button first,
+  // but for a human user the experience is near-instant.
+  useEffect(() => {
+    if (!hasToken || status !== 'ready') return
+
+    // Check if this is likely a real user click (not a prefetch).
+    // navigator.userActivation is available in modern browsers and tells
+    // us if the page load was triggered by a user gesture (clicking a link).
+    // If supported and active, auto-verify immediately.
+    if (typeof navigator !== 'undefined' && 'userActivation' in navigator) {
+      const activation = (navigator as { userActivation: { isActive: boolean } }).userActivation
+      if (activation.isActive) {
+        verify()
+        return
       }
     }
 
-    verify()
-  }, [token, tokenHash, type, next, hasToken])
+    // For browsers without userActivation, or if it's not active (prefetch),
+    // wait for the user to click the button. Don't auto-verify.
+  }, [hasToken, status, verify])
 
   if (!hasToken) {
     return (
@@ -125,11 +148,31 @@ function ConfirmContent() {
     )
   }
 
+  if (status === 'verifying') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+          <p className="text-muted-foreground">Confirming your account...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // status === 'ready' — show confirm button (anti-prefetch protection)
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center space-y-4">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-        <p className="text-muted-foreground">Confirming your account...</p>
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md space-y-6 text-center">
+        <div className="space-y-2">
+          <h1 className="text-2xl font-semibold text-foreground">Confirm your account</h1>
+          <p className="text-sm text-muted-foreground">Click below to complete your sign-in.</p>
+        </div>
+        <button
+          onClick={verify}
+          className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+        >
+          Confirm &amp; Continue
+        </button>
       </div>
     </div>
   )

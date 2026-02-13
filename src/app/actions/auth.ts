@@ -395,7 +395,11 @@ export async function sendMagicLink(
       return { success: false, error: 'Unable to send verification email. Please try again.' }
     }
 
-    const magicLinkUrl = `${baseUrl}/auth/confirm?token_hash=${encodeURIComponent(hashedToken)}&type=magiclink&next=/activate`
+    // Use 'email' type — 'magiclink' is deprecated in Supabase verifyOtp()
+    const verificationType = data.properties?.verification_type === 'magiclink'
+      ? 'email'
+      : (data.properties?.verification_type ?? 'email')
+    const magicLinkUrl = `${baseUrl}/auth/confirm?token_hash=${encodeURIComponent(hashedToken)}&type=${verificationType}&next=/activate`
 
     // Send branded email via Resend (all links point to app.exitosx.com)
     const emailResult = await sendMagicLinkEmail({ email: normalizedEmail, magicLinkUrl })
