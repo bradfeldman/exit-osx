@@ -162,10 +162,22 @@ export function CashFlowFormGrid({ companyId }: CashFlowFormGridProps) {
     )
   }
 
+  // Cash flow needs prior-year balance sheet, so skip the first (earliest) period
+  // since it will always show "Needs data"
+  const cashFlowPeriods = periods.length > 1 ? periods.slice(1) : periods
+
   if (periods.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
         No periods found. Click &quot;Enter Manually&quot; to get started.
+      </div>
+    )
+  }
+
+  if (cashFlowPeriods.length === 0) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        Add at least two fiscal years of data to view cash flow statements.
       </div>
     )
   }
@@ -199,7 +211,7 @@ export function CashFlowFormGrid({ companyId }: CashFlowFormGridProps) {
   return (
     <div className="space-y-6">
       {/* Info banner for periods that can't calculate */}
-      {periods.some(p => !periodCF[p.id]?.data) && (
+      {cashFlowPeriods.some(p => !periodCF[p.id]?.data) && (
         <div className="flex items-start gap-2 p-3 bg-amber-50 text-amber-800 rounded-lg border border-amber-200 text-sm">
           <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
           <span>
@@ -211,49 +223,49 @@ export function CashFlowFormGrid({ companyId }: CashFlowFormGridProps) {
 
       <div className="overflow-x-auto">
         <div className="min-w-[600px]">
-          <PeriodHeaders periods={periods} />
+          <PeriodHeaders periods={cashFlowPeriods} />
 
           {/* ── Operating Activities ── */}
           <div className="space-y-3 mb-6">
             <SectionHeader icon={Activity} label="Operating Activities" bgColor="bg-emerald-100" textColor="text-emerald-600" />
 
-            <FormRow label="Net Income" periods={periods}>
+            <FormRow label="Net Income" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="netIncome" />}
             </FormRow>
-            <FormRow label="Depreciation" periods={periods}>
+            <FormRow label="Depreciation" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="depreciation" />}
             </FormRow>
-            <FormRow label="Amortization" periods={periods}>
+            <FormRow label="Amortization" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="amortization" />}
             </FormRow>
 
             <p className="text-xs text-gray-500 pl-8 font-medium uppercase tracking-wide">Working Capital Changes</p>
-            <FormRow label="Chg. in A/R" periods={periods}>
+            <FormRow label="Chg. in A/R" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="changeInAccountsReceivable" />}
             </FormRow>
-            <FormRow label="Chg. in Inventory" periods={periods}>
+            <FormRow label="Chg. in Inventory" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="changeInInventory" />}
             </FormRow>
-            <FormRow label="Chg. in Prepaid" periods={periods}>
+            <FormRow label="Chg. in Prepaid" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="changeInPrepaidExpenses" />}
             </FormRow>
-            <FormRow label="Chg. in Other CA" periods={periods}>
+            <FormRow label="Chg. in Other CA" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="changeInOtherCurrentAssets" />}
             </FormRow>
-            <FormRow label="Chg. in A/P" periods={periods}>
+            <FormRow label="Chg. in A/P" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="changeInAccountsPayable" />}
             </FormRow>
-            <FormRow label="Chg. in Accrued" periods={periods}>
+            <FormRow label="Chg. in Accrued" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="changeInAccruedExpenses" />}
             </FormRow>
-            <FormRow label="Chg. in Other CL" periods={periods}>
+            <FormRow label="Chg. in Other CL" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="changeInOtherCurrentLiabilities" />}
             </FormRow>
-            <FormRow label="Chg. in Deferred Tax" periods={periods}>
+            <FormRow label="Chg. in Deferred Tax" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="changeInDeferredTaxLiabilities" />}
             </FormRow>
 
-            <FormRow label="Cash from Operations" periods={periods}>
+            <FormRow label="Cash from Operations" periods={cashFlowPeriods}>
               {(p) => <CashFlowSubtotal periodId={p.id} field="cashFromOperations" highlight />}
             </FormRow>
           </div>
@@ -262,17 +274,17 @@ export function CashFlowFormGrid({ companyId }: CashFlowFormGridProps) {
           <div className="space-y-3 mb-6">
             <SectionHeader icon={TrendingDown} label="Investing Activities" bgColor="bg-orange-100" textColor="text-orange-600" />
 
-            <FormRow label="Capital Expenditures" periods={periods}>
+            <FormRow label="Capital Expenditures" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="capitalExpenditures" />}
             </FormRow>
-            <FormRow label="Chg. in Intangibles" periods={periods}>
+            <FormRow label="Chg. in Intangibles" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="changeInIntangibleAssets" />}
             </FormRow>
-            <FormRow label="Chg. in Other LT Assets" periods={periods}>
+            <FormRow label="Chg. in Other LT Assets" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="changeInOtherLongTermAssets" />}
             </FormRow>
 
-            <FormRow label="Cash from Investing" periods={periods}>
+            <FormRow label="Cash from Investing" periods={cashFlowPeriods}>
               {(p) => <CashFlowSubtotal periodId={p.id} field="cashFromInvesting" highlight />}
             </FormRow>
           </div>
@@ -281,20 +293,20 @@ export function CashFlowFormGrid({ companyId }: CashFlowFormGridProps) {
           <div className="space-y-3 mb-6">
             <SectionHeader icon={Wallet} label="Financing Activities" bgColor="bg-purple-100" textColor="text-purple-600" />
 
-            <FormRow label="Chg. in Current LTD" periods={periods}>
+            <FormRow label="Chg. in Current LTD" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="changeInCurrentPortionLtd" />}
             </FormRow>
-            <FormRow label="Chg. in LT Debt" periods={periods}>
+            <FormRow label="Chg. in LT Debt" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="changeInLongTermDebt" />}
             </FormRow>
-            <FormRow label="Chg. in Other LT Liab." periods={periods}>
+            <FormRow label="Chg. in Other LT Liab." periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="changeInOtherLongTermLiabilities" />}
             </FormRow>
-            <FormRow label="Chg. in Owner's Equity" periods={periods}>
+            <FormRow label="Chg. in Owner's Equity" periods={cashFlowPeriods}>
               {(p) => <CashFlowCell periodId={p.id} field="changeInOwnersEquity" />}
             </FormRow>
 
-            <FormRow label="Cash from Financing" periods={periods}>
+            <FormRow label="Cash from Financing" periods={cashFlowPeriods}>
               {(p) => <CashFlowSubtotal periodId={p.id} field="cashFromFinancing" highlight />}
             </FormRow>
           </div>
@@ -303,16 +315,16 @@ export function CashFlowFormGrid({ companyId }: CashFlowFormGridProps) {
           <div className="space-y-3">
             <SectionHeader icon={BarChart3} label="Summary" bgColor="bg-blue-100" textColor="text-blue-600" />
 
-            <FormRow label="Net Change in Cash" periods={periods}>
+            <FormRow label="Net Change in Cash" periods={cashFlowPeriods}>
               {(p) => <CashFlowSubtotal periodId={p.id} field="netChangeInCash" />}
             </FormRow>
-            <FormRow label="Beginning Cash" periods={periods}>
+            <FormRow label="Beginning Cash" periods={cashFlowPeriods}>
               {(p) => <CashFlowSubtotal periodId={p.id} field="beginningCash" />}
             </FormRow>
-            <FormRow label="Ending Cash" periods={periods}>
+            <FormRow label="Ending Cash" periods={cashFlowPeriods}>
               {(p) => <CashFlowSubtotal periodId={p.id} field="endingCash" />}
             </FormRow>
-            <FormRow label="Free Cash Flow" periods={periods}>
+            <FormRow label="Free Cash Flow" periods={cashFlowPeriods}>
               {(p) => <CashFlowSubtotal periodId={p.id} field="freeCashFlow" highlight />}
             </FormRow>
           </div>

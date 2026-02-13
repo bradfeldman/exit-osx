@@ -53,12 +53,24 @@ export function NextMoveCard({ task, comingUp, isFreeUser = false, onUpgrade }: 
   const [showRationale, setShowRationale] = useState(false)
   const isInProgress = task?.status === 'IN_PROGRESS'
 
-  const handleStart = () => {
+  const handleStart = async () => {
     if (isFreeUser) {
       onUpgrade?.()
       return
     }
     if (task) {
+      // Start the task immediately (mark as IN_PROGRESS) then navigate
+      if (task.status !== 'IN_PROGRESS') {
+        try {
+          await fetch(`/api/tasks/${task.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'IN_PROGRESS' }),
+          })
+        } catch {
+          // Navigate anyway even if status update fails
+        }
+      }
       router.push(`/dashboard/actions?taskId=${task.id}`)
     }
   }

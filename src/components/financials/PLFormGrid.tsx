@@ -52,7 +52,7 @@ export function PLFormGrid({ companyId }: PLFormGridProps) {
   const [periodData, setPeriodData] = useState<Record<string, PeriodPLData>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [showDAIT, setShowDAIT] = useState(false)
-  const [saveStatuses, setSaveStatuses] = useState<Record<string, 'idle' | 'saving' | 'saved'>>({})
+  const [saveStatuses, setSaveStatuses] = useState<Record<string, 'idle' | 'saving' | 'saved' | 'error'>>({})
 
   const saveTimersRef = useRef<Record<string, NodeJS.Timeout>>({})
 
@@ -131,7 +131,7 @@ export function PLFormGrid({ companyId }: PLFormGridProps) {
   const savePeriod = useCallback(async (periodId: string, data: PeriodPLData) => {
     setSaveStatuses(prev => ({ ...prev, [periodId]: 'saving' }))
     try {
-      await fetch(
+      const res = await fetch(
         `/api/companies/${companyId}/financial-periods/${periodId}/income-statement`,
         {
           method: 'PUT',
@@ -147,13 +147,16 @@ export function PLFormGrid({ companyId }: PLFormGridProps) {
           }),
         }
       )
+      if (!res.ok) {
+        throw new Error(`Save failed: ${res.status}`)
+      }
       setSaveStatuses(prev => ({ ...prev, [periodId]: 'saved' }))
       setTimeout(() => {
         setSaveStatuses(prev => ({ ...prev, [periodId]: 'idle' }))
       }, 2000)
     } catch (err) {
       console.error('Failed to save income statement for period', periodId, err)
-      setSaveStatuses(prev => ({ ...prev, [periodId]: 'idle' }))
+      setSaveStatuses(prev => ({ ...prev, [periodId]: 'error' }))
     }
   }, [companyId])
 
@@ -225,10 +228,13 @@ export function PLFormGrid({ companyId }: PLFormGridProps) {
               'flex items-center gap-1',
               status === 'saving' && 'text-amber-600',
               status === 'saved' && 'text-emerald-600',
+              status === 'error' && 'text-red-600',
             )}>
               {status === 'saving' && <Loader2 className="h-3 w-3 animate-spin" />}
               {status === 'saved' && '✓'}
-              {period?.label}
+              {status === 'error' && '✗ Failed to save'}
+              {status !== 'error' && period?.label}
+              {status === 'error' && ` ${period?.label}`}
             </span>
           )
         })}

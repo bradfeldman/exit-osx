@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useSubscription } from '@/contexts/SubscriptionContext'
+import { useProgression } from '@/contexts/ProgressionContext'
 import { AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
 import { DiagnosisHeader } from './DiagnosisHeader'
 import { BRIRangeGauge } from './BRIRangeGauge'
@@ -69,6 +70,8 @@ interface DiagnosisData {
 export function DiagnosisPage() {
   const { selectedCompanyId } = useCompany()
   const { planTier } = useSubscription()
+  const { progressionData } = useProgression()
+  const hasFullAssessment = progressionData?.hasFullAssessment ?? false
   const isFreeUser = planTier === 'foundation'
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -232,8 +235,8 @@ export function DiagnosisPage() {
           </AnimatedItem>
         )}
 
-        {/* Re-Assess Banner */}
-        {(allQuestionsAnswered || sharpenActive) && (
+        {/* Re-Assess Banner (only after full 6-category baseline) */}
+        {hasFullAssessment && (allQuestionsAnswered || sharpenActive) && (
           <AnimatedItem>
             <SharpenDiagnosisBanner
               companyId={selectedCompanyId}

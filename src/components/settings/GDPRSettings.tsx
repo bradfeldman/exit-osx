@@ -317,7 +317,7 @@ export function GDPRSettings() {
             Delete Account
           </CardTitle>
           <CardDescription>
-            Permanently delete your account and all associated data (GDPR Article 17 - Right to Erasure)
+            Permanently delete your entire account, including your company, all team members, financial data, assessments, and uploaded documents. This cannot be undone.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -361,7 +361,7 @@ export function GDPRSettings() {
               <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
                 <h4 className="font-medium text-red-800">Are you sure?</h4>
                 <p className="text-sm text-red-700 mt-1">
-                  This will permanently delete your account and all your data. This action cannot be undone.
+                  This will permanently delete your account, company, all team members, financial data, assessments, tasks, evidence documents, and deal room. This action cannot be undone.
                   You will have a 30-day grace period to cancel.
                 </p>
               </div>

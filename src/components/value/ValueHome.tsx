@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { useExposure } from '@/contexts/ExposureContext'
+import { useProgression } from '@/contexts/ProgressionContext'
 import { AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
 import { HeroMetricsBar } from './HeroMetricsBar'
 import { ValuationBridge } from './ValuationBridge'
@@ -126,6 +127,8 @@ export function ValueHome() {
   const { selectedCompanyId } = useCompany()
   const { planTier } = useSubscription()
   const { isLearning, isLoading: exposureLoading } = useExposure()
+  const { progressionData } = useProgression()
+  const hasFullAssessment = progressionData?.hasFullAssessment ?? false
   const router = useRouter()
   const isFreeUser = planTier === 'foundation'
   const [data, setData] = useState<DashboardData | null>(null)
@@ -200,15 +203,19 @@ export function ValueHome() {
         </Button>
       </div>
       <AnimatedStagger className="space-y-8" staggerDelay={0.15}>
-        {/* Weekly Check-In (shows only when pending) */}
-        <AnimatedItem>
-          <WeeklyCheckInTrigger onRefresh={fetchData} />
-        </AnimatedItem>
+        {/* Weekly Check-In (only after full 6-category baseline assessment) */}
+        {hasFullAssessment && (
+          <AnimatedItem>
+            <WeeklyCheckInTrigger onRefresh={fetchData} />
+          </AnimatedItem>
+        )}
 
-        {/* Monthly Disclosure Check-in (shows only when pending) */}
-        <AnimatedItem>
-          <DisclosureTrigger onRefresh={fetchData} />
-        </AnimatedItem>
+        {/* Quick Check / Disclosure (only after full 6-category baseline assessment) */}
+        {hasFullAssessment && (
+          <AnimatedItem>
+            <DisclosureTrigger onRefresh={fetchData} />
+          </AnimatedItem>
+        )}
 
         {/* Hero Metrics Bar */}
         <AnimatedItem>
@@ -261,7 +268,7 @@ export function ValueHome() {
           />
         </AnimatedItem>
 
-        {/* What-If Scenarios */}
+        {/* What-If Scenarios (only after full 6-category baseline assessment) */}
         <AnimatedItem>
           <WhatIfScenarios
             coreFactors={data.coreFactors}
@@ -271,7 +278,7 @@ export function ValueHome() {
             currentValue={tier1?.currentValue ?? 0}
             briScore={tier1?.briScore ?? 50}
             currentMultiple={tier1?.finalMultiple ?? 0}
-            hasAssessment={data.hasAssessment}
+            hasAssessment={hasFullAssessment}
             isFreeUser={isFreeUser}
             onUpgrade={() => handleUpgrade('company-assessment', 'What-If Scenarios')}
             companyId={selectedCompanyId ?? undefined}

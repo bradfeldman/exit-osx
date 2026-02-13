@@ -126,38 +126,8 @@ export function HeroMetricsBar({
         {!hasAssessment && (
           <Badge variant="secondary" className="mt-2">Industry Preview</Badge>
         )}
-        {hasAssessment && isEbitdaFromFinancials && !dcfValuation && (
+        {hasAssessment && isEbitdaFromFinancials && (
           <Badge variant="secondary" className="mt-2">Based on your financials</Badge>
-        )}
-        {dcfValuation && (
-          <motion.div
-            className="mt-2"
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2, duration: 0.4 }}
-          >
-            <Badge
-              variant="secondary"
-              className={
-                dcfValuation.confidenceSignal === 'high'
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
-                  : dcfValuation.confidenceSignal === 'moderate'
-                    ? 'bg-secondary text-secondary-foreground'
-                    : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
-              }
-              title={
-                dcfValuation.divergenceRatio != null
-                  ? `${Math.round(dcfValuation.divergenceRatio * 100)}% divergence from EBITDA multiple`
-                  : undefined
-              }
-            >
-              {dcfValuation.confidenceSignal === 'high'
-                ? `DCF Confirms: ${formatCurrency(dcfValuation.enterpriseValue)}`
-                : dcfValuation.confidenceSignal === 'moderate'
-                  ? `DCF Estimate: ${formatCurrency(dcfValuation.enterpriseValue)}`
-                  : `DCF Suggests: ${formatCurrency(dcfValuation.enterpriseValue)}`}
-            </Badge>
-          </motion.div>
         )}
       </motion.div>
 

@@ -193,6 +193,7 @@ export function BillingSettings() {
               (planTier === 'exit-ready' && plan.id !== 'exit-ready') ||
               (planTier === 'growth' && plan.id === 'foundation')
             const canUpgrade = !isCurrentPlan && !isDowngrade
+            const canDowngrade = isDowngrade && !isCurrentPlan
 
             return (
               <Card
@@ -275,9 +276,22 @@ export function BillingSettings() {
                     <Button className="w-full" variant="secondary" disabled>
                       Current Plan
                     </Button>
+                  ) : canDowngrade ? (
+                    <Button
+                      className="w-full"
+                      variant="outline"
+                      onClick={() => handleUpgrade(plan.id)}
+                      disabled={isUpgrading}
+                    >
+                      {isUpgrading && selectedPlan === plan.id ? (
+                        'Processing...'
+                      ) : (
+                        'Downgrade'
+                      )}
+                    </Button>
                   ) : (
                     <Button className="w-full" variant="ghost" disabled>
-                      {isDowngrade ? 'Contact Support to Downgrade' : 'N/A'}
+                      N/A
                     </Button>
                   )}
                 </CardContent>

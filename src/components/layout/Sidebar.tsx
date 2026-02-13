@@ -1,65 +1,47 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useCompany } from '@/contexts/CompanyContext'
-import { useSubscription } from '@/contexts/SubscriptionContext'
 import { useProgression } from '@/contexts/ProgressionContext'
-import { UpgradeModal } from '@/components/subscription/UpgradeModal'
-import { AccessRequestModal } from '@/components/access/AccessRequestModal'
-import { ProgressionLockedItem } from '@/components/ui/ProgressionLockedItem'
-import { PlanTier } from '@/lib/pricing'
 import packageJson from '../../../package.json'
-// Select imports removed - company selector is no longer a dropdown
-import { isPersonalFeature } from '@/lib/pricing'
 
 interface NavLink {
   name: string
   href: string
   icon: React.ComponentType<{ className?: string }>
-  requiredPlan?: PlanTier
-  featureKey?: string
-  progressionKey?: string // Key for feature-level progression locking (e.g. retirementCalculator)
-  modeKey?: string        // Key for mode-level milestone gating (e.g. actions, evidence, dealRoom)
   exactMatch?: boolean    // Only highlight on exact pathname match
 }
 
-// CORE section links - 5 Mode Navigation
-// Value and Diagnosis are always accessible.
-// Actions and Evidence require hasAssessment (at least 1 category assessed).
-// Deal Room requires evidencePercentage >= 70.
+// CORE section links - 5 Mode Navigation (all unlocked, no gating)
 const coreLinks: NavLink[] = [
   { name: 'Value', href: '/dashboard', icon: HomeIcon },
   { name: 'Diagnosis', href: '/dashboard/diagnosis', icon: DiagnosisIcon },
-  { name: 'Actions', href: '/dashboard/actions', icon: ActionsIcon, modeKey: 'actions' },
-  { name: 'Evidence', href: '/dashboard/evidence', icon: EvidenceIcon, modeKey: 'evidence' },
-  { name: 'Deal Room', href: '/dashboard/deal-room', icon: DealRoomIcon, modeKey: 'dealRoom' },
+  { name: 'Actions', href: '/dashboard/actions', icon: ActionsIcon },
+  { name: 'Evidence', href: '/dashboard/evidence', icon: EvidenceIcon },
+  { name: 'Deal Room', href: '/dashboard/deal-room', icon: DealRoomIcon },
 ]
 
-// VALUE MODELING section
+// VALUE MODELING section (no subscription/progression gating, DCF removed)
 const valueModelingLinks: NavLink[] = [
-  { name: 'Business Financials', href: '/dashboard/financials', icon: FinancialsIcon, requiredPlan: 'growth', featureKey: 'business-financials', exactMatch: true },
-  { name: 'DCF Valuation', href: '/dashboard/valuation', icon: ChartBarIcon, requiredPlan: 'exit-ready', featureKey: 'dcf-valuation' },
+  { name: 'Business Financials', href: '/dashboard/financials', icon: FinancialsIcon, exactMatch: true },
 ]
 
 const retirementCalculatorLink: NavLink = {
-  name: 'Retirement Calculator', href: '/dashboard/financials/retirement', icon: CalculatorIcon, progressionKey: 'retirementCalculator',
+  name: 'Retirement Calculator', href: '/dashboard/financials/retirement', icon: CalculatorIcon,
 }
 
-// Personal financials (always in financials section when unlocked)
+// Personal financials (always visible, no gating)
 const personalFinancialsLink: NavLink = {
   name: 'Personal Financial Statement',
   href: '/dashboard/financials/personal',
   icon: WalletIcon,
-  requiredPlan: 'growth',
-  featureKey: 'personal-financials',
 }
 
-// CAPITAL section
+// CAPITAL section (no subscription gating)
 const capitalLinks: NavLink[] = [
-  { name: 'Business Loans', href: '/dashboard/loans/business', icon: BankIcon, requiredPlan: 'growth', featureKey: 'business-loans' },
+  { name: 'Business Loans', href: '/dashboard/loans/business', icon: BankIcon },
 ]
 
 // EXIT TOOLS section removed -- consolidated into Mode 5 (Deal Room) at /dashboard/deal-room
@@ -67,56 +49,13 @@ const capitalLinks: NavLink[] = [
 export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const { companies, selectedCompanyId, setSelectedCompanyId: _setSelectedCompanyId, isLoading, isSelectedCompanySubscribingOwner } = useCompany()
-  const subscription = useSubscription()
-  const progression = useProgression()
-  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
-  const [lockedFeature, setLockedFeature] = useState<{ key: string; name: string } | null>(null)
-  const [requestAccessModalOpen, setRequestAccessModalOpen] = useState(false)
-  const [requestAccessFeature, setRequestAccessFeature] = useState<{ key: string; name: string } | null>(null)
-
-  // Defensive: if subscription is still loading, allow all features to prevent UI breaking
-  const canAccessFeature = subscription.isLoading
-    ? () => true
-    : subscription.canAccessFeature
-
-  const shouldShowRequestAccess = subscription.isLoading
-    ? () => false
-    : subscription.shouldShowRequestAccess
-
-  // Progression unlocks (milestone-based)
-  const {
-    progressionData,
-    getUnlockHint,
-    getModeUnlockHint,
-    isProgressionLocked,
-    canAccessActions,
-    canAccessEvidence,
-    canAccessDealRoom,
-  } = progression
-
-  // Map modeKey to its canAccess gate
-  const modeAccessMap: Record<string, boolean> = {
-    actions: canAccessActions,
-    evidence: canAccessEvidence,
-    dealRoom: canAccessDealRoom,
-  }
-
-  const handleLockedClick = (featureKey: string, featureName: string) => {
-    // Check if this is a personal feature that staff can request access to
-    if (isPersonalFeature(featureKey) && shouldShowRequestAccess(featureKey)) {
-      setRequestAccessFeature({ key: featureKey, name: featureName })
-      setRequestAccessModalOpen(true)
-    } else {
-      setLockedFeature({ key: featureKey, name: featureName })
-      setUpgradeModalOpen(true)
-    }
-  }
+  const { companies, selectedCompanyId, isLoading, isSelectedCompanySubscribingOwner } = useCompany()
+  const { progressionData } = useProgression()
 
   const selectedCompany = companies.find(c => c.id === selectedCompanyId)
 
-  // Helper to render a nav link with subscription, mode-milestone, and feature-progression locking
-  const renderNavLink = (link: NavLink, options?: { showBadge?: boolean; badgeType?: 'warning' | 'alert' }) => {
+  // Helper to render a nav link (all items unlocked, no gating)
+  const renderNavLink = (link: NavLink) => {
     // Special case for Value (/dashboard) - only match exact path
     const isActive = link.href === '/dashboard'
       ? pathname === '/dashboard'
@@ -125,59 +64,6 @@ export function Sidebar() {
         : pathname === link.href || pathname.startsWith(link.href + '/')
     const IconComponent = link.icon
 
-    // Check mode-level milestone gate (for core 5-mode navigation)
-    if (link.modeKey && modeAccessMap[link.modeKey] === false) {
-      const modeHint = getModeUnlockHint(link.modeKey)
-      if (modeHint) {
-        return (
-          <li key={link.href}>
-            <ProgressionLockedItem
-              name={link.name}
-              icon={IconComponent}
-              unlockHint={modeHint}
-            />
-          </li>
-        )
-      }
-    }
-
-    // Check subscription lock
-    const isSubscriptionLocked = link.featureKey && !canAccessFeature(link.featureKey)
-
-    // Check feature-level progression lock (for sub-items like retirement calculator)
-    const progressionLocked = link.progressionKey && isProgressionLocked(link.progressionKey)
-    const unlockHint = link.progressionKey ? getUnlockHint(link.progressionKey) : null
-
-    // If progression locked (and not subscription locked), show progression locked item
-    if (progressionLocked && !isSubscriptionLocked && unlockHint) {
-      return (
-        <li key={link.href}>
-          <ProgressionLockedItem
-            name={link.name}
-            icon={IconComponent}
-            unlockHint={unlockHint}
-          />
-        </li>
-      )
-    }
-
-    // If subscription locked, show subscription locked button
-    if (isSubscriptionLocked) {
-      return (
-        <li key={link.href}>
-          <button
-            onClick={() => handleLockedClick(link.featureKey!, link.name)}
-            className="group flex w-full gap-x-3 rounded-md p-2 text-sm font-medium leading-6 transition-colors text-sidebar-foreground/50 hover:bg-sidebar-accent/50"
-          >
-            <IconComponent className="h-5 w-5 shrink-0 text-sidebar-foreground/40" />
-            <span className="flex-1 text-left">{link.name}</span>
-            <LockIcon className="h-4 w-4 text-sidebar-foreground/40" />
-          </button>
-        </li>
-      )
-    }
-
-    // Normal unlocked link
     return (
       <li key={link.href}>
         <Link
@@ -196,17 +82,6 @@ export function Sidebar() {
             )}
           />
           <span className="flex-1">{link.name}</span>
-          {options?.showBadge && options.badgeType === 'warning' && (
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-medium text-white">
-              !
-            </span>
-          )}
-          {options?.showBadge && options.badgeType === 'alert' && (
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-            </span>
-          )}
         </Link>
       </li>
     )
@@ -351,23 +226,6 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Upgrade Modal */}
-      <UpgradeModal
-        open={upgradeModalOpen}
-        onOpenChange={setUpgradeModalOpen}
-        feature={lockedFeature?.key}
-        featureDisplayName={lockedFeature?.name}
-      />
-
-      {/* Request Access Modal */}
-      {requestAccessFeature && (
-        <AccessRequestModal
-          open={requestAccessModalOpen}
-          onOpenChange={setRequestAccessModalOpen}
-          feature={requestAccessFeature.key}
-          featureDisplayName={requestAccessFeature.name}
-        />
-      )}
     </div>
   )
 }
@@ -418,22 +276,6 @@ function BankIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" />
-    </svg>
-  )
-}
-
-function ChartBarIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
-    </svg>
-  )
-}
-
-function LockIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
     </svg>
   )
 }

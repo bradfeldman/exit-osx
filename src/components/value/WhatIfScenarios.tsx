@@ -216,7 +216,7 @@ export function WhatIfScenarios({
           <p className="text-sm font-medium text-muted-foreground mb-1">
             {isFreeUser
               ? 'Upgrade to unlock What-If Scenarios'
-              : 'Complete your assessment to unlock What-If Scenarios'}
+              : 'Complete all 6 assessment categories to unlock What-If Scenarios'}
           </p>
           <p className="text-xs text-muted-foreground/60 mb-3">
             See how improving specific business factors could change your valuation

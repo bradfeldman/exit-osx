@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useCompany } from '@/contexts/CompanyContext'
-import { useSubscription } from '@/contexts/SubscriptionContext'
 import { useProgression } from '@/contexts/ProgressionContext'
 import {
   Select,
@@ -24,31 +23,8 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { companies, selectedCompanyId, setSelectedCompanyId, isLoading } = useCompany()
-  const subscription = useSubscription()
-  const progression = useProgression()
+  const { progressionData } = useProgression()
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-  const {
-    progressionData,
-    isProgressionLocked,
-    getUnlockHint: _getUnlockHint,
-    getModeUnlockHint,
-    canAccessActions,
-    canAccessEvidence,
-    canAccessDealRoom,
-  } = progression
-
-  // Map modeKey to its canAccess gate
-  const modeAccessMap: Record<string, boolean> = {
-    actions: canAccessActions,
-    evidence: canAccessEvidence,
-    dealRoom: canAccessDealRoom,
-  }
-
-  // Defensive: if subscription is still loading, allow all features
-  const canAccessFeature = subscription.isLoading
-    ? () => true
-    : subscription.canAccessFeature
 
   // Delayed close to prevent accidental closes when hovering near edge or using dropdowns
   const handleMouseLeave = useCallback(() => {
@@ -208,35 +184,18 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
 
           {/* Navigation */}
           <nav className="flex-1 space-y-1">
-            {/* CORE Section -- 5-Mode Navigation with milestone gating */}
+            {/* CORE Section -- 5-Mode Navigation (all unlocked) */}
             {[
               { name: 'Value', href: '/dashboard', icon: HomeIcon, exact: true },
               { name: 'Diagnosis', href: '/dashboard/diagnosis', icon: DiagnosisIcon },
-              { name: 'Actions', href: '/dashboard/actions', icon: ActionsIcon, modeKey: 'actions' },
-              { name: 'Evidence', href: '/dashboard/evidence', icon: EvidenceIcon, modeKey: 'evidence' },
-              { name: 'Deal Room', href: '/dashboard/deal-room', icon: DealRoomIcon, modeKey: 'dealRoom' },
+              { name: 'Actions', href: '/dashboard/actions', icon: ActionsIcon },
+              { name: 'Evidence', href: '/dashboard/evidence', icon: EvidenceIcon },
+              { name: 'Deal Room', href: '/dashboard/deal-room', icon: DealRoomIcon },
             ].map((link) => {
               const isActive = link.exact
                 ? pathname === link.href
                 : pathname === link.href || pathname.startsWith(link.href + '/')
               const Icon = link.icon
-
-              // Check mode-level milestone gate
-              if (link.modeKey && modeAccessMap[link.modeKey] === false) {
-                const modeHint = getModeUnlockHint(link.modeKey)
-                return (
-                  <button
-                    key={link.href}
-                    className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full cursor-not-allowed"
-                    disabled
-                    title={modeHint || undefined}
-                  >
-                    <Icon className="h-5 w-5 text-sidebar-foreground/30" />
-                    {link.name}
-                    <MilestoneLockIcon className="h-4 w-4 ml-auto text-sidebar-foreground/30" />
-                  </button>
-                )
-              }
 
               return (
                 <Link
@@ -256,8 +215,8 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
               )
             })}
 
-            {/* VALUE MODELING Section - visible when business financials uploaded */}
-            {progressionData?.hasBusinessFinancials && (
+            {/* VALUE MODELING Section - always visible, no gating */}
+            {progressionData && (
               <>
                 <div className="pt-4 border-t border-sidebar-border mt-4">
                   <p className="px-3 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
@@ -265,123 +224,52 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                   </p>
                 </div>
 
-                {/* Business Financials */}
-                {canAccessFeature('business-financials') ? (
-                  <Link
-                    href="/dashboard/financials"
-                    onClick={handleLinkClick}
-                    className={cn(
-                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                      pathname === '/dashboard/financials' || pathname.startsWith('/dashboard/financials/statements')
-                        ? 'bg-sidebar-accent text-sidebar-primary'
-                        : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                    )}
-                  >
-                    <FinancialsIcon className="h-5 w-5" />
-                    Business Financials
-                  </Link>
-                ) : (
-                  <button
-                    className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"
-                    disabled
-                  >
-                    <FinancialsIcon className="h-5 w-5" />
-                    Business Financials
-                    <LockIcon className="h-4 w-4 ml-auto" />
-                  </button>
-                )}
+                <Link
+                  href="/dashboard/financials"
+                  onClick={handleLinkClick}
+                  className={cn(
+                    'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                    pathname === '/dashboard/financials' || pathname.startsWith('/dashboard/financials/statements')
+                      ? 'bg-sidebar-accent text-sidebar-primary'
+                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                  )}
+                >
+                  <FinancialsIcon className="h-5 w-5" />
+                  Business Financials
+                </Link>
 
-                {/* DCF Valuation */}
-                {canAccessFeature('dcf-valuation') ? (
-                  <Link
-                    href="/dashboard/valuation"
-                    onClick={handleLinkClick}
-                    className={cn(
-                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                      pathname.startsWith('/dashboard/valuation')
-                        ? 'bg-sidebar-accent text-sidebar-primary'
-                        : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                    )}
-                  >
-                    <ChartBarIcon className="h-5 w-5" />
-                    DCF Valuation
-                  </Link>
-                ) : (
-                  <button
-                    className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"
-                    disabled
-                  >
-                    <ChartBarIcon className="h-5 w-5" />
-                    DCF Valuation
-                    <LockIcon className="h-4 w-4 ml-auto" />
-                  </button>
-                )}
+                <Link
+                  href="/dashboard/financials/retirement"
+                  onClick={handleLinkClick}
+                  className={cn(
+                    'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                    pathname === '/dashboard/financials/retirement'
+                      ? 'bg-sidebar-accent text-sidebar-primary'
+                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                  )}
+                >
+                  <CalculatorIcon className="h-5 w-5" />
+                  Retirement Calculator
+                </Link>
 
-                {/* Retirement Calculator */}
-                {isProgressionLocked('retirementCalculator') ? (
-                  <button
-                    className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"
-                    disabled
-                  >
-                    <CalculatorIcon className="h-5 w-5" />
-                    Retirement Calculator
-                    <ClockIcon className="h-4 w-4 ml-auto" />
-                  </button>
-                ) : canAccessFeature('retirement-calculator') ? (
-                  <Link
-                    href="/dashboard/financials/retirement"
-                    onClick={handleLinkClick}
-                    className={cn(
-                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                      pathname === '/dashboard/financials/retirement'
-                        ? 'bg-sidebar-accent text-sidebar-primary'
-                        : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                    )}
-                  >
-                    <CalculatorIcon className="h-5 w-5" />
-                    Retirement Calculator
-                  </Link>
-                ) : (
-                  <button
-                    className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"
-                    disabled
-                  >
-                    <CalculatorIcon className="h-5 w-5" />
-                    Retirement Calculator
-                    <LockIcon className="h-4 w-4 ml-auto" />
-                  </button>
-                )}
-
-                {/* Personal Financial Statement */}
-                {canAccessFeature('personal-financials') ? (
-                  <Link
-                    href="/dashboard/financials/personal"
-                    onClick={handleLinkClick}
-                    className={cn(
-                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                      pathname === '/dashboard/financials/personal'
-                        ? 'bg-sidebar-accent text-sidebar-primary'
-                        : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                    )}
-                  >
-                    <WalletIcon className="h-5 w-5" />
-                    Personal Financials
-                  </Link>
-                ) : (
-                  <button
-                    className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"
-                    disabled
-                  >
-                    <WalletIcon className="h-5 w-5" />
-                    Personal Financials
-                    <LockIcon className="h-4 w-4 ml-auto" />
-                  </button>
-                )}
+                <Link
+                  href="/dashboard/financials/personal"
+                  onClick={handleLinkClick}
+                  className={cn(
+                    'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                    pathname === '/dashboard/financials/personal'
+                      ? 'bg-sidebar-accent text-sidebar-primary'
+                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                  )}
+                >
+                  <WalletIcon className="h-5 w-5" />
+                  Personal Financials
+                </Link>
               </>
             )}
 
-            {/* CAPITAL Section - visible when both business + personal financials complete */}
-            {progressionData?.hasBusinessFinancials && progressionData?.hasPersonalFinancials && (
+            {/* CAPITAL Section - always visible, no gating */}
+            {progressionData && (
               <>
                 <div className="pt-4 border-t border-sidebar-border mt-4">
                   <p className="px-3 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
@@ -389,30 +277,19 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                   </p>
                 </div>
 
-                {canAccessFeature('business-loans') ? (
-                  <Link
-                    href="/dashboard/loans/business"
-                    onClick={handleLinkClick}
-                    className={cn(
-                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                      pathname.startsWith('/dashboard/loans')
-                        ? 'bg-sidebar-accent text-sidebar-primary'
-                        : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                    )}
-                  >
-                    <BankIcon className="h-5 w-5" />
-                    Business Loans
-                  </Link>
-                ) : (
-                  <button
-                    className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/40 w-full"
-                    disabled
-                  >
-                    <BankIcon className="h-5 w-5" />
-                    Business Loans
-                    <LockIcon className="h-4 w-4 ml-auto" />
-                  </button>
-                )}
+                <Link
+                  href="/dashboard/loans/business"
+                  onClick={handleLinkClick}
+                  className={cn(
+                    'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                    pathname.startsWith('/dashboard/loans')
+                      ? 'bg-sidebar-accent text-sidebar-primary'
+                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                  )}
+                >
+                  <BankIcon className="h-5 w-5" />
+                  Business Loans
+                </Link>
               </>
             )}
 
@@ -476,21 +353,6 @@ function CalculatorIcon({ className }: { className?: string }) {
   )
 }
 
-function LockIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-    </svg>
-  )
-}
-
-function ClockIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-    </svg>
-  )
-}
 
 function WalletIcon({ className }: { className?: string }) {
   return (
@@ -504,14 +366,6 @@ function BankIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" />
-    </svg>
-  )
-}
-
-function ChartBarIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
     </svg>
   )
 }
@@ -557,11 +411,3 @@ function DealRoomIcon({ className }: { className?: string }) {
   )
 }
 
-// Clock icon for milestone-locked items (distinct from subscription lock)
-function MilestoneLockIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-    </svg>
-  )
-}

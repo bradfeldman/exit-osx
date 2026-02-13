@@ -453,68 +453,6 @@ export function CompanySettings() {
         </CardContent>
       </Card>
 
-      {/* Fiscal Year End */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Fiscal Year End</CardTitle>
-          <CardDescription>
-            Set your company&apos;s fiscal year end date. This is used when adding financial periods.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="fiscal-month">Month</Label>
-              <Select
-                value={fiscalYearEndMonth.toString()}
-                onValueChange={(value) => {
-                  const month = parseInt(value)
-                  setFiscalYearEndMonth(month)
-                  const maxDays = getDaysInMonth(month)
-                  if (fiscalYearEndDay > maxDays) {
-                    setFiscalYearEndDay(maxDays)
-                  }
-                }}
-              >
-                <SelectTrigger id="fiscal-month">
-                  <SelectValue placeholder="Select month" />
-                </SelectTrigger>
-                <SelectContent>
-                  {MONTHS.map((month) => (
-                    <SelectItem key={month.value} value={month.value.toString()}>
-                      {month.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="fiscal-day">Day</Label>
-              <Select
-                value={fiscalYearEndDay.toString()}
-                onValueChange={(value) => setFiscalYearEndDay(parseInt(value))}
-              >
-                <SelectTrigger id="fiscal-day">
-                  <SelectValue placeholder="Select day" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: getDaysInMonth(fiscalYearEndMonth) }, (_, i) => i + 1).map((day) => (
-                    <SelectItem key={day} value={day.toString()}>
-                      {day}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {fiscalYearEndMonth === 12 && fiscalYearEndDay === 31
-              ? 'Calendar year (January 1 - December 31)'
-              : `Fiscal year ends on ${MONTHS.find(m => m.value === fiscalYearEndMonth)?.label} ${fiscalYearEndDay}`}
-          </p>
-        </CardContent>
-      </Card>
-
       {/* Assessment Cadence */}
       <AssessmentCadenceCard />
 

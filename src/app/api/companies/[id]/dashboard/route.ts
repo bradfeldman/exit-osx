@@ -717,15 +717,17 @@ export async function GET(
 
           // If using DCF, use that value and calculate implied multiple
           // Otherwise, use EBITDA x recalculated multiple
-          const currentValue = dcfEnterpriseValue ?? recalculated.currentValue
+          const currentValueRaw = dcfEnterpriseValue ?? recalculated.currentValue
+          const currentValue = Math.max(0, currentValueRaw)
           const impliedMultiple = dcfImpliedMultiple ?? recalculated.finalMultiple
           const industryBasedPotential = adjustedEbitda * effectiveMultipleHigh
 
           // When DCF value exceeds industry-based potential, show DCF as both current and potential
           // This prevents the confusing situation where "potential" < "current"
-          const potentialValue = useDCF && currentValue > industryBasedPotential
+          const potentialValueRaw = useDCF && currentValue > industryBasedPotential
             ? currentValue
             : industryBasedPotential
+          const potentialValue = Math.max(0, potentialValueRaw)
 
           // Value gap: positive when below potential, zero when at or above
           const valueGap = Math.max(0, potentialValue - currentValue)
@@ -752,14 +754,16 @@ export async function GET(
         } else {
           // No snapshot - estimate values based on industry multiples (or overrides)
           // Still respect DCF value if enabled
-          const currentValue = dcfEnterpriseValue ?? (adjustedEbitda * estimatedMultiple)
+          const currentValueRaw = dcfEnterpriseValue ?? (adjustedEbitda * estimatedMultiple)
+          const currentValue = Math.max(0, currentValueRaw)
           const impliedMultiple = dcfImpliedMultiple ?? estimatedMultiple
           const industryBasedPotential = adjustedEbitda * multipleHigh
 
           // When DCF value exceeds industry-based potential, show DCF as both current and potential
-          const potentialValue = useDCF && currentValue > industryBasedPotential
+          const potentialValueRaw = useDCF && currentValue > industryBasedPotential
             ? currentValue
             : industryBasedPotential
+          const potentialValue = Math.max(0, potentialValueRaw)
 
           // Value gap: positive when below potential, zero when at or above
           const valueGap = Math.max(0, potentialValue - currentValue)

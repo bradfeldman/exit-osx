@@ -259,99 +259,12 @@ export function AddPeriodDialog({
               </p>
             </div>
 
-            {/* Preview with subtle FYE edit */}
+            {/* Preview */}
             <div className="rounded-md bg-muted p-3 space-y-2">
               <p className="text-sm font-medium">{generateLabel()}</p>
               <p className="text-xs text-muted-foreground">
                 {startDatePreview} - {endDatePreview}
               </p>
-
-              {/* Subtle fiscal year end link */}
-              <Popover open={showFYEPicker} onOpenChange={setShowFYEPicker}>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
-                    disabled={isSavingFYE}
-                  >
-                    <Calendar className="h-3 w-3" />
-                    {companySettings.fiscalYearEndMonth === 12 && companySettings.fiscalYearEndDay === 31
-                      ? 'Change fiscal year end'
-                      : `Year ends ${formatFYE(companySettings.fiscalYearEndMonth, companySettings.fiscalYearEndDay)}`
-                    }
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-64 p-3" align="start">
-                  <div className="space-y-3">
-                    <p className="text-sm font-medium">Fiscal Year End Date</p>
-                    <p className="text-xs text-muted-foreground">
-                      Applies to all fiscal years
-                    </p>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1">
-                        <Label className="text-xs">Month</Label>
-                        <Select
-                          value={tempMonth.toString()}
-                          onValueChange={(v) => setTempMonth(parseInt(v))}
-                        >
-                          <SelectTrigger className="h-8 text-sm">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {MONTH_NAMES.map((name, i) => (
-                              <SelectItem key={i + 1} value={(i + 1).toString()}>
-                                {name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-1">
-                        <Label className="text-xs">Day</Label>
-                        <Select
-                          value={tempDay.toString()}
-                          onValueChange={(v) => setTempDay(parseInt(v))}
-                        >
-                          <SelectTrigger className="h-8 text-sm">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Array.from({ length: getDaysInMonth(tempMonth) }, (_, i) => i + 1).map((day) => (
-                              <SelectItem key={day} value={day.toString()}>
-                                {day}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end gap-2 pt-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setTempMonth(companySettings.fiscalYearEndMonth)
-                          setTempDay(companySettings.fiscalYearEndDay)
-                          setShowFYEPicker(false)
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={handleSaveFYE}
-                      >
-                        Save
-                      </Button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
             </div>
 
             {error && (

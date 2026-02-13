@@ -762,7 +762,7 @@ export function WorkspaceSettings() {
                                             ? 'bg-green-100 text-green-700'
                                             : level === 'view'
                                               ? 'bg-blue-100 text-blue-700'
-                                              : 'bg-gray-100 text-gray-700'
+                                              : 'bg-red-100 text-red-700'
                                           : 'hover:bg-muted text-muted-foreground'
                                       )}
                                       title={permissionLevelLabels[level]}
@@ -824,9 +824,10 @@ export function WorkspaceSettings() {
             </TableHeader>
             <TableBody>
               {workspace.members.map((member) => {
-                const affiliation = dataToAffiliation(member.functionalCategories, member.isExternalAdvisor)
-                const AffiliationIcon = affiliationIcons[affiliation]
                 const isOwner = member.workspaceRole === 'OWNER'
+                // Workspace owners always show as "owner" affiliation regardless of functionalCategories
+                const affiliation = isOwner ? 'owner' : dataToAffiliation(member.functionalCategories, member.isExternalAdvisor)
+                const AffiliationIcon = affiliationIcons[affiliation]
 
                 return (
                   <TableRow key={member.id}>
@@ -1227,7 +1228,7 @@ function MemberPermissionsEditor({
                             ? 'bg-green-100 text-green-700'
                             : level === 'view'
                               ? 'bg-blue-100 text-blue-700'
-                              : 'bg-gray-100 text-gray-700'
+                              : 'bg-red-100 text-red-700'
                           : 'hover:bg-muted text-muted-foreground'
                       )}
                       title={permissionLevelLabels[level]}
