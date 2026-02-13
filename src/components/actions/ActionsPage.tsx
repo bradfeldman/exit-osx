@@ -17,7 +17,6 @@ import { ActionsLoading } from './ActionsLoading'
 import { ActionsError } from './ActionsError'
 import { TaskCompletionDialog } from './TaskCompletionDialog'
 import { ViewOnlyBanner } from './ViewOnlyBanner'
-import { toast } from '@/components/ui/toaster'
 
 interface SubStep {
   id: string
@@ -216,35 +215,27 @@ export function ActionsPage() {
 
     // Persist to server
     try {
-      const response = await fetch(`/api/tasks/${taskId}`, {
+      await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ subStepId: stepId, subStepCompleted: completed }),
       })
-      if (!response.ok) {
-        fetchData() // Revert optimistic update
-      }
     } catch {
-      fetchData() // Revert on error
+      // Revert on error
+      fetchData()
     }
   }
 
   const handleStartTask = async (taskId: string) => {
     try {
-      const response = await fetch(`/api/tasks/${taskId}`, {
+      await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'IN_PROGRESS' }),
       })
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}))
-        toast.error(err.message || 'Could not start task. Please try again.')
-        return
-      }
-      toast.success('Task started')
       fetchData()
     } catch {
-      toast.error('Could not start task. Please check your connection.')
+      // Silently fail, user can retry
     }
   }
 
@@ -254,45 +245,34 @@ export function ActionsPage() {
 
   const handleCompletionConfirm = async (taskId: string, notes: string) => {
     try {
-      const response = await fetch(`/api/tasks/${taskId}/complete`, {
+      await fetch(`/api/tasks/${taskId}/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ completionNotes: notes }),
       })
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}))
-        toast.error(err.message || 'Could not complete task. Please try again.')
-        return
-      }
-      toast.success('Task completed!')
       setCompletingTask(null)
       fetchData()
     } catch {
-      toast.error('Could not complete task. Please check your connection.')
+      // Keep dialog open on error
     }
   }
 
   const handleBlockTask = async (taskId: string, reason: string) => {
     try {
-      const response = await fetch(`/api/tasks/${taskId}`, {
+      await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'BLOCKED', blockedReason: reason }),
       })
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}))
-        toast.error(err.message || 'Could not block task.')
-        return
-      }
       fetchData()
     } catch {
-      toast.error('Could not block task. Please check your connection.')
+      // Silently fail
     }
   }
 
   const handleDeferTask = async (taskId: string, deferredUntil: string, reason: string) => {
     try {
-      const response = await fetch(`/api/tasks/${taskId}`, {
+      await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -301,20 +281,15 @@ export function ActionsPage() {
           deferralReason: reason || 'Deferred',
         }),
       })
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}))
-        toast.error(err.message || 'Could not defer task.')
-        return
-      }
       fetchData()
     } catch {
-      toast.error('Could not defer task. Please check your connection.')
+      // Silently fail
     }
   }
 
   const handleResumeTask = async (taskId: string) => {
     try {
-      const response = await fetch(`/api/tasks/${taskId}`, {
+      await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -322,14 +297,9 @@ export function ActionsPage() {
           deferredUntil: null,
         }),
       })
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}))
-        toast.error(err.message || 'Could not resume task.')
-        return
-      }
       fetchData()
     } catch {
-      toast.error('Could not resume task. Please check your connection.')
+      // Silently fail
     }
   }
 

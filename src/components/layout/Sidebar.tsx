@@ -26,7 +26,7 @@ const coreLinks: NavLink[] = [
 // VALUE MODELING section (no subscription/progression gating)
 const valueModelingLinks: NavLink[] = [
   { name: 'Business Financials', href: '/dashboard/financials', icon: FinancialsIcon, exactMatch: true },
-  { name: 'DCF Valuation', href: '/dashboard/financials/dcf', icon: DCFIcon },
+  { name: 'DCF Valuation', href: '/dashboard/valuation', icon: DCFIcon },
 ]
 
 const retirementCalculatorLink: NavLink = {
