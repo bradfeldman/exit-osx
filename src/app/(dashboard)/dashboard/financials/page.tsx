@@ -6,27 +6,10 @@ import { motion, AnimatePresence } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { useCompany } from '@/contexts/CompanyContext'
 import { FinancialsDataEntry } from '@/components/financials/FinancialsDataEntry'
-import { Pencil, Loader2, CheckCircle, Link2, AlertCircle, X, TrendingUp, Calendar } from 'lucide-react'
+import { Pencil, Loader2, CheckCircle, Link2, AlertCircle, X, TrendingUp } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { fetchWithRetry } from '@/lib/fetch-with-retry'
 import { analytics } from '@/lib/analytics'
-
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
-]
-
-function getDaysInMonth(month: number): number {
-  return new Date(2023, month, 0).getDate()
-}
 
 interface FinancialPeriod {
   id: string
@@ -112,22 +95,6 @@ function FinancialsEmptyState({
   completedTaskValue?: number
 }) {
   const headline = getFinancialsHeadline(hasAssessment, hasBriScore)
-  const [fyeMonth, setFyeMonth] = useState(12)
-  const [fyeDay, setFyeDay] = useState(31)
-
-  // Change month and clamp day if needed
-  const handleMonthChange = (month: number) => {
-    setFyeMonth(month)
-    const maxDay = getDaysInMonth(month)
-    if (fyeDay > maxDay) {
-      setFyeDay(maxDay)
-    }
-  }
-
-  const isCalendarYear = fyeMonth === 12 && fyeDay === 31
-  const fyeHint = isCalendarYear
-    ? 'Calendar year (Dec 31)'
-    : `FYE ${MONTH_NAMES[fyeMonth - 1]} ${fyeDay}`
 
   const currentYear = new Date().getFullYear()
   const requiredYears = [
@@ -363,55 +330,8 @@ function FinancialsEmptyState({
                   </div>
                 </div>
 
-                {/* FYE Picker */}
-                <div className="mt-4 space-y-3">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    <span>Fiscal year end:</span>
-                    <span className="font-medium text-foreground">{fyeHint}</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <Label className="text-xs">Month</Label>
-                      <Select
-                        value={fyeMonth.toString()}
-                        onValueChange={(v) => handleMonthChange(parseInt(v))}
-                      >
-                        <SelectTrigger className="h-8 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {MONTH_NAMES.map((name, i) => (
-                            <SelectItem key={i + 1} value={(i + 1).toString()}>
-                              {name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs">Day</Label>
-                      <Select
-                        value={fyeDay.toString()}
-                        onValueChange={(v) => setFyeDay(parseInt(v))}
-                      >
-                        <SelectTrigger className="h-8 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from({ length: getDaysInMonth(fyeMonth) }, (_, i) => i + 1).map((day) => (
-                            <SelectItem key={day} value={day.toString()}>
-                              {day}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-
                 <div className="mt-4">
-                  <Button variant="outline" onClick={() => onAddYear(fyeMonth, fyeDay)} className="w-full" disabled={isCreatingPeriods}>
+                  <Button variant="outline" onClick={() => onAddYear(12, 31)} className="w-full" disabled={isCreatingPeriods}>
                     {isCreatingPeriods ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />

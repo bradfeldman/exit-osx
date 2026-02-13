@@ -365,41 +365,58 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
           {/* Connected State */}
           {connected && integration && (
             <>
-              {/* Compact Status Line */}
+              {/* Status Line */}
               <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Clock className="h-4 w-4 text-gray-400" />
-                    <span>
-                      {integration.lastSyncAt
-                        ? `Last synced ${formatRelativeTime(integration.lastSyncAt)}`
-                        : 'Never synced'}
-                    </span>
-                  </div>
-                  {integration.lastSyncStatus === 'SYNCING' || isSyncing ? (
-                    <span className="flex items-center gap-1.5 text-blue-600">
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      Syncing...
+                <div className="flex items-center gap-2 text-gray-600">
+                  {isSyncing || integration.lastSyncStatus === 'SYNCING' ? (
+                    <span className="flex items-center gap-2 text-blue-600">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Syncing financial data...
                     </span>
                   ) : integration.lastSyncStatus === 'FAILED' ? (
-                    <span className="flex items-center gap-1.5 text-red-600">
-                      <XCircle className="h-3.5 w-3.5" />
+                    <span className="flex items-center gap-2 text-red-600">
+                      <XCircle className="h-4 w-4" />
                       Sync failed
+                      {integration.lastSyncAt && (
+                        <span className="text-gray-400 font-normal"> &middot; Last synced {formatRelativeTime(integration.lastSyncAt)}</span>
+                      )}
                     </span>
-                  ) : isDataStale(integration.lastSyncAt) ? (
-                    <span className="flex items-center gap-1.5 text-amber-600">
-                      <AlertCircle className="h-3.5 w-3.5" />
-                      Data may be outdated
+                  ) : integration.lastSyncAt ? (
+                    isDataStale(integration.lastSyncAt) ? (
+                      <span className="flex items-center gap-2 text-amber-600">
+                        <AlertCircle className="h-4 w-4" />
+                        Last synced {formatRelativeTime(integration.lastSyncAt)} &middot; Data may be outdated
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2 text-green-600">
+                        <CheckCircle className="h-4 w-4" />
+                        Synced {formatRelativeTime(integration.lastSyncAt)}
+                      </span>
+                    )
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-gray-400" />
+                      Ready to sync
                     </span>
-                  ) : integration.lastSyncStatus === 'SUCCESS' ? (
-                    <span className="flex items-center gap-1.5 text-green-600">
-                      <CheckCircle className="h-3.5 w-3.5" />
-                      Up to date
-                    </span>
-                  ) : null}
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
-                  {!(isSyncing || integration.lastSyncStatus === 'SYNCING') && (
+                  {isSyncing || integration.lastSyncStatus === 'SYNCING' ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCancelSync}
+                      disabled={isCancelling}
+                      className="text-gray-500 hover:text-red-600"
+                    >
+                      {isCancelling ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+                      ) : (
+                        <XCircle className="h-4 w-4 mr-1.5" />
+                      )}
+                      {isCancelling ? 'Cancelling...' : 'Cancel'}
+                    </Button>
+                  ) : (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -434,59 +451,39 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
                     </p>
                   )}
 
-                  {/* Actions */}
-                  <div className="flex gap-2">
-                    {isSyncing || integration.lastSyncStatus === 'SYNCING' ? (
-                      <div className="flex-1 space-y-2">
-                        <span className="flex items-center gap-2 text-sm text-blue-600">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Syncing financial data from QuickBooks...
-                        </span>
-                        <div className="text-xs text-gray-500 pl-6">
-                          Fetching P&L and Balance Sheet reports for the last 6 years
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleCancelSync}
-                          disabled={isCancelling}
-                          className="text-gray-500 hover:text-red-600"
-                        >
-                          {isCancelling ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                          ) : (
-                            <XCircle className="h-4 w-4 mr-2" />
-                          )}
-                          {isCancelling ? 'Cancelling...' : 'Cancel Sync'}
-                        </Button>
-                      </div>
-                    ) : (
-                      <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleSync}
-                        >
-                          <RefreshCw className="h-4 w-4 mr-2" />
-                          Force Sync
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleDisconnect}
-                          disabled={isDisconnecting}
-                          className="text-gray-500 hover:text-red-600"
-                        >
-                          {isDisconnecting ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                          ) : (
-                            <Unlink className="h-4 w-4 mr-2" />
-                          )}
-                          Disconnect
-                        </Button>
-                      </>
-                    )}
-                  </div>
+                  {(isSyncing || integration.lastSyncStatus === 'SYNCING') && (
+                    <div className="text-xs text-gray-500">
+                      Fetching P&L and Balance Sheet reports for the last 6 years. You can leave this page — sync continues in the background.
+                    </div>
+                  )}
+
+                  {/* Actions (only when not syncing) */}
+                  {!(isSyncing || integration.lastSyncStatus === 'SYNCING') && (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSync}
+                      >
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Force Sync
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleDisconnect}
+                        disabled={isDisconnecting}
+                        className="text-gray-500 hover:text-red-600"
+                      >
+                        {isDisconnecting ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <Unlink className="h-4 w-4 mr-2" />
+                        )}
+                        Disconnect
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </>

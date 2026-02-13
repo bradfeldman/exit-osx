@@ -19,6 +19,18 @@ export async function GET(
   const result = await checkPermission('COMPANY_VIEW', companyId)
   if (isAuthError(result)) return result.error
 
+  // Don't create check-ins for companies less than 7 days old
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { createdAt: true },
+  })
+  if (company) {
+    const daysSinceCreation = (Date.now() - new Date(company.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+    if (daysSinceCreation < 7) {
+      return NextResponse.json({ checkIn: null })
+    }
+  }
+
   const weekOf = getWeekStart()
   const expiresAt = new Date(weekOf)
   expiresAt.setDate(expiresAt.getDate() + 7)

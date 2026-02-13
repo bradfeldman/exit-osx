@@ -203,17 +203,10 @@ export function ValueHome() {
         </Button>
       </div>
       <AnimatedStagger className="space-y-8" staggerDelay={0.15}>
-        {/* Weekly Check-In (only after full 6-category baseline assessment) */}
+        {/* Check-In: show only ONE at a time — Weekly takes priority over Quick Check */}
         {hasFullAssessment && (
           <AnimatedItem>
-            <WeeklyCheckInTrigger onRefresh={fetchData} />
-          </AnimatedItem>
-        )}
-
-        {/* Quick Check / Disclosure (only after full 6-category baseline assessment) */}
-        {hasFullAssessment && (
-          <AnimatedItem>
-            <DisclosureTrigger onRefresh={fetchData} />
+            <CheckInSlot onRefresh={fetchData} />
           </AnimatedItem>
         )}
 
@@ -341,5 +334,22 @@ export function ValueHome() {
 
       <PlatformTour key={tourKey} open={showTour} onComplete={handleTourComplete} />
     </div>
+  )
+}
+
+/** Shows only one check-in at a time: Weekly Check-In takes priority over Quick Check */
+function CheckInSlot({ onRefresh }: { onRefresh?: () => void }) {
+  const [weeklyVisible, setWeeklyVisible] = useState<boolean | null>(null)
+
+  return (
+    <>
+      <WeeklyCheckInTrigger
+        onRefresh={onRefresh}
+        onVisibilityChange={setWeeklyVisible}
+      />
+      {weeklyVisible === false && (
+        <DisclosureTrigger onRefresh={onRefresh} />
+      )}
+    </>
   )
 }

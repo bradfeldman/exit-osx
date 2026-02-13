@@ -60,8 +60,8 @@ export async function GET(
     const evidenceResult = calculateEvidenceScore(countsByCategory)
     const evidenceScore = evidenceResult.totalPercentage
 
-    const evidenceReady = evidenceScore >= 70
-    const canActivate = evidenceReady
+    const evidenceReady = true // No evidence gate — Deal Room always accessible
+    const canActivate = true
     const isActivated = !!company.dealRoomActivatedAt
 
     const activation = {

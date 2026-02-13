@@ -56,7 +56,7 @@ interface ProgressionContextType {
   canAccessDiagnosis: boolean      // always true (entry point)
   canAccessActions: boolean        // hasAssessment
   canAccessEvidence: boolean       // hasAssessment
-  canAccessDealRoom: boolean       // evidencePercentage >= 70
+  canAccessDealRoom: boolean       // always accessible
 
   // Feature-level lock checks (for sub-items like retirement calculator)
   isProgressionLocked: (featureKey: string) => boolean
@@ -146,7 +146,7 @@ export function ProgressionProvider({ children }: { children: ReactNode }) {
   const canAccessDiagnosis = true // Always accessible -- this is the entry point
   const canAccessActions = progressionData?.hasAssessment ?? false
   const canAccessEvidence = progressionData?.hasAssessment ?? false
-  const canAccessDealRoom = (progressionData?.evidencePercentage ?? 0) >= 70
+  const canAccessDealRoom = true // Always accessible — no evidence gate
 
   // --------------------------------------------------------------------------
   // Feature-level lock helpers (for sub-items like retirement calculator)

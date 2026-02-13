@@ -16,9 +16,10 @@ interface CheckInData {
 
 interface WeeklyCheckInTriggerProps {
   onRefresh?: () => void
+  onVisibilityChange?: (visible: boolean) => void
 }
 
-export function WeeklyCheckInTrigger({ onRefresh }: WeeklyCheckInTriggerProps = {}) {
+export function WeeklyCheckInTrigger({ onRefresh, onVisibilityChange }: WeeklyCheckInTriggerProps = {}) {
   const { selectedCompanyId } = useCompany()
   const [checkIn, setCheckIn] = useState<CheckInData | null>(null)
   const [showPrompt, setShowPrompt] = useState(false)
@@ -42,13 +43,16 @@ export function WeeklyCheckInTrigger({ onRefresh }: WeeklyCheckInTriggerProps = 
     fetchCheckIn()
   }, [fetchCheckIn])
 
-  // Don't show if loading, no check-in, or already completed/skipped
-  if (isLoading || !checkIn || checkIn.completedAt || checkIn.skippedAt) {
-    return null
-  }
+  const isVisible = !isLoading && !!checkIn && !checkIn.completedAt && !checkIn.skippedAt &&
+    new Date(checkIn.expiresAt) >= new Date()
 
-  // Don't show if expired
-  if (new Date(checkIn.expiresAt) < new Date()) {
+  useEffect(() => {
+    if (!isLoading) {
+      onVisibilityChange?.(isVisible)
+    }
+  }, [isLoading, isVisible, onVisibilityChange])
+
+  if (!isVisible) {
     return null
   }
 

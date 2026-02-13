@@ -15,6 +15,18 @@ export async function GET(
   try {
     const now = new Date()
 
+    // Don't show disclosures for companies less than 7 days old
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: { createdAt: true },
+    })
+    if (company) {
+      const daysSinceCreation = (now.getTime() - new Date(company.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+      if (daysSinceCreation < 7) {
+        return NextResponse.json({ promptSet: null })
+      }
+    }
+
     // Find active (non-expired, non-completed, non-skipped) prompt set
     let promptSet = await prisma.disclosurePromptSet.findFirst({
       where: {
