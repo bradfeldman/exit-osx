@@ -385,15 +385,23 @@ export async function sendMagicLink(
     }
 
     // Build verification URL through our own domain.
-    // Uses hashed_token so link scanners can't consume it — the actual
-    // verification happens client-side in the browser via JS (not on GET).
-    const tokenHash = data.properties?.hashed_token
-    if (!tokenHash) {
-      console.error('[Auth] generateLink returned no hashed_token')
+    // We pass the raw token from the action_link URL. The confirm page
+    // (client-side JS) redirects to Supabase's /auth/v1/verify which
+    // handles all token types including PKCE, then redirects to /auth/callback.
+    const actionLink = data.properties?.action_link
+    if (!actionLink) {
+      console.error('[Auth] generateLink returned no action_link')
       return { success: false, error: 'Unable to send verification email. Please try again.' }
     }
 
-    const magicLinkUrl = `${baseUrl}/auth/confirm?token_hash=${encodeURIComponent(tokenHash)}&type=magiclink&next=/activate`
+    const actionUrl = new URL(actionLink)
+    const rawToken = actionUrl.searchParams.get('token')
+    if (!rawToken) {
+      console.error('[Auth] action_link has no token param:', actionLink)
+      return { success: false, error: 'Unable to send verification email. Please try again.' }
+    }
+
+    const magicLinkUrl = `${baseUrl}/auth/confirm?token=${encodeURIComponent(rawToken)}&type=magiclink&next=/activate`
 
     // Send branded email via Resend (all links point to app.exitosx.com)
     const emailResult = await sendMagicLinkEmail({ email: normalizedEmail, magicLinkUrl })

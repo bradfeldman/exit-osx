@@ -1,68 +1,62 @@
 'use client'
 
 import { useEffect, useState, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 import { Loader2 } from 'lucide-react'
 
 /**
  * Client-side magic link confirmation page.
  *
- * Email links point to app.exitosx.com/auth/confirm (our domain) to avoid
- * domain mismatch that triggers Gmail spam filters. The actual OTP verification
- * happens client-side via JavaScript so that email link scanners (which only
- * make GET requests and don't execute JS) cannot consume the token before
- * the real user clicks it.
+ * Email links point to app.exitosx.com/auth/confirm to avoid Gmail spam filters
+ * (domain mismatch between sender and link). This page runs in the browser
+ * (link scanners don't execute JS) and redirects to Supabase's own /auth/v1/verify
+ * endpoint which handles all token types (including PKCE). Supabase then redirects
+ * to /auth/callback with a session code.
  */
 
 function ConfirmContent() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    const token = searchParams.get('token')
     const tokenHash = searchParams.get('token_hash')
-    const type = searchParams.get('type') as 'magiclink' | 'signup' | 'email' | null
+    const type = searchParams.get('type') ?? 'magiclink'
     const next = searchParams.get('next') ?? '/activate'
-
-    if (!tokenHash || !type) {
-      router.replace('/login?error=auth_error')
-      return
-    }
 
     // Sanitize redirect
     const sanitizedNext = (next.startsWith('/') && !next.startsWith('//') && !next.includes('://'))
       ? next
       : '/activate'
 
-    async function verify() {
-      const supabase = createClient()
-
-      const { error: verifyError } = await supabase.auth.verifyOtp({
-        token_hash: tokenHash!,
-        type: type!,
-      })
-
-      if (verifyError) {
-        console.error('[Auth Confirm] verifyOtp failed:', verifyError.message)
-        const isExpired = verifyError.message?.includes('expired') || verifyError.message?.includes('invalid')
-        if (isExpired) {
-          router.replace('/login?error=link_expired')
-        } else {
-          setError(verifyError.message || 'Verification failed')
-        }
-        return
-      }
-
-      // Success — session is now set in browser cookies by Supabase client.
-      // Use full page navigation (not router.replace) so middleware runs
-      // on a fresh document request and properly sets the activity cookie.
-      window.location.href = sanitizedNext
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    if (!supabaseUrl) {
+      setError('Configuration error. Please contact support.')
+      return
     }
 
-    verify()
-  }, [searchParams, router])
+    // Build the callback URL that Supabase will redirect to after verification
+    const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(sanitizedNext)}`
+
+    if (token) {
+      // New flow: redirect to Supabase's verify endpoint with the raw token.
+      // Supabase handles verification (including PKCE) and redirects to our callback.
+      const verifyUrl = `${supabaseUrl}/auth/v1/verify?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}&redirect_to=${encodeURIComponent(callbackUrl)}`
+      window.location.href = verifyUrl
+      return
+    }
+
+    if (tokenHash) {
+      // Legacy flow: redirect to Supabase's verify endpoint with token_hash
+      const verifyUrl = `${supabaseUrl}/auth/v1/verify?token_hash=${encodeURIComponent(tokenHash)}&type=${encodeURIComponent(type)}&redirect_to=${encodeURIComponent(callbackUrl)}`
+      window.location.href = verifyUrl
+      return
+    }
+
+    // No token provided
+    setError('Invalid confirmation link.')
+  }, [searchParams])
 
   if (error) {
     return (
