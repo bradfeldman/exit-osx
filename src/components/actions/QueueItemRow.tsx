@@ -1,6 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { ChevronRight } from 'lucide-react'
 import { getBRICategoryColor } from '@/lib/constants/bri-categories'
 
 function formatCurrency(value: number): string {
@@ -64,13 +65,16 @@ export function QueueItemRow({
         </p>
       </div>
 
-      {assignee && (
-        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0 ml-2">
-          <span className="text-[10px] font-medium text-muted-foreground">
-            {assignee.name.charAt(0).toUpperCase()}
-          </span>
-        </div>
-      )}
+      <div className="flex items-center gap-1 shrink-0 ml-2">
+        {assignee && (
+          <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+            <span className="text-[10px] font-medium text-muted-foreground">
+              {assignee.name.charAt(0).toUpperCase()}
+            </span>
+          </div>
+        )}
+        <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+      </div>
     </button>
   )
 }

@@ -364,6 +364,7 @@ export function ActionsPage() {
               totalQueueSize={data.totalQueueSize}
               onStartTask={handleStartTask}
               disabled={isViewing}
+              autoExpandFirst={data.activeTasks.length === 0}
             />
           </AnimatedItem>
         )}

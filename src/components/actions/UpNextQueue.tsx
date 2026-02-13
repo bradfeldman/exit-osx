@@ -24,10 +24,13 @@ interface UpNextQueueProps {
   totalQueueSize: number
   onStartTask: (taskId: string) => void
   disabled?: boolean
+  autoExpandFirst?: boolean
 }
 
-export function UpNextQueue({ tasks, hasMore, totalQueueSize, onStartTask, disabled = false }: UpNextQueueProps) {
-  const [expandedId, setExpandedId] = useState<string | null>(null)
+export function UpNextQueue({ tasks, hasMore, totalQueueSize, onStartTask, disabled = false, autoExpandFirst = false }: UpNextQueueProps) {
+  const [expandedId, setExpandedId] = useState<string | null>(
+    autoExpandFirst && tasks.length > 0 ? tasks[0].id : null
+  )
 
   return (
     <div>
