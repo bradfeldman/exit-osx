@@ -86,26 +86,19 @@ function ConfirmContent() {
     }
   }, [hasToken, tokenHash, token, type, sanitizedNext])
 
-  // Auto-verify if user interacted (clicked from email = page is fresh)
-  // We use a brief delay so the page renders the "confirm" button first,
-  // but for a human user the experience is near-instant.
+  // Auto-verify if the page load was triggered by a real user click (not a prefetch).
+  // Deferred via queueMicrotask to avoid synchronous setState inside useEffect.
   useEffect(() => {
     if (!hasToken || status !== 'ready') return
 
-    // Check if this is likely a real user click (not a prefetch).
-    // navigator.userActivation is available in modern browsers and tells
-    // us if the page load was triggered by a user gesture (clicking a link).
-    // If supported and active, auto-verify immediately.
     if (typeof navigator !== 'undefined' && 'userActivation' in navigator) {
       const activation = (navigator as { userActivation: { isActive: boolean } }).userActivation
       if (activation.isActive) {
-        verify()
+        queueMicrotask(() => verify())
         return
       }
     }
-
-    // For browsers without userActivation, or if it's not active (prefetch),
-    // wait for the user to click the button. Don't auto-verify.
+    // Otherwise wait for the user to click the button (anti-prefetch).
   }, [hasToken, status, verify])
 
   if (!hasToken) {
