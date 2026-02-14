@@ -357,7 +357,6 @@ export function ActionsPage() {
                 onBlock={handleBlockTask}
                 onDefer={handleDeferTask}
                 onRefresh={fetchData}
-                disabled={isViewing}
               />
             </div>
           </AnimatedItem>
@@ -370,7 +369,6 @@ export function ActionsPage() {
               hasMore={data.hasMoreInQueue}
               totalQueueSize={data.totalQueueSize}
               onStartTask={handleStartTask}
-              disabled={isViewing}
               autoExpandFirst={data.activeTasks.length === 0}
             />
           </AnimatedItem>
