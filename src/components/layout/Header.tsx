@@ -39,7 +39,9 @@ export function Header({ user }: HeaderProps) {
   const { companies, selectedCompanyId } = useCompany()
   const { progressionData } = useProgression()
   const selectedCompany = companies.find(c => c.id === selectedCompanyId)
-  const briScore = progressionData?.briScore ?? null
+  const briScoreRaw = progressionData?.briScore ?? null
+  // briScore is stored as Decimal(5,4) in 0-1 range; convert to 0-100 for display
+  const briScore = briScoreRaw !== null ? Math.round(briScoreRaw * 100) : null
 
   const handleSignOut = async () => {
     setLoading(true)
@@ -87,7 +89,7 @@ export function Header({ user }: HeaderProps) {
               </span>
               {briScore !== null && briScore !== undefined && (
                 <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ring-1 ${getBriColor(briScore).bg} ${getBriColor(briScore).text} ${getBriColor(briScore).ring}`}>
-                  BRI {Math.round(briScore)}
+                  BRI {briScore}
                 </span>
               )}
             </>
