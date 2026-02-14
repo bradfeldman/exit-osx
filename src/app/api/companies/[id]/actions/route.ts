@@ -214,10 +214,9 @@ export async function GET(
       }
     })
 
-    // Build up next queue (pending tasks, max 5) — full format so any can be focused
+    // Build up next queue (all pending tasks) — full format so any can be focused
     const upNextFormatted = pendingTasks
       .filter(t => !waitingOnOthersTasks.some(w => w.id === t.id))
-      .slice(0, 5)
       .map(task => {
         const subSteps = formatSubSteps(task.subSteps)
         const completedSteps = subSteps.filter(s => s.completed).length
@@ -316,7 +315,7 @@ export async function GET(
       waitingOnOthers: waitingFormatted,
       deferredTasks: deferredFormatted,
       blockedTasks: blockedTasks.length,
-      hasMoreInQueue: pendingTasks.length > 5,
+      hasMoreInQueue: false,
       totalQueueSize: pendingTasks.length + blockedTasks.length,
     })
   } catch (error) {
