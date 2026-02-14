@@ -138,7 +138,7 @@ export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onStart, onB
       )}
 
       {/* Company context (personalized financials + benchmarks) */}
-      <CompanyContextBlock companyContext={task.companyContext} />
+      <CompanyContextBlock companyContext={task.companyContext} taskId={task.id} />
 
       {/* Buyer context */}
       <BuyerContextBlock
@@ -176,6 +176,9 @@ export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onStart, onB
         successCriteria={task.successCriteria}
         outputFormat={task.outputFormat}
         description={task.description}
+        taskId={task.id}
+        taskCategory={task.briCategory}
+        enrichmentTier={task.companyContext?.dataQuality ?? 'NONE'}
       />
     </div>
   )

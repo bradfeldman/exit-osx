@@ -15,6 +15,7 @@ import { AllCompletedState } from './AllCompletedState'
 import { ActionsLoading } from './ActionsLoading'
 import { ActionsError } from './ActionsError'
 import { TaskCompletionDialog } from './TaskCompletionDialog'
+import { analytics } from '@/lib/analytics'
 
 interface SubStep {
   id: string
@@ -132,6 +133,10 @@ interface ActionsData {
   totalQueueSize: number
 }
 
+function getEnrichmentTier(task: ActiveTask): 'HIGH' | 'MODERATE' | 'LOW' | 'NONE' {
+  return task.companyContext?.dataQuality ?? 'NONE'
+}
+
 export function ActionsPage() {
   const { selectedCompanyId } = useCompany()
   const searchParams = useSearchParams()
@@ -244,6 +249,18 @@ export function ActionsPage() {
         return
       }
       setFocusedTaskId(taskId)
+      const task = [...(data?.activeTasks ?? []), ...(data?.upNext ?? [])].find(t => t.id === taskId)
+      if (task) {
+        analytics.track('task_started', {
+          taskId,
+          taskTitle: task.title,
+          taskCategory: task.briCategory,
+          issueTier: null,
+          effortLevel: task.effortLevel,
+          taskNumber: task.priorityRank,
+          enrichmentTier: getEnrichmentTier(task),
+        })
+      }
       fetchData()
     } catch (err) {
       console.error('Start task error:', err)
@@ -262,6 +279,18 @@ export function ActionsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ completionNotes: notes }),
       })
+      if (completingTask) {
+        analytics.track('task_completed', {
+          taskId,
+          taskTitle: completingTask.title,
+          taskCategory: completingTask.briCategory,
+          issueTier: null,
+          effortLevel: completingTask.effortLevel,
+          hasEvidence: completingTask.proofDocuments.length > 0,
+          hasCompletionNotes: !!notes,
+          enrichmentTier: getEnrichmentTier(completingTask),
+        })
+      }
       setCompletingTask(null)
       fetchData()
     } catch {

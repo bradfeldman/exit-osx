@@ -2,12 +2,14 @@
 
 import Link from 'next/link'
 import type { CompanyContextData } from '@/lib/playbook/rich-task-description'
+import { analytics } from '@/lib/analytics'
 
 interface CompanyContextBlockProps {
   companyContext: CompanyContextData | null | undefined
+  taskId: string
 }
 
-export function CompanyContextBlock({ companyContext }: CompanyContextBlockProps) {
+export function CompanyContextBlock({ companyContext, taskId }: CompanyContextBlockProps) {
   if (!companyContext) return null
 
   if (companyContext.dataQuality === 'HIGH') {
@@ -15,10 +17,10 @@ export function CompanyContextBlock({ companyContext }: CompanyContextBlockProps
   }
 
   if (companyContext.dataQuality === 'MODERATE') {
-    return <ModerateTierBlock context={companyContext} />
+    return <ModerateTierBlock context={companyContext} taskId={taskId} />
   }
 
-  return <LowTierBlock />
+  return <LowTierBlock taskId={taskId} />
 }
 
 // ─── HIGH Tier: Full financials + benchmarks + dollar impact ────────────
@@ -87,7 +89,7 @@ function HighTierBlock({ context }: { context: CompanyContextData }) {
 
 // ─── MODERATE Tier: Categorical insights + CTA ──────────────────────────
 
-function ModerateTierBlock({ context }: { context: CompanyContextData }) {
+function ModerateTierBlock({ context, taskId }: { context: CompanyContextData; taskId: string }) {
   return (
     <div className="mt-4 p-4 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-800/30">
       <p className="text-xs font-semibold tracking-wider text-blue-700 dark:text-blue-400 uppercase mb-2">
@@ -112,6 +114,11 @@ function ModerateTierBlock({ context }: { context: CompanyContextData }) {
         <Link
           href="/dashboard/financials/statements"
           className="inline-flex items-center gap-1 mt-3 text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
+          onClick={() => analytics.track('financial_upload_cta_clicked', {
+            taskId,
+            ctaLocation: 'company_context_moderate',
+            enrichmentTier: 'MODERATE',
+          })}
         >
           Add your financials to see dollar impact
           <span aria-hidden="true">&rarr;</span>
@@ -123,7 +130,7 @@ function ModerateTierBlock({ context }: { context: CompanyContextData }) {
 
 // ─── LOW Tier: Blurred preview + CTA ────────────────────────────────────
 
-function LowTierBlock() {
+function LowTierBlock({ taskId }: { taskId: string }) {
   return (
     <div className="mt-4 p-4 rounded-lg bg-muted/30 border border-border/30 relative overflow-hidden">
       {/* Blurred preview */}
@@ -143,6 +150,11 @@ function LowTierBlock() {
         <Link
           href="/dashboard/financials/statements"
           className="px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90 transition-opacity"
+          onClick={() => analytics.track('financial_upload_cta_clicked', {
+            taskId,
+            ctaLocation: 'company_context_low',
+            enrichmentTier: 'LOW',
+          })}
         >
           Add Your Financials
         </Link>

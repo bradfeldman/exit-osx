@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { analytics } from '@/lib/analytics'
 
 interface TaskDetailsCollapsibleProps {
   successCriteria: {
@@ -15,12 +16,18 @@ interface TaskDetailsCollapsibleProps {
     guidance: string
   } | null
   description: string
+  taskId: string
+  taskCategory: string
+  enrichmentTier: 'HIGH' | 'MODERATE' | 'LOW' | 'NONE'
 }
 
 export function TaskDetailsCollapsible({
   successCriteria,
   outputFormat,
   description,
+  taskId,
+  taskCategory,
+  enrichmentTier,
 }: TaskDetailsCollapsibleProps) {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -28,7 +35,17 @@ export function TaskDetailsCollapsible({
     <div className="mt-4 border border-border/30 rounded-lg">
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          const wasOpen = isOpen
+          setIsOpen(!isOpen)
+          if (!wasOpen) {
+            analytics.track('task_context_expanded', {
+              taskId,
+              taskCategory,
+              enrichmentTier,
+            })
+          }
+        }}
         className="w-full px-4 py-3 flex items-center justify-between text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
       >
         <span>More Details</span>

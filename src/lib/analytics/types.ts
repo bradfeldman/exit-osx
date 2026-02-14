@@ -439,6 +439,7 @@ export interface TaskExpandedParams extends BaseEventParams {
   taskPriority: string
   issueTier: string | null
   effortLevel: string
+  enrichmentTier: 'HIGH' | 'MODERATE' | 'LOW' | 'NONE'
 }
 
 export interface TaskStartedParams extends BaseEventParams {
@@ -448,6 +449,7 @@ export interface TaskStartedParams extends BaseEventParams {
   issueTier: string | null
   effortLevel: string
   taskNumber: number  // position in the list
+  enrichmentTier: 'HIGH' | 'MODERATE' | 'LOW' | 'NONE'
 }
 
 export interface TaskCompletedParams extends BaseEventParams {
@@ -458,18 +460,33 @@ export interface TaskCompletedParams extends BaseEventParams {
   effortLevel: string
   hasEvidence: boolean
   hasCompletionNotes: boolean
+  enrichmentTier: 'HIGH' | 'MODERATE' | 'LOW' | 'NONE'
 }
 
 export interface TaskDismissedParams extends BaseEventParams {
   taskId: string
   taskCategory: string
   dismissReason: 'deferred' | 'not_applicable'
+  enrichmentTier: 'HIGH' | 'MODERATE' | 'LOW' | 'NONE'
 }
 
 export interface TaskBlockedParams extends BaseEventParams {
   taskId: string
   taskCategory: string
   blockedReason?: string
+  enrichmentTier: 'HIGH' | 'MODERATE' | 'LOW' | 'NONE'
+}
+
+export interface TaskContextExpandedParams extends BaseEventParams {
+  taskId: string
+  taskCategory: string
+  enrichmentTier: 'HIGH' | 'MODERATE' | 'LOW' | 'NONE'
+}
+
+export interface FinancialUploadCtaClickedParams extends BaseEventParams {
+  taskId: string
+  ctaLocation: 'company_context_moderate' | 'company_context_low'
+  enrichmentTier: 'MODERATE' | 'LOW'
 }
 
 export interface PlaybookFilterChangedParams extends BaseEventParams {
@@ -868,6 +885,8 @@ export interface AnalyticsEventMap {
   'task_completed': TaskCompletedParams
   'task_dismissed': TaskDismissedParams
   'task_blocked': TaskBlockedParams
+  'task_context_expanded': TaskContextExpandedParams
+  'financial_upload_cta_clicked': FinancialUploadCtaClickedParams
   'playbook_filter_changed': PlaybookFilterChangedParams
   'dashboard_return_view': DashboardReturnViewParams
   'valuation_change_noticed': ValuationChangeNoticedParams
