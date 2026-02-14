@@ -105,7 +105,7 @@ export function GrowthAssumptions({
         {/* Growth Rate Inputs */}
         <div className="space-y-4">
           <Label className="text-sm text-gray-700">FCF Growth Rates</Label>
-          <div className="grid grid-cols-5 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
             {YEARS.map((year, index) => (
               <div key={year} className="space-y-2">
                 <Label htmlFor={year} className="text-xs text-gray-500">
@@ -118,7 +118,7 @@ export function GrowthAssumptions({
                     step={0.1}
                     value={((growthRates[year] || 0) * 100).toFixed(1)}
                     onChange={(e) => onGrowthRateChange(year, parseFloat(e.target.value) / 100 || 0)}
-                    className="text-sm h-8 text-center"
+                    className="text-sm h-8 text-center min-w-0"
                   />
                   <span className="text-xs text-gray-400 text-center">%</span>
                 </div>

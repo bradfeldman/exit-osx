@@ -69,7 +69,7 @@ export function ValuationResults({ results, wacc, netDebt, isLoading }: Valuatio
         {/* FCF Projections Table */}
         <div>
           <h4 className="text-sm font-medium text-gray-800 mb-3">Projected Free Cash Flows</h4>
-          <div className="border rounded-lg overflow-hidden">
+          <div className="border rounded-lg overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50">

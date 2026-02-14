@@ -446,9 +446,9 @@ export default function ValuationPage() {
       </div>
 
       {/* Three Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
         {/* Left Column: Market & Industry Data */}
-        <div className="lg:col-span-3 space-y-4">
+        <div className="md:col-span-1 lg:col-span-3 space-y-4">
           <MarketDataPanel
             industryBetaLow={industryData.betaLow}
             industryBetaHigh={industryData.betaHigh}
@@ -465,7 +465,7 @@ export default function ValuationPage() {
         </div>
 
         {/* Center Column: Inputs */}
-        <div className="lg:col-span-5 space-y-4">
+        <div className="md:col-span-1 lg:col-span-5 space-y-4">
           <WACCCalculator
             inputs={waccInputs}
             onInputChange={handleWACCInputChange}
@@ -498,7 +498,7 @@ export default function ValuationPage() {
         </div>
 
         {/* Right Column: Results */}
-        <div className="lg:col-span-4 space-y-4">
+        <div className="md:col-span-2 lg:col-span-4 space-y-4">
           <ValuationResults
             results={dcfResults}
             wacc={calculatedWACC}
