@@ -66,18 +66,9 @@ interface ActiveTask {
   proofDocuments: { id: string; name: string; uploadedAt: string }[]
 }
 
-interface UpNextTask {
-  id: string
-  title: string
-  briCategory: string
-  categoryLabel: string
-  normalizedValue: number
-  estimatedMinutes: number | null
-  effortLevel: string
-  priorityRank: number
+interface UpNextTask extends ActiveTask {
   prerequisiteHint: string | null
   outputHint: string | null
-  assignee: { name: string; role: string | null } | null
 }
 
 interface CompletedTask {
@@ -317,19 +308,25 @@ export function ActionsPage() {
   if (hasNoTasks) return <EmptyState />
 
   // Determine which task is focused (shown as big card)
-  // Default to first active task, or keep current selection if still valid
+  // Check both active and upNext lists; default to first active, then first upNext
+  const allFocusable = [...data.activeTasks, ...data.upNext]
   const effectiveFocusedId = (() => {
-    if (focusedTaskId && data.activeTasks.some(t => t.id === focusedTaskId)) {
+    if (focusedTaskId && allFocusable.some(t => t.id === focusedTaskId)) {
       return focusedTaskId
     }
-    return data.activeTasks.length > 0 ? data.activeTasks[0].id : null
+    if (data.activeTasks.length > 0) return data.activeTasks[0].id
+    if (data.upNext.length > 0) return data.upNext[0].id
+    return null
   })()
 
   const focusedTask = effectiveFocusedId
-    ? data.activeTasks.find(t => t.id === effectiveFocusedId) ?? null
+    ? allFocusable.find(t => t.id === effectiveFocusedId) ?? null
     : null
 
+  const isFocusedPending = focusedTask?.status === 'PENDING'
+
   const otherActiveTasks = data.activeTasks.filter(t => t.id !== effectiveFocusedId)
+  const remainingUpNext = data.upNext.filter(t => t.id !== effectiveFocusedId)
 
   // Map other active tasks to the shape UpNextQueue expects
   const otherActiveForQueue = otherActiveTasks.map(t => ({
@@ -342,7 +339,7 @@ export function ActionsPage() {
     assignee: t.assignee ? { name: t.assignee.name, role: t.assignee.role } : null,
   }))
 
-  const showQueue = otherActiveTasks.length > 0 || data.upNext.length > 0
+  const showQueue = otherActiveTasks.length > 0 || remainingUpNext.length > 0
 
   return (
     <div className="max-w-[800px] mx-auto px-6 py-8">
@@ -373,6 +370,7 @@ export function ActionsPage() {
                 task={focusedTask}
                 onSubStepToggle={handleSubStepToggle}
                 onComplete={() => handleCompleteTask(focusedTask)}
+                onStart={isFocusedPending ? () => handleStartTask(focusedTask.id) : undefined}
                 onBlock={handleBlockTask}
                 onDefer={handleDeferTask}
                 onRefresh={fetchData}
@@ -384,13 +382,11 @@ export function ActionsPage() {
         {showQueue && (
           <AnimatedItem>
             <UpNextQueue
-              tasks={data.upNext}
+              tasks={remainingUpNext}
               otherActiveTasks={otherActiveForQueue}
               hasMore={data.hasMoreInQueue}
               totalQueueSize={data.totalQueueSize}
-              onStartTask={handleStartTask}
               onFocusTask={(taskId) => setFocusedTaskId(taskId)}
-              autoExpandFirst={data.activeTasks.length === 0}
             />
           </AnimatedItem>
         )}

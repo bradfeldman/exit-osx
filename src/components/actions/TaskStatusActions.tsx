@@ -7,6 +7,7 @@ import { MoreHorizontal, AlertTriangle, Clock, XCircle, UserPlus, Mail, X } from
 interface TaskStatusActionsProps {
   taskId: string
   onComplete: () => void
+  onStart?: () => void
   onBlock: (taskId: string, reason: string) => void
   onDefer?: (taskId: string, deferredUntil: string, reason: string) => void
   onNotApplicable?: (taskId: string) => void
@@ -20,6 +21,7 @@ interface TaskStatusActionsProps {
 export function TaskStatusActions({
   taskId,
   onComplete,
+  onStart,
   onBlock,
   onDefer,
   onNotApplicable,
@@ -178,9 +180,15 @@ export function TaskStatusActions({
     <div className="mt-6 border-t border-border/50 pt-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button onClick={onComplete}>
-            Mark Complete
-          </Button>
+          {onStart ? (
+            <Button onClick={onStart}>
+              Start Task
+            </Button>
+          ) : (
+            <Button onClick={onComplete}>
+              Mark Complete
+            </Button>
+          )}
           <div className="relative">
             <Button
               variant="ghost"

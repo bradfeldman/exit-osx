@@ -1,7 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
 import { QueueItemRow } from './QueueItemRow'
 
 interface UpNextTask {
@@ -11,11 +9,9 @@ interface UpNextTask {
   categoryLabel: string
   normalizedValue: number
   estimatedMinutes: number | null
-  effortLevel: string
-  priorityRank: number
-  prerequisiteHint: string | null
-  outputHint: string | null
-  assignee: { name: string; role: string | null } | null
+  prerequisiteHint?: string | null
+  outputHint?: string | null
+  assignee: { name: string; role: string | null; [key: string]: unknown } | null
 }
 
 interface OtherActiveTask {
@@ -33,17 +29,10 @@ interface UpNextQueueProps {
   otherActiveTasks?: OtherActiveTask[]
   hasMore: boolean
   totalQueueSize: number
-  onStartTask: (taskId: string) => void
   onFocusTask?: (taskId: string) => void
-  disabled?: boolean
-  autoExpandFirst?: boolean
 }
 
-export function UpNextQueue({ tasks, otherActiveTasks = [], hasMore, totalQueueSize, onStartTask, onFocusTask, disabled = false, autoExpandFirst = false }: UpNextQueueProps) {
-  const [expandedId, setExpandedId] = useState<string | null>(
-    autoExpandFirst && tasks.length > 0 ? tasks[0].id : null
-  )
-
+export function UpNextQueue({ tasks, otherActiveTasks = [], hasMore, totalQueueSize, onFocusTask }: UpNextQueueProps) {
   const hasItems = otherActiveTasks.length > 0 || tasks.length > 0
 
   if (!hasItems) return null
@@ -71,41 +60,18 @@ export function UpNextQueue({ tasks, otherActiveTasks = [], hasMore, totalQueueS
           />
         ))}
         {tasks.map(task => (
-          <div key={task.id}>
-            {expandedId === task.id ? (
-              <div className="p-4">
-                <h3 className="text-base font-semibold text-foreground">{task.title}</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {task.categoryLabel} · ~${Math.round(task.normalizedValue / 1000)}K impact
-                  {task.estimatedMinutes && ` · ${task.estimatedMinutes} min`}
-                </p>
-                <div className="flex items-center gap-2 mt-3">
-                  <Button size="sm" onClick={() => onStartTask(task.id)} disabled={disabled}>
-                    Start This Task
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setExpandedId(null)}
-                  >
-                    Collapse
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <QueueItemRow
-                title={task.title}
-                categoryLabel={task.categoryLabel}
-                briCategory={task.briCategory}
-                normalizedValue={task.normalizedValue}
-                estimatedMinutes={task.estimatedMinutes}
-                prerequisiteHint={task.prerequisiteHint}
-                outputHint={task.outputHint}
-                assignee={task.assignee}
-                onClick={() => setExpandedId(task.id)}
-              />
-            )}
-          </div>
+          <QueueItemRow
+            key={task.id}
+            title={task.title}
+            categoryLabel={task.categoryLabel}
+            briCategory={task.briCategory}
+            normalizedValue={task.normalizedValue}
+            estimatedMinutes={task.estimatedMinutes}
+            prerequisiteHint={task.prerequisiteHint ?? null}
+            outputHint={task.outputHint ?? null}
+            assignee={task.assignee ? { name: task.assignee.name, role: task.assignee.role } : null}
+            onClick={() => onFocusTask?.(task.id)}
+          />
         ))}
       </div>
 

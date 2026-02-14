@@ -214,28 +214,59 @@ export async function GET(
       }
     })
 
-    // Build up next queue (pending tasks, max 5)
+    // Build up next queue (pending tasks, max 5) — full format so any can be focused
     const upNextFormatted = pendingTasks
       .filter(t => !waitingOnOthersTasks.some(w => w.id === t.id))
       .slice(0, 5)
-      .map(task => ({
-        id: task.id,
-        title: task.title,
-        briCategory: task.briCategory,
-        categoryLabel: BRI_CATEGORY_LABELS[task.briCategory as BRICategory] ?? task.briCategory,
-        normalizedValue: Number(task.normalizedValue),
-        estimatedMinutes: formatHoursToMinutes(task.estimatedHours),
-        effortLevel: task.effortLevel,
-        priorityRank: task.priorityRank,
-        prerequisiteHint: derivePrerequisiteHint(task.richDescription),
-        outputHint: deriveOutputHint(task.richDescription),
-        assignee: task.primaryAssignee
-          ? {
-              name: task.primaryAssignee.name ?? task.primaryAssignee.email,
-              role: task.assigneeRole,
-            }
-          : null,
-      }))
+      .map(task => {
+        const subSteps = formatSubSteps(task.subSteps)
+        const completedSteps = subSteps.filter(s => s.completed).length
+        const rd = hasRichDescription(task.richDescription)
+          ? (task.richDescription as RichTaskDescription)
+          : null
+
+        return {
+          id: task.id,
+          title: task.title,
+          description: task.description,
+          briCategory: task.briCategory,
+          categoryLabel: BRI_CATEGORY_LABELS[task.briCategory as BRICategory] ?? task.briCategory,
+          normalizedValue: Number(task.normalizedValue),
+          estimatedMinutes: formatHoursToMinutes(task.estimatedHours),
+          effortLevel: task.effortLevel,
+          status: task.status,
+          startedAt: null,
+          daysInProgress: null,
+          priorityRank: task.priorityRank,
+          buyerConsequence: task.buyerConsequence,
+          buyerRisk: rd?.buyerRisk ?? null,
+          subSteps,
+          subStepProgress: {
+            completed: completedSteps,
+            total: subSteps.length,
+          },
+          successCriteria: rd?.successCriteria ?? null,
+          outputFormat: rd?.outputFormat ?? null,
+          prerequisiteHint: derivePrerequisiteHint(task.richDescription),
+          outputHint: deriveOutputHint(task.richDescription),
+          assignee: task.primaryAssignee
+            ? {
+                id: task.primaryAssignee.id,
+                name: task.primaryAssignee.name ?? task.primaryAssignee.email,
+                email: task.primaryAssignee.email,
+                role: task.assigneeRole,
+              }
+            : null,
+          isAssignedToCurrentUser:
+            !task.primaryAssigneeId || task.primaryAssigneeId === currentUserId,
+          pendingInvite: pendingInviteMap.get(task.id) ?? null,
+          proofDocuments: task.proofDocuments.map(d => ({
+            id: d.id,
+            name: d.documentName,
+            uploadedAt: d.createdAt.toISOString(),
+          })),
+        }
+      })
 
     // Build completed this month
     const completedFormatted = completedThisMonthTasks

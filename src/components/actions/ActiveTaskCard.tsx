@@ -57,13 +57,14 @@ interface ActiveTaskCardProps {
   task: ActiveTask
   onSubStepToggle: (taskId: string, stepId: string, completed: boolean) => void
   onComplete: () => void
+  onStart?: () => void
   onBlock: (taskId: string, reason: string) => void
   onDefer?: (taskId: string, deferredUntil: string, reason: string) => void
   onRefresh?: () => void
   disabled?: boolean
 }
 
-export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onBlock, onDefer, onRefresh, disabled = false }: ActiveTaskCardProps) {
+export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onStart, onBlock, onDefer, onRefresh, disabled = false }: ActiveTaskCardProps) {
   const metaParts: string[] = []
   metaParts.push(`~${formatCurrency(task.normalizedValue)} impact`)
   if (task.estimatedMinutes) {
@@ -73,16 +74,28 @@ export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onBlock, onD
     metaParts.push(`Started ${formatDate(task.startedAt)}`)
   }
 
-  const showStaleNudge = task.daysInProgress !== null && task.daysInProgress >= 14
+  const isPending = task.status === 'PENDING'
+  const showStaleNudge = !isPending && task.daysInProgress !== null && task.daysInProgress >= 14
 
   return (
-    <div className={cn('rounded-xl border-2 border-[var(--burnt-orange)]/30 bg-card p-6 shadow-sm', disabled && 'opacity-60 pointer-events-none')}>
+    <div className={cn(
+      'rounded-xl border-2 bg-card p-6 shadow-sm',
+      isPending ? 'border-border/50' : 'border-[var(--burnt-orange)]/30',
+      disabled && 'opacity-60 pointer-events-none'
+    )}>
       {/* Header row */}
       <div className="flex items-center justify-between">
-        <div className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--burnt-orange)]">
-          <span className="w-2 h-2 rounded-full bg-[var(--burnt-orange)] animate-pulse" />
-          IN PROGRESS
-        </div>
+        {isPending ? (
+          <div className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <span className="w-2 h-2 rounded-full bg-muted-foreground/50" />
+            UP NEXT
+          </div>
+        ) : (
+          <div className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--burnt-orange)]">
+            <span className="w-2 h-2 rounded-full bg-[var(--burnt-orange)] animate-pulse" />
+            IN PROGRESS
+          </div>
+        )}
         <span className={cn('text-xs font-medium px-2 py-0.5 rounded-full', getBRICategoryColor(task.briCategory))}>
           {task.categoryLabel}
         </span>
@@ -127,6 +140,7 @@ export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onBlock, onD
       <TaskStatusActions
         taskId={task.id}
         onComplete={onComplete}
+        onStart={onStart}
         onBlock={onBlock}
         onDefer={onDefer}
         assignee={task.assignee}
