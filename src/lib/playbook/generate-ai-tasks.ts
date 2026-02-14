@@ -6,6 +6,7 @@
 import { prisma } from '@/lib/prisma'
 import { generateJSON } from '@/lib/ai/anthropic'
 import { calculateTaskPriorityFromAttributes, initializeActionPlan } from '@/lib/tasks/action-plan'
+import { enrichTasksWithContext } from '@/lib/tasks/enrich-task-context'
 
 type IssueTier = 'CRITICAL' | 'SIGNIFICANT' | 'OPTIMIZATION'
 
@@ -301,6 +302,11 @@ Generate one task per question above. Return tasks in the same order.`
   if (created > 0) {
     const actionPlanResult = await initializeActionPlan(companyId)
     console.log(`[AI_TASK_ENGINE] Action plan: ${actionPlanResult.initialized} tasks, Queue: ${actionPlanResult.queued} tasks`)
+
+    // Enrich tasks with personalized financial context (fire-and-forget)
+    enrichTasksWithContext(companyId).catch(err =>
+      console.error('[AI_TASK_ENGINE] Task context enrichment failed:', err)
+    )
   }
 
   console.log(`[AI_TASK_ENGINE] Generated ${created} AI tasks for company ${companyId}, skipped ${skipped}`)

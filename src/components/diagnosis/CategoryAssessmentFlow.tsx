@@ -234,6 +234,12 @@ export function CategoryAssessmentFlow({
       if (!res.ok) {
         console.error('Failed to recalculate BRI:', await res.text())
       }
+
+      // Fire-and-forget: regenerate AI tasks based on updated answers
+      fetch(`/api/companies/${companyId}/generate-ai-tasks`, {
+        method: 'POST',
+      }).catch(() => {})
+
       onComplete()
     } catch (err) {
       console.error('Error recalculating BRI:', err)
