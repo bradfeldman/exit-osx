@@ -45,10 +45,10 @@ export function ExposureProvider({ children }: { children: ReactNode }) {
       const response = await fetch('/api/user/exposure-state', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ exposureState: 'VIEWING' }),
+        body: JSON.stringify({ exposureState: 'ACTING' }),
       })
       if (response.ok) {
-        setExposureState('VIEWING')
+        setExposureState('ACTING')
       }
     } catch (err) {
       console.error('Failed to update exposure state:', err)

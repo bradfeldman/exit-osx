@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
-import { useExposure } from '@/contexts/ExposureContext'
 import { AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
 import { HeroSummaryBar } from './HeroSummaryBar'
 import { ActiveTaskCard } from './ActiveTaskCard'
@@ -16,7 +15,6 @@ import { AllCompletedState } from './AllCompletedState'
 import { ActionsLoading } from './ActionsLoading'
 import { ActionsError } from './ActionsError'
 import { TaskCompletionDialog } from './TaskCompletionDialog'
-import { ViewOnlyBanner } from './ViewOnlyBanner'
 
 interface SubStep {
   id: string
@@ -130,7 +128,6 @@ interface ActionsData {
 
 export function ActionsPage() {
   const { selectedCompanyId } = useCompany()
-  const { isViewing, isActing: _isActing } = useExposure()
   const searchParams = useSearchParams()
   const highlightTaskId = searchParams.get('taskId')
   const scrolledRef = useRef(false)
@@ -317,8 +314,6 @@ export function ActionsPage() {
 
   if (hasNoTasks) return <EmptyState />
 
-  const showViewOnlyBanner = isViewing && data.activeTasks.length > 0
-
   return (
     <div className="max-w-[800px] mx-auto px-6 py-8">
       <AnimatedStagger className="space-y-6" staggerDelay={0.1}>
@@ -331,12 +326,6 @@ export function ActionsPage() {
             valueRecoveredThisMonth={data.summary.valueRecoveredThisMonth}
           />
         </AnimatedItem>
-
-        {showViewOnlyBanner && (
-          <AnimatedItem>
-            <ViewOnlyBanner />
-          </AnimatedItem>
-        )}
 
         {allTasksCompleted && (
           <AnimatedItem>
