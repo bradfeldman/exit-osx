@@ -302,3 +302,21 @@ export async function createTrialExpiredAlert(userId: string): Promise<AlertWith
     actionUrl: `/dashboard/settings?tab=billing`,
   })
 }
+
+/**
+ * Create an action plan updated alert after task re-enrichment
+ */
+export async function createActionPlanUpdatedAlert(
+  userId: string,
+  companyName: string,
+  tasksUpdated: number
+): Promise<AlertWithMeta> {
+  return createAlert({
+    recipientId: userId,
+    type: 'ACTION_PLAN_UPDATED',
+    title: 'Action Plan Updated',
+    message: `${tasksUpdated} task${tasksUpdated === 1 ? '' : 's'} in ${companyName} updated with your latest financials`,
+    actionUrl: '/dashboard/actions',
+    metadata: { companyName, tasksUpdated },
+  })
+}

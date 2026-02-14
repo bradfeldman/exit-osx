@@ -2132,6 +2132,7 @@ enum AlertType {
   TRIAL_ENDING
   TRIAL_EXPIRED
   PARTNER_NUDGE
+  ACTION_PLAN_UPDATED
 }
 
 enum CompanyMemberStatus {
