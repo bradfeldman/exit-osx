@@ -11,7 +11,6 @@ interface ClarifyingQuestionsStepProps {
   industry: string
   revenueRange: string
   onComplete: (answers: Record<string, string>, questions: ClarifyingQuestion[]) => void
-  onSkip: () => void
 }
 
 export function ClarifyingQuestionsStep({
@@ -20,7 +19,6 @@ export function ClarifyingQuestionsStep({
   industry,
   revenueRange,
   onComplete,
-  onSkip,
 }: ClarifyingQuestionsStepProps) {
   const [questions, setQuestions] = useState<ClarifyingQuestion[]>([])
   const [answers, setAnswers] = useState<Record<string, string>>({})
@@ -119,10 +117,10 @@ export function ClarifyingQuestionsStep({
       <div className="text-center py-8">
         <p className="text-destructive mb-4">{error}</p>
         <button
-          onClick={onSkip}
+          onClick={() => onComplete({}, [])}
           className="text-sm text-primary hover:text-primary/80"
         >
-          Skip this step
+          Continue anyway
         </button>
       </div>
     )
@@ -222,18 +220,7 @@ export function ClarifyingQuestionsStep({
         ))}
       </div>
 
-      <div className="flex items-center justify-between pt-6 border-t border-border">
-        {!allQuestionsAnswered ? (
-          <button
-            type="button"
-            onClick={onSkip}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Skip for now
-          </button>
-        ) : (
-          <div />
-        )}
+      <div className="flex items-center justify-end pt-6 border-t border-border">
         <button
           type="button"
           onClick={handleContinue}

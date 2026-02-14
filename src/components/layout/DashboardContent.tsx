@@ -6,6 +6,7 @@ import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 import { TrialBanner } from '@/components/subscription/TrialBanner'
 import { SessionTimeoutWarning } from '@/components/session/SessionTimeoutWarning'
+import { FeedbackWidget } from '@/components/feedback/FeedbackWidget'
 import { EntryScreen } from './EntryScreen'
 import type { User } from '@supabase/supabase-js'
 
@@ -46,6 +47,7 @@ export function DashboardContent({ children, user }: DashboardContentProps) {
         </main>
       </div>
       <SessionTimeoutWarning />
+      <FeedbackWidget />
     </div>
   )
 }

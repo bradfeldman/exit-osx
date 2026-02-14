@@ -157,6 +157,11 @@ export interface SignupSubmitParams extends BaseEventParams {
   errorType?: string
 }
 
+export interface LoginSuccessParams extends BaseEventParams {
+  success: boolean
+  timeToSubmit: number  // ms from page load
+}
+
 export interface SignupCompleteParams extends BaseEventParams {
   method: 'email' | 'google' | 'github' | 'magic_link'
 }
@@ -829,6 +834,7 @@ export interface AnalyticsEventMap {
   'form_field_error': FormFieldErrorParams
   'form_abandonment': FormAbandonmentParams
   'signup_submit': SignupSubmitParams
+  'login_success': LoginSuccessParams
   'signup_complete': SignupCompleteParams
   'verification_email_sent': VerificationEmailSentParams
   'verification_link_clicked': VerificationLinkClickedParams

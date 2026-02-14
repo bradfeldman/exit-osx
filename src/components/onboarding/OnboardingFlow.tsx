@@ -361,17 +361,6 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     }
   }
 
-  const handleSkip = () => {
-    // Skip to dashboard with incomplete state
-    localStorage.setItem('onboardingSkipped', 'true')
-    // Clear session storage
-    sessionStorage.removeItem('onboarding_companyId')
-    sessionStorage.removeItem('onboarding_previewData')
-    sessionStorage.removeItem('onboarding_formData')
-    sessionStorage.removeItem('onboarding_businessDescription')
-    router.push('/dashboard')
-  }
-
   const handleQuickScanComplete = async (scanResults: QuickScanResults) => {
     // Calculate category scores based on quick scan risks (as decimals 0-1)
     const categoryScoresObj: Record<string, number> = {
@@ -598,7 +587,6 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
             valuationHigh={industryPreviewData.valuationHigh}
             potentialGap={industryPreviewData.potentialGap}
             onContinue={() => goToStep(4)}
-            onSkip={handleSkip}
           />
         ) : (
           <div className="flex items-center justify-center py-20">
@@ -611,7 +599,6 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
             companyId={createdCompanyId}
             companyName={formData.name}
             onComplete={handleQuickScanComplete}
-            onSkip={handleSkip}
           />
         ) : null
       case 5:

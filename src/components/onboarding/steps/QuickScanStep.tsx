@@ -77,7 +77,6 @@ interface QuickScanStepProps {
   companyId: string
   companyName: string
   onComplete: (results: QuickScanResults) => void
-  onSkip: () => void
 }
 
 export interface QuickScanResults {
@@ -95,7 +94,6 @@ export interface QuickScanResults {
 export function QuickScanStep({
   companyName: _companyName,
   onComplete,
-  onSkip,
 }: QuickScanStepProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, boolean>>({})
@@ -291,17 +289,6 @@ export function QuickScanStep({
         </motion.div>
       )}
 
-      {/* Skip Option - only show when not complete */}
-      {!isComplete && (
-        <div className="text-center mt-6">
-          <button
-            onClick={onSkip}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Skip for now
-          </button>
-        </div>
-      )}
     </div>
   )
 }

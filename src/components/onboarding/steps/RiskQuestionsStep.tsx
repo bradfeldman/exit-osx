@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
-import { Loader2, ChevronRight, SkipForward } from 'lucide-react'
+import { Loader2, ChevronRight } from 'lucide-react'
 
 interface RiskQuestion {
   id: string
@@ -26,7 +26,6 @@ interface RiskQuestionsStepProps {
     valueGap: number
   }
   onComplete: (answers: Record<string, string>) => void
-  onSkip: () => void
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -44,7 +43,6 @@ export function RiskQuestionsStep({
   businessDescription,
   riskResults,
   onComplete,
-  onSkip,
 }: RiskQuestionsStepProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -138,9 +136,6 @@ export function RiskQuestionsStep({
           <p className="text-sm mt-1">{error}</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" onClick={onSkip}>
-            Skip to Action Plan
-          </Button>
           <Button onClick={() => window.location.reload()}>
             Try Again
           </Button>
@@ -255,16 +250,7 @@ export function RiskQuestionsStep({
       </AnimatePresence>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between">
-        <Button
-          variant="ghost"
-          onClick={onSkip}
-          className="text-muted-foreground gap-2"
-        >
-          <SkipForward className="w-4 h-4" />
-          Skip Questions
-        </Button>
-
+      <div className="flex items-center justify-end">
         <Button
           onClick={handleNext}
           disabled={!selectedOption}

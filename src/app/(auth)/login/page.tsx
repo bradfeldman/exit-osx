@@ -197,7 +197,7 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
       }
 
       // Track successful login
-      analytics.track('signup_submit', {
+      analytics.track('login_success', {
         success: true,
         timeToSubmit: Date.now() - pageLoadTime.current,
       })

@@ -10,7 +10,6 @@ interface IndustryPreviewStepProps {
   valuationHigh: number
   potentialGap: number
   onContinue: () => void
-  onSkip: () => void
 }
 
 function formatCurrency(value: number): string {
