@@ -6,7 +6,7 @@ import { getUserAlerts, markAllAsRead } from '@/lib/alerts'
 
 // Combined alert types
 type AssessmentAlertType = 'NO_ASSESSMENT' | 'STALE_ASSESSMENT' | 'QUARTERLY_REMINDER' | 'OPEN_ASSESSMENT' | 'ASSESSMENT_AVAILABLE'
-type SystemAlertType = 'ACCESS_REQUEST' | 'ACCESS_GRANTED' | 'ACCESS_DENIED' | 'STAFF_PAUSED' | 'OWNERSHIP_TRANSFER' | 'TRIAL_ENDING' | 'TRIAL_EXPIRED'
+type SystemAlertType = 'ACCESS_REQUEST' | 'ACCESS_GRANTED' | 'ACCESS_DENIED' | 'STAFF_PAUSED' | 'OWNERSHIP_TRANSFER' | 'TRIAL_ENDING' | 'TRIAL_EXPIRED' | 'ACTION_PLAN_UPDATED'
 
 interface Alert {
   id: string
@@ -180,6 +180,7 @@ export async function GET() {
           'OWNERSHIP_TRANSFER': 'info',
           'TRIAL_ENDING': 'urgent',
           'TRIAL_EXPIRED': 'urgent',
+          'ACTION_PLAN_UPDATED': 'info',
         }
 
         alerts.push({

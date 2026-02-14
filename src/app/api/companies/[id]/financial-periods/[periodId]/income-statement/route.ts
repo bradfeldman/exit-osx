@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 import { RevenueSizeCategory } from '@prisma/client'
 import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snapshot'
 import { triggerDossierUpdate } from '@/lib/dossier/build-dossier'
+import { triggerTaskReEnrichment } from '@/lib/tasks/enrich-task-context'
 import {
   calculateGrossProfit,
   calculateGrossMargin,
@@ -286,6 +287,9 @@ export async function PUT(
 
     // Update company dossier (non-blocking)
     triggerDossierUpdate(companyId, 'financial_data_updated', periodId)
+
+    // Re-enrich all tasks with updated financials (non-blocking)
+    triggerTaskReEnrichment(companyId)
 
     return NextResponse.json({
       incomeStatement: {
