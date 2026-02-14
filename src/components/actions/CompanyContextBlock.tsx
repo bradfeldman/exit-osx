@@ -2,18 +2,20 @@
 
 import Link from 'next/link'
 import type { CompanyContextData } from '@/lib/playbook/rich-task-description'
+import type { FinancialDriftResult } from '@/lib/tasks/detect-financial-drift'
 import { analytics } from '@/lib/analytics'
 
 interface CompanyContextBlockProps {
   companyContext: CompanyContextData | null | undefined
   taskId: string
+  financialDrift?: FinancialDriftResult | null
 }
 
-export function CompanyContextBlock({ companyContext, taskId }: CompanyContextBlockProps) {
+export function CompanyContextBlock({ companyContext, taskId, financialDrift }: CompanyContextBlockProps) {
   if (!companyContext) return null
 
   if (companyContext.dataQuality === 'HIGH') {
-    return <HighTierBlock context={companyContext} />
+    return <HighTierBlock context={companyContext} financialDrift={financialDrift} />
   }
 
   if (companyContext.dataQuality === 'MODERATE') {
@@ -25,9 +27,25 @@ export function CompanyContextBlock({ companyContext, taskId }: CompanyContextBl
 
 // ─── HIGH Tier: Full financials + benchmarks + dollar impact ────────────
 
-function HighTierBlock({ context }: { context: CompanyContextData }) {
+function HighTierBlock({ context, financialDrift }: { context: CompanyContextData; financialDrift?: FinancialDriftResult | null }) {
   return (
     <div className="mt-4 p-4 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-800/30">
+      {/* Drift indicator */}
+      {financialDrift?.hasDrift && (
+        <div className="mb-3 p-2.5 rounded-md bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30">
+          <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
+            Financials changed since this was personalized — updating...
+          </p>
+          <div className="mt-1 space-y-0.5">
+            {financialDrift.items.map(item => (
+              <p key={item.metric} className="text-xs text-amber-600 dark:text-amber-500">
+                {item.metric}: {item.oldValue} &rarr; {item.newValue}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+
       <p className="text-xs font-semibold tracking-wider text-emerald-700 dark:text-emerald-400 uppercase mb-3">
         YOUR NUMBERS
       </p>
@@ -46,14 +64,30 @@ function HighTierBlock({ context }: { context: CompanyContextData }) {
 
         {/* Industry benchmark */}
         {context.industryBenchmark && (
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-sm text-muted-foreground">
-              Industry range:{' '}
-              <span className="font-medium text-foreground">{context.industryBenchmark.range}</span>
-            </span>
-            <span className="text-xs text-muted-foreground whitespace-nowrap">
-              {context.industryBenchmark.source}
-            </span>
+          <div>
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-sm text-muted-foreground">
+                Industry range:{' '}
+                <span className="font-medium text-foreground">{context.industryBenchmark.range}</span>
+              </span>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                {context.industryBenchmark.source}
+              </span>
+            </div>
+            {/* Benchmark trend — show previous range when benchmarks changed */}
+            {context.benchmarkSnapshot && context.industryBenchmark && (
+              (() => {
+                const snap = context.benchmarkSnapshot!
+                const currentRange = context.industryBenchmark!.range
+                const prevRange = `${snap.ebitdaMarginLow}-${snap.ebitdaMarginHigh}%`
+                if (prevRange === currentRange) return null
+                return (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Previously {snap.ebitdaMultipleLow}x&ndash;{snap.ebitdaMultipleHigh}x
+                  </p>
+                )
+              })()
+            )}
           </div>
         )}
 

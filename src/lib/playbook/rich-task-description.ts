@@ -22,6 +22,23 @@ export interface CompanyContextData {
   contextNote: string
   dataQuality: 'HIGH' | 'MODERATE' | 'LOW'
   addFinancialsCTA: boolean
+
+  /** Key financials at enrichment time — used for drift detection */
+  financialSnapshot?: {
+    revenue: number
+    ebitda: number
+    ebitdaMarginPct: number
+    enrichedAt: string  // ISO date
+  }
+
+  /** Previous benchmark values — used for trend display */
+  benchmarkSnapshot?: {
+    ebitdaMarginLow: number
+    ebitdaMarginHigh: number
+    ebitdaMultipleLow: number
+    ebitdaMultipleHigh: number
+    capturedAt: string  // ISO date
+  }
 }
 
 export interface RichTaskDescription {

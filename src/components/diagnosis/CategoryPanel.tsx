@@ -55,6 +55,12 @@ interface CategoryPanelProps {
   onCollapse?: () => void
   /** PROD-017: Next cadence-based prompt date (ISO string or null) */
   nextPromptDate?: string | null
+  financialContext?: {
+    tier: string
+    metric: { label: string; value: string; source: string } | null
+    benchmark: { range: string; source: string } | null
+    dollarContext: string | null
+  } | null
 }
 
 export function CategoryPanel({
@@ -72,6 +78,7 @@ export function CategoryPanel({
   onExpand,
   onCollapse,
   nextPromptDate,
+  financialContext,
 }: CategoryPanelProps) {
   // Fully controlled mode when parent provides onExpand/onCollapse
   const isControlled = onExpand !== undefined && onCollapse !== undefined
@@ -176,6 +183,28 @@ export function CategoryPanel({
         <p className="text-xs text-muted-foreground mt-2">
           Affects your exit timeline, not buyer pricing
         </p>
+      )}
+
+      {/* Financial context */}
+      {isAssessed && financialContext && (
+        <div className="mt-2 pt-2 border-t border-border/30">
+          {financialContext.metric && (
+            <p className="text-xs text-foreground">
+              Your {financialContext.metric.label}: <span className="font-semibold">{financialContext.metric.value}</span>
+              <span className="text-muted-foreground ml-1">({financialContext.metric.source})</span>
+            </p>
+          )}
+          {financialContext.benchmark && (
+            <p className="text-xs text-muted-foreground">
+              Industry: {financialContext.benchmark.range}
+            </p>
+          )}
+          {financialContext.dollarContext && (
+            <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mt-0.5">
+              {financialContext.dollarContext}
+            </p>
+          )}
+        </div>
       )}
 
       {/* Questions progress */}

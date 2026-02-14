@@ -5,6 +5,7 @@ import { getBRICategoryColor } from '@/lib/constants/bri-categories'
 import { SubStepChecklist } from './SubStepChecklist'
 import { CompanyContextBlock } from './CompanyContextBlock'
 import { BuyerContextBlock } from './BuyerContextBlock'
+import { RelatedTasksBlock } from './RelatedTasksBlock'
 import { TaskDetailsCollapsible } from './TaskDetailsCollapsible'
 import { TaskStatusActions } from './TaskStatusActions'
 import { TaskNotes } from './TaskNotes'
@@ -56,7 +57,26 @@ interface ActiveTask {
     contextNote: string
     dataQuality: 'HIGH' | 'MODERATE' | 'LOW'
     addFinancialsCTA: boolean
+    financialSnapshot?: {
+      revenue: number
+      ebitda: number
+      ebitdaMarginPct: number
+      enrichedAt: string
+    }
+    benchmarkSnapshot?: {
+      ebitdaMarginLow: number
+      ebitdaMarginHigh: number
+      ebitdaMultipleLow: number
+      ebitdaMultipleHigh: number
+      capturedAt: string
+    }
   } | null
+  financialDrift?: {
+    hasDrift: boolean
+    items: Array<{ metric: string; oldValue: string; newValue: string; direction: 'up' | 'down'; pctChange: number }>
+    enrichedAt: string | null
+  } | null
+  relatedTasks?: Array<{ id: string; title: string; value: number; status: string }>
   subSteps: SubStep[]
   subStepProgress: { completed: number; total: number }
   successCriteria: { overview: string; outcomes: string[] } | null
@@ -75,10 +95,11 @@ interface ActiveTaskCardProps {
   onBlock: (taskId: string, reason: string) => void
   onDefer?: (taskId: string, deferredUntil: string, reason: string) => void
   onRefresh?: () => void
+  onFocusTask?: (taskId: string) => void
   disabled?: boolean
 }
 
-export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onStart, onBlock, onDefer, onRefresh, disabled = false }: ActiveTaskCardProps) {
+export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onStart, onBlock, onDefer, onRefresh, onFocusTask, disabled = false }: ActiveTaskCardProps) {
   const metaParts: string[] = []
   metaParts.push(`~${formatCurrency(task.normalizedValue)} impact`)
   if (task.estimatedMinutes) {
@@ -138,7 +159,16 @@ export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onStart, onB
       )}
 
       {/* Company context (personalized financials + benchmarks) */}
-      <CompanyContextBlock companyContext={task.companyContext} taskId={task.id} />
+      <CompanyContextBlock companyContext={task.companyContext} taskId={task.id} financialDrift={task.financialDrift} />
+
+      {/* Related tasks in same category */}
+      {task.relatedTasks && task.relatedTasks.length > 0 && (
+        <RelatedTasksBlock
+          tasks={task.relatedTasks}
+          categoryLabel={task.categoryLabel}
+          onFocusTask={onFocusTask}
+        />
+      )}
 
       {/* Buyer context */}
       <BuyerContextBlock

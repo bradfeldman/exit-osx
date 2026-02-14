@@ -14,6 +14,7 @@ import { EmptyState } from './EmptyState'
 import { AllCompletedState } from './AllCompletedState'
 import { ActionsLoading } from './ActionsLoading'
 import { ActionsError } from './ActionsError'
+import { EnrichmentBanner } from './EnrichmentBanner'
 import { TaskCompletionDialog } from './TaskCompletionDialog'
 import { analytics } from '@/lib/analytics'
 
@@ -21,6 +22,27 @@ interface SubStep {
   id: string
   title: string
   completed: boolean
+}
+
+interface DriftItem {
+  metric: string
+  oldValue: string
+  newValue: string
+  direction: 'up' | 'down'
+  pctChange: number
+}
+
+interface FinancialDrift {
+  hasDrift: boolean
+  items: DriftItem[]
+  enrichedAt: string | null
+}
+
+interface RelatedTask {
+  id: string
+  title: string
+  value: number
+  status: string
 }
 
 interface CompanyContext {
@@ -35,6 +57,19 @@ interface CompanyContext {
   contextNote: string
   dataQuality: 'HIGH' | 'MODERATE' | 'LOW'
   addFinancialsCTA: boolean
+  financialSnapshot?: {
+    revenue: number
+    ebitda: number
+    ebitdaMarginPct: number
+    enrichedAt: string
+  }
+  benchmarkSnapshot?: {
+    ebitdaMarginLow: number
+    ebitdaMarginHigh: number
+    ebitdaMultipleLow: number
+    ebitdaMultipleHigh: number
+    capturedAt: string
+  }
 }
 
 interface ActiveTask {
@@ -57,6 +92,8 @@ interface ActiveTask {
     conclusion: string
   } | null
   companyContext: CompanyContext | null
+  financialDrift?: FinancialDrift | null
+  relatedTasks?: RelatedTask[]
   subSteps: SubStep[]
   subStepProgress: {
     completed: number
@@ -131,6 +168,7 @@ interface ActionsData {
   deferredTasks: DeferredTask[]
   hasMoreInQueue: boolean
   totalQueueSize: number
+  enrichmentAlert: { id: string; message: string; createdAt: string } | null
 }
 
 function getEnrichmentTier(task: ActiveTask): 'HIGH' | 'MODERATE' | 'LOW' | 'NONE' {
@@ -388,6 +426,15 @@ export function ActionsPage() {
   return (
     <div className="max-w-[800px] mx-auto px-6 py-8">
       <AnimatedStagger className="space-y-6" staggerDelay={0.1}>
+        {data.enrichmentAlert && (
+          <AnimatedItem>
+            <EnrichmentBanner
+              alertId={data.enrichmentAlert.id}
+              message={data.enrichmentAlert.message}
+            />
+          </AnimatedItem>
+        )}
+
         <AnimatedItem>
           <HeroSummaryBar
             totalTasks={data.summary.totalTasks}
@@ -418,6 +465,7 @@ export function ActionsPage() {
                 onBlock={handleBlockTask}
                 onDefer={handleDeferTask}
                 onRefresh={fetchData}
+                onFocusTask={(taskId) => setFocusedTaskId(taskId)}
               />
             </div>
           </AnimatedItem>

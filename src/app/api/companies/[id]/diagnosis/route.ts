@@ -8,6 +8,7 @@ import {
 } from '@/lib/constants/bri-categories'
 import { calculateCategoryValueGaps } from '@/lib/valuation/value-gap-attribution'
 import { DEFAULT_BRI_WEIGHTS } from '@/lib/bri-weights'
+import { gatherTaskPersonalizationContext } from '@/lib/tasks/personalization-context'
 
 // BRI weights from shared source (PROD-010 audit: previously hardcoded, now imported for consistency)
 const BRI_WEIGHTS: Record<string, number> = DEFAULT_BRI_WEIGHTS
@@ -19,6 +20,12 @@ const BUYER_EXPLANATIONS: Record<string, string> = {
   OPERATIONAL: 'Buyers see risk in businesses without documented, repeatable processes.',
   MARKET: 'Buyers pay premiums for defensible market positions and diverse revenue.',
   LEGAL_TAX: 'Buyers walk away from unresolved legal exposure and compliance gaps.',
+}
+
+function formatCurrency(value: number): string {
+  if (Math.abs(value) >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
+  if (Math.abs(value) >= 1_000) return `$${Math.round(value / 1_000)}K`
+  return `$${Math.round(value)}`
 }
 
 function calculateConfidence(
@@ -113,6 +120,9 @@ export async function GET(
       tasks.filter(t => t.linkedQuestionId).map(t => [t.linkedQuestionId!, t])
     )
 
+    // Fetch personalization context for financial enrichment
+    const personalizationCtx = await gatherTaskPersonalizationContext(companyId)
+
     // Build response map — deduplicate to latest response per question
     // Since allResponses is ordered by updatedAt desc, first occurrence wins
     const responseMap = new Map<string, typeof allResponses[number]>()
@@ -172,6 +182,12 @@ export async function GET(
         hasUnansweredAiQuestions: boolean
       }
       isLowestConfidence: boolean
+      financialContext: {
+        tier: string
+        metric: { label: string; value: string; source: string } | null
+        benchmark: { range: string; source: string } | null
+        dollarContext: string | null
+      } | null
     }
 
     const categories: CategoryData[] = []
@@ -235,12 +251,32 @@ export async function GET(
       // of a fake default score (previously defaulted to 70).
       const isAssessed = questionsAnswered > 0
 
+      const catDollarImpact = catKey === 'PERSONAL' ? null : (categoryDollarImpacts.get(catKey) ?? 0)
+
+      // Build financial context for this category
+      let catFinancialContext: CategoryData['financialContext'] = null
+      if (personalizationCtx && personalizationCtx.tier !== 'LOW') {
+        catFinancialContext = {
+          tier: personalizationCtx.tier,
+          metric: catKey === 'FINANCIAL' && personalizationCtx.financials ? {
+            label: 'EBITDA Margin',
+            value: `${((personalizationCtx.financials.ebitdaMarginPct ?? 0)).toFixed(1)}%`,
+            source: personalizationCtx.financials.source,
+          } : null,
+          benchmark: personalizationCtx.benchmarks ? {
+            range: `${personalizationCtx.benchmarks.ebitdaMarginLow}–${personalizationCtx.benchmarks.ebitdaMarginHigh}%`,
+            source: `${personalizationCtx.company.subSector} sector data`,
+          } : null,
+          dollarContext: catDollarImpact && catDollarImpact > 0 ? `Closing this gap could recover ~${formatCurrency(catDollarImpact)}` : null,
+        }
+      }
+
       categories.push({
         category: catKey,
         label: BRI_CATEGORY_LABELS[catKey as BRICategory] || catKey,
         score: Math.round(scoreDecimal * 100),
         scoreDecimal,
-        dollarImpact: catKey === 'PERSONAL' ? null : (categoryDollarImpacts.get(catKey) ?? 0),
+        dollarImpact: catDollarImpact,
         weight: BRI_WEIGHTS[catKey] || 0,
         isAssessed,
         confidence: {
@@ -254,6 +290,7 @@ export async function GET(
           hasUnansweredAiQuestions,
         },
         isLowestConfidence: false, // Set below
+        financialContext: catFinancialContext,
       })
     }
 
@@ -278,6 +315,11 @@ export async function GET(
       linkedTaskId: string | null
       linkedTaskTitle: string | null
       linkedTaskStatus: string | null
+      financialContext: {
+        ebitda: number
+        source: string
+        benchmarkMultiple: string | null
+      } | null
     }> = []
 
     for (const q of questions) {
@@ -328,6 +370,13 @@ export async function GET(
         linkedTaskId: linkedTask?.id ?? null,
         linkedTaskTitle: linkedTask?.title ?? null,
         linkedTaskStatus: linkedTask?.status ?? null,
+        financialContext: personalizationCtx?.financials ? {
+          ebitda: personalizationCtx.financials.ebitda,
+          source: personalizationCtx.financials.source,
+          benchmarkMultiple: personalizationCtx.benchmarks
+            ? `${personalizationCtx.benchmarks.ebitdaMultipleLow}x–${personalizationCtx.benchmarks.ebitdaMultipleHigh}x`
+            : null,
+        } : null,
       })
     }
 

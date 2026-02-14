@@ -36,6 +36,12 @@ interface CategoryData {
     hasUnansweredAiQuestions: boolean
   }
   isLowestConfidence: boolean
+  financialContext?: {
+    tier: string
+    metric: { label: string; value: string; source: string } | null
+    benchmark: { range: string; source: string } | null
+    dollarContext: string | null
+  } | null
 }
 
 interface RiskDriver {
@@ -53,6 +59,11 @@ interface RiskDriver {
   linkedTaskId: string | null
   linkedTaskTitle: string | null
   linkedTaskStatus: string | null
+  financialContext?: {
+    ebitda: number
+    source: string
+    benchmarkMultiple: string | null
+  } | null
 }
 
 interface DiagnosisData {
@@ -269,6 +280,7 @@ export function DiagnosisPage() {
                 onExpand={() => setExpandedCategory(cat.category)}
                 onCollapse={() => setExpandedCategory(null)}
                 nextPromptDate={cadenceNextDates[cat.category] ?? null}
+                financialContext={cat.financialContext}
               />
             ))}
           </div>

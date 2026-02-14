@@ -19,6 +19,11 @@ interface RiskDriverRowProps {
   isFreeUser?: boolean
   onUpgrade?: () => void
   onExpandCategory?: (category: string) => void
+  financialContext?: {
+    ebitda: number
+    source: string
+    benchmarkMultiple: string | null
+  } | null
 }
 
 function formatCurrency(value: number): string {
@@ -43,6 +48,7 @@ export function RiskDriverRow({
   isFreeUser = false,
   onUpgrade,
   onExpandCategory,
+  financialContext,
 }: RiskDriverRowProps) {
   const router = useRouter()
 
@@ -74,6 +80,13 @@ export function RiskDriverRow({
             {buyerLogic && (
               <p className="text-sm text-muted-foreground italic mt-1">
                 &ldquo;{buyerLogic}&rdquo;
+              </p>
+            )}
+            {financialContext && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Based on {formatCurrency(financialContext.ebitda)} EBITDA
+                {financialContext.benchmarkMultiple && ` at ${financialContext.benchmarkMultiple}`}
+                <span className="ml-1">({financialContext.source})</span>
               </p>
             )}
 

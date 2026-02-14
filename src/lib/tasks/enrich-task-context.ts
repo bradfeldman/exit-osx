@@ -158,6 +158,19 @@ function generateRuleBasedContext(
       contextNote: `Based on your ${ctx.company.subSector} financials and industry benchmarks.`,
       dataQuality: 'HIGH',
       addFinancialsCTA: false,
+      financialSnapshot: {
+        revenue: ctx.financials.revenue,
+        ebitda: ctx.financials.ebitda,
+        ebitdaMarginPct: ctx.financials.ebitdaMarginPct ?? 0,
+        enrichedAt: new Date().toISOString(),
+      },
+      benchmarkSnapshot: {
+        ebitdaMarginLow: ctx.benchmarks.ebitdaMarginLow,
+        ebitdaMarginHigh: ctx.benchmarks.ebitdaMarginHigh,
+        ebitdaMultipleLow: ctx.benchmarks.ebitdaMultipleLow,
+        ebitdaMultipleHigh: ctx.benchmarks.ebitdaMultipleHigh,
+        capturedAt: new Date().toISOString(),
+      },
     }
   }
 
@@ -194,12 +207,21 @@ function generateRuleBasedContext(
   }
 }
 
+// ─── Types ──────────────────────────────────────────────────────────────
+
+interface EnrichOptions {
+  taskIds?: string[]
+  force?: boolean  // When true, re-enrich tasks that already have companyContext
+}
+
 // ─── Main Enrichment Function ───────────────────────────────────────────
 
 export async function enrichTasksWithContext(
   companyId: string,
-  taskIds?: string[]
+  options: EnrichOptions = {}
 ): Promise<{ updated: number; failed: number }> {
+  const { taskIds, force = false } = options
+
   // Fetch tasks that need enrichment
   const tasks = await prisma.task.findMany({
     where: {
@@ -216,12 +238,14 @@ export async function enrichTasksWithContext(
     },
   })
 
-  // Filter to tasks that don't already have companyContext
-  const needsEnrichment = tasks.filter(t => {
-    if (!t.richDescription || typeof t.richDescription !== 'object') return true
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return !(t.richDescription as any).companyContext
-  })
+  // Filter to tasks that don't already have companyContext (unless force=true)
+  const needsEnrichment = force
+    ? tasks
+    : tasks.filter(t => {
+        if (!t.richDescription || typeof t.richDescription !== 'object') return true
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return !(t.richDescription as any).companyContext
+      })
 
   if (needsEnrichment.length === 0) {
     return { updated: 0, failed: 0 }
@@ -289,6 +313,19 @@ async function enrichBatch(
             contextNote: aiContext.contextNote,
             dataQuality: ctx.tier,
             addFinancialsCTA: ctx.tier !== 'HIGH',
+            financialSnapshot: ctx.financials ? {
+              revenue: ctx.financials.revenue,
+              ebitda: ctx.financials.ebitda,
+              ebitdaMarginPct: ctx.financials.ebitdaMarginPct ?? 0,
+              enrichedAt: new Date().toISOString(),
+            } : undefined,
+            benchmarkSnapshot: ctx.benchmarks ? {
+              ebitdaMarginLow: ctx.benchmarks.ebitdaMarginLow,
+              ebitdaMarginHigh: ctx.benchmarks.ebitdaMarginHigh,
+              ebitdaMultipleLow: ctx.benchmarks.ebitdaMultipleLow,
+              ebitdaMultipleHigh: ctx.benchmarks.ebitdaMultipleHigh,
+              capturedAt: new Date().toISOString(),
+            } : undefined,
           }
         : generateRuleBasedContext(ctx)
 
@@ -366,10 +403,56 @@ async function saveCompanyContext(
     ? existingRichDescription
     : {}
 
+  // On re-enrichment, preserve the previous benchmarkSnapshot so we can show trends.
+  // The first enrichment records current benchmarks as benchmarkSnapshot.
+  // On re-enrichment, the OLD benchmarkSnapshot (from previous enrichment) is carried forward
+  // so the UI can compare old vs new.
+  const previousContext = (existing as Record<string, unknown>).companyContext as CompanyContextData | undefined
+  if (previousContext?.benchmarkSnapshot && companyContext.benchmarkSnapshot) {
+    companyContext.benchmarkSnapshot = previousContext.benchmarkSnapshot
+  }
+
   const merged = { ...existing, companyContext }
 
   await prisma.task.update({
     where: { id: taskId },
     data: { richDescription: merged as unknown as Prisma.InputJsonValue },
   })
+}
+
+// ─── Re-enrichment Trigger (fire-and-forget) ────────────────────────────
+
+/**
+ * Fire-and-forget: re-enrich all tasks with latest financials and notify workspace members.
+ * Call this after P&L data is saved.
+ */
+export function triggerTaskReEnrichment(companyId: string): void {
+  reEnrichAndNotify(companyId).catch(err => {
+    console.error('[TASK_CONTEXT] Re-enrichment failed:', err)
+  })
+}
+
+async function reEnrichAndNotify(companyId: string): Promise<void> {
+  const result = await enrichTasksWithContext(companyId, { force: true })
+  console.log(`[TASK_CONTEXT] Re-enrichment: ${result.updated} updated, ${result.failed} failed`)
+  if (result.updated === 0) return
+
+  // Notify all workspace members
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: {
+      name: true,
+      workspace: {
+        select: {
+          members: { select: { userId: true } }
+        }
+      }
+    }
+  })
+  if (!company) return
+
+  const { createActionPlanUpdatedAlert } = await import('@/lib/alerts/alert-service')
+  for (const member of company.workspace.members) {
+    await createActionPlanUpdatedAlert(member.userId, company.name, result.updated)
+  }
 }

@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { BRI_CATEGORY_LABELS, type BRICategory } from '@/lib/constants/bri-categories'
 import { hasRichDescription, type RichTaskDescription, type CompanyContextData } from '@/lib/playbook/rich-task-description'
+import { enrichTasksWithContext, triggerTaskReEnrichment } from '@/lib/tasks/enrich-task-context'
+import { detectFinancialDrift } from '@/lib/tasks/detect-financial-drift'
 
 function formatHoursToMinutes(hours: number | null): number | null {
   if (hours === null) return null
@@ -104,6 +106,44 @@ export async function GET(
       orderBy: [{ priorityRank: 'asc' }, { rawImpact: 'desc' }],
     })
 
+    // Lazy retroactive enrichment: fill companyContext for pre-existing unenriched tasks
+    const unenrichedCount = allTasks.filter(t => {
+      if (['COMPLETED', 'CANCELLED', 'NOT_APPLICABLE'].includes(t.status)) return false
+      const rd = t.richDescription as Record<string, unknown> | null
+      return !rd?.companyContext
+    }).length
+
+    if (unenrichedCount > 0) {
+      // Fire-and-forget — next page load will show enriched tasks
+      enrichTasksWithContext(companyId).catch(err => {
+        console.error('[ACTIONS] Lazy enrichment failed:', err)
+      })
+    }
+
+    // Fetch current financials for drift detection (one query)
+    const latestPeriod = await prisma.financialPeriod.findFirst({
+      where: { companyId },
+      orderBy: { endDate: 'desc' },
+      include: { incomeStatement: true },
+    })
+    const currentFinancials = latestPeriod?.incomeStatement ? {
+      revenue: Number(latestPeriod.incomeStatement.grossRevenue),
+      ebitda: Number(latestPeriod.incomeStatement.ebitda),
+      ebitdaMarginPct: Number(latestPeriod.incomeStatement.ebitdaMarginPct) * 100,
+    } : null
+
+    // Build category → tasks map for cross-task context (zero additional DB queries)
+    const tasksByCategory = new Map<string, Array<{ id: string; title: string; normalizedValue: number; status: string }>>()
+    for (const t of allTasks) {
+      if (['COMPLETED', 'CANCELLED', 'NOT_APPLICABLE'].includes(t.status)) continue
+      const arr = tasksByCategory.get(t.briCategory) ?? []
+      arr.push({ id: t.id, title: t.title, normalizedValue: Number(t.normalizedValue), status: t.status })
+      tasksByCategory.set(t.briCategory, arr)
+    }
+
+    // Track whether any task has drift (to trigger re-enrichment)
+    let anyDrift = false
+
     // Fetch pending invites for all tasks
     const taskIds = allTasks.map(t => t.id)
     const pendingInvites = await prisma.taskInvite.findMany({
@@ -181,6 +221,16 @@ export async function GET(
         ? (task.richDescription as RichTaskDescription)
         : null
 
+      const companyContext = extractCompanyContext(task.richDescription)
+      const drift = detectFinancialDrift(companyContext?.financialSnapshot, currentFinancials)
+      if (drift.hasDrift) anyDrift = true
+
+      const relatedTasks = (tasksByCategory.get(task.briCategory) ?? [])
+        .filter(t => t.id !== task.id)
+        .sort((a, b) => b.normalizedValue - a.normalizedValue)
+        .slice(0, 3)
+        .map(t => ({ id: t.id, title: t.title, value: t.normalizedValue, status: t.status }))
+
       return {
         id: task.id,
         title: task.title,
@@ -196,7 +246,9 @@ export async function GET(
         priorityRank: task.priorityRank,
         buyerConsequence: task.buyerConsequence,
         buyerRisk: rd?.buyerRisk ?? null,
-        companyContext: extractCompanyContext(task.richDescription),
+        companyContext,
+        financialDrift: drift,
+        relatedTasks,
         subSteps,
         subStepProgress: {
           completed: completedSteps,
@@ -233,6 +285,16 @@ export async function GET(
           ? (task.richDescription as RichTaskDescription)
           : null
 
+        const companyContext = extractCompanyContext(task.richDescription)
+        const drift = detectFinancialDrift(companyContext?.financialSnapshot, currentFinancials)
+        if (drift.hasDrift) anyDrift = true
+
+        const relatedTasks = (tasksByCategory.get(task.briCategory) ?? [])
+          .filter(t => t.id !== task.id)
+          .sort((a, b) => b.normalizedValue - a.normalizedValue)
+          .slice(0, 3)
+          .map(t => ({ id: t.id, title: t.title, value: t.normalizedValue, status: t.status }))
+
         return {
           id: task.id,
           title: task.title,
@@ -248,7 +310,9 @@ export async function GET(
           priorityRank: task.priorityRank,
           buyerConsequence: task.buyerConsequence,
           buyerRisk: rd?.buyerRisk ?? null,
-          companyContext: extractCompanyContext(task.richDescription),
+          companyContext,
+          financialDrift: drift,
+          relatedTasks,
           subSteps,
           subStepProgress: {
             completed: completedSteps,
@@ -317,6 +381,22 @@ export async function GET(
       deferralReason: task.deferralReason,
     }))
 
+    // If any task has financial drift, trigger re-enrichment (fire-and-forget)
+    if (anyDrift) {
+      triggerTaskReEnrichment(companyId)
+    }
+
+    // Check for most recent unread enrichment alert for this user
+    const enrichmentAlert = await prisma.alert.findFirst({
+      where: {
+        recipientId: currentUserId,
+        type: 'ACTION_PLAN_UPDATED',
+        isRead: false,
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, message: true, createdAt: true },
+    })
+
     return NextResponse.json({
       summary,
       activeTasks: activeTasksFormatted,
@@ -327,6 +407,7 @@ export async function GET(
       blockedTasks: blockedTasks.length,
       hasMoreInQueue: false,
       totalQueueSize: pendingTasks.length + blockedTasks.length,
+      enrichmentAlert: enrichmentAlert ?? null,
     })
   } catch (error) {
     console.error('Error fetching actions data:', error)

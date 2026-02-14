@@ -19,6 +19,11 @@ interface RiskDriver {
   linkedTaskId: string | null
   linkedTaskTitle: string | null
   linkedTaskStatus: string | null
+  financialContext?: {
+    ebitda: number
+    source: string
+    benchmarkMultiple: string | null
+  } | null
 }
 
 interface RiskDriversSectionProps {
@@ -102,6 +107,7 @@ export function RiskDriversSection({
                 isFreeUser={isFreeUser}
                 onUpgrade={onUpgrade}
                 onExpandCategory={onExpandCategory}
+                financialContext={driver.financialContext}
               />
               {index < visibleDrivers.length - 1 && (
                 <div className="border-t border-border" />
