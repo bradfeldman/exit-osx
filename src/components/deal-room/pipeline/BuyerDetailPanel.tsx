@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, ChevronDown } from 'lucide-react'
+import { X, ChevronDown, Archive } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BuyerTypeBadge } from '../shared/BuyerTypeBadge'
 import { TierBadge } from '../shared/TierBadge'
@@ -27,6 +27,7 @@ interface BuyerDetailPanelProps {
 export function BuyerDetailPanel({ buyer, companyId, onClose, onStageChange }: BuyerDetailPanelProps) {
   const [showStageSelect, setShowStageSelect] = useState(false)
   const [isChangingStage, setIsChangingStage] = useState(false)
+  const [isArchiving, setIsArchiving] = useState(false)
   const offerAmount = buyer.loiAmount ?? buyer.ioiAmount
 
   const formatAmount = (amount: number) =>
@@ -249,6 +250,35 @@ export function BuyerDetailPanel({ buyer, companyId, onClose, onStageChange }: B
             >
               {isChangingStage ? 'Updating...' : 'Change Stage'}
               <ChevronDown className="ml-1 h-3 w-3" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-muted-foreground"
+              disabled={isArchiving}
+              onClick={async () => {
+                if (!companyId) return
+                setIsArchiving(true)
+                try {
+                  const res = await fetch(
+                    `/api/companies/${companyId}/deal-room/buyers/${buyer.id}`,
+                    {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ action: 'archive' }),
+                    }
+                  )
+                  if (res.ok) {
+                    onStageChange()
+                    onClose()
+                  }
+                } finally {
+                  setIsArchiving(false)
+                }
+              }}
+            >
+              <Archive className="mr-1 h-3 w-3" />
+              {isArchiving ? 'Archiving...' : 'Archive'}
             </Button>
           </div>
         </div>

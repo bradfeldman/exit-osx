@@ -4,6 +4,8 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useCompany } from '@/contexts/CompanyContext'
+import { useProgression } from '@/contexts/ProgressionContext'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import {
   DropdownMenu,
@@ -22,11 +24,22 @@ interface HeaderProps {
   user: User
 }
 
+function getBriColor(score: number) {
+  if (score >= 80) return { bg: 'bg-emerald-100', text: 'text-emerald-700', ring: 'ring-emerald-200' }
+  if (score >= 60) return { bg: 'bg-blue-100', text: 'text-blue-700', ring: 'ring-blue-200' }
+  if (score >= 40) return { bg: 'bg-amber-100', text: 'text-amber-700', ring: 'ring-amber-200' }
+  return { bg: 'bg-red-100', text: 'text-red-700', ring: 'ring-red-200' }
+}
+
 export function Header({ user }: HeaderProps) {
   const [loading, setLoading] = useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+  const { companies, selectedCompanyId } = useCompany()
+  const { progressionData } = useProgression()
+  const selectedCompany = companies.find(c => c.id === selectedCompanyId)
+  const briScore = progressionData?.briScore ?? null
 
   const handleSignOut = async () => {
     setLoading(true)
@@ -65,7 +78,22 @@ export function Header({ user }: HeaderProps) {
         </div>
 
       <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-        <div className="flex flex-1" />
+        {/* Company name + BRI score (BF-006) */}
+        <div className="hidden lg:flex items-center gap-3 flex-1 min-w-0">
+          {selectedCompany && (
+            <>
+              <span className="text-sm font-semibold text-foreground truncate">
+                {selectedCompany.name}
+              </span>
+              {briScore !== null && briScore !== undefined && (
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ring-1 ${getBriColor(briScore).bg} ${getBriColor(briScore).text} ${getBriColor(briScore).ring}`}>
+                  BRI {Math.round(briScore)}
+                </span>
+              )}
+            </>
+          )}
+        </div>
+        <div className="flex flex-1 lg:hidden" />
 
         {/* User menu */}
         <div className="flex items-center gap-x-4 lg:gap-x-6">

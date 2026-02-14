@@ -20,8 +20,71 @@ export async function PATCH(
     const { auth } = result
 
     const body = await request.json()
-    const { stage } = body
+    const { stage, action } = body
 
+    // Handle archive/restore actions
+    if (action === 'archive' || action === 'restore') {
+      const buyer = await prisma.dealBuyer.findFirst({
+        where: {
+          id: buyerId,
+          deal: { companyId, status: 'ACTIVE' },
+        },
+        include: { deal: true },
+      })
+
+      if (!buyer) {
+        return NextResponse.json({ error: 'Buyer not found' }, { status: 404 })
+      }
+
+      if (action === 'archive') {
+        await prisma.dealBuyer.update({
+          where: { id: buyerId },
+          data: {
+            currentStage: 'WITHDRAWN',
+            exitedAt: new Date(),
+            exitReason: 'Archived',
+            stageUpdatedAt: new Date(),
+          },
+        })
+
+        await prisma.dealActivity2.create({
+          data: {
+            dealId: buyer.dealId,
+            dealBuyerId: buyerId,
+            activityType: 'STAGE_CHANGED',
+            subject: 'Buyer archived',
+            performedByUserId: auth.user.id,
+          },
+        })
+
+        return NextResponse.json({ success: true, stage: 'WITHDRAWN' })
+      }
+
+      // Restore: move back to IDENTIFIED
+      await prisma.dealBuyer.update({
+        where: { id: buyerId },
+        data: {
+          currentStage: 'IDENTIFIED',
+          exitedAt: null,
+          exitReason: null,
+          stageUpdatedAt: new Date(),
+        },
+      })
+
+      await prisma.dealActivity2.create({
+        data: {
+          dealId: buyer.dealId,
+          dealBuyerId: buyerId,
+          activityType: 'STAGE_CHANGED',
+          subject: 'Buyer restored from archive',
+          performedByUserId: auth.user.id,
+        },
+      })
+
+      return NextResponse.json({ success: true, stage: 'IDENTIFIED' })
+    }
+
+    // Handle stage changes
     if (!stage || !VALID_VISUAL_STAGES.includes(stage)) {
       return NextResponse.json(
         { error: 'Invalid stage. Must be one of: ' + VALID_VISUAL_STAGES.join(', ') },

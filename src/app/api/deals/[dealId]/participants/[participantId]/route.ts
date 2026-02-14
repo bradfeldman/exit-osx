@@ -111,6 +111,48 @@ export async function PATCH(
       },
     })
 
+    // BF-014: Auto-add prospect's company to pipeline
+    if (body.category === 'PROSPECT' && participant.canonicalPerson.currentCompany && !participant.dealBuyerId) {
+      const companyId = participant.canonicalPerson.currentCompany.id
+      const existingBuyer = await prisma.dealBuyer.findFirst({
+        where: { dealId, canonicalCompanyId: companyId },
+      })
+
+      if (!existingBuyer) {
+        const newBuyer = await prisma.dealBuyer.create({
+          data: {
+            dealId,
+            canonicalCompanyId: companyId,
+            currentStage: 'IDENTIFIED',
+            createdByUserId: result.auth.user.id,
+          },
+        })
+
+        // Link participant to the new buyer
+        await prisma.dealParticipant.update({
+          where: { id: participantId },
+          data: { dealBuyerId: newBuyer.id },
+        })
+
+        // Log activity
+        await prisma.dealActivity2.create({
+          data: {
+            dealId,
+            dealBuyerId: newBuyer.id,
+            activityType: 'NOTE_ADDED',
+            subject: `${participant.canonicalPerson.currentCompany.name} auto-added to pipeline`,
+            performedByUserId: result.auth.user.id,
+          },
+        })
+      } else if (!participant.dealBuyerId) {
+        // Company already in pipeline, just link the participant
+        await prisma.dealParticipant.update({
+          where: { id: participantId },
+          data: { dealBuyerId: existingBuyer.id },
+        })
+      }
+    }
+
     return NextResponse.json({
       participant: {
         ...participant,

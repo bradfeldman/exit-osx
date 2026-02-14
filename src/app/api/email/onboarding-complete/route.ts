@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { sendOnboardingCompleteEmail } from '@/lib/email/send-onboarding-complete-email'
 import { prisma } from '@/lib/prisma'
+import { generateReportToken } from '@/lib/report-token'
 
 export async function POST(request: Request) {
   try {
@@ -33,17 +34,22 @@ export async function POST(request: Request) {
       ? topRisks[0]
       : { category: 'OPERATIONAL', label: 'Operations', score: 50 }
 
+    // Generate shareable report token (BF-025)
+    const reportToken = generateReportToken(companyId)
+
     // Send the email
     const result = await sendOnboardingCompleteEmail({
       email: user.email!,
       name: user.user_metadata?.full_name as string | undefined,
       companyName: company.name,
+      companyId,
       currentValue: currentValue || 0,
       potentialValue: potentialValue || 0,
       valueGap: valueGap || 0,
       briScore: briScore || 0,
       topRisk,
       topTask: topTask || null,
+      reportToken,
     })
 
     if (!result.success) {

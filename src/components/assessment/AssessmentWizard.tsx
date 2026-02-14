@@ -396,6 +396,57 @@ export function AssessmentWizard({ companyId, companyName, title: _title = 'Buye
     }
   }
 
+  // Mark question as "I don't know" — doesn't block progress (BF-005)
+  const markAsDontKnow = async () => {
+    if (!assessmentId || !currentQuestion || saving) return
+
+    const timeToAnswer = questionStartTime.current > 0
+      ? Date.now() - questionStartTime.current
+      : 0
+
+    setSaving(true)
+
+    try {
+      const res = await fetch(`/api/assessments/${assessmentId}/responses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionId: currentQuestion.id,
+          selectedOptionId: null,
+          confidenceLevel: 'UNCERTAIN',
+        }),
+      })
+
+      if (!res.ok) throw new Error('Failed to save response')
+
+      const newResponses = new Map(responses)
+      newResponses.set(currentQuestion.id, {
+        questionId: currentQuestion.id,
+        selectedOptionId: '',
+        confidenceLevel: 'UNCERTAIN',
+      })
+      setResponses(newResponses)
+
+      analytics.track('question_skipped', {
+        assessmentId,
+        questionId: currentQuestion.id,
+        questionNumber: currentQuestionIndex + 1,
+        category: currentQuestion.briCategory,
+        skipReason: 'dont_know',
+        timeToSkip: timeToAnswer,
+      })
+
+      setTimeout(() => {
+        advanceToNext()
+      }, 500)
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const getSkippedQuestions = () => {
     return orderedQuestions.filter(q => !responses.has(q.id))
   }
@@ -744,7 +795,8 @@ export function AssessmentWizard({ companyId, companyName, title: _title = 'Buye
 
   const allAnswered = responses.size >= orderedQuestions.length
   const currentResponse = currentQuestion ? responses.get(currentQuestion.id) : null
-  const isCurrentUncertain = currentResponse?.confidenceLevel === 'UNCERTAIN'
+  const isCurrentUncertain = currentResponse?.confidenceLevel === 'UNCERTAIN' && !!currentResponse?.selectedOptionId
+  const isCurrentDontKnow = currentResponse?.confidenceLevel === 'UNCERTAIN' && !currentResponse?.selectedOptionId
   const isCurrentNotApplicable = currentResponse?.confidenceLevel === 'NOT_APPLICABLE'
 
   return (
@@ -982,38 +1034,74 @@ export function AssessmentWizard({ companyId, companyName, title: _title = 'Buye
                   )
                 })}
 
-              {/* "Doesn't apply" option - always visible */}
-              <AnimatePresence mode="wait">
-                {isCurrentNotApplicable ? (
-                  <motion.div
-                    key="na-state"
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="flex items-center justify-center gap-2 py-3 text-sm text-slate-500 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-200 dark:border-slate-800"
-                  >
-                    <MinusCircle className="w-4 h-4" />
-                    Marked as not applicable to your business
-                  </motion.div>
-                ) : (
-                  <motion.button
-                    key="na-button"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={markAsNotApplicable}
-                    disabled={saving}
-                    className="w-full flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <MinusCircle className="w-3.5 h-3.5" />
-                    This doesn&apos;t apply to my business
-                  </motion.button>
-                )}
-              </AnimatePresence>
+              {/* Skip options: "I don't know" and "Doesn't apply" (BF-005) */}
+              <div className="flex items-center justify-center gap-4 pt-1">
+                {/* "I don't know" - skip without blocking progress */}
+                <AnimatePresence mode="wait">
+                  {isCurrentDontKnow ? (
+                    <motion.div
+                      key="dk-state"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400"
+                    >
+                      <HelpCircle className="w-3.5 h-3.5" />
+                      Marked as &quot;I don&apos;t know&quot; &mdash; you can revisit later
+                    </motion.div>
+                  ) : (
+                    <motion.button
+                      key="dk-button"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onClick={markAsDontKnow}
+                      disabled={saving}
+                      className="flex items-center gap-1.5 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <HelpCircle className="w-3.5 h-3.5" />
+                      I don&apos;t know
+                    </motion.button>
+                  )}
+                </AnimatePresence>
 
-              {/* Subtle "Not sure" option - appears after answering (but not for N/A) */}
+                {!isCurrentDontKnow && !isCurrentNotApplicable && (
+                  <span className="text-muted-foreground/30">|</span>
+                )}
+
+                {/* "Doesn't apply" */}
+                <AnimatePresence mode="wait">
+                  {isCurrentNotApplicable ? (
+                    <motion.div
+                      key="na-state"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-center gap-1.5 text-xs text-slate-500"
+                    >
+                      <MinusCircle className="w-3.5 h-3.5" />
+                      Marked as not applicable
+                    </motion.div>
+                  ) : (
+                    <motion.button
+                      key="na-button"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onClick={markAsNotApplicable}
+                      disabled={saving}
+                      className="flex items-center gap-1.5 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <MinusCircle className="w-3.5 h-3.5" />
+                      Doesn&apos;t apply
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* "Not sure" flag - appears after answering (not for N/A or Don't Know) */}
               <AnimatePresence>
-                {currentResponse && !isCurrentUncertain && !isCurrentNotApplicable && currentResponse.selectedOptionId && (
+                {currentResponse && !isCurrentUncertain && !isCurrentDontKnow && !isCurrentNotApplicable && currentResponse.selectedOptionId && (
                   <motion.button
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}

@@ -334,7 +334,7 @@ export interface QuestionSkippedParams extends BaseEventParams {
   questionId: string
   questionNumber: number
   category: string
-  skipReason?: 'not_applicable' | 'uncertain' | 'skipped'
+  skipReason?: 'not_applicable' | 'uncertain' | 'skipped' | 'dont_know'
   timeToSkip?: number  // ms
 }
 

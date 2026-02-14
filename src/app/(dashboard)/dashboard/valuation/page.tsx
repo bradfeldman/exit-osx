@@ -71,6 +71,7 @@ export default function ValuationPage() {
   const [originalAssumptions, setOriginalAssumptions] = useState<DCFAssumptions | null>(null)
   const [useDCFValue, setUseDCFValue] = useState(false) // Toggle to use DCF value for scorecard/PFS/loans
   const [workingCapital, setWorkingCapital] = useState<{ t12: number | null; lastFY: number | null; threeYearAvg: number | null } | null>(null)
+  const [fcfIsEstimated, setFcfIsEstimated] = useState(false)
   const [originalUseDCFValue, setOriginalUseDCFValue] = useState(false)
 
   // Analytics tracking
@@ -152,6 +153,10 @@ export default function ValuationPage() {
         if (data.financials) {
           if (data.financials.freeCashFlow) {
             setBaseFCF(Number(data.financials.freeCashFlow))
+            setFcfIsEstimated(false)
+          } else if (data.financials.estimatedFCF) {
+            setBaseFCF(Number(data.financials.estimatedFCF))
+            setFcfIsEstimated(true)
           }
           if (data.financials.ebitda) {
             setEbitda(Number(data.financials.ebitda))
@@ -477,6 +482,7 @@ export default function ValuationPage() {
             growthRates={assumptions.growthAssumptions}
             onGrowthRateChange={handleGrowthRateChange}
             onBaseFCFChange={setBaseFCF}
+            fcfIsEstimated={fcfIsEstimated}
           />
 
           <TerminalValuePanel
@@ -504,6 +510,7 @@ export default function ValuationPage() {
             wacc={calculatedWACC}
             netDebt={netDebt}
             isLoading={false}
+            workingCapital={workingCapital}
           />
 
           {/* Use DCF Value Toggle */}

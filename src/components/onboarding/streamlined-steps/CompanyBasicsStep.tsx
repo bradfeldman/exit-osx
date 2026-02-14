@@ -62,7 +62,7 @@ export function CompanyBasicsStep({
     setIndustryRecommendation(null)
 
     try {
-      const response = await fetch('/api/industries/match', {
+      const response = await fetch('/api/industries/classify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ description: businessDescription.trim() }),
@@ -73,15 +73,15 @@ export function CompanyBasicsStep({
       }
 
       const data = await response.json()
-      const match = data.match
+      const primary = data.primaryIndustry
 
       setIndustryRecommendation({
-        icbIndustry: match.icbIndustry,
-        icbSuperSector: match.icbSuperSector,
-        icbSector: match.icbSector,
-        icbSubSector: match.icbSubSector,
-        subSectorLabel: match.subSectorLabel,
-        reasoning: match.reasoning,
+        icbIndustry: primary.icbIndustry,
+        icbSuperSector: primary.icbSuperSector,
+        icbSector: primary.icbSector,
+        icbSubSector: primary.icbSubSector,
+        subSectorLabel: primary.name,
+        reasoning: data.explanation,
       })
     } catch (err) {
       console.error('[ONBOARDING] Industry classification error:', err)

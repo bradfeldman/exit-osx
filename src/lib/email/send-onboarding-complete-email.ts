@@ -6,6 +6,7 @@ interface OnboardingCompleteEmailParams {
   email: string
   name?: string
   companyName: string
+  companyId: string
   currentValue: number
   potentialValue: number
   valueGap: number
@@ -20,6 +21,7 @@ interface OnboardingCompleteEmailParams {
     category: string
     estimatedValue: number
   } | null
+  reportToken: string
 }
 
 function formatCurrency(value: number): string {
@@ -37,7 +39,7 @@ function formatCurrency(value: number): string {
  * This delivers immediate value and gives them ONE clear action.
  */
 export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmailParams): Promise<{ success: boolean; error?: string }> {
-  const { email, name, companyName, currentValue, potentialValue, valueGap, briScore, topRisk, topTask } = params
+  const { email, name, companyName, currentValue, potentialValue, valueGap, briScore, topRisk, topTask, reportToken } = params
 
   if (!resend) {
     console.warn('[Email] Resend not configured, skipping onboarding complete email')
@@ -235,6 +237,24 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
             </td>
           </tr>
           `}
+
+          <!-- View Full Report CTA -->
+          <tr>
+            <td style="padding: 24px 40px; text-align: center; border-top: 1px solid #f0f0f0;">
+              <p style="margin: 0 0 16px 0; font-size: 14px; color: #666666;">
+                Want to share this with your advisor or partner?
+              </p>
+              <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
+                <tr>
+                  <td style="border-radius: 8px; border: 2px solid #B87333;">
+                    <a href="${baseUrl}/report/${reportToken}" target="_blank" style="display: inline-block; padding: 12px 32px; font-size: 14px; font-weight: 600; color: #B87333; text-decoration: none; border-radius: 8px;">
+                      View &amp; Share Full Report
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
           <!-- Social Proof -->
           <tr>

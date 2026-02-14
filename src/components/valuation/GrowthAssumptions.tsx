@@ -21,6 +21,7 @@ interface GrowthAssumptionsProps {
   growthRates: Record<string, number>
   onGrowthRateChange: (year: string, value: number) => void
   onBaseFCFChange: (value: number) => void
+  fcfIsEstimated?: boolean
 }
 
 const YEARS = ['year1', 'year2', 'year3', 'year4', 'year5']
@@ -45,6 +46,7 @@ export function GrowthAssumptions({
   growthRates,
   onGrowthRateChange,
   onBaseFCFChange,
+  fcfIsEstimated,
 }: GrowthAssumptionsProps) {
   // Calculate projected FCF for chart
   const projectedData = YEARS.reduce(
@@ -100,6 +102,11 @@ export function GrowthAssumptions({
               className="flex-1"
             />
           </div>
+          {fcfIsEstimated && (
+            <p className="text-xs text-amber-600 mt-1">
+              Estimated from EBITDA × 70%. Edit to refine based on actual cash flows.
+            </p>
+          )}
         </div>
 
         {/* Growth Rate Inputs */}

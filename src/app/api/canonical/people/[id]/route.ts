@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
-import { normalizePersonName } from '@/lib/contact-system/identity-resolution'
+import { normalizePersonName, normalizeCompanyName } from '@/lib/contact-system/identity-resolution'
 
 /**
  * GET /api/canonical/people/[id]
@@ -150,6 +150,7 @@ export async function PUT(
       linkedInUrl,
       currentTitle,
       currentCompanyId,
+      companyName,
       dataQuality,
     } = body
 
@@ -182,7 +183,29 @@ export async function PUT(
     if (phone !== undefined) updateData.phone = phone?.trim() || null
     if (linkedInUrl !== undefined) updateData.linkedInUrl = linkedInUrl?.trim() || null
     if (currentTitle !== undefined) updateData.currentTitle = currentTitle?.trim() || null
-    if (currentCompanyId !== undefined) updateData.currentCompanyId = currentCompanyId || null
+    if (currentCompanyId !== undefined) {
+      updateData.currentCompanyId = currentCompanyId || null
+    } else if (companyName !== undefined) {
+      // Find or create canonical company by name
+      if (companyName && companyName.trim()) {
+        const normalized = normalizeCompanyName(companyName.trim())
+        let company = await prisma.canonicalCompany.findFirst({
+          where: { normalizedName: normalized, mergedIntoId: null },
+        })
+        if (!company) {
+          company = await prisma.canonicalCompany.create({
+            data: {
+              name: companyName.trim(),
+              normalizedName: normalized,
+              dataQuality: 'ENRICHED',
+            },
+          })
+        }
+        updateData.currentCompanyId = company.id
+      } else {
+        updateData.currentCompanyId = null
+      }
+    }
     if (dataQuality !== undefined) {
       updateData.dataQuality = dataQuality
       if (dataQuality === 'VERIFIED') {

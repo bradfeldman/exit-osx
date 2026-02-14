@@ -231,8 +231,10 @@ export function DealRoomPage() {
         <PipelineView
           pipeline={data.pipeline}
           offers={data.offers}
+          companyId={selectedCompanyId}
           onBuyerClick={handleBuyerClick}
           onStageChange={handleStageChange}
+          onRefresh={fetchData}
           onAddBuyer={handleAddBuyer}
           isAddingBuyer={isAddingBuyer}
         />

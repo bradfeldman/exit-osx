@@ -9,9 +9,10 @@ interface ValuationResultsProps {
   wacc: number
   netDebt: number
   isLoading?: boolean
+  workingCapital?: { t12: number | null; lastFY: number | null; threeYearAvg: number | null } | null
 }
 
-export function ValuationResults({ results, wacc, netDebt, isLoading }: ValuationResultsProps) {
+export function ValuationResults({ results, wacc, netDebt, isLoading, workingCapital }: ValuationResultsProps) {
   if (isLoading) {
     return (
       <Card>
@@ -140,6 +141,14 @@ export function ValuationResults({ results, wacc, netDebt, isLoading }: Valuatio
                 ({formatCurrency(Math.abs(netDebt))})
               </span>
             </div>
+            {workingCapital && workingCapital.t12 !== null && (
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-600">Net Working Capital (T12)</span>
+                <span className="text-sm font-medium">
+                  {formatCurrency(workingCapital.t12)}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between items-center py-3 bg-green-50 rounded-lg px-3">
               <span className="text-sm font-semibold text-gray-900">Equity Value</span>
               <span className="text-lg font-bold text-green-700">
@@ -164,6 +173,34 @@ export function ValuationResults({ results, wacc, netDebt, isLoading }: Valuatio
             </div>
           )}
         </div>
+
+        {/* Working Capital Detail */}
+        {workingCapital && (workingCapital.t12 !== null || workingCapital.lastFY !== null || workingCapital.threeYearAvg !== null) && (
+          <div className="p-3 bg-gray-50 rounded-lg space-y-1.5">
+            <p className="text-xs font-medium text-gray-700">Net Working Capital</p>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              {workingCapital.t12 !== null && (
+                <div>
+                  <p className="text-xs text-gray-500">T12</p>
+                  <p className="text-sm font-semibold">{formatCurrency(workingCapital.t12)}</p>
+                </div>
+              )}
+              {workingCapital.lastFY !== null && (
+                <div>
+                  <p className="text-xs text-gray-500">Last FY</p>
+                  <p className="text-sm font-semibold">{formatCurrency(workingCapital.lastFY)}</p>
+                </div>
+              )}
+              {workingCapital.threeYearAvg !== null && (
+                <div>
+                  <p className="text-xs text-gray-500">3yr Avg</p>
+                  <p className="text-sm font-semibold">{formatCurrency(workingCapital.threeYearAvg)}</p>
+                </div>
+              )}
+            </div>
+            <p className="text-[10px] text-gray-400">AR + Inventory − AP. Typically used as the working capital peg in deal negotiations.</p>
+          </div>
+        )}
 
         {/* Terminal Value Breakdown - DCF-001 FIX: Color-coded by reasonableness */}
         {(() => {

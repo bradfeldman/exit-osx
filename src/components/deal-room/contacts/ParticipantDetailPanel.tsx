@@ -37,6 +37,7 @@ export function ParticipantDetailPanel({
     email: participant.canonicalPerson.email ?? '',
     phone: participant.canonicalPerson.phone ?? '',
     currentTitle: participant.canonicalPerson.currentTitle ?? '',
+    companyName: participant.canonicalPerson.currentCompany?.name ?? '',
     linkedInUrl: participant.canonicalPerson.linkedInUrl ?? '',
   })
   const { updateParticipant, removeParticipant } = useDealParticipants(dealId)
@@ -124,6 +125,7 @@ export function ParticipantDetailPanel({
           email: editFields.email.trim() || null,
           phone: editFields.phone.trim() || null,
           currentTitle: editFields.currentTitle.trim() || null,
+          companyName: editFields.companyName.trim() || null,
           linkedInUrl: editFields.linkedInUrl.trim() || null,
         }),
       })
@@ -213,6 +215,7 @@ export function ParticipantDetailPanel({
                         email: canonicalPerson.email ?? '',
                         phone: canonicalPerson.phone ?? '',
                         currentTitle: canonicalPerson.currentTitle ?? '',
+                        companyName: canonicalPerson.currentCompany?.name ?? '',
                         linkedInUrl: canonicalPerson.linkedInUrl ?? '',
                       })
                     }}
@@ -258,6 +261,15 @@ export function ParticipantDetailPanel({
                     value={editFields.currentTitle}
                     onChange={e => setEditFields(f => ({ ...f, currentTitle: e.target.value }))}
                     placeholder="e.g. Managing Director"
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground">Company</label>
+                  <Input
+                    value={editFields.companyName}
+                    onChange={e => setEditFields(f => ({ ...f, companyName: e.target.value }))}
+                    placeholder="e.g. Acme Corp"
                     className="h-8 text-sm"
                   />
                 </div>

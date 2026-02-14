@@ -35,6 +35,11 @@ export function MissingDocumentsSection({ documents, totalMissing, onUploadSucce
         <div className="flex-1 h-px bg-border/50" />
       </div>
 
+      {/* Contextual guidance (BF-009) */}
+      <p className="mt-3 text-xs text-muted-foreground">
+        These are the documents a buyer would request first. Each one includes an explanation of why it matters to a buyer and what you should provide.
+      </p>
+
       {/* Missing items */}
       <div className="mt-4 space-y-4">
         {visible.map(doc => (

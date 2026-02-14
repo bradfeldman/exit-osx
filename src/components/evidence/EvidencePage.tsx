@@ -117,6 +117,7 @@ export function EvidencePage() {
   if (error || !data) return <EvidenceError onRetry={fetchData} />
 
   const isEmpty = data.score.documentsUploaded === 0
+  const showGuidance = data.score.percentage < 50
 
   return (
     <div className="max-w-[900px] mx-auto px-6 py-8">
@@ -129,6 +130,36 @@ export function EvidencePage() {
             lastUploadAt={data.score.lastUploadAt}
           />
         </AnimatedItem>
+
+        {/* Contextual guidance (BF-009) — shows when evidence is low */}
+        {showGuidance && (
+          <AnimatedItem>
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
+              <h3 className="text-sm font-semibold text-foreground mb-2">
+                Why build your evidence?
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-muted-foreground">
+                <div>
+                  <p className="font-medium text-foreground mb-0.5">Higher Valuation</p>
+                  <p className="text-xs">Well-documented businesses sell for 20-30% more. Buyers pay a premium for transparency.</p>
+                </div>
+                <div>
+                  <p className="font-medium text-foreground mb-0.5">Faster Deal Close</p>
+                  <p className="text-xs">Pre-organized evidence can cut due diligence time in half, keeping deal momentum alive.</p>
+                </div>
+                <div>
+                  <p className="font-medium text-foreground mb-0.5">Fewer Deal Killers</p>
+                  <p className="text-xs">Missing documents are the #1 reason deals fall through. Get ahead of it now.</p>
+                </div>
+              </div>
+              {isEmpty && (
+                <p className="text-xs text-muted-foreground mt-4 border-t border-primary/10 pt-3">
+                  Start with <span className="font-medium text-foreground">Financial</span> documents (tax returns, P&amp;L) &mdash; buyers request these in every deal. Then work through each category below.
+                </p>
+              )}
+            </div>
+          </AnimatedItem>
+        )}
 
         {isEmpty ? (
           <AnimatedItem>

@@ -50,8 +50,10 @@ interface PipelineViewProps {
     exitedBuyersSummary: ExitedBuyer[]
   }
   offers: Offer[]
+  companyId?: string | null
   onBuyerClick: (buyerId: string) => void
   onStageChange: (buyerId: string, newVisualStage: string) => Promise<void>
+  onRefresh?: () => void
   onAddBuyer: (data: {
     companyName: string
     buyerType: string
@@ -65,8 +67,10 @@ interface PipelineViewProps {
 export function PipelineView({
   pipeline,
   offers,
+  companyId,
   onBuyerClick,
   onStageChange,
+  onRefresh,
   onAddBuyer,
   isAddingBuyer,
 }: PipelineViewProps) {
@@ -170,7 +174,11 @@ export function PipelineView({
       )}
 
       {/* Exited Buyers */}
-      <ExitedBuyersSection buyers={pipeline.exitedBuyersSummary} />
+      <ExitedBuyersSection
+        buyers={pipeline.exitedBuyersSummary}
+        companyId={companyId}
+        onRestore={onRefresh}
+      />
 
       {/* Add Buyer */}
       <AddBuyerForm onAdd={onAddBuyer} isAdding={isAddingBuyer} />

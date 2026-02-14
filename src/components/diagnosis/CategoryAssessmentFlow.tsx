@@ -223,6 +223,44 @@ export function CategoryAssessmentFlow({
     }
   }
 
+  // Mark as "I don't know" — skip without blocking (BF-005)
+  const markAsDontKnow = async () => {
+    if (!currentQuestion || saving) return
+
+    setSaving(true)
+
+    try {
+      const res = await fetch(`/api/assessments/${assessmentId}/responses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionId: currentQuestion.id,
+          selectedOptionId: null,
+          confidenceLevel: 'UNCERTAIN',
+        }),
+      })
+
+      if (!res.ok) throw new Error('Failed to save response')
+
+      const newResponses = new Map(responses)
+      newResponses.set(currentQuestion.id, {
+        questionId: currentQuestion.id,
+        selectedOptionId: '',
+        confidenceLevel: 'UNCERTAIN',
+      })
+      setResponses(newResponses)
+
+      setTimeout(() => {
+        advanceToNext()
+      }, 400)
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   // Handle completion - recalculate BRI
   const handleDone = async () => {
     setSaving(true)
@@ -283,7 +321,8 @@ export function CategoryAssessmentFlow({
   }
 
   const currentResponse = currentQuestion ? responses.get(currentQuestion.id) : null
-  const isCurrentUncertain = currentResponse?.confidenceLevel === 'UNCERTAIN'
+  const isCurrentUncertain = currentResponse?.confidenceLevel === 'UNCERTAIN' && !!currentResponse?.selectedOptionId
+  const isCurrentDontKnow = currentResponse?.confidenceLevel === 'UNCERTAIN' && !currentResponse?.selectedOptionId
   const isCurrentNotApplicable = currentResponse?.confidenceLevel === 'NOT_APPLICABLE'
 
   return (
@@ -419,25 +458,47 @@ export function CategoryAssessmentFlow({
                   )
                 })}
 
-              {/* Not applicable option */}
-              {isCurrentNotApplicable ? (
-                <div className="flex items-center justify-center gap-2 py-2 text-xs text-slate-500 bg-slate-50 dark:bg-slate-900/30 rounded-lg">
-                  <MinusCircle className="w-3.5 h-3.5" />
-                  Marked as not applicable
-                </div>
-              ) : (
-                <button
-                  onClick={markAsNotApplicable}
-                  disabled={saving}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <MinusCircle className="w-3 h-3" />
-                  Doesn&apos;t apply to my business
-                </button>
-              )}
+              {/* Skip options: "I don't know" and "Doesn't apply" (BF-005) */}
+              <div className="flex items-center justify-center gap-4 pt-1">
+                {isCurrentDontKnow ? (
+                  <span className="flex items-center gap-1.5 text-xs text-amber-600">
+                    <HelpCircle className="w-3 h-3" />
+                    Marked as &quot;I don&apos;t know&quot;
+                  </span>
+                ) : (
+                  <button
+                    onClick={markAsDontKnow}
+                    disabled={saving}
+                    className="flex items-center gap-1.5 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <HelpCircle className="w-3 h-3" />
+                    I don&apos;t know
+                  </button>
+                )}
 
-              {/* Uncertain option */}
-              {currentResponse && !isCurrentUncertain && !isCurrentNotApplicable && currentResponse.selectedOptionId && (
+                {!isCurrentDontKnow && !isCurrentNotApplicable && (
+                  <span className="text-muted-foreground/30">|</span>
+                )}
+
+                {isCurrentNotApplicable ? (
+                  <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                    <MinusCircle className="w-3 h-3" />
+                    Not applicable
+                  </span>
+                ) : (
+                  <button
+                    onClick={markAsNotApplicable}
+                    disabled={saving}
+                    className="flex items-center gap-1.5 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <MinusCircle className="w-3 h-3" />
+                    Doesn&apos;t apply
+                  </button>
+                )}
+              </div>
+
+              {/* Uncertain flag - after answering (not for N/A or Don't Know) */}
+              {currentResponse && !isCurrentUncertain && !isCurrentDontKnow && !isCurrentNotApplicable && currentResponse.selectedOptionId && (
                 <button
                   onClick={markAsUncertain}
                   disabled={saving}

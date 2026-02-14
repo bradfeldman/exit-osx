@@ -309,88 +309,93 @@ export function GDPRSettings() {
         </CardContent>
       </Card>
 
-      {/* Account Deletion */}
-      <Card className="border-destructive/50">
+      {/* Account Deletion — Danger Zone (BF-027) */}
+      <Card className="border-red-200 bg-red-50/30">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-destructive">
-            <Trash2 className="h-5 w-5" aria-hidden="true" />
-            Delete Account
-          </CardTitle>
-          <CardDescription>
-            Permanently delete your entire account, including your company, all team members, financial data, assessments, and uploaded documents. This cannot be undone.
+          <CardTitle className="text-red-700">Danger Zone</CardTitle>
+          <CardDescription className="text-red-600">
+            Irreversible and destructive actions
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {deletionRequest ? (
-            <div className="space-y-4">
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" aria-hidden="true" />
-                  <div>
-                    <h4 className="font-medium text-amber-800">Deletion Scheduled</h4>
-                    <p className="text-sm text-amber-700 mt-1">
-                      Your account is scheduled for deletion on{' '}
-                      <strong>{formatDate(deletionRequest.scheduledFor)}</strong>.
-                      {!deletionRequest.confirmedAt && ' Please confirm to proceed.'}
-                    </p>
+        <CardContent>
+          <div className="rounded-md border border-red-200 bg-white p-4 space-y-4">
+            <div>
+              <h3 className="font-medium text-gray-900">Delete your account</h3>
+              <p className="text-sm text-gray-600 mt-1">
+                Permanently delete your entire account, including your company, all team members, financial data, assessments, and uploaded documents. You will have a 30-day grace period to cancel.
+              </p>
+            </div>
+
+            {deletionRequest ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" aria-hidden="true" />
+                    <div>
+                      <h4 className="font-medium text-amber-800">Deletion Scheduled</h4>
+                      <p className="text-sm text-amber-700 mt-1">
+                        Your account is scheduled for deletion on{' '}
+                        <strong>{formatDate(deletionRequest.scheduledFor)}</strong>.
+                        {!deletionRequest.confirmedAt && ' Please confirm to proceed.'}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex gap-3">
-                {!deletionRequest.confirmedAt && (
+                <div className="flex gap-3">
+                  {!deletionRequest.confirmedAt && (
+                    <Button
+                      variant="destructive"
+                      onClick={handleConfirmDeletion}
+                      disabled={actionLoading === 'confirm'}
+                    >
+                      {actionLoading === 'confirm' ? 'Confirming...' : 'Confirm Deletion'}
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    onClick={handleCancelDeletion}
+                    disabled={actionLoading === 'cancel'}
+                  >
+                    {actionLoading === 'cancel' ? 'Cancelling...' : 'Cancel Request'}
+                  </Button>
+                </div>
+              </div>
+            ) : showDeleteConfirm ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <h4 className="font-medium text-red-800">Are you sure?</h4>
+                  <p className="text-sm text-red-700 mt-1">
+                    This will permanently delete your account, company, all team members, financial data, assessments, tasks, evidence documents, and deal room. This action cannot be undone.
+                  </p>
+                </div>
+                <div className="flex gap-3">
                   <Button
                     variant="destructive"
-                    onClick={handleConfirmDeletion}
-                    disabled={actionLoading === 'confirm'}
+                    onClick={handleRequestDeletion}
+                    disabled={actionLoading === 'delete'}
                   >
-                    {actionLoading === 'confirm' ? 'Confirming...' : 'Confirm Deletion'}
+                    {actionLoading === 'delete' ? 'Processing...' : 'Yes, Delete My Account'}
                   </Button>
-                )}
-                <Button
-                  variant="outline"
-                  onClick={handleCancelDeletion}
-                  disabled={actionLoading === 'cancel'}
-                >
-                  {actionLoading === 'cancel' ? 'Cancelling...' : 'Cancel Request'}
-                </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDeleteConfirm(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
               </div>
-            </div>
-          ) : showDeleteConfirm ? (
-            <div className="space-y-4">
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                <h4 className="font-medium text-red-800">Are you sure?</h4>
-                <p className="text-sm text-red-700 mt-1">
-                  This will permanently delete your account, company, all team members, financial data, assessments, tasks, evidence documents, and deal room. This action cannot be undone.
-                  You will have a 30-day grace period to cancel.
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <Button
-                  variant="destructive"
-                  onClick={handleRequestDeletion}
-                  disabled={actionLoading === 'delete'}
-                >
-                  {actionLoading === 'delete' ? 'Processing...' : 'Yes, Delete My Account'}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowDeleteConfirm(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <Button
-              variant="destructive"
-              onClick={() => setShowDeleteConfirm(true)}
-              className="gap-2"
-            >
-              <Trash2 className="h-4 w-4" aria-hidden="true" />
-              Delete My Account
-            </Button>
-          )}
+            ) : (
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="gap-2"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+                Delete My Account
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
 

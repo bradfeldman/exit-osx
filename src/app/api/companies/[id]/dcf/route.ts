@@ -30,14 +30,23 @@ export async function GET(
     // Use latest period (T12 if available, otherwise latest FY) for financials
     const latestPeriod = periods[0] || null
 
+    const actualFCF = latestPeriod?.cashFlowStatement?.freeCashFlow
+      ? Number(latestPeriod.cashFlowStatement.freeCashFlow)
+      : null
+    const ebitda = latestPeriod?.incomeStatement?.ebitda
+      ? Number(latestPeriod.incomeStatement.ebitda)
+      : null
+
+    // If no actual FCF but we have EBITDA, estimate FCF using a 70% conversion ratio
+    // FCF ≈ EBITDA × 0.70 (accounts for taxes, capex, and WC changes typical of SMBs)
+    const estimatedFCF = !actualFCF && ebitda ? Math.round(ebitda * 0.70) : null
+
     const financials = latestPeriod
       ? {
-          freeCashFlow: latestPeriod.cashFlowStatement?.freeCashFlow
-            ? Number(latestPeriod.cashFlowStatement.freeCashFlow)
-            : null,
-          ebitda: latestPeriod.incomeStatement?.ebitda
-            ? Number(latestPeriod.incomeStatement.ebitda)
-            : null,
+          freeCashFlow: actualFCF,
+          estimatedFCF,
+          fcfIsEstimated: !actualFCF && !!estimatedFCF,
+          ebitda,
           netDebt: latestPeriod.balanceSheet
             ? Number(latestPeriod.balanceSheet.longTermDebt) +
               Number(latestPeriod.balanceSheet.currentPortionLtd) -

@@ -122,10 +122,35 @@ export function ActivityFeed({ companyId }: ActivityFeedProps) {
       </div>
 
       {/* Activity Groups */}
+      {/* Empty state with value explanation (BF-012) */}
       {activities.length === 0 && !isLoading && (
-        <p className="text-sm text-muted-foreground text-center py-8">
-          No activity yet. Add buyers and start the process.
-        </p>
+        <div className="text-center py-10 space-y-4">
+          <div className="w-12 h-12 mx-auto rounded-full bg-muted flex items-center justify-center">
+            <svg className="w-6 h-6 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">Your deal activity will appear here</h3>
+            <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+              Once you share documents with prospective buyers, you&apos;ll see exactly who is viewing what and when &mdash; giving you real-time insight into buyer interest levels.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-3 max-w-md mx-auto pt-2">
+            <div className="text-center">
+              <p className="text-xs font-medium text-foreground">Document Views</p>
+              <p className="text-xs text-muted-foreground">Track what buyers read</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs font-medium text-foreground">Stage Changes</p>
+              <p className="text-xs text-muted-foreground">See deal momentum</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs font-medium text-foreground">Engagement Signals</p>
+              <p className="text-xs text-muted-foreground">Gauge buyer interest</p>
+            </div>
+          </div>
+        </div>
       )}
 
       {Array.from(grouped.entries()).map(([dateLabel, items]) => (

@@ -50,10 +50,8 @@ const capitalLinks: NavLink[] = [
 export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const { companies, selectedCompanyId, isLoading, isSelectedCompanySubscribingOwner } = useCompany()
+  const { companies, isLoading } = useCompany()
   const { progressionData } = useProgression()
-
-  const selectedCompany = companies.find(c => c.id === selectedCompanyId)
 
   // Helper to render a nav link (all items unlocked, no gating)
   const renderNavLink = (link: NavLink) => {
@@ -128,9 +126,9 @@ export function Sidebar() {
           </svg>
         </a>
 
-        {/* Company Selector */}
-        <div className="-mt-2 mb-2">
-          {!isLoading && companies.length === 0 && (
+        {/* Add Company button (company name moved to Header - BF-006) */}
+        {!isLoading && companies.length === 0 && (
+          <div className="-mt-2 mb-2">
             <button
               onClick={() => router.push('/dashboard/company/setup')}
               className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-sidebar-primary hover:bg-sidebar-accent transition-colors"
@@ -140,18 +138,8 @@ export function Sidebar() {
               </svg>
               Add Company
             </button>
-          )}
-          {!isLoading && companies.length > 0 && selectedCompany && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-sidebar-accent/50 border border-sidebar-border rounded-md text-sidebar-foreground">
-              {isSelectedCompanySubscribingOwner ? (
-                <CrownIcon className="h-4 w-4 shrink-0 text-amber-500" />
-              ) : (
-                <BuildingIcon className="h-4 w-4 shrink-0 text-sidebar-foreground/60" />
-              )}
-              <span className="truncate font-medium">{selectedCompany.name}</span>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Navigation */}
         <nav className="flex flex-1 flex-col">
@@ -249,14 +237,6 @@ function FinancialsIcon({ className }: { className?: string }) {
   )
 }
 
-function BuildingIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
-    </svg>
-  )
-}
-
 function CalculatorIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -277,14 +257,6 @@ function BankIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" />
-    </svg>
-  )
-}
-
-function CrownIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l2.5 5 5.5.75-4 4 1 5.75-5-2.75-5 2.75 1-5.75-4-4L9.5 8 12 3z" />
     </svg>
   )
 }
