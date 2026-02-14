@@ -10,6 +10,20 @@ export interface SubTask {
   items: string[]
 }
 
+export interface CompanyContextData {
+  yourSituation: { metric: string; value: string; source: string }
+  industryBenchmark: { range: string; source: string } | null
+  financialImpact: {
+    gapDescription: string
+    dollarImpact: string
+    enterpriseValueImpact: string
+    calculation: string
+  } | null
+  contextNote: string
+  dataQuality: 'HIGH' | 'MODERATE' | 'LOW'
+  addFinancialsCTA: boolean
+}
+
 export interface RichTaskDescription {
   /** Why this task applies specifically to the user's business */
   whyThisApplies: string
@@ -42,6 +56,9 @@ export interface RichTaskDescription {
     overview: string
     benefits: string[]
   }
+
+  /** Personalized company context with financials + benchmarks (optional, added post-generation) */
+  companyContext?: CompanyContextData
 }
 
 /**

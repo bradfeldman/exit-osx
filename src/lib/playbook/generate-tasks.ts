@@ -9,6 +9,7 @@ import { getTemplatesForQuestion } from './task-templates'
 import { type RichTaskDescription, hasRichDescription } from './rich-task-description'
 import { calculateTaskPriorityFromAttributes, initializeActionPlan } from '@/lib/tasks/action-plan'
 import { generateBuyerConsequences, type TaskForConsequence } from '@/lib/ai/buyer-consequences'
+import { enrichTasksWithContext } from '@/lib/tasks/enrich-task-context'
 
 // Use flexible types to handle Prisma Decimal
 type NumberLike = string | number | { toString(): string }
@@ -349,6 +350,14 @@ export async function generateTasksForCompany(
     }
   } catch (error) {
     console.error('[TASK_ENGINE] Buyer consequence enrichment failed (non-blocking):', error)
+  }
+
+  // Enrich tasks with personalized company context (non-blocking)
+  try {
+    const enrichResult = await enrichTasksWithContext(companyId)
+    console.log(`[TASK_ENGINE] Context enrichment: ${enrichResult.updated} enriched, ${enrichResult.failed} failed`)
+  } catch (error) {
+    console.error('[TASK_ENGINE] Context enrichment failed (non-blocking):', error)
   }
 
   console.log(`[TASK_ENGINE] Generated ${created} tasks for company ${companyId}`)

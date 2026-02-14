@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { BRI_CATEGORY_LABELS, type BRICategory } from '@/lib/constants/bri-categories'
-import { hasRichDescription, type RichTaskDescription } from '@/lib/playbook/rich-task-description'
+import { hasRichDescription, type RichTaskDescription, type CompanyContextData } from '@/lib/playbook/rich-task-description'
 
 function formatHoursToMinutes(hours: number | null): number | null {
   if (hours === null) return null
@@ -16,6 +16,14 @@ function formatSubSteps(
   return subSteps
     .sort((a, b) => a.order - b.order)
     .map(({ id, title, completed }) => ({ id, title, completed }))
+}
+
+function extractCompanyContext(richDescription: unknown): CompanyContextData | null {
+  if (!richDescription || typeof richDescription !== 'object') return null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rd = richDescription as any
+  if (!rd.companyContext || typeof rd.companyContext !== 'object') return null
+  return rd.companyContext as CompanyContextData
 }
 
 function derivePrerequisiteHint(richDescription: unknown): string | null {
@@ -188,6 +196,7 @@ export async function GET(
         priorityRank: task.priorityRank,
         buyerConsequence: task.buyerConsequence,
         buyerRisk: rd?.buyerRisk ?? null,
+        companyContext: extractCompanyContext(task.richDescription),
         subSteps,
         subStepProgress: {
           completed: completedSteps,
@@ -239,6 +248,7 @@ export async function GET(
           priorityRank: task.priorityRank,
           buyerConsequence: task.buyerConsequence,
           buyerRisk: rd?.buyerRisk ?? null,
+          companyContext: extractCompanyContext(task.richDescription),
           subSteps,
           subStepProgress: {
             completed: completedSteps,

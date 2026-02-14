@@ -4,6 +4,7 @@ import { getCurrentDossier } from './build-dossier'
 import type { CompanyDossierContent, TaskGenerationResult } from './types'
 import type { BriCategory } from '@prisma/client'
 import { calculateTaskPriorityFromAttributes, initializeActionPlan } from '@/lib/tasks/action-plan'
+import { enrichTasksWithContext } from '@/lib/tasks/enrich-task-context'
 
 // Same tier allocations as the template-based system
 const TIER_ALLOCATION: Record<string, number> = {
@@ -86,16 +87,47 @@ Return valid JSON:
 function buildTaskUserPrompt(
   dossier: CompanyDossierContent,
   responses: AssessmentResponseForTasks[],
-  valueGap: number
+  valueGap: number,
+  enrichedFinancials?: EnrichedFinancialData | null
 ): string {
   const parts: string[] = []
 
   parts.push(`COMPANY: ${dossier.identity.name} (${dossier.identity.industry} > ${dossier.identity.subSector})`)
   parts.push(`Revenue: $${dossier.financials.annualRevenue.toLocaleString()}, EBITDA: $${dossier.financials.annualEbitda.toLocaleString()}`)
+
+  // Include detailed P&L data if available
+  if (enrichedFinancials?.incomeStatement) {
+    const is = enrichedFinancials.incomeStatement
+    parts.push(`COGS: $${is.cogs.toLocaleString()} (Gross Margin: ${(is.grossMarginPct * 100).toFixed(1)}%)`)
+    parts.push(`EBITDA Margin: ${(is.ebitdaMarginPct * 100).toFixed(1)}%`)
+  } else if (dossier.financials.ebitdaMarginPct) {
+    parts.push(`EBITDA Margin: ${dossier.financials.ebitdaMarginPct.toFixed(1)}%`)
+  }
+
+  // Include industry benchmarks if available
+  if (enrichedFinancials?.benchmarks) {
+    const b = enrichedFinancials.benchmarks
+    parts.push(`Industry EBITDA Margin Range: ${b.ebitdaMarginLow}-${b.ebitdaMarginHigh}%`)
+    parts.push(`Industry EBITDA Multiple Range: ${b.ebitdaMultipleLow}x-${b.ebitdaMultipleHigh}x`)
+    parts.push(`Industry Revenue Multiple Range: ${b.revenueMultipleLow}x-${b.revenueMultipleHigh}x`)
+  }
+
   parts.push(`Value Gap: $${valueGap.toLocaleString()}`)
 
+  // Include all core factors (not just revenueModel and ownerInvolvement)
   if (dossier.identity.coreFactors) {
-    parts.push(`Revenue Model: ${dossier.identity.coreFactors.revenueModel}, Owner Involvement: ${dossier.identity.coreFactors.ownerInvolvement}`)
+    const cf = dossier.identity.coreFactors
+    parts.push(`\nCORE FACTORS:`)
+    parts.push(`  Revenue Model: ${cf.revenueModel}`)
+    parts.push(`  Owner Involvement: ${cf.ownerInvolvement}`)
+    parts.push(`  Labor Intensity: ${cf.laborIntensity}`)
+    parts.push(`  Asset Intensity: ${cf.assetIntensity}`)
+    parts.push(`  Gross Margin Proxy: ${cf.grossMarginProxy}`)
+  }
+
+  // Include business description if available
+  if (dossier.identity.businessDescription) {
+    parts.push(`\nBusiness: ${dossier.identity.businessDescription.slice(0, 300)}`)
   }
 
   parts.push(`\nASSESSMENT RESPONSES (questions needing improvement):`)
@@ -109,9 +141,70 @@ function buildTaskUserPrompt(
     parts.push(`- [${r.question.briCategory}/${r.question.issueTier}] Q: "${r.question.questionText}" → Current score: ${score.toFixed(2)} (ID: ${r.questionId})`)
   }
 
-  parts.push(`\nGenerate one task per question listed above. Each task should upgrade the answer by one step.`)
+  parts.push(`\nGenerate one task per question listed above. Each task should upgrade the answer by one step. Reference specific financial data and industry benchmarks where relevant.`)
 
   return parts.join('\n')
+}
+
+// Enriched financial data for richer AI task generation prompts
+interface EnrichedFinancialData {
+  incomeStatement: {
+    cogs: number
+    grossMarginPct: number
+    ebitdaMarginPct: number
+  } | null
+  benchmarks: {
+    ebitdaMarginLow: number
+    ebitdaMarginHigh: number
+    ebitdaMultipleLow: number
+    ebitdaMultipleHigh: number
+    revenueMultipleLow: number
+    revenueMultipleHigh: number
+  } | null
+}
+
+async function fetchEnrichedFinancials(companyId: string): Promise<EnrichedFinancialData | null> {
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { icbSubSector: true, icbSector: true, icbSuperSector: true, icbIndustry: true },
+  })
+  if (!company) return null
+
+  const [period, benchmarks] = await Promise.all([
+    prisma.financialPeriod.findFirst({
+      where: { companyId },
+      orderBy: { endDate: 'desc' },
+      include: { incomeStatement: true },
+    }),
+    company.icbSubSector
+      ? (await import('@/lib/valuation/industry-multiples')).getIndustryMultiples(
+          company.icbSubSector,
+          company.icbSector ?? undefined,
+          company.icbSuperSector ?? undefined,
+          company.icbIndustry ?? undefined
+        )
+      : null,
+  ])
+
+  return {
+    incomeStatement: period?.incomeStatement
+      ? {
+          cogs: Number(period.incomeStatement.cogs),
+          grossMarginPct: Number(period.incomeStatement.grossMarginPct),
+          ebitdaMarginPct: Number(period.incomeStatement.ebitdaMarginPct),
+        }
+      : null,
+    benchmarks: benchmarks && !benchmarks.isDefault
+      ? {
+          ebitdaMarginLow: benchmarks.ebitdaMarginLow ?? 0,
+          ebitdaMarginHigh: benchmarks.ebitdaMarginHigh ?? 0,
+          ebitdaMultipleLow: benchmarks.ebitdaMultipleLow,
+          ebitdaMultipleHigh: benchmarks.ebitdaMultipleHigh,
+          revenueMultipleLow: benchmarks.revenueMultipleLow,
+          revenueMultipleHigh: benchmarks.revenueMultipleHigh,
+        }
+      : null,
+  }
 }
 
 /**
@@ -162,8 +255,11 @@ export async function generateAITasksForCompany(
     return { created: 0, skipped: 0 }
   }
 
+  // Fetch enriched financial data for richer prompts
+  const enrichedFinancials = await fetchEnrichedFinancials(companyId)
+
   const systemPrompt = buildTaskSystemPrompt()
-  const userPrompt = buildTaskUserPrompt(content, improvableResponses, valueGap)
+  const userPrompt = buildTaskUserPrompt(content, improvableResponses, valueGap, enrichedFinancials)
 
   const startTime = Date.now()
 
@@ -267,6 +363,14 @@ export async function generateAITasksForCompany(
 
   // Initialize action plan
   const actionPlanResult = await initializeActionPlan(companyId)
+
+  // Enrich tasks with personalized company context (non-blocking)
+  try {
+    const enrichResult = await enrichTasksWithContext(companyId)
+    console.log(`[AI_TASK_ENGINE] Context enrichment: ${enrichResult.updated} enriched, ${enrichResult.failed} failed`)
+  } catch (error) {
+    console.error('[AI_TASK_ENGINE] Context enrichment failed (non-blocking):', error)
+  }
 
   // Log
   await prisma.aIGenerationLog.create({

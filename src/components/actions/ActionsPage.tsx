@@ -22,6 +22,20 @@ interface SubStep {
   completed: boolean
 }
 
+interface CompanyContext {
+  yourSituation: { metric: string; value: string; source: string }
+  industryBenchmark: { range: string; source: string } | null
+  financialImpact: {
+    gapDescription: string
+    dollarImpact: string
+    enterpriseValueImpact: string
+    calculation: string
+  } | null
+  contextNote: string
+  dataQuality: 'HIGH' | 'MODERATE' | 'LOW'
+  addFinancialsCTA: boolean
+}
+
 interface ActiveTask {
   id: string
   title: string
@@ -41,6 +55,7 @@ interface ActiveTask {
     consequences: string[]
     conclusion: string
   } | null
+  companyContext: CompanyContext | null
   subSteps: SubStep[]
   subStepProgress: {
     completed: number

@@ -8,6 +8,8 @@ export interface MultipleResult {
   ebitdaMultipleHigh: number
   revenueMultipleLow: number
   revenueMultipleHigh: number
+  ebitdaMarginLow?: number
+  ebitdaMarginHigh?: number
   source: string | null
   isDefault: boolean
   matchLevel: 'subsector' | 'sector' | 'supersector' | 'industry' | 'default'
@@ -46,6 +48,8 @@ export async function getIndustryMultiples(
       ebitdaMultipleHigh: Number(multiple.ebitdaMultipleHigh),
       revenueMultipleLow: Number(multiple.revenueMultipleLow),
       revenueMultipleHigh: Number(multiple.revenueMultipleHigh),
+      ...(multiple.ebitdaMarginLow != null && { ebitdaMarginLow: Number(multiple.ebitdaMarginLow) }),
+      ...(multiple.ebitdaMarginHigh != null && { ebitdaMarginHigh: Number(multiple.ebitdaMarginHigh) }),
       source: multiple.source,
       isDefault: false,
       matchLevel: 'subsector',
@@ -65,6 +69,8 @@ export async function getIndustryMultiples(
         ebitdaMultipleHigh: Number(multiple.ebitdaMultipleHigh),
         revenueMultipleLow: Number(multiple.revenueMultipleLow),
         revenueMultipleHigh: Number(multiple.revenueMultipleHigh),
+        ...(multiple.ebitdaMarginLow != null && { ebitdaMarginLow: Number(multiple.ebitdaMarginLow) }),
+        ...(multiple.ebitdaMarginHigh != null && { ebitdaMarginHigh: Number(multiple.ebitdaMarginHigh) }),
         source: multiple.source,
         isDefault: false,
         matchLevel: 'sector',
@@ -85,6 +91,8 @@ export async function getIndustryMultiples(
         ebitdaMultipleHigh: Number(multiple.ebitdaMultipleHigh),
         revenueMultipleLow: Number(multiple.revenueMultipleLow),
         revenueMultipleHigh: Number(multiple.revenueMultipleHigh),
+        ...(multiple.ebitdaMarginLow != null && { ebitdaMarginLow: Number(multiple.ebitdaMarginLow) }),
+        ...(multiple.ebitdaMarginHigh != null && { ebitdaMarginHigh: Number(multiple.ebitdaMarginHigh) }),
         source: multiple.source,
         isDefault: false,
         matchLevel: 'supersector',
@@ -105,6 +113,8 @@ export async function getIndustryMultiples(
         ebitdaMultipleHigh: Number(multiple.ebitdaMultipleHigh),
         revenueMultipleLow: Number(multiple.revenueMultipleLow),
         revenueMultipleHigh: Number(multiple.revenueMultipleHigh),
+        ...(multiple.ebitdaMarginLow != null && { ebitdaMarginLow: Number(multiple.ebitdaMarginLow) }),
+        ...(multiple.ebitdaMarginHigh != null && { ebitdaMarginHigh: Number(multiple.ebitdaMarginHigh) }),
         source: multiple.source,
         isDefault: false,
         matchLevel: 'industry',

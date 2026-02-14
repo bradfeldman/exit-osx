@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils'
 import { getBRICategoryColor } from '@/lib/constants/bri-categories'
 import { SubStepChecklist } from './SubStepChecklist'
+import { CompanyContextBlock } from './CompanyContextBlock'
 import { BuyerContextBlock } from './BuyerContextBlock'
 import { TaskDetailsCollapsible } from './TaskDetailsCollapsible'
 import { TaskStatusActions } from './TaskStatusActions'
@@ -42,6 +43,19 @@ interface ActiveTask {
     mainQuestion: string
     consequences: string[]
     conclusion: string
+  } | null
+  companyContext: {
+    yourSituation: { metric: string; value: string; source: string }
+    industryBenchmark: { range: string; source: string } | null
+    financialImpact: {
+      gapDescription: string
+      dollarImpact: string
+      enterpriseValueImpact: string
+      calculation: string
+    } | null
+    contextNote: string
+    dataQuality: 'HIGH' | 'MODERATE' | 'LOW'
+    addFinancialsCTA: boolean
   } | null
   subSteps: SubStep[]
   subStepProgress: { completed: number; total: number }
@@ -122,6 +136,9 @@ export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onStart, onB
           </p>
         </div>
       )}
+
+      {/* Company context (personalized financials + benchmarks) */}
+      <CompanyContextBlock companyContext={task.companyContext} />
 
       {/* Buyer context */}
       <BuyerContextBlock
