@@ -3,6 +3,8 @@ import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { generateQuestionsForCompany } from '@/lib/dossier/ai-questions'
 import { getCurrentDossier, updateDossier } from '@/lib/dossier/build-dossier'
 
+export const maxDuration = 60
+
 /**
  * POST /api/companies/[id]/dossier/generate-questions
  * Generates AI-tailored BRI questions for the company.
