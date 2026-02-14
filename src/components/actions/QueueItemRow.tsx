@@ -20,6 +20,7 @@ interface QueueItemRowProps {
   outputHint: string | null
   assignee: { name: string; role: string | null } | null
   onClick: () => void
+  status?: 'IN_PROGRESS' | 'PENDING'
 }
 
 export function QueueItemRow({
@@ -32,6 +33,7 @@ export function QueueItemRow({
   outputHint,
   assignee,
   onClick,
+  status,
 }: QueueItemRowProps) {
   const metaParts = [categoryLabel, `~${formatCurrency(normalizedValue)}`]
   if (estimatedMinutes) metaParts.push(`${estimatedMinutes} min`)
@@ -46,8 +48,15 @@ export function QueueItemRow({
     >
       <div>
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full border-2 border-border shrink-0" />
+          {status === 'IN_PROGRESS' ? (
+            <span className="w-3 h-3 rounded-full bg-[var(--burnt-orange)] shrink-0 animate-pulse" />
+          ) : (
+            <span className="w-3 h-3 rounded-full border-2 border-border shrink-0" />
+          )}
           <span className="text-sm font-medium text-foreground">{title}</span>
+          {status === 'IN_PROGRESS' && (
+            <span className="text-[10px] font-semibold tracking-wider text-[var(--burnt-orange)] uppercase">In Progress</span>
+          )}
         </div>
         <p className="text-xs text-muted-foreground mt-0.5 ml-5">
           {metaParts.map((part, i) => (

@@ -136,6 +136,7 @@ export function ActionsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [completingTask, setCompletingTask] = useState<ActiveTask | null>(null)
+  const [focusedTaskId, setFocusedTaskId] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
     if (!selectedCompanyId) return
@@ -236,6 +237,7 @@ export function ActionsPage() {
         alert(err.message || `Failed to start task (${response.status})`)
         return
       }
+      setFocusedTaskId(taskId)
       fetchData()
     } catch (err) {
       console.error('Start task error:', err)
@@ -314,6 +316,34 @@ export function ActionsPage() {
 
   if (hasNoTasks) return <EmptyState />
 
+  // Determine which task is focused (shown as big card)
+  // Default to first active task, or keep current selection if still valid
+  const effectiveFocusedId = (() => {
+    if (focusedTaskId && data.activeTasks.some(t => t.id === focusedTaskId)) {
+      return focusedTaskId
+    }
+    return data.activeTasks.length > 0 ? data.activeTasks[0].id : null
+  })()
+
+  const focusedTask = effectiveFocusedId
+    ? data.activeTasks.find(t => t.id === effectiveFocusedId) ?? null
+    : null
+
+  const otherActiveTasks = data.activeTasks.filter(t => t.id !== effectiveFocusedId)
+
+  // Map other active tasks to the shape UpNextQueue expects
+  const otherActiveForQueue = otherActiveTasks.map(t => ({
+    id: t.id,
+    title: t.title,
+    briCategory: t.briCategory,
+    categoryLabel: t.categoryLabel,
+    normalizedValue: t.normalizedValue,
+    estimatedMinutes: t.estimatedMinutes,
+    assignee: t.assignee ? { name: t.assignee.name, role: t.assignee.role } : null,
+  }))
+
+  const showQueue = otherActiveTasks.length > 0 || data.upNext.length > 0
+
   return (
     <div className="max-w-[800px] mx-auto px-6 py-8">
       <AnimatedStagger className="space-y-6" staggerDelay={0.1}>
@@ -336,28 +366,30 @@ export function ActionsPage() {
           </AnimatedItem>
         )}
 
-        {data.activeTasks.map(task => (
-          <AnimatedItem key={task.id}>
-            <div id={`task-${task.id}`}>
+        {focusedTask && (
+          <AnimatedItem key={focusedTask.id}>
+            <div id={`task-${focusedTask.id}`}>
               <ActiveTaskCard
-                task={task}
+                task={focusedTask}
                 onSubStepToggle={handleSubStepToggle}
-                onComplete={() => handleCompleteTask(task)}
+                onComplete={() => handleCompleteTask(focusedTask)}
                 onBlock={handleBlockTask}
                 onDefer={handleDeferTask}
                 onRefresh={fetchData}
               />
             </div>
           </AnimatedItem>
-        ))}
+        )}
 
-        {data.upNext.length > 0 && (
+        {showQueue && (
           <AnimatedItem>
             <UpNextQueue
               tasks={data.upNext}
+              otherActiveTasks={otherActiveForQueue}
               hasMore={data.hasMoreInQueue}
               totalQueueSize={data.totalQueueSize}
               onStartTask={handleStartTask}
+              onFocusTask={(taskId) => setFocusedTaskId(taskId)}
               autoExpandFirst={data.activeTasks.length === 0}
             />
           </AnimatedItem>
