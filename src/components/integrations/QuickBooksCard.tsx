@@ -73,6 +73,7 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
   useEffect(() => {
     if (!integration || !connected) return
     if (integration.lastSyncStatus === 'SYNCING') return
+    if (integration.lastSyncStatus === 'FAILED') return // Don't auto-retry failed syncs
     if (isSyncing) return
 
     if (isDataStale(integration.lastSyncAt)) {
@@ -86,15 +87,18 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
-            fetchStatus()
             onSyncComplete?.()
+          } else {
+            setError(data.error || 'Auto-sync failed')
           }
         })
         .catch((err) => {
           console.error('Auto-refresh failed:', err)
+          setError('Auto-sync failed')
         })
         .finally(() => {
           setIsSyncing(false)
+          fetchStatus() // Always refresh integration state from DB
         })
     }
   }, [integration, connected, isSyncing, companyId, fetchStatus, onSyncComplete])
@@ -228,6 +232,7 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
       })
       if (response.ok) {
         setIsSyncing(false)
+        setError(null)
         setSuccessMessage('Sync cancelled.')
         fetchStatus()
       }
@@ -368,12 +373,12 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
               {/* Status Line */}
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2 text-gray-600">
-                  {isSyncing || integration.lastSyncStatus === 'SYNCING' ? (
+                  {isSyncing ? (
                     <span className="flex items-center gap-2 text-blue-600">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       Syncing financial data...
                     </span>
-                  ) : integration.lastSyncStatus === 'FAILED' ? (
+                  ) : integration.lastSyncStatus === 'FAILED' || integration.lastSyncError ? (
                     <span className="flex items-center gap-2 text-red-600">
                       <XCircle className="h-4 w-4" />
                       Sync failed
@@ -401,7 +406,7 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  {isSyncing || integration.lastSyncStatus === 'SYNCING' ? (
+                  {isSyncing ? (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -424,7 +429,7 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
                       className="text-gray-600 hover:text-gray-900"
                     >
                       <RefreshCw className="h-4 w-4 mr-1.5" />
-                      Sync Now
+                      {integration.lastSyncStatus === 'FAILED' ? 'Retry Sync' : 'Sync Now'}
                     </Button>
                   )}
                   <Button
@@ -451,14 +456,14 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
                     </p>
                   )}
 
-                  {(isSyncing || integration.lastSyncStatus === 'SYNCING') && (
+                  {isSyncing && (
                     <div className="text-xs text-gray-500">
                       Fetching P&L and Balance Sheet reports for the last 6 years. You can leave this page — sync continues in the background.
                     </div>
                   )}
 
                   {/* Actions (only when not syncing) */}
-                  {!(isSyncing || integration.lastSyncStatus === 'SYNCING') && (
+                  {!isSyncing && (
                     <div className="flex gap-2">
                       <Button
                         variant="outline"

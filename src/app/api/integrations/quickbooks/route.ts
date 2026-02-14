@@ -158,12 +158,12 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'cancel-sync') {
-      // Reset stuck sync status
+      // Reset stuck sync or failed status
       await prisma.integration.updateMany({
         where: {
           companyId,
           provider: 'QUICKBOOKS_ONLINE',
-          lastSyncStatus: 'SYNCING',
+          lastSyncStatus: { in: ['SYNCING', 'FAILED'] },
         },
         data: {
           lastSyncStatus: 'IDLE',
