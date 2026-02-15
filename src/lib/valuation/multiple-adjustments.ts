@@ -254,8 +254,9 @@ export function adjustMultiples(profile: AdjustmentProfile): AdjustmentResult {
     .reduce((sum, a) => sum + a.impact, 0)
 
   // The multiplier is (1 + totalAdjustment), floored at 0.3 to prevent
-  // total adjustment from turning the multiple negative or near-zero
-  const adjustmentMultiplier = Math.max(0.3, 1 + totalAdjustment)
+  // total adjustment from turning the multiple negative or near-zero,
+  // and capped at 1.5 to prevent unrealistic valuation inflation
+  const adjustmentMultiplier = Math.max(0.3, Math.min(1 + totalAdjustment, 1.5))
 
   return {
     adjustments,

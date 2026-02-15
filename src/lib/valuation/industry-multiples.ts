@@ -266,5 +266,10 @@ export function estimateEbitdaFromRevenue(
 
   // Blended estimate, rounded to nearest $100,000
   const blendedEstimate = (ebitdaLow + ebitdaHigh) / 2
-  return Math.round(blendedEstimate / 100000) * 100000
+
+  // Cap implied margin at 35% (95th percentile for SMBs) to prevent unrealistic estimates
+  const maxEbitda = revenue * 0.35
+  const cappedEstimate = Math.min(blendedEstimate, maxEbitda)
+
+  return Math.round(cappedEstimate / 100000) * 100000
 }

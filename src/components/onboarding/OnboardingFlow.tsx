@@ -676,6 +676,7 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
             valuationHigh={industryPreviewData.valuationHigh}
             potentialGap={industryPreviewData.potentialGap}
             onContinue={() => goToStep(4)}
+            onBack={() => goToStep(2)}
           />
         ) : (
           <div className="flex items-center justify-center py-20">

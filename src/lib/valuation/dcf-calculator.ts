@@ -166,8 +166,8 @@ export function calculateDCF(inputs: DCFInputs, finalEBITDA?: number): DCFResult
     )
   }
 
-  // Present value of terminal value (discounted from year 5)
-  const presentValueTerminal = calculatePresentValue(terminalValue, inputs.wacc, 5)
+  // Present value of terminal value (discounted from the final projection year)
+  const presentValueTerminal = calculatePresentValue(terminalValue, inputs.wacc, inputs.growthRates.length)
 
   // Enterprise Value = sum of PV of FCF + PV of Terminal Value
   const enterpriseValue = presentValueFCF.reduce((sum, pv) => sum + pv, 0) + presentValueTerminal

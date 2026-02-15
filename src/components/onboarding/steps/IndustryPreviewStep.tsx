@@ -11,6 +11,7 @@ interface IndustryPreviewStepProps {
   valuationHigh: number
   potentialGap: number
   onContinue: () => void
+  onBack?: () => void
 }
 
 export function IndustryPreviewStep({
@@ -18,6 +19,7 @@ export function IndustryPreviewStep({
   valuationLow,
   valuationHigh,
   onContinue,
+  onBack,
 }: IndustryPreviewStepProps) {
   return (
     <div className="max-w-xl mx-auto">
@@ -112,7 +114,7 @@ export function IndustryPreviewStep({
         >
           <Button
             variant="ghost"
-            onClick={() => window.history.back()}
+            onClick={() => onBack ? onBack() : window.history.back()}
           >
             Back
           </Button>

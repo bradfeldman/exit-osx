@@ -67,7 +67,9 @@ function calculateEbitdaImprovementMultiplier(
     const maxImprovement = EBITDA_IMPROVEMENT_BY_CATEGORY[cs.category] || 0
 
     // Improvement potential is proportional to the gap and weighted by category importance
-    totalImprovementPotential += gap * maxImprovement * (categoryWeight / 0.25) // Normalize by average weight
+    // Normalize by average weight (1/numCategories) so all categories contribute proportionally
+    const avgWeight = 1 / categoryScores.length
+    totalImprovementPotential += gap * maxImprovement * (categoryWeight / avgWeight)
   }
 
   // Cap total improvement at 25% to be conservative
