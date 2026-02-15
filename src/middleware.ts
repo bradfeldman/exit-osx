@@ -206,6 +206,23 @@ export async function middleware(request: NextRequest) {
     // (logged in users go to dashboard, logged out users see focused onboarding)
   }
 
+  // SEC-043: Handle CORS preflight for API routes (dynamic origin reflection)
+  if (pathname.startsWith('/api/') && request.method === 'OPTIONS') {
+    const origin = request.headers.get('origin')
+    if (origin && isAllowedOrigin(origin)) {
+      return new NextResponse(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': origin,
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+          'Access-Control-Allow-Credentials': 'true',
+          'Access-Control-Max-Age': '86400',
+        },
+      })
+    }
+  }
+
   // SECURITY: Apply rate limiting before any other processing
   const isAuthApiRoute = AUTH_API_RATE_LIMITED_ROUTES.some(route => pathname.startsWith(route))
   const isAuthPageRoute = AUTH_PAGE_ROUTES.some(route => pathname.startsWith(route))
@@ -523,6 +540,18 @@ export async function middleware(request: NextRequest) {
   // SEC-026: Set nonce-based CSP response header for page routes
   if (!isApiRoute) {
     supabaseResponse.headers.set('Content-Security-Policy', cspHeader)
+  }
+
+  // SEC-043: Dynamic CORS for API routes — reflect allowed origin instead of static single-origin
+  if (isApiRoute) {
+    const origin = request.headers.get('origin')
+    if (origin && isAllowedOrigin(origin)) {
+      supabaseResponse.headers.set('Access-Control-Allow-Origin', origin)
+      supabaseResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+      supabaseResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+      supabaseResponse.headers.set('Access-Control-Allow-Credentials', 'true')
+      supabaseResponse.headers.set('Access-Control-Max-Age', '86400')
+    }
   }
 
   return supabaseResponse

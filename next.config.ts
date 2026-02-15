@@ -49,13 +49,7 @@ const securityHeaders = [
   },
 ];
 
-// SECURITY: Allowed origins for CORS
-const allowedOrigins = [
-  process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-  'https://app.exitosx.com',
-  'https://admin.exitosx.com',
-  'https://staging.exitosx.com',
-].filter(Boolean);
+// SEC-043: CORS moved to middleware for dynamic origin reflection — see src/middleware.ts
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -76,33 +70,13 @@ const nextConfig: NextConfig = {
         headers: securityHeaders,
       },
       {
-        // SECURITY: CORS and stricter CSP for API routes
+        // SECURITY: Stricter CSP for API routes
+        // SEC-043: CORS moved to middleware for dynamic origin reflection
         source: '/api/:path*',
         headers: [
           {
             key: 'Content-Security-Policy',
             value: "default-src 'none'; frame-ancestors 'none';",
-          },
-          // CORS headers
-          {
-            key: 'Access-Control-Allow-Origin',
-            value: allowedOrigins[0], // Primary origin
-          },
-          {
-            key: 'Access-Control-Allow-Methods',
-            value: 'GET, POST, PUT, DELETE, OPTIONS',
-          },
-          {
-            key: 'Access-Control-Allow-Headers',
-            value: 'Content-Type, Authorization, X-Requested-With',
-          },
-          {
-            key: 'Access-Control-Allow-Credentials',
-            value: 'true',
-          },
-          {
-            key: 'Access-Control-Max-Age',
-            value: '86400', // 24 hours
           },
         ],
       },
@@ -137,6 +111,90 @@ const nextConfig: NextConfig = {
       {
         // SECURITY: Prevent caching of subscription data API responses
         source: '/api/subscription/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+        ],
+      },
+      {
+        // SECURITY: Prevent caching of user PII and profile data
+        source: '/api/user/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+        ],
+      },
+      {
+        // SECURITY: Prevent caching of admin data
+        source: '/api/admin/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+        ],
+      },
+      {
+        // SECURITY: Prevent caching of advisor data
+        source: '/api/advisor/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+        ],
+      },
+      {
+        // SECURITY: Prevent caching of report data
+        source: '/api/report/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+        ],
+      },
+      {
+        // SECURITY: Prevent caching of partner data
+        source: '/api/partner/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+        ],
+      },
+      {
+        // SECURITY: Prevent caching of seller data
+        source: '/api/seller/:path*',
         headers: [
           {
             key: 'Cache-Control',

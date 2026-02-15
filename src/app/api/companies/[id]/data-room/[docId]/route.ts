@@ -128,11 +128,19 @@ export async function PATCH(
     }
 
     // Handle file upload
+    // SECURITY: Validate fileUrl is a legitimate Supabase storage URL to prevent URL injection
     if (isFileUpload && fileUrl) {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      if (!supabaseUrl || typeof fileUrl !== 'string' || !fileUrl.startsWith(`${supabaseUrl}/storage/`)) {
+        return NextResponse.json(
+          { error: 'Invalid file URL — must be a valid storage path' },
+          { status: 400 }
+        )
+      }
       updateData.fileUrl = fileUrl
-      updateData.fileName = fileName
-      updateData.fileSize = fileSize
-      updateData.mimeType = mimeType
+      updateData.fileName = typeof fileName === 'string' ? fileName.slice(0, 500) : fileName
+      updateData.fileSize = typeof fileSize === 'number' && fileSize >= 0 && fileSize <= 100_000_000 ? fileSize : null
+      updateData.mimeType = typeof mimeType === 'string' ? mimeType.slice(0, 200) : mimeType
       updateData.lastUpdatedAt = new Date()
       updateData.status = 'CURRENT'
 

@@ -104,7 +104,7 @@ export async function POST(request: Request) {
           { status: 409 }
         )
       }
-      console.error('[assess/save] Auth error:', authError)
+      console.error('[assess/save] Auth error:', authError.message)
       return NextResponse.json({ error: 'Failed to create account' }, { status: 500 })
     }
 

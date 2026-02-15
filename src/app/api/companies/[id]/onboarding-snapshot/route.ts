@@ -30,21 +30,16 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  console.log('[ONBOARDING_SNAPSHOT] POST request received')
-
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    console.log('[ONBOARDING_SNAPSHOT] Unauthorized - no user')
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const { id: companyId } = await params
-  console.log(`[ONBOARDING_SNAPSHOT] Company ${companyId} - User ${user.id}`)
 
   const body: OnboardingSnapshotRequest = await request.json()
-  console.log(`[ONBOARDING_SNAPSHOT] Body received - briScore: ${body.briScore}`)
 
   // Validate required fields
   if (typeof body.briScore !== 'number' || body.briScore < 0 || body.briScore > 100) {
@@ -68,7 +63,6 @@ export async function POST(
     })
 
     if (!prismaUser) {
-      console.log('[ONBOARDING_SNAPSHOT] Prisma user not found for authId:', user.id)
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
@@ -90,7 +84,6 @@ export async function POST(
     })
 
     if (!company) {
-      console.log('[ONBOARDING_SNAPSHOT] Company not found or user not in org:', companyId)
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
@@ -160,8 +153,6 @@ export async function POST(
     const currentValue = Math.round(valuation.currentValue)
     const potentialValue = Math.round(valuation.potentialValue)
     const valueGap = Math.round(valuation.valueGap)
-
-    console.log(`[ONBOARDING_SNAPSHOT] Company ${companyId}: Server-calculated values - currentValue: ${currentValue}, potentialValue: ${potentialValue}, valueGap: ${valueGap}, briScore: ${body.briScore}, adjustedEbitda: ${adjustedEbitda}, coreScore: ${coreScore}`)
 
     // Convert category scores from 0-100 to 0-1 scale
     const getCategoryScoreNormalized = (category: string): number => {

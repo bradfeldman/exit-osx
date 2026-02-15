@@ -361,17 +361,40 @@ export const companyUpdateSchema = z.object({
   fiscalYearEndDay: z.coerce.number().int().min(1).max(31).optional().nullable(),
 })
 
+// SEC-045: Bounded JSON array for Prisma Json? fields — prevents DoS via oversized payloads
+// Validates array shape + max items while preserving Prisma type compatibility
+const boundedJsonArray = z.any().optional().refine(
+  (val) => {
+    if (val === undefined || val === null) return true
+    if (!Array.isArray(val)) return false
+    if (val.length > 100) return false
+    return val.every((item: unknown) => typeof item === 'object' && item !== null && !Array.isArray(item))
+  },
+  'Must be an array of objects (max 100 items)'
+)
+
+// SEC-045: Bounded JSON value for Prisma Json? — accepts object, array, or primitive with size limit
+const boundedJsonValue = z.any().optional().refine(
+  (val) => {
+    if (val === undefined || val === null) return true
+    try {
+      return JSON.stringify(val).length <= 10_000 // 10KB max
+    } catch { return false }
+  },
+  'JSON value too large (max 10KB)'
+)
+
 /** Personal Financials PUT */
 export const personalFinancialsSchema = z.object({
-  retirementAccounts: z.any().optional(),   // Json? in Prisma
+  retirementAccounts: boundedJsonArray,     // Json? in Prisma — array of account objects
   totalRetirement: optionalFinancialAmount,
-  personalAssets: z.any().optional(),       // Json? in Prisma
-  personalLiabilities: z.any().optional(),  // Json? in Prisma
+  personalAssets: boundedJsonArray,          // Json? in Prisma — array of asset objects
+  personalLiabilities: boundedJsonArray,     // Json? in Prisma — array of liability objects
   netWorth: optionalFinancialAmount,
   exitGoalAmount: optionalFinancialAmount,
   retirementAge: z.coerce.number().int().min(0).max(120).optional().nullable(),
   currentAge: z.coerce.number().int().min(0).max(120).optional().nullable(),
-  businessOwnership: z.any().optional(),    // Json? in Prisma
+  businessOwnership: boundedJsonValue,       // Json? in Prisma — ownership data
   notes: longText.optional().nullable(),
 })
 
