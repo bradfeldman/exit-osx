@@ -47,7 +47,7 @@ export function LandingPage() {
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <Image
                 src="/logo.webp"
                 alt="Exit OSx"
@@ -60,15 +60,15 @@ export function LandingPage() {
                 alt="Exit OSx"
                 width={100}
                 height={28}
-                className="h-6 w-auto"
+                className="h-6 w-auto hidden sm:block"
               />
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 sm:gap-3">
               <Link href="/login">
-                <Button variant="ghost" size="sm">Sign In</Button>
+                <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">Sign In</Button>
               </Link>
               <Link href="/signup">
-                <Button size="sm">Get Your Free Exit Score</Button>
+                <Button size="sm" className="text-xs sm:text-sm px-2.5 sm:px-3">Get Your Free Exit Score</Button>
               </Link>
             </div>
           </div>
