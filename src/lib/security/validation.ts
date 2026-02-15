@@ -242,6 +242,184 @@ export async function validateRequestBody<T extends z.ZodTypeAny>(
   }
 }
 
+// =============================================================================
+// Shared Schema Primitives
+// =============================================================================
+
+/** Monetary amount: coerces to number, rejects NaN/Infinity, caps at ±$10B */
+export const financialAmount = z.coerce.number().finite().min(-10_000_000_000).max(10_000_000_000)
+export const optionalFinancialAmount = financialAmount.optional().nullable()
+
+/** Rate/percentage: 0-1 range (e.g., 0.05 = 5%) */
+export const rateSchema = z.coerce.number().finite().min(0).max(1)
+export const optionalRate = rateSchema.optional().nullable()
+
+/** Safe bounded strings */
+export const shortText = z.string().max(500)
+export const longText = z.string().max(5000)
+
+// =============================================================================
+// API Route Schemas
+// =============================================================================
+
+/** Income Statement PUT — required revenue/costs, optional detailed expenses */
+export const incomeStatementSchema = z.object({
+  grossRevenue: financialAmount,
+  cogs: financialAmount,
+  operatingExpenses: financialAmount,
+  depreciation: optionalFinancialAmount,
+  amortization: optionalFinancialAmount,
+  interestExpense: optionalFinancialAmount,
+  taxExpense: optionalFinancialAmount,
+})
+
+/** Balance Sheet PUT — all fields default to 0 */
+export const balanceSheetSchema = z.object({
+  cash: financialAmount.default(0),
+  accountsReceivable: financialAmount.default(0),
+  inventory: financialAmount.default(0),
+  prepaidExpenses: financialAmount.default(0),
+  otherCurrentAssets: financialAmount.default(0),
+  ppeGross: financialAmount.default(0),
+  accumulatedDepreciation: financialAmount.default(0),
+  intangibleAssets: financialAmount.default(0),
+  otherLongTermAssets: financialAmount.default(0),
+  accountsPayable: financialAmount.default(0),
+  accruedExpenses: financialAmount.default(0),
+  currentPortionLtd: financialAmount.default(0),
+  otherCurrentLiabilities: financialAmount.default(0),
+  longTermDebt: financialAmount.default(0),
+  deferredTaxLiabilities: financialAmount.default(0),
+  otherLongTermLiabilities: financialAmount.default(0),
+  retainedEarnings: financialAmount.default(0),
+  ownersEquity: financialAmount.default(0),
+})
+
+/** Cash Flow PUT — optional prior period, all financial fields default to 0 */
+export const cashFlowSchema = z.object({
+  priorPeriodId: uuidSchema.nullable().default(null),
+  netIncome: financialAmount.default(0),
+  depreciation: financialAmount.default(0),
+  amortization: financialAmount.default(0),
+  changeInAccountsReceivable: financialAmount.default(0),
+  changeInInventory: financialAmount.default(0),
+  changeInPrepaidExpenses: financialAmount.default(0),
+  changeInOtherCurrentAssets: financialAmount.default(0),
+  changeInAccountsPayable: financialAmount.default(0),
+  changeInAccruedExpenses: financialAmount.default(0),
+  changeInOtherCurrentLiabilities: financialAmount.default(0),
+  changeInDeferredTaxLiabilities: financialAmount.default(0),
+  otherOperatingAdjustments: financialAmount.default(0),
+  capitalExpenditures: financialAmount.default(0),
+  changeInIntangibleAssets: financialAmount.default(0),
+  changeInOtherLongTermAssets: financialAmount.default(0),
+  otherInvestingActivities: financialAmount.default(0),
+  changeInCurrentPortionLtd: financialAmount.default(0),
+  changeInLongTermDebt: financialAmount.default(0),
+  changeInOtherLongTermLiabilities: financialAmount.default(0),
+  changeInOwnersEquity: financialAmount.default(0),
+  otherFinancingActivities: financialAmount.default(0),
+  beginningCash: financialAmount.default(0),
+  endingCash: financialAmount.default(0),
+})
+
+/** DCF Assumptions PUT */
+export const dcfAssumptionsSchema = z.object({
+  baseFCF: optionalFinancialAmount,
+  riskFreeRate: z.coerce.number().finite().min(0).max(1),
+  marketRiskPremium: z.coerce.number().finite().min(0).max(1),
+  beta: z.coerce.number().finite().min(0).max(5),
+  sizeRiskPremium: z.coerce.number().finite().min(0).max(1),
+  costOfDebtOverride: optionalRate,
+  taxRateOverride: optionalRate,
+  growthAssumptions: z.union([
+    z.record(z.string(), z.coerce.number().finite()),
+    z.array(z.coerce.number().finite()),
+  ]).optional().nullable(),
+  terminalMethod: z.enum(['gordon', 'exit_multiple']).optional().nullable(),
+  perpetualGrowthRate: z.coerce.number().finite().min(0).max(1).optional().nullable(),
+  exitMultiple: z.coerce.number().finite().min(0).max(100).optional().nullable(),
+  calculatedWACC: z.coerce.number().finite().min(0).max(1).optional().nullable(),
+  enterpriseValue: optionalFinancialAmount,
+  equityValue: optionalFinancialAmount,
+  useDCFValue: z.boolean().optional().nullable(),
+  ebitdaMultipleLowOverride: z.coerce.number().finite().min(0).max(100).optional().nullable(),
+  ebitdaMultipleHighOverride: z.coerce.number().finite().min(0).max(100).optional().nullable(),
+})
+
+/** Company PUT — partial update, all fields optional */
+export const companyUpdateSchema = z.object({
+  name: shortText.optional(),
+  icbIndustry: shortText.optional().nullable(),
+  icbSuperSector: shortText.optional().nullable(),
+  icbSector: shortText.optional().nullable(),
+  icbSubSector: shortText.optional().nullable(),
+  annualRevenue: optionalFinancialAmount,
+  annualEbitda: optionalFinancialAmount,
+  ownerCompensation: optionalFinancialAmount,
+  fiscalYearEndMonth: z.coerce.number().int().min(1).max(12).optional().nullable(),
+  fiscalYearEndDay: z.coerce.number().int().min(1).max(31).optional().nullable(),
+})
+
+/** Personal Financials PUT */
+export const personalFinancialsSchema = z.object({
+  retirementAccounts: z.any().optional(),   // Json? in Prisma
+  totalRetirement: optionalFinancialAmount,
+  personalAssets: z.any().optional(),       // Json? in Prisma
+  personalLiabilities: z.any().optional(),  // Json? in Prisma
+  netWorth: optionalFinancialAmount,
+  exitGoalAmount: optionalFinancialAmount,
+  retirementAge: z.coerce.number().int().min(0).max(120).optional().nullable(),
+  currentAge: z.coerce.number().int().min(0).max(120).optional().nullable(),
+  businessOwnership: z.any().optional(),    // Json? in Prisma
+  notes: longText.optional().nullable(),
+})
+
+/** Deal Create POST */
+export const dealCreateSchema = z.object({
+  companyId: uuidSchema,
+  codeName: shortText.min(1),
+  description: longText.optional().nullable(),
+  targetCloseDate: z.string().max(100).optional().nullable(),
+  requireSellerApproval: z.boolean().default(true),
+})
+
+/** Deal Update PUT — all fields optional */
+export const dealUpdateSchema = z.object({
+  codeName: shortText.optional(),
+  description: longText.optional().nullable(),
+  status: z.enum(['ACTIVE', 'CLOSED', 'TERMINATED', 'ON_HOLD']).optional(),
+  targetCloseDate: z.string().max(100).optional().nullable(),
+  requireSellerApproval: z.boolean().optional(),
+})
+
+/** Buyer Update PUT — all fields optional */
+export const buyerUpdateSchema = z.object({
+  name: shortText.optional(),
+  buyerType: z.enum(['STRATEGIC', 'FINANCIAL', 'INDIVIDUAL', 'MANAGEMENT', 'ESOP', 'OTHER']).optional(),
+  tier: z.enum(['A_TIER', 'B_TIER', 'C_TIER', 'D_TIER']).optional(),
+  website: z.string().max(2000).optional().nullable(),
+  description: longText.optional().nullable(),
+  industry: shortText.optional().nullable(),
+  location: shortText.optional().nullable(),
+  internalNotes: longText.optional().nullable(),
+  tags: z.array(z.string().max(100)).max(50).optional().nullable(),
+  ioiAmount: optionalFinancialAmount,
+  loiAmount: optionalFinancialAmount,
+  ioiDeadline: z.string().max(100).optional().nullable(),
+  loiDeadline: z.string().max(100).optional().nullable(),
+  exclusivityStart: z.string().max(100).optional().nullable(),
+  exclusivityEnd: z.string().max(100).optional().nullable(),
+  approvalStatus: z.string().max(50).optional(),
+  approvalNotes: longText.optional().nullable(),
+})
+
+/** Subscription Upgrade POST */
+export const subscriptionUpgradeSchema = z.object({
+  targetPlan: z.enum(['foundation', 'growth', 'exit-ready']),
+  billingCycle: z.enum(['monthly', 'annual']).default('annual'),
+})
+
 /**
  * Validate query parameters against a Zod schema
  */

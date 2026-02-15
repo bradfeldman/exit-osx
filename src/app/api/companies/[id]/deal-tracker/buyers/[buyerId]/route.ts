@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { BuyerType, BuyerTier, DealStage } from '@prisma/client'
 import { syncBuyerVDRAccess as _syncBuyerVDRAccess } from '@/lib/deal-tracker/vdr-sync'
 import { ACTIVITY_TYPES } from '@/lib/deal-tracker/constants'
+import { validateRequestBody, buyerUpdateSchema } from '@/lib/security/validation'
 
 /**
  * GET /api/companies/[id]/deal-tracker/buyers/[buyerId]
@@ -75,7 +76,9 @@ export async function PUT(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
+    const validation = await validateRequestBody(request, buyerUpdateSchema)
+    if (!validation.success) return validation.error
+
     const {
       name,
       buyerType,
@@ -94,7 +97,7 @@ export async function PUT(
       exclusivityEnd,
       approvalStatus,
       approvalNotes,
-    } = body
+    } = validation.data
 
     // Verify buyer belongs to company
     const existing = await prisma.prospectiveBuyer.findFirst({

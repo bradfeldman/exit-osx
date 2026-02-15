@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { triggerDossierUpdate } from '@/lib/dossier/build-dossier'
 import { calculateWorkingCapital } from '@/lib/financial-calculations'
+import { validateRequestBody, balanceSheetSchema } from '@/lib/security/validation'
 
 export async function GET(
   request: Request,
@@ -116,32 +117,34 @@ export async function PUT(
   }
 
   try {
-    const body = await request.json()
+    const validation = await validateRequestBody(request, balanceSheetSchema)
+    if (!validation.success) return validation.error
+
     const {
       // Current Assets
-      cash = 0,
-      accountsReceivable = 0,
-      inventory = 0,
-      prepaidExpenses = 0,
-      otherCurrentAssets = 0,
+      cash,
+      accountsReceivable,
+      inventory,
+      prepaidExpenses,
+      otherCurrentAssets,
       // Long-term Assets
-      ppeGross = 0,
-      accumulatedDepreciation = 0,
-      intangibleAssets = 0,
-      otherLongTermAssets = 0,
+      ppeGross,
+      accumulatedDepreciation,
+      intangibleAssets,
+      otherLongTermAssets,
       // Current Liabilities
-      accountsPayable = 0,
-      accruedExpenses = 0,
-      currentPortionLtd = 0,
-      otherCurrentLiabilities = 0,
+      accountsPayable,
+      accruedExpenses,
+      currentPortionLtd,
+      otherCurrentLiabilities,
       // Long-term Liabilities
-      longTermDebt = 0,
-      deferredTaxLiabilities = 0,
-      otherLongTermLiabilities = 0,
+      longTermDebt,
+      deferredTaxLiabilities,
+      otherLongTermLiabilities,
       // Equity
-      retainedEarnings = 0,
-      ownersEquity = 0,
-    } = body
+      retainedEarnings,
+      ownersEquity,
+    } = validation.data
 
     // Verify user has access
     const company = await prisma.company.findUnique({

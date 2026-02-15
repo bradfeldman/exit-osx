@@ -3,6 +3,7 @@ import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { DealStatus } from '@prisma/client'
 import { PAGINATION } from '@/lib/contact-system/constants'
+import { validateRequestBody, dealCreateSchema } from '@/lib/security/validation'
 
 /**
  * GET /api/deals
@@ -108,21 +109,16 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const validation = await validateRequestBody(request, dealCreateSchema)
+    if (!validation.success) return validation.error
+
     const {
       companyId,
       codeName,
       description,
       targetCloseDate,
-      requireSellerApproval = true,
-    } = body
-
-    if (!companyId || !codeName) {
-      return NextResponse.json(
-        { error: 'Company ID and code name are required' },
-        { status: 400 }
-      )
-    }
+      requireSellerApproval,
+    } = validation.data
 
     // SECURITY FIX: Pass companyId to checkPermission for company-level access control
     const result = await checkPermission('COMPANY_UPDATE', companyId)

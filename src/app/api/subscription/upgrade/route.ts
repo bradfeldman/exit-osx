@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { PlanTier } from '@prisma/client'
 import { stripe, STRIPE_PRICE_MAP } from '@/lib/stripe'
+import { validateRequestBody, subscriptionUpgradeSchema } from '@/lib/security/validation'
 
 // Map plan ID to Prisma PlanTier enum
 function getPlanTierEnum(planId: string): PlanTier | null {
@@ -36,12 +37,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    const body = await request.json()
-    const { targetPlan, billingCycle = 'annual' } = body
+    const validation = await validateRequestBody(request, subscriptionUpgradeSchema)
+    if (!validation.success) return validation.error
 
-    if (!targetPlan) {
-      return NextResponse.json({ error: 'Target plan is required' }, { status: 400 })
-    }
+    const { targetPlan, billingCycle } = validation.data
 
     const targetPlanEnum = getPlanTierEnum(targetPlan)
     if (!targetPlanEnum) {

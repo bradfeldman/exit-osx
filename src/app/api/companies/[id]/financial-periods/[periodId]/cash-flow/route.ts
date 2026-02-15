@@ -7,6 +7,7 @@ import {
   calculateFreeCashFlow,
   calculateNetIncomeFromEbitda,
 } from '@/lib/financial-calculations'
+import { validateRequestBody, cashFlowSchema } from '@/lib/security/validation'
 
 // Calculate cash flow statement from P&L and Balance Sheet data
 function calculateCashFlowStatement(
@@ -368,7 +369,8 @@ export async function PUT(
   }
 
   try {
-    const body = await request.json()
+    const validation = await validateRequestBody(request, cashFlowSchema)
+    if (!validation.success) return validation.error
 
     // Verify user has access
     const company = await prisma.company.findUnique({
@@ -401,33 +403,32 @@ export async function PUT(
       return NextResponse.json({ error: 'Period not found' }, { status: 404 })
     }
 
-    // Extract all fields with defaults
     const {
-      priorPeriodId = null,
-      netIncome = 0,
-      depreciation = 0,
-      amortization = 0,
-      changeInAccountsReceivable = 0,
-      changeInInventory = 0,
-      changeInPrepaidExpenses = 0,
-      changeInOtherCurrentAssets = 0,
-      changeInAccountsPayable = 0,
-      changeInAccruedExpenses = 0,
-      changeInOtherCurrentLiabilities = 0,
-      changeInDeferredTaxLiabilities = 0,
-      otherOperatingAdjustments = 0,
-      capitalExpenditures = 0,
-      changeInIntangibleAssets = 0,
-      changeInOtherLongTermAssets = 0,
-      otherInvestingActivities = 0,
-      changeInCurrentPortionLtd = 0,
-      changeInLongTermDebt = 0,
-      changeInOtherLongTermLiabilities = 0,
-      changeInOwnersEquity = 0,
-      otherFinancingActivities = 0,
-      beginningCash = 0,
-      endingCash = 0,
-    } = body
+      priorPeriodId,
+      netIncome,
+      depreciation,
+      amortization,
+      changeInAccountsReceivable,
+      changeInInventory,
+      changeInPrepaidExpenses,
+      changeInOtherCurrentAssets,
+      changeInAccountsPayable,
+      changeInAccruedExpenses,
+      changeInOtherCurrentLiabilities,
+      changeInDeferredTaxLiabilities,
+      otherOperatingAdjustments,
+      capitalExpenditures,
+      changeInIntangibleAssets,
+      changeInOtherLongTermAssets,
+      otherInvestingActivities,
+      changeInCurrentPortionLtd,
+      changeInLongTermDebt,
+      changeInOtherLongTermLiabilities,
+      changeInOwnersEquity,
+      otherFinancingActivities,
+      beginningCash,
+      endingCash,
+    } = validation.data
 
     // Calculate totals
     const cashFromOperations = netIncome + depreciation + amortization +

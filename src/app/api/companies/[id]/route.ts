@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { validateRequestBody, companyUpdateSchema } from '@/lib/security/validation'
 
 export async function GET(
   request: Request,
@@ -46,7 +47,10 @@ export async function PUT(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
+    const validation = await validateRequestBody(request, companyUpdateSchema)
+    if (!validation.success) return validation.error
+
+    const body = validation.data
 
     // Verify company exists
     const existingCompany = await prisma.company.findUnique({

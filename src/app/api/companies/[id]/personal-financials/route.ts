@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { requireGranularPermission } from '@/lib/auth/check-granular-permission'
+import { validateRequestBody, personalFinancialsSchema } from '@/lib/security/validation'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -130,9 +131,10 @@ export async function PUT(request: Request, { params }: RouteParams) {
     }
 
     const userId = auth.auth.user.id
-    const body = await request.json()
 
-    // Validate and extract data
+    const validation = await validateRequestBody(request, personalFinancialsSchema)
+    if (!validation.success) return validation.error
+
     const {
       retirementAccounts,
       totalRetirement,
@@ -144,7 +146,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       currentAge,
       businessOwnership,
       notes,
-    } = body
+    } = validation.data
 
     // Upsert personal financials (user-scoped)
     const personalFinancials = await prisma.personalFinancials.upsert({

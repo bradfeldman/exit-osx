@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { DealStatus } from '@prisma/client'
+import { validateRequestBody, dealUpdateSchema } from '@/lib/security/validation'
 
 /**
  * GET /api/deals/[dealId]
@@ -131,14 +132,16 @@ export async function PUT(
     const result = await checkPermission('COMPANY_UPDATE', existing.companyId)
     if (isAuthError(result)) return result.error
 
-    const body = await request.json()
+    const validation = await validateRequestBody(request, dealUpdateSchema)
+    if (!validation.success) return validation.error
+
     const {
       codeName,
       description,
       status,
       targetCloseDate,
       requireSellerApproval,
-    } = body
+    } = validation.data
 
     const updateData: Record<string, unknown> = {}
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { validateRequestBody, dcfAssumptionsSchema } from '@/lib/security/validation'
 
 // Size risk premium by revenue category (mirrors auto-dcf.ts)
 const SIZE_RISK_PREMIUM: Record<string, number> = {
@@ -249,7 +250,8 @@ export async function PUT(
     const result = await checkPermission('COMPANY_VIEW', companyId)
     if (isAuthError(result)) return result.error
 
-    const body = await request.json()
+    const validation = await validateRequestBody(request, dcfAssumptionsSchema)
+    if (!validation.success) return validation.error
 
     const {
       baseFCF,
@@ -269,7 +271,7 @@ export async function PUT(
       useDCFValue,
       ebitdaMultipleLowOverride,
       ebitdaMultipleHighOverride,
-    } = body
+    } = validation.data
 
     const dcfAssumptions = await prisma.dCFAssumptions.upsert({
       where: { companyId },

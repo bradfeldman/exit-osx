@@ -11,6 +11,7 @@ import {
   calculateEbitda,
   calculateEbitdaMargin,
 } from '@/lib/financial-calculations'
+import { validateRequestBody, incomeStatementSchema } from '@/lib/security/validation'
 
 // Helper to determine revenue size category from actual revenue
 function getRevenueSizeCategory(revenue: number): RevenueSizeCategory {
@@ -113,7 +114,9 @@ export async function PUT(
   }
 
   try {
-    const body = await request.json()
+    const validation = await validateRequestBody(request, incomeStatementSchema)
+    if (!validation.success) return validation.error
+
     const {
       grossRevenue,
       cogs,
@@ -122,15 +125,7 @@ export async function PUT(
       amortization,
       interestExpense,
       taxExpense
-    } = body
-
-    // Validate required fields
-    if (grossRevenue === undefined || cogs === undefined || operatingExpenses === undefined) {
-      return NextResponse.json(
-        { error: 'Missing required fields: grossRevenue, cogs, operatingExpenses' },
-        { status: 400 }
-      )
-    }
+    } = validation.data
 
     // Verify user has access
     const company = await prisma.company.findUnique({
