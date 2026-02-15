@@ -198,14 +198,14 @@ export function BillingSettings() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h3 className="text-2xl font-bold">{currentPlanData?.name || 'Foundation'}</h3>
               <p className="text-muted-foreground">
                 {currentPlanData?.description || 'Free plan with basic features'}
               </p>
             </div>
-            <div className="text-right">
+            <div className="sm:text-right">
               <p className="text-3xl font-bold">
                 ${billingCycle === 'annual' ? (currentPlanData?.annualPrice || 0) : (currentPlanData?.monthlyPrice || 0)}
                 <span className="text-base font-normal text-muted-foreground">/mo</span>
@@ -244,7 +244,7 @@ export function BillingSettings() {
 
       {/* Available Plans */}
       <div>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <h2 className="text-lg font-semibold">
             {planTier === 'exit-ready' ? 'Your Plan' : 'Upgrade Your Plan'}
           </h2>
