@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { sendEmail } from '@/lib/email/service'
 import { EmailType } from '@/lib/email/types'
+import { verifyCronAuth } from '@/lib/security/cron-auth'
 
 /**
  * Internal API endpoint for triggering emails.
- * This is used by cron jobs, signal pipelines, and other internal services.
+ * SECURITY: Restricted to cron jobs / internal services via CRON_SECRET.
+ * Regular users cannot call this endpoint.
  *
  * Expected body:
  * {
@@ -19,16 +20,12 @@ import { EmailType } from '@/lib/email/types'
  * }
  */
 export async function POST(request: Request) {
+  // SECURITY FIX (SEC-031): Lock to cron/internal service auth only.
+  // Previously any authenticated user could send arbitrary emails to any address.
+  const authError = verifyCronAuth(request)
+  if (authError) return authError
+
   try {
-    // Auth check - only authenticated users or internal services
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    // For now, require authentication. In future, add internal service token check.
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const body = await request.json()
     const { userId, companyId, emailType, to, subject, html, skipPreferenceCheck } = body
 
@@ -90,7 +87,6 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('[API] Error in email/send:', error)
     return NextResponse.json(
-      // SECURITY FIX (PROD-060): Removed String(error) from response to prevent leaking stack traces
       { error: 'Failed to process request' },
       { status: 500 }
     )

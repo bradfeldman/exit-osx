@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server'
 import { getUserByUnsubscribeToken, unsubscribeUser } from '@/lib/email/preferences'
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
 /**
  * Handle email unsubscribe via token.
  * GET /api/email/unsubscribe?token=xxx
@@ -80,7 +89,7 @@ export async function GET(request: Request) {
   <div class="container">
     <h1>You've been unsubscribed</h1>
     <p>
-      We've removed <strong>${user.email}</strong> from all email notifications.
+      We've removed <strong>${escapeHtml(user.email)}</strong> from all email notifications.
     </p>
     <p style="font-size: 14px; color: #888888;">
       You can re-enable emails anytime in your account settings.
