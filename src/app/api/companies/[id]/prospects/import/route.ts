@@ -17,6 +17,11 @@ interface CSVRow {
   location?: string
 }
 
+// SEC-069: Strip HTML tags from CSV-imported text to prevent stored XSS
+function sanitizeText(value: string): string {
+  return value.replace(/<[^>]*>/g, '').trim()
+}
+
 interface ParsedProspect {
   name: string
   buyerType: BuyerType
@@ -142,7 +147,7 @@ function validateRow(row: CSVRow, rowIndex: number): {
   const errors: ImportError[] = []
 
   // Get name (support multiple column names)
-  const name = (row.company_name || row.name || '').trim()
+  const name = sanitizeText(row.company_name || row.name || '')
   if (!name) {
     errors.push({
       row: rowIndex,
@@ -175,21 +180,21 @@ function validateRow(row: CSVRow, rowIndex: number): {
     return { prospect: null, errors }
   }
 
-  // Get optional fields
-  const relevanceDescription = (
+  // Get optional fields (SEC-069: sanitize to prevent stored XSS)
+  const relevanceDescription = sanitizeText(
     row.relevance_description ||
     row.relevanceDescription ||
     row.description ||
     ''
-  ).trim() || null
+  ) || null
 
   const website = (row.website || '').trim() || null
-  const headquartersLocation = (
+  const headquartersLocation = sanitizeText(
     row.headquarters_location ||
     row.headquartersLocation ||
     row.location ||
     ''
-  ).trim() || null
+  ) || null
 
   return {
     prospect: {

@@ -282,8 +282,18 @@ export async function middleware(request: NextRequest) {
         )
       }
     }
-    // No Origin or Referer: allow through (server-to-server calls, curl, etc.)
-    // CSRF requires a browser — SameSite=Lax already handles browser-based attacks
+    } else {
+      // SEC-064: No Origin or Referer — require X-Requested-With as CSRF proof.
+      // Legitimate browser requests from our app include this header via fetch().
+      // Server-to-server calls (cron, webhooks) are already in CSRF_EXEMPT_ROUTES.
+      const xRequestedWith = request.headers.get('x-requested-with')
+      if (!xRequestedWith) {
+        return NextResponse.json(
+          { error: 'Forbidden', message: 'Missing required request headers' },
+          { status: 403 }
+        )
+      }
+    }
   }
 
   // Add pathname and URL headers for server components to detect route
