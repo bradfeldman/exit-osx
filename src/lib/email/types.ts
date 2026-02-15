@@ -15,6 +15,13 @@ export type EmailType =
   | 'PARTNER_MONTHLY_SUMMARY'
   | 'PARTNER_NUDGE'
   | 'ACCOUNT_EXISTS'
+  | 'TRIAL_WELCOME'
+  | 'TRIAL_MIDPOINT'
+  | 'TRIAL_ENDING_SOON'
+  | 'TRIAL_LAST_DAY'
+  | 'TRIAL_EXPIRED'
+  | 'TRIAL_WINBACK_14'
+  | 'TRIAL_WINBACK_30'
 
 export type EmailFrequency = 'REALTIME' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'NEVER'
 
