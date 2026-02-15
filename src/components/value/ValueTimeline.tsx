@@ -11,6 +11,7 @@ import {
   ReferenceDot,
 } from 'recharts'
 import { cn } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils/currency'
 
 interface TimelineAnnotation {
   date: string
@@ -29,12 +30,6 @@ interface ValueTrendPoint {
 interface ValueTimelineProps {
   valueTrend: ValueTrendPoint[]
   annotations: TimelineAnnotation[]
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
-  if (value >= 1_000) return `$${Math.round(value / 1_000)}K`
-  return `$${Math.round(value)}`
 }
 
 function formatDate(date: string): string {

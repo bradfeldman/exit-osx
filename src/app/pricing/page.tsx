@@ -380,7 +380,7 @@ export default function PricingPage() {
                 90-Day Outcome Guarantee
               </h3>
               <p className="text-muted-foreground leading-relaxed">
-                If your Exit Readiness Score doesn&apos;t improve within 90 days of following your
+                If your Buyer Readiness Score doesn&apos;t improve within 90 days of following your
                 action plan, we&apos;ll refund your last 3 months. No questions asked.
               </p>
               <p className="text-sm text-muted-foreground/70 mt-4">
@@ -510,7 +510,7 @@ export default function PricingPage() {
             <div className="border-t border-border">
               <FAQItem
                 question="How long does the assessment take?"
-                answer="About 10 minutes. You'll answer questions about your business across six risk categories. You get your Exit Readiness Score and a buyer-perspective diagnostic immediately."
+                answer="About 10 minutes. You'll answer questions about your business across six risk categories. You get your Buyer Readiness Score and a buyer-perspective diagnostic immediately."
               />
               <FAQItem
                 question="Is my data secure?"
@@ -551,7 +551,7 @@ export default function PricingPage() {
             </p>
             <Link href="/signup">
               <Button variant="secondary" size="lg" className="text-base px-8 h-14 btn-hover">
-                Get Your Exit Readiness Score
+                Get Your Buyer Readiness Score
               </Button>
             </Link>
             <p className="text-sm text-primary-foreground/60 mt-4">

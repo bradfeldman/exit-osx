@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Image from 'next/image'
+import { formatCurrency } from '@/lib/utils/currency'
 
 interface ReportData {
   companyName: string
@@ -19,12 +20,6 @@ interface ReportData {
     estimatedValue: number
   }>
   generatedAt: string
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
-  if (value >= 1000) return `$${Math.round(value / 1000).toLocaleString()}K`
-  return `$${value.toLocaleString()}`
 }
 
 function getBriLabel(score: number) {
@@ -146,7 +141,7 @@ export default function SharedReportPage() {
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-semibold text-slate-900">Buyer Readiness Index (BRI)</h2>
+              <h2 className="text-sm font-semibold text-slate-900">Buyer Readiness Score</h2>
               <p className="text-xs text-slate-500 mt-0.5">How attractive this business is to potential buyers</p>
             </div>
             <div className="text-right">

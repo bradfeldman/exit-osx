@@ -340,7 +340,7 @@ export default function InviteAcceptPage() {
               >
                 <p className="text-sm font-medium text-slate-700 text-center">What you&apos;ll have access to:</p>
                 <div className="flex flex-wrap justify-center gap-2">
-                  {['Exit Scorecard', 'Action Plan', 'Data Room', 'Valuations'].map((feature) => (
+                  {['Scorecard', 'Action Plan', 'Data Room', 'Valuations'].map((feature) => (
                     <span
                       key={feature}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 text-sm"

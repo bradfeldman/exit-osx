@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { formatCurrency } from '@/lib/utils/currency'
 
 interface RiskDriverRowProps {
   rank: number
@@ -24,12 +25,6 @@ interface RiskDriverRowProps {
     source: string
     benchmarkMultiple: string | null
   } | null
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
-  if (value >= 1_000) return `$${Math.round(value / 1_000)}K`
-  return `$${Math.round(value)}`
 }
 
 export function RiskDriverRow({

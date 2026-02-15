@@ -2,6 +2,12 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Check } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/currency'
 
@@ -26,13 +32,15 @@ export function TaskCompletionDialog({ task, onConfirm, onCancel }: TaskCompleti
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-card border border-border rounded-xl p-6 w-full max-w-md mx-4 shadow-xl">
+    <Dialog open onOpenChange={(open) => !open && !isSubmitting && onCancel()}>
+      <DialogContent className="sm:max-w-md" showCloseButton={false}>
         {/* Header */}
-        <div className="flex items-center gap-2 text-emerald-600">
-          <Check className="h-5 w-5" />
-          <h3 className="text-lg font-semibold">Task Complete</h3>
-        </div>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-emerald-600">
+            <Check className="h-5 w-5" />
+            <span>Task Complete</span>
+          </DialogTitle>
+        </DialogHeader>
 
         {/* Task info */}
         <p className="text-base font-medium text-foreground mt-3">{task.title}</p>
@@ -67,7 +75,7 @@ export function TaskCompletionDialog({ task, onConfirm, onCancel }: TaskCompleti
             Back
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils/currency'
 import { fetchWithRetry } from '@/lib/fetch-with-retry'
 import { analytics } from '@/lib/analytics'
 import { Plus, Check, Loader2, TrendingUp, TrendingDown, Minus, AlertCircle, Trash2, PlusCircle, MinusCircle, ChevronDown, ChevronRight, ArrowRight, X, DollarSign, Sparkles, Lightbulb } from 'lucide-react'
@@ -232,7 +233,19 @@ const cashFlowRows: RowConfig[] = [
 ]
 
 // Formatters
-function formatCurrency(value: number | null | undefined): string {
+function formatPercent(value: number | null | undefined): string {
+  if (value === null || value === undefined) return '-'
+  return `${(value * 100).toFixed(1)}%`
+}
+
+function formatValue(value: number | null | undefined, format: 'currency' | 'percent' | 'number'): string {
+  if (format === 'currency') return formatCurrencyFull(value)
+  if (format === 'percent') return formatPercent(value)
+  return value?.toLocaleString() ?? '-'
+}
+
+// Keep full-format currency for spreadsheet cells (renamed to avoid conflict)
+function formatCurrencyFull(value: number | null | undefined): string {
   if (value === null || value === undefined) return '-'
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -240,27 +253,6 @@ function formatCurrency(value: number | null | undefined): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value)
-}
-
-function formatPercent(value: number | null | undefined): string {
-  if (value === null || value === undefined) return '-'
-  return `${(value * 100).toFixed(1)}%`
-}
-
-function formatValue(value: number | null | undefined, format: 'currency' | 'percent' | 'number'): string {
-  if (format === 'currency') return formatCurrency(value)
-  if (format === 'percent') return formatPercent(value)
-  return value?.toLocaleString() ?? '-'
-}
-
-function formatCurrencyCompact(value: number): string {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`
-  }
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}k`
-  }
-  return `$${value.toLocaleString()}`
 }
 
 function parseInputValue(input: string): number {
@@ -1440,7 +1432,7 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
               >
                 <DollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                 <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
-                  {formatCurrencyCompact(currentValuation)}
+                  {formatCurrency(currentValuation)}
                 </span>
                 {sessionStartValuation !== null && currentValuation !== sessionStartValuation && (
                   <span className={cn(
@@ -1450,7 +1442,7 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                       : 'text-red-600 dark:text-red-400'
                   )}>
                     {currentValuation > sessionStartValuation ? '+' : ''}
-                    {formatCurrencyCompact(currentValuation - sessionStartValuation)} this session
+                    {formatCurrency(currentValuation - sessionStartValuation)} this session
                   </span>
                 )}
               </motion.div>
@@ -1524,7 +1516,7 @@ export function FinancialsSpreadsheet({ companyId, initialTab, hideTabs, hidePnl
                             'ml-2 text-sm',
                             lastValuationChange.change > 0 ? 'text-emerald-600' : 'text-red-600'
                           )}>
-                            ({lastValuationChange.change > 0 ? '+' : ''}{formatCurrencyCompact(lastValuationChange.change)}
+                            ({lastValuationChange.change > 0 ? '+' : ''}{formatCurrency(lastValuationChange.change)}
                             {lastValuationChange.percentChange !== null &&
                               ` / ${lastValuationChange.change > 0 ? '+' : ''}${lastValuationChange.percentChange.toFixed(1)}%`
                             })

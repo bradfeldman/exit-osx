@@ -52,7 +52,7 @@ export async function sendTrialWinback30Email(params: TrialWinback30EmailParams)
               </p>
 
               <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #666666; text-align: center;">
-                ${companyName}'s last Buyer Readiness Index was <strong>${roundedBRI}</strong>. Whether you're planning to sell this year or in five, staying on top of readiness makes the difference between a good exit and a great one.
+                ${companyName}'s last Buyer Readiness Score was <strong>${roundedBRI}</strong>. Whether you're planning to sell this year or in five, staying on top of readiness makes the difference between a good exit and a great one.
               </p>
 
               <p style="margin: 0 0 32px 0; font-size: 16px; line-height: 1.6; color: #666666; text-align: center;">

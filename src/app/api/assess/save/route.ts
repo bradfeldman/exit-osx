@@ -294,7 +294,7 @@ async function sendProspectAlert(params: {
         <tr><td style="padding: 4px 12px 4px 0; font-weight: 600;">Company</td><td>${params.companyName}</td></tr>
         <tr><td style="padding: 4px 12px 4px 0; font-weight: 600;">Email</td><td><a href="mailto:${params.email}">${params.email}</a></td></tr>
         <tr><td style="padding: 4px 12px 4px 0; font-weight: 600;">Revenue</td><td>${formatCurrency(params.annualRevenue)}</td></tr>
-        <tr><td style="padding: 4px 12px 4px 0; font-weight: 600;">BRI Score</td><td>${Math.round(params.briScore)}/100</td></tr>
+        <tr><td style="padding: 4px 12px 4px 0; font-weight: 600;">Buyer Readiness</td><td>${Math.round(params.briScore)}/100</td></tr>
         <tr><td style="padding: 4px 12px 4px 0; font-weight: 600;">Value Gap</td><td>${formatCurrency(params.valueGap)}</td></tr>
         <tr><td style="padding: 4px 12px 4px 0; font-weight: 600;">Top Risk</td><td>${params.topRiskCategory}</td></tr>
       </table>

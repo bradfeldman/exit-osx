@@ -339,7 +339,7 @@ export default function AdminMultipleAdjustmentPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-2 px-3 font-semibold">BRI Score</th>
+                  <th className="text-left py-2 px-3 font-semibold">Buyer Readiness</th>
                   <th className="text-center py-2 px-3 font-semibold">α = 1.3</th>
                   <th className="text-center py-2 px-3 font-semibold">α = 1.4 (default)</th>
                   <th className="text-center py-2 px-3 font-semibold">α = 1.5</th>

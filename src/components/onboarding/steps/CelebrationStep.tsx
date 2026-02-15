@@ -2,22 +2,13 @@
 
 import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
+import { formatCurrency } from '@/lib/utils/currency'
 import { Check } from 'lucide-react'
 
 interface CelebrationStepProps {
   recoveredValue: number
   onContinue: () => void
   onLater: () => void
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`
-  }
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}k`
-  }
-  return `$${value.toFixed(0)}`
 }
 
 export function CelebrationStep({

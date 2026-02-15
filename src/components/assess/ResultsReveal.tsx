@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Loader2, TrendingUp, Shield, AlertTriangle } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils/currency'
 import type { BusinessBasicsData } from './BusinessBasicsStep'
 import type { BusinessProfileData } from './BusinessProfileStep'
 import type { BuyerScanData } from './BuyerScanStep'
@@ -31,12 +33,6 @@ interface ResultsRevealProps {
   basics: BusinessBasicsData
   profile: BusinessProfileData
   scan: BuyerScanData
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
-  if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`
-  return `$${value.toLocaleString()}`
 }
 
 function getBriColor(score: number): string {
@@ -125,7 +121,7 @@ export function ResultsReveal({ results, email, basics, profile, scan }: Results
         className="text-center"
       >
         <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">
-          Buyer Readiness Index
+          Buyer Readiness Score
         </p>
         <div className={`text-7xl sm:text-8xl font-bold tabular-nums ${getBriColor(results.briScore)}`}>
           {results.briScore}
@@ -262,7 +258,7 @@ export function ResultsReveal({ results, email, basics, profile, scan }: Results
                 Check your email for a verification link to access your full dashboard.
               </p>
               <Button asChild size="lg" className="mt-2">
-                <a href="/login">Go to Login</a>
+                <Link href="/login">Go to Login</Link>
               </Button>
             </div>
           ) : (

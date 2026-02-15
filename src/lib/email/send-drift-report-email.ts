@@ -80,7 +80,7 @@ export async function sendDriftReportEmail(params: DriftReportEmailParams): Prom
 
     <div style="display:flex;gap:16px;margin:24px 0;">
       <div style="flex:1;background:#f9fafb;border-radius:8px;padding:16px;text-align:center;border:1px solid #e5e7eb;">
-        <p style="font-size:12px;color:#6b7280;margin:0;">BRI Score</p>
+        <p style="font-size:12px;color:#6b7280;margin:0;">Buyer Readiness</p>
         <p style="font-size:28px;font-weight:700;margin:4px 0;color:#111827;">${Math.round(briScoreEnd * 100)}</p>
         <p style="font-size:13px;color:${briColor};margin:0;font-weight:600;">
           ${briArrow} ${Math.abs(Math.round(briChange * 100))} pts ${briDirection}

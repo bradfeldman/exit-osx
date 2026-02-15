@@ -2,6 +2,7 @@
 
 import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
+import { formatCurrency } from '@/lib/utils/currency'
 
 interface IndustryPreviewStepProps {
   companyName: string
@@ -10,16 +11,6 @@ interface IndustryPreviewStepProps {
   valuationHigh: number
   potentialGap: number
   onContinue: () => void
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`
-  }
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}K`
-  }
-  return `$${value.toLocaleString()}`
 }
 
 export function IndustryPreviewStep({

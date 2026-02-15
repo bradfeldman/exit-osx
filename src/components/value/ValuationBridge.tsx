@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { Button } from '@/components/ui/button'
+import { formatCurrency } from '@/lib/utils/currency'
 import { BridgeTooltip } from './BridgeTooltip'
 
 const BRI_CATEGORY_COLORS: Record<string, string> = {
@@ -34,12 +35,6 @@ interface ValuationBridgeProps {
   hasAssessment: boolean
   onCategoryClick?: (category: string) => void
   onAssessmentStart?: () => void
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
-  if (value >= 1_000) return `$${Math.round(value / 1_000)}K`
-  return `$${Math.round(value)}`
 }
 
 export function ValuationBridge({

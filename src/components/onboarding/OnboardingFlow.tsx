@@ -16,6 +16,8 @@ import { DEFAULT_BRI_WEIGHTS } from '@/lib/bri-weights'
 import { LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { calculateValuationFromPercentages } from '@/lib/valuation/calculate-valuation'
+import { track } from '@/lib/analytics'
+import { useTimer } from '@/lib/analytics/hooks'
 
 // Onboarding step definitions - Streamlined Dan/Alex flow
 const STEPS = [
@@ -71,6 +73,9 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
   const [formData, setFormData] = useState<CompanyFormData>(initialFormData)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Analytics: Track time per step
+  const stepTimer = useTimer('onboarding_step')
 
   // Business description state (used for industry matching + risk-focused AI questions)
   const [businessDescription, setBusinessDescription] = useState<string>(() => {
@@ -160,6 +165,44 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
       localStorage.removeItem('pendingCompanyName')
     }
   }, [])
+
+  // Analytics: Track onboarding start (only once on first mount at step 1)
+  useEffect(() => {
+    const startTime = sessionStorage.getItem('onboarding_analytics_start_time')
+    if (currentStep === 1 && !startTime) {
+      track('setup_wizard_started', {
+        entrySource: searchParams.get('source') || 'direct',
+      })
+      sessionStorage.setItem('onboarding_analytics_start_time', Date.now().toString())
+    }
+  }, [currentStep, searchParams])
+
+  // Analytics: Track step views and timing
+  useEffect(() => {
+    const step = STEPS.find(s => s.id === currentStep)
+    if (!step) return
+
+    // Track step viewed
+    track('setup_step_viewed', {
+      stepNumber: currentStep,
+      stepName: step.key as 'basic_info' | 'revenue' | 'business_profile',
+    })
+
+    // Start timer for this step
+    stepTimer.start()
+
+    // On unmount or step change, track time spent
+    return () => {
+      const timeSpent = stepTimer.stop()
+      if (timeSpent !== null) {
+        track('setup_step_time', {
+          stepNumber: currentStep,
+          stepName: step.key,
+          duration: timeSpent,
+        })
+      }
+    }
+  }, [currentStep, stepTimer])
 
   // Restore form data from sessionStorage on mount
   useEffect(() => {
@@ -271,6 +314,17 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
       const { company } = await companyResponse.json()
       setCreatedCompanyId(company.id)
 
+      // Analytics: Track company creation during onboarding
+      track('setup_step_completed', {
+        stepNumber: 3,
+        stepName: 'company_created',
+        inputsProvided: {
+          companyId: company.id,
+          hasIndustry: true,
+          hasRevenue: true,
+        },
+      })
+
       // Save core factors with moderate defaults (Core Score ~0.5)
       const coreFactorsPayload = {
         revenueSizeCategory,
@@ -344,6 +398,25 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
 
   // Handle next step
   const handleNext = async () => {
+    const step = STEPS.find(s => s.id === currentStep)
+
+    // Analytics: Track step completion
+    if (step) {
+      track('setup_step_completed', {
+        stepNumber: currentStep,
+        stepName: step.key,
+        inputsProvided: currentStep === 1
+          ? {
+              hasCompanyName: !!formData.name,
+              hasIndustry: !!formData.icbIndustry,
+              hasBusinessDescription: businessDescription.length >= 20,
+            }
+          : currentStep === 2
+          ? { hasRevenue: formData.annualRevenue > 0 }
+          : {},
+      })
+    }
+
     if (currentStep === 2) {
       // Create company before moving to step 3 (value preview)
       const result = await createCompany()
@@ -357,6 +430,11 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
 
   const handleBack = () => {
     if (currentStep > 1) {
+      // Analytics: Track step back navigation
+      track('setup_step_back', {
+        fromStep: currentStep,
+        toStep: currentStep - 1,
+      })
       goToStep(currentStep - 1)
     }
   }
@@ -466,6 +544,16 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
   const handleComplete = async () => {
     console.log('[ONBOARDING] handleComplete called, createdCompanyId:', createdCompanyId, 'riskResults:', !!riskResults)
 
+    // Analytics: Track onboarding completion
+    const startTimeStr = sessionStorage.getItem('onboarding_analytics_start_time')
+    if (startTimeStr) {
+      const totalTime = Date.now() - parseInt(startTimeStr, 10)
+      track('setup_completed', {
+        totalTime,
+        stepsRevisited: 0, // Could track this in future if needed
+      })
+    }
+
     // Note: Snapshot was already created in handleQuickScanComplete for task value calculation
     // Tasks are generated in DeepDiveStep before this is called
     // We just need to send the completion email here
@@ -524,6 +612,7 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     sessionStorage.removeItem('onboarding_previewData')
     sessionStorage.removeItem('onboarding_formData')
     sessionStorage.removeItem('onboarding_businessDescription')
+    sessionStorage.removeItem('onboarding_analytics_start_time')
 
     // Navigate to dashboard — PlatformTour auto-triggers there and ends with "See Your First Move" → Actions
     router.push('/dashboard')

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { formatIcbName } from '@/lib/utils/format-icb'
+import { formatCurrency } from '@/lib/utils/currency'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -43,16 +44,6 @@ interface DashboardData {
     ebitdaMultipleLow: number
     ebitdaMultipleHigh: number
   }
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`
-  }
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}K`
-  }
-  return `$${value.toFixed(0)}`
 }
 
 export default function AdvisorClientPage() {
@@ -267,7 +258,7 @@ export default function AdvisorClientPage() {
             </Card>
             <Card>
               <CardContent className="pt-6">
-                <p className="text-sm text-muted-foreground">BRI Score</p>
+                <p className="text-sm text-muted-foreground">Buyer Readiness Score</p>
                 <p className="text-2xl font-bold">
                   {dashboard.tier1.briScore.toFixed(0)}
                 </p>

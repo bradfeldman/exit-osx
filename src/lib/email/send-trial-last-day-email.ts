@@ -75,7 +75,7 @@ export async function sendTrialLastDayEmail(params: TrialLastDayEmailParams) {
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                       <tr>
                         <td style="width: 33%; text-align: center; border-right: 1px solid #E5E7EB;">
-                          <p style="margin: 0 0 4px 0; font-size: 12px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px;">BRI Score</p>
+                          <p style="margin: 0 0 4px 0; font-size: 12px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px;">Buyer Readiness</p>
                           <p style="margin: 0; font-size: 28px; font-weight: 700; color: #3D3D3D;">${roundedBRI}</p>
                           <p style="margin: 4px 0 0 0; font-size: 11px; color: #DC2626;">will freeze</p>
                         </td>

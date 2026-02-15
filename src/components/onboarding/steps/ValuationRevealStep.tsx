@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from '@/lib/motion'
 import confetti from 'canvas-confetti'
 import { Button } from '@/components/ui/button'
+import { formatCurrency } from '@/lib/utils/currency'
 import {
   ArrowRight,
   TrendingUp,
@@ -41,16 +42,6 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
   MARKET: Target,
   LEGAL_TAX: Scale,
   PERSONAL: User,
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`
-  }
-  if (value >= 1000) {
-    return `$${Math.round(value / 1000)}K`
-  }
-  return `$${value.toLocaleString()}`
 }
 
 export function ValuationRevealStep({
@@ -184,7 +175,7 @@ export function ValuationRevealStep({
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                  Buyer Readiness Index
+                  Buyer Readiness Score
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   How attractive you are to buyers

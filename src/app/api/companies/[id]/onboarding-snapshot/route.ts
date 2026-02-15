@@ -8,6 +8,7 @@ import {
   calculateValuation,
   type CoreFactors,
 } from '@/lib/valuation/calculate-valuation'
+import { getMarketSalary } from '@/lib/valuation/recalculate-snapshot'
 
 /**
  * PROD-063: Server-side recalculation for onboarding snapshots.
@@ -84,6 +85,7 @@ export async function POST(
       },
       include: {
         coreFactors: true,
+        ebitdaAdjustments: true,
       }
     })
 
@@ -102,9 +104,35 @@ export async function POST(
       company.icbIndustry
     )
 
-    // Calculate adjusted EBITDA from revenue using industry multiples
-    const revenue = Number(company.annualRevenue)
-    const adjustedEbitda = estimateEbitdaFromRevenue(revenue, multiples)
+    // Calculate adjusted EBITDA
+    // If actual EBITDA exists, use it with adjustments
+    // Otherwise, estimate EBITDA from revenue using industry multiples
+    const baseEbitda = Number(company.annualEbitda)
+    const ownerComp = Number(company.ownerCompensation)
+    const addBacks = company.ebitdaAdjustments
+      .filter(a => a.type === 'ADD_BACK')
+      .reduce((sum, a) => sum + Number(a.amount), 0)
+    const deductions = company.ebitdaAdjustments
+      .filter(a => a.type === 'DEDUCTION')
+      .reduce((sum, a) => sum + Number(a.amount), 0)
+
+    // Add owner compensation as an add-back (normalized)
+    const revenueSizeCategory = company.coreFactors?.revenueSizeCategory ?? null
+    const marketSalaryBenchmark = getMarketSalary(revenueSizeCategory)
+    const marketSalary = Math.min(ownerComp, marketSalaryBenchmark)
+    const excessComp = Math.max(0, ownerComp - marketSalary)
+
+    let adjustedEbitda: number
+    if (baseEbitda > 0) {
+      // Actual EBITDA provided - use adjusted calculation
+      adjustedEbitda = baseEbitda + addBacks + excessComp - deductions
+    } else {
+      // No EBITDA provided - estimate from revenue using industry multiples
+      const revenue = Number(company.annualRevenue)
+      const estimatedEbitda = estimateEbitdaFromRevenue(revenue, multiples)
+      // Still apply add-backs and owner comp adjustments to estimated base
+      adjustedEbitda = estimatedEbitda + addBacks + excessComp - deductions
+    }
 
     // Calculate Core Score using shared utility (should be 1.0 for onboarding defaults)
     const coreFactors = company.coreFactors

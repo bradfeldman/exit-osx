@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { formatCurrency } from '@/lib/utils/currency'
 
 interface Company {
   id: string
@@ -42,16 +43,6 @@ interface SnapshotLogEntry {
   currentValue: number
   briScore: number
   coreScore: number
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(2)}M`
-  }
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}K`
-  }
-  return `$${value.toFixed(0)}`
 }
 
 function formatPercent(value: number): string {
@@ -392,7 +383,7 @@ export default function AdminSnapshotPage() {
                     </CardHeader>
                     <CardContent>
                       <DataRow
-                        label="Overall BRI Score"
+                        label="Buyer Readiness Score"
                         value={formatScore(snapshot.briScore)}
                         description="Weighted average of all categories (0-100)"
                       />

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { formatIcbName } from '@/lib/utils/format-icb'
+import { formatCurrency } from '@/lib/utils/currency'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -71,16 +72,6 @@ const roleLabels: Record<string, string> = {
   wealth_advisor: 'Wealth Advisor',
   ma_advisor: 'M&A Advisor',
   consultant: 'Consultant',
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`
-  }
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}K`
-  }
-  return `$${value.toFixed(0)}`
 }
 
 export default function AdvisorDashboardPage() {
@@ -222,7 +213,7 @@ export default function AdvisorDashboardPage() {
                   <TrendingUp className="h-5 w-5 text-amber-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Avg. BRI Score</p>
+                  <p className="text-sm text-muted-foreground">Avg. Buyer Readiness</p>
                   <p className="text-2xl font-bold">{avgBriScore.toFixed(0)}</p>
                 </div>
               </div>
@@ -299,7 +290,7 @@ export default function AdvisorDashboardPage() {
                             </p>
                           </div>
                           <div>
-                            <p className="text-xs text-muted-foreground">BRI Score</p>
+                            <p className="text-xs text-muted-foreground">Buyer Readiness</p>
                             <p className="font-medium">
                               {client.valuation
                                 ? client.valuation.briScore.toFixed(0)

@@ -63,6 +63,8 @@ export function DeepDiveStep({
   const [questionsByCategory, setQuestionsByCategory] = useState<Record<string, Question[]>>({})
   const [expandedCategory, setExpandedCategory] = useState<BRICategory | null>(null)
   const [completedCategories, setCompletedCategories] = useState<Set<string>>(new Set())
+  const [taskGenError, setTaskGenError] = useState<string | null>(null)
+  const [retryCount, setRetryCount] = useState(0)
 
   // Persist assessmentId to sessionStorage
   useEffect(() => {
@@ -159,17 +161,21 @@ export function DeepDiveStep({
 
   const handleContinue = async () => {
     setFinishing(true)
+    setTaskGenError(null)
     try {
       const allDone = completedCategories.size >= BRI_CATEGORIES.length
 
       if (allDone && assessmentId && !isAssessmentCompleted) {
         // All 6 categories completed — complete the full assessment (scoring + task generation)
-        await fetch(`/api/assessments/${assessmentId}/complete`, {
+        const res = await fetch(`/api/assessments/${assessmentId}/complete`, {
           method: 'POST',
         })
+        if (!res.ok) {
+          throw new Error('Failed to complete assessment')
+        }
       } else {
         // Partial or skip — generate tasks from QuickScan risk results
-        await fetch('/api/tasks/generate', {
+        const res = await fetch('/api/tasks/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -182,16 +188,35 @@ export function DeepDiveStep({
             riskQuestionAnswers: {},
           }),
         })
+        if (!res.ok) {
+          throw new Error('Failed to generate tasks')
+        }
       }
-    } catch (err) {
-      console.error('[DeepDiveStep] Task generation error:', err)
-      // Continue to dashboard even if task generation fails
-    } finally {
-      // Clean up sessionStorage
+
+      // Success — clean up and proceed
       sessionStorage.removeItem('onboarding_deepdive_assessmentId')
       setFinishing(false)
       onFinish()
+    } catch (err) {
+      console.error('[DeepDiveStep] Task generation error:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Failed to generate action plan'
+
+      if (retryCount < 2) {
+        // Show error with retry option
+        setTaskGenError(errorMessage)
+        setFinishing(false)
+      } else {
+        // After 2 failed retries, allow user to continue
+        sessionStorage.removeItem('onboarding_deepdive_assessmentId')
+        setFinishing(false)
+        onFinish()
+      }
     }
+  }
+
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1)
+    handleContinue()
   }
 
   if (loading) {
@@ -343,6 +368,42 @@ export function DeepDiveStep({
           )
         })}
       </motion.div>
+
+      {/* Task generation error */}
+      <AnimatePresence>
+        {taskGenError && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl"
+          >
+            <p className="text-sm text-destructive mb-3">{taskGenError}</p>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleRetry}
+                disabled={finishing}
+              >
+                {finishing ? (
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin mr-2" />
+                    Retrying...
+                  </>
+                ) : (
+                  'Retry'
+                )}
+              </Button>
+              {retryCount >= 1 && (
+                <p className="text-xs text-muted-foreground flex items-center">
+                  We're generating your action plan. It'll be ready when you reach your dashboard.
+                </p>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Continue CTA */}
       <motion.div

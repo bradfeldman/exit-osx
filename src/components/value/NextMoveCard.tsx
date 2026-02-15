@@ -6,6 +6,7 @@ import { Clock, DollarSign, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getBRICategoryLabel, getBRICategoryColor } from '@/lib/constants/bri-categories'
+import { formatCurrency } from '@/lib/utils/currency'
 import { ComingUpList } from './ComingUpList'
 
 interface NextMoveTask {
@@ -40,12 +41,6 @@ function formatTime(hours: number | null): string {
   if (!hours) return ''
   if (hours < 2) return `${Math.round(hours * 60)} min`
   return `${hours} hours`
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
-  if (value >= 1_000) return `$${Math.round(value / 1_000)}K`
-  return `$${Math.round(value)}`
 }
 
 export function NextMoveCard({ task, comingUp, isFreeUser = false, onUpgrade }: NextMoveCardProps) {

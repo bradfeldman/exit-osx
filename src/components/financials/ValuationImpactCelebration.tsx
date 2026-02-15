@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
+import { formatCurrency } from '@/lib/utils/currency'
 import { TrendingUp, Sparkles, ArrowRight, X } from 'lucide-react'
 
 interface ValuationImpactCelebrationProps {
@@ -21,16 +22,6 @@ interface ConfettiParticle {
   duration: number
   delay: number
   color: string
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`
-  }
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}k`
-  }
-  return `$${value.toLocaleString()}`
 }
 
 function formatCurrencyFull(value: number): string {

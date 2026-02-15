@@ -76,7 +76,7 @@ export async function sendMagicLinkEmail({ email, magicLinkUrl }: SendMagicLinkE
                       After a quick onboarding (about 5 minutes), you will get:
                     </p>
                     <p style="margin: 0 0 6px 0; font-size: 14px; line-height: 1.5; color: #666666;">
-                      &#10003; Your Exit Readiness Score
+                      &#10003; Your Buyer Readiness Score
                     </p>
                     <p style="margin: 0 0 6px 0; font-size: 14px; line-height: 1.5; color: #666666;">
                       &#10003; A valuation range estimate

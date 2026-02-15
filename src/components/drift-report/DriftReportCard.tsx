@@ -77,7 +77,7 @@ export function DriftReportCard({ report, compact = false }: DriftReportCardProp
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-muted-foreground">BRI Score</p>
+              <p className="text-xs text-muted-foreground">Buyer Readiness</p>
               <div className="flex items-center gap-1.5 mt-1">
                 <span className="text-lg font-bold">{Math.round(report.briScoreEnd * 100)}</span>
                 <span className={`flex items-center text-xs font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}`}>

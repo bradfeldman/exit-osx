@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useProgression } from '@/contexts/ProgressionContext'
+import { formatCurrency } from '@/lib/utils/currency'
 import {
   ArrowRight,
   TrendingUp,
@@ -61,16 +62,6 @@ interface TaskStats {
   completed: number
   totalValue: number
   completedValue: number
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`
-  }
-  if (value >= 1000) {
-    return `$${Math.round(value / 1000)}k`
-  }
-  return `$${value.toLocaleString()}`
 }
 
 function formatRiskLabel(category: string): string {

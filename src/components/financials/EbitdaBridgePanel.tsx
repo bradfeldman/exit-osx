@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Sparkles, Loader2, AlertTriangle, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils/currency'
 import { EbitdaBridgeChart, buildWaterfallData, type WaterfallItem } from './EbitdaBridgeChart'
 import { BridgeSuggestionCard } from './BridgeSuggestionCard'
 import type { BridgeAnalysis, AdjustmentReview } from '@/lib/ai/ebitda-bridge'
@@ -39,12 +40,6 @@ interface CompanyData {
 
 interface EbitdaBridgePanelProps {
   companyId: string
-}
-
-function formatCurrency(value: number): string {
-  if (Math.abs(value) >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
-  if (Math.abs(value) >= 1_000) return `$${Math.round(value / 1_000)}K`
-  return `$${Math.round(value)}`
 }
 
 // Market salary benchmarks (matching recalculate-snapshot.ts)

@@ -125,7 +125,7 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
                 <tr>
                   <td style="width: 70%;">
                     <p style="margin: 0 0 4px 0; font-size: 12px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px;">
-                      Buyer Readiness Index
+                      Buyer Readiness Score
                     </p>
                     <p style="margin: 0; font-size: 14px; color: #666666;">
                       How attractive you are to buyers

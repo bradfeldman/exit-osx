@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { useCompany } from '@/contexts/CompanyContext'
+import { formatCurrency } from '@/lib/utils/currency'
 import { FinancialsDataEntry } from '@/components/financials/FinancialsDataEntry'
 import { Pencil, Loader2, CheckCircle, Link2, AlertCircle, X, TrendingUp } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
@@ -38,16 +39,6 @@ function QuickBooksLogo({ className = "w-8 h-8" }: { className?: string }) {
       <circle cx="20" cy="20" r="3" fill="white" />
     </svg>
   )
-}
-
-function formatCurrencyCompact(value: number): string {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`
-  }
-  if (value >= 1000) {
-    return `$${Math.round(value / 1000)}k`
-  }
-  return `$${value.toLocaleString()}`
 }
 
 // Get conditional headline based on assessment status
@@ -172,7 +163,7 @@ function FinancialsEmptyState({
               <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             </div>
             <p className="text-sm text-emerald-700 dark:text-emerald-300">
-              You&apos;ve already improved your value by <span className="font-semibold">{formatCurrencyCompact(completedTaskValue)}</span> through {completedTaskCount} completed task{completedTaskCount !== 1 ? 's' : ''}.
+              You&apos;ve already improved your value by <span className="font-semibold">{formatCurrency(completedTaskValue)}</span> through {completedTaskCount} completed task{completedTaskCount !== 1 ? 's' : ''}.
               Add your financials to see your total valuation.
             </p>
           </div>

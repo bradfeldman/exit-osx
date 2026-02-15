@@ -6,6 +6,7 @@ import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useProgression } from '@/contexts/ProgressionContext'
+import { formatCurrency } from '@/lib/utils/currency'
 import {
   ArrowLeft,
   Target,
@@ -29,16 +30,6 @@ interface Task {
 
 interface TaskExecutionClientProps {
   taskId: string
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`
-  }
-  if (value >= 1000) {
-    return `$${Math.round(value / 1000)}k`
-  }
-  return `$${value.toLocaleString()}`
 }
 
 function formatRiskLabel(category: string): string {

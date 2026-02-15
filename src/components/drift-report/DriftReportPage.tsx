@@ -152,7 +152,7 @@ export function DriftReportPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
               <CardHeader className="pb-2">
-                <CardDescription>BRI Score</CardDescription>
+                <CardDescription>Buyer Readiness Score</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-end gap-3">

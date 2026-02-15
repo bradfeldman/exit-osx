@@ -68,7 +68,7 @@ export function LandingPage() {
                 <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">Sign In</Button>
               </Link>
               <Link href="/signup">
-                <Button size="sm" className="text-xs sm:text-sm px-2.5 sm:px-3">Get Your Free Exit Score</Button>
+                <Button size="sm" className="text-xs sm:text-sm px-2.5 sm:px-3">Get Your Free Score</Button>
               </Link>
             </div>
           </div>
@@ -130,7 +130,7 @@ export function LandingPage() {
               >
                 <Link href="/signup" className="w-full sm:w-auto">
                   <Button size="lg" className="text-base px-10 h-14 text-lg btn-hover w-full sm:w-auto">
-                    Get Your Free Exit Score
+                    Get Your Free Score
                   </Button>
                 </Link>
               </motion.div>
@@ -343,7 +343,7 @@ export function LandingPage() {
             <AnimatedSection className="text-center mt-10">
               <Link href="/signup">
                 <Button size="lg" className="btn-hover">
-                  Get Your Free Exit Score
+                  Get Your Free Score
                 </Button>
               </Link>
             </AnimatedSection>
@@ -382,7 +382,7 @@ export function LandingPage() {
                 {
                   num: 4,
                   title: 'Track',
-                  desc: 'Watch your Exit Readiness Score climb. See your projected valuation increase in real-time.',
+                  desc: 'Watch your Buyer Readiness Score climb. See your projected valuation increase in real-time.',
                 },
               ].map((step) => (
                 <AnimatedItem key={step.num}>
@@ -400,7 +400,7 @@ export function LandingPage() {
             <AnimatedSection className="text-center mt-12">
               <Link href="/signup">
                 <Button size="lg" className="text-base px-8 btn-hover">
-                  Get Your Free Exit Score
+                  Get Your Free Score
                 </Button>
               </Link>
             </AnimatedSection>
@@ -561,7 +561,7 @@ export function LandingPage() {
                 },
                 {
                   q: '"How long does the assessment take?"',
-                  a: '10 minutes. You\'ll get your Exit Readiness Score, a valuation estimate, and a breakdown of where buyers will focus immediately.',
+                  a: '10 minutes. You\'ll get your Buyer Readiness Score, a valuation estimate, and a breakdown of where buyers will focus immediately.',
                 },
                 {
                   q: '"Is my data secure?"',
@@ -598,7 +598,7 @@ export function LandingPage() {
               </p>
               <Link href="/signup">
                 <Button size="lg" variant="secondary" className="text-base px-10 h-14 text-lg btn-hover">
-                  Get Your Free Exit Score
+                  Get Your Free Score
                 </Button>
               </Link>
               <p className="text-sm text-primary-foreground/60 mt-4">

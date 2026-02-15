@@ -69,7 +69,7 @@ export async function GET() {
           id: `no-assessment-${company.id}`,
           type: 'NO_ASSESSMENT',
           title: 'Complete Your Assessment',
-          message: `${company.name} needs an initial assessment to calculate your Buyer Readiness Index and valuation.`,
+          message: `${company.name} needs an initial assessment to calculate your Buyer Readiness Score and valuation.`,
           actionUrl: '/dashboard/diagnosis',
           companyId: company.id,
           companyName: company.name,

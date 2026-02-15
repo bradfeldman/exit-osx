@@ -94,7 +94,7 @@ export function HeroMetricsBar({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <p className="text-sm font-medium text-muted-foreground">BRI Score</p>
+        <p className="text-sm font-medium text-muted-foreground">Buyer Readiness Score</p>
         <p className={`text-3xl font-bold mt-1 ${getBriColor()}`}>
           {briPercent != null
             ? isClient ? animatedBri : `${briPercent}`

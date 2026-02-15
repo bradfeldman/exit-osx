@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts'
+import { formatCurrency } from '@/lib/utils/currency'
 
 export interface WaterfallItem {
   label: string
@@ -21,12 +22,6 @@ export interface WaterfallItem {
 
 interface EbitdaBridgeChartProps {
   items: WaterfallItem[]
-}
-
-function formatCurrency(value: number): string {
-  if (Math.abs(value) >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
-  if (Math.abs(value) >= 1_000) return `$${Math.round(value / 1_000)}K`
-  return `$${Math.round(value)}`
 }
 
 function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: WaterfallItem }> }) {
