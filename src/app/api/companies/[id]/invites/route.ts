@@ -190,6 +190,7 @@ export async function POST(
 
     // TODO: Send email invitation via Resend
 
+    // SEC-075: Never expose raw invite token in API response
     return NextResponse.json({
       invite: {
         id: invite.id,
@@ -197,7 +198,6 @@ export async function POST(
         inviteType: invite.inviteType,
         ownershipPercent: invite.ownershipPercent?.toNumber(),
         expiresAt: invite.expiresAt.toISOString(),
-        token: invite.token,
       },
     })
   } catch (error) {

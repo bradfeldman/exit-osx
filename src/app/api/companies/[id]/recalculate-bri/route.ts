@@ -1,6 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snapshot'
 
 /**
@@ -12,59 +12,32 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
   const { id: companyId } = await params
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  // SEC-077: Use standard checkPermission instead of ad-hoc auth
+  const result = await checkPermission('COMPANY_UPDATE', companyId)
+  if (isAuthError(result)) return result.error
 
   try {
-    // Verify user has access and get database user ID
-    const company = await prisma.company.findUnique({
-      where: { id: companyId },
-      include: {
-        workspace: {
-          include: {
-            members: {
-              where: { user: { authId: user.id } },
-              include: {
-                user: { select: { id: true } }
-              }
-            }
-          }
-        }
-      }
-    })
-
-    if (!company) {
-      return NextResponse.json({ error: 'Company not found' }, { status: 404 })
-    }
-
-    if (company.workspace.members.length === 0) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
-    }
-
-    const dbUserId = company.workspace.members[0].user.id
+    const dbUserId = result.auth.user.id
 
     // Recalculate snapshot with current BRI scores
-    const result = await recalculateSnapshotForCompany(
+    const recalcResult = await recalculateSnapshotForCompany(
       companyId,
       'Category assessment updated',
       dbUserId
     )
 
-    if (!result.success) {
+    if (!recalcResult.success) {
       return NextResponse.json(
-        { error: result.error || 'Failed to recalculate' },
+        { error: recalcResult.error || 'Failed to recalculate' },
         { status: 500 }
       )
     }
 
     // Get the new snapshot to return updated scores
     const snapshot = await prisma.valuationSnapshot.findUnique({
-      where: { id: result.snapshotId },
+      where: { id: recalcResult.snapshotId },
       select: {
         briScore: true,
         briFinancial: true,
@@ -81,7 +54,7 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      snapshotId: result.snapshotId,
+      snapshotId: recalcResult.snapshotId,
       scores: snapshot ? {
         briScore: Math.round(Number(snapshot.briScore) * 100),
         categories: {

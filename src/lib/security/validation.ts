@@ -369,7 +369,7 @@ const financialAccountItem = z.object({
   balance: z.coerce.number().finite().optional(),
   institution: z.string().max(200).optional(),
   notes: z.string().max(1000).optional(),
-}).passthrough() // allow extra fields for forward compatibility
+}) // SEC-080: Strip unknown fields instead of passing through
 
 const financialJsonArray = z.array(financialAccountItem).max(100).optional().nullable()
 
@@ -379,7 +379,7 @@ const businessOwnershipSchema = z.object({
   shareClass: z.string().max(100).optional(),
   vestingComplete: z.boolean().optional(),
   notes: z.string().max(1000).optional(),
-}).passthrough().optional().nullable()
+}).optional().nullable() // SEC-080: Strip unknown fields instead of passing through
 
 /** Personal Financials PUT */
 export const personalFinancialsSchema = z.object({

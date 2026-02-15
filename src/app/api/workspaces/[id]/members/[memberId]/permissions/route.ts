@@ -24,6 +24,11 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     const { id: workspaceId, memberId } = await params
 
+    // SEC-081: Verify user belongs to the workspace in the URL
+    if (result.auth.workspaceMember.workspaceId !== workspaceId) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    }
+
     // Verify the member belongs to this workspace
     const workspaceMember = await prisma.workspaceMember.findFirst({
       where: {
@@ -93,6 +98,11 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     if (isAuthError(result)) return result.error
 
     const { id: workspaceId, memberId } = await params
+
+    // SEC-081: Verify user belongs to the workspace in the URL
+    if (result.auth.workspaceMember.workspaceId !== workspaceId) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    }
 
     const validation = await validateRequestBody(request, patchSchema)
     if (!validation.success) return validation.error
@@ -229,6 +239,11 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     if (isAuthError(result)) return result.error
 
     const { id: workspaceId, memberId } = await params
+
+    // SEC-081: Verify user belongs to the workspace in the URL
+    if (result.auth.workspaceMember.workspaceId !== workspaceId) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    }
 
     // Verify the member belongs to this workspace
     const workspaceMember = await prisma.workspaceMember.findFirst({

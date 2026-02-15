@@ -15,7 +15,8 @@ export async function GET(
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search')
     const noteType = searchParams.get('noteType')
-    const limit = parseInt(searchParams.get('limit') || '50', 10)
+    // SEC-079: Cap limit to prevent excessive data extraction
+    const limit = Math.min(parseInt(searchParams.get('limit') || '50', 10), 200)
 
     // Build search filter
     const where: {

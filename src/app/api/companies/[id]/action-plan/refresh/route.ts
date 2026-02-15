@@ -8,7 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { updateActionPlan, getActionPlanCount } from '@/lib/tasks/action-plan'
 import { MAX_ACTION_PLAN_TASKS } from '@/lib/tasks/priority-matrix'
@@ -17,37 +17,13 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   const { id: companyId } = await params
 
+  // SEC-077: Use standard checkPermission instead of ad-hoc auth
+  const result = await checkPermission('COMPANY_UPDATE', companyId)
+  if (isAuthError(result)) return result.error
+
   try {
-    // Verify user has access to this company
-    const dbUser = await prisma.user.findUnique({
-      where: { authId: user.id },
-      include: {
-        workspaces: {
-          include: {
-            workspace: {
-              include: { companies: { where: { id: companyId } } }
-            }
-          }
-        }
-      }
-    })
-
-    const hasAccess = dbUser?.workspaces.some(
-      ws => ws.workspace.companies.length > 0
-    )
-
-    if (!hasAccess) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
 
     // Get current action plan count
     const currentCount = await getActionPlanCount(companyId)
@@ -64,7 +40,7 @@ export async function POST(
     }
 
     // Update the action plan
-    const result = await updateActionPlan(companyId)
+    const refreshResult = await updateActionPlan(companyId)
 
     // Get queue count for response
     const queueCount = await prisma.task.count({
@@ -77,9 +53,9 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      message: result.message,
-      added: result.added,
-      total: result.total,
+      message: refreshResult.message,
+      added: refreshResult.added,
+      total: refreshResult.total,
       queueRemaining: queueCount,
       maxCapacity: MAX_ACTION_PLAN_TASKS,
     })
@@ -96,37 +72,13 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   const { id: companyId } = await params
 
+  // SEC-077: Use standard checkPermission instead of ad-hoc auth
+  const result = await checkPermission('COMPANY_VIEW', companyId)
+  if (isAuthError(result)) return result.error
+
   try {
-    // Verify user has access
-    const dbUser = await prisma.user.findUnique({
-      where: { authId: user.id },
-      include: {
-        workspaces: {
-          include: {
-            workspace: {
-              include: { companies: { where: { id: companyId } } }
-            }
-          }
-        }
-      }
-    })
-
-    const hasAccess = dbUser?.workspaces.some(
-      ws => ws.workspace.companies.length > 0
-    )
-
-    if (!hasAccess) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
 
     // Get action plan status
     const actionPlanCount = await getActionPlanCount(companyId)

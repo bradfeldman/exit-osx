@@ -7,31 +7,32 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { prisma } from '@/lib/prisma'
+import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { generateActionPlan } from '@/lib/tasks/action-plan'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+// SEC-078: Zod schema for action plan generation
+const generateActionPlanSchema = z.object({
+  dueDate: z.string().min(1),
+  carryForward: z.boolean().default(false),
+})
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   const { id: companyId } = await params
 
-  try {
-    // Parse request body
-    const body = await request.json()
-    const { dueDate, carryForward } = body
+  // SEC-077: Use standard checkPermission instead of ad-hoc auth
+  const result = await checkPermission('COMPANY_UPDATE', companyId)
+  if (isAuthError(result)) return result.error
 
-    if (!dueDate) {
-      return NextResponse.json({ error: 'Due date is required' }, { status: 400 })
-    }
+  try {
+    // SEC-078: Zod validated input
+    const validation = await validateRequestBody(request, generateActionPlanSchema)
+    if (!validation.success) return validation.error
+    const { dueDate, carryForward } = validation.data
 
     // Validate due date is within 90 days
     const dueDateObj = new Date(dueDate)
@@ -39,47 +40,18 @@ export async function POST(
     today.setHours(0, 0, 0, 0)
     const maxDate = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000)
 
-    if (dueDateObj < today || dueDateObj > maxDate) {
+    if (isNaN(dueDateObj.getTime()) || dueDateObj < today || dueDateObj > maxDate) {
       return NextResponse.json(
         { error: 'Due date must be between today and 90 days from now' },
         { status: 400 }
       )
     }
 
-    // Verify user has access to this company and get user ID
-    const dbUser = await prisma.user.findUnique({
-      where: { authId: user.id },
-      include: {
-        workspaces: {
-          include: {
-            workspace: {
-              include: { companies: { where: { id: companyId } } }
-            }
-          }
-        }
-      }
-    })
-
-    const hasAccess = dbUser?.workspaces.some(
-      ws => ws.workspace.companies.length > 0
-    )
-
-    if (!hasAccess || !dbUser) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    // Get the company's workspace to check user count
-    const _company = await prisma.company.findUnique({
-      where: { id: companyId },
-      select: { workspaceId: true },
-    })
-
-    // Determine default assignee
     // Use current user as default assignee
-    const defaultAssigneeId: string | null = dbUser.id
+    const defaultAssigneeId: string | null = result.auth.user.id
 
     // Generate the action plan
-    const result = await generateActionPlan(
+    const planResult = await generateActionPlan(
       companyId,
       dueDateObj,
       carryForward ?? false,
@@ -87,11 +59,11 @@ export async function POST(
     )
 
     return NextResponse.json({
-      success: result.success,
-      message: result.message,
-      tasksInPlan: result.tasksInPlan,
-      tasksCarriedForward: result.tasksCarriedForward,
-      newTasksAdded: result.newTasksAdded,
+      success: planResult.success,
+      message: planResult.message,
+      tasksInPlan: planResult.tasksInPlan,
+      tasksCarriedForward: planResult.tasksCarriedForward,
+      newTasksAdded: planResult.newTasksAdded,
     })
   } catch (error) {
     console.error('Error generating action plan:', error instanceof Error ? error.message : String(error))

@@ -32,10 +32,18 @@ export async function GET(
       )
     }
 
-    // Get all deal contacts for this person
+    // SEC-076: Scope deal contacts to companies in the user's workspace
+    const workspaceId = result.auth.workspaceMember.workspaceId
     const dealContacts = await prisma.dealContact.findMany({
       where: {
-        canonicalPersonId: personId
+        canonicalPersonId: personId,
+        dealBuyer: {
+          deal: {
+            company: {
+              workspaceId,
+            },
+          },
+        },
       },
       include: {
         dealBuyer: {
