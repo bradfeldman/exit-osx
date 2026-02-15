@@ -7,10 +7,10 @@ const DEFAULT_EXPIRY_SECONDS = 7 * 24 * 60 * 60
 const LEGACY_TOKEN_CUTOFF = new Date('2026-03-16T00:00:00Z').getTime()
 
 function getSecret(): string {
-  const secret = process.env.REPORT_SHARE_SECRET || process.env.NEXTAUTH_SECRET
+  const secret = process.env.REPORT_SHARE_SECRET
   if (!secret) {
     throw new Error(
-      'REPORT_SHARE_SECRET (or NEXTAUTH_SECRET) is not configured. ' +
+      'REPORT_SHARE_SECRET is not configured. ' +
       'Set a strong random secret in your environment variables.'
     )
   }

@@ -186,12 +186,12 @@ function getEncryptionKey(): Buffer {
 }
 
 function constantTimeCompare(a: string, b: string): boolean {
-  if (a.length !== b.length) {
-    return false
-  }
-  let result = 0
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  const maxLength = Math.max(a.length, b.length)
+  const aPadded = a.padEnd(maxLength, '\0')
+  const bPadded = b.padEnd(maxLength, '\0')
+  let result = a.length ^ b.length
+  for (let i = 0; i < maxLength; i++) {
+    result |= aPadded.charCodeAt(i) ^ bPadded.charCodeAt(i)
   }
   return result === 0
 }

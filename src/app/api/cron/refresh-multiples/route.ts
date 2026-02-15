@@ -252,7 +252,7 @@ export async function GET(request: Request) {
           } catch (error) {
             console.error(
               `[RefreshMultiples] Error creating signal for company ${company.id}:`,
-              error
+              error instanceof Error ? error.message : String(error)
             )
           }
         }

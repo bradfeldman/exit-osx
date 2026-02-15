@@ -55,9 +55,9 @@ export async function POST(request: Request) {
         sourceType: payload.sourceType as ExternalSignalType,
         title: payload.title,
         description: payload.description ?? undefined,
-        severity: payload.severity as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' | undefined,
-        estimatedValueImpact: payload.estimatedValueImpact ?? null,
-        rawData: payload.rawData,
+        severity: (payload.severity as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL') ?? undefined,
+        estimatedValueImpact: payload.estimatedValueImpact ?? undefined,
+        rawData: payload.rawData ?? undefined,
       })
       results.push({ success: true, signalId: signal.id })
     } catch (error) {

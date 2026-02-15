@@ -160,10 +160,9 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     // SECURITY FIX (PROD-091 #6): Only log error message, not full object
     // which may contain token data from the OAuth exchange.
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    console.error('[QuickBooks] Callback error:', errorMessage)
+    console.error('[QuickBooks] Callback error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.redirect(
-      new URL(`/dashboard/financials?qb_error=${encodeURIComponent(errorMessage)}`, request.url)
+      new URL('/dashboard/financials?qb_error=connection_failed', request.url)
     )
   }
 }
