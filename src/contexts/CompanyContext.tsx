@@ -94,6 +94,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- standard data-fetching pattern
     loadCompanies()
   }, [])
 
