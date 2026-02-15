@@ -156,69 +156,74 @@ export function BuyerScanStep({ initialData, onComplete, onBack }: BuyerScanStep
         </span>
       </div>
 
-      {!isComplete ? (
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentQuestion.id}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-            className="bg-card rounded-2xl border border-border p-6 shadow-lg"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary">
-                {currentQuestion.categoryLabel}
-              </span>
-              <span className="text-sm text-muted-foreground">
-                {currentIndex + 1} of {QUICK_SCAN_QUESTIONS.length}
-              </span>
-            </div>
-
-            <h3 className="text-xl font-semibold text-foreground mb-3">
-              {currentQuestion.question}
-            </h3>
-
-            <p className="text-sm text-muted-foreground italic mb-6">
-              {currentQuestion.rationale}
-            </p>
-
-            <div className="flex gap-4">
-              <Button
-                variant={answers[currentQuestion.id] === true ? 'default' : 'outline'}
-                size="lg"
-                className="flex-1 py-6 text-lg font-semibold"
-                onClick={() => handleAnswer(true)}
-              >
-                Yes
-              </Button>
-              <Button
-                variant={answers[currentQuestion.id] === false ? 'default' : 'outline'}
-                size="lg"
-                className="flex-1 py-6 text-lg font-semibold"
-                onClick={() => handleAnswer(false)}
-              >
-                No
-              </Button>
-            </div>
-
-            {currentIndex > 0 && (
-              <div className="mt-4 text-center">
-                <Button variant="ghost" onClick={handleBack} className="text-muted-foreground">
-                  Back
-                </Button>
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
-      ) : (
+      <AnimatePresence mode="wait">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
+          key={currentQuestion.id}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3 }}
+          className="bg-card rounded-2xl border border-border p-6 shadow-lg"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary">
+              {currentQuestion.categoryLabel}
+            </span>
+            <span className="text-sm text-muted-foreground">
+              {currentIndex + 1} of {QUICK_SCAN_QUESTIONS.length}
+            </span>
+          </div>
+
+          <h3 className="text-xl font-semibold text-foreground mb-3">
+            {currentQuestion.question}
+          </h3>
+
+          <p className="text-sm text-muted-foreground italic mb-6">
+            {currentQuestion.rationale}
+          </p>
+
+          <div className="flex gap-4">
+            <Button
+              variant={answers[currentQuestion.id] === true ? 'default' : 'outline'}
+              size="lg"
+              className="flex-1 py-6 text-lg font-semibold"
+              onClick={() => handleAnswer(true)}
+            >
+              Yes
+            </Button>
+            <Button
+              variant={answers[currentQuestion.id] === false ? 'default' : 'outline'}
+              size="lg"
+              className="flex-1 py-6 text-lg font-semibold"
+              onClick={() => handleAnswer(false)}
+            >
+              No
+            </Button>
+          </div>
+
+          <div className="mt-4 flex items-center justify-between">
+            {currentIndex > 0 ? (
+              <Button variant="ghost" onClick={handleBack} className="text-muted-foreground">
+                Previous
+              </Button>
+            ) : <div />}
+            {currentIndex < QUICK_SCAN_QUESTIONS.length - 1 && answers[currentQuestion.id] !== undefined && (
+              <Button variant="ghost" onClick={() => setCurrentIndex(currentIndex + 1)} className="text-muted-foreground">
+                Next
+              </Button>
+            )}
+          </div>
+        </motion.div>
+      </AnimatePresence>
+
+      {isComplete && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
           className="text-center"
         >
           <Button size="lg" onClick={handleComplete} className="px-8 h-12 text-base font-medium">
-            See My Results
+            Continue
           </Button>
         </motion.div>
       )}

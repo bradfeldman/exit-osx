@@ -7,6 +7,14 @@ import type { BusinessProfileData } from './BusinessProfileStep'
 import type { BuyerScanData } from './BuyerScanStep'
 import type { AssessStep } from './AssessmentFlow'
 
+const PROFILE_FIELD_NAMES: Record<string, string> = {
+  revenueModel: 'Revenue Model',
+  laborIntensity: 'People Dependency',
+  assetIntensity: 'Asset Intensity',
+  ownerInvolvement: 'Owner Involvement',
+  grossMarginProxy: 'Profit Margins',
+}
+
 const PROFILE_LABELS: Record<string, Record<string, string>> = {
   revenueModel: {
     PROJECT_BASED: 'Project-based',
@@ -80,6 +88,10 @@ export function ReviewStep({ basics, profile, scan, onConfirm, onEdit, isCalcula
         </div>
         <dl className="space-y-2 text-sm">
           <div className="flex justify-between">
+            <dt className="text-muted-foreground">Email</dt>
+            <dd className="font-medium text-foreground">{basics.email}</dd>
+          </div>
+          <div className="flex justify-between">
             <dt className="text-muted-foreground">Company</dt>
             <dd className="font-medium text-foreground">{basics.companyName}</dd>
           </div>
@@ -110,7 +122,7 @@ export function ReviewStep({ basics, profile, scan, onConfirm, onEdit, isCalcula
         <dl className="space-y-2 text-sm">
           {Object.entries(profile).map(([key, value]) => (
             <div key={key} className="flex justify-between">
-              <dt className="text-muted-foreground capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</dt>
+              <dt className="text-muted-foreground">{PROFILE_FIELD_NAMES[key] || key}</dt>
               <dd className="font-medium text-foreground">{PROFILE_LABELS[key]?.[value] || value}</dd>
             </div>
           ))}
