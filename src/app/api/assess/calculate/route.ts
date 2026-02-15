@@ -166,26 +166,44 @@ const TASK_SUGGESTIONS: Record<string, { title: string; category: string }> = {
   'personal-1': { title: 'Develop a personal exit readiness plan with a 6-month timeline', category: 'PERSONAL' },
 }
 
+// Category weights reflect how much each risk area typically affects deal value
+// Higher weight = bigger impact on what a buyer will actually pay
+const CATEGORY_IMPACT_WEIGHTS: Record<string, number> = {
+  FINANCIAL: 0.25,
+  TRANSFERABILITY: 0.25,
+  OPERATIONAL: 0.15,
+  MARKET: 0.15,
+  LEGAL_TAX: 0.10,
+  PERSONAL: 0.10,
+}
+
 function generateTopTasks(
   answers: Record<string, boolean>,
   valueGap: number
 ): Array<{ title: string; category: string; estimatedImpact: number }> {
-  const risks: Array<{ id: string; title: string; category: string }> = []
+  const risks: Array<{ id: string; title: string; category: string; weight: number }> = []
 
   for (const q of SCAN_QUESTIONS) {
     const answer = answers[q.id]
     const isRisk = q.riskOnNo ? answer !== true : answer === true
     if (isRisk && TASK_SUGGESTIONS[q.id]) {
-      risks.push({ id: q.id, ...TASK_SUGGESTIONS[q.id] })
+      risks.push({
+        id: q.id,
+        ...TASK_SUGGESTIONS[q.id],
+        weight: CATEGORY_IMPACT_WEIGHTS[q.category] || 0.10,
+      })
     }
   }
 
-  // Distribute value gap across risks
-  const impactPerTask = risks.length > 0 ? valueGap / risks.length : 0
+  // Sort by weight (highest-impact categories first)
+  risks.sort((a, b) => b.weight - a.weight)
+
+  // Distribute value gap proportionally by category weight
+  const totalWeight = risks.reduce((sum, r) => sum + r.weight, 0)
 
   return risks.slice(0, 3).map(r => ({
     title: r.title,
     category: r.category,
-    estimatedImpact: Math.round(impactPerTask),
+    estimatedImpact: totalWeight > 0 ? Math.round((r.weight / totalWeight) * valueGap) : 0,
   }))
 }

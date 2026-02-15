@@ -224,7 +224,7 @@ export function ResultsReveal({ results, email, basics, profile, scan }: Results
         </motion.div>
       )}
 
-      {/* Top Tasks */}
+      {/* Top Tasks — show #1 fully, tease #2 and #3 */}
       {phase >= 3 && results.topTasks.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -233,24 +233,30 @@ export function ResultsReveal({ results, email, basics, profile, scan }: Results
         >
           <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-amber-500" />
-            Top 3 Actions to Close the Gap
+            Your #1 Priority
           </h3>
-          <div className="space-y-3">
-            {results.topTasks.slice(0, 3).map((task, i) => (
-              <div key={i} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-                <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center shrink-0">
-                  {i + 1}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground text-sm">{task.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {CATEGORY_LABELS[task.category] || task.category}
-                    {task.estimatedImpact > 0 && ` · ${formatCurrency(task.estimatedImpact)} potential impact`}
-                  </p>
-                </div>
-              </div>
-            ))}
+          {/* Task #1 — fully visible */}
+          <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+            <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center shrink-0">
+              1
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-foreground text-sm">{results.topTasks[0].title}</p>
+              <p className="text-xs text-muted-foreground">
+                {CATEGORY_LABELS[results.topTasks[0].category] || results.topTasks[0].category}
+                {results.topTasks[0].estimatedImpact > 0 && ` · ${formatCurrency(results.topTasks[0].estimatedImpact)} potential impact`}
+              </p>
+            </div>
           </div>
+          {/* Tasks #2+ — teased, locked */}
+          {results.topTasks.length > 1 && (
+            <div className="mt-3 p-3 bg-muted/30 rounded-lg border border-dashed border-border">
+              <p className="text-sm text-muted-foreground text-center">
+                + {results.topTasks.length - 1} more prioritized action{results.topTasks.length > 2 ? 's' : ''} identified.{' '}
+                <span className="font-medium text-foreground">Create a free account</span> to see your full action plan.
+              </p>
+            </div>
+          )}
         </motion.div>
       )}
 
