@@ -6,7 +6,6 @@ import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useProgression } from '@/contexts/ProgressionContext'
-import { HomeIcon, DiagnosisIcon, ActionsIcon, EvidenceIcon, DealRoomIcon } from './nav-icons'
 import {
   Select,
   SelectContent,
@@ -183,43 +182,12 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
             )}
           </div>
 
-          {/* Navigation */}
+          {/* Navigation — secondary sections only (5-mode nav is in BottomTabBar) */}
           <nav className="flex-1 space-y-1">
-            {/* CORE Section -- 5-Mode Navigation (all unlocked) */}
-            {[
-              { name: 'Value', href: '/dashboard', icon: HomeIcon, exact: true },
-              { name: 'Diagnosis', href: '/dashboard/diagnosis', icon: DiagnosisIcon },
-              { name: 'Actions', href: '/dashboard/actions', icon: ActionsIcon },
-              { name: 'Evidence', href: '/dashboard/evidence', icon: EvidenceIcon },
-              { name: 'Deal Room', href: '/dashboard/deal-room', icon: DealRoomIcon },
-            ].map((link) => {
-              const isActive = link.exact
-                ? pathname === link.href
-                : pathname === link.href || pathname.startsWith(link.href + '/')
-              const Icon = link.icon
-
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={handleLinkClick}
-                  className={cn(
-                    'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-sidebar-accent text-sidebar-primary'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                  )}
-                >
-                  <Icon className="h-5 w-5" />
-                  {link.name}
-                </Link>
-              )
-            })}
-
             {/* VALUE MODELING Section - always visible, no gating */}
             {progressionData && (
               <>
-                <div className="pt-4 border-t border-sidebar-border mt-4">
+                <div>
                   <p className="px-3 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
                     Value Modeling
                   </p>

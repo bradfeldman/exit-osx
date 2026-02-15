@@ -124,14 +124,8 @@ export function SessionManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-medium">Active Sessions</h3>
-          <p className="text-sm text-muted-foreground">
-            Manage your active sessions across devices
-          </p>
-        </div>
-        <div className="flex gap-2">
+      <div className="space-y-3">
+        <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             size="sm"

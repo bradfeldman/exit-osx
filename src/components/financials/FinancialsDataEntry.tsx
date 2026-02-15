@@ -54,8 +54,8 @@ export function FinancialsDataEntry({ companyId }: FinancialsDataEntryProps) {
       <QuickBooksCard companyId={companyId} onSyncComplete={handleSyncComplete} />
 
       {/* Header bar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="space-y-3">
+        <div className="overflow-x-auto -mx-6 px-6">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as DataEntryTab)}>
             <TabsList>
               <TabsTrigger value="pnl">P&L</TabsTrigger>
@@ -65,14 +65,14 @@ export function FinancialsDataEntry({ companyId }: FinancialsDataEntryProps) {
               <TabsTrigger value="cash-flow">Cash Flow</TabsTrigger>
             </TabsList>
           </Tabs>
-
-          <FYESettingsLink
-            companyId={companyId}
-            fiscalYearEndMonth={fyeMonth}
-            fiscalYearEndDay={fyeDay}
-            onFYEChange={handleFYEChange}
-          />
         </div>
+
+        <FYESettingsLink
+          companyId={companyId}
+          fiscalYearEndMonth={fyeMonth}
+          fiscalYearEndDay={fyeDay}
+          onFYEChange={handleFYEChange}
+        />
       </div>
 
       {/* Content */}
