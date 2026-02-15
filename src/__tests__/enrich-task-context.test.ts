@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { PersonalizationContext } from '@/lib/tasks/personalization-context'
 import type { CompanyContextData } from '@/lib/playbook/rich-task-description'
 
 // ─── Mock Dependencies ──────────────────────────────────────────────────

@@ -36,7 +36,7 @@ export function GoogleTagManagerHead({ gtmId }: GoogleTagManagerProps) {
       {/* Default consent must be set before GTM */}
       <Script
         id="gtm-consent-default"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
         dangerouslySetInnerHTML={{
           __html: `
             window.dataLayer = window.dataLayer || [];
@@ -130,7 +130,7 @@ export function GoogleAnalytics({ measurementId }: GoogleAnalyticsProps) {
       {/* Default consent must be set before GA4 */}
       <Script
         id="ga4-consent-default"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
         dangerouslySetInnerHTML={{
           __html: `
             window.dataLayer = window.dataLayer || [];

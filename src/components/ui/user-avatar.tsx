@@ -231,6 +231,7 @@ export function UserAvatar({ email, name, size = 'md', className }: UserAvatarPr
 
       {/* Gravatar image - overlaid when loaded */}
       {!imageError && (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={gravatarUrl}
           alt=""

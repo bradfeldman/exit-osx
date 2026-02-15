@@ -45,7 +45,7 @@ export default function LoginPage() {
   const [isTimeout, setIsTimeout] = useState(false)
   const [isExpiredLink, setIsExpiredLink] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
-  const [isHydrated, setIsHydrated] = useState(false)
+  const [_isHydrated, setIsHydrated] = useState(false)
 
   const handleSearchParams = useCallback((data: { redirectUrl: string; isFromInvite: boolean; isTimeout: boolean; isExpiredLink: boolean; authError: string | null }) => {
     // Batch state updates to prevent multiple re-renders

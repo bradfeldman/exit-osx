@@ -194,7 +194,7 @@ export function ApprovalHistory({ dealId, buyerId, className }: ApprovalHistoryP
                         {/* Note */}
                         {meta?.note && (
                           <p className="text-sm text-muted-foreground mt-1 italic">
-                            "{meta.note}"
+                            &quot;{meta.note}&quot;
                           </p>
                         )}
 

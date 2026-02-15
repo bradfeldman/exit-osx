@@ -115,6 +115,7 @@ export function VDRActivityTimeline({
 
   useEffect(() => {
     fetchActivities()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dealId, buyerId, limit])
 
   const formatTime = (dateString: string) => {

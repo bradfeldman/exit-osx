@@ -133,6 +133,7 @@ export function ActivityTimeline({
 
   useEffect(() => {
     fetchActivities()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dealId, buyerId, limit])
 
   const _getActivityIcon = (activityType: ActivityType) => {

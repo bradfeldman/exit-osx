@@ -203,10 +203,11 @@ export function useFormTracking(options: FormTrackingOptions) {
 
   useEffect(() => {
     formStartTime.current = Date.now()
+    const fields = focusedFields.current
 
     return () => {
-      if (!wasSubmitted.current && focusedFields.current.size > 0) {
-        const lastField = Array.from(focusedFields.current).pop() || 'unknown'
+      if (!wasSubmitted.current && fields.size > 0) {
+        const lastField = Array.from(fields).pop() || 'unknown'
         trackAbandonment(lastField)
       }
     }

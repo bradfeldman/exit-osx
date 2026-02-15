@@ -81,10 +81,10 @@ export default function PartnerInvitePage() {
           ) : accepted ? (
             <>
               <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-4" />
-              <h1 className="text-xl font-semibold mb-2">You're In</h1>
+              <h1 className="text-xl font-semibold mb-2">You&apos;re In</h1>
               <p className="text-sm text-muted-foreground">
-                You're now the accountability partner for <strong>{invite?.companyName}</strong>.
-                You'll receive monthly progress summaries via email.
+                You&apos;re now the accountability partner for <strong>{invite?.companyName}</strong>.
+                You&apos;ll receive monthly progress summaries via email.
               </p>
             </>
           ) : (
@@ -98,7 +98,7 @@ export default function PartnerInvitePage() {
                 for <strong>{invite?.companyName}</strong>.
               </p>
               <p className="text-xs text-muted-foreground mb-6">
-                You'll receive monthly progress summaries (no sensitive financial data) and can
+                You&apos;ll receive monthly progress summaries (no sensitive financial data) and can
                 send nudge reminders.
               </p>
               <div className="mb-4">

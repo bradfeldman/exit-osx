@@ -12,19 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Calendar } from 'lucide-react'
+import { Calendar as _Calendar } from 'lucide-react'
 
 interface AddPeriodDialogProps {
   open: boolean
@@ -88,7 +76,7 @@ export function AddPeriodDialog({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isSavingFYE, setIsSavingFYE] = useState(false)
-  const [showFYEPicker, setShowFYEPicker] = useState(false)
+  const [_showFYEPicker, setShowFYEPicker] = useState(false)
   const [tempMonth, setTempMonth] = useState(12)
   const [tempDay, setTempDay] = useState(31)
 
@@ -127,7 +115,7 @@ export function AddPeriodDialog({
   }, [tempMonth, tempDay])
 
   // Save fiscal year end
-  const handleSaveFYE = async () => {
+  const _handleSaveFYE = async () => {
     setCompanySettings({
       fiscalYearEndMonth: tempMonth,
       fiscalYearEndDay: tempDay,
@@ -152,7 +140,7 @@ export function AddPeriodDialog({
   }
 
   // Format fiscal year end for display
-  const formatFYE = (month: number, day: number) => {
+  const _formatFYE = (month: number, day: number) => {
     return `${MONTH_NAMES[month - 1]} ${day}`
   }
 

@@ -89,7 +89,7 @@ interface ValueBuilderClientProps {
   userName?: string
 }
 
-export function ValueBuilderClient({ userName }: ValueBuilderClientProps) {
+export function ValueBuilderClient({ userName: _userName }: ValueBuilderClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { selectedCompanyId, isLoading: isContextLoading, companies } = useCompany()

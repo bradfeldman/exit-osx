@@ -111,7 +111,6 @@ describe('Refresh Multiples Cron Job', () => {
     })
 
     // Mock signal creation
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(prisma.signal.create).mockResolvedValue({} as any)
 
     const request = new Request('http://localhost/api/cron/refresh-multiples')
@@ -188,7 +187,6 @@ describe('Refresh Multiples Cron Job', () => {
       companyId: company.id,
       companyName: company.name,
     })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(prisma.signal.create).mockResolvedValue({} as any)
 
     const request = new Request('http://localhost/api/cron/refresh-multiples')
@@ -461,7 +459,6 @@ describe('Refresh Multiples Cron Job', () => {
       companyId: 'company-1',
       companyName: 'Test',
     })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(prisma.signal.create).mockResolvedValue({} as any)
 
     const request = new Request('http://localhost/api/cron/refresh-multiples')

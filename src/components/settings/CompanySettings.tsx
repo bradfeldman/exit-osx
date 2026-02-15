@@ -7,13 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { useCompany } from '@/contexts/CompanyContext'
 import { IndustryListInline } from '@/components/company/IndustryListInline'
 import { AccountabilityPartnerCard } from '@/components/settings/AccountabilityPartnerCard'
@@ -34,7 +27,7 @@ interface CompanyData {
   fiscalYearEndDay: number
 }
 
-const MONTHS = [
+const _MONTHS = [
   { value: 1, label: 'January' },
   { value: 2, label: 'February' },
   { value: 3, label: 'March' },
@@ -49,7 +42,7 @@ const MONTHS = [
   { value: 12, label: 'December' },
 ]
 
-function getDaysInMonth(month: number): number {
+function _getDaysInMonth(month: number): number {
   const daysPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
   return daysPerMonth[month - 1] || 31
 }

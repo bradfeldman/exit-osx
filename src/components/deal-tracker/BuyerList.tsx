@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { DealStage, BuyerType, BuyerTier } from '@prisma/client'
+import { DealStage, BuyerType } from '@prisma/client'
 import { Button } from '@/components/ui/button'
 import {
   Table,

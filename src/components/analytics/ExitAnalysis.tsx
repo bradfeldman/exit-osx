@@ -167,7 +167,7 @@ export function ExitAnalysis({ dealId, className }: ExitAnalysisProps) {
         {exitData.length > 0 && (
           <div className="mt-4 pt-4 border-t">
             <p className="text-xs text-muted-foreground">
-              <strong>Insight:</strong> Most buyers exit as "{exitData[0]?.reason.replace(/_/g, ' ')}"
+              <strong>Insight:</strong> Most buyers exit as &quot;{exitData[0]?.reason.replace(/_/g, ' ')}&quot;
               after an average of {exitData[0]?.avgDaysInProcess} days in the process.
             </p>
           </div>

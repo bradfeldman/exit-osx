@@ -114,16 +114,19 @@ export function CompanySetupWizard() {
       stepNumber: currentStep,
       stepName,
     })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep])
 
   // Analytics: Track abandonment on unmount
   useEffect(() => {
+    const startTime = wizardStartTime.current
+    const visited = stepsVisited.current
     return () => {
       // Only track abandonment if wizard wasn't completed
       if (!showCelebration && hasTrackedStart.current) {
-        const totalTimeSpent = Date.now() - wizardStartTime.current
+        const totalTimeSpent = Date.now() - startTime
         analytics.track('setup_abandoned', {
-          lastStepCompleted: Math.max(...Array.from(stepsVisited.current)) - 1,
+          lastStepCompleted: Math.max(...Array.from(visited)) - 1,
           totalTimeSpent,
         })
       }
@@ -165,6 +168,7 @@ export function CompanySetupWizard() {
       stepName,
       inputsProvided,
     })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData])
 
   const updateFormData = (updates: Partial<CompanyFormData>) => {

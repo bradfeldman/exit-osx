@@ -100,6 +100,7 @@ export function ContactDetail({
 
   useEffect(() => {
     fetchContact()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dealId, buyerId, contactId])
 
   const handleRoleChange = async (newRole: BuyerContactRole) => {

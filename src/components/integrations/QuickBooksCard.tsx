@@ -140,6 +140,7 @@ export function QuickBooksCard({ companyId, onSyncComplete }: QuickBooksCardProp
       setError(decodeURIComponent(qbError))
       window.history.replaceState({}, '', window.location.pathname)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchStatus])
 
   const handleConnect = async () => {

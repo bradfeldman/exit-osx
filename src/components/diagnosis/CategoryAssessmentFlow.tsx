@@ -118,6 +118,7 @@ export function CategoryAssessmentFlow({
     }
 
     loadData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category, assessmentId])
 
   const currentQuestion = questions[currentQuestionIndex]

@@ -224,7 +224,7 @@ export function ContactSearch({
               </div>
             ) : (
               <div className="p-4 text-center text-sm text-muted-foreground">
-                <p>No contacts found for "{search}"</p>
+                <p>No contacts found for &quot;{search}&quot;</p>
                 {allowCreate && onCreateNew && (
                   <Button
                     variant="link"

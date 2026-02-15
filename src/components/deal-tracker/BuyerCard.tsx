@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { motion } from '@/lib/motion'
-import { DealStage, BuyerType, BuyerTier } from '@prisma/client'
+import { DealStage, BuyerType } from '@prisma/client'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,

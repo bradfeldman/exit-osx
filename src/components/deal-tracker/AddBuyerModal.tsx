@@ -138,7 +138,7 @@ export function AddBuyerModal({
     setError(null)
 
     try {
-      const params = new URLSearchParams({ email: searchEmail.trim() })
+      const _params = new URLSearchParams({ email: searchEmail.trim() })
       // Use new contact system search endpoint
       const res = await fetch(`/api/contact-system/search?q=${encodeURIComponent(searchEmail.trim())}`)
 

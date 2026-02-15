@@ -24,7 +24,7 @@ import {
   BUYER_TIER_LABELS,
   STAGE_LABELS,
 } from '@/lib/deal-tracker/constants'
-import { DealStage, BuyerType, BuyerTier, ProspectApprovalStatus } from '@prisma/client'
+import { BuyerType, BuyerTier, ProspectApprovalStatus } from '@prisma/client'
 import { Loader2 } from 'lucide-react'
 import { useDealBuyers, type DealBuyer } from '@/hooks/useContactSystem'
 

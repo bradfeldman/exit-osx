@@ -144,6 +144,7 @@ export default function AdvisorProfilePage() {
               <div className="flex items-center gap-4">
                 <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
                   {data?.user.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={data.user.avatarUrl}
                       alt={data.user.name || 'Avatar'}

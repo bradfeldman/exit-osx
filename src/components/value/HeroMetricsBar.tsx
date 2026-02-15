@@ -53,7 +53,7 @@ export function HeroMetricsBar({
   isEstimated: _isEstimated = false,
   hasAssessment = false,
   isEbitdaFromFinancials = false,
-  dcfValuation,
+  dcfValuation: _dcfValuation,
 }: HeroMetricsBarProps) {
   const isClient = useIsClient()
 
