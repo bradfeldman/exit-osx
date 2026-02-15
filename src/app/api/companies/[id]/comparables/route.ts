@@ -15,6 +15,7 @@ import { Prisma } from '@prisma/client'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { findComparables, type CompanyProfile, type ComparableResult } from '@/lib/valuation/comparable-engine'
+import { applyUserRateLimit, createRateLimitResponse, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limit'
 import {
   adjustMultiples,
   calculateMultipleRange,
@@ -34,6 +35,10 @@ export async function GET(
   const { id: companyId } = await params
   const result = await checkPermission('COMPANY_VIEW', companyId)
   if (isAuthError(result)) return result.error
+
+  // SEC-034: Rate limit AI endpoints
+  const rl = await applyUserRateLimit(request, result.auth.user.id, RATE_LIMIT_CONFIGS.AI)
+  if (!rl.success) return createRateLimitResponse(rl)
 
   try {
     // Check for force refresh parameter

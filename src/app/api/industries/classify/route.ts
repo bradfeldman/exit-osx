@@ -4,6 +4,7 @@ import {
   classifyBusiness,
   ClassificationError,
 } from '@/lib/ai/business-classifier'
+import { applyRateLimit, createRateLimitResponse, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limit'
 
 /**
  * POST /api/industries/classify
@@ -16,9 +17,13 @@ import {
  * Response: ClassificationResult
  *
  * Auth: Required (user must be logged in)
- * Rate limiting: Inherent via AI call cost
+ * Rate limiting: SEC-034 — 10 requests/minute per IP
  */
 export async function POST(request: Request) {
+  // SEC-034: Rate limit AI endpoints
+  const rl = await applyRateLimit(request, RATE_LIMIT_CONFIGS.AI)
+  if (!rl.success) return createRateLimitResponse(rl)
+
   // ── Auth check ─────────────────────────────────────────────────────
   const supabase = await createClient()
   const {

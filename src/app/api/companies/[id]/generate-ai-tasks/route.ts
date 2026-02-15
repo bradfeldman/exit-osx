@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { generateAITasksForCompany } from '@/lib/playbook/generate-ai-tasks'
+import { applyUserRateLimit, createRateLimitResponse, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limit'
 
 export const maxDuration = 60 // Allow up to 60s for Claude API call
 
@@ -16,6 +17,10 @@ export async function POST(
   const { id: companyId } = await params
   const result = await checkPermission('COMPANY_VIEW', companyId)
   if (isAuthError(result)) return result.error
+
+  // SEC-034: Rate limit AI endpoints
+  const rl = await applyUserRateLimit(request, result.auth.user.id, RATE_LIMIT_CONFIGS.AI)
+  if (!rl.success) return createRateLimitResponse(rl)
 
   try {
     const taskResult = await generateAITasksForCompany(companyId)

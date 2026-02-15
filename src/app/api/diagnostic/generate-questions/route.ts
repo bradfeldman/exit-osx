@@ -4,8 +4,13 @@ import { generateDiagnosticQuestions } from '@/lib/ai/diagnosis'
 import { prisma } from '@/lib/prisma'
 import type { BusinessProfile, Subcategory } from '@/lib/ai/types'
 import { DiagnosisSubcategory } from '@prisma/client'
+import { applyRateLimit, createRateLimitResponse, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limit'
 
 export async function POST(request: Request) {
+  // SEC-034: Rate limit AI endpoints
+  const rl = await applyRateLimit(request, RATE_LIMIT_CONFIGS.AI)
+  if (!rl.success) return createRateLimitResponse(rl)
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

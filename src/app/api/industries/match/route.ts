@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getFlattenedIndustryOptions, type FlattenedIndustryOption } from '@/lib/data/industries'
+import { applyRateLimit, createRateLimitResponse, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limit'
 
 // Get all industry options for matching
 const allIndustries = getFlattenedIndustryOptions()
@@ -74,6 +75,10 @@ function keywordMatch(description: string): FlattenedIndustryOption | null {
 }
 
 export async function POST(request: Request) {
+  // SEC-034: Rate limit AI endpoints
+  const rl = await applyRateLimit(request, RATE_LIMIT_CONFIGS.AI)
+  if (!rl.success) return createRateLimitResponse(rl)
+
   // SECURITY FIX (PROD-060): Was completely unauthenticated. This endpoint calls OpenAI,
   // so an attacker could abuse it for AI cost amplification. Require auth.
   const supabase = await createClient()

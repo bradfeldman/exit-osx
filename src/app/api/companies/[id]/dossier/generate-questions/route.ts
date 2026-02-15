@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { generateQuestionsForCompany } from '@/lib/dossier/ai-questions'
 import { getCurrentDossier, updateDossier } from '@/lib/dossier/build-dossier'
+import { applyUserRateLimit, createRateLimitResponse, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limit'
 
 export const maxDuration = 60
 
@@ -18,6 +19,10 @@ export async function POST(
 
   const result = await checkPermission('COMPANY_VIEW', companyId)
   if (isAuthError(result)) return result.error
+
+  // SEC-034: Rate limit AI endpoints
+  const rl = await applyUserRateLimit(request, result.auth.user.id, RATE_LIMIT_CONFIGS.AI)
+  if (!rl.success) return createRateLimitResponse(rl)
 
   try {
     // Ensure dossier exists — build one if needed

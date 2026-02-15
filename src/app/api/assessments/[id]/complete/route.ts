@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { applyRateLimit, createRateLimitResponse, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limit'
 import { generateTasksForCompany } from '@/lib/playbook/generate-tasks'
 import { generateAITasksForCompany } from '@/lib/dossier/ai-tasks'
 import { getIndustryMultiples, estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
@@ -51,6 +52,10 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // SEC-034: Rate limit AI endpoints
+  const rl = await applyRateLimit(request, RATE_LIMIT_CONFIGS.AI)
+  if (!rl.success) return createRateLimitResponse(rl)
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const { id: assessmentId } = await params

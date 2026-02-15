@@ -3,8 +3,13 @@ import { createClient } from '@/lib/supabase/server'
 import { generateBusinessProfile } from '@/lib/ai/profile'
 import { prisma } from '@/lib/prisma'
 import type { ClarifyingQuestion } from '@/lib/ai/types'
+import { applyRateLimit, createRateLimitResponse, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limit'
 
 export async function POST(request: Request) {
+  // SEC-034: Rate limit AI endpoints
+  const rl = await applyRateLimit(request, RATE_LIMIT_CONFIGS.AI)
+  if (!rl.success) return createRateLimitResponse(rl)
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

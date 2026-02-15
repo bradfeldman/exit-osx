@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { generateTasks } from '@/lib/ai/diagnosis'
 import { generateOnboardingTasks } from '@/lib/ai/onboarding-tasks'
 import { prisma } from '@/lib/prisma'
+import { applyRateLimit, createRateLimitResponse, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limit'
 import type { BusinessProfile, Subcategory, IdentifiedDriver } from '@/lib/ai/types'
 import { DiagnosisSubcategory, BriCategory } from '@prisma/client'
 import { calculateValuation } from '@/lib/valuation/calculate-valuation'
@@ -18,6 +19,10 @@ const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
 }
 
 export async function POST(request: Request) {
+  // SEC-034: Rate limit AI endpoints
+  const rl = await applyRateLimit(request, RATE_LIMIT_CONFIGS.AI)
+  if (!rl.success) return createRateLimitResponse(rl)
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

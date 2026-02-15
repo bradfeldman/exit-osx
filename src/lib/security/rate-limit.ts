@@ -49,6 +49,12 @@ export const RATE_LIMIT_CONFIGS = {
     windowSeconds: 60, // 3 requests per minute
     identifier: 'token',
   },
+  // AI/LLM endpoints — expensive API calls (SEC-034)
+  AI: {
+    limit: 10,
+    windowSeconds: 60, // 10 requests per minute per user
+    identifier: 'ai',
+  },
 } as const
 
 export interface RateLimitResult {
