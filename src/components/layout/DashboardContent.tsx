@@ -2,12 +2,14 @@
 
 import { ReactNode } from 'react'
 import { useProgression } from '@/contexts/ProgressionContext'
+import { useCompany } from '@/contexts/CompanyContext'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 import { TrialBanner } from '@/components/subscription/TrialBanner'
 import { SessionTimeoutWarning } from '@/components/session/SessionTimeoutWarning'
 import { FeedbackWidget } from '@/components/feedback/FeedbackWidget'
 import { EntryScreen } from './EntryScreen'
+import { DashboardLoadError } from './DashboardLoadError'
 import type { User } from '@supabase/supabase-js'
 
 interface DashboardContentProps {
@@ -17,6 +19,7 @@ interface DashboardContentProps {
 
 export function DashboardContent({ children, user }: DashboardContentProps) {
   const { hasCompany, isLoading } = useProgression()
+  const { loadError } = useCompany()
 
   // While loading, show a minimal loading state
   if (isLoading) {
@@ -28,6 +31,11 @@ export function DashboardContent({ children, user }: DashboardContentProps) {
         </div>
       </div>
     )
+  }
+
+  // Load failed: Show friendly error instead of mistakenly showing EntryScreen
+  if (!hasCompany && loadError) {
+    return <DashboardLoadError />
   }
 
   // No company: Show entry screen with no sidebar

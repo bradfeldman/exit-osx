@@ -21,6 +21,7 @@ interface CompanyContextType {
   isSelectedCompanySubscribingOwner: boolean
   setSelectedCompanyId: (id: string | null) => void
   isLoading: boolean
+  loadError: boolean
   refreshCompanies: () => Promise<void>
 }
 
@@ -30,44 +31,66 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
   const [companies, setCompanies] = useState<Company[]>([])
   const [selectedCompanyId, setSelectedCompanyIdState] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
 
   const loadCompanies = async (preserveSelection = false) => {
     setIsLoading(true)
-    try {
-      const response = await fetch('/api/companies')
-      if (response.ok) {
-        const data = await response.json()
-        const companyList = (data.companies || []).sort((a: Company, b: Company) =>
-          a.name.localeCompare(b.name)
-        )
-        setCompanies(companyList)
+    setLoadError(false)
 
-        // Only auto-select if not preserving current selection
-        if (!preserveSelection) {
-          // Check localStorage for previously selected company
-          const storedId = localStorage.getItem('selectedCompanyId')
-          if (storedId && companyList.some((c: Company) => c.id === storedId)) {
-            setSelectedCompanyIdState(storedId)
-          } else if (companyList.length > 0) {
-            setSelectedCompanyIdState(companyList[0].id)
+    const MAX_RETRIES = 2
+    let lastError: unknown = null
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const response = await fetch('/api/companies')
+        if (response.ok) {
+          const data = await response.json()
+          const companyList = (data.companies || []).sort((a: Company, b: Company) =>
+            a.name.localeCompare(b.name)
+          )
+          setCompanies(companyList)
+
+          // Only auto-select if not preserving current selection
+          if (!preserveSelection) {
+            // Check localStorage for previously selected company
+            const storedId = localStorage.getItem('selectedCompanyId')
+            if (storedId && companyList.some((c: Company) => c.id === storedId)) {
+              setSelectedCompanyIdState(storedId)
+            } else if (companyList.length > 0) {
+              setSelectedCompanyIdState(companyList[0].id)
+            }
+          } else {
+            // When preserving selection, verify the selected company still exists
+            const currentId = localStorage.getItem('selectedCompanyId')
+            if (currentId && companyList.some((c: Company) => c.id === currentId)) {
+              setSelectedCompanyIdState(currentId)
+            } else if (companyList.length > 0) {
+              // Fallback to first company if current selection no longer exists
+              setSelectedCompanyIdState(companyList[0].id)
+              localStorage.setItem('selectedCompanyId', companyList[0].id)
+            }
           }
-        } else {
-          // When preserving selection, verify the selected company still exists
-          const currentId = localStorage.getItem('selectedCompanyId')
-          if (currentId && companyList.some((c: Company) => c.id === currentId)) {
-            setSelectedCompanyIdState(currentId)
-          } else if (companyList.length > 0) {
-            // Fallback to first company if current selection no longer exists
-            setSelectedCompanyIdState(companyList[0].id)
-            localStorage.setItem('selectedCompanyId', companyList[0].id)
-          }
+          setIsLoading(false)
+          return // Success — exit early
+        }
+
+        // Non-200 response — retry if attempts remain
+        lastError = new Error(`API returned ${response.status}`)
+        if (attempt < MAX_RETRIES) {
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+      } catch (error) {
+        lastError = error
+        if (attempt < MAX_RETRIES) {
+          await new Promise(resolve => setTimeout(resolve, 1000))
         }
       }
-    } catch (error) {
-      console.error('Failed to load companies:', error)
-    } finally {
-      setIsLoading(false)
     }
+
+    // All retries exhausted
+    console.error('Failed to load companies after retries:', lastError)
+    setLoadError(true)
+    setIsLoading(false)
   }
 
   useEffect(() => {
@@ -104,6 +127,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         isSelectedCompanySubscribingOwner,
         setSelectedCompanyId,
         isLoading,
+        loadError,
         refreshCompanies,
       }}
     >

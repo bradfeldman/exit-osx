@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, Suspense, useEffect, useRef } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -95,7 +95,6 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
   const [twoFactorCode, setTwoFactorCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
-  const router = useRouter()
 
   // Analytics: Page load time reference
   const pageLoadTime = useRef(Date.now())
@@ -202,10 +201,9 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
         timeToSubmit: Date.now() - pageLoadTime.current,
       })
 
-      // Use replace instead of push to prevent back button issues
-      // and potential redirect loops on mobile
-      router.replace(redirectUrl)
-      router.refresh()
+      // Hard navigation ensures cookies are fully propagated before
+      // the dashboard loads (prevents race with session cookie propagation)
+      window.location.href = redirectUrl
     } catch {
       setError('An unexpected error occurred')
     } finally {
