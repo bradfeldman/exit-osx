@@ -54,7 +54,7 @@ export async function POST(request: Request) {
         companyId: payload.companyId,
         sourceType: payload.sourceType as ExternalSignalType,
         title: payload.title,
-        description: payload.description,
+        description: payload.description ?? undefined,
         severity: payload.severity as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' | undefined,
         estimatedValueImpact: payload.estimatedValueImpact ?? null,
         rawData: payload.rawData,
