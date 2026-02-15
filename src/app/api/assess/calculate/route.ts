@@ -116,19 +116,11 @@ export async function POST(request: Request) {
       finalMultiple: valuation.finalMultiple,
       categoryBreakdown,
       topTasks,
-      // Extra data for save endpoint
-      _internal: {
-        adjustedEbitda,
-        coreScore,
-        briScore,
-        marketSalary,
-        revenueSizeCategory,
-        industryMultipleLow: multiples.ebitdaMultipleLow,
-        industryMultipleHigh: multiples.ebitdaMultipleHigh,
-      },
+      // SECURITY: Internal calculation details removed from public response (SEC-052)
+      // The save endpoint recalculates server-side — no need to expose algorithm internals
     })
   } catch (err) {
-    console.error('[/api/assess/calculate] Error:', err)
+    console.error('[/api/assess/calculate] Error:', err instanceof Error ? err.message : 'Calculation failed')
     return NextResponse.json({ error: 'Calculation failed' }, { status: 500 })
   }
 }

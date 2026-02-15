@@ -47,11 +47,17 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json()
-    const { name } = body
+    // SECURITY: Validate and sanitize name input
+    const rawName = body.name
+    const name = typeof rawName === 'string' ? rawName.trim().slice(0, 200) : undefined
+
+    if (name !== undefined && name.length === 0) {
+      return NextResponse.json({ error: 'Name cannot be empty' }, { status: 400 })
+    }
 
     const user = await prisma.user.update({
       where: { authId: authUser.id },
-      data: { name },
+      data: { ...(name !== undefined && { name }) },
       select: {
         id: true,
         name: true,

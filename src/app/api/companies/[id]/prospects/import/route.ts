@@ -228,6 +228,14 @@ export async function POST(
       )
     }
 
+    // SECURITY: Cap file size to prevent memory pressure on serverless function
+    if (file.size > 5 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: 'CSV file must be 5MB or less' },
+        { status: 400 }
+      )
+    }
+
     // Read file content
     const content = await file.text()
     const rows = parseCSV(content)

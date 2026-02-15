@@ -38,6 +38,14 @@ export async function POST(request: Request) {
     )
   }
 
+  // SECURITY: Cap description length to prevent excessive AI token consumption
+  if (description.length > 2000) {
+    return NextResponse.json(
+      { error: 'Description must be 2000 characters or less' },
+      { status: 400 }
+    )
+  }
+
   try {
     const result = await classifyBusiness(description)
     return NextResponse.json(result)
@@ -45,7 +53,7 @@ export async function POST(request: Request) {
     if (err instanceof ClassificationError) {
       return NextResponse.json({ error: err.message, code: err.code }, { status: 400 })
     }
-    console.error('[/api/assess/classify] Error:', err)
+    console.error('[/api/assess/classify] Error:', err instanceof Error ? err.message : 'Classification failed')
     return NextResponse.json({ error: 'Classification failed' }, { status: 500 })
   }
 }

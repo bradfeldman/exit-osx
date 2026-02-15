@@ -31,6 +31,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // SECURITY: Cap description length to prevent oversized tickets
+    if (description.length > 5000) {
+      return NextResponse.json(
+        { error: 'Description must be 5000 characters or less' },
+        { status: 400 }
+      )
+    }
+
     if (category && !VALID_CATEGORIES.includes(category)) {
       return NextResponse.json(
         { error: 'Invalid category' },
@@ -78,8 +86,8 @@ export async function POST(request: NextRequest) {
       '---',
       `Submitted by: ${userName} (${userEmail})`,
       `Category: ${categoryLabel}`,
-      currentPage ? `Page: ${currentPage}` : null,
-      `User Agent: ${request.headers.get('user-agent')?.slice(0, 150) || 'unknown'}`,
+      currentPage ? `Page: ${typeof currentPage === 'string' ? currentPage.slice(0, 500) : 'unknown'}` : null,
+      `User Agent: ${(request.headers.get('user-agent') || 'unknown').slice(0, 150).replace(/[<>]/g, '')}`,
     ].filter(Boolean).join('\n')
 
     await prisma.ticketMessage.create({

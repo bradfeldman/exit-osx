@@ -243,6 +243,8 @@ export async function GET(
           fileName: document.fileName,
           expiresIn: 300,
           warning: 'Document downloaded without watermark',
+        }, {
+          headers: { 'Referrer-Policy': 'no-referrer' },
         })
       }
     }
@@ -262,6 +264,11 @@ export async function GET(
       url: data.signedUrl,
       fileName: document.fileName,
       expiresIn: SIGNED_URL_EXPIRY_SECONDS,
+    }, {
+      headers: {
+        // SECURITY: Prevent Supabase from seeing company IDs in referrer when user follows signed URL
+        'Referrer-Policy': 'no-referrer',
+      },
     })
   } catch (error) {
     console.error('Error generating download URL:', error instanceof Error ? error.message : String(error))

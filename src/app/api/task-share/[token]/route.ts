@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyTaskShareToken } from '@/lib/task-share-token'
+import {
+  applyRateLimit,
+  RATE_LIMIT_CONFIGS,
+  createRateLimitResponse,
+} from '@/lib/security/rate-limit'
 
 /**
  * GET /api/task-share/[token]
@@ -62,6 +67,12 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
+  // SECURITY: Rate limit public write endpoint to prevent abuse
+  const rateLimitResult = await applyRateLimit(request, RATE_LIMIT_CONFIGS.TOKEN)
+  if (!rateLimitResult.success) {
+    return createRateLimitResponse(rateLimitResult)
+  }
+
   const { token } = await params
   const taskId = verifyTaskShareToken(token)
 
@@ -71,6 +82,14 @@ export async function POST(
 
   const body = await request.json()
   const { completionNotes, subStepId } = body
+
+  // SECURITY: Validate inputs from public endpoint
+  if (subStepId !== undefined && (typeof subStepId !== 'string' || subStepId.length > 100)) {
+    return NextResponse.json({ error: 'Invalid subStepId' }, { status: 400 })
+  }
+  if (completionNotes !== undefined && (typeof completionNotes !== 'string' || completionNotes.length > 5000)) {
+    return NextResponse.json({ error: 'Completion notes must be 5000 characters or less' }, { status: 400 })
+  }
 
   // Toggle a sub-step
   if (subStepId) {

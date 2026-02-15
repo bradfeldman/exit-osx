@@ -98,7 +98,7 @@ export async function PUT(
     console.error('Error resolving duplicate:', error instanceof Error ? error.message : String(error))
 
     if (error instanceof Error && error.message.includes('not found or already merged')) {
-      return NextResponse.json({ error: error.message }, { status: 400 })
+      return NextResponse.json({ error: 'Entity not found or already merged' }, { status: 400 })
     }
 
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
