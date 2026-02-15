@@ -43,11 +43,11 @@ export async function POST(request: Request) {
     const adminClient = createServiceClient()
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.exitosx.com'
 
-    // Create user via Supabase admin API
+    // Create user via Supabase admin API (email_confirm: true so magic link works)
     const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
       email: normalizedEmail,
       password,
-      email_confirm: false,
+      email_confirm: true,
       user_metadata: {
         selected_plan: 'foundation',
         signup_method: 'assess_flow',
@@ -68,8 +68,8 @@ export async function POST(request: Request) {
 
     const authId = authData.user.id
 
-    // Generate magic link for email verification
-    const { data: linkData } = await adminClient.auth.admin.generateLink({
+    // Generate magic link for login convenience email
+    const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
       type: 'magiclink',
       email: normalizedEmail,
       options: {
@@ -77,17 +77,26 @@ export async function POST(request: Request) {
       },
     })
 
-    // Send verification email if we have a link
+    if (linkError) {
+      console.error('[assess/save] generateLink error:', linkError.message)
+    }
+
+    // Send branded login email if we have a link
     if (linkData?.properties?.hashed_token) {
-      const verificationType = linkData.properties.verification_type === 'magiclink' ? 'email' : (linkData.properties.verification_type ?? 'email')
-      const magicLinkUrl = `${baseUrl}/auth/confirm?token_hash=${encodeURIComponent(linkData.properties.hashed_token)}&type=${verificationType}&next=/dashboard`
+      const verifyType = linkData.properties.verification_type || 'magiclink'
+      const magicLinkUrl = `${baseUrl}/auth/confirm?token_hash=${encodeURIComponent(linkData.properties.hashed_token)}&type=${verifyType}&next=/dashboard`
 
       try {
         const { sendMagicLinkEmail } = await import('@/lib/email/send-magic-link-email')
-        await sendMagicLinkEmail({ email: normalizedEmail, magicLinkUrl })
+        const emailResult = await sendMagicLinkEmail({ email: normalizedEmail, magicLinkUrl })
+        if (!emailResult.success) {
+          console.error('[assess/save] Magic link email failed:', emailResult.error)
+        }
       } catch (emailErr) {
-        console.error('[assess/save] Email send failed:', emailErr instanceof Error ? emailErr.message : String(emailErr))
+        console.error('[assess/save] Email send threw:', emailErr instanceof Error ? emailErr.message : String(emailErr))
       }
+    } else {
+      console.error('[assess/save] No hashed_token from generateLink — linkData:', JSON.stringify(linkData))
     }
 
     // Create database records in a transaction
