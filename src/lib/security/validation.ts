@@ -23,7 +23,7 @@ export const emailSchema = z.string().email('Invalid email').transform(val => va
 export const safeStringSchema = z.string()
   .min(1, 'Required')
   .max(1000, 'Too long')
-  .refine(val => !val.includes('<script'), 'Invalid characters')
+  .refine(val => !/[<>]/.test(val), 'Invalid characters')
 
 /** Pagination parameters with security limits */
 export const paginationSchema = z.object({

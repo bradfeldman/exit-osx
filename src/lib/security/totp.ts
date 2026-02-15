@@ -16,7 +16,7 @@ const BACKUP_CODE_LENGTH = 8
 
 // Encryption for storing secrets
 const ENCRYPTION_ALGORITHM = 'aes-256-gcm'
-const IV_LENGTH = 16
+const IV_LENGTH = 12 // NIST-recommended 96-bit IV for AES-256-GCM
 const _AUTH_TAG_LENGTH = 16
 
 /**

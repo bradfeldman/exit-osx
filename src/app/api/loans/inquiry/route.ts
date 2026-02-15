@@ -6,6 +6,16 @@ import { formatIcbName } from '@/lib/utils/format-icb'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
+// SECURITY: Escape user-supplied values before embedding in HTML emails
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+}
+
 // Format currency for display
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -102,11 +112,11 @@ export async function POST(request: Request) {
       <table style="border-collapse: collapse; width: 100%; max-width: 600px;">
         <tr>
           <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9; width: 40%;"><strong>Name</strong></td>
-          <td style="padding: 8px; border: 1px solid #ddd;">${userName}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(userName)}</td>
         </tr>
         <tr>
           <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9;"><strong>Email</strong></td>
-          <td style="padding: 8px; border: 1px solid #ddd;">${userEmail}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(userEmail)}</td>
         </tr>
       </table>
 
@@ -130,11 +140,11 @@ export async function POST(request: Request) {
       <table style="border-collapse: collapse; width: 100%; max-width: 600px;">
         <tr>
           <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9; width: 40%;"><strong>Company Name</strong></td>
-          <td style="padding: 8px; border: 1px solid #ddd;">${company.name}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(company.name)}</td>
         </tr>
         <tr>
           <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9;"><strong>Industry</strong></td>
-          <td style="padding: 8px; border: 1px solid #ddd;">${formatIcbName(company.icbSubSector) || formatIcbName(company.icbSector) || formatIcbName(company.icbSuperSector) || 'Not specified'}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(formatIcbName(company.icbSubSector) || formatIcbName(company.icbSector) || formatIcbName(company.icbSuperSector) || 'Not specified')}</td>
         </tr>
         <tr>
           <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9;"><strong>Annual Revenue</strong></td>

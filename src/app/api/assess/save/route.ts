@@ -266,6 +266,16 @@ export async function POST(request: Request) {
 /**
  * Send a prospect alert email to Brad for high-value signups.
  */
+// SECURITY: Escape user-supplied values before embedding in HTML emails
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+}
+
 async function sendProspectAlert(params: {
   email: string
   companyName: string
@@ -291,15 +301,15 @@ async function sendProspectAlert(params: {
     html: `
       <h2>New High-Value Prospect</h2>
       <table style="font-family: sans-serif; font-size: 14px; border-collapse: collapse;">
-        <tr><td style="padding: 4px 12px 4px 0; font-weight: 600;">Company</td><td>${params.companyName}</td></tr>
-        <tr><td style="padding: 4px 12px 4px 0; font-weight: 600;">Email</td><td><a href="mailto:${params.email}">${params.email}</a></td></tr>
+        <tr><td style="padding: 4px 12px 4px 0; font-weight: 600;">Company</td><td>${escapeHtml(params.companyName)}</td></tr>
+        <tr><td style="padding: 4px 12px 4px 0; font-weight: 600;">Email</td><td><a href="mailto:${encodeURIComponent(params.email)}">${escapeHtml(params.email)}</a></td></tr>
         <tr><td style="padding: 4px 12px 4px 0; font-weight: 600;">Revenue</td><td>${formatCurrency(params.annualRevenue)}</td></tr>
         <tr><td style="padding: 4px 12px 4px 0; font-weight: 600;">Buyer Readiness</td><td>${Math.round(params.briScore)}/100</td></tr>
         <tr><td style="padding: 4px 12px 4px 0; font-weight: 600;">Value Gap</td><td>${formatCurrency(params.valueGap)}</td></tr>
-        <tr><td style="padding: 4px 12px 4px 0; font-weight: 600;">Top Risk</td><td>${params.topRiskCategory}</td></tr>
+        <tr><td style="padding: 4px 12px 4px 0; font-weight: 600;">Top Risk</td><td>${escapeHtml(params.topRiskCategory)}</td></tr>
       </table>
       <p style="margin-top: 16px; font-size: 13px; color: #666;">
-        Suggested Day 3 outreach: "I saw your assessment. Your biggest risk is ${params.topRiskCategory}. I've helped companies like yours close this gap. Want 15 minutes to walk through your specific situation?"
+        Suggested Day 3 outreach: "I saw your assessment. Your biggest risk is ${escapeHtml(params.topRiskCategory)}. I've helped companies like yours close this gap. Want 15 minutes to walk through your specific situation?"
       </p>
     `,
   })
