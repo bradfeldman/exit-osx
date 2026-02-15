@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { CookieConsent } from "@/components/gdpr/CookieConsent";
@@ -65,17 +66,18 @@ export const viewport = {
   viewportFit: 'cover' as const, // Extends into safe area on notched devices
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
+  const nonce = (await headers()).get('x-nonce') || '';
 
   return (
     <html lang="en">
       <head>
-        {gtmId && <GoogleTagManager gtmId={gtmId} />}
+        {gtmId && <GoogleTagManager gtmId={gtmId} nonce={nonce} />}
       </head>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         {gtmId && <GoogleTagManagerBody gtmId={gtmId} />}

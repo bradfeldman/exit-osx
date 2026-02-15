@@ -274,6 +274,32 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set('x-pathname', pathname)
   requestHeaders.set('x-url', request.url)
 
+  // SEC-026: Generate cryptographic nonce for CSP
+  const nonce = btoa(crypto.randomUUID())
+  requestHeaders.set('x-nonce', nonce)
+
+  // SEC-026: Build nonce-based CSP for page routes
+  // API routes use static CSP from next.config.ts headers — skip them here
+  const isDev = process.env.NODE_ENV !== 'production'
+  const cspHeader = [
+    "default-src 'self'",
+    `script-src 'self' ${isDev ? "'unsafe-eval' " : ""}'nonce-${nonce}' https://js.stripe.com https://vercel.live https://www.googletagmanager.com https://www.google-analytics.com https://*.sentry.io https://browser.sentry-cdn.com`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' blob: data: https://*.supabase.co https://www.gravatar.com https://www.googletagmanager.com https://www.google-analytics.com",
+    "font-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "frame-src 'self' https://js.stripe.com https://vercel.live",
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.intuit.com https://vercel.live https://www.googletagmanager.com https://www.google-analytics.com https://*.analytics.google.com https://*.g.doubleclick.net https://*.sentry.io",
+    "upgrade-insecure-requests",
+  ].join('; ')
+
+  if (!isApiRoute) {
+    requestHeaders.set('Content-Security-Policy', cspHeader)
+  }
+
   // MOBILE FIX: Clear stale auth cookies on login/signup pages BEFORE the
   // Supabase client is created. Without this, getUser() may refresh an expired-
   // but-refreshable session on /login, causing a redirect to /dashboard. On
@@ -386,7 +412,13 @@ export async function middleware(request: NextRequest) {
   if (isAdminSubdomain && !pathname.startsWith('/admin')) {
     const url = request.nextUrl.clone()
     url.pathname = `/admin${pathname === '/' ? '' : pathname}`
-    return NextResponse.rewrite(url)
+    const rewriteResponse = NextResponse.rewrite(url, {
+      request: { headers: requestHeaders },
+    })
+    if (!isApiRoute) {
+      rewriteResponse.headers.set('Content-Security-Policy', cspHeader)
+    }
+    return rewriteResponse
   }
 
   // SECURITY: Enhanced admin route protection at middleware level
@@ -447,6 +479,9 @@ export async function middleware(request: NextRequest) {
         .forEach(c => supabaseResponse.cookies.delete(c.name))
       supabaseResponse.cookies.delete(SESSION_COOKIE_NAME)
       supabaseResponse.cookies.delete('_auth_loop_guard')
+      if (!isApiRoute) {
+        supabaseResponse.headers.set('Content-Security-Policy', cspHeader)
+      }
       return supabaseResponse
     }
 
@@ -467,6 +502,9 @@ export async function middleware(request: NextRequest) {
     // On marketing domain: stay on landing page (don't redirect)
     if (isMarketingDomain(hostname)) {
       // Continue to serve the landing page
+      if (!isApiRoute) {
+        supabaseResponse.headers.set('Content-Security-Policy', cspHeader)
+      }
       return supabaseResponse
     }
     // On app domain or admin: redirect to dashboard
@@ -480,6 +518,11 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return createRedirect(url, supabaseResponse)
+  }
+
+  // SEC-026: Set nonce-based CSP response header for page routes
+  if (!isApiRoute) {
+    supabaseResponse.headers.set('Content-Security-Policy', cspHeader)
   }
 
   return supabaseResponse

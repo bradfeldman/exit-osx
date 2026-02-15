@@ -6,28 +6,9 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 });
 
-// SECURITY FIX (PROD-091 #5): Remove 'unsafe-eval' from CSP in production.
-// 'unsafe-eval' allows eval() and is a major XSS vector. Next.js only requires
-// it during development for hot module replacement (HMR). In production builds,
-// Next.js does not use eval(). The Vercel toolbar (vercel.live) only appears in
-// preview deployments — it also only needs 'unsafe-eval' in those contexts.
-const isDev = process.env.NODE_ENV !== 'production';
-const scriptSrcEval = isDev ? "'unsafe-eval' " : '';
-
-const ContentSecurityPolicy = `
-  default-src 'self';
-  script-src 'self' ${scriptSrcEval}'unsafe-inline' https://js.stripe.com https://vercel.live https://www.googletagmanager.com https://www.google-analytics.com https://*.sentry.io https://browser.sentry-cdn.com;
-  style-src 'self' 'unsafe-inline';
-  img-src 'self' blob: data: https://*.supabase.co https://www.gravatar.com https://www.googletagmanager.com https://www.google-analytics.com;
-  font-src 'self';
-  object-src 'none';
-  base-uri 'self';
-  form-action 'self';
-  frame-ancestors 'none';
-  frame-src 'self' https://js.stripe.com https://vercel.live;
-  connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.intuit.com https://vercel.live https://www.googletagmanager.com https://www.google-analytics.com https://*.analytics.google.com https://*.g.doubleclick.net https://*.sentry.io;
-  upgrade-insecure-requests;
-`.replace(/\s{2,}/g, ' ').trim();
+// SEC-026: CSP is now set dynamically in middleware with per-request nonces.
+// Only the static security headers below are applied via next.config.ts.
+// API routes and evidence viewer retain their own static CSPs in the headers() config.
 
 const securityHeaders = [
   // Prevent clickjacking attacks
@@ -55,11 +36,7 @@ const securityHeaders = [
     key: 'Referrer-Policy',
     value: 'strict-origin-when-cross-origin',
   },
-  // Content Security Policy
-  {
-    key: 'Content-Security-Policy',
-    value: ContentSecurityPolicy,
-  },
+  // SEC-026: CSP moved to middleware (nonce-based) — see src/middleware.ts
   // Prevent browser from making DNS queries for external resources
   {
     key: 'X-DNS-Prefetch-Control',

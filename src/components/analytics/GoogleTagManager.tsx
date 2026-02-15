@@ -16,13 +16,14 @@ const GTM_EXCLUDED_PATHS = ['/login', '/signup', '/forgot-password', '/reset-pas
 
 interface GoogleTagManagerProps {
   gtmId: string
+  nonce?: string
 }
 
 /**
  * GTM Head Script
  * Must be placed in the <head> section
  */
-export function GoogleTagManagerHead({ gtmId }: GoogleTagManagerProps) {
+export function GoogleTagManagerHead({ gtmId, nonce }: GoogleTagManagerProps) {
   // Set default consent BEFORE GTM loads
   useEffect(() => {
     initializeDataLayer()
@@ -37,6 +38,7 @@ export function GoogleTagManagerHead({ gtmId }: GoogleTagManagerProps) {
       <Script
         id="gtm-consent-default"
         strategy="afterInteractive"
+        nonce={nonce}
         dangerouslySetInnerHTML={{
           __html: `
             window.dataLayer = window.dataLayer || [];
@@ -70,6 +72,7 @@ export function GoogleTagManagerHead({ gtmId }: GoogleTagManagerProps) {
       <Script
         id="gtm-script"
         strategy="afterInteractive"
+        nonce={nonce}
         dangerouslySetInnerHTML={{
           __html: `
             (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -109,10 +112,10 @@ export function GoogleTagManagerBody({ gtmId }: GoogleTagManagerProps) {
  * Combined GTM component for simpler usage
  * Note: The body iframe should ideally be placed right after <body> tag
  */
-export function GoogleTagManager({ gtmId }: GoogleTagManagerProps) {
+export function GoogleTagManager({ gtmId, nonce }: GoogleTagManagerProps) {
   const pathname = usePathname()
   if (GTM_EXCLUDED_PATHS.includes(pathname)) return null
-  return <GoogleTagManagerHead gtmId={gtmId} />
+  return <GoogleTagManagerHead gtmId={gtmId} nonce={nonce} />
 }
 
 /**
