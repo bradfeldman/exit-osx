@@ -281,7 +281,6 @@ export async function middleware(request: NextRequest) {
           { status: 403 }
         )
       }
-    }
     } else {
       // SEC-064: No Origin or Referer — require X-Requested-With as CSRF proof.
       // Legitimate browser requests from our app include this header via fetch().
