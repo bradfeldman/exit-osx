@@ -9,7 +9,8 @@ import { PAGINATION } from '@/lib/contact-system/constants'
  * Get potential duplicate companies and people for admin review
  */
 export async function GET(request: NextRequest) {
-  const result = await checkPermission('COMPANY_VIEW')
+  // SECURITY FIX (SEC-032): Duplicate management is an admin operation
+  const result = await checkPermission('ORG_MANAGE_MEMBERS')
   if (isAuthError(result)) return result.error
 
   try {
@@ -169,7 +170,8 @@ export async function GET(request: NextRequest) {
  * Run duplicate detection and save candidates to database
  */
 export async function POST(request: NextRequest) {
-  const result = await checkPermission('COMPANY_UPDATE')
+  // SECURITY FIX (SEC-032): Running duplicate detection is an admin operation
+  const result = await checkPermission('ORG_MANAGE_MEMBERS')
   if (isAuthError(result)) return result.error
 
   try {

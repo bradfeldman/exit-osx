@@ -237,7 +237,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const result = await checkPermission('COMPANY_UPDATE')
+  // SECURITY FIX (SEC-032): Delete is a destructive admin operation
+  const result = await checkPermission('ORG_MANAGE_MEMBERS')
   if (isAuthError(result)) return result.error
 
   try {

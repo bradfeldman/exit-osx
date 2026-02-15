@@ -12,7 +12,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const result = await checkPermission('COMPANY_UPDATE')
+  // SECURITY FIX (SEC-032): Resolving duplicates is a destructive admin operation
+  const result = await checkPermission('ORG_MANAGE_MEMBERS')
   if (isAuthError(result)) return result.error
 
   try {
@@ -113,7 +114,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const result = await checkPermission('COMPANY_UPDATE')
+  // SECURITY FIX (SEC-032): Deleting duplicates is a destructive admin operation
+  const result = await checkPermission('ORG_MANAGE_MEMBERS')
   if (isAuthError(result)) return result.error
 
   try {

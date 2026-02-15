@@ -8,7 +8,8 @@ import { PAGINATION, FREE_EMAIL_DOMAINS } from '@/lib/contact-system/constants'
  * Get all canonical domains with optional filtering
  */
 export async function GET(request: NextRequest) {
-  const result = await checkPermission('COMPANY_VIEW')
+  // SECURITY FIX (SEC-032): Domain management is an admin operation
+  const result = await checkPermission('ORG_MANAGE_MEMBERS')
   if (isAuthError(result)) return result.error
 
   try {
@@ -67,7 +68,8 @@ export async function GET(request: NextRequest) {
  * Add a domain to a canonical company
  */
 export async function POST(request: NextRequest) {
-  const result = await checkPermission('COMPANY_UPDATE')
+  // SECURITY FIX (SEC-032): Domain management is an admin operation
+  const result = await checkPermission('ORG_MANAGE_MEMBERS')
   if (isAuthError(result)) return result.error
 
   try {
@@ -155,7 +157,8 @@ export async function POST(request: NextRequest) {
  * Remove a domain from a company
  */
 export async function DELETE(request: NextRequest) {
-  const result = await checkPermission('COMPANY_UPDATE')
+  // SECURITY FIX (SEC-032): Domain management is an admin operation
+  const result = await checkPermission('ORG_MANAGE_MEMBERS')
   if (isAuthError(result)) return result.error
 
   try {
