@@ -1,4 +1,4 @@
-// Shared 5-Mode Navigation Icons used by Sidebar, MobileNav, and BottomTabBar
+// Shared Navigation Icons used by Sidebar, BottomTabBar, and MoreSheet
 
 export function HomeIcon({ className }: { className?: string }) {
   return (

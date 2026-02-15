@@ -17,7 +17,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { NotificationBell } from './NotificationBell'
 import { ExitCoachButton } from '@/components/ai-coach/ExitCoachButton'
-import { MobileNav } from './MobileNav'
 import type { User } from '@supabase/supabase-js'
 
 interface HeaderProps {
@@ -33,7 +32,6 @@ function getBriColor(score: number) {
 
 export function Header({ user }: HeaderProps) {
   const [loading, setLoading] = useState(false)
-  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const router = useRouter()
   const supabase = createClient()
   const { companies, selectedCompanyId } = useCompany()
@@ -51,33 +49,18 @@ export function Header({ user }: HeaderProps) {
   }
 
   return (
-    <>
-      <MobileNav isOpen={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
-      <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-border bg-card px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-        {/* Mobile menu button - opens on hover */}
-        <button
-          type="button"
-          onClick={() => setMobileNavOpen(true)}
-          onMouseEnter={() => setMobileNavOpen(true)}
-          className="lg:hidden -m-2.5 p-2.5 text-muted-foreground hover:text-foreground"
-        >
-          <span className="sr-only">Open sidebar</span>
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
-        </button>
-
-        {/* Mobile logo */}
-        <div className="lg:hidden flex items-center gap-2">
-          <Image
-            src="/logo.webp"
-            alt="Exit OSx"
-            width={28}
-            height={28}
-            className="h-7 w-7"
-          />
-          <span className="text-lg font-semibold text-foreground">Exit OSx</span>
-        </div>
+    <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-border bg-card px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+      {/* Mobile logo */}
+      <div className="lg:hidden flex items-center gap-2">
+        <Image
+          src="/logo.webp"
+          alt="Exit OSx"
+          width={28}
+          height={28}
+          className="h-7 w-7"
+        />
+        <span className="text-lg font-semibold text-foreground">Exit OSx</span>
+      </div>
 
       <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
         {/* Company name + BRI score (BF-006) */}
@@ -123,10 +106,6 @@ export function Header({ user }: HeaderProps) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push('/dashboard/settings?tab=account')}>
-                User Settings
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut} disabled={loading}>
                 {loading ? 'Signing out...' : 'Sign out'}
               </DropdownMenuItem>
@@ -135,6 +114,5 @@ export function Header({ user }: HeaderProps) {
         </div>
       </div>
     </header>
-    </>
   )
 }

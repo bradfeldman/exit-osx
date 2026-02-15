@@ -151,11 +151,11 @@ export function Sidebar() {
             </ul>
           </div>
 
-          {/* VALUE MODELING Section - always visible so users see the full map */}
+          {/* FINANCIAL TOOLS Section - always visible so users see the full map */}
           {progressionData && (
             <div className="mb-4 pt-4 border-t border-sidebar-border/50">
               <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
-                Value Modeling
+                Financial Tools
               </p>
               <ul role="list" className="mt-1 space-y-1">
                 {valueModelingLinks.map((link) => renderNavLink(link))}
@@ -177,13 +177,9 @@ export function Sidebar() {
             </div>
           )}
 
-          {/* ADMIN Section */}
+          {/* Settings */}
           <div className="flex-1 pt-4 border-t border-sidebar-border/50">
-            <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
-              Admin
-            </p>
-            <ul role="list" className="mt-1 space-y-1">
-              {/* Company Settings */}
+            <ul role="list" className="space-y-1">
               <li>
                 <Link
                   href="/dashboard/settings"
