@@ -1,11 +1,10 @@
 /**
  * Security Store Abstraction
  * Provides a unified interface for storing security-related data
- * Uses Redis in production (if configured) or falls back to in-memory storage
- *
- * IMPORTANT: In-memory storage will NOT work with multiple server instances.
- * Configure REDIS_URL in production for proper distributed rate limiting and lockouts.
+ * Uses Upstash Redis in production (Edge-compatible via HTTP) or falls back to in-memory storage
  */
+
+import { Redis } from '@upstash/redis'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type StoreValue = string | number | Record<string, any>
@@ -82,114 +81,65 @@ class MemoryStore implements StoreInterface {
   }
 }
 
-// Redis client type (simplified for dynamic import)
-interface RedisClient {
-  get(key: string): Promise<string | null>
-  set(key: string, value: string, mode?: string, duration?: number): Promise<unknown>
-  incr(key: string): Promise<number>
-  pexpire(key: string, milliseconds: number): Promise<number>
-  del(key: string): Promise<number>
-  exists(key: string): Promise<number>
-}
-
-// Redis store implementation (lazy loaded)
+// Upstash Redis store implementation (Edge Runtime compatible via HTTP)
 class RedisStore implements StoreInterface {
-  private client: RedisClient | null = null
-  private connectionPromise: Promise<RedisClient> | null = null
+  private client: Redis
 
-  private async getClient(): Promise<RedisClient> {
-    if (this.client) return this.client
-
-    if (!this.connectionPromise) {
-      this.connectionPromise = (async () => {
-        const Redis = (await import('ioredis')).default
-        const client = new Redis(process.env.REDIS_URL!, {
-          maxRetriesPerRequest: 3,
-          lazyConnect: true,
-        })
-
-        this.client = client as unknown as RedisClient
-        return this.client
-      })()
-    }
-
-    return this.connectionPromise
+  constructor() {
+    this.client = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    })
   }
 
   async get<T extends StoreValue>(key: string): Promise<T | null> {
-    const client = await this.getClient()
-    const value = await client.get(key)
-    if (!value) return null
-
-    try {
-      return JSON.parse(value) as T
-    } catch {
-      return value as T
-    }
+    const value = await this.client.get<T>(key)
+    return value ?? null
   }
 
   async set(key: string, value: StoreValue, ttlMs?: number): Promise<void> {
-    const client = await this.getClient()
-    const serialized = typeof value === 'object' ? JSON.stringify(value) : String(value)
-
     if (ttlMs) {
-      await client.set(key, serialized, 'PX', ttlMs)
+      await this.client.set(key, value, { px: ttlMs })
     } else {
-      await client.set(key, serialized)
+      await this.client.set(key, value)
     }
   }
 
   async increment(key: string, ttlMs?: number): Promise<number> {
-    const client = await this.getClient()
-    const result = await client.incr(key)
+    const result = await this.client.incr(key)
 
     if (ttlMs && result === 1) {
       // Set expiry only on first increment
-      await client.pexpire(key, ttlMs)
+      await this.client.pexpire(key, ttlMs)
     }
 
     return result
   }
 
   async delete(key: string): Promise<void> {
-    const client = await this.getClient()
-    await client.del(key)
+    await this.client.del(key)
   }
 
   async exists(key: string): Promise<boolean> {
-    const client = await this.getClient()
-    const result = await client.exists(key)
+    const result = await this.client.exists(key)
     return result === 1
   }
 }
 
-// SECURITY FIX (PROD-091 #3): Determine which store to use.
-// On Vercel serverless, each function invocation may run in a separate isolate,
-// so in-memory state is NOT shared across instances. This means rate limiting and
-// account lockout counters are per-instance only — an attacker can bypass limits
-// by hitting different instances.
-//
-// RECOMMENDATION: Provision Upstash Redis (Vercel integration) and set REDIS_URL
-// in Vercel environment variables. Upstash provides a serverless Redis that works
-// with ioredis and costs ~$0 for low-volume usage.
-//
-// TODO: Set up Upstash Redis and configure REDIS_URL for production to enable
-// distributed rate limiting and account lockout across all serverless instances.
 let securityStore: StoreInterface
 
-if (process.env.REDIS_URL) {
+if (process.env.UPSTASH_REDIS_REST_URL) {
   securityStore = new RedisStore()
   if (process.env.NODE_ENV !== 'production') {
-    console.info('[Security] Using Redis store for rate limiting and lockouts')
+    console.info('[Security] Using Upstash Redis store for rate limiting and lockouts')
   }
 } else {
   securityStore = new MemoryStore()
   if (process.env.NODE_ENV === 'production') {
-    // Log at error level so this surfaces in monitoring/alerting dashboards
     console.error(
       '[Security] CRITICAL: Using in-memory store for rate limiting. ' +
         'Rate limits and account lockouts will NOT be enforced across Vercel serverless instances. ' +
-        'Set REDIS_URL (e.g., Upstash Redis) for production deployments.'
+        'Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN for production deployments.'
     )
   }
 }
