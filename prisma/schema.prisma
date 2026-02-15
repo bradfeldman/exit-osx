@@ -293,6 +293,8 @@ model EbitdaAdjustment {
   amount      Decimal          @db.Decimal(15, 2)
   type        String
   frequency   String           @default("ANNUAL")
+  category    String?          @map("category")
+  aiSuggested Boolean          @default(false) @map("ai_suggested")
   createdAt   DateTime         @default(now()) @map("created_at")
   company     Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
   period      FinancialPeriod? @relation(fields: [periodId], references: [id])

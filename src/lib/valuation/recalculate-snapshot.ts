@@ -22,7 +22,7 @@ import {
 
 // Market salary benchmarks by revenue size category
 // Based on industry compensation studies for owner/CEO roles
-const MARKET_SALARY_BY_REVENUE: Record<string, number> = {
+export const MARKET_SALARY_BY_REVENUE: Record<string, number> = {
   UNDER_500K: 80000,
   FROM_500K_TO_1M: 120000,
   FROM_1M_TO_3M: 150000,
@@ -35,7 +35,7 @@ const MARKET_SALARY_BY_REVENUE: Record<string, number> = {
  * Get market salary based on company revenue size
  * Falls back to $150K if revenue size category is unknown
  */
-function getMarketSalary(revenueSizeCategory: string | null | undefined): number {
+export function getMarketSalary(revenueSizeCategory: string | null | undefined): number {
   if (!revenueSizeCategory) return 150000
   return MARKET_SALARY_BY_REVENUE[revenueSizeCategory] || 150000
 }

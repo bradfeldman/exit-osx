@@ -6,10 +6,11 @@ import { PLFormGrid } from './PLFormGrid'
 import { BSFormGrid } from './BSFormGrid'
 import { AddBacksFormGrid } from './AddBacksFormGrid'
 import { CashFlowFormGrid } from './CashFlowFormGrid'
+import { EbitdaBridgePanel } from './EbitdaBridgePanel'
 import { FYESettingsLink } from './FYESettingsLink'
 import { QuickBooksCard } from '@/components/integrations'
 
-type DataEntryTab = 'pnl' | 'balance-sheet' | 'add-backs' | 'cash-flow'
+type DataEntryTab = 'pnl' | 'balance-sheet' | 'add-backs' | 'ebitda-bridge' | 'cash-flow'
 
 interface FinancialsDataEntryProps {
   companyId: string
@@ -60,6 +61,7 @@ export function FinancialsDataEntry({ companyId }: FinancialsDataEntryProps) {
               <TabsTrigger value="pnl">P&L</TabsTrigger>
               <TabsTrigger value="balance-sheet">Balance Sheet</TabsTrigger>
               <TabsTrigger value="add-backs">Add-Backs</TabsTrigger>
+              <TabsTrigger value="ebitda-bridge">EBITDA Bridge</TabsTrigger>
               <TabsTrigger value="cash-flow">Cash Flow</TabsTrigger>
             </TabsList>
           </Tabs>
@@ -77,6 +79,7 @@ export function FinancialsDataEntry({ companyId }: FinancialsDataEntryProps) {
       {activeTab === 'pnl' && <PLFormGrid key={syncVersion} companyId={companyId} />}
       {activeTab === 'balance-sheet' && <BSFormGrid key={syncVersion} companyId={companyId} />}
       {activeTab === 'add-backs' && <AddBacksFormGrid key={syncVersion} companyId={companyId} />}
+      {activeTab === 'ebitda-bridge' && <EbitdaBridgePanel companyId={companyId} />}
       {activeTab === 'cash-flow' && <CashFlowFormGrid key={syncVersion} companyId={companyId} />}
     </div>
   )

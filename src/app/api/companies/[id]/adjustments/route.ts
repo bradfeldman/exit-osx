@@ -76,7 +76,7 @@ export async function POST(
 
   try {
     const body = await request.json()
-    const { description, amount, type, periodId, frequency = 'ANNUAL' } = body
+    const { description, amount, type, periodId, frequency = 'ANNUAL', category, aiSuggested } = body
 
     // Validate
     if (!description || amount === undefined || !type) {
@@ -141,7 +141,9 @@ export async function POST(
         amount,
         type,
         frequency,
-        periodId: periodId || null
+        periodId: periodId || null,
+        ...(category && { category }),
+        ...(aiSuggested !== undefined && { aiSuggested: Boolean(aiSuggested) }),
       }
     })
 
@@ -179,7 +181,7 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { amount, description, type, frequency } = body
+    const { amount, description, type, frequency, category } = body
 
     // Verify user has access
     const company = await prisma.company.findUnique({
@@ -221,7 +223,8 @@ export async function PATCH(
         ...(amount !== undefined && { amount }),
         ...(description !== undefined && { description }),
         ...(type !== undefined && { type }),
-        ...(frequency !== undefined && { frequency })
+        ...(frequency !== undefined && { frequency }),
+        ...(category !== undefined && { category }),
       }
     })
 
