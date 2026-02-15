@@ -105,7 +105,7 @@ export function UpgradeModal({
   // Get the description for the upgrade action
   const getUpgradeDescription = () => {
     if (isFoundation) {
-      return 'Start a 14-day free trial with full access to all features.'
+      return 'Start a 7-day free trial with full access to all features.'
     }
 
     if (isTrialing && trialDaysRemaining !== null) {

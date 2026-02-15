@@ -272,7 +272,7 @@ export async function middleware(request: NextRequest) {
   // Public routes that don't require auth
   // SECURITY FIX (PROD-060): Removed /api/diag (now behind requireDevEndpoint),
   // /api/industries (now requires auth — calls OpenAI which has cost abuse risk)
-  const publicRoutes = ['/login', '/signup', '/activate', '/auth/callback', '/auth/confirm', '/pricing', '/terms', '/privacy', '/invite', '/api/invites', '/api/cron', '/api/health', '/api/public', '/api/report', '/report', '/api/task-share', '/task', '/forgot-password', '/reset-password']
+  const publicRoutes = ['/login', '/signup', '/activate', '/auth/callback', '/auth/confirm', '/pricing', '/terms', '/privacy', '/invite', '/api/invites', '/api/cron', '/api/health', '/api/public', '/api/report', '/report', '/api/task-share', '/task', '/forgot-password', '/reset-password', '/api/stripe/webhook']
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
 
   // Admin public routes (login/forgot-password on admin subdomain)

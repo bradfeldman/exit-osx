@@ -769,6 +769,7 @@ export interface BillingPageViewedParams extends BaseEventParams {
 export interface PlanUpgradeInitiatedParams extends BaseEventParams {
   currentPlan: string
   targetPlan: string
+  billingCycle?: 'monthly' | 'annual'
   isTrialing: boolean
   triggerSource: 'billing_page' | 'upgrade_modal' | 'feature_gate' | 'trial_banner'
 }

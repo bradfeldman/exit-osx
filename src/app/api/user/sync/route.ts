@@ -6,7 +6,7 @@ import { PlanTier, SubscriptionStatus, BillingCycle } from '@prisma/client'
 import { serverAnalytics } from '@/lib/analytics/server'
 
 // Get subscription config for new users
-// All new signups get EXIT_READY tier with a 14-day trial, regardless of selected plan
+// All new signups get EXIT_READY tier with a 7-day trial, regardless of selected plan
 function getSubscriptionConfig(_planId: string): {
   planTier: PlanTier
   subscriptionStatus: SubscriptionStatus
@@ -15,9 +15,9 @@ function getSubscriptionConfig(_planId: string): {
   trialEndsAt: Date | null
 } {
   const now = new Date()
-  const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000) // 14 days from now
+  const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
 
-  // All new users start with EXIT_READY on a 14-day trial
+  // All new users start with EXIT_READY on a 7-day trial
   // This gives them full access to evaluate all features before choosing a plan
   return {
     planTier: 'EXIT_READY',

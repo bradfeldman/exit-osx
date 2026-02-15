@@ -8,12 +8,13 @@ import { analytics } from '@/lib/analytics'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Check, Clock, CreditCard, Sparkles, ArrowRight, AlertCircle } from 'lucide-react'
+import { Check, Clock, CreditCard, Sparkles, ArrowRight, AlertCircle, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function BillingSettings() {
   const searchParams = useSearchParams()
   const requestedUpgrade = searchParams.get('upgrade') as PlanTier | null
+  const checkoutSessionId = searchParams.get('session_id')
   const {
     planTier,
     status,
@@ -25,11 +26,25 @@ export function BillingSettings() {
 
   const [selectedPlan, setSelectedPlan] = useState<PlanTier | null>(requestedUpgrade)
   const [isUpgrading, setIsUpgrading] = useState(false)
-  const [upgradeSuccess, setUpgradeSuccess] = useState(false)
+  const [isManagingBilling, setIsManagingBilling] = useState(false)
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual')
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false)
 
   const hasTrackedPageView = useRef(false)
 
   const currentPlanData = getPlan(planTier)
+
+  // Detect checkout success from URL params
+  useEffect(() => {
+    if (checkoutSessionId) {
+      setCheckoutSuccess(true)
+      refetch()
+      // Clean URL without reloading
+      const url = new URL(window.location.href)
+      url.searchParams.delete('session_id')
+      window.history.replaceState({}, '', url.toString())
+    }
+  }, [checkoutSessionId, refetch])
 
   // Track billing page view
   useEffect(() => {
@@ -46,44 +61,38 @@ export function BillingSettings() {
 
   const handleUpgrade = async (targetPlan: PlanTier) => {
     const previousPlan = planTier
-    const wasTrialingBefore = isTrialing
 
     setIsUpgrading(true)
     setSelectedPlan(targetPlan)
 
-    // Track upgrade initiated
     analytics.track('plan_upgrade_initiated', {
       currentPlan: planTier,
       targetPlan,
+      billingCycle,
       isTrialing,
       triggerSource: requestedUpgrade ? 'upgrade_modal' : 'billing_page',
     })
 
     try {
-      const response = await fetch('/api/subscription/upgrade', {
+      const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetPlan }),
+        body: JSON.stringify({ planId: targetPlan, billingCycle }),
       })
 
       if (response.ok) {
-        setUpgradeSuccess(true)
-        await refetch()
-
-        // Track upgrade completed
-        analytics.track('plan_upgrade_completed', {
-          previousPlan,
-          newPlan: targetPlan,
-          wasTrialing: wasTrialingBefore,
-          isNowTrialing: previousPlan === 'foundation', // Starting a trial if coming from foundation
-        })
+        const data = await response.json()
+        if (data.url) {
+          // Redirect to Stripe Checkout
+          window.location.href = data.url
+          return
+        }
       } else {
         const error = await response.json()
-        const errorMessage = error.message || 'Failed to upgrade. Please try again.'
+        const errorMessage = error.error || 'Failed to start checkout. Please try again.'
 
-        // Track upgrade failed
         analytics.track('plan_upgrade_failed', {
-          currentPlan: planTier,
+          currentPlan: previousPlan,
           targetPlan,
           errorMessage,
         })
@@ -93,18 +102,47 @@ export function BillingSettings() {
     } catch (error) {
       console.error('Upgrade failed:', error)
 
-      // Track upgrade failed
       analytics.track('plan_upgrade_failed', {
         currentPlan: planTier,
         targetPlan,
         errorMessage: 'Network error or unexpected failure',
       })
 
-      alert('Failed to upgrade. Please try again.')
+      alert('Failed to start checkout. Please try again.')
     } finally {
       setIsUpgrading(false)
     }
   }
+
+  const handleManageBilling = async () => {
+    setIsManagingBilling(true)
+
+    try {
+      const response = await fetch('/api/stripe/portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.url) {
+          window.location.href = data.url
+          return
+        }
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to open billing portal.')
+      }
+    } catch (error) {
+      console.error('Portal failed:', error)
+      alert('Failed to open billing portal. Please try again.')
+    } finally {
+      setIsManagingBilling(false)
+    }
+  }
+
+  // Check if workspace has Stripe subscription (derived from plan + status)
+  const hasStripeSubscription = status === 'ACTIVE' || status === 'PAST_DUE' || (isTrialing && planTier !== 'foundation')
 
   if (isLoading) {
     return (
@@ -116,6 +154,23 @@ export function BillingSettings() {
 
   return (
     <div className="space-y-6">
+      {/* Checkout Success Message */}
+      {checkoutSuccess && (
+        <Card className="border-green-200 bg-green-50">
+          <CardContent className="flex items-center gap-3 py-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
+              <Check className="h-5 w-5 text-green-600" />
+            </div>
+            <div>
+              <p className="font-medium text-green-800">Subscription activated!</p>
+              <p className="text-sm text-green-600">
+                Welcome to {currentPlanData?.name}. You now have full access to all plan features.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Current Plan Card */}
       <Card>
         <CardHeader>
@@ -127,10 +182,18 @@ export function BillingSettings() {
                 Trial
               </Badge>
             )}
+            {status === 'PAST_DUE' && (
+              <Badge variant="destructive">
+                <AlertCircle className="mr-1 h-3 w-3" />
+                Past Due
+              </Badge>
+            )}
           </CardTitle>
           <CardDescription>
             {isTrialing && trialDaysRemaining !== null
               ? `Your trial ends in ${trialDaysRemaining} day${trialDaysRemaining !== 1 ? 's' : ''}`
+              : status === 'PAST_DUE'
+              ? 'Please update your payment method to continue service'
               : 'Your active subscription plan'}
           </CardDescription>
         </CardHeader>
@@ -144,11 +207,13 @@ export function BillingSettings() {
             </div>
             <div className="text-right">
               <p className="text-3xl font-bold">
-                ${currentPlanData?.annualPrice || 0}
+                ${billingCycle === 'annual' ? (currentPlanData?.annualPrice || 0) : (currentPlanData?.monthlyPrice || 0)}
                 <span className="text-base font-normal text-muted-foreground">/mo</span>
               </p>
               {(currentPlanData?.annualPrice || 0) > 0 && (
-                <p className="text-sm text-muted-foreground">billed annually</p>
+                <p className="text-sm text-muted-foreground">
+                  billed {billingCycle === 'annual' ? 'annually' : 'monthly'}
+                </p>
               )}
             </div>
           </div>
@@ -159,33 +224,65 @@ export function BillingSettings() {
               <span>Your trial has expired. Upgrade to continue using premium features.</span>
             </div>
           )}
+
+          {/* Manage Billing button — only shown if user has a Stripe subscription */}
+          {hasStripeSubscription && planTier !== 'foundation' && (
+            <div className="mt-4">
+              <Button
+                variant="outline"
+                onClick={handleManageBilling}
+                disabled={isManagingBilling}
+              >
+                <CreditCard className="mr-2 h-4 w-4" />
+                {isManagingBilling ? 'Opening...' : 'Manage Billing'}
+                <ExternalLink className="ml-2 h-3 w-3" />
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Upgrade Success Message */}
-      {upgradeSuccess && (
-        <Card className="border-green-200 bg-green-50">
-          <CardContent className="flex items-center gap-3 py-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
-              <Check className="h-5 w-5 text-green-600" />
-            </div>
-            <div>
-              <p className="font-medium text-green-800">Plan upgraded successfully!</p>
-              <p className="text-sm text-green-600">
-                {isTrialing
-                  ? 'Your trial has been upgraded. Enjoy your new features!'
-                  : 'You now have access to all the features in your new plan.'}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Available Plans */}
       <div>
-        <h2 className="mb-4 text-lg font-semibold">
-          {planTier === 'exit-ready' ? 'Your Plan' : 'Upgrade Your Plan'}
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">
+            {planTier === 'exit-ready' ? 'Your Plan' : 'Upgrade Your Plan'}
+          </h2>
+
+          {/* Billing Cycle Toggle */}
+          <div className="flex items-center gap-3">
+            <span className={cn(
+              'text-sm font-medium transition-colors',
+              billingCycle === 'monthly' ? 'text-foreground' : 'text-muted-foreground'
+            )}>
+              Monthly
+            </span>
+            <button
+              onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'annual' : 'monthly')}
+              className={cn(
+                'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                billingCycle === 'annual' ? 'bg-primary' : 'bg-muted'
+              )}
+            >
+              <span
+                className={cn(
+                  'inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform',
+                  billingCycle === 'annual' ? 'translate-x-6' : 'translate-x-1'
+                )}
+              />
+            </button>
+            <span className={cn(
+              'text-sm font-medium transition-colors',
+              billingCycle === 'annual' ? 'text-foreground' : 'text-muted-foreground'
+            )}>
+              Annual
+              <span className="ml-1.5 inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                Save 20%
+              </span>
+            </span>
+          </div>
+        </div>
+
         <div className="grid gap-4 md:grid-cols-3">
           {PRICING_PLANS.map((plan) => {
             const isCurrentPlan = plan.id === planTier
@@ -193,7 +290,7 @@ export function BillingSettings() {
               (planTier === 'exit-ready' && plan.id !== 'exit-ready') ||
               (planTier === 'growth' && plan.id === 'foundation')
             const canUpgrade = !isCurrentPlan && !isDowngrade
-            const canDowngrade = isDowngrade && !isCurrentPlan
+            const price = billingCycle === 'annual' ? plan.annualPrice : plan.monthlyPrice
 
             return (
               <Card
@@ -221,9 +318,14 @@ export function BillingSettings() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg">{plan.name}</CardTitle>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold">${plan.annualPrice}</span>
+                    <span className="text-3xl font-bold">${price}</span>
                     <span className="text-muted-foreground">/mo</span>
                   </div>
+                  {price > 0 && billingCycle === 'annual' && (
+                    <p className="text-xs text-muted-foreground">
+                      billed annually at ${(price * 12).toLocaleString()}/yr
+                    </p>
+                  )}
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-muted-foreground">{plan.description}</p>
@@ -254,7 +356,7 @@ export function BillingSettings() {
                       disabled={isUpgrading}
                     >
                       {isUpgrading && selectedPlan === plan.id ? (
-                        'Upgrading...'
+                        'Redirecting...'
                       ) : isTrialing ? (
                         <>
                           Upgrade Trial
@@ -262,7 +364,7 @@ export function BillingSettings() {
                         </>
                       ) : planTier === 'foundation' ? (
                         <>
-                          Start Free Trial
+                          Start 7-Day Free Trial
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </>
                       ) : (
@@ -276,18 +378,14 @@ export function BillingSettings() {
                     <Button className="w-full" variant="secondary" disabled>
                       Current Plan
                     </Button>
-                  ) : canDowngrade ? (
+                  ) : isDowngrade ? (
                     <Button
                       className="w-full"
-                      variant="outline"
-                      onClick={() => handleUpgrade(plan.id)}
-                      disabled={isUpgrading}
+                      variant="ghost"
+                      onClick={handleManageBilling}
+                      disabled={isManagingBilling || !hasStripeSubscription}
                     >
-                      {isUpgrading && selectedPlan === plan.id ? (
-                        'Processing...'
-                      ) : (
-                        'Downgrade'
-                      )}
+                      {hasStripeSubscription ? 'Manage in Billing Portal' : 'N/A'}
                     </Button>
                   ) : (
                     <Button className="w-full" variant="ghost" disabled>
@@ -300,31 +398,6 @@ export function BillingSettings() {
           })}
         </div>
       </div>
-
-      {/* Payment Method (Placeholder) */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            Payment Method
-          </CardTitle>
-          <CardDescription>
-            Manage your payment information
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between rounded-lg border border-dashed p-4">
-            <div className="text-muted-foreground">
-              <p className="font-medium">No payment method on file</p>
-              <p className="text-sm">Add a payment method to continue after your trial ends</p>
-            </div>
-            <Button variant="outline" disabled>
-              Add Payment Method
-              <span className="ml-2 text-xs text-muted-foreground">(Coming Soon)</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Trial Notice */}
       {isTrialing && (

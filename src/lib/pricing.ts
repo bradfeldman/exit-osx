@@ -50,7 +50,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     description: 'Comprehensive tools to actively increase your business value',
     monthlyPrice: 179,
     annualPrice: 149,
-    cta: 'Start 14-Day Free Trial',
+    cta: 'Start 7-Day Free Trial',
     highlighted: true,
     features: [
       { name: 'Exit Readiness Assessment', included: true },
@@ -77,7 +77,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     description: 'Full suite for M&A-ready businesses preparing to exit',
     monthlyPrice: 449,
     annualPrice: 379,
-    cta: 'Start 14-Day Free Trial',
+    cta: 'Start 7-Day Free Trial',
     features: [
       { name: 'Exit Readiness Assessment', included: true },
       { name: 'Valuation Estimate', included: true },

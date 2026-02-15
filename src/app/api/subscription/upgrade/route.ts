@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { PlanTier } from '@prisma/client'
+import { stripe, STRIPE_PRICE_MAP } from '@/lib/stripe'
 
 // Map plan ID to Prisma PlanTier enum
 function getPlanTierEnum(planId: string): PlanTier | null {
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { targetPlan } = body
+    const { targetPlan, billingCycle = 'annual' } = body
 
     if (!targetPlan) {
       return NextResponse.json({ error: 'Target plan is required' }, { status: 400 })
@@ -59,6 +60,8 @@ export async function POST(request: Request) {
                 planTier: true,
                 subscriptionStatus: true,
                 trialEndsAt: true,
+                stripeCustomerId: true,
+                stripeSubscriptionId: true,
               }
             }
           }
@@ -76,46 +79,79 @@ export async function POST(request: Request) {
     // Validate this is an upgrade, not a downgrade
     if (!isUpgrade(currentPlanId, targetPlan)) {
       return NextResponse.json(
-        { error: 'Can only upgrade to a higher plan. Contact support to downgrade.' },
+        { error: 'Can only upgrade to a higher plan. Use Manage Billing to downgrade.' },
         { status: 400 }
       )
     }
 
-    // Determine new subscription status and trial dates
-    const now = new Date()
-    let newStatus = workspace.subscriptionStatus
-    let trialStartedAt = null
-    let trialEndsAt = workspace.trialEndsAt
+    // If workspace already has an active Stripe subscription, update it via Stripe API
+    if (workspace.stripeSubscriptionId) {
+      const subscription = await stripe.subscriptions.retrieve(workspace.stripeSubscriptionId)
+      const priceKey = `${targetPlan}-${billingCycle}`
+      const newPriceId = STRIPE_PRICE_MAP[priceKey]
 
-    // If user is on Foundation (free), start a new 14-day trial
-    if (workspace.planTier === 'FOUNDATION') {
-      newStatus = 'TRIALING'
-      trialStartedAt = now
-      trialEndsAt = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000) // 14 days
-    }
-    // If user is already trialing, keep the existing trial end date (no extra time)
-    // If user is on a paid plan, they stay on ACTIVE status
-
-    // Update the workspace's plan
-    await prisma.workspace.update({
-      where: { id: workspace.id },
-      data: {
-        planTier: targetPlanEnum,
-        subscriptionStatus: newStatus,
-        ...(trialStartedAt && { trialStartedAt }),
-        ...(trialEndsAt && { trialEndsAt }),
-        billingCycle: 'ANNUAL', // Default to annual
+      if (!newPriceId) {
+        return NextResponse.json({ error: 'Price not found' }, { status: 400 })
       }
+
+      await stripe.subscriptions.update(workspace.stripeSubscriptionId, {
+        items: [{
+          id: subscription.items.data[0].id,
+          price: newPriceId,
+        }],
+        metadata: { workspaceId: workspace.id, planTier: targetPlanEnum },
+        proration_behavior: 'create_prorations',
+      })
+
+      // Webhook will handle the DB update, but return success immediately
+      return NextResponse.json({
+        success: true,
+        message: `Upgrading to ${targetPlan}. Changes will apply shortly.`,
+      })
+    }
+
+    // No Stripe subscription — redirect to Stripe Checkout
+    let stripeCustomerId = workspace.stripeCustomerId
+
+    if (!stripeCustomerId) {
+      const customer = await stripe.customers.create({
+        email: user.email!,
+        metadata: { workspaceId: workspace.id },
+      })
+      stripeCustomerId = customer.id
+
+      await prisma.workspace.update({
+        where: { id: workspace.id },
+        data: { stripeCustomerId: customer.id },
+      })
+    }
+
+    const priceKey = `${targetPlan}-${billingCycle}`
+    const priceId = STRIPE_PRICE_MAP[priceKey]
+
+    if (!priceId) {
+      return NextResponse.json({ error: 'Price not found' }, { status: 400 })
+    }
+
+    const origin = request.headers.get('origin') || 'https://app.exitosx.com'
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      customer: stripeCustomerId,
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${origin}/dashboard/settings?tab=billing&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/dashboard/settings?tab=billing`,
+      metadata: { workspaceId: workspace.id, planTier: targetPlanEnum },
+      allow_promotion_codes: true,
+      subscription_data: {
+        metadata: { workspaceId: workspace.id, planTier: targetPlanEnum },
+        trial_period_days: 7,
+      },
     })
 
     return NextResponse.json({
-      success: true,
-      message: `Successfully upgraded to ${targetPlan}`,
-      subscription: {
-        planTier: targetPlan,
-        status: newStatus,
-        trialEndsAt,
-      }
+      redirectToCheckout: true,
+      checkoutUrl: session.url,
     })
   } catch (error) {
     console.error('Error upgrading subscription:', error)

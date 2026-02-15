@@ -356,11 +356,11 @@ export default function PricingPage() {
           <AnimatedSection className="flex flex-wrap items-center justify-center gap-8 mb-6 py-6">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <CheckIcon className="h-5 w-5 text-green-600" />
-              <span>14-day free trial on paid plans</span>
+              <span>7-day free trial on paid plans</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <CheckIcon className="h-5 w-5 text-green-600" />
-              <span>No credit card to start</span>
+              <span>No credit card required during trial</span>
             </div>
             <div className="flex items-center gap-2 text-sm font-medium text-foreground">
               <CheckIcon className="h-5 w-5 text-green-600" />
