@@ -84,8 +84,11 @@ function parseUserAgent(userAgent: string | null): {
  */
 export async function recordSession(): Promise<void> {
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user } } = await supabase.auth.getUser()
 
+  if (!user) return
+
+  const { data: { session } } = await supabase.auth.getSession()
   if (!session) return
 
   const headersList = await headers()
@@ -96,7 +99,7 @@ export async function recordSession(): Promise<void> {
 
   try {
     const dbUser = await prisma.user.findUnique({
-      where: { authId: session.user.id },
+      where: { authId: user.id },
     })
 
     if (!dbUser) return
@@ -137,15 +140,17 @@ export async function recordSession(): Promise<void> {
  */
 export async function getSessions(): Promise<SessionListResult> {
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (!user) {
     return { success: false, error: 'Not authenticated' }
   }
 
+  const { data: { session } } = await supabase.auth.getSession()
+
   try {
     const dbUser = await prisma.user.findUnique({
-      where: { authId: session.user.id },
+      where: { authId: user.id },
     })
 
     if (!dbUser) {
@@ -172,7 +177,7 @@ export async function getSessions(): Promise<SessionListResult> {
         ipAddress: s.ipAddress,
         lastActiveAt: s.lastActiveAt.toISOString(),
         createdAt: s.createdAt.toISOString(),
-        isCurrent: s.sessionToken === session.access_token,
+        isCurrent: s.sessionToken === session?.access_token,
       })),
     }
   } catch (error) {
@@ -186,15 +191,17 @@ export async function getSessions(): Promise<SessionListResult> {
  */
 export async function revokeSession(sessionId: string): Promise<SessionActionResult> {
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (!user) {
     return { success: false, error: 'Not authenticated' }
   }
 
+  const { data: { session } } = await supabase.auth.getSession()
+
   try {
     const dbUser = await prisma.user.findUnique({
-      where: { authId: session.user.id },
+      where: { authId: user.id },
     })
 
     if (!dbUser) {
@@ -210,7 +217,7 @@ export async function revokeSession(sessionId: string): Promise<SessionActionRes
       return { success: false, error: 'Session not found' }
     }
 
-    if (targetSession.sessionToken === session.access_token) {
+    if (session && targetSession.sessionToken === session.access_token) {
       return { success: false, error: 'Cannot revoke current session' }
     }
 
@@ -222,7 +229,7 @@ export async function revokeSession(sessionId: string): Promise<SessionActionRes
 
     securityLogger.info('session.revoked', 'Session revoked by user', {
       userId: dbUser.id,
-      userEmail: session.user.email,
+      userEmail: user.email,
       metadata: {
         revokedSessionId: sessionId,
         revokedSessionDevice: targetSession.deviceType,
@@ -242,15 +249,17 @@ export async function revokeSession(sessionId: string): Promise<SessionActionRes
  */
 export async function revokeAllOtherSessions(): Promise<SessionActionResult> {
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (!user) {
     return { success: false, error: 'Not authenticated' }
   }
 
+  const { data: { session } } = await supabase.auth.getSession()
+
   try {
     const dbUser = await prisma.user.findUnique({
-      where: { authId: session.user.id },
+      where: { authId: user.id },
     })
 
     if (!dbUser) {
@@ -261,7 +270,7 @@ export async function revokeAllOtherSessions(): Promise<SessionActionResult> {
     const result = await prisma.userSession.updateMany({
       where: {
         userId: dbUser.id,
-        sessionToken: { not: session.access_token },
+        ...(session ? { sessionToken: { not: session.access_token } } : {}),
         revokedAt: null,
       },
       data: { revokedAt: new Date() },
@@ -269,7 +278,7 @@ export async function revokeAllOtherSessions(): Promise<SessionActionResult> {
 
     securityLogger.security('session.revoke_all', 'All other sessions revoked by user', {
       userId: dbUser.id,
-      userEmail: session.user.email,
+      userEmail: user.email,
       metadata: { revokedCount: result.count },
     })
 
