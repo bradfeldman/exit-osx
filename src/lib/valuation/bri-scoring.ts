@@ -106,12 +106,19 @@ export function calculateWeightedBriScore(
   categoryScores: CategoryScore[],
   categoryWeights: Record<string, number> = DEFAULT_CATEGORY_WEIGHTS
 ): number {
+  // Normalize weights to sum to 1.0 to prevent NaN from Math.pow in valuation
+  const weightSum = Object.values(categoryWeights).reduce((sum, w) => sum + w, 0)
+  const normalizedWeights = weightSum > 0 && Math.abs(weightSum - 1.0) > 0.001
+    ? Object.fromEntries(Object.entries(categoryWeights).map(([k, v]) => [k, v / weightSum]))
+    : categoryWeights
+
   let briScore = 0
   for (const cs of categoryScores) {
-    const weight = categoryWeights[cs.category] || 0
+    const weight = normalizedWeights[cs.category] || 0
     briScore += cs.score * weight
   }
-  return briScore
+  // Clamp to [0, 1] to ensure valid input for downstream calculations
+  return Math.max(0, Math.min(1, briScore))
 }
 
 /**

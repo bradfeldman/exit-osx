@@ -482,6 +482,11 @@ export interface TaskBlockedParams extends BaseEventParams {
   enrichmentTier: 'HIGH' | 'MODERATE' | 'LOW' | 'NONE'
 }
 
+export interface LockedTaskClickedParams extends BaseEventParams {
+  taskValue: number
+  currentPlan: string
+}
+
 export interface TaskContextExpandedParams extends BaseEventParams {
   taskId: string
   taskCategory: string
@@ -892,6 +897,7 @@ export interface AnalyticsEventMap {
   'task_completed': TaskCompletedParams
   'task_dismissed': TaskDismissedParams
   'task_blocked': TaskBlockedParams
+  'locked_task_clicked': LockedTaskClickedParams
   'task_context_expanded': TaskContextExpandedParams
   'financial_upload_cta_clicked': FinancialUploadCtaClickedParams
   'playbook_filter_changed': PlaybookFilterChangedParams

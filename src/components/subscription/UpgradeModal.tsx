@@ -21,6 +21,13 @@ interface UpgradeModalProps {
   onOpenChange: (open: boolean) => void
   feature?: string
   featureDisplayName?: string
+  taskDollarImpact?: number
+}
+
+function formatDollarImpact(value: number): string {
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
+  if (value >= 1_000) return `$${Math.round(value / 1_000)}K`
+  return `$${Math.round(value)}`
 }
 
 export function UpgradeModal({
@@ -28,6 +35,7 @@ export function UpgradeModal({
   onOpenChange,
   feature,
   featureDisplayName,
+  taskDollarImpact,
 }: UpgradeModalProps) {
   const { planTier, isTrialing, trialDaysRemaining, status: _status } = useSubscription()
 
@@ -128,7 +136,15 @@ export function UpgradeModal({
               : 'Upgrade to Unlock'}
           </DialogTitle>
           <DialogDescription className="text-center">
-            {feature && requiredPlanData ? (
+            {taskDollarImpact && taskDollarImpact > 0 ? (
+              <>
+                This task could recover{' '}
+                <span className="font-semibold text-foreground">
+                  {formatDollarImpact(taskDollarImpact)}
+                </span>{' '}
+                for your business. Unlock it with {requiredPlanData?.name || 'Growth'}.
+              </>
+            ) : feature && requiredPlanData ? (
               <>
                 This feature requires the{' '}
                 <span className="font-semibold text-foreground">
@@ -172,11 +188,11 @@ export function UpgradeModal({
                   <h3 className="text-lg font-semibold">{targetPlanData.name}</h3>
                   <div className="text-right">
                     <span className="text-2xl font-bold">
-                      ${targetPlanData.annualPrice}
+                      ${targetPlanData.monthlyPrice}
                     </span>
                     <span className="text-sm text-muted-foreground">/mo</span>
                     <p className="text-xs text-muted-foreground">
-                      billed annually
+                      or ${targetPlanData.annualPrice}/mo billed annually — Save {Math.round((1 - targetPlanData.annualPrice / targetPlanData.monthlyPrice) * 100)}%
                     </p>
                   </div>
                 </div>

@@ -30,9 +30,11 @@ interface UpNextQueueProps {
   hasMore: boolean
   totalQueueSize: number
   onFocusTask?: (taskId: string) => void
+  freeTaskLimit?: number
+  onLockedTaskClick?: (taskValue: number) => void
 }
 
-export function UpNextQueue({ tasks, otherActiveTasks = [], hasMore, totalQueueSize, onFocusTask }: UpNextQueueProps) {
+export function UpNextQueue({ tasks, otherActiveTasks = [], hasMore, totalQueueSize, onFocusTask, freeTaskLimit, onLockedTaskClick }: UpNextQueueProps) {
   const hasItems = otherActiveTasks.length > 0 || tasks.length > 0
 
   if (!hasItems) return null
@@ -59,20 +61,32 @@ export function UpNextQueue({ tasks, otherActiveTasks = [], hasMore, totalQueueS
             onClick={() => onFocusTask?.(task.id)}
           />
         ))}
-        {tasks.map(task => (
-          <QueueItemRow
-            key={task.id}
-            title={task.title}
-            categoryLabel={task.categoryLabel}
-            briCategory={task.briCategory}
-            normalizedValue={task.normalizedValue}
-            estimatedMinutes={task.estimatedMinutes}
-            prerequisiteHint={task.prerequisiteHint ?? null}
-            outputHint={task.outputHint ?? null}
-            assignee={task.assignee ? { name: task.assignee.name, role: task.assignee.role } : null}
-            onClick={() => onFocusTask?.(task.id)}
-          />
-        ))}
+        {tasks.map((task, i) => {
+          // If freeTaskLimit is set, lock tasks beyond the limit
+          // Account for otherActiveTasks taking up slots
+          const isLocked = freeTaskLimit !== undefined && (otherActiveTasks.length + i) >= freeTaskLimit
+          return (
+            <QueueItemRow
+              key={task.id}
+              title={task.title}
+              categoryLabel={task.categoryLabel}
+              briCategory={task.briCategory}
+              normalizedValue={task.normalizedValue}
+              estimatedMinutes={task.estimatedMinutes}
+              prerequisiteHint={task.prerequisiteHint ?? null}
+              outputHint={task.outputHint ?? null}
+              assignee={task.assignee ? { name: task.assignee.name, role: task.assignee.role } : null}
+              locked={isLocked}
+              onClick={() => {
+                if (isLocked) {
+                  onLockedTaskClick?.(task.normalizedValue)
+                } else {
+                  onFocusTask?.(task.id)
+                }
+              }}
+            />
+          )
+        })}
       </div>
 
       {hasMore && (

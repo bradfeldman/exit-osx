@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 import { generateTasksForCompany } from '@/lib/playbook/generate-tasks'
 import { generateAITasksForCompany } from '@/lib/dossier/ai-tasks'
 import { getIndustryMultiples, estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
+import { getMarketSalary } from '@/lib/valuation/recalculate-snapshot'
 import { triggerDossierUpdate } from '@/lib/dossier/build-dossier'
 import {
   ALPHA,
@@ -195,7 +196,9 @@ export async function POST(
       .reduce((sum, a) => sum + Number(a.amount), 0)
 
     // Add owner compensation as an add-back (normalized)
-    const marketSalary = Math.min(ownerComp, 150000) // Cap market salary assumption
+    const revenueSizeCategory = assessment.company.coreFactors?.revenueSizeCategory ?? null
+    const marketSalaryBenchmark = getMarketSalary(revenueSizeCategory)
+    const marketSalary = Math.min(ownerComp, marketSalaryBenchmark)
     const excessComp = Math.max(0, ownerComp - marketSalary)
 
     let adjustedEbitda: number

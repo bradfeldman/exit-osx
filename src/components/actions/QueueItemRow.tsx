@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Lock } from 'lucide-react'
 import { getBRICategoryColor } from '@/lib/constants/bri-categories'
 import { formatCurrency } from '@/lib/utils/currency'
 
@@ -16,6 +16,7 @@ interface QueueItemRowProps {
   assignee: { name: string; role: string | null } | null
   onClick: () => void
   status?: 'IN_PROGRESS' | 'PENDING'
+  locked?: boolean
 }
 
 export function QueueItemRow({
@@ -29,6 +30,7 @@ export function QueueItemRow({
   assignee,
   onClick,
   status,
+  locked = false,
 }: QueueItemRowProps) {
   const metaParts = [categoryLabel, `~${formatCurrency(normalizedValue)}`]
   if (estimatedMinutes) metaParts.push(`${estimatedMinutes} min`)
@@ -70,14 +72,18 @@ export function QueueItemRow({
       </div>
 
       <div className="flex items-center gap-1 shrink-0 ml-2">
-        {assignee && (
+        {assignee && !locked && (
           <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
             <span className="text-[10px] font-medium text-muted-foreground">
               {assignee.name.charAt(0).toUpperCase()}
             </span>
           </div>
         )}
-        <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+        {locked ? (
+          <Lock className="h-4 w-4 text-muted-foreground/50" />
+        ) : (
+          <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+        )}
       </div>
     </button>
   )

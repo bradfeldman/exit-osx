@@ -83,6 +83,8 @@ export async function POST(request: Request) {
 
     const origin = request.headers.get('origin') || 'https://app.exitosx.com'
 
+    const isTrialEligible = !hasHadSubscription
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer: stripeCustomerId,
@@ -91,9 +93,11 @@ export async function POST(request: Request) {
       cancel_url: `${origin}/dashboard/settings?tab=billing`,
       metadata: { workspaceId: workspace.id, planTier },
       allow_promotion_codes: true,
+      // No credit card required during trial — collect payment at conversion
+      ...(isTrialEligible && { payment_method_collection: 'if_required' as const }),
       subscription_data: {
         metadata: { workspaceId: workspace.id, planTier },
-        ...(!hasHadSubscription && { trial_period_days: 7 }),
+        ...(isTrialEligible && { trial_period_days: 7 }),
       },
     })
 

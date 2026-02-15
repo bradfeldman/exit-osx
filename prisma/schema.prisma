@@ -409,7 +409,7 @@ model ValuationSnapshot {
   currentValue         Decimal  @map("current_value") @db.Decimal(15, 2)
   potentialValue       Decimal  @map("potential_value") @db.Decimal(15, 2)
   valueGap             Decimal  @map("value_gap") @db.Decimal(15, 2)
-  alphaConstant        Decimal  @default(0.40) @map("alpha_constant") @db.Decimal(3, 2)
+  alphaConstant        Decimal  @default(1.40) @map("alpha_constant") @db.Decimal(4, 2)
   snapshotReason       String?  @map("snapshot_reason")
   // Auto-DCF fields (nullable — only populated when cash flow data is available)
   dcfEnterpriseValue     Decimal?  @map("dcf_enterprise_value") @db.Decimal(15, 2)

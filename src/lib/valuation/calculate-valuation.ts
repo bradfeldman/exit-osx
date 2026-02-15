@@ -129,6 +129,19 @@ export function calculateValuation(inputs: ValuationInputs): ValuationResult {
     briScore,
   } = inputs
 
+  // Guard: negative or zero EBITDA cannot produce meaningful valuations
+  if (adjustedEbitda <= 0) {
+    const baseMultiple = industryMultipleLow + coreScore * (industryMultipleHigh - industryMultipleLow)
+    return {
+      currentValue: 0,
+      potentialValue: 0,
+      valueGap: 0,
+      baseMultiple,
+      finalMultiple: baseMultiple,
+      discountFraction: 0,
+    }
+  }
+
   // Step 1: Core Score positions within industry range
   const baseMultiple = industryMultipleLow + coreScore * (industryMultipleHigh - industryMultipleLow)
 

@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
+import { BRI_CATEGORY_LABELS } from '@/lib/constants/bri-categories'
+import { formatCurrency } from '@/lib/utils/currency'
 
 interface RiskResultsStepProps {
   companyName: string
@@ -18,33 +20,14 @@ interface RiskResultsStepProps {
   onContinue: () => void
 }
 
-const RISK_LABELS: Record<string, string> = {
-  FINANCIAL: 'Financial Health',
-  TRANSFERABILITY: 'Founder Dependency',
-  OPERATIONAL: 'Operational Gaps',
-  MARKET: 'Market Position',
-  LEGAL_TAX: 'Legal Exposure',
-  PERSONAL: 'Transition Readiness',
-}
-
 // Categories that can be addressed without changing revenue
 // (vs FINANCIAL and MARKET which typically require revenue/growth changes)
 const ADDRESSABLE_WITHOUT_REVENUE = [
-  'TRANSFERABILITY', // Founder Dependency - process/documentation
-  'OPERATIONAL',     // Operational Gaps - systems/processes
-  'LEGAL_TAX',       // Legal Exposure - compliance/structure
-  'PERSONAL',        // Transition Readiness - planning/preparation
+  'TRANSFERABILITY', // Transferability - process/documentation
+  'OPERATIONAL',     // Operations - systems/processes
+  'LEGAL_TAX',       // Legal & Tax - compliance/structure
+  'PERSONAL',        // Personal Readiness - planning/preparation
 ]
-
-function formatCurrency(value: number): string {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`
-  }
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}k`
-  }
-  return `$${value.toFixed(0)}`
-}
 
 export function RiskResultsStep({
   riskResults,
@@ -186,7 +169,7 @@ export function RiskResultsStep({
               >
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground mb-1">
-                    {RISK_LABELS[category] || category}
+                    {BRI_CATEGORY_LABELS[category as keyof typeof BRI_CATEGORY_LABELS] || category}
                   </p>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <motion.div

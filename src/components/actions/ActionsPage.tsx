@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
+import { useSubscription } from '@/contexts/SubscriptionContext'
 import { AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
 import { HeroSummaryBar } from './HeroSummaryBar'
 import { ActiveTaskCard } from './ActiveTaskCard'
@@ -16,6 +17,7 @@ import { ActionsLoading } from './ActionsLoading'
 import { ActionsError } from './ActionsError'
 import { EnrichmentBanner } from './EnrichmentBanner'
 import { TaskCompletionDialog } from './TaskCompletionDialog'
+import { UpgradeModal } from '@/components/subscription/UpgradeModal'
 import { analytics } from '@/lib/analytics'
 
 interface SubStep {
@@ -177,6 +179,7 @@ function getEnrichmentTier(task: ActiveTask): 'HIGH' | 'MODERATE' | 'LOW' | 'NON
 
 export function ActionsPage() {
   const { selectedCompanyId } = useCompany()
+  const { planTier } = useSubscription()
   const searchParams = useSearchParams()
   const highlightTaskId = searchParams.get('taskId')
   const scrolledRef = useRef(false)
@@ -186,6 +189,11 @@ export function ActionsPage() {
   const [error, setError] = useState<string | null>(null)
   const [completingTask, setCompletingTask] = useState<ActiveTask | null>(null)
   const [focusedTaskId, setFocusedTaskId] = useState<string | null>(null)
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
+  const [lockedTaskValue, setLockedTaskValue] = useState<number | undefined>(undefined)
+
+  const isFreeUser = planTier === 'foundation'
+  const FREE_TASK_LIMIT = 3
 
   const fetchData = useCallback(async () => {
     if (!selectedCompanyId) return
@@ -479,6 +487,15 @@ export function ActionsPage() {
               hasMore={data.hasMoreInQueue}
               totalQueueSize={data.totalQueueSize}
               onFocusTask={(taskId) => setFocusedTaskId(taskId)}
+              freeTaskLimit={isFreeUser ? FREE_TASK_LIMIT : undefined}
+              onLockedTaskClick={(taskValue) => {
+                setLockedTaskValue(taskValue)
+                setUpgradeModalOpen(true)
+                analytics.track('locked_task_clicked', {
+                  taskValue,
+                  currentPlan: planTier,
+                })
+              }}
             />
           </AnimatedItem>
         )}
@@ -512,6 +529,14 @@ export function ActionsPage() {
           onCancel={() => setCompletingTask(null)}
         />
       )}
+
+      <UpgradeModal
+        open={upgradeModalOpen}
+        onOpenChange={setUpgradeModalOpen}
+        feature="action-plan"
+        featureDisplayName="Full Action Plan"
+        taskDollarImpact={lockedTaskValue}
+      />
     </div>
   )
 }

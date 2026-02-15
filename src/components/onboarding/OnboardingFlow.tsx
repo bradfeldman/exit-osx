@@ -271,14 +271,14 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
       const { company } = await companyResponse.json()
       setCreatedCompanyId(company.id)
 
-      // Save core factors with defaults (Core Score = 1.0)
+      // Save core factors with moderate defaults (Core Score ~0.5)
       const coreFactorsPayload = {
         revenueSizeCategory,
-        revenueModel: 'SUBSCRIPTION_SAAS',
-        laborIntensity: 'LOW',
-        assetIntensity: 'ASSET_LIGHT',
-        ownerInvolvement: 'MINIMAL',
-        grossMarginProxy: 'EXCELLENT',
+        revenueModel: 'TRANSACTIONAL',
+        laborIntensity: 'MODERATE',
+        assetIntensity: 'MODERATE',
+        ownerInvolvement: 'MODERATE',
+        grossMarginProxy: 'MODERATE',
       }
 
       await fetch(`/api/companies/${company.id}/core-factors`, {

@@ -85,6 +85,7 @@ interface TaskToCreate {
   upgradesToOptionId: string
   estimatedValueImpact: number // Estimated value for display purposes
   effectiveTier: IssueTier     // The tier this task was calculated at
+  upgradeFromScore: number     // The user's current score for this question (0-1)
   effortLevel: string
   complexity: string
   estimatedHours?: number
@@ -251,6 +252,7 @@ export async function generateTasksForCompany(
           upgradesToOptionId: toOption.id,
           estimatedValueImpact,
           effectiveTier,
+          upgradeFromScore: currentScore,
           effortLevel: taskDef.effortLevel,
           complexity: taskDef.complexity,
           estimatedHours: taskDef.estimatedHours,
@@ -272,12 +274,9 @@ export async function generateTasksForCompany(
 
     try {
       // Calculate priority based on the 25-level matrix
-      // Lower score = more room for improvement = higher impact
-      const scoreForPriority = tasksToCreate.indexOf(task) < tasksToCreate.length
-        ? (tasksToCreate.indexOf(task) / tasksToCreate.length) * 0.5 // Spread scores
-        : 0.5
+      // Use the actual answer score — lower score = more room for improvement = higher impact
       const { impactLevel, difficultyLevel, priorityRank } = calculateTaskPriorityFromAttributes(
-        scoreForPriority,
+        task.upgradeFromScore,
         task.effortLevel,
         task.estimatedHours
       )

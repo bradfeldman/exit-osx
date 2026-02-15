@@ -27,7 +27,7 @@ export function BillingSettings() {
   const [selectedPlan, setSelectedPlan] = useState<PlanTier | null>(requestedUpgrade)
   const [isUpgrading, setIsUpgrading] = useState(false)
   const [isManagingBilling, setIsManagingBilling] = useState(false)
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual')
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly')
   const [checkoutSuccess, setCheckoutSuccess] = useState(false)
 
   const hasTrackedPageView = useRef(false)
