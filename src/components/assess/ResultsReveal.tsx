@@ -57,6 +57,21 @@ const CATEGORY_LABELS: Record<string, string> = {
   PERSONAL: 'Personal',
 }
 
+function getCategoryRiskLabel(score: number): string {
+  if (score >= 0.75) return 'Low Risk'
+  if (score >= 0.5) return 'Some Risk'
+  if (score > 0) return 'High Risk'
+  return 'At Risk'
+}
+
+function getCategoryBarWidth(score: number): number {
+  // For the quick scan, avoid showing completely empty or completely full bars
+  // when a category only has 1 question (which gives 0 or 1.0)
+  if (score === 0) return 8 // show a sliver so it's not invisible
+  if (score === 1) return 92 // leave a little room so it doesn't look like "perfect"
+  return score * 100
+}
+
 export function ResultsReveal({ results, email, basics, profile, scan }: ResultsRevealProps) {
   const [phase, setPhase] = useState(0) // 0=BRI, 1=categories, 2=valuation, 3=tasks, 4=CTA
   const [isSaving, setIsSaving] = useState(false)
@@ -158,14 +173,14 @@ export function ResultsReveal({ results, email, basics, profile, scan }: Results
                       score >= 0.75 ? 'bg-green-500' : score >= 0.5 ? 'bg-amber-500' : 'bg-red-500'
                     }`}
                     initial={{ width: 0 }}
-                    animate={{ width: `${score * 100}%` }}
+                    animate={{ width: `${getCategoryBarWidth(score)}%` }}
                     transition={{ duration: 0.8, delay: 0.2 }}
                   />
                 </div>
-                <span className={`text-sm font-medium w-10 text-right ${
+                <span className={`text-xs font-medium w-20 text-right ${
                   score >= 0.75 ? 'text-green-600' : score >= 0.5 ? 'text-amber-600' : 'text-red-600'
                 }`}>
-                  {Math.round(score * 100)}
+                  {getCategoryRiskLabel(score)}
                 </span>
               </div>
             ))}
