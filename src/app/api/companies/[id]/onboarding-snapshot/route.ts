@@ -9,6 +9,13 @@ import {
   type CoreFactors,
 } from '@/lib/valuation/calculate-valuation'
 import { getMarketSalary } from '@/lib/valuation/recalculate-snapshot'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const onboardingSnapshotSchema = z.object({
+  briScore: z.coerce.number().finite().min(0).max(100),
+  categoryScores: z.record(z.string(), z.coerce.number().finite().min(0).max(100)),
+})
 
 /**
  * PROD-063: Server-side recalculation for onboarding snapshots.
@@ -19,13 +26,6 @@ import { getMarketSalary } from '@/lib/valuation/recalculate-snapshot'
  * The client can calculate locally for instant preview, but the database
  * always stores server-verified values.
  */
-interface OnboardingSnapshotRequest {
-  /** BRI score on 0-100 scale */
-  briScore: number
-  /** Per-category BRI scores on 0-100 scale */
-  categoryScores: Record<string, number>
-}
-
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -39,22 +39,10 @@ export async function POST(
 
   const { id: companyId } = await params
 
-  const body: OnboardingSnapshotRequest = await request.json()
+  const validation = await validateRequestBody(request, onboardingSnapshotSchema)
+  if (!validation.success) return validation.error
 
-  // Validate required fields
-  if (typeof body.briScore !== 'number' || body.briScore < 0 || body.briScore > 100) {
-    return NextResponse.json(
-      { error: 'briScore must be a number between 0 and 100' },
-      { status: 400 }
-    )
-  }
-
-  if (!body.categoryScores || typeof body.categoryScores !== 'object') {
-    return NextResponse.json(
-      { error: 'categoryScores is required' },
-      { status: 400 }
-    )
-  }
+  const { briScore, categoryScores } = validation.data
 
   try {
     // Look up the Prisma User by auth ID
@@ -135,7 +123,7 @@ export async function POST(
     const industryMultipleHigh = multiples.ebitdaMultipleHigh
 
     // Convert BRI score from 0-100 to 0-1 scale
-    const briScoreNormalized = body.briScore / 100
+    const briScoreNormalized = briScore / 100
 
     // Calculate valuation using shared utility for consistency
     // Server is the source of truth — UI values are only for preview
@@ -156,7 +144,7 @@ export async function POST(
 
     // Convert category scores from 0-100 to 0-1 scale
     const getCategoryScoreNormalized = (category: string): number => {
-      const score = body.categoryScores[category]
+      const score = categoryScores[category]
       return score !== undefined ? score / 100 : 0.7 // Default to 70% if not provided
     }
 
@@ -193,7 +181,7 @@ export async function POST(
       currentValue,
       potentialValue,
       valueGap,
-      briScore: body.briScore,
+      briScore,
     })
   } catch (error) {
     console.error('Error creating onboarding snapshot:', error instanceof Error ? error.message : String(error))

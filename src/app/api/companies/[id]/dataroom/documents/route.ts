@@ -3,6 +3,8 @@ import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { UpdateFrequency } from '@prisma/client'
 import { logActivity } from '@/lib/dataroom'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 const VALID_FREQUENCIES = new Set<string>(Object.values(UpdateFrequency))
 
@@ -140,6 +142,15 @@ export async function GET(
   }
 }
 
+const createDocumentSchema = z.object({
+  folderId: z.string().uuid(),
+  documentName: z.string().min(1).max(500),
+  description: z.string().max(5000).optional(),
+  updateFrequency: z.enum(['MONTHLY', 'QUARTERLY', 'ANNUALLY', 'AS_NEEDED', 'ONE_TIME']).default('AS_NEEDED'),
+  isRequired: z.boolean().default(false),
+  isConfidential: z.boolean().default(false),
+})
+
 /**
  * POST /api/companies/[id]/dataroom/documents
  * Create a new document placeholder
@@ -153,23 +164,16 @@ export async function POST(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
+    const validation = await validateRequestBody(request, createDocumentSchema)
+    if (!validation.success) return validation.error
     const {
       folderId,
       documentName,
       description,
-      updateFrequency = 'AS_NEEDED',
-      isRequired = false,
-      isConfidential = false,
-    } = body
-
-    if (!folderId || !documentName) {
-      return NextResponse.json({ error: 'Folder ID and document name are required' }, { status: 400 })
-    }
-
-    if (!VALID_FREQUENCIES.has(updateFrequency)) {
-      return NextResponse.json({ error: `Invalid update frequency: ${updateFrequency}` }, { status: 400 })
-    }
+      updateFrequency,
+      isRequired,
+      isConfidential,
+    } = validation.data
 
     const dataRoom = await prisma.dataRoom.findUnique({
       where: { companyId },

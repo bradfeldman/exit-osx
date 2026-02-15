@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
 import { getAdvisorClients, isExternalAdvisor } from '@/lib/auth/check-granular-permission'
 import { dismissSignal } from '@/lib/signals/confirm-signal'
+import { validateRequestBody, shortText } from '@/lib/security/validation'
+
+const dismissSignalSchema = z.object({
+  reason: shortText.min(1),
+})
 
 export async function POST(
   request: Request,
@@ -41,12 +47,10 @@ export async function POST(
     return NextResponse.json({ error: 'Signal not found' }, { status: 404 })
   }
 
-  const body = await request.json()
-  const { reason } = body
+  const validation = await validateRequestBody(request, dismissSignalSchema)
+  if (!validation.success) return validation.error
 
-  if (!reason || typeof reason !== 'string') {
-    return NextResponse.json({ error: 'Dismissal reason is required' }, { status: 400 })
-  }
+  const { reason } = validation.data
 
   const updated = await dismissSignal(signalId, user.id, reason)
 

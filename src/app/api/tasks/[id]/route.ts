@@ -5,6 +5,8 @@ import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snaps
 import { improveSnapshotForOnboardingTask } from '@/lib/valuation/improve-snapshot-for-task'
 import { checkAssessmentTriggers } from '@/lib/assessment/assessment-triggers'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 export async function GET(
   request: Request,
@@ -101,6 +103,19 @@ export async function GET(
   }
 }
 
+const patchTaskSchema = z.object({
+  status: z.enum(['PENDING', 'IN_PROGRESS', 'BLOCKED', 'COMPLETED', 'DEFERRED', 'CANCELLED', 'NOT_APPLICABLE']).optional(),
+  deferredUntil: z.string().optional().nullable(),
+  deferralReason: z.string().max(500).optional().nullable(),
+  blockedReason: z.string().max(500).optional().nullable(),
+  dueDate: z.string().optional().nullable(),
+  primaryAssigneeId: z.string().uuid().optional().nullable(),
+  assigneeIds: z.array(z.string().uuid()).max(50).optional(),
+  completionNotes: z.string().max(5000).optional().nullable(),
+  subStepId: z.string().uuid().optional(),
+  subStepCompleted: z.boolean().optional(),
+})
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -108,8 +123,9 @@ export async function PATCH(
   const { id } = await params
 
   try {
-    const body = await request.json()
-    const { status, deferredUntil, deferralReason, blockedReason, dueDate, primaryAssigneeId, assigneeIds, completionNotes, subStepId, subStepCompleted } = body
+    const validation = await validateRequestBody(request, patchTaskSchema)
+    if (!validation.success) return validation.error
+    const { status, deferredUntil, deferralReason, blockedReason, dueDate, primaryAssigneeId, assigneeIds, completionNotes, subStepId, subStepCompleted } = validation.data
 
     // Fetch task to get companyId for permission check
     const existingTask = await prisma.task.findUnique({

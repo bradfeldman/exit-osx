@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { PlanTier, SubscriptionStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireSuperAdmin, isAdminError, logAdminAction } from '@/lib/admin'
+import { validateRequestBody, shortText } from '@/lib/security/validation'
 
 const VALID_PLAN_TIERS = new Set(Object.values(PlanTier))
 const VALID_SUBSCRIPTION_STATUSES = new Set(Object.values(SubscriptionStatus))
@@ -56,6 +58,13 @@ export async function GET(
   return NextResponse.json({ workspace })
 }
 
+const workspaceUpdateSchema = z.object({
+  name: shortText.optional(),
+  planTier: z.enum(['FOUNDATION', 'GROWTH', 'EXIT_READY']).optional(),
+  subscriptionStatus: z.enum(['ACTIVE', 'PAST_DUE', 'CANCELED', 'TRIALING', 'PAUSED']).optional(),
+  trialEndsAt: z.string().datetime().optional().nullable(),
+})
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -64,7 +73,10 @@ export async function PATCH(
   if (isAdminError(result)) return result.error
 
   const { id } = await params
-  const body = await request.json()
+
+  const validation = await validateRequestBody(request, workspaceUpdateSchema)
+  if (!validation.success) return validation.error
+  const body = validation.data
 
   // Get current workspace state
   const currentWorkspace = await prisma.workspace.findUnique({
@@ -88,44 +100,26 @@ export async function PATCH(
   const changes: Record<string, { from: unknown; to: unknown }> = {}
 
   // Simple string fields
-  if ('name' in body && body.name !== currentWorkspace.name) {
+  if (body.name !== undefined && body.name !== currentWorkspace.name) {
     updateData.name = body.name
     changes.name = { from: currentWorkspace.name, to: body.name }
   }
 
-  // Plan tier (validated against enum)
-  if ('planTier' in body && body.planTier !== currentWorkspace.planTier) {
-    if (!VALID_PLAN_TIERS.has(body.planTier)) {
-      return NextResponse.json(
-        { error: 'Invalid value', message: `planTier must be one of: ${[...VALID_PLAN_TIERS].join(', ')}` },
-        { status: 400 }
-      )
-    }
+  // Plan tier
+  if (body.planTier !== undefined && body.planTier !== currentWorkspace.planTier) {
     updateData.planTier = body.planTier
     changes.planTier = { from: currentWorkspace.planTier, to: body.planTier }
   }
 
-  // Subscription status (validated against enum)
-  if ('subscriptionStatus' in body && body.subscriptionStatus !== currentWorkspace.subscriptionStatus) {
-    if (!VALID_SUBSCRIPTION_STATUSES.has(body.subscriptionStatus)) {
-      return NextResponse.json(
-        { error: 'Invalid value', message: `subscriptionStatus must be one of: ${[...VALID_SUBSCRIPTION_STATUSES].join(', ')}` },
-        { status: 400 }
-      )
-    }
+  // Subscription status
+  if (body.subscriptionStatus !== undefined && body.subscriptionStatus !== currentWorkspace.subscriptionStatus) {
     updateData.subscriptionStatus = body.subscriptionStatus
     changes.subscriptionStatus = { from: currentWorkspace.subscriptionStatus, to: body.subscriptionStatus }
   }
 
-  // Trial end date (null to clear, ISO string to set)
-  if ('trialEndsAt' in body) {
+  // Trial end date
+  if (body.trialEndsAt !== undefined) {
     const newVal = body.trialEndsAt ? new Date(body.trialEndsAt) : null
-    if (body.trialEndsAt && isNaN(newVal!.getTime())) {
-      return NextResponse.json(
-        { error: 'Invalid value', message: 'trialEndsAt must be a valid ISO date string or null' },
-        { status: 400 }
-      )
-    }
     updateData.trialEndsAt = newVal
     changes.trialEndsAt = { from: currentWorkspace.trialEndsAt, to: newVal }
   }

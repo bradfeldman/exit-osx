@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const uploadUrlSchema = z.object({
+  fileName: z.string().min(1).max(500),
+  mimeType: z.string().max(200),
+})
 
 // POST - Get a signed upload URL for a document
 export async function POST(
@@ -19,12 +26,10 @@ export async function POST(
     }
 
     const { id: companyId, docId } = await params
-    const body = await request.json()
-    const { fileName, mimeType } = body
 
-    if (!fileName || !mimeType) {
-      return NextResponse.json({ error: 'File name and MIME type are required' }, { status: 400 })
-    }
+    const validation = await validateRequestBody(request, uploadUrlSchema)
+    if (!validation.success) return validation.error
+    const { fileName, mimeType } = validation.data
 
     // Check document access
     const existingDoc = await prisma.dataRoomDocument.findFirst({

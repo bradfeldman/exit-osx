@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { ConfidenceLevel } from '@prisma/client'
 import { NextResponse } from 'next/server'
 import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snapshot'
+import { z } from 'zod'
+import { validateRequestBody, uuidSchema } from '@/lib/security/validation'
 
 // GET - Fetch questions and current responses for reassessment
 export async function GET(
@@ -139,6 +141,15 @@ export async function GET(
   }
 }
 
+const reassessResponseSchema = z.object({
+  responses: z.array(z.object({
+    questionId: uuidSchema,
+    selectedOptionId: uuidSchema,
+    confidenceLevel: z.enum(['LOW', 'MODERATE', 'CONFIDENT', 'VERY_CONFIDENT']).optional(),
+    notes: z.string().max(2000).optional(),
+  })).min(1).max(100),
+})
+
 // POST - Update responses and recalculate snapshot
 export async function POST(
   request: Request,
@@ -152,23 +163,12 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  try {
-    const body = await request.json()
-    const { responses } = body as {
-      responses: Array<{
-        questionId: string
-        selectedOptionId: string
-        confidenceLevel?: string
-        notes?: string
-      }>
-    }
+  const validation = await validateRequestBody(request, reassessResponseSchema)
+  if (!validation.success) return validation.error
 
-    if (!responses || !Array.isArray(responses) || responses.length === 0) {
-      return NextResponse.json(
-        { error: 'No responses provided' },
-        { status: 400 }
-      )
-    }
+  const { responses } = validation.data
+
+  try {
 
     // Verify user has access and get database user ID
     const company = await prisma.company.findUnique({

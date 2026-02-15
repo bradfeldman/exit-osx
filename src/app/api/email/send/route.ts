@@ -2,6 +2,31 @@ import { NextResponse } from 'next/server'
 import { sendEmail } from '@/lib/email/service'
 import { EmailType } from '@/lib/email/types'
 import { verifyCronAuth } from '@/lib/security/cron-auth'
+import { z } from 'zod'
+import { validateRequestBody, emailSchema, uuidSchema } from '@/lib/security/validation'
+
+const postSchema = z.object({
+  userId: uuidSchema,
+  companyId: uuidSchema.optional(),
+  emailType: z.enum([
+    'ONBOARDING_COMPLETE',
+    'DRIFT_REPORT',
+    'SIGNAL_ALERT',
+    'WEEKLY_CHECKIN',
+    'WEEKLY_DIGEST',
+    'INACTIVITY_NUDGE',
+    'TASK_REMINDER',
+    'TASK_DELEGATION',
+    'PARTNER_INVITE',
+    'PARTNER_MONTHLY_SUMMARY',
+    'PARTNER_NUDGE',
+    'ACCOUNT_EXISTS',
+  ]),
+  to: emailSchema,
+  subject: z.string().min(1).max(500),
+  html: z.string().min(1).max(100000),
+  skipPreferenceCheck: z.boolean().default(false),
+})
 
 /**
  * Internal API endpoint for triggering emails.
@@ -25,37 +50,11 @@ export async function POST(request: Request) {
   const authError = verifyCronAuth(request)
   if (authError) return authError
 
+  const validation = await validateRequestBody(request, postSchema)
+  if (!validation.success) return validation.error
+  const { userId, companyId, emailType, to, subject, html, skipPreferenceCheck } = validation.data
+
   try {
-    const body = await request.json()
-    const { userId, companyId, emailType, to, subject, html, skipPreferenceCheck } = body
-
-    // Validate required fields
-    if (!userId || !emailType || !to || !subject || !html) {
-      return NextResponse.json(
-        { error: 'Missing required fields: userId, emailType, to, subject, html' },
-        { status: 400 }
-      )
-    }
-
-    // Validate email type
-    const validEmailTypes: EmailType[] = [
-      'ONBOARDING_COMPLETE',
-      'DRIFT_REPORT',
-      'SIGNAL_ALERT',
-      'WEEKLY_CHECKIN',
-      'WEEKLY_DIGEST',
-      'INACTIVITY_NUDGE',
-      'TASK_REMINDER',
-      'TASK_DELEGATION',
-      'PARTNER_INVITE',
-      'PARTNER_MONTHLY_SUMMARY',
-      'PARTNER_NUDGE',
-      'ACCOUNT_EXISTS',
-    ]
-
-    if (!validEmailTypes.includes(emailType)) {
-      return NextResponse.json({ error: 'Invalid email type' }, { status: 400 })
-    }
 
     // Send the email
     const result = await sendEmail({
@@ -65,7 +64,7 @@ export async function POST(request: Request) {
       to,
       subject,
       html,
-      skipPreferenceCheck: skipPreferenceCheck || false,
+      skipPreferenceCheck,
     })
 
     if (!result.success) {

@@ -7,6 +7,8 @@ import {
   RATE_LIMIT_CONFIGS,
   createRateLimitResponse,
 } from '@/lib/security'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 // GET - Get current deletion request status
 export async function GET() {
@@ -51,6 +53,10 @@ export async function GET() {
   }
 }
 
+const postSchema = z.object({
+  reason: z.string().max(5000).optional(),
+})
+
 // POST - Create a new deletion request
 // SECURITY FIX (PROD-060): Added per-route rate limiting for sensitive GDPR operation
 export async function POST(request: NextRequest) {
@@ -66,9 +72,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const validation = await validateRequestBody(request, postSchema)
+  if (!validation.success) return validation.error
+  const { reason } = validation.data
+
   try {
-    const body = await request.json().catch(() => ({}))
-    const { reason } = body
 
     const dbUser = await prisma.user.findUnique({
       where: { authId: user.id },

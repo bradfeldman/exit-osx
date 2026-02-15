@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { ConsentType, ConsentAction } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 // GET - Get consent history
 export async function GET() {
@@ -59,6 +61,12 @@ export async function GET() {
   }
 }
 
+const postSchema = z.object({
+  consentType: z.nativeEnum(ConsentType),
+  action: z.nativeEnum(ConsentAction),
+  version: z.string().max(100).optional(),
+})
+
 // POST - Record a new consent
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -68,25 +76,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const validation = await validateRequestBody(request, postSchema)
+  if (!validation.success) return validation.error
+  const { consentType, action, version } = validation.data
+
   try {
-    const body = await request.json()
-    const { consentType, action, version } = body
-
-    // Validate consent type
-    if (!Object.values(ConsentType).includes(consentType)) {
-      return NextResponse.json(
-        { error: 'Invalid consent type' },
-        { status: 400 }
-      )
-    }
-
-    // Validate action
-    if (!Object.values(ConsentAction).includes(action)) {
-      return NextResponse.json(
-        { error: 'Invalid consent action' },
-        { status: 400 }
-      )
-    }
 
     const dbUser = await prisma.user.findUnique({
       where: { authId: user.id },
@@ -134,6 +128,13 @@ export async function POST(request: NextRequest) {
   }
 }
 
+const putSchema = z.object({
+  consents: z.array(z.object({
+    consentType: z.nativeEnum(ConsentType),
+    granted: z.boolean(),
+  })).max(100),
+})
+
 // PUT - Batch update multiple consents (for cookie settings)
 export async function PUT(request: NextRequest) {
   const supabase = await createClient()
@@ -143,16 +144,11 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  try {
-    const body = await request.json()
-    const { consents } = body // Array of { consentType, granted }
+  const validation = await validateRequestBody(request, putSchema)
+  if (!validation.success) return validation.error
+  const { consents } = validation.data
 
-    if (!Array.isArray(consents)) {
-      return NextResponse.json(
-        { error: 'Consents must be an array' },
-        { status: 400 }
-      )
-    }
+  try {
 
     const dbUser = await prisma.user.findUnique({
       where: { authId: user.id },

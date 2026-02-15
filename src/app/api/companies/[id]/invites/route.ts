@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { isUserSubscribingOwner, checkCanInviteStaff, checkCanInviteOwner } from '@/lib/access'
+import { z } from 'zod'
+import { validateRequestBody, emailSchema } from '@/lib/security/validation'
 
 // GET - List pending invites for a company
 export async function GET(
@@ -71,6 +73,12 @@ export async function GET(
   }
 }
 
+const companyInviteCreateSchema = z.object({
+  email: emailSchema,
+  inviteType: z.enum(['GUEST_OWNER', 'STAFF']).default('STAFF'),
+  ownershipPercent: z.coerce.number().finite().min(0).max(100).optional().nullable(),
+})
+
 // POST - Create a new invite
 export async function POST(
   request: Request,
@@ -84,16 +92,12 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const validation = await validateRequestBody(request, companyInviteCreateSchema)
+  if (!validation.success) return validation.error
+
+  const { email: normalizedEmail, inviteType: type, ownershipPercent } = validation.data
+
   try {
-    const body = await request.json()
-    const { email, inviteType, ownershipPercent } = body
-
-    if (!email || typeof email !== 'string') {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 })
-    }
-
-    const normalizedEmail = email.toLowerCase().trim()
-    const type = inviteType === 'GUEST_OWNER' ? 'GUEST_OWNER' : 'STAFF'
 
     // Get the current user
     const dbUser = await prisma.user.findUnique({

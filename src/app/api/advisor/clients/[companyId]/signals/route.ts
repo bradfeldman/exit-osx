@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
 import { getAdvisorClients, isExternalAdvisor } from '@/lib/auth/check-granular-permission'
 import { createSignalWithLedgerEntry } from '@/lib/signals/create-signal'
 import { getDefaultConfidenceForChannel } from '@/lib/signals/confidence-scoring'
+import { validateRequestBody, shortText, longText } from '@/lib/security/validation'
 
 async function verifyAdvisorAccess(companyId: string) {
   const supabase = await createClient()
@@ -72,6 +74,13 @@ export async function GET(
   })
 }
 
+const advisorSignalSchema = z.object({
+  title: shortText.min(1),
+  description: longText.optional().nullable(),
+  category: z.enum(['FINANCIAL', 'TRANSFERABILITY', 'OPERATIONAL', 'MARKET', 'LEGAL_TAX', 'PERSONAL']).optional().nullable(),
+  severity: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional(),
+})
+
 // POST — Create an advisor observation signal
 export async function POST(
   request: Request,
@@ -83,12 +92,10 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
-  const body = await request.json()
-  const { title, description, category, severity } = body
+  const validation = await validateRequestBody(request, advisorSignalSchema)
+  if (!validation.success) return validation.error
 
-  if (!title || typeof title !== 'string') {
-    return NextResponse.json({ error: 'Title is required' }, { status: 400 })
-  }
+  const { title, description, category, severity } = validation.data
 
   const advisorConfidence = getDefaultConfidenceForChannel('ADVISOR')
 

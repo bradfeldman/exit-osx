@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
+import { validateRequestBody, uuidSchema, shortText, financialAmount } from '@/lib/security/validation'
 
 export async function GET(
   request: Request,
@@ -62,6 +64,16 @@ export async function GET(
   }
 }
 
+const adjustmentCreateSchema = z.object({
+  description: shortText.min(1),
+  amount: financialAmount,
+  type: z.enum(['ADD_BACK', 'DEDUCTION']),
+  periodId: uuidSchema.optional().nullable(),
+  frequency: z.enum(['MONTHLY', 'ANNUAL']).default('ANNUAL'),
+  category: shortText.optional().nullable(),
+  aiSuggested: z.boolean().optional(),
+})
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -74,31 +86,12 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const validation = await validateRequestBody(request, adjustmentCreateSchema)
+  if (!validation.success) return validation.error
+
+  const { description, amount, type, periodId, frequency, category, aiSuggested } = validation.data
+
   try {
-    const body = await request.json()
-    const { description, amount, type, periodId, frequency = 'ANNUAL', category, aiSuggested } = body
-
-    // Validate
-    if (!description || amount === undefined || !type) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
-    }
-
-    if (!['ADD_BACK', 'DEDUCTION'].includes(type)) {
-      return NextResponse.json(
-        { error: 'Invalid adjustment type' },
-        { status: 400 }
-      )
-    }
-
-    if (!['MONTHLY', 'ANNUAL'].includes(frequency)) {
-      return NextResponse.json(
-        { error: 'Invalid frequency' },
-        { status: 400 }
-      )
-    }
 
     // Verify user has access
     const company = await prisma.company.findUnique({
@@ -157,6 +150,14 @@ export async function POST(
   }
 }
 
+const adjustmentUpdateSchema = z.object({
+  amount: financialAmount.optional(),
+  description: shortText.optional(),
+  type: z.enum(['ADD_BACK', 'DEDUCTION']).optional(),
+  frequency: z.enum(['MONTHLY', 'ANNUAL']).optional(),
+  category: shortText.optional().nullable(),
+})
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -169,6 +170,11 @@ export async function PATCH(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const validation = await validateRequestBody(request, adjustmentUpdateSchema)
+  if (!validation.success) return validation.error
+
+  const { amount, description, type, frequency, category } = validation.data
+
   try {
     const { searchParams } = new URL(request.url)
     const adjustmentId = searchParams.get('adjustmentId')
@@ -179,9 +185,6 @@ export async function PATCH(
         { status: 400 }
       )
     }
-
-    const body = await request.json()
-    const { amount, description, type, frequency, category } = body
 
     // Verify user has access
     const company = await prisma.company.findUnique({

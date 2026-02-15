@@ -1,6 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const schema = z.object({
+  questionId: z.string().uuid(),
+  selectedOptionId: z.string().uuid().optional().nullable(),
+  confidenceLevel: z.enum(['CONFIDENT', 'SOMEWHAT_CONFIDENT', 'UNCERTAIN', 'NOT_APPLICABLE']).default('CONFIDENT'),
+  notes: z.string().max(5000).optional().nullable(),
+})
 
 export async function POST(
   request: Request,
@@ -14,31 +23,21 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const validation = await validateRequestBody(request, schema)
+  if (!validation.success) return validation.error
+  const { questionId, selectedOptionId, confidenceLevel, notes } = validation.data
+
+  // Allow null selectedOptionId for NOT_APPLICABLE and UNCERTAIN (I Don't Know)
+  const allowNullOption = confidenceLevel === 'NOT_APPLICABLE' || confidenceLevel === 'UNCERTAIN'
+
+  if (!allowNullOption && !selectedOptionId) {
+    return NextResponse.json(
+      { error: 'Selected option ID required' },
+      { status: 400 }
+    )
+  }
+
   try {
-    const body = await request.json()
-    const {
-      questionId,
-      selectedOptionId,
-      confidenceLevel = 'CONFIDENT',
-      notes,
-    } = body
-
-    // Allow null selectedOptionId for NOT_APPLICABLE and UNCERTAIN (I Don't Know)
-    const allowNullOption = confidenceLevel === 'NOT_APPLICABLE' || confidenceLevel === 'UNCERTAIN'
-
-    if (!questionId) {
-      return NextResponse.json(
-        { error: 'Question ID required' },
-        { status: 400 }
-      )
-    }
-
-    if (!allowNullOption && !selectedOptionId) {
-      return NextResponse.json(
-        { error: 'Selected option ID required' },
-        { status: 400 }
-      )
-    }
 
     // Verify user has access to this assessment
     const assessment = await prisma.assessment.findUnique({

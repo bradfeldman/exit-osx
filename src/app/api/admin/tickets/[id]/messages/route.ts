@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireSuperAdmin, isAdminError, logAdminAction } from '@/lib/admin'
+import { validateRequestBody, longText } from '@/lib/security/validation'
 
 export async function GET(
   request: NextRequest,
@@ -24,6 +26,11 @@ export async function GET(
   return NextResponse.json({ messages })
 }
 
+const ticketMessageSchema = z.object({
+  content: longText.min(1),
+  isInternal: z.boolean().optional(),
+})
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -32,15 +39,11 @@ export async function POST(
   if (isAdminError(result)) return result.error
 
   const { id } = await params
-  const body = await request.json()
-  const { content, isInternal } = body
 
-  if (!content || content.trim().length === 0) {
-    return NextResponse.json(
-      { error: 'Bad Request', message: 'Message content is required' },
-      { status: 400 }
-    )
-  }
+  const validation = await validateRequestBody(request, ticketMessageSchema)
+  if (!validation.success) return validation.error
+
+  const { content, isInternal } = validation.data
 
   // Verify ticket exists
   const ticket = await prisma.supportTicket.findUnique({

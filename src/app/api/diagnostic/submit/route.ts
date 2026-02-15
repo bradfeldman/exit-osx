@@ -5,6 +5,17 @@ import { prisma } from '@/lib/prisma'
 import type { Subcategory, DiagnosticQuestion } from '@/lib/ai/types'
 import { DiagnosisSubcategory } from '@prisma/client'
 import { applyRateLimit, createRateLimitResponse, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limit'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const schema = z.object({
+  companyId: z.string().uuid(),
+  subcategory: z.string().max(200),
+  responses: z.array(z.object({
+    questionId: z.string().max(100),
+    selectedOptionId: z.string().max(100),
+  })).max(100),
+})
 
 export async function POST(request: Request) {
   // SEC-034: Rate limit AI endpoints
@@ -21,23 +32,11 @@ export async function POST(request: Request) {
     )
   }
 
-  try {
-    const body = await request.json()
-    const { companyId, subcategory, responses } = body as {
-      companyId: string
-      subcategory: Subcategory
-      responses: Array<{
-        questionId: string
-        selectedOptionId: string
-      }>
-    }
+  const validation = await validateRequestBody(request, schema)
+  if (!validation.success) return validation.error
+  const { companyId, subcategory, responses } = validation.data
 
-    if (!companyId || !subcategory || !responses) {
-      return NextResponse.json(
-        { error: 'Company ID, subcategory, and responses are required' },
-        { status: 400 }
-      )
-    }
+  try {
 
     // Get the stored questions to validate responses
     const storedQuestions = await prisma.companyDiagnosticQuestions.findUnique({

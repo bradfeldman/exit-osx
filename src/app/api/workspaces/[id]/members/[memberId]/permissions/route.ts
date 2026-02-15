@@ -6,6 +6,8 @@ import { prisma } from '@/lib/prisma'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { resolveUserPermissions } from '@/lib/auth/check-granular-permission'
 import { GRANULAR_PERMISSIONS } from '@/lib/auth/permissions'
+import { z } from 'zod'
+import { validateRequestBody, uuidSchema } from '@/lib/security/validation'
 
 interface RouteParams {
   params: Promise<{
@@ -75,6 +77,15 @@ export async function GET(request: Request, { params }: RouteParams) {
   }
 }
 
+const patchSchema = z.object({
+  roleTemplateId: uuidSchema.nullable().optional(),
+  isExternalAdvisor: z.boolean().optional(),
+  customPermissions: z.array(z.object({
+    permission: z.string().max(100),
+    granted: z.boolean(),
+  })).max(100).optional(),
+})
+
 // PATCH - Update member's permissions
 export async function PATCH(request: Request, { params }: RouteParams) {
   try {
@@ -82,7 +93,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     if (isAuthError(result)) return result.error
 
     const { id: workspaceId, memberId } = await params
-    const body = await request.json()
+
+    const validation = await validateRequestBody(request, patchSchema)
+    if (!validation.success) return validation.error
+    const {
+      roleTemplateId,
+      isExternalAdvisor,
+      customPermissions,
+    } = validation.data
 
     // Verify the member belongs to this workspace
     const workspaceMember = await prisma.workspaceMember.findFirst({
@@ -95,16 +113,6 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     if (!workspaceMember) {
       return NextResponse.json({ error: 'Member not found' }, { status: 404 })
     }
-
-    const {
-      roleTemplateId,
-      isExternalAdvisor,
-      customPermissions,
-    }: {
-      roleTemplateId?: string | null
-      isExternalAdvisor?: boolean
-      customPermissions?: Array<{ permission: string; granted: boolean }>
-    } = body
 
     // Validate role template if provided
     if (roleTemplateId !== undefined && roleTemplateId !== null) {

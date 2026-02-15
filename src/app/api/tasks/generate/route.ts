@@ -7,6 +7,8 @@ import { applyRateLimit, createRateLimitResponse, RATE_LIMIT_CONFIGS } from '@/l
 import type { BusinessProfile, Subcategory, IdentifiedDriver } from '@/lib/ai/types'
 import { DiagnosisSubcategory, BriCategory } from '@prisma/client'
 import { calculateValuation } from '@/lib/valuation/calculate-valuation'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 // Default category weights for BRI calculation (must match improve-snapshot-for-task.ts)
 const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
@@ -17,6 +19,22 @@ const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
   LEGAL_TAX: 0.10,
   PERSONAL: 0.10,
 }
+
+const subcategoryTaskGenSchema = z.object({
+  companyId: z.string().uuid(),
+  subcategory: z.string().max(100),
+  valueAtStake: z.coerce.number().finite().optional(),
+})
+
+const onboardingTaskGenSchema = z.object({
+  companyId: z.string().uuid(),
+  riskResults: z.object({
+    briScore: z.coerce.number().finite().min(0).max(100),
+    categoryScores: z.record(z.string(), z.coerce.number().finite()),
+    valueGapByCategory: z.record(z.string(), z.coerce.number().finite()),
+  }),
+  riskQuestionAnswers: z.record(z.string(), z.string()).optional(),
+})
 
 export async function POST(request: Request) {
   // SEC-034: Rate limit AI endpoints
@@ -34,26 +52,29 @@ export async function POST(request: Request) {
   }
 
   try {
-    const body = await request.json()
+    const bodyRaw = await request.json()
 
     // Check if this is an onboarding task generation request (has riskResults)
-    if (body.riskResults) {
-      return handleOnboardingTaskGeneration(body)
+    if (bodyRaw.riskResults) {
+      const validation = onboardingTaskGenSchema.safeParse(bodyRaw)
+      if (!validation.success) {
+        return NextResponse.json(
+          { error: 'Validation failed', details: validation.error.issues },
+          { status: 400 }
+        )
+      }
+      return handleOnboardingTaskGeneration(validation.data)
     }
 
     // Otherwise, handle the subcategory-based task generation (original flow)
-    const { companyId, subcategory, valueAtStake } = body as {
-      companyId: string
-      subcategory: Subcategory
-      valueAtStake?: number
-    }
-
-    if (!companyId || !subcategory) {
+    const validation = subcategoryTaskGenSchema.safeParse(bodyRaw)
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'Company ID and subcategory are required' },
+        { error: 'Validation failed', details: validation.error.issues },
         { status: 400 }
       )
     }
+    const { companyId, subcategory, valueAtStake } = validation.data
 
     // Get company profile and diagnostic responses
     const [company, diagnosticResponses] = await Promise.all([
@@ -245,7 +266,7 @@ async function handleOnboardingTaskGeneration(body: {
         },
         outputData: JSON.parse(JSON.stringify(data)),
       }
-    }).catch(err => console.error('Failed to log AI usage:', err))
+    }).catch(err => console.error('Failed to log AI usage:', err instanceof Error ? err.message : String(err)))
 
     // Get or create current week's progress
     const now = new Date()

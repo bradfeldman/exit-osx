@@ -13,12 +13,19 @@ import { getDefaultConfidenceForChannel, applyConfidenceWeight } from '@/lib/sig
 import { triggerDossierUpdate } from '@/lib/dossier/build-dossier'
 import type { BriCategory } from '@prisma/client'
 import type { TaskGeneratedData } from '@/lib/signals/types'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 function formatCurrency(value: number): string {
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
   if (value >= 1_000) return `$${Math.round(value / 1_000)}K`
   return `$${value.toLocaleString()}`
 }
+
+const completeTaskSchema = z.object({
+  completionNotes: z.string().max(5000).optional(),
+  evidenceDocumentIds: z.array(z.string().uuid()).max(50).optional(),
+})
 
 export async function POST(
   request: Request,
@@ -27,11 +34,9 @@ export async function POST(
   const { id } = await params
 
   try {
-    const body = await request.json()
-    const { completionNotes, evidenceDocumentIds } = body as {
-      completionNotes?: string
-      evidenceDocumentIds?: string[]
-    }
+    const validation = await validateRequestBody(request, completeTaskSchema)
+    if (!validation.success) return validation.error
+    const { completionNotes, evidenceDocumentIds } = validation.data
 
     // Fetch task
     const existingTask = await prisma.task.findUnique({
@@ -166,7 +171,7 @@ export async function POST(
       try {
         await generateNextLevelTasks(existingTask.companyId, existingTask.linkedQuestionId)
       } catch (err) {
-        console.error(`[TaskComplete] Failed to generate next-level tasks for question ${existingTask.linkedQuestionId}:`, err)
+        console.error(`[TaskComplete] Failed to generate next-level tasks for question ${existingTask.linkedQuestionId}:`, err instanceof Error ? err.message : String(err))
       }
     } else {
       // Onboarding task
@@ -222,7 +227,7 @@ export async function POST(
         valueAfter: postSnapshot ? Number(postSnapshot.currentValue) : null,
       })
     } catch (err) {
-      console.error(`[ValueLedger] Failed to create entry for task ${id}, company ${existingTask.companyId}:`, err)
+      console.error(`[ValueLedger] Failed to create entry for task ${id}, company ${existingTask.companyId}:`, err instanceof Error ? err.message : String(err))
     }
 
     // Create TASK_GENERATED signal with Value Ledger entry
@@ -270,7 +275,7 @@ export async function POST(
           : `Task "${existingTask.title}" completed — ~${formatCurrency(weightedImpact)} value recovered`,
       })
     } catch (err) {
-      console.error(`[Signal] Failed to create task signal for task ${id}, company ${existingTask.companyId}:`, err)
+      console.error(`[Signal] Failed to create task signal for task ${id}, company ${existingTask.companyId}:`, err instanceof Error ? err.message : String(err))
     }
 
     // Update company dossier (fire-and-forget, non-blocking)
@@ -280,13 +285,13 @@ export async function POST(
     try {
       await checkAssessmentTriggers(existingTask.companyId)
     } catch (err) {
-      console.error(`[TaskComplete] Assessment trigger check failed for company ${existingTask.companyId}:`, err)
+      console.error(`[TaskComplete] Assessment trigger check failed for company ${existingTask.companyId}:`, err instanceof Error ? err.message : String(err))
     }
 
     try {
       await onTaskStatusChange(id, 'COMPLETED', true)
     } catch (err) {
-      console.error(`[TaskComplete] Action plan update failed for task ${id}:`, err)
+      console.error(`[TaskComplete] Action plan update failed for task ${id}:`, err instanceof Error ? err.message : String(err))
     }
 
     // Get next task

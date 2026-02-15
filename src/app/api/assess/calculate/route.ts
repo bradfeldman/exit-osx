@@ -11,6 +11,32 @@ import {
   RATE_LIMIT_CONFIGS,
   createRateLimitResponse,
 } from '@/lib/security/rate-limit'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const schema = z.object({
+  annualRevenue: z.coerce.number().finite().positive('annualRevenue is required and must be positive'),
+  coreFactors: z.object({
+    revenueModel: z.string().max(100),
+    laborIntensity: z.string().max(100),
+    assetIntensity: z.string().max(100),
+    ownerInvolvement: z.string().max(100),
+    grossMarginProxy: z.string().max(100),
+  }),
+  buyerScan: z.object({
+    briScore: z.coerce.number().finite().min(0).max(100),
+    riskCount: z.coerce.number().int().min(0).max(100),
+    answers: z.record(z.string(), z.boolean()),
+  }),
+  classification: z.object({
+    primaryIndustry: z.object({
+      icbSubSector: z.string().max(200),
+      icbSector: z.string().max(200),
+      icbSuperSector: z.string().max(200),
+      icbIndustry: z.string().max(200),
+    }).optional(),
+  }).optional().nullable(),
+})
 
 /**
  * POST /api/assess/calculate
@@ -24,47 +50,9 @@ export async function POST(request: Request) {
     return createRateLimitResponse(rateLimitResult)
   }
 
-  let body: {
-    annualRevenue?: number
-    coreFactors?: {
-      revenueModel: string
-      laborIntensity: string
-      assetIntensity: string
-      ownerInvolvement: string
-      grossMarginProxy: string
-    }
-    buyerScan?: {
-      briScore: number
-      riskCount: number
-      answers: Record<string, boolean>
-    }
-    classification?: {
-      primaryIndustry?: {
-        icbSubSector: string
-        icbSector: string
-        icbSuperSector: string
-        icbIndustry: string
-      }
-    } | null
-  }
-
-  try {
-    body = await request.json()
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
-  }
-
-  const { annualRevenue, coreFactors, buyerScan, classification } = body
-
-  if (!annualRevenue || annualRevenue <= 0) {
-    return NextResponse.json({ error: 'annualRevenue is required and must be positive' }, { status: 400 })
-  }
-  if (!coreFactors) {
-    return NextResponse.json({ error: 'coreFactors is required' }, { status: 400 })
-  }
-  if (!buyerScan) {
-    return NextResponse.json({ error: 'buyerScan is required' }, { status: 400 })
-  }
+  const validation = await validateRequestBody(request, schema)
+  if (!validation.success) return validation.error
+  const { annualRevenue, coreFactors, buyerScan, classification } = validation.data
 
   try {
     // Calculate Core Score

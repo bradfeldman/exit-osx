@@ -3,6 +3,8 @@ import { Prisma } from '@prisma/client'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snapshot'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 // Default weights that must sum to 1.0 (100%)
 const DEFAULT_BRI_WEIGHTS = {
@@ -76,6 +78,23 @@ export async function GET(
   }
 }
 
+const briWeightsUpdateSchema = z.object({
+  weights: z.object({
+    FINANCIAL: z.coerce.number().finite().min(0).max(1),
+    TRANSFERABILITY: z.coerce.number().finite().min(0).max(1),
+    OPERATIONAL: z.coerce.number().finite().min(0).max(1),
+    MARKET: z.coerce.number().finite().min(0).max(1),
+    LEGAL_TAX: z.coerce.number().finite().min(0).max(1),
+    PERSONAL: z.coerce.number().finite().min(0).max(1),
+  }).refine(
+    (weights) => {
+      const sumPercent = Object.values(weights).reduce((a, b) => a + Math.round(b * 100), 0)
+      return sumPercent === 100
+    },
+    { message: 'Weights must sum to exactly 100%' }
+  )
+})
+
 // PUT - Set company-specific BRI weights
 export async function PUT(
   request: Request,
@@ -85,39 +104,12 @@ export async function PUT(
   const result = await checkPermission('COMPANY_UPDATE', companyId)
   if (isAuthError(result)) return result.error
 
+  const validation = await validateRequestBody(request, briWeightsUpdateSchema)
+  if (!validation.success) return validation.error
+
+  const { weights } = validation.data
+
   try {
-    const body = await request.json()
-    const weights = body.weights as BriWeights
-
-    // Validate all required keys exist
-    const requiredKeys = Object.keys(DEFAULT_BRI_WEIGHTS)
-    for (const key of requiredKeys) {
-      if (typeof weights[key as keyof BriWeights] !== 'number') {
-        return NextResponse.json(
-          { error: `Missing or invalid weight for ${key}` },
-          { status: 400 }
-        )
-      }
-    }
-
-    // Validate weights sum to exactly 100%
-    const sumPercent = Object.values(weights).reduce((a, b) => a + Math.round(b * 100), 0)
-    if (sumPercent !== 100) {
-      return NextResponse.json(
-        { error: `Weights must sum to exactly 100%. Current sum: ${sumPercent}%` },
-        { status: 400 }
-      )
-    }
-
-    // Validate each weight is between 0 and 1
-    for (const [key, value] of Object.entries(weights)) {
-      if (value < 0 || value > 1) {
-        return NextResponse.json(
-          { error: `Weight for ${key} must be between 0% and 100%` },
-          { status: 400 }
-        )
-      }
-    }
 
     // Update company with new weights
     await prisma.company.update({

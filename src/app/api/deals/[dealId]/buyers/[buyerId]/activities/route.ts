@@ -2,8 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { ActivityType } from '@prisma/client'
 import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 type RouteParams = Promise<{ dealId: string; buyerId: string }>
+
+const postSchema = z.object({
+  activityType: z.enum([
+    'STAGE_CHANGED', 'NOTE_ADDED', 'EMAIL_SENT', 'EMAIL_RECEIVED',
+    'CALL_MADE', 'CALL_RECEIVED', 'MEETING_SCHEDULED', 'MEETING_COMPLETED',
+    'DOCUMENT_SENT', 'DOCUMENT_RECEIVED', 'APPROVAL_GRANTED', 'APPROVAL_DENIED'
+  ] as const satisfies readonly ActivityType[]),
+  subject: z.string().min(1).max(500),
+  description: z.string().max(5000).optional(),
+  metadata: z.any().optional(),
+})
 
 /**
  * GET /api/deals/[dealId]/buyers/[buyerId]/activities
@@ -124,24 +137,9 @@ export async function POST(
     const { auth } = authResult
     const userId = auth.user.id
 
-    const body = await request.json()
-    const { activityType, subject, description, metadata } = body
-
-    // Validate required fields
-    if (!activityType || !subject) {
-      return NextResponse.json(
-        { error: 'activityType and subject are required' },
-        { status: 400 }
-      )
-    }
-
-    // Validate activity type
-    if (!Object.values(ActivityType).includes(activityType)) {
-      return NextResponse.json(
-        { error: 'Invalid activity type' },
-        { status: 400 }
-      )
-    }
+    const validation = await validateRequestBody(request, postSchema)
+    if (!validation.success) return validation.error
+    const { activityType, subject, description, metadata } = validation.data
 
     // Verify buyer exists and belongs to deal
     const buyer = await prisma.dealBuyer.findUnique({

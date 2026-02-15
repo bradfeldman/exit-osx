@@ -520,7 +520,7 @@ export async function PUT(
     try {
       await recalculateSnapshotForCompany(companyId, 'Cash flow data updated')
     } catch (err) {
-      console.error('Error recalculating snapshot after cash flow save:', err)
+      console.error('Error recalculating snapshot after cash flow save:', err instanceof Error ? err.message : String(err))
       // Non-fatal: cash flow was saved successfully
     }
 

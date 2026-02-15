@@ -2,6 +2,24 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { requireDevEndpoint, logDevEndpointAccess } from '@/lib/security'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const postQuestionSchema = z.object({
+  category: z.string().max(100),
+  subCategory: z.string().max(100).optional().nullable(),
+  questionText: z.string().min(1).max(500),
+  helpText: z.string().max(1000).optional().nullable(),
+  buyerLogic: z.string().max(500),
+  answers: z.array(
+    z.object({
+      text: z.string().max(500),
+      riskLevel: z.string().max(50),
+      score: z.string().max(20),
+      buyerInterpretation: z.string().max(1000),
+    })
+  ).min(2).max(5),
+})
 
 // POST - Create a new question with options
 export async function POST(request: NextRequest) {
@@ -9,33 +27,20 @@ export async function POST(request: NextRequest) {
   const devCheck = requireDevEndpoint()
   if (devCheck) return devCheck
 
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+  }
+
+  logDevEndpointAccess('POST /api/developer/questions', user.id)
+
+  const validation = await validateRequestBody(request, postQuestionSchema)
+  if (!validation.success) return validation.error
+  const { category, subCategory, questionText, helpText, buyerLogic, answers } = validation.data
+
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-    }
-
-    logDevEndpointAccess('POST /api/developer/questions', user.id)
-
-    const body = await request.json()
-    const {
-      category,
-      subCategory,
-      questionText,
-      helpText,
-      buyerLogic,
-      answers,
-    } = body
-
-    // Validate required fields (2-5 answers allowed)
-    if (!category || !questionText || !buyerLogic || !answers || answers.length < 2 || answers.length > 5) {
-      return NextResponse.json(
-        { message: 'Missing required fields: category, questionText, buyerLogic, and 2-5 answers are required' },
-        { status: 400 }
-      )
-    }
 
     // Get the max display order for this category
     const maxOrderResult = await prisma.question.aggregate({

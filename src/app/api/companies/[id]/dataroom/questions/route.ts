@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { logActivity, notifyTeamMembers } from '@/lib/dataroom'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 /**
  * GET /api/companies/[id]/dataroom/questions
@@ -125,6 +127,12 @@ export async function GET(
   }
 }
 
+const createQuestionSchema = z.object({
+  question: z.string().min(1).max(5000),
+  documentId: z.string().uuid().optional().nullable(),
+  folderId: z.string().uuid().optional().nullable(),
+})
+
 /**
  * POST /api/companies/[id]/dataroom/questions
  * Ask a new question
@@ -138,12 +146,9 @@ export async function POST(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
-    const { question, documentId, folderId } = body
-
-    if (!question || question.trim().length === 0) {
-      return NextResponse.json({ error: 'Question is required' }, { status: 400 })
-    }
+    const validation = await validateRequestBody(request, createQuestionSchema)
+    if (!validation.success) return validation.error
+    const { question, documentId, folderId } = validation.data
 
     const dataRoom = await prisma.dataRoom.findUnique({
       where: { companyId },
@@ -188,8 +193,8 @@ export async function POST(
       userId: result.auth.user.id,
       userEmail: result.auth.user.email,
       action: 'ASKED_QUESTION',
-      documentId,
-      folderId,
+      documentId: documentId || undefined,
+      folderId: folderId || undefined,
       metadata: { questionId: newQuestion.id },
     })
 
@@ -203,9 +208,9 @@ export async function POST(
       actorEmail: result.auth.user.email,
       actorUserId: result.auth.user.id,
       questionId: newQuestion.id,
-      documentId,
-      folderId,
-    }).catch((err) => console.error('Error sending notifications:', err))
+      documentId: documentId || undefined,
+      folderId: folderId || undefined,
+    }).catch((err) => console.error('Error sending notifications:', err instanceof Error ? err.message : String(err)))
 
     return NextResponse.json({ question: newQuestion }, { status: 201 })
   } catch (error) {

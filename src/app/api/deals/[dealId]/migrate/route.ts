@@ -6,8 +6,15 @@ import {
   rollbackMigration,
   type MigrationOptions,
 } from '@/lib/contact-system/migration'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 type RouteParams = Promise<{ dealId: string }>
+
+const postSchema = z.object({
+  dryRun: z.boolean().default(false),
+  skipDuplicateCheck: z.boolean().default(false),
+})
 
 /**
  * POST /api/deals/[dealId]/migrate
@@ -26,8 +33,9 @@ export async function POST(
   if (authResult instanceof NextResponse) return authResult
 
   try {
-    const body = await request.json().catch(() => ({}))
-    const { dryRun = false, skipDuplicateCheck = false } = body
+    const validation = await validateRequestBody(request, postSchema)
+    if (!validation.success) return validation.error
+    const { dryRun, skipDuplicateCheck } = validation.data
 
     // Validate migration readiness
     const validation = await validateMigrationReadiness(dealId)

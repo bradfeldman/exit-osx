@@ -225,7 +225,7 @@ export async function GET(
           },
         })
       } catch (err) {
-        console.error('Evidence view - watermark pipeline error:', err)
+        console.error('Evidence view - watermark pipeline error:', err instanceof Error ? err.message : String(err))
         return serveHtmlViewer(urlData.signedUrl, document, result.auth.user.email)
       }
     }

@@ -6,6 +6,8 @@ import {
   RATE_LIMIT_CONFIGS,
   createRateLimitResponse,
 } from '@/lib/security/rate-limit'
+import { z } from 'zod'
+import { validateRequestBody, uuidSchema } from '@/lib/security/validation'
 
 /**
  * GET /api/task-share/[token]
@@ -59,6 +61,11 @@ export async function GET(
   })
 }
 
+const postSchema = z.object({
+  completionNotes: z.string().max(5000).optional(),
+  subStepId: uuidSchema.optional(),
+})
+
 /**
  * POST /api/task-share/[token]
  * Public endpoint: mark a shared task as complete (no auth required)
@@ -80,16 +87,9 @@ export async function POST(
     return NextResponse.json({ error: 'Invalid or expired link' }, { status: 403 })
   }
 
-  const body = await request.json()
-  const { completionNotes, subStepId } = body
-
-  // SECURITY: Validate inputs from public endpoint
-  if (subStepId !== undefined && (typeof subStepId !== 'string' || subStepId.length > 100)) {
-    return NextResponse.json({ error: 'Invalid subStepId' }, { status: 400 })
-  }
-  if (completionNotes !== undefined && (typeof completionNotes !== 'string' || completionNotes.length > 5000)) {
-    return NextResponse.json({ error: 'Completion notes must be 5000 characters or less' }, { status: 400 })
-  }
+  const validation = await validateRequestBody(request, postSchema)
+  if (!validation.success) return validation.error
+  const { completionNotes, subStepId } = validation.data
 
   // Toggle a sub-step
   if (subStepId) {

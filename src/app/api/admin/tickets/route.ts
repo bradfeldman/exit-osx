@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireSuperAdmin, isAdminError, logAdminAction } from '@/lib/admin'
-import { sanitizePagination } from '@/lib/security/validation'
+import { sanitizePagination, validateRequestBody, uuidSchema, emailSchema, shortText } from '@/lib/security/validation'
 
 function generateTicketNumber(): string {
   const date = new Date()
@@ -66,19 +67,22 @@ export async function GET(request: NextRequest) {
   })
 }
 
+const ticketCreateSchema = z.object({
+  userId: uuidSchema.optional().nullable(),
+  userEmail: emailSchema,
+  subject: shortText.min(1),
+  category: shortText.optional(),
+  priority: z.enum(['low', 'normal', 'high', 'urgent']).optional(),
+})
+
 export async function POST(request: NextRequest) {
   const result = await requireSuperAdmin()
   if (isAdminError(result)) return result.error
 
-  const body = await request.json()
-  const { userId, userEmail, subject, category, priority } = body
+  const validation = await validateRequestBody(request, ticketCreateSchema)
+  if (!validation.success) return validation.error
 
-  if (!userEmail || !subject) {
-    return NextResponse.json(
-      { error: 'Bad Request', message: 'userEmail and subject are required' },
-      { status: 400 }
-    )
-  }
+  const { userId, userEmail, subject, category, priority } = validation.data
 
   const ticket = await prisma.supportTicket.create({
     data: {

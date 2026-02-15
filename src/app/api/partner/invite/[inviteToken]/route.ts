@@ -5,6 +5,8 @@ import {
   RATE_LIMIT_CONFIGS,
   createRateLimitResponse,
 } from '@/lib/security'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 // GET — Validate invite token
 // SECURITY FIX (PROD-060): Added rate limiting to prevent token enumeration
@@ -37,6 +39,10 @@ export async function GET(
   })
 }
 
+const postSchema = z.object({
+  name: z.string().max(200).optional(),
+})
+
 // POST — Accept invite
 // SECURITY FIX (PROD-060): Added rate limiting
 export async function POST(
@@ -61,13 +67,15 @@ export async function POST(
     return NextResponse.json({ error: 'Already accepted' }, { status: 400 })
   }
 
-  const body = await request.json().catch(() => ({}))
+  const validation = await validateRequestBody(request, postSchema)
+  if (!validation.success) return validation.error
+  const { name } = validation.data
 
   await prisma.accountabilityPartner.update({
     where: { inviteToken },
     data: {
       acceptedAt: new Date(),
-      name: body.name || partner.name,
+      name: name || partner.name,
     },
   })
 

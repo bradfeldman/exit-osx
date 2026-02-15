@@ -8,6 +8,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import type { ConfidenceLevel } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const schema = z.object({
+  questionId: z.string().uuid(),
+  selectedOptionId: z.string().uuid(),
+  confidenceLevel: z.enum(['CONFIDENT', 'SOMEWHAT_CONFIDENT', 'UNCERTAIN', 'NOT_APPLICABLE']).optional(),
+  notes: z.string().max(5000).optional().nullable(),
+})
 
 /**
  * POST /api/project-assessments/[id]/responses
@@ -32,15 +41,9 @@ export async function POST(
   }
 
   const { id: assessmentId } = await params
-  const body = await request.json()
-  const { questionId, selectedOptionId, confidenceLevel, notes } = body
-
-  if (!questionId || !selectedOptionId) {
-    return NextResponse.json(
-      { error: 'questionId and selectedOptionId are required' },
-      { status: 400 }
-    )
-  }
+  const validation = await validateRequestBody(request, schema)
+  if (!validation.success) return validation.error
+  const { questionId, selectedOptionId, confidenceLevel, notes } = validation.data
 
   // Get the assessment to verify access and status
   const assessment = await prisma.projectAssessment.findUnique({

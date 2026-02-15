@@ -3,6 +3,17 @@ import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import { prisma } from '@/lib/prisma'
 import { ApprovalStatus } from '@prisma/client'
 import { revokeVDRAccessForBuyer } from '@/lib/contact-system/stage-service'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const putSchema = z.object({
+  approvalStatus: z.enum(['PENDING', 'APPROVED', 'DENIED', 'HOLD']).optional(),
+  approvalNotes: z.string().max(5000).optional(),
+  internalNotes: z.string().max(5000).optional(),
+  ioiAmount: z.coerce.number().finite().optional(),
+  loiAmount: z.coerce.number().finite().optional(),
+  isPriority: z.boolean().optional(),
+})
 
 /**
  * GET /api/deals/[dealId]/buyers/[buyerId]
@@ -127,7 +138,8 @@ export async function PUT(
       return NextResponse.json({ error: 'Buyer not found in this deal' }, { status: 404 })
     }
 
-    const body = await request.json()
+    const validation = await validateRequestBody(request, putSchema)
+    if (!validation.success) return validation.error
     const {
       approvalStatus,
       approvalNotes,
@@ -135,7 +147,7 @@ export async function PUT(
       ioiAmount,
       loiAmount,
       isPriority,
-    } = body
+    } = validation.data
 
     const updateData: Record<string, unknown> = {}
 

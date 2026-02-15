@@ -3,6 +3,14 @@ import { createClient } from '@/lib/supabase/server'
 import { generateClarifyingQuestions } from '@/lib/ai/profile'
 import { prisma } from '@/lib/prisma'
 import { applyRateLimit, createRateLimitResponse, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limit'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const schema = z.object({
+  businessDescription: z.string().min(1).max(5000),
+  industry: z.string().max(500).optional().nullable(),
+  revenueRange: z.string().max(200).optional().nullable(),
+})
 
 export async function POST(request: Request) {
   // SEC-034: Rate limit AI endpoints
@@ -19,16 +27,11 @@ export async function POST(request: Request) {
     )
   }
 
-  try {
-    const body = await request.json()
-    const { businessDescription, industry, revenueRange } = body
+  const validation = await validateRequestBody(request, schema)
+  if (!validation.success) return validation.error
+  const { businessDescription, industry, revenueRange } = validation.data
 
-    if (!businessDescription) {
-      return NextResponse.json(
-        { error: 'Business description is required' },
-        { status: 400 }
-      )
-    }
+  try {
 
     const { data, usage } = await generateClarifyingQuestions(
       businessDescription,
@@ -46,7 +49,7 @@ export async function POST(request: Request) {
         inputData: { businessDescription: businessDescription.substring(0, 500), industry, revenueRange },
         outputData: JSON.parse(JSON.stringify(data)),
       }
-    }).catch(err => console.error('Failed to log AI usage:', err))
+    }).catch(err => console.error('Failed to log AI usage:', err instanceof Error ? err.message : String(err)))
 
     return NextResponse.json({ questions: data.questions })
   } catch (error) {

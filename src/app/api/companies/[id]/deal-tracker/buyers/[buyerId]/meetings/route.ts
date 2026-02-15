@@ -3,6 +3,34 @@ import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { MeetingType } from '@prisma/client'
 import { ACTIVITY_TYPES } from '@/lib/deal-tracker/constants'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const postSchema = z.object({
+  meetingType: z.enum(['INTRO', 'MANAGEMENT_PRESENTATION', 'SITE_VISIT', 'DUE_DILIGENCE', 'NEGOTIATION', 'OTHER']),
+  title: z.string().min(1).max(500),
+  description: z.string().max(5000).optional(),
+  scheduledAt: z.string().max(100),
+  duration: z.coerce.number().int().min(0).optional(),
+  location: z.string().max(500).optional(),
+  meetingLink: z.string().max(2000).optional(),
+  attendees: z.array(z.string().max(500)).max(100).optional(),
+})
+
+const putSchema = z.object({
+  meetingId: z.string().uuid(),
+  meetingType: z.enum(['INTRO', 'MANAGEMENT_PRESENTATION', 'SITE_VISIT', 'DUE_DILIGENCE', 'NEGOTIATION', 'OTHER']).optional(),
+  title: z.string().max(500).optional(),
+  description: z.string().max(5000).optional(),
+  scheduledAt: z.string().max(100).optional(),
+  duration: z.coerce.number().int().min(0).optional(),
+  location: z.string().max(500).optional(),
+  meetingLink: z.string().max(2000).optional(),
+  attendees: z.array(z.string().max(500)).max(100).optional(),
+  status: z.enum(['scheduled', 'completed', 'cancelled', 'rescheduled']).optional(),
+  completedAt: z.string().max(100).optional().nullable(),
+  notes: z.string().max(5000).optional(),
+})
 
 /**
  * GET /api/companies/[id]/deal-tracker/buyers/[buyerId]/meetings
@@ -77,7 +105,8 @@ export async function POST(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
+    const validation = await validateRequestBody(request, postSchema)
+    if (!validation.success) return validation.error
     const {
       meetingType,
       title,
@@ -87,14 +116,7 @@ export async function POST(
       location,
       meetingLink,
       attendees,
-    } = body
-
-    if (!meetingType || !title || !scheduledAt) {
-      return NextResponse.json(
-        { error: 'Meeting type, title, and scheduled time are required' },
-        { status: 400 }
-      )
-    }
+    } = validation.data
 
     // Verify buyer belongs to company
     const buyer = await prisma.prospectiveBuyer.findFirst({
@@ -155,7 +177,8 @@ export async function PUT(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
+    const validation = await validateRequestBody(request, putSchema)
+    if (!validation.success) return validation.error
     const {
       meetingId,
       meetingType,
@@ -169,11 +192,7 @@ export async function PUT(
       status,
       completedAt,
       notes,
-    } = body
-
-    if (!meetingId) {
-      return NextResponse.json({ error: 'Meeting ID is required' }, { status: 400 })
-    }
+    } = validation.data
 
     // Verify buyer and meeting belong to company
     const buyer = await prisma.prospectiveBuyer.findFirst({

@@ -1,7 +1,9 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { recalculateSnapshotsForMultipleUpdate } from '@/lib/valuation/recalculate-snapshot'
+import { validateRequestBody, shortText } from '@/lib/security/validation'
 
 // GET - Get a specific industry multiple
 export async function GET(
@@ -49,6 +51,15 @@ export async function GET(
   }
 }
 
+const industryMultipleUpdateSchema = z.object({
+  ebitdaMultipleLow: z.coerce.number().finite().min(0).max(100).optional(),
+  ebitdaMultipleHigh: z.coerce.number().finite().min(0).max(100).optional(),
+  revenueMultipleLow: z.coerce.number().finite().min(0).max(100).optional(),
+  revenueMultipleHigh: z.coerce.number().finite().min(0).max(100).optional(),
+  effectiveDate: z.string().datetime().optional(),
+  source: shortText.optional(),
+})
+
 // PUT - Update an existing industry multiple
 export async function PUT(
   request: Request,
@@ -72,7 +83,9 @@ export async function PUT(
       return NextResponse.json({ error: 'Industry multiple not found' }, { status: 404 })
     }
 
-    const body = await request.json()
+    const validation = await validateRequestBody(request, industryMultipleUpdateSchema)
+    if (!validation.success) return validation.error
+
     const {
       ebitdaMultipleLow,
       ebitdaMultipleHigh,
@@ -80,7 +93,7 @@ export async function PUT(
       revenueMultipleHigh,
       effectiveDate,
       source,
-    } = body
+    } = validation.data
 
     // Determine what type of update this is
     const ebitdaChanged =
@@ -95,30 +108,18 @@ export async function PUT(
     const updateData: Record<string, unknown> = {}
 
     if (ebitdaMultipleLow !== undefined) {
-      if (ebitdaMultipleLow < 0) {
-        return NextResponse.json({ error: 'EBITDA multiple low must be positive' }, { status: 400 })
-      }
       updateData.ebitdaMultipleLow = ebitdaMultipleLow
     }
 
     if (ebitdaMultipleHigh !== undefined) {
-      if (ebitdaMultipleHigh < 0) {
-        return NextResponse.json({ error: 'EBITDA multiple high must be positive' }, { status: 400 })
-      }
       updateData.ebitdaMultipleHigh = ebitdaMultipleHigh
     }
 
     if (revenueMultipleLow !== undefined) {
-      if (revenueMultipleLow < 0) {
-        return NextResponse.json({ error: 'Revenue multiple low must be positive' }, { status: 400 })
-      }
       updateData.revenueMultipleLow = revenueMultipleLow
     }
 
     if (revenueMultipleHigh !== undefined) {
-      if (revenueMultipleHigh < 0) {
-        return NextResponse.json({ error: 'Revenue multiple high must be positive' }, { status: 400 })
-      }
       updateData.revenueMultipleHigh = revenueMultipleHigh
     }
 
@@ -131,10 +132,10 @@ export async function PUT(
     }
 
     // Validate low <= high after update
-    const newEbitdaLow = updateData.ebitdaMultipleLow ?? Number(existingMultiple.ebitdaMultipleLow)
-    const newEbitdaHigh = updateData.ebitdaMultipleHigh ?? Number(existingMultiple.ebitdaMultipleHigh)
-    const newRevenueLow = updateData.revenueMultipleLow ?? Number(existingMultiple.revenueMultipleLow)
-    const newRevenueHigh = updateData.revenueMultipleHigh ?? Number(existingMultiple.revenueMultipleHigh)
+    const newEbitdaLow = (updateData.ebitdaMultipleLow ?? Number(existingMultiple.ebitdaMultipleLow)) as number
+    const newEbitdaHigh = (updateData.ebitdaMultipleHigh ?? Number(existingMultiple.ebitdaMultipleHigh)) as number
+    const newRevenueLow = (updateData.revenueMultipleLow ?? Number(existingMultiple.revenueMultipleLow)) as number
+    const newRevenueHigh = (updateData.revenueMultipleHigh ?? Number(existingMultiple.revenueMultipleHigh)) as number
 
     if (newEbitdaLow > newEbitdaHigh) {
       return NextResponse.json(

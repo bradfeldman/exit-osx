@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { PeriodType, Quarter } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 export async function GET(
   request: Request,
@@ -83,6 +85,22 @@ export async function GET(
   }
 }
 
+const financialPeriodCreateSchema = z.object({
+  periodType: z.enum(['ANNUAL', 'QUARTERLY', 'MONTHLY']),
+  fiscalYear: z.coerce.number().int().min(1900).max(2100),
+  quarter: z.enum(['Q1', 'Q2', 'Q3', 'Q4']).optional(),
+  month: z.coerce.number().int().min(1).max(12).optional(),
+  startDate: z.string().max(100),
+  endDate: z.string().max(100),
+  label: z.string().max(100).optional().nullable(),
+}).refine(
+  (data) => data.periodType !== 'QUARTERLY' || data.quarter,
+  { message: 'Quarter is required for quarterly periods', path: ['quarter'] }
+).refine(
+  (data) => data.periodType !== 'MONTHLY' || data.month,
+  { message: 'Month is required for monthly periods', path: ['month'] }
+)
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -95,41 +113,12 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const validation = await validateRequestBody(request, financialPeriodCreateSchema)
+  if (!validation.success) return validation.error
+
+  const { periodType, fiscalYear, quarter, month, startDate, endDate, label } = validation.data
+
   try {
-    const body = await request.json()
-    const { periodType, fiscalYear, quarter, month, startDate, endDate, label } = body
-
-    // Validate required fields
-    if (!periodType || !fiscalYear || !startDate || !endDate) {
-      return NextResponse.json(
-        { error: 'Missing required fields: periodType, fiscalYear, startDate, endDate' },
-        { status: 400 }
-      )
-    }
-
-    // Validate periodType
-    if (!['ANNUAL', 'QUARTERLY', 'MONTHLY'].includes(periodType)) {
-      return NextResponse.json(
-        { error: 'Invalid period type' },
-        { status: 400 }
-      )
-    }
-
-    // Validate quarter for quarterly periods
-    if (periodType === 'QUARTERLY' && !quarter) {
-      return NextResponse.json(
-        { error: 'Quarter is required for quarterly periods' },
-        { status: 400 }
-      )
-    }
-
-    // Validate month for monthly periods
-    if (periodType === 'MONTHLY' && (!month || month < 1 || month > 12)) {
-      return NextResponse.json(
-        { error: 'Valid month (1-12) is required for monthly periods' },
-        { status: 400 }
-      )
-    }
 
     // Verify user has access to company
     const company = await prisma.company.findUnique({

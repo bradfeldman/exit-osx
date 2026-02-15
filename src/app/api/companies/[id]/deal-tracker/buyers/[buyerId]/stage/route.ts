@@ -8,6 +8,16 @@ import {
   isValidTransition,
   STAGE_LABELS,
 } from '@/lib/deal-tracker/constants'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const putSchema = z.object({
+  stage: z.enum(['IDENTIFIED', 'CONTACTED', 'ENGAGED', 'NDA_SENT', 'NDA_EXECUTED', 'CIM_SENT', 'IOI_RECEIVED', 'SELECTED', 'LOI_RECEIVED', 'DD_IN_PROGRESS', 'CLOSED', 'WITHDRAWN', 'TERMINATED']),
+  notes: z.string().max(5000).optional(),
+  skipValidation: z.boolean().default(false),
+  ioiAmount: z.coerce.number().finite().optional(),
+  loiAmount: z.coerce.number().finite().optional(),
+})
 
 /**
  * PUT /api/companies/[id]/deal-tracker/buyers/[buyerId]/stage
@@ -22,12 +32,9 @@ export async function PUT(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
-    const { stage, notes, skipValidation = false, ioiAmount, loiAmount } = body
-
-    if (!stage) {
-      return NextResponse.json({ error: 'Stage is required' }, { status: 400 })
-    }
+    const validation = await validateRequestBody(request, putSchema)
+    if (!validation.success) return validation.error
+    const { stage, notes, skipValidation, ioiAmount, loiAmount } = validation.data
 
     // Verify buyer belongs to company
     const buyer = await prisma.prospectiveBuyer.findFirst({

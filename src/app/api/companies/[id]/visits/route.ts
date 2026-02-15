@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 interface RouteContext {
   params: Promise<{ id: string }>
@@ -57,6 +59,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }
 }
 
+const visitLogSchema = z.object({
+  briScore: z.coerce.number().finite().min(0).max(100).optional(),
+  valuation: z.coerce.number().finite().min(0).optional(),
+  tasksCompleted: z.coerce.number().int().min(0).default(0),
+  criticalTasksCompleted: z.coerce.number().int().min(0).default(0),
+})
+
 // POST - Log a new visit
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
@@ -67,7 +76,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (isAuthError(authResult)) return authResult.error
 
     const dbUser = authResult.auth.user
-    const body = await request.json()
+
+    const validation = await validateRequestBody(request, visitLogSchema)
+    if (!validation.success) return validation.error
+
+    const { briScore, valuation, tasksCompleted, criticalTasksCompleted } = validation.data
 
     // Check if there's a recent visit (within last hour) to avoid duplicate logging
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
@@ -86,10 +99,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       await prisma.companyVisitLog.update({
         where: { id: recentVisit.id },
         data: {
-          briScore: body.briScore ?? recentVisit.briScore,
-          valuation: body.valuation ?? recentVisit.valuation,
-          tasksCompleted: body.tasksCompleted ?? recentVisit.tasksCompleted,
-          criticalTasksCompleted: body.criticalTasksCompleted ?? recentVisit.criticalTasksCompleted,
+          briScore: briScore ?? recentVisit.briScore,
+          valuation: valuation ?? recentVisit.valuation,
+          tasksCompleted: tasksCompleted ?? recentVisit.tasksCompleted,
+          criticalTasksCompleted: criticalTasksCompleted ?? recentVisit.criticalTasksCompleted,
         },
       })
 
@@ -101,10 +114,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       data: {
         companyId,
         userId: dbUser.id,
-        briScore: body.briScore,
-        valuation: body.valuation,
-        tasksCompleted: body.tasksCompleted ?? 0,
-        criticalTasksCompleted: body.criticalTasksCompleted ?? 0,
+        briScore,
+        valuation,
+        tasksCompleted,
+        criticalTasksCompleted,
       },
     })
 

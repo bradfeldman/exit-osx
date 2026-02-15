@@ -3,6 +3,18 @@ import { createClient } from '@/lib/supabase/server'
 import { generateRiskFocusedQuestions } from '@/lib/ai/risk-questions'
 import { prisma } from '@/lib/prisma'
 import { applyRateLimit, createRateLimitResponse, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limit'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const schema = z.object({
+  companyId: z.string().uuid(),
+  businessDescription: z.string().max(5000).optional().nullable(),
+  riskResults: z.object({
+    briScore: z.coerce.number().finite().min(0).max(100),
+    categoryScores: z.record(z.string(), z.coerce.number().finite()),
+    valueGapByCategory: z.record(z.string(), z.coerce.number().finite()),
+  }),
+})
 
 export async function POST(request: Request) {
   // SEC-034: Rate limit AI endpoints
@@ -19,28 +31,11 @@ export async function POST(request: Request) {
     )
   }
 
-  try {
-    const body = await request.json()
-    const {
-      companyId,
-      businessDescription,
-      riskResults,
-    } = body as {
-      companyId: string
-      businessDescription: string
-      riskResults: {
-        briScore: number
-        categoryScores: Record<string, number>
-        valueGapByCategory: Record<string, number>
-      }
-    }
+  const validation = await validateRequestBody(request, schema)
+  if (!validation.success) return validation.error
+  const { companyId, businessDescription, riskResults } = validation.data
 
-    if (!companyId || !riskResults) {
-      return NextResponse.json(
-        { error: 'Company ID and risk results are required' },
-        { status: 400 }
-      )
-    }
+  try {
 
     // Get company to verify ownership
     const company = await prisma.company.findUnique({
@@ -77,7 +72,7 @@ export async function POST(request: Request) {
         },
         outputData: JSON.parse(JSON.stringify(data)),
       }
-    }).catch(err => console.error('Failed to log AI usage:', err))
+    }).catch(err => console.error('Failed to log AI usage:', err instanceof Error ? err.message : String(err)))
 
     return NextResponse.json({ questions: data.questions })
   } catch (error) {

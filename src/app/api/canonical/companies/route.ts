@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { BuyerType, DataQuality } from '@prisma/client'
 import { normalizeCompanyName, extractDomainFromUrl, findCompanyMatches } from '@/lib/contact-system/identity-resolution'
 import { PAGINATION, FREE_EMAIL_DOMAINS } from '@/lib/contact-system/constants'
+import { validateRequestBody, shortText, longText } from '@/lib/security/validation'
 
 /**
  * GET /api/canonical/companies
@@ -119,6 +121,24 @@ export async function GET(request: NextRequest) {
   }
 }
 
+const canonicalCompanyCreateSchema = z.object({
+  name: shortText.min(1),
+  legalName: shortText.optional().nullable(),
+  website: z.string().max(2000).optional().nullable(),
+  linkedInUrl: z.string().max(2000).optional().nullable(),
+  companyType: z.enum(['STRATEGIC', 'FINANCIAL', 'INDIVIDUAL', 'MANAGEMENT', 'ESOP', 'OTHER']).optional(),
+  industryCode: shortText.optional().nullable(),
+  industryName: shortText.optional().nullable(),
+  headquarters: shortText.optional().nullable(),
+  country: shortText.optional().nullable(),
+  employeeCount: z.coerce.number().int().min(0).optional().nullable(),
+  foundedYear: z.coerce.number().int().min(1800).max(new Date().getFullYear() + 1).optional().nullable(),
+  aum: z.coerce.number().finite().optional().nullable(),
+  description: longText.optional().nullable(),
+  domains: z.array(z.string().max(255)).max(20).optional(),
+  skipDuplicateCheck: z.boolean().optional(),
+})
+
 /**
  * POST /api/canonical/companies
  * Create a new canonical company
@@ -128,7 +148,9 @@ export async function POST(request: NextRequest) {
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
+    const validation = await validateRequestBody(request, canonicalCompanyCreateSchema)
+    if (!validation.success) return validation.error
+
     const {
       name,
       legalName,
@@ -145,14 +167,7 @@ export async function POST(request: NextRequest) {
       description,
       domains: inputDomains,
       skipDuplicateCheck,
-    } = body
-
-    if (!name) {
-      return NextResponse.json(
-        { error: 'Name is required' },
-        { status: 400 }
-      )
-    }
+    } = validation.data
 
     const normalizedName = normalizeCompanyName(name)
 

@@ -49,7 +49,7 @@ export async function POST(request: Request) {
         console.log(`[Stripe Webhook] Unhandled event type: ${event.type}`)
     }
   } catch (err) {
-    console.error(`[Stripe Webhook] Error handling ${event.type}:`, err)
+    console.error(`[Stripe Webhook] Error handling ${event.type}:`, err instanceof Error ? err.message : String(err))
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 })
   }
 

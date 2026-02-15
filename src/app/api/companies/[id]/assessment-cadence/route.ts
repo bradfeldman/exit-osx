@@ -16,6 +16,8 @@ import {
 } from '@/lib/assessment/cadence-rules'
 import { detectAllMaterialChanges } from '@/lib/assessment/material-change-detector'
 import { BRI_CATEGORY_LABELS, type BRICategory } from '@/lib/constants/bri-categories'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 const VALID_CADENCES: CadencePreference[] = ['weekly', 'monthly', 'manual']
 const CATEGORY_KEYS = ['FINANCIAL', 'TRANSFERABILITY', 'OPERATIONAL', 'MARKET', 'LEGAL_TAX', 'PERSONAL']
@@ -166,6 +168,10 @@ export async function GET(
 // PUT — Update cadence preference
 // ---------------------------------------------------------------------------
 
+const putCadenceSchema = z.object({
+  cadence: z.enum(['weekly', 'monthly', 'manual']),
+})
+
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -175,15 +181,9 @@ export async function PUT(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
-    const { cadence } = body
-
-    if (!cadence || !VALID_CADENCES.includes(cadence)) {
-      return NextResponse.json(
-        { error: `Invalid cadence. Must be one of: ${VALID_CADENCES.join(', ')}` },
-        { status: 400 },
-      )
-    }
+    const validation = await validateRequestBody(request, putCadenceSchema)
+    if (!validation.success) return validation.error
+    const { cadence } = validation.data
 
     await prisma.company.update({
       where: { id: companyId },

@@ -7,6 +7,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const schema = z.object({
+  questionId: z.string().uuid(),
+})
 
 /**
  * POST /api/project-assessments/[id]/skip
@@ -28,12 +34,9 @@ export async function POST(
   }
 
   const { id: assessmentId } = await params
-  const body = await request.json()
-  const { questionId } = body
-
-  if (!questionId) {
-    return NextResponse.json({ error: 'questionId is required' }, { status: 400 })
-  }
+  const validation = await validateRequestBody(request, schema)
+  if (!validation.success) return validation.error
+  const { questionId } = validation.data
 
   // Get the assessment to verify access and status
   const assessment = await prisma.projectAssessment.findUnique({

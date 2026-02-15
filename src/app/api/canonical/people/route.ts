@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { DataQuality } from '@prisma/client'
 import { normalizePersonName, extractDomain, findPersonMatches } from '@/lib/contact-system/identity-resolution'
 import { PAGINATION, FREE_EMAIL_DOMAINS } from '@/lib/contact-system/constants'
+import { validateRequestBody, uuidSchema, emailSchema, shortText } from '@/lib/security/validation'
 
 /**
  * GET /api/canonical/people
@@ -124,6 +126,18 @@ export async function GET(request: NextRequest) {
   }
 }
 
+const canonicalPersonCreateSchema = z.object({
+  firstName: shortText.min(1),
+  lastName: shortText.min(1),
+  email: emailSchema.optional().nullable(),
+  phone: z.string().max(50).optional().nullable(),
+  linkedInUrl: z.string().max(2000).optional().nullable(),
+  currentTitle: shortText.optional().nullable(),
+  currentCompanyId: uuidSchema.optional().nullable(),
+  currentCompanyName: shortText.optional().nullable(),
+  skipDuplicateCheck: z.boolean().optional(),
+})
+
 /**
  * POST /api/canonical/people
  * Create a new canonical person
@@ -133,7 +147,9 @@ export async function POST(request: NextRequest) {
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
+    const validation = await validateRequestBody(request, canonicalPersonCreateSchema)
+    if (!validation.success) return validation.error
+
     const {
       firstName,
       lastName,
@@ -144,14 +160,7 @@ export async function POST(request: NextRequest) {
       currentCompanyId,
       currentCompanyName,
       skipDuplicateCheck,
-    } = body
-
-    if (!firstName || !lastName) {
-      return NextResponse.json(
-        { error: 'First name and last name are required' },
-        { status: 400 }
-      )
-    }
+    } = validation.data
 
     const normalizedName = normalizePersonName(firstName, lastName)
 

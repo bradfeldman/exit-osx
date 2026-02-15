@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
 import { UpdateFrequency } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 // Calculate next update due date based on frequency
 function calculateNextUpdateDue(frequency: UpdateFrequency, fromDate: Date = new Date()): Date | null {
@@ -62,6 +64,18 @@ export async function GET(
   }
 }
 
+const patchDocumentSchema = z.object({
+  documentName: z.string().max(500).optional(),
+  description: z.string().max(5000).optional(),
+  updateFrequency: z.enum(['MONTHLY', 'QUARTERLY', 'ANNUALLY', 'AS_NEEDED', 'ONE_TIME']).optional(),
+  fileUrl: z.string().max(2000).optional(),
+  fileName: z.string().max(500).optional(),
+  fileSize: z.coerce.number().int().min(0).max(100_000_000).optional().nullable(),
+  mimeType: z.string().max(200).optional(),
+  notes: z.string().max(5000).optional(),
+  isFileUpload: z.boolean().optional(),
+})
+
 // PATCH - Update document metadata or upload file
 export async function PATCH(
   request: NextRequest,
@@ -99,7 +113,8 @@ export async function PATCH(
       return NextResponse.json({ error: 'Document not found' }, { status: 404 })
     }
 
-    const body = await request.json()
+    const validation = await validateRequestBody(request, patchDocumentSchema)
+    if (!validation.success) return validation.error
     const {
       documentName,
       description,
@@ -109,8 +124,8 @@ export async function PATCH(
       fileSize,
       mimeType,
       notes,
-      isFileUpload, // Flag to indicate this is a file upload
-    } = body
+      isFileUpload,
+    } = validation.data
 
     const updateData: Record<string, unknown> = {}
 

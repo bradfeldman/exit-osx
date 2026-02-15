@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { SIGNED_URL_EXPIRY_SECONDS } from '@/lib/security'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 // GET - Get proof documents for a task with signed download URLs
 export async function GET(
@@ -69,6 +71,13 @@ export async function GET(
   }
 }
 
+const postProofDocumentSchema = z.object({
+  fileName: z.string().min(1).max(500),
+  mimeType: z.string().min(1).max(200),
+  fileSize: z.coerce.number().int().min(0).max(100_000_000).optional().nullable(),
+  description: z.string().max(5000).optional().nullable(),
+})
+
 // POST - Create a proof document and get upload URL
 export async function POST(
   request: NextRequest,
@@ -83,12 +92,9 @@ export async function POST(
     }
 
     const { id: taskId } = await params
-    const body = await request.json()
-    const { fileName, mimeType, fileSize, description } = body
-
-    if (!fileName || !mimeType) {
-      return NextResponse.json({ error: 'File name and MIME type are required' }, { status: 400 })
-    }
+    const validation = await validateRequestBody(request, postProofDocumentSchema)
+    if (!validation.success) return validation.error
+    const { fileName, mimeType, fileSize, description } = validation.data
 
     // Verify task access
     const task = await prisma.task.findFirst({
@@ -171,6 +177,12 @@ export async function POST(
   }
 }
 
+const patchProofDocumentSchema = z.object({
+  documentId: z.string().uuid(),
+  completeTask: z.boolean().optional(),
+  completionNotes: z.string().max(5000).optional().nullable(),
+})
+
 // PATCH - Confirm upload is complete and update document status
 export async function PATCH(
   request: NextRequest,
@@ -185,12 +197,9 @@ export async function PATCH(
     }
 
     const { id: taskId } = await params
-    const body = await request.json()
-    const { documentId, completeTask, completionNotes } = body
-
-    if (!documentId) {
-      return NextResponse.json({ error: 'Document ID is required' }, { status: 400 })
-    }
+    const validation = await validateRequestBody(request, patchProofDocumentSchema)
+    if (!validation.success) return validation.error
+    const { documentId, completeTask, completionNotes } = validation.data
 
     // Verify task and document access
     const task = await prisma.task.findFirst({

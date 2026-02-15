@@ -443,6 +443,48 @@ export const subscriptionUpgradeSchema = z.object({
   billingCycle: z.enum(['monthly', 'annual']).default('annual'),
 })
 
+/** Assess/Save POST — public assessment signup */
+export const assessSaveSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(8, 'Password must be at least 8 characters').max(128),
+  basics: z.object({
+    email: emailSchema,
+    companyName: z.string().min(1).max(200),
+    businessDescription: z.string().min(1).max(5000),
+    annualRevenue: financialAmount.refine(v => v > 0, 'Revenue must be positive'),
+  }),
+  profile: z.object({
+    revenueModel: z.enum(['PROJECT_BASED', 'TRANSACTIONAL', 'RECURRING_CONTRACTS', 'SUBSCRIPTION_SAAS']),
+    laborIntensity: z.enum(['LOW', 'MODERATE', 'HIGH', 'VERY_HIGH']),
+    assetIntensity: z.enum(['ASSET_LIGHT', 'MODERATE', 'ASSET_HEAVY']),
+    ownerInvolvement: z.enum(['MINIMAL', 'LOW', 'MODERATE', 'HIGH', 'CRITICAL']),
+    grossMarginProxy: z.enum(['LOW', 'MODERATE', 'GOOD', 'EXCELLENT']),
+  }),
+  scan: z.object({
+    answers: z.record(z.string(), z.boolean()),
+    riskCount: z.coerce.number().int().min(0).max(50),
+    briScore: z.coerce.number().finite().min(0).max(100),
+  }),
+  results: z.object({
+    briScore: z.coerce.number().finite().min(0).max(100),
+    currentValue: financialAmount,
+    potentialValue: financialAmount,
+    valueGap: financialAmount,
+    baseMultiple: z.coerce.number().finite().min(0).max(100),
+    finalMultiple: z.coerce.number().finite().min(0).max(100),
+    categoryBreakdown: z.array(z.object({
+      category: z.string().max(100),
+      label: z.string().max(200),
+      score: z.coerce.number().finite().min(0).max(100),
+    })).optional(),
+    topTasks: z.array(z.object({
+      title: z.string().max(500),
+      category: z.string().max(100),
+      estimatedValue: financialAmount,
+    })).max(10).optional(),
+  }),
+})
+
 /**
  * Validate query parameters against a Zod schema
  */

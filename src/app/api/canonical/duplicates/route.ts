@@ -3,6 +3,8 @@ import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { findDuplicateCompanies, findDuplicatePeople } from '@/lib/contact-system/identity-resolution'
 import { PAGINATION } from '@/lib/contact-system/constants'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 /**
  * GET /api/canonical/duplicates
@@ -165,6 +167,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
+const postSchema = z.object({
+  entityType: z.enum(['company', 'person']).optional(),
+  minConfidence: z.coerce.number().finite().min(0).max(1).default(0.70),
+})
+
 /**
  * POST /api/canonical/duplicates
  * Run duplicate detection and save candidates to database
@@ -174,9 +181,11 @@ export async function POST(request: NextRequest) {
   const result = await checkPermission('ORG_MANAGE_MEMBERS')
   if (isAuthError(result)) return result.error
 
+  const validation = await validateRequestBody(request, postSchema)
+  if (!validation.success) return validation.error
+  const { entityType, minConfidence } = validation.data
+
   try {
-    const body = await request.json()
-    const { entityType, minConfidence = 0.70 } = body
 
     let companyDuplicates: Awaited<ReturnType<typeof findDuplicateCompanies>> = []
     let personDuplicates: Awaited<ReturnType<typeof findDuplicatePeople>> = []

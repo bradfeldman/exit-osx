@@ -3,6 +3,14 @@ import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import { prisma } from '@/lib/prisma'
 import { BuyerContactRole } from '@prisma/client'
 import { syncVDRAccessForBuyer } from '@/lib/contact-system/stage-service'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const postSchema = z.object({
+  canonicalPersonId: z.string().uuid(),
+  role: z.enum(['DEAL_LEAD', 'ADVISOR', 'LEGAL', 'FINANCIAL', 'OPERATIONS', 'OTHER'] as const satisfies readonly BuyerContactRole[]).default('DEAL_LEAD'),
+  isPrimary: z.boolean().default(false),
+})
 
 /**
  * GET /api/deals/[dealId]/buyers/[buyerId]/contacts
@@ -111,19 +119,13 @@ export async function POST(
       )
     }
 
-    const body = await request.json()
+    const validation = await validateRequestBody(request, postSchema)
+    if (!validation.success) return validation.error
     const {
       canonicalPersonId,
-      role = BuyerContactRole.DEAL_LEAD,
-      isPrimary = false,
-    } = body
-
-    if (!canonicalPersonId) {
-      return NextResponse.json(
-        { error: 'Canonical person ID is required' },
-        { status: 400 }
-      )
-    }
+      role,
+      isPrimary,
+    } = validation.data
 
     // Verify canonical person exists
     const person = await prisma.canonicalPerson.findUnique({

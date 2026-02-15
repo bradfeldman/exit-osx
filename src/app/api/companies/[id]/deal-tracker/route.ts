@@ -3,6 +3,32 @@ import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { DealStage, BuyerType, BuyerTier } from '@prisma/client'
 import { ACTIVITY_TYPES } from '@/lib/deal-tracker/constants'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const contactSchema = z.object({
+  email: z.string().email().max(500),
+  firstName: z.string().min(1).max(500),
+  lastName: z.string().min(1).max(500),
+  title: z.string().max(500).optional(),
+  phone: z.string().max(100).optional(),
+  role: z.string().max(100).optional(),
+  isPrimary: z.boolean().optional(),
+})
+
+const postSchema = z.object({
+  prospectId: z.string().uuid(),
+  name: z.string().max(500).optional(),
+  buyerType: z.enum(['STRATEGIC', 'FINANCIAL', 'INDIVIDUAL', 'MANAGEMENT', 'ESOP', 'OTHER']).optional(),
+  tier: z.enum(['A_TIER', 'B_TIER', 'C_TIER', 'D_TIER']).default('B_TIER'),
+  website: z.string().max(2000).optional(),
+  description: z.string().max(5000).optional(),
+  industry: z.string().max(500).optional(),
+  location: z.string().max(500).optional(),
+  internalNotes: z.string().max(5000).optional(),
+  tags: z.array(z.string().max(100)).max(50).default([]),
+  contacts: z.array(contactSchema).max(100).default([]),
+})
 
 /**
  * GET /api/companies/[id]/deal-tracker
@@ -96,28 +122,21 @@ export async function POST(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
+    const validation = await validateRequestBody(request, postSchema)
+    if (!validation.success) return validation.error
     const {
       prospectId,
       name,
       buyerType,
-      tier = 'B_TIER',
+      tier,
       website,
       description,
       industry,
       location,
       internalNotes,
-      tags = [],
-      contacts = [],
-    } = body
-
-    // Prospect linking is required
-    if (!prospectId) {
-      return NextResponse.json(
-        { error: 'prospectId is required. Buyers must be linked to an approved prospect.' },
-        { status: 400 }
-      )
-    }
+      tags,
+      contacts,
+    } = validation.data
 
     // Verify prospect exists, belongs to company, and is approved
     const prospect = await prisma.buyerProspect.findFirst({

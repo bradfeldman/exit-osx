@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { requireSuperAdmin, isAdminError, startImpersonation } from '@/lib/admin'
+import { validateRequestBody, shortText } from '@/lib/security/validation'
+
+const impersonateSchema = z.object({
+  reason: shortText.optional(),
+})
 
 export async function POST(
   request: NextRequest,
@@ -9,8 +15,10 @@ export async function POST(
   if (isAdminError(result)) return result.error
 
   const { id } = await params
-  const body = await request.json()
-  const { reason } = body
+
+  const validation = await validateRequestBody(request, impersonateSchema)
+  if (!validation.success) return validation.error
+  const { reason } = validation.data
 
   const impersonationResult = await startImpersonation(result.admin, id, reason)
 

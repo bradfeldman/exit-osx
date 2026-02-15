@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { DataRoomCategory, DataRoomStage } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 /**
  * GET /api/companies/[id]/dataroom/folders
@@ -58,6 +60,13 @@ export async function GET(
   }
 }
 
+const createFolderSchema = z.object({
+  name: z.string().min(1).max(500),
+  parentId: z.string().uuid().optional().nullable(),
+  category: z.enum(['FINANCIAL', 'LEGAL', 'OPERATIONS', 'CUSTOMERS', 'EMPLOYEES', 'IP', 'CUSTOM']).optional(),
+  minStage: z.enum(['PREPARATION', 'TEASER', 'POST_NDA', 'DUE_DILIGENCE', 'CLOSED']).optional(),
+})
+
 /**
  * POST /api/companies/[id]/dataroom/folders
  * Create a new folder
@@ -71,12 +80,9 @@ export async function POST(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
-    const { name, parentId, category, minStage } = body
-
-    if (!name) {
-      return NextResponse.json({ error: 'Folder name is required' }, { status: 400 })
-    }
+    const validation = await validateRequestBody(request, createFolderSchema)
+    if (!validation.success) return validation.error
+    const { name, parentId, category, minStage } = validation.data
 
     const dataRoom = await prisma.dataRoom.findUnique({
       where: { companyId },

@@ -2,8 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import { BuyerContactRole } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 type RouteParams = Promise<{ dealId: string; buyerId: string; contactId: string }>
+
+const putSchema = z.object({
+  role: z.enum(['DEAL_LEAD', 'ADVISOR', 'LEGAL', 'FINANCIAL', 'OPERATIONS', 'OTHER'] as const satisfies readonly BuyerContactRole[]).optional(),
+  isPrimary: z.boolean().optional(),
+})
 
 /**
  * GET /api/deals/[dealId]/buyers/[buyerId]/contacts/[contactId]
@@ -74,8 +81,9 @@ export async function PUT(
   if (authResult instanceof NextResponse) return authResult
 
   try {
-    const body = await request.json()
-    const { role, isPrimary } = body
+    const validation = await validateRequestBody(request, putSchema)
+    if (!validation.success) return validation.error
+    const { role, isPrimary } = validation.data
 
     // Verify contact exists and belongs to the buyer
     const existingContact = await prisma.dealContact.findUnique({
@@ -95,14 +103,6 @@ export async function PUT(
     if (existingContact.dealBuyer.id !== buyerId || existingContact.dealBuyer.dealId !== dealId) {
       return NextResponse.json(
         { error: 'Contact does not belong to this buyer or deal' },
-        { status: 400 }
-      )
-    }
-
-    // Validate role if provided
-    if (role && !Object.values(BuyerContactRole).includes(role)) {
-      return NextResponse.json(
-        { error: 'Invalid contact role' },
         { status: 400 }
       )
     }

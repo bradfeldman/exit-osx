@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 // GET /api/user/profile - Get current user's profile from database
 export async function GET() {
@@ -36,6 +38,10 @@ export async function GET() {
   }
 }
 
+const putSchema = z.object({
+  name: z.string().min(1, 'Name cannot be empty').max(200).trim(),
+})
+
 // PUT /api/user/profile - Update current user's profile in database
 export async function PUT(request: Request) {
   try {
@@ -46,18 +52,13 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
-    // SECURITY: Validate and sanitize name input
-    const rawName = body.name
-    const name = typeof rawName === 'string' ? rawName.trim().slice(0, 200) : undefined
-
-    if (name !== undefined && name.length === 0) {
-      return NextResponse.json({ error: 'Name cannot be empty' }, { status: 400 })
-    }
+    const validation = await validateRequestBody(request, putSchema)
+    if (!validation.success) return validation.error
+    const { name } = validation.data
 
     const user = await prisma.user.update({
       where: { authId: authUser.id },
-      data: { ...(name !== undefined && { name }) },
+      data: { name },
       select: {
         id: true,
         name: true,

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { PAGINATION, FREE_EMAIL_DOMAINS } from '@/lib/contact-system/constants'
+import { z } from 'zod'
+import { validateRequestBody, uuidSchema } from '@/lib/security/validation'
 
 /**
  * GET /api/canonical/domains
@@ -63,6 +65,12 @@ export async function GET(request: NextRequest) {
   }
 }
 
+const postSchema = z.object({
+  domain: z.string().min(1).max(500).transform(val => val.toLowerCase().trim()),
+  companyId: uuidSchema,
+  isPrimary: z.boolean().default(false),
+})
+
 /**
  * POST /api/canonical/domains
  * Add a domain to a canonical company
@@ -72,18 +80,11 @@ export async function POST(request: NextRequest) {
   const result = await checkPermission('ORG_MANAGE_MEMBERS')
   if (isAuthError(result)) return result.error
 
+  const validation = await validateRequestBody(request, postSchema)
+  if (!validation.success) return validation.error
+  const { domain: normalizedDomain, companyId, isPrimary } = validation.data
+
   try {
-    const body = await request.json()
-    const { domain, companyId, isPrimary = false } = body
-
-    if (!domain || !companyId) {
-      return NextResponse.json(
-        { error: 'Domain and companyId are required' },
-        { status: 400 }
-      )
-    }
-
-    const normalizedDomain = domain.toLowerCase().trim()
 
     // Validate domain format
     if (!/^[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}$/.test(normalizedDomain)) {
@@ -152,6 +153,13 @@ export async function POST(request: NextRequest) {
   }
 }
 
+const deleteSchema = z.object({
+  domainId: uuidSchema.optional(),
+  domain: z.string().max(500).optional(),
+}).refine(data => data.domainId || data.domain, {
+  message: 'domainId or domain is required',
+})
+
 /**
  * DELETE /api/canonical/domains
  * Remove a domain from a company
@@ -161,19 +169,13 @@ export async function DELETE(request: NextRequest) {
   const result = await checkPermission('ORG_MANAGE_MEMBERS')
   if (isAuthError(result)) return result.error
 
-  try {
-    const body = await request.json()
-    const { domainId, domain } = body
+  const validation = await validateRequestBody(request, deleteSchema)
+  if (!validation.success) return validation.error
+  const { domainId, domain } = validation.data
 
+  try {
     // Can delete by ID or domain string
     const where = domainId ? { id: domainId } : domain ? { domain: domain.toLowerCase() } : null
-
-    if (!where) {
-      return NextResponse.json(
-        { error: 'domainId or domain is required' },
-        { status: 400 }
-      )
-    }
 
     const existing = await prisma.canonicalDomain.findFirst({ where })
 

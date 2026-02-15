@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { getUserNotifications, markNotificationsRead, getUnreadNotificationCount } from '@/lib/dataroom'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 /**
  * GET /api/companies/[id]/dataroom/notifications
@@ -38,6 +40,10 @@ export async function GET(
   }
 }
 
+const markNotificationsReadSchema = z.object({
+  notificationIds: z.array(z.string().uuid()).max(100).optional(),
+})
+
 /**
  * PUT /api/companies/[id]/dataroom/notifications
  * Mark notifications as read
@@ -51,8 +57,9 @@ export async function PUT(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
-    const { notificationIds } = body // Optional: if not provided, marks all as read
+    const validation = await validateRequestBody(request, markNotificationsReadSchema)
+    if (!validation.success) return validation.error
+    const { notificationIds } = validation.data
 
     await markNotificationsRead(result.auth.user.id, notificationIds)
 

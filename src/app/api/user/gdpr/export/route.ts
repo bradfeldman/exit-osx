@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { randomBytes } from 'crypto'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 // GET - Get current export request status
 export async function GET() {
@@ -54,6 +56,13 @@ export async function GET() {
   }
 }
 
+const postSchema = z.object({
+  includeProfile: z.boolean().default(true),
+  includeCompanies: z.boolean().default(true),
+  includeAssessments: z.boolean().default(true),
+  includeDocuments: z.boolean().default(false),
+})
+
 // POST - Create a new export request
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -63,14 +72,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const validation = await validateRequestBody(request, postSchema)
+  if (!validation.success) return validation.error
+  const {
+    includeProfile,
+    includeCompanies,
+    includeAssessments,
+    includeDocuments,
+  } = validation.data
+
   try {
-    const body = await request.json().catch(() => ({}))
-    const {
-      includeProfile = true,
-      includeCompanies = true,
-      includeAssessments = true,
-      includeDocuments = false,
-    } = body
 
     const dbUser = await prisma.user.findUnique({
       where: { authId: user.id },

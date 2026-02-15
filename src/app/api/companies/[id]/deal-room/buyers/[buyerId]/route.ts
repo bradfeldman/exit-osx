@@ -3,10 +3,17 @@ import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { resolveBackendStage, type VisualStage } from '@/lib/deal-room/visual-stages'
 import { DealStage } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 const VALID_VISUAL_STAGES: VisualStage[] = [
   'identified', 'engaged', 'under_nda', 'offer_received', 'diligence', 'closed',
 ]
+
+const patchSchema = z.object({
+  stage: z.enum(['identified', 'engaged', 'under_nda', 'offer_received', 'diligence', 'closed']).optional(),
+  action: z.enum(['archive', 'restore']).optional(),
+})
 
 export async function PATCH(
   request: Request,
@@ -19,8 +26,9 @@ export async function PATCH(
     if (isAuthError(result)) return result.error
     const { auth } = result
 
-    const body = await request.json()
-    const { stage, action } = body
+    const validation = await validateRequestBody(request, patchSchema)
+    if (!validation.success) return validation.error
+    const { stage, action } = validation.data
 
     // Handle archive/restore actions
     if (action === 'archive' || action === 'restore') {

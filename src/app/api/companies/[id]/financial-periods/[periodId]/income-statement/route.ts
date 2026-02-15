@@ -239,7 +239,7 @@ export async function PUT(
         previousEbitda = Number(previousSnapshot.adjustedEbitda)
       }
     } catch (e) {
-      console.error('Failed to get previous snapshot:', e)
+      console.error('Failed to get previous snapshot:', e instanceof Error ? e.message : String(e))
     }
 
     // Trigger valuation snapshot recalculation

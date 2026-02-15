@@ -3,6 +3,19 @@ import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import { prisma } from '@/lib/prisma'
 import { ParticipantSide, ParticipantRole, DealStage, ApprovalStatus } from '@prisma/client'
 import { inferCategoryFromSideRole, deriveSideRoleFromCategory } from '@/lib/contact-system/constants'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const postSchema = z.object({
+  canonicalPersonId: z.string().uuid(),
+  category: z.enum(['PROSPECT', 'MANAGEMENT', 'ADVISOR', 'OTHER']).optional(),
+  description: z.string().max(5000).optional(),
+  notes: z.string().max(5000).optional(),
+  dealBuyerId: z.string().uuid().nullable().optional(),
+  isPrimary: z.boolean().default(false),
+  side: z.enum(['BUYER', 'SELLER', 'NEUTRAL']).optional(),
+  role: z.enum(['DEAL_LEAD', 'DECISION_MAKER', 'ADVISOR', 'LEGAL', 'FINANCE', 'OPERATIONS', 'OTHER']).optional(),
+})
 
 const PERSON_SELECT = {
   id: true,
@@ -126,19 +139,20 @@ export async function POST(
   const { auth } = authResult
 
   try {
-    const body = await request.json()
+    const validation = await validateRequestBody(request, postSchema)
+    if (!validation.success) return validation.error
     const {
       canonicalPersonId,
       category,
       description,
       notes,
-      dealBuyerId = null,
-      isPrimary = false,
-    } = body
+      dealBuyerId,
+      isPrimary,
+    } = validation.data
 
     // Accept explicit side/role or derive from category
-    let side = body.side as ParticipantSide | undefined
-    let role = body.role as ParticipantRole | undefined
+    let side = validation.data.side as ParticipantSide | undefined
+    let role = validation.data.role as ParticipantRole | undefined
 
     if (category && !side) {
       const derived = deriveSideRoleFromCategory(category)
@@ -148,13 +162,6 @@ export async function POST(
 
     if (!side) side = 'SELLER' as ParticipantSide
     if (!role) role = 'OTHER' as ParticipantRole
-
-    if (!canonicalPersonId) {
-      return NextResponse.json(
-        { error: 'Canonical person ID is required' },
-        { status: 400 }
-      )
-    }
 
     // Verify deal exists and is active
     const deal = await prisma.deal.findUnique({

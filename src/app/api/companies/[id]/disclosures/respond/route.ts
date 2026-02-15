@@ -3,12 +3,18 @@ import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { createSignal } from '@/lib/signals/create-signal'
 import type { BriCategory } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody, uuidSchema } from '@/lib/security/validation'
 
-interface ResponseInput {
-  questionKey: string
-  answer: boolean
-  followUpAnswer?: string
-}
+const disclosureResponseSchema = z.object({
+  promptSetId: uuidSchema,
+  responses: z.array(z.object({
+    questionKey: z.string().max(100),
+    answer: z.boolean(),
+    followUpAnswer: z.string().max(2000).optional(),
+  })).max(100),
+  isComplete: z.boolean().default(false),
+})
 
 export async function POST(
   request: Request,
@@ -19,20 +25,12 @@ export async function POST(
   const result = await checkPermission('TASK_UPDATE', companyId)
   if (isAuthError(result)) return result.error
 
-  try {
-    const body = await request.json()
-    const { promptSetId, responses, isComplete } = body as {
-      promptSetId: string
-      responses: ResponseInput[]
-      isComplete: boolean
-    }
+  const validation = await validateRequestBody(request, disclosureResponseSchema)
+  if (!validation.success) return validation.error
 
-    if (!promptSetId || !responses || !Array.isArray(responses)) {
-      return NextResponse.json(
-        { error: 'promptSetId and responses array are required' },
-        { status: 400 }
-      )
-    }
+  const { promptSetId, responses, isComplete } = validation.data
+
+  try {
 
     const promptSet = await prisma.disclosurePromptSet.findUnique({
       where: { id: promptSetId, companyId },

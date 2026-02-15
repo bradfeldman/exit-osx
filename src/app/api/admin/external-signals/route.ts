@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 import { requireSuperAdmin, isAdminError } from '@/lib/admin'
 import { createExternalSignal } from '@/lib/signals/create-external-signal'
 import { EXTERNAL_SIGNAL_TYPES, type ExternalSignalType } from '@/lib/signals/external-signal-types'
+import { validateRequestBody, uuidSchema, shortText, longText } from '@/lib/security/validation'
 
 const CRON_SECRET = process.env.CRON_SECRET
 
@@ -17,25 +19,20 @@ async function authenticateRequest(request: Request): Promise<boolean> {
   return !isAdminError(result)
 }
 
-interface ExternalSignalPayload {
-  companyId: string
-  sourceType: string
-  title: string
-  description?: string
-  severity?: string
-  estimatedValueImpact?: number
-  rawData?: Record<string, unknown>
-}
+const externalSignalPayloadSchema = z.object({
+  companyId: uuidSchema,
+  sourceType: z.enum(Object.keys(EXTERNAL_SIGNAL_TYPES) as [string, ...string[]]),
+  title: shortText.min(1),
+  description: longText.optional().nullable(),
+  severity: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional().nullable(),
+  estimatedValueImpact: z.coerce.number().finite().optional().nullable(),
+  rawData: z.record(z.string(), z.any()).optional().nullable(),
+})
 
-function validatePayload(payload: ExternalSignalPayload): string | null {
-  if (!payload.companyId) return 'companyId is required'
-  if (!payload.sourceType) return 'sourceType is required'
-  if (!payload.title) return 'title is required'
-  if (!(payload.sourceType in EXTERNAL_SIGNAL_TYPES)) {
-    return `Invalid sourceType: ${payload.sourceType}. Valid types: ${Object.keys(EXTERNAL_SIGNAL_TYPES).join(', ')}`
-  }
-  return null
-}
+const externalSignalBatchSchema = z.union([
+  externalSignalPayloadSchema,
+  z.object({ signals: z.array(externalSignalPayloadSchema).max(100) }),
+])
 
 export async function POST(request: Request) {
   const isAuthed = await authenticateRequest(request)
@@ -43,18 +40,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
-  const body = await request.json()
+  const validation = await validateRequestBody(request, externalSignalBatchSchema)
+  if (!validation.success) return validation.error
 
   // Support batch mode: { signals: [...] } or single: { companyId, ... }
-  const payloads: ExternalSignalPayload[] = Array.isArray(body.signals) ? body.signals : [body]
+  const payloads = 'signals' in validation.data ? validation.data.signals : [validation.data]
   const results: Array<{ success: boolean; signalId?: string; error?: string }> = []
 
   for (const payload of payloads) {
-    const validationError = validatePayload(payload)
-    if (validationError) {
-      results.push({ success: false, error: validationError })
-      continue
-    }
 
     try {
       const signal = await createExternalSignal({

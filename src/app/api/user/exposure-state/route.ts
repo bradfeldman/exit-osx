@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 export async function GET(_request: NextRequest) {
   const supabase = await createClient()
@@ -29,6 +31,10 @@ export async function GET(_request: NextRequest) {
   }
 }
 
+const patchSchema = z.object({
+  exposureState: z.enum(['LEARNING', 'VIEWING', 'ACTING']),
+})
+
 export async function PATCH(request: NextRequest) {
   const supabase = await createClient()
   const {
@@ -39,13 +45,11 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  try {
-    const body = await request.json()
-    const { exposureState } = body
+  const validation = await validateRequestBody(request, patchSchema)
+  if (!validation.success) return validation.error
+  const { exposureState } = validation.data
 
-    if (!['LEARNING', 'VIEWING', 'ACTING'].includes(exposureState)) {
-      return NextResponse.json({ error: 'Invalid exposure state' }, { status: 400 })
-    }
+  try {
 
     const updatedUser = await prisma.user.update({
       where: { authId: user.id },

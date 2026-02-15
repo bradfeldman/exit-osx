@@ -2,6 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { createAccessGrantedAlert, createAccessDeniedAlert } from '@/lib/alerts'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const patchSchema = z.object({
+  action: z.enum(['approve', 'deny']),
+})
 
 // PATCH - Approve or deny an access request
 export async function PATCH(
@@ -16,13 +22,11 @@ export async function PATCH(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  try {
-    const body = await request.json()
-    const { action } = body // 'approve' | 'deny'
+  const validation = await validateRequestBody(request, patchSchema)
+  if (!validation.success) return validation.error
+  const { action } = validation.data
 
-    if (!action || !['approve', 'deny'].includes(action)) {
-      return NextResponse.json({ error: 'Action must be "approve" or "deny"' }, { status: 400 })
-    }
+  try {
 
     // Get the current user
     const dbUser = await prisma.user.findUnique({

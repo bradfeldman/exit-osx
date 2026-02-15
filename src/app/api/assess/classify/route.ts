@@ -8,6 +8,12 @@ import {
   RATE_LIMIT_CONFIGS,
   createRateLimitResponse,
 } from '@/lib/security/rate-limit'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const schema = z.object({
+  description: z.string().min(10, 'Description must be at least 10 characters').max(2000, 'Description must be 2000 characters or less'),
+})
 
 /**
  * POST /api/assess/classify
@@ -22,29 +28,9 @@ export async function POST(request: Request) {
     return createRateLimitResponse(rateLimitResult)
   }
 
-  let body: { description?: string }
-  try {
-    body = await request.json()
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
-  }
-
-  const { description } = body
-
-  if (!description || typeof description !== 'string' || description.trim().length < 10) {
-    return NextResponse.json(
-      { error: 'Description must be at least 10 characters' },
-      { status: 400 }
-    )
-  }
-
-  // SECURITY: Cap description length to prevent excessive AI token consumption
-  if (description.length > 2000) {
-    return NextResponse.json(
-      { error: 'Description must be 2000 characters or less' },
-      { status: 400 }
-    )
-  }
+  const validation = await validateRequestBody(request, schema)
+  if (!validation.success) return validation.error
+  const { description } = validation.data
 
   try {
     const result = await classifyBusiness(description)

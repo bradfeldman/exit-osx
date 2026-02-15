@@ -3,6 +3,14 @@ import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { createLedgerEntry } from '@/lib/value-ledger/create-entry'
 import { generateNarrative } from '@/lib/value-ledger/narrative-templates'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const patchSignalSchema = z.object({
+  action: z.enum(['confirm', 'dismiss']),
+  dismissalReason: z.string().max(5000).optional(),
+  adjustedImpact: z.coerce.number().finite().optional(),
+})
 
 export async function PATCH(
   request: Request,
@@ -14,19 +22,9 @@ export async function PATCH(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
-    const { action, dismissalReason, adjustedImpact } = body as {
-      action: 'confirm' | 'dismiss'
-      dismissalReason?: string
-      adjustedImpact?: number
-    }
-
-    if (!action || !['confirm', 'dismiss'].includes(action)) {
-      return NextResponse.json(
-        { error: 'action must be "confirm" or "dismiss"' },
-        { status: 400 }
-      )
-    }
+    const validation = await validateRequestBody(request, patchSignalSchema)
+    if (!validation.success) return validation.error
+    const { action, dismissalReason, adjustedImpact } = validation.data
 
     const signal = await prisma.signal.findUnique({
       where: { id: signalId, companyId },

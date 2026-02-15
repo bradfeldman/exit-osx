@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { mergeCompanies } from '@/lib/contact-system/identity-resolution'
+import { validateRequestBody, uuidSchema } from '@/lib/security/validation'
+
+const mergeCompaniesSchema = z.object({
+  duplicateIds: z.array(uuidSchema).min(1).max(50),
+})
 
 /**
  * POST /api/canonical/companies/[id]/merge
@@ -16,15 +22,10 @@ export async function POST(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
-    const { duplicateIds } = body
+    const validation = await validateRequestBody(request, mergeCompaniesSchema)
+    if (!validation.success) return validation.error
 
-    if (!duplicateIds || !Array.isArray(duplicateIds) || duplicateIds.length === 0) {
-      return NextResponse.json(
-        { error: 'duplicateIds array is required' },
-        { status: 400 }
-      )
-    }
+    const { duplicateIds } = validation.data
 
     // Ensure primary ID is not in the duplicates list
     if (duplicateIds.includes(primaryId)) {

@@ -2,6 +2,12 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { generateReportToken } from '@/lib/report-token'
+import { z } from 'zod'
+import { validateRequestBody, uuidSchema } from '@/lib/security/validation'
+
+const postSchema = z.object({
+  companyId: uuidSchema,
+})
 
 /**
  * Authenticated endpoint to generate a shareable report URL for a company.
@@ -14,10 +20,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { companyId } = await request.json()
-  if (!companyId) {
-    return NextResponse.json({ error: 'Company ID required' }, { status: 400 })
-  }
+  const validation = await validateRequestBody(request, postSchema)
+  if (!validation.success) return validation.error
+  const { companyId } = validation.data
 
   // Verify user has access to this company
   const member = await prisma.workspaceMember.findFirst({

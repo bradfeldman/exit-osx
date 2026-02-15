@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { getFolder } from '@/lib/dataroom'
 import { prisma } from '@/lib/prisma'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 /**
  * GET /api/companies/[id]/dataroom/folders/[folderId]
@@ -38,6 +40,12 @@ export async function GET(
   }
 }
 
+const updateFolderSchema = z.object({
+  name: z.string().max(500).optional(),
+  minStage: z.enum(['PREPARATION', 'TEASER', 'POST_NDA', 'DUE_DILIGENCE', 'CLOSED']).optional(),
+  sortOrder: z.coerce.number().int().finite().optional(),
+})
+
 /**
  * PUT /api/companies/[id]/dataroom/folders/[folderId]
  * Update a folder
@@ -51,8 +59,9 @@ export async function PUT(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
-    const { name, minStage, sortOrder } = body
+    const validation = await validateRequestBody(request, updateFolderSchema)
+    if (!validation.success) return validation.error
+    const { name, minStage, sortOrder } = validation.data
 
     // Verify folder belongs to company
     const dataRoom = await prisma.dataRoom.findUnique({

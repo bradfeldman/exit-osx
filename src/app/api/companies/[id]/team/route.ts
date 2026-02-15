@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { CompanyRole } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody, uuidSchema } from '@/lib/security/validation'
 
 // GET - Get all team members for a company (from CompanyMember)
 export async function GET(
@@ -101,6 +103,11 @@ export async function GET(
   }
 }
 
+const teamMemberAddSchema = z.object({
+  userId: uuidSchema,
+  role: z.enum(['LEAD', 'CONTRIBUTOR', 'VIEWER']).default('CONTRIBUTOR'),
+})
+
 // POST - Add a member to the company team
 export async function POST(
   request: Request,
@@ -114,18 +121,12 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const validation = await validateRequestBody(request, teamMemberAddSchema)
+  if (!validation.success) return validation.error
+
+  const { userId, role } = validation.data
+
   try {
-    const { userId, role = 'CONTRIBUTOR' } = await request.json()
-
-    if (!userId) {
-      return NextResponse.json({ error: 'userId is required' }, { status: 400 })
-    }
-
-    // Validate role
-    const validRoles: CompanyRole[] = ['LEAD', 'CONTRIBUTOR', 'VIEWER']
-    if (!validRoles.includes(role)) {
-      return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
-    }
 
     // Get current user
     const currentDbUser = await prisma.user.findUnique({
@@ -246,6 +247,11 @@ export async function POST(
   }
 }
 
+const teamMemberUpdateSchema = z.object({
+  memberId: uuidSchema,
+  role: z.enum(['LEAD', 'CONTRIBUTOR', 'VIEWER']),
+})
+
 // PATCH - Update a member's role
 export async function PATCH(
   request: Request,
@@ -259,21 +265,12 @@ export async function PATCH(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const validation = await validateRequestBody(request, teamMemberUpdateSchema)
+  if (!validation.success) return validation.error
+
+  const { memberId, role } = validation.data
+
   try {
-    const { memberId, role } = await request.json()
-
-    if (!memberId || !role) {
-      return NextResponse.json(
-        { error: 'memberId and role are required' },
-        { status: 400 }
-      )
-    }
-
-    // Validate role
-    const validRoles: CompanyRole[] = ['LEAD', 'CONTRIBUTOR', 'VIEWER']
-    if (!validRoles.includes(role)) {
-      return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
-    }
 
     // Get current user
     const currentDbUser = await prisma.user.findUnique({

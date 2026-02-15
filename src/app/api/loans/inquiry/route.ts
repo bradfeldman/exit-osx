@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { formatIcbName } from '@/lib/utils/format-icb'
+import { z } from 'zod'
+import { validateRequestBody, uuidSchema, financialAmount } from '@/lib/security/validation'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
@@ -42,6 +44,30 @@ function formatLoanPurpose(purpose: string): string {
   return purposeMap[purpose] || purpose
 }
 
+const postSchema = z.object({
+  companyId: uuidSchema,
+  requestedAmount: financialAmount,
+  loanPurpose: z.enum([
+    'acquisition',
+    'growth',
+    'working_capital',
+    'refinancing',
+    'equipment',
+    'real_estate',
+    'owner_distribution',
+    'buyout',
+    'other',
+  ]),
+  qualification: z.object({
+    maxLoan: financialAmount.optional(),
+    ebitda: financialAmount.optional(),
+    businessValue: financialAmount.optional(),
+    personalNetWorth: financialAmount.optional(),
+    dscr: z.coerce.number().finite().optional(),
+    collateralCoverage: z.coerce.number().finite().optional(),
+  }).optional(),
+})
+
 export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -50,16 +76,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  try {
-    const body = await request.json()
-    const { companyId, requestedAmount, loanPurpose, qualification } = body
+  const validation = await validateRequestBody(request, postSchema)
+  if (!validation.success) return validation.error
+  const { companyId, requestedAmount, loanPurpose, qualification } = validation.data
 
-    if (!companyId || !requestedAmount || !loanPurpose) {
-      return NextResponse.json(
-        { error: 'Missing required fields: companyId, requestedAmount, loanPurpose' },
-        { status: 400 }
-      )
-    }
+  try {
 
     // Get current user details
     const currentUser = await prisma.user.findUnique({

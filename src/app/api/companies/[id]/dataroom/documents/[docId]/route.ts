@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { logActivity, trackDocumentView } from '@/lib/dataroom'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 /**
  * GET /api/companies/[id]/dataroom/documents/[docId]
@@ -94,6 +96,17 @@ export async function GET(
   }
 }
 
+const updateDocumentSchema = z.object({
+  documentName: z.string().max(500).optional(),
+  description: z.string().max(5000).optional(),
+  folderId: z.string().uuid().optional(),
+  displayOrder: z.coerce.number().int().finite().optional(),
+  isConfidential: z.boolean().optional(),
+  allowDownload: z.boolean().optional(),
+  updateFrequency: z.enum(['MONTHLY', 'QUARTERLY', 'ANNUALLY', 'AS_NEEDED', 'ONE_TIME']).optional(),
+  notes: z.string().max(5000).optional(),
+})
+
 /**
  * PUT /api/companies/[id]/dataroom/documents/[docId]
  * Update document metadata
@@ -107,7 +120,8 @@ export async function PUT(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
+    const validation = await validateRequestBody(request, updateDocumentSchema)
+    if (!validation.success) return validation.error
 
     const documentWithFolder = await prisma.dataRoomDocument.findUnique({
       where: { id: docId },
@@ -127,7 +141,7 @@ export async function PUT(
       allowDownload,
       updateFrequency,
       notes,
-    } = body
+    } = validation.data
 
     const updateData: Record<string, unknown> = {}
 

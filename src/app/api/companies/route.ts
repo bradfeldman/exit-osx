@@ -5,6 +5,9 @@ import { getUserAccessibleCompanies } from '@/lib/access'
 import { createClient } from '@/lib/supabase/server'
 import { serverAnalytics } from '@/lib/analytics/server'
 import { COMPANY_LIMITS, type PlanTier } from '@/lib/pricing'
+import { z } from 'zod'
+import { validateRequestBody, shortText, financialAmount, optionalFinancialAmount } from '@/lib/security/validation'
+import type { Prisma } from '@prisma/client'
 
 /** Typed error for company limit enforcement within serializable transactions */
 class CompanyLimitError extends Error {
@@ -91,6 +94,20 @@ export async function GET() {
   }
 }
 
+const companyCreateSchema = z.object({
+  name: shortText.min(1),
+  icbIndustry: shortText.min(1),
+  icbSuperSector: shortText.min(1),
+  icbSector: shortText.min(1),
+  icbSubSector: shortText.min(1),
+  annualRevenue: optionalFinancialAmount,
+  annualEbitda: optionalFinancialAmount,
+  ownerCompensation: financialAmount.default(0),
+  businessDescription: z.string().max(5000).optional(),
+  businessProfile: z.any().optional(),
+  profileQuestionsAnswered: z.boolean().optional(),
+})
+
 export async function POST(request: Request) {
   // First, check if user is authenticated
   const supabase = await createClient()
@@ -103,29 +120,24 @@ export async function POST(request: Request) {
     )
   }
 
-  try {
-    const body = await request.json()
-    const {
-      name,
-      icbIndustry,
-      icbSuperSector,
-      icbSector,
-      icbSubSector,
-      annualRevenue,
-      annualEbitda,
-      ownerCompensation = 0,
-      businessDescription,
-      businessProfile,
-      profileQuestionsAnswered,
-    } = body
+  const validation = await validateRequestBody(request, companyCreateSchema)
+  if (!validation.success) return validation.error
 
-    // Validate required fields
-    if (!name || !icbIndustry || !icbSuperSector || !icbSector || !icbSubSector) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
-    }
+  const {
+    name,
+    icbIndustry,
+    icbSuperSector,
+    icbSector,
+    icbSubSector,
+    annualRevenue,
+    annualEbitda,
+    ownerCompensation,
+    businessDescription,
+    businessProfile,
+    profileQuestionsAnswered,
+  } = validation.data
+
+  try {
 
     // Get the user from our database
     const dbUser = await prisma.user.findUnique({
@@ -211,21 +223,23 @@ export async function POST(request: Request) {
         }
 
         // Create the company in the target workspace
+        const createData: Prisma.CompanyCreateInput = {
+          workspace: { connect: { id: targetWorkspace.workspaceId } },
+          name,
+          icbIndustry,
+          icbSuperSector,
+          icbSector,
+          icbSubSector,
+          annualRevenue: annualRevenue ?? 0,
+          annualEbitda: annualEbitda ?? 0,
+          ownerCompensation,
+        }
+        if (businessDescription) createData.businessDescription = businessDescription
+        if (businessProfile) createData.businessProfile = businessProfile
+        if (profileQuestionsAnswered !== undefined) createData.profileQuestionsAnswered = profileQuestionsAnswered
+
         const newCompany = await tx.company.create({
-          data: {
-            workspaceId: targetWorkspace.workspaceId,
-            name,
-            icbIndustry,
-            icbSuperSector,
-            icbSector,
-            icbSubSector,
-            annualRevenue,
-            annualEbitda,
-            ownerCompensation,
-            businessDescription,
-            businessProfile,
-            profileQuestionsAnswered,
-          },
+          data: createData,
           include: {
             coreFactors: true,
             ebitdaAdjustments: true

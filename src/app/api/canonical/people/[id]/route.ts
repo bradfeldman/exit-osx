@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { normalizePersonName, normalizeCompanyName } from '@/lib/contact-system/identity-resolution'
+import { validateRequestBody, uuidSchema, emailSchema, shortText } from '@/lib/security/validation'
 
 /**
  * GET /api/canonical/people/[id]
@@ -111,6 +113,18 @@ export async function GET(
   }
 }
 
+const canonicalPersonUpdateSchema = z.object({
+  firstName: shortText.optional(),
+  lastName: shortText.optional(),
+  email: emailSchema.optional().nullable(),
+  phone: z.string().max(50).optional().nullable(),
+  linkedInUrl: z.string().max(2000).optional().nullable(),
+  currentTitle: shortText.optional().nullable(),
+  currentCompanyId: uuidSchema.optional().nullable(),
+  companyName: shortText.optional().nullable(),
+  dataQuality: z.enum(['PROVISIONAL', 'SUGGESTED', 'VERIFIED', 'ENRICHED']).optional(),
+})
+
 /**
  * PUT /api/canonical/people/[id]
  * Update a canonical person
@@ -141,7 +155,9 @@ export async function PUT(
       )
     }
 
-    const body = await request.json()
+    const validation = await validateRequestBody(request, canonicalPersonUpdateSchema)
+    if (!validation.success) return validation.error
+
     const {
       firstName,
       lastName,
@@ -152,7 +168,7 @@ export async function PUT(
       currentCompanyId,
       companyName,
       dataQuality,
-    } = body
+    } = validation.data
 
     // If email is being changed, check uniqueness
     if (email !== undefined && email !== existing.email) {

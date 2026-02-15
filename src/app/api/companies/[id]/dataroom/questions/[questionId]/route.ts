@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { logActivity, notifyTeamMembers } from '@/lib/dataroom'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 /**
  * GET /api/companies/[id]/dataroom/questions/[questionId]
@@ -88,6 +90,11 @@ export async function GET(
   }
 }
 
+const answerQuestionSchema = z.object({
+  answer: z.string().min(1).max(5000),
+  isInternal: z.boolean().default(false),
+})
+
 /**
  * POST /api/companies/[id]/dataroom/questions/[questionId]
  * Answer a question
@@ -101,12 +108,9 @@ export async function POST(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
-    const { answer, isInternal = false } = body
-
-    if (!answer || answer.trim().length === 0) {
-      return NextResponse.json({ error: 'Answer is required' }, { status: 400 })
-    }
+    const validation = await validateRequestBody(request, answerQuestionSchema)
+    if (!validation.success) return validation.error
+    const { answer, isInternal } = validation.data
 
     const dataRoom = await prisma.dataRoom.findUnique({
       where: { companyId },
@@ -158,7 +162,7 @@ export async function POST(
         questionId,
         documentId: questionToAnswer.documentId || undefined,
         folderId: questionToAnswer.folderId || undefined,
-      }).catch((err) => console.error('Error sending notifications:', err))
+      }).catch((err) => console.error('Error sending notifications:', err instanceof Error ? err.message : String(err)))
     }
 
     return NextResponse.json({ answer: newAnswer }, { status: 201 })

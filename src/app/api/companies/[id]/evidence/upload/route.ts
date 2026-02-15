@@ -129,7 +129,7 @@ export async function POST(
       mimeType: file.type || null,
       fileSize: file.size || null,
     }).catch((err) => {
-      console.error('[Signal] Failed to create document upload signal (non-blocking):', err)
+      console.error('[Signal] Failed to create document upload signal (non-blocking):', err instanceof Error ? err.message : String(err))
     })
 
     return NextResponse.json({ document }, { status: 201 })

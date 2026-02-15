@@ -5,6 +5,13 @@ import {
   ClassificationError,
 } from '@/lib/ai/business-classifier'
 import { applyRateLimit, createRateLimitResponse, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limit'
+import { z } from 'zod'
+import { validateRequestBody, uuidSchema } from '@/lib/security/validation'
+
+const classifySchema = z.object({
+  description: z.string().min(10, 'Description must be at least 10 characters').max(5000),
+  companyId: uuidSchema.optional(),
+})
 
 /**
  * POST /api/industries/classify
@@ -37,32 +44,10 @@ export async function POST(request: Request) {
     )
   }
 
-  // ── Parse request ──────────────────────────────────────────────────
-  let body: { description?: string; companyId?: string }
-  try {
-    body = await request.json()
-  } catch {
-    return NextResponse.json(
-      { error: 'Invalid JSON in request body' },
-      { status: 400 }
-    )
-  }
-
-  const { description, companyId } = body
-
-  if (!description || typeof description !== 'string') {
-    return NextResponse.json(
-      { error: 'description is required and must be a string' },
-      { status: 400 }
-    )
-  }
-
-  if (description.trim().length < 10) {
-    return NextResponse.json(
-      { error: 'Description must be at least 10 characters' },
-      { status: 400 }
-    )
-  }
+  // ── Parse and validate request ─────────────────────────────────────
+  const validation = await validateRequestBody(request, classifySchema)
+  if (!validation.success) return validation.error
+  const { description, companyId } = validation.data
 
   // ── Classify ───────────────────────────────────────────────────────
   try {
@@ -76,7 +61,7 @@ export async function POST(request: Request) {
       )
     }
 
-    console.error('[/api/industries/classify] Unexpected error:', err)
+    console.error('[/api/industries/classify] Unexpected error:', err instanceof Error ? err.message : String(err))
     return NextResponse.json(
       { error: 'Failed to classify business description' },
       { status: 500 }

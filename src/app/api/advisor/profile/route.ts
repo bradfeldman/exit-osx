@@ -2,9 +2,11 @@
 // GET/PUT advisor profile data
 
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
 import { isExternalAdvisor } from '@/lib/auth/check-granular-permission'
+import { validateRequestBody, shortText } from '@/lib/security/validation'
 
 // GET - Get advisor profile
 export async function GET() {
@@ -50,6 +52,11 @@ export async function GET() {
   }
 }
 
+const advisorProfileSchema = z.object({
+  firmName: shortText.optional().nullable(),
+  specialty: shortText.optional().nullable(),
+})
+
 // PUT - Update advisor profile
 export async function PUT(request: Request) {
   try {
@@ -73,8 +80,10 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Not an advisor' }, { status: 403 })
     }
 
-    const body = await request.json()
-    const { firmName, specialty } = body
+    const validation = await validateRequestBody(request, advisorProfileSchema)
+    if (!validation.success) return validation.error
+
+    const { firmName, specialty } = validation.data
 
     const profile = await prisma.advisorProfile.upsert({
       where: { userId: user.id },

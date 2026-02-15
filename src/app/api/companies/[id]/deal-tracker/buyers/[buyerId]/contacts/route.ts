@@ -8,6 +8,31 @@ import {
   getVDRAccessConfig,
 } from '@/lib/deal-tracker/vdr-sync'
 import { ACTIVITY_TYPES } from '@/lib/deal-tracker/constants'
+import { z } from 'zod'
+import { validateRequestBody, emailSchema, uuidSchema } from '@/lib/security/validation'
+
+const postContactSchema = z.object({
+  email: emailSchema,
+  firstName: z.string().min(1).max(100),
+  lastName: z.string().min(1).max(100),
+  title: z.string().max(200).optional().nullable(),
+  phone: z.string().max(50).optional().nullable(),
+  role: z.enum(['DEAL_LEAD', 'ADVISOR', 'LEGAL', 'FINANCIAL', 'OPERATIONS', 'OTHER'] as const satisfies readonly BuyerContactRole[]).default('DEAL_LEAD'),
+  isPrimary: z.boolean().default(false),
+  grantVDRAccess: z.boolean().default(true),
+})
+
+const putContactSchema = z.object({
+  contactId: uuidSchema,
+  email: emailSchema.optional(),
+  firstName: z.string().min(1).max(100).optional(),
+  lastName: z.string().min(1).max(100).optional(),
+  title: z.string().max(200).optional().nullable(),
+  phone: z.string().max(50).optional().nullable(),
+  role: z.enum(['DEAL_LEAD', 'ADVISOR', 'LEGAL', 'FINANCIAL', 'OPERATIONS', 'OTHER'] as const satisfies readonly BuyerContactRole[]).optional(),
+  isPrimary: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+})
 
 /**
  * GET /api/companies/[id]/deal-tracker/buyers/[buyerId]/contacts
@@ -65,25 +90,11 @@ export async function POST(
   const result = await checkPermission('COMPANY_UPDATE', companyId)
   if (isAuthError(result)) return result.error
 
-  try {
-    const body = await request.json()
-    const {
-      email,
-      firstName,
-      lastName,
-      title,
-      phone,
-      role = 'DEAL_LEAD',
-      isPrimary = false,
-      grantVDRAccess = true,
-    } = body
+  const validation = await validateRequestBody(request, postContactSchema)
+  if (!validation.success) return validation.error
+  const { email, firstName, lastName, title, phone, role, isPrimary, grantVDRAccess } = validation.data
 
-    if (!email || !firstName || !lastName) {
-      return NextResponse.json(
-        { error: 'Email, first name, and last name are required' },
-        { status: 400 }
-      )
-    }
+  try {
 
     // Verify buyer belongs to company
     const buyer = await prisma.prospectiveBuyer.findFirst({
@@ -123,12 +134,12 @@ export async function POST(
     const contact = await prisma.buyerContact.create({
       data: {
         buyerId,
-        email: email.toLowerCase(),
+        email,
         firstName,
         lastName,
         title,
         phone,
-        role: role as BuyerContactRole,
+        role,
         isPrimary,
       },
     })
@@ -141,7 +152,7 @@ export async function POST(
           await grantContactVDRAccess(contact.id, result.auth.user.id)
         } catch (e) {
           // Log but don't fail the contact creation
-          console.error('Failed to grant VDR access:', e)
+          console.error('Failed to grant VDR access:', e instanceof Error ? e.message : String(e))
         }
       }
     }
@@ -196,23 +207,11 @@ export async function PUT(
   const result = await checkPermission('COMPANY_UPDATE', companyId)
   if (isAuthError(result)) return result.error
 
-  try {
-    const body = await request.json()
-    const {
-      contactId,
-      email,
-      firstName,
-      lastName,
-      title,
-      phone,
-      role,
-      isPrimary,
-      isActive,
-    } = body
+  const validation = await validateRequestBody(request, putContactSchema)
+  if (!validation.success) return validation.error
+  const { contactId, email, firstName, lastName, title, phone, role, isPrimary, isActive } = validation.data
 
-    if (!contactId) {
-      return NextResponse.json({ error: 'Contact ID is required' }, { status: 400 })
-    }
+  try {
 
     // Verify buyer and contact belong to company
     const buyer = await prisma.prospectiveBuyer.findFirst({
@@ -233,12 +232,12 @@ export async function PUT(
 
     // Build update data
     const updateData: Record<string, unknown> = {}
-    if (email !== undefined) updateData.email = email.toLowerCase()
+    if (email !== undefined) updateData.email = email
     if (firstName !== undefined) updateData.firstName = firstName
     if (lastName !== undefined) updateData.lastName = lastName
     if (title !== undefined) updateData.title = title
     if (phone !== undefined) updateData.phone = phone
-    if (role !== undefined) updateData.role = role as BuyerContactRole
+    if (role !== undefined) updateData.role = role
     if (isActive !== undefined) updateData.isActive = isActive
 
     // Handle primary flag

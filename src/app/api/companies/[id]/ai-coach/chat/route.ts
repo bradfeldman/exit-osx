@@ -3,6 +3,15 @@ import { prisma } from '@/lib/prisma'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { getAnthropicClient } from '@/lib/ai/anthropic'
 import { buildCoachContext } from '@/lib/ai-coach/build-context'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const schema = z.object({
+  messages: z.array(z.object({
+    role: z.enum(['user', 'assistant']),
+    content: z.string().max(5000),
+  })).min(1).max(20),
+})
 
 export async function POST(
   request: Request,
@@ -12,14 +21,9 @@ export async function POST(
   const result = await checkPermission('COMPANY_VIEW', companyId)
   if (isAuthError(result)) return result.error
 
-  const body = await request.json()
-  const { messages } = body as {
-    messages: Array<{ role: 'user' | 'assistant'; content: string }>
-  }
-
-  if (!messages || !Array.isArray(messages) || messages.length === 0) {
-    return NextResponse.json({ error: 'messages array is required' }, { status: 400 })
-  }
+  const validation = await validateRequestBody(request, schema)
+  if (!validation.success) return validation.error
+  const { messages } = validation.data
 
   // Rate limit: max 20 messages/day per company
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
@@ -73,7 +77,7 @@ export async function POST(
         outputTokens: response.usage.output_tokens,
         latencyMs,
       },
-    }).catch(err => console.error('[AICoach] Failed to log:', err))
+    }).catch(err => console.error('[AICoach] Failed to log:', err instanceof Error ? err.message : String(err)))
 
     return NextResponse.json({ message })
   } catch (error) {

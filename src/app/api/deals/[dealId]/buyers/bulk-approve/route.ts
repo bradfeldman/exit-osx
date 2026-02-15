@@ -2,8 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import { ApprovalStatus, ActivityType } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 type RouteParams = Promise<{ dealId: string }>
+
+const postSchema = z.object({
+  buyerIds: z.array(z.string().uuid()).min(1).max(100),
+  status: z.enum(['APPROVED', 'DENIED', 'HOLD', 'PENDING']),
+  note: z.string().max(5000).optional(),
+})
 
 /**
  * POST /api/deals/[dealId]/buyers/bulk-approve
@@ -26,23 +34,9 @@ export async function POST(
   const userId = auth.user.id
 
   try {
-    const body = await request.json()
-    const { buyerIds, status, note } = body
-
-    // Validate inputs
-    if (!Array.isArray(buyerIds) || buyerIds.length === 0) {
-      return NextResponse.json(
-        { error: 'buyerIds must be a non-empty array' },
-        { status: 400 }
-      )
-    }
-
-    if (!status || !Object.values(ApprovalStatus).includes(status)) {
-      return NextResponse.json(
-        { error: 'Invalid status. Must be APPROVED, DENIED, HOLD, or PENDING' },
-        { status: 400 }
-      )
-    }
+    const validation = await validateRequestBody(request, postSchema)
+    if (!validation.success) return validation.error
+    const { buyerIds, status, note } = validation.data
 
     // Require reason for denial
     if (status === ApprovalStatus.DENIED && !note) {

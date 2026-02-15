@@ -4,8 +4,30 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snapshot'
 import { DEFAULT_BRI_WEIGHTS, type BriWeights } from '@/lib/bri-weights'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 const BRI_WEIGHTS_KEY = 'bri_category_weights'
+
+const briWeightsSchema = z.object({
+  weights: z.object({
+    financial: z.coerce.number().finite().min(0).max(1),
+    transferability: z.coerce.number().finite().min(0).max(1),
+    operational: z.coerce.number().finite().min(0).max(1),
+    market: z.coerce.number().finite().min(0).max(1),
+    legalTax: z.coerce.number().finite().min(0).max(1),
+    personal: z.coerce.number().finite().min(0).max(1),
+  }).refine(
+    (weights) => {
+      const sumPercent = Object.values(weights).reduce((a, b) => a + Math.round(b * 100), 0)
+      return sumPercent === 100
+    },
+    { message: 'Weights must sum to exactly 100%' }
+  ).refine(
+    (weights) => Object.values(weights).every(v => v >= 0 && v <= 1),
+    { message: 'Each weight must be between 0 and 1' }
+  ),
+})
 
 export async function GET() {
   const supabase = await createClient()
@@ -43,6 +65,10 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const validation = await validateRequestBody(request, briWeightsSchema)
+  if (!validation.success) return validation.error
+  const { weights } = validation.data
+
   try {
     // Get the database user ID for tracking who triggered the update
     const dbUser = await prisma.user.findUnique({
@@ -50,39 +76,6 @@ export async function PUT(request: Request) {
       select: { id: true },
     })
     const dbUserId = dbUser?.id
-
-    const body = await request.json()
-    const weights = body.weights as BriWeights
-
-    // Validate all required keys exist
-    const requiredKeys = Object.keys(DEFAULT_BRI_WEIGHTS)
-    for (const key of requiredKeys) {
-      if (typeof weights[key as keyof BriWeights] !== 'number') {
-        return NextResponse.json(
-          { error: `Missing or invalid weight for ${key}` },
-          { status: 400 }
-        )
-      }
-    }
-
-    // Validate weights sum to exactly 100% (sum rounded percentages)
-    const sumPercent = Object.values(weights).reduce((a, b) => a + Math.round(b * 100), 0)
-    if (sumPercent !== 100) {
-      return NextResponse.json(
-        { error: `Weights must sum to exactly 100%. Current sum: ${sumPercent}%` },
-        { status: 400 }
-      )
-    }
-
-    // Validate each weight is between 0 and 1
-    for (const [key, value] of Object.entries(weights)) {
-      if (value < 0 || value > 1) {
-        return NextResponse.json(
-          { error: `Weight for ${key} must be between 0% and 100%` },
-          { status: 400 }
-        )
-      }
-    }
 
     // Upsert the setting
     const setting = await prisma.systemSetting.upsert({

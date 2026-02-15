@@ -3,6 +3,15 @@ import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import { prisma } from '@/lib/prisma'
 import { DealStage, ApprovalStatus } from '@prisma/client'
 import { PAGINATION } from '@/lib/contact-system/constants'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const postSchema = z.object({
+  canonicalCompanyId: z.string().uuid(),
+  initialStage: z.enum(['IDENTIFIED', 'CONTACTED', 'ENGAGED', 'NDA_SENT', 'NDA_EXECUTED', 'CIM_SENT', 'IOI_RECEIVED', 'SELECTED', 'LOI_RECEIVED', 'DD_IN_PROGRESS', 'CLOSED', 'WITHDRAWN', 'TERMINATED']).default('IDENTIFIED'),
+  notes: z.string().max(5000).optional(),
+  requireSellerApproval: z.boolean().optional(),
+})
 
 /**
  * GET /api/deals/[dealId]/buyers
@@ -155,20 +164,14 @@ export async function POST(
       )
     }
 
-    const body = await request.json()
+    const validation = await validateRequestBody(request, postSchema)
+    if (!validation.success) return validation.error
     const {
       canonicalCompanyId,
-      initialStage = DealStage.IDENTIFIED,
+      initialStage,
       notes,
       requireSellerApproval,
-    } = body
-
-    if (!canonicalCompanyId) {
-      return NextResponse.json(
-        { error: 'Canonical company ID is required' },
-        { status: 400 }
-      )
-    }
+    } = validation.data
 
     // Verify canonical company exists
     const canonicalCompany = await prisma.canonicalCompany.findUnique({

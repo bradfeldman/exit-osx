@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { normalizeCompanyName } from '@/lib/contact-system/identity-resolution'
+import { validateRequestBody, shortText, longText } from '@/lib/security/validation'
 
 /**
  * GET /api/canonical/companies/[id]
@@ -90,6 +92,23 @@ export async function GET(
   }
 }
 
+const canonicalCompanyUpdateSchema = z.object({
+  name: shortText.optional(),
+  legalName: shortText.optional().nullable(),
+  website: z.string().max(2000).optional().nullable(),
+  linkedInUrl: z.string().max(2000).optional().nullable(),
+  companyType: z.enum(['STRATEGIC', 'FINANCIAL', 'INDIVIDUAL', 'MANAGEMENT', 'ESOP', 'OTHER']).optional(),
+  industryCode: shortText.optional().nullable(),
+  industryName: shortText.optional().nullable(),
+  headquarters: shortText.optional().nullable(),
+  country: shortText.optional().nullable(),
+  employeeCount: z.coerce.number().int().min(0).optional().nullable(),
+  foundedYear: z.coerce.number().int().min(1800).max(new Date().getFullYear() + 1).optional().nullable(),
+  aum: z.coerce.number().finite().optional().nullable(),
+  description: longText.optional().nullable(),
+  dataQuality: z.enum(['PROVISIONAL', 'SUGGESTED', 'VERIFIED', 'ENRICHED']).optional(),
+})
+
 /**
  * PUT /api/canonical/companies/[id]
  * Update a canonical company
@@ -120,7 +139,9 @@ export async function PUT(
       )
     }
 
-    const body = await request.json()
+    const validation = await validateRequestBody(request, canonicalCompanyUpdateSchema)
+    if (!validation.success) return validation.error
+
     const {
       name,
       legalName,
@@ -136,7 +157,7 @@ export async function PUT(
       aum,
       description,
       dataQuality,
-    } = body
+    } = validation.data
 
     // Build update data
     const updateData: Record<string, unknown> = {}

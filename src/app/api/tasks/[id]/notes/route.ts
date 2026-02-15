@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 export async function GET(
   request: Request,
@@ -48,6 +50,11 @@ export async function GET(
   }
 }
 
+const postTaskNoteSchema = z.object({
+  content: z.string().min(1).max(5000),
+  noteType: z.enum(['GENERAL', 'COMPLETION', 'STATUS_CHANGE', 'ASSIGNMENT']).default('GENERAL'),
+})
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -55,18 +62,9 @@ export async function POST(
   const { id } = await params
 
   try {
-    const body = await request.json()
-    const { content, noteType = 'GENERAL' } = body as {
-      content: string
-      noteType?: string
-    }
-
-    if (!content || content.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'Note content is required' },
-        { status: 400 }
-      )
-    }
+    const validation = await validateRequestBody(request, postTaskNoteSchema)
+    if (!validation.success) return validation.error
+    const { content, noteType } = validation.data
 
     // Fetch task to get companyId for permission check
     const task = await prisma.task.findUnique({

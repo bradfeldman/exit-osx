@@ -7,6 +7,16 @@ import {
   getValidNextStages,
   STAGE_LABELS,
 } from '@/lib/contact-system/stage-service'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const postSchema = z.object({
+  toStage: z.enum(['IDENTIFIED', 'CONTACTED', 'ENGAGED', 'NDA_SENT', 'NDA_EXECUTED', 'CIM_SENT', 'IOI_RECEIVED', 'SELECTED', 'LOI_RECEIVED', 'DD_IN_PROGRESS', 'CLOSED', 'WITHDRAWN', 'TERMINATED']),
+  note: z.string().max(5000).optional(),
+  skipValidation: z.boolean().optional(),
+  ioiAmount: z.coerce.number().finite().optional(),
+  loiAmount: z.coerce.number().finite().optional(),
+})
 
 /**
  * GET /api/deals/[dealId]/buyers/[buyerId]/stage
@@ -108,23 +118,9 @@ export async function POST(
       )
     }
 
-    const body = await request.json()
-    const { toStage, note, skipValidation, ioiAmount, loiAmount } = body
-
-    if (!toStage) {
-      return NextResponse.json(
-        { error: 'Target stage is required' },
-        { status: 400 }
-      )
-    }
-
-    // Validate stage is a valid enum value
-    if (!Object.values(DealStage).includes(toStage)) {
-      return NextResponse.json(
-        { error: `Invalid stage: ${toStage}` },
-        { status: 400 }
-      )
-    }
+    const validation = await validateRequestBody(request, postSchema)
+    if (!validation.success) return validation.error
+    const { toStage, note, skipValidation, ioiAmount, loiAmount } = validation.data
 
     // Perform transition
     const transitionResult = await transitionStage({

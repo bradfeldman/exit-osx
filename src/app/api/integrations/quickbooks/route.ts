@@ -9,6 +9,8 @@ import {
 } from '@/lib/integrations/quickbooks'
 import { createSignedOAuthState } from '@/lib/security/oauth-state'
 import { decryptToken, isEncrypted } from '@/lib/security/token-encryption'
+import { z } from 'zod'
+import { validateRequestBody, uuidSchema } from '@/lib/security/validation'
 
 // Sync can make 12+ API calls to QuickBooks — needs extended timeout
 export const maxDuration = 60
@@ -69,6 +71,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
+const postSchema = z.object({
+  action: z.enum(['connect', 'sync', 'cancel-sync']),
+  companyId: uuidSchema,
+})
+
 // POST - Start QuickBooks OAuth flow or trigger sync
 export async function POST(request: NextRequest) {
   try {
@@ -79,12 +86,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const { action, companyId } = body
-
-    if (!companyId) {
-      return NextResponse.json({ error: 'Company ID required' }, { status: 400 })
-    }
+    const validation = await validateRequestBody(request, postSchema)
+    if (!validation.success) return validation.error
+    const { action, companyId } = validation.data
 
     // Verify user has access to this company
     const dbUser = await prisma.user.findUnique({
@@ -173,6 +177,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true })
     }
 
+    // This shouldn't be reached due to Zod validation
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
   } catch (error) {
     // SECURITY FIX (PROD-091 #6): Only log the error message, not the full object

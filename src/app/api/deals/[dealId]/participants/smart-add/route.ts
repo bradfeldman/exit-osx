@@ -3,6 +3,12 @@ import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import { parseInput } from '@/lib/contact-system/smart-parser'
 import { findPersonMatches, findCompanyMatches } from '@/lib/contact-system/identity-resolution'
 import { inferRoleFromTitle } from '@/lib/contact-system/constants'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const postSchema = z.object({
+  text: z.string().min(1).max(10000),
+})
 
 /**
  * POST /api/deals/[dealId]/participants/smart-add
@@ -17,12 +23,9 @@ export async function POST(
   if (authResult instanceof NextResponse) return authResult
 
   try {
-    const body = await request.json()
-    const { text } = body
-
-    if (!text || typeof text !== 'string') {
-      return NextResponse.json({ error: 'Text is required' }, { status: 400 })
-    }
+    const validation = await validateRequestBody(request, postSchema)
+    if (!validation.success) return validation.error
+    const { text } = validation.data
 
     // Parse the input text
     const parsed = parseInput(text)

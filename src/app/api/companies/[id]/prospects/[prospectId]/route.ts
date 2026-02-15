@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { BuyerType, ProspectApprovalStatus } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 /**
  * GET /api/companies/[id]/prospects/[prospectId]
@@ -51,6 +53,17 @@ export async function GET(
   }
 }
 
+const patchProspectSchema = z.object({
+  name: z.string().min(1).max(500).optional(),
+  buyerType: z.enum(['STRATEGIC', 'FINANCIAL', 'OTHER']).optional(),
+  relevanceDescription: z.string().max(5000).optional().nullable(),
+  website: z.string().max(2000).optional().nullable(),
+  headquartersLocation: z.string().max(500).optional().nullable(),
+  notes: z.string().max(5000).optional().nullable(),
+  approvalStatus: z.enum(['APPROVED', 'DENIED', 'UNDECIDED']).optional(),
+  denialReason: z.string().max(5000).optional().nullable(),
+})
+
 /**
  * PATCH /api/companies/[id]/prospects/[prospectId]
  * Update a buyer prospect
@@ -64,7 +77,8 @@ export async function PATCH(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
+    const validation = await validateRequestBody(request, patchProspectSchema)
+    if (!validation.success) return validation.error
     const {
       name,
       buyerType,
@@ -74,7 +88,7 @@ export async function PATCH(
       notes,
       approvalStatus,
       denialReason,
-    } = body
+    } = validation.data
 
     // Verify prospect exists and belongs to company
     const existing = await prisma.buyerProspect.findFirst({
@@ -107,13 +121,6 @@ export async function PATCH(
     }
 
     if (buyerType !== undefined) {
-      const validTypes: BuyerType[] = ['STRATEGIC', 'FINANCIAL', 'OTHER']
-      if (!validTypes.includes(buyerType)) {
-        return NextResponse.json(
-          { error: 'Invalid buyer type' },
-          { status: 400 }
-        )
-      }
       updateData.buyerType = buyerType
     }
 
@@ -146,14 +153,6 @@ export async function PATCH(
 
     // Handle approval status change
     if (approvalStatus !== undefined) {
-      const validStatuses: ProspectApprovalStatus[] = ['APPROVED', 'DENIED', 'UNDECIDED']
-      if (!validStatuses.includes(approvalStatus)) {
-        return NextResponse.json(
-          { error: 'Invalid approval status' },
-          { status: 400 }
-        )
-      }
-
       // Only update status tracking if status actually changed
       if (approvalStatus !== existing.approvalStatus) {
         updateData.approvalStatus = approvalStatus

@@ -45,7 +45,7 @@ export async function POST(request: Request) {
         await updateDossier(company.id, 'manual_rebuild', 'cron_weekly')
         refreshed++
       } catch (err) {
-        console.error(`[Cron] Failed to refresh dossier for company ${company.id}:`, err)
+        console.error(`[Cron] Failed to refresh dossier for company ${company.id}:`, err instanceof Error ? err.message : String(err))
         errors++
       }
     }

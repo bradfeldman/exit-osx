@@ -3,6 +3,25 @@ import { createClient } from '@/lib/supabase/server'
 import { sendOnboardingCompleteEmail } from '@/lib/email/send-onboarding-complete-email'
 import { prisma } from '@/lib/prisma'
 import { generateReportToken } from '@/lib/report-token'
+import { z } from 'zod'
+import { validateRequestBody, uuidSchema, financialAmount } from '@/lib/security/validation'
+
+const postSchema = z.object({
+  companyId: uuidSchema,
+  currentValue: financialAmount.optional(),
+  potentialValue: financialAmount.optional(),
+  valueGap: financialAmount.optional(),
+  briScore: z.coerce.number().finite().min(0).max(100).optional(),
+  topRisks: z.array(z.object({
+    category: z.string().max(100),
+    label: z.string().max(200),
+    score: z.coerce.number().finite().min(0).max(100),
+  })).max(10).optional(),
+  topTask: z.object({
+    title: z.string().max(500),
+    category: z.string().max(100),
+  }).optional().nullable(),
+})
 
 export async function POST(request: Request) {
   try {
@@ -13,12 +32,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const { companyId, currentValue, potentialValue, valueGap, briScore, topRisks, topTask } = body
-
-    if (!companyId) {
-      return NextResponse.json({ error: 'Company ID required' }, { status: 400 })
-    }
+    const validation = await validateRequestBody(request, postSchema)
+    if (!validation.success) return validation.error
+    const { companyId, currentValue, potentialValue, valueGap, briScore, topRisks, topTask } = validation.data
 
     // Get company details
     const company = await prisma.company.findUnique({

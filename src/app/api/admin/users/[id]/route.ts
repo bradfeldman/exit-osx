@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireSuperAdmin, isAdminError, logAdminAction } from '@/lib/admin'
 import { createServiceClient } from '@/lib/supabase/server'
+import { validateRequestBody, emailSchema, shortText } from '@/lib/security/validation'
 
 export async function GET(
   request: NextRequest,
@@ -72,6 +74,12 @@ export async function GET(
   return NextResponse.json({ user })
 }
 
+const userUpdateSchema = z.object({
+  name: shortText.optional(),
+  email: emailSchema.optional(),
+  isSuperAdmin: z.boolean().optional(),
+})
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -80,10 +88,11 @@ export async function PATCH(
   if (isAdminError(result)) return result.error
 
   const { id } = await params
-  const body = await request.json()
 
-  // Validate fields that can be updated
-  const allowedFields = ['name', 'email', 'isSuperAdmin']
+  const validation = await validateRequestBody(request, userUpdateSchema)
+  if (!validation.success) return validation.error
+  const body = validation.data
+
   const updateData: Record<string, unknown> = {}
   const changes: Record<string, { from: unknown; to: unknown }> = {}
 
@@ -100,6 +109,7 @@ export async function PATCH(
     )
   }
 
+  const allowedFields: (keyof typeof body)[] = ['name', 'email', 'isSuperAdmin']
   for (const field of allowedFields) {
     if (field in body && body[field] !== currentUser[field as keyof typeof currentUser]) {
       updateData[field] = body[field]
@@ -144,6 +154,11 @@ export async function PATCH(
   return NextResponse.json({ user })
 }
 
+const userDeleteSchema = z.object({
+  confirmEmail: emailSchema,
+  reason: shortText.optional(),
+})
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -161,8 +176,9 @@ export async function DELETE(
     )
   }
 
-  const body = await request.json()
-  const { confirmEmail, reason } = body
+  const validation = await validateRequestBody(request, userDeleteSchema)
+  if (!validation.success) return validation.error
+  const { confirmEmail, reason } = validation.data
 
   // Find the user
   const user = await prisma.user.findUnique({

@@ -155,7 +155,7 @@ export async function POST(
         actorUserId: result.auth.user.id,
         documentId: docId,
         folderId: document.folderId || undefined,
-      }).catch((err) => console.error('Error sending notifications:', err))
+      }).catch((err) => console.error('Error sending notifications:', err instanceof Error ? err.message : String(err)))
     }
 
     return NextResponse.json({

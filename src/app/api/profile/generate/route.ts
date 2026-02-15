@@ -4,6 +4,16 @@ import { generateBusinessProfile } from '@/lib/ai/profile'
 import { prisma } from '@/lib/prisma'
 import type { ClarifyingQuestion } from '@/lib/ai/types'
 import { applyRateLimit, createRateLimitResponse, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limit'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const schema = z.object({
+  businessDescription: z.string().min(1).max(5000),
+  industry: z.string().max(500).optional().nullable(),
+  revenueRange: z.string().max(200).optional().nullable(),
+  answers: z.record(z.string(), z.string().max(5000)),
+  questions: z.array(z.any()).max(50),
+})
 
 export async function POST(request: Request) {
   // SEC-034: Rate limit AI endpoints
@@ -20,28 +30,11 @@ export async function POST(request: Request) {
     )
   }
 
-  try {
-    const body = await request.json()
-    const {
-      businessDescription,
-      industry,
-      revenueRange,
-      answers,
-      questions
-    } = body as {
-      businessDescription: string
-      industry?: string
-      revenueRange?: string
-      answers: Record<string, string>
-      questions: ClarifyingQuestion[]
-    }
+  const validation = await validateRequestBody(request, schema)
+  if (!validation.success) return validation.error
+  const { businessDescription, industry, revenueRange, answers, questions } = validation.data
 
-    if (!businessDescription) {
-      return NextResponse.json(
-        { error: 'Business description is required' },
-        { status: 400 }
-      )
-    }
+  try {
 
     const { data, usage } = await generateBusinessProfile(
       businessDescription,
@@ -61,7 +54,7 @@ export async function POST(request: Request) {
         inputData: { businessDescription: businessDescription.substring(0, 500), industry, revenueRange },
         outputData: JSON.parse(JSON.stringify(data)),
       }
-    }).catch(err => console.error('Failed to log AI usage:', err))
+    }).catch(err => console.error('Failed to log AI usage:', err instanceof Error ? err.message : String(err)))
 
     return NextResponse.json({ profile: data })
   } catch (error) {

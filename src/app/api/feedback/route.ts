@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 function generateTicketNumber(): string {
   const date = new Date()
@@ -12,6 +14,12 @@ function generateTicketNumber(): string {
 
 const VALID_CATEGORIES = ['bug', 'feature', 'improvement', 'other'] as const
 
+const postSchema = z.object({
+  category: z.enum(VALID_CATEGORIES).default('other'),
+  description: z.string().min(5, 'Description must be at least 5 characters').max(5000),
+  currentPage: z.string().max(500).optional(),
+})
+
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -20,31 +28,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const validation = await validateRequestBody(request, postSchema)
+  if (!validation.success) return validation.error
+  const { category, description, currentPage } = validation.data
+
   try {
-    const body = await request.json()
-    const { category, description, currentPage } = body
-
-    if (!description || typeof description !== 'string' || description.trim().length < 5) {
-      return NextResponse.json(
-        { error: 'Description must be at least 5 characters' },
-        { status: 400 }
-      )
-    }
-
-    // SECURITY: Cap description length to prevent oversized tickets
-    if (description.length > 5000) {
-      return NextResponse.json(
-        { error: 'Description must be 5000 characters or less' },
-        { status: 400 }
-      )
-    }
-
-    if (category && !VALID_CATEGORIES.includes(category)) {
-      return NextResponse.json(
-        { error: 'Invalid category' },
-        { status: 400 }
-      )
-    }
 
     // Look up the DB user
     const dbUser = await prisma.user.findUnique({
@@ -54,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     const userEmail = dbUser?.email || user.email || 'unknown'
     const userName = dbUser?.name || 'User'
-    const feedbackCategory = category || 'other'
+    const feedbackCategory = category
 
     // Build a descriptive subject line
     const categoryLabel = feedbackCategory === 'bug' ? 'Bug Report'
@@ -86,7 +74,7 @@ export async function POST(request: NextRequest) {
       '---',
       `Submitted by: ${userName} (${userEmail})`,
       `Category: ${categoryLabel}`,
-      currentPage ? `Page: ${typeof currentPage === 'string' ? currentPage.slice(0, 500) : 'unknown'}` : null,
+      currentPage ? `Page: ${currentPage}` : null,
       `User Agent: ${(request.headers.get('user-agent') || 'unknown').slice(0, 150).replace(/[<>]/g, '')}`,
     ].filter(Boolean).join('\n')
 

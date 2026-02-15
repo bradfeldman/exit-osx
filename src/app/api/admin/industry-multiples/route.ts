@@ -1,8 +1,10 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { recalculateSnapshotsForMultipleUpdate } from '@/lib/valuation/recalculate-snapshot'
 import { industryMultiples as defaultMultiples } from '@/../prisma/seed-data/industry-multiples'
+import { validateRequestBody, shortText } from '@/lib/security/validation'
 
 // GET - List all industry multiples
 export async function GET() {
@@ -48,6 +50,23 @@ export async function GET() {
   }
 }
 
+const industryMultipleSchema = z.object({
+  icbIndustry: shortText.min(1),
+  icbSuperSector: shortText.min(1),
+  icbSector: shortText.min(1),
+  icbSubSector: shortText.min(1),
+  ebitdaMultipleLow: z.coerce.number().finite().min(0).max(100),
+  ebitdaMultipleHigh: z.coerce.number().finite().min(0).max(100),
+  revenueMultipleLow: z.coerce.number().finite().min(0).max(100),
+  revenueMultipleHigh: z.coerce.number().finite().min(0).max(100),
+  effectiveDate: z.string().datetime().optional(),
+  source: shortText.optional(),
+}).refine(data => data.ebitdaMultipleLow <= data.ebitdaMultipleHigh, {
+  message: 'EBITDA multiple low must be <= high',
+}).refine(data => data.revenueMultipleLow <= data.revenueMultipleHigh, {
+  message: 'Revenue multiple low must be <= high',
+})
+
 // POST - Create a new industry multiple entry
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -65,7 +84,9 @@ export async function POST(request: Request) {
     })
     const dbUserId = dbUser?.id
 
-    const body = await request.json()
+    const validation = await validateRequestBody(request, industryMultipleSchema)
+    if (!validation.success) return validation.error
+
     const {
       icbIndustry,
       icbSuperSector,
@@ -77,39 +98,7 @@ export async function POST(request: Request) {
       revenueMultipleHigh,
       effectiveDate,
       source,
-    } = body
-
-    // Validate required fields
-    if (!icbIndustry || !icbSuperSector || !icbSector || !icbSubSector) {
-      return NextResponse.json(
-        { error: 'All ICB classification fields are required' },
-        { status: 400 }
-      )
-    }
-
-    // Validate multiples are positive numbers
-    if (ebitdaMultipleLow < 0 || ebitdaMultipleHigh < 0 ||
-        revenueMultipleLow < 0 || revenueMultipleHigh < 0) {
-      return NextResponse.json(
-        { error: 'Multiples must be positive numbers' },
-        { status: 400 }
-      )
-    }
-
-    // Validate low <= high
-    if (ebitdaMultipleLow > ebitdaMultipleHigh) {
-      return NextResponse.json(
-        { error: 'EBITDA multiple low must be <= high' },
-        { status: 400 }
-      )
-    }
-
-    if (revenueMultipleLow > revenueMultipleHigh) {
-      return NextResponse.json(
-        { error: 'Revenue multiple low must be <= high' },
-        { status: 400 }
-      )
-    }
+    } = validation.data
 
     // Create the new multiple entry
     const multiple = await prisma.industryMultiple.create({

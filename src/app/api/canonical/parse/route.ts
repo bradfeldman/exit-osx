@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { parseInput, parseBulkInput, parseVCard, parseLinkedInUrl } from '@/lib/contact-system/smart-parser'
 import { findCompanyMatches, findPersonMatches } from '@/lib/contact-system/identity-resolution'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const postSchema = z.object({
+  text: z.string().min(1, 'Text input is required').max(50000),
+  format: z.enum(['auto', 'vcard', 'bulk']).default('auto'),
+  includeMatches: z.boolean().default(true),
+})
 
 /**
  * POST /api/canonical/parse
@@ -12,16 +20,11 @@ export async function POST(request: NextRequest) {
   const result = await checkPermission('COMPANY_VIEW')
   if (isAuthError(result)) return result.error
 
-  try {
-    const body = await request.json()
-    const { text, format = 'auto', includeMatches = true } = body
+  const validation = await validateRequestBody(request, postSchema)
+  if (!validation.success) return validation.error
+  const { text, format, includeMatches } = validation.data
 
-    if (!text || typeof text !== 'string') {
-      return NextResponse.json(
-        { error: 'Text input is required' },
-        { status: 400 }
-      )
-    }
+  try {
 
     // Detect format and parse
     let parsed

@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { ProspectApprovalStatus } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const patchBulkStatusSchema = z.object({
+  prospectIds: z.array(z.string().uuid()).min(1).max(100),
+  approvalStatus: z.enum(['APPROVED', 'DENIED', 'UNDECIDED']),
+  denialReason: z.string().max(5000).optional(),
+})
 
 /**
  * PATCH /api/companies/[id]/prospects/bulk-status
@@ -16,30 +24,9 @@ export async function PATCH(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
-    const { prospectIds, approvalStatus, denialReason } = body
-
-    if (!prospectIds || !Array.isArray(prospectIds) || prospectIds.length === 0) {
-      return NextResponse.json(
-        { error: 'prospectIds array is required' },
-        { status: 400 }
-      )
-    }
-
-    if (!approvalStatus) {
-      return NextResponse.json(
-        { error: 'approvalStatus is required' },
-        { status: 400 }
-      )
-    }
-
-    const validStatuses: ProspectApprovalStatus[] = ['APPROVED', 'DENIED', 'UNDECIDED']
-    if (!validStatuses.includes(approvalStatus)) {
-      return NextResponse.json(
-        { error: 'Invalid approval status. Must be APPROVED, DENIED, or UNDECIDED' },
-        { status: 400 }
-      )
-    }
+    const validation = await validateRequestBody(request, patchBulkStatusSchema)
+    if (!validation.success) return validation.error
+    const { prospectIds, approvalStatus, denialReason } = validation.data
 
     // Verify all prospects belong to this company
     const prospects = await prisma.buyerProspect.findMany({

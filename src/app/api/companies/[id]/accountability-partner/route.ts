@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { sendPartnerInviteEmail } from '@/lib/email/send-partner-invite-email'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 // GET — Get current accountability partner
 export async function GET(
@@ -28,6 +30,11 @@ export async function GET(
   return NextResponse.json({ partner })
 }
 
+const postAccountabilityPartnerSchema = z.object({
+  email: z.string().email().max(500),
+  name: z.string().max(200).optional().nullable(),
+})
+
 // POST — Invite an accountability partner
 export async function POST(
   request: Request,
@@ -37,12 +44,9 @@ export async function POST(
   const result = await checkPermission('COMPANY_VIEW', companyId)
   if (isAuthError(result)) return result.error
 
-  const body = await request.json()
-  const { email, name } = body
-
-  if (!email || typeof email !== 'string') {
-    return NextResponse.json({ error: 'Email is required' }, { status: 400 })
-  }
+  const validation = await validateRequestBody(request, postAccountabilityPartnerSchema)
+  if (!validation.success) return validation.error
+  const { email, name } = validation.data
 
   // Check if partner already exists
   const existing = await prisma.accountabilityPartner.findUnique({
@@ -76,7 +80,7 @@ export async function POST(
     inviterName: result.auth.user.name || result.auth.user.email,
     companyName: company?.name || 'the company',
     inviteToken: partner.inviteToken,
-  }).catch(err => console.error('[Partner] Failed to send invite email:', err))
+  }).catch(err => console.error('[Partner] Failed to send invite email:', err instanceof Error ? err.message : String(err)))
 
   return NextResponse.json({ partner: { id: partner.id, email: partner.email, name: partner.name } }, { status: 201 })
 }

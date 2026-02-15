@@ -1,6 +1,19 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const postSchema = z.object({
+  companyName: z.string().min(1).max(500),
+  buyerType: z.enum(['STRATEGIC', 'FINANCIAL', 'INDIVIDUAL', 'MANAGEMENT', 'ESOP', 'OTHER']).default('OTHER'),
+  contactName: z.string().min(1).max(500),
+  contactEmail: z.string().email().max(500),
+  contactTitle: z.string().max(500).optional(),
+  notes: z.string().max(5000).optional(),
+  tier: z.enum(['A_TIER', 'B_TIER', 'C_TIER', 'D_TIER']).default('B_TIER'),
+  tags: z.array(z.string().max(100)).max(50).default([]),
+})
 
 export async function POST(
   request: Request,
@@ -13,24 +26,18 @@ export async function POST(
     if (isAuthError(result)) return result.error
     const { auth } = result
 
-    const body = await request.json()
+    const validation = await validateRequestBody(request, postSchema)
+    if (!validation.success) return validation.error
     const {
       companyName,
-      buyerType = 'OTHER',
+      buyerType,
       contactName,
       contactEmail,
       contactTitle,
       notes,
-      tier = 'B_TIER',
-      tags = [],
-    } = body
-
-    if (!companyName || !contactName || !contactEmail) {
-      return NextResponse.json(
-        { error: 'Company name, contact name, and contact email are required' },
-        { status: 400 }
-      )
-    }
+      tier,
+      tags,
+    } = validation.data
 
     // Find or create active deal
     const deal = await prisma.deal.findFirst({

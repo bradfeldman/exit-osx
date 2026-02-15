@@ -3,8 +3,19 @@ import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
 import { ApprovalStatus, ActivityType } from '@prisma/client'
 import { validateSellerAccess } from '@/lib/contact-system/seller-projection'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 type RouteParams = Promise<{ dealId: string }>
+
+const sellerApproveSchema = z.object({
+  buyerId: z.string().uuid(),
+  action: z.enum(['approve', 'deny', 'hold']),
+  reason: z.string().max(5000).optional(),
+}).refine(
+  (data) => data.action !== 'deny' || data.reason,
+  { message: 'Reason is required when denying', path: ['reason'] }
+)
 
 /**
  * POST /api/seller/[dealId]/approve
@@ -21,8 +32,9 @@ export async function POST(
 ) {
   try {
     const { dealId } = await params
-    const body = await request.json()
-    const { buyerId, action, reason } = body
+    const validation = await validateRequestBody(request, sellerApproveSchema)
+    if (!validation.success) return validation.error
+    const { buyerId, action, reason } = validation.data
 
     // SECURITY FIX (PROD-060): Was reading user ID from spoofable x-user-id header.
     // Now uses proper Supabase auth to get the authenticated user.
@@ -49,28 +61,6 @@ export async function POST(
       return NextResponse.json(
         { error: access.error || 'Access denied' },
         { status: 403 }
-      )
-    }
-
-    // Validate input
-    if (!buyerId || !action) {
-      return NextResponse.json(
-        { error: 'buyerId and action are required' },
-        { status: 400 }
-      )
-    }
-
-    if (!['approve', 'deny', 'hold'].includes(action)) {
-      return NextResponse.json(
-        { error: 'action must be approve, deny, or hold' },
-        { status: 400 }
-      )
-    }
-
-    if (action === 'deny' && !reason) {
-      return NextResponse.json(
-        { error: 'reason is required when denying' },
-        { status: 400 }
       )
     }
 

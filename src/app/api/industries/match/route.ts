@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getFlattenedIndustryOptions, type FlattenedIndustryOption } from '@/lib/data/industries'
 import { applyRateLimit, createRateLimitResponse, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limit'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 // Get all industry options for matching
 const allIndustries = getFlattenedIndustryOptions()
@@ -74,6 +76,10 @@ function keywordMatch(description: string): FlattenedIndustryOption | null {
   return null
 }
 
+const matchSchema = z.object({
+  description: z.string().min(1, 'Description is required').max(5000),
+})
+
 export async function POST(request: Request) {
   // SEC-034: Rate limit AI endpoints
   const rl = await applyRateLimit(request, RATE_LIMIT_CONFIGS.AI)
@@ -90,16 +96,11 @@ export async function POST(request: Request) {
     )
   }
 
-  try {
-    const body = await request.json()
-    const { description } = body
+  const validation = await validateRequestBody(request, matchSchema)
+  if (!validation.success) return validation.error
+  const { description } = validation.data
 
-    if (!description || typeof description !== 'string') {
-      return NextResponse.json(
-        { error: 'Description is required' },
-        { status: 400 }
-      )
-    }
+  try {
 
     // ALWAYS try OpenAI first if API key is available
     const openaiKey = process.env.OPENAI_API_KEY

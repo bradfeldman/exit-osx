@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { BuyerType, ProspectApprovalStatus } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 /**
  * GET /api/companies/[id]/prospects
@@ -100,6 +102,15 @@ export async function GET(
   }
 }
 
+const postProspectSchema = z.object({
+  name: z.string().min(1).max(500),
+  buyerType: z.enum(['STRATEGIC', 'FINANCIAL', 'OTHER']),
+  relevanceDescription: z.string().max(5000).optional().nullable(),
+  website: z.string().max(2000).optional().nullable(),
+  headquartersLocation: z.string().max(500).optional().nullable(),
+  notes: z.string().max(5000).optional().nullable(),
+})
+
 /**
  * POST /api/companies/[id]/prospects
  * Create a new buyer prospect
@@ -113,7 +124,8 @@ export async function POST(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
+    const validation = await validateRequestBody(request, postProspectSchema)
+    if (!validation.success) return validation.error
     const {
       name,
       buyerType,
@@ -121,23 +133,7 @@ export async function POST(
       website,
       headquartersLocation,
       notes,
-    } = body
-
-    if (!name || !buyerType) {
-      return NextResponse.json(
-        { error: 'Name and buyer type are required' },
-        { status: 400 }
-      )
-    }
-
-    // Validate buyer type (only STRATEGIC, FINANCIAL, or use OTHER for hybrid)
-    const validTypes: BuyerType[] = ['STRATEGIC', 'FINANCIAL', 'OTHER']
-    if (!validTypes.includes(buyerType)) {
-      return NextResponse.json(
-        { error: 'Invalid buyer type. Must be STRATEGIC, FINANCIAL, or OTHER (hybrid)' },
-        { status: 400 }
-      )
-    }
+    } = validation.data
 
     // Check for duplicate
     const existing = await prisma.buyerProspect.findUnique({
@@ -186,6 +182,10 @@ export async function POST(
   }
 }
 
+const deleteProspectsSchema = z.object({
+  prospectIds: z.array(z.string().uuid()).min(1).max(100),
+})
+
 /**
  * DELETE /api/companies/[id]/prospects
  * Delete multiple prospects
@@ -199,15 +199,9 @@ export async function DELETE(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
-    const { prospectIds } = body
-
-    if (!prospectIds || !Array.isArray(prospectIds) || prospectIds.length === 0) {
-      return NextResponse.json(
-        { error: 'prospectIds array is required' },
-        { status: 400 }
-      )
-    }
+    const validation = await validateRequestBody(request, deleteProspectsSchema)
+    if (!validation.success) return validation.error
+    const { prospectIds } = validation.data
 
     // Verify all prospects belong to this company
     const prospects = await prisma.buyerProspect.findMany({

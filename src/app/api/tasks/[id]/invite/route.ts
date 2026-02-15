@@ -2,6 +2,13 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { sendTaskDelegationEmail } from '@/lib/email/send-task-delegation-email'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const postTaskInviteSchema = z.object({
+  email: z.string().email().max(500),
+  isPrimary: z.boolean().default(true),
+})
 
 // POST - Invite a user to a task
 export async function POST(
@@ -17,12 +24,9 @@ export async function POST(
   }
 
   try {
-    const body = await request.json()
-    const { email, isPrimary = true } = body
-
-    if (!email) {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 })
-    }
+    const validation = await validateRequestBody(request, postTaskInviteSchema)
+    if (!validation.success) return validation.error
+    const { email, isPrimary } = validation.data
 
     // Get current user
     const currentUser = await prisma.user.findUnique({

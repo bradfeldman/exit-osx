@@ -4,6 +4,8 @@ import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { WorkspaceRole, FunctionalCategory } from '@prisma/client'
 import { GRANULAR_PERMISSIONS } from '@/lib/auth/permissions'
 import { Resend } from 'resend'
+import { z } from 'zod'
+import { validateRequestBody, emailSchema, uuidSchema } from '@/lib/security/validation'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
@@ -68,6 +70,18 @@ export async function GET(
   }
 }
 
+const postSchema = z.object({
+  email: emailSchema,
+  role: z.nativeEnum(WorkspaceRole).default('MEMBER'),
+  functionalCategories: z.array(z.nativeEnum(FunctionalCategory)).max(50).default([]),
+  roleTemplateId: uuidSchema.optional().nullable(),
+  customPermissions: z.array(z.object({
+    permission: z.string().max(100),
+    granted: z.boolean(),
+  })).max(100).optional().nullable(),
+  isExternalAdvisor: z.boolean().default(false),
+})
+
 // POST - Create invite
 export async function POST(
   request: Request,
@@ -79,61 +93,18 @@ export async function POST(
 
   const { auth } = result
 
+  const validation = await validateRequestBody(request, postSchema)
+  if (!validation.success) return validation.error
+  const {
+    email,
+    role,
+    functionalCategories,
+    roleTemplateId,
+    customPermissions,
+    isExternalAdvisor,
+  } = validation.data
+
   try {
-    const {
-      email,
-      role = 'MEMBER',
-      functionalCategories = [],
-      roleTemplateId,
-      customPermissions,
-      isExternalAdvisor = false,
-    } = await request.json()
-
-    if (!email) {
-      return NextResponse.json(
-        { error: 'Email is required' },
-        { status: 400 }
-      )
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'Invalid email format' },
-        { status: 400 }
-      )
-    }
-
-    // Verify valid role
-    const validRoles: WorkspaceRole[] = ['OWNER', 'ADMIN', 'BILLING', 'MEMBER']
-    if (!validRoles.includes(role)) {
-      return NextResponse.json(
-        { error: 'Invalid role' },
-        { status: 400 }
-      )
-    }
-
-    // Validate functional categories if provided
-    const validCategories: FunctionalCategory[] = [
-      'OWNER', 'FINANCE', 'OPERATIONS', 'HR', 'LEGAL', 'SALES_MARKETING', 'IT', 'EXTERNAL'
-    ]
-
-    if (!Array.isArray(functionalCategories)) {
-      return NextResponse.json(
-        { error: 'functionalCategories must be an array' },
-        { status: 400 }
-      )
-    }
-
-    const invalidCategories = functionalCategories.filter((c: string) => !validCategories.includes(c as FunctionalCategory))
-    if (invalidCategories.length > 0) {
-      return NextResponse.json(
-        { error: `Invalid categories: ${invalidCategories.join(', ')}` },
-        { status: 400 }
-      )
-    }
-
     // Validate role template if provided
     if (roleTemplateId) {
       const template = await prisma.roleTemplate.findUnique({
@@ -149,20 +120,8 @@ export async function POST(
 
     // Validate custom permissions if provided
     if (customPermissions) {
-      if (!Array.isArray(customPermissions)) {
-        return NextResponse.json(
-          { error: 'customPermissions must be an array' },
-          { status: 400 }
-        )
-      }
       const validPermissions = Object.keys(GRANULAR_PERMISSIONS)
       for (const perm of customPermissions) {
-        if (!perm.permission || typeof perm.granted !== 'boolean') {
-          return NextResponse.json(
-            { error: 'Each custom permission must have permission and granted fields' },
-            { status: 400 }
-          )
-        }
         if (!validPermissions.includes(perm.permission)) {
           return NextResponse.json(
             { error: `Invalid permission: ${perm.permission}` },

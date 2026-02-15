@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { FunctionalCategory, WorkspaceRole } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody, uuidSchema } from '@/lib/security/validation'
 
 // GET - List workspace members
 export async function GET(
@@ -54,6 +56,12 @@ export async function GET(
   }
 }
 
+const patchSchema = z.object({
+  userId: uuidSchema,
+  workspaceRole: z.nativeEnum(WorkspaceRole).optional(),
+  functionalCategories: z.array(z.nativeEnum(FunctionalCategory)).max(50).optional(),
+})
+
 // PATCH - Update member role and/or functional categories
 export async function PATCH(
   request: Request,
@@ -65,16 +73,11 @@ export async function PATCH(
 
   const { auth } = result
 
+  const validation = await validateRequestBody(request, patchSchema)
+  if (!validation.success) return validation.error
+  const { userId, workspaceRole, functionalCategories } = validation.data
+
   try {
-    const { userId, workspaceRole, functionalCategories } = await request.json()
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
-      )
-    }
-
     // Build update data object
     const updateData: {
       workspaceRole?: WorkspaceRole
@@ -83,13 +86,6 @@ export async function PATCH(
 
     // Validate and add workspaceRole if provided
     if (workspaceRole !== undefined) {
-      const validRoles: WorkspaceRole[] = ['OWNER', 'ADMIN', 'BILLING', 'MEMBER']
-      if (!validRoles.includes(workspaceRole)) {
-        return NextResponse.json(
-          { error: 'Invalid workspace role' },
-          { status: 400 }
-        )
-      }
 
       // Prevent changing your own role
       if (userId === auth.user.id) {
@@ -127,27 +123,8 @@ export async function PATCH(
       updateData.workspaceRole = workspaceRole
     }
 
-    // Validate and add functionalCategories if provided
+    // Add functionalCategories if provided
     if (functionalCategories !== undefined) {
-      const validCategories: FunctionalCategory[] = [
-        'OWNER', 'FINANCE', 'OPERATIONS', 'HR', 'LEGAL', 'SALES_MARKETING', 'IT', 'EXTERNAL'
-      ]
-
-      if (!Array.isArray(functionalCategories)) {
-        return NextResponse.json(
-          { error: 'functionalCategories must be an array' },
-          { status: 400 }
-        )
-      }
-
-      const invalidCategories = functionalCategories.filter(c => !validCategories.includes(c))
-      if (invalidCategories.length > 0) {
-        return NextResponse.json(
-          { error: `Invalid categories: ${invalidCategories.join(', ')}` },
-          { status: 400 }
-        )
-      }
-
       updateData.functionalCategories = functionalCategories
     }
 

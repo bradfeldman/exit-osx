@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { isUserSubscribingOwner, getCompanySubscribingOwner, PERSONAL_FEATURES } from '@/lib/access'
 import { createAccessRequestAlert } from '@/lib/alerts'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 // GET - List access requests for a company (owner only)
 export async function GET(
@@ -78,6 +80,11 @@ export async function GET(
   }
 }
 
+const accessRequestCreateSchema = z.object({
+  featureKey: z.enum(['pfs', 'retirement', 'loans']),
+  reason: z.string().max(1000).optional().nullable(),
+})
+
 // POST - Create access request (staff only)
 export async function POST(
   request: Request,
@@ -91,17 +98,12 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  try {
-    const body = await request.json()
-    const { featureKey, reason } = body
+  const validation = await validateRequestBody(request, accessRequestCreateSchema)
+  if (!validation.success) return validation.error
 
-    // Validate feature key
-    if (!featureKey || !PERSONAL_FEATURES.includes(featureKey)) {
-      return NextResponse.json(
-        { error: 'Invalid feature key. Must be one of: pfs, retirement, loans' },
-        { status: 400 }
-      )
-    }
+  const { featureKey, reason } = validation.data
+
+  try {
 
     // Get the current user
     const dbUser = await prisma.user.findUnique({

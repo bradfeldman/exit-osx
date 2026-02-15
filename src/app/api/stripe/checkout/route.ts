@@ -2,6 +2,13 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { stripe, STRIPE_PRICE_MAP } from '@/lib/stripe'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const postSchema = z.object({
+  planId: z.enum(['growth', 'exit-ready']),
+  billingCycle: z.enum(['monthly', 'annual']).default('annual'),
+})
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -11,20 +18,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const validation = await validateRequestBody(request, postSchema)
+  if (!validation.success) return validation.error
+  const { planId, billingCycle } = validation.data
+
   try {
-    const body = await request.json()
-    const { planId, billingCycle = 'annual' } = body as {
-      planId: 'growth' | 'exit-ready'
-      billingCycle: 'monthly' | 'annual'
-    }
-
-    if (!planId || !['growth', 'exit-ready'].includes(planId)) {
-      return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
-    }
-
-    if (!['monthly', 'annual'].includes(billingCycle)) {
-      return NextResponse.json({ error: 'Invalid billing cycle' }, { status: 400 })
-    }
 
     // Get user's workspace
     const dbUser = await prisma.user.findUnique({

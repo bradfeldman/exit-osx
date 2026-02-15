@@ -14,6 +14,7 @@ import {
   RATE_LIMIT_CONFIGS,
   createRateLimitResponse,
 } from '@/lib/security/rate-limit'
+import { validateRequestBody, assessSaveSchema } from '@/lib/security/validation'
 import { ALPHA } from '@/lib/valuation/calculate-valuation'
 import { generateReportToken } from '@/lib/report-token'
 import { sendOnboardingCompleteEmail } from '@/lib/email/send-onboarding-complete-email'
@@ -30,56 +31,13 @@ export async function POST(request: Request) {
     return createRateLimitResponse(rateLimitResult)
   }
 
-  let body: {
-    email: string
-    password: string
-    basics: {
-      email: string
-      companyName: string
-      businessDescription: string
-      annualRevenue: number
-    }
-    profile: {
-      revenueModel: string
-      laborIntensity: string
-      assetIntensity: string
-      ownerInvolvement: string
-      grossMarginProxy: string
-    }
-    scan: {
-      answers: Record<string, boolean>
-      riskCount: number
-      briScore: number
-    }
-    results: {
-      briScore: number
-      currentValue: number
-      potentialValue: number
-      valueGap: number
-      baseMultiple: number
-      finalMultiple: number
-      categoryBreakdown?: { category: string; label: string; score: number }[]
-      topTasks?: { title: string; category: string; estimatedValue: number }[]
-    }
-  }
+  // SEC-035: Zod validation with enum checking for profile fields
+  const validation = await validateRequestBody(request, assessSaveSchema)
+  if (!validation.success) return validation.error
 
-  try {
-    body = await request.json()
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
-  }
-
+  const body = validation.data
   const { email, password, basics, profile, results } = body
-
-  if (!email || !password || !basics || !profile || !results) {
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
-  }
-
-  if (password.length < 8) {
-    return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
-  }
-
-  const normalizedEmail = email.trim().toLowerCase()
+  const normalizedEmail = email
 
   try {
     const adminClient = createServiceClient()
@@ -128,7 +86,7 @@ export async function POST(request: Request) {
         const { sendMagicLinkEmail } = await import('@/lib/email/send-magic-link-email')
         await sendMagicLinkEmail({ email: normalizedEmail, magicLinkUrl })
       } catch (emailErr) {
-        console.error('[assess/save] Email send failed:', emailErr)
+        console.error('[assess/save] Email send failed:', emailErr instanceof Error ? emailErr.message : String(emailErr))
       }
     }
 
@@ -237,7 +195,7 @@ export async function POST(request: Request) {
       topRisk,
       topTask,
       reportToken,
-    }).catch(err => console.error('[assess/save] Day 0 email failed:', err))
+    }).catch(err => console.error('[assess/save] Day 0 email failed:', err instanceof Error ? err.message : String(err)))
 
     // High-value prospect alert to Brad (revenue >$3M or value gap >$1M)
     const isHighValue = basics.annualRevenue >= 3_000_000 || results.valueGap >= 1_000_000
@@ -249,7 +207,7 @@ export async function POST(request: Request) {
         briScore: results.briScore,
         valueGap: results.valueGap,
         topRiskCategory: topRisk.label,
-      }).catch(err => console.error('[assess/save] Prospect alert failed:', err))
+      }).catch(err => console.error('[assess/save] Prospect alert failed:', err instanceof Error ? err.message : String(err)))
     }
 
     return NextResponse.json({
@@ -258,7 +216,7 @@ export async function POST(request: Request) {
       userId: dbResult.user.id,
     })
   } catch (err) {
-    console.error('[assess/save] Error:', err)
+    console.error('[assess/save] Error:', err instanceof Error ? err.message : String(err))
     return NextResponse.json({ error: 'Failed to save results' }, { status: 500 })
   }
 }

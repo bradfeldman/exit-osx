@@ -78,7 +78,7 @@ export async function POST(
     ownerName: owner.name || 'there',
     companyName: partner.company.name,
     partnerName: partner.name || undefined,
-  }).catch(err => console.error('[Partner] Failed to send nudge email:', err))
+  }).catch(err => console.error('[Partner] Failed to send nudge email:', err instanceof Error ? err.message : String(err)))
 
   return NextResponse.json({ success: true })
 }

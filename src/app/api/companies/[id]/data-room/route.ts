@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
 import { DataRoomCategory, UpdateFrequency, DocumentStatus } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 const VALID_CATEGORIES = new Set<string>(Object.values(DataRoomCategory))
 const VALID_FREQUENCIES = new Set<string>(Object.values(UpdateFrequency))
@@ -191,6 +193,13 @@ export async function GET(
   }
 }
 
+const createDataRoomDocSchema = z.object({
+  category: z.enum(['FINANCIAL', 'LEGAL', 'OPERATIONS', 'CUSTOMERS', 'EMPLOYEES', 'IP', 'CUSTOM']),
+  documentName: z.string().min(1).max(500),
+  description: z.string().max(5000).optional(),
+  updateFrequency: z.enum(['MONTHLY', 'QUARTERLY', 'ANNUALLY', 'AS_NEEDED', 'ONE_TIME']).default('AS_NEEDED'),
+})
+
 // POST - Create a new custom document
 export async function POST(
   request: NextRequest,
@@ -205,7 +214,6 @@ export async function POST(
     }
 
     const { id: companyId } = await params
-    const body = await request.json()
 
     // Check company access
     const company = await prisma.company.findFirst({
@@ -226,24 +234,14 @@ export async function POST(
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
+    const validation = await validateRequestBody(request, createDataRoomDocSchema)
+    if (!validation.success) return validation.error
     const {
       category,
       documentName,
       description,
-      updateFrequency = 'AS_NEEDED',
-    } = body
-
-    if (!category || !documentName) {
-      return NextResponse.json({ error: 'Category and document name are required' }, { status: 400 })
-    }
-
-    if (!VALID_CATEGORIES.has(category)) {
-      return NextResponse.json({ error: `Invalid category: ${category}` }, { status: 400 })
-    }
-
-    if (!VALID_FREQUENCIES.has(updateFrequency)) {
-      return NextResponse.json({ error: `Invalid update frequency: ${updateFrequency}` }, { status: 400 })
-    }
+      updateFrequency,
+    } = validation.data
 
     // Get max display order for this category
     const maxOrder = await prisma.dataRoomDocument.aggregate({

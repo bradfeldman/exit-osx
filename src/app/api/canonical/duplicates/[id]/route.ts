@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { mergeCompanies, mergePeople } from '@/lib/contact-system/identity-resolution'
+import { validateRequestBody, uuidSchema } from '@/lib/security/validation'
+
+const duplicateResolveSchema = z.object({
+  resolution: z.enum(['MERGE', 'NOT_DUPLICATE', 'SKIP']),
+  primaryId: uuidSchema.optional(),
+})
 
 /**
  * PUT /api/canonical/duplicates/[id]
@@ -17,17 +24,10 @@ export async function PUT(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
-    const { resolution, primaryId } = body
+    const validation = await validateRequestBody(request, duplicateResolveSchema)
+    if (!validation.success) return validation.error
 
-    // resolution: 'MERGE', 'NOT_DUPLICATE', 'SKIP'
-
-    if (!['MERGE', 'NOT_DUPLICATE', 'SKIP'].includes(resolution)) {
-      return NextResponse.json(
-        { error: 'Invalid resolution. Must be MERGE, NOT_DUPLICATE, or SKIP' },
-        { status: 400 }
-      )
-    }
+    const { resolution, primaryId } = validation.data
 
     const candidate = await prisma.duplicateCandidate.findUnique({
       where: { id },

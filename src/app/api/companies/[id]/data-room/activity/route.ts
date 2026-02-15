@@ -2,8 +2,32 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
 import { DataRoomAction } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 const VALID_ACTIONS = new Set<string>(Object.values(DataRoomAction))
+
+const logActivitySchema = z.object({
+  action: z.enum([
+    'VIEWED_FOLDER',
+    'VIEWED_DOCUMENT',
+    'DOWNLOADED_DOCUMENT',
+    'UPLOADED_DOCUMENT',
+    'DELETED_DOCUMENT',
+    'UPDATED_DOCUMENT',
+    'CREATED_FOLDER',
+    'DELETED_FOLDER',
+    'GRANTED_ACCESS',
+    'REVOKED_ACCESS',
+    'ASKED_QUESTION',
+    'ANSWERED_QUESTION',
+    'EXPORTED_REPORT',
+    'STAGE_CHANGED',
+  ]),
+  documentId: z.string().uuid().optional().nullable(),
+  folderId: z.string().uuid().optional().nullable(),
+  metadata: z.any().optional().nullable(),
+})
 
 // POST - Log a data room activity
 export async function POST(
@@ -19,7 +43,6 @@ export async function POST(
     }
 
     const { id: companyId } = await params
-    const body = await request.json()
 
     // Check company access
     const company = await prisma.company.findFirst({
@@ -40,11 +63,9 @@ export async function POST(
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
-    const { action, documentId, folderId, metadata } = body
-
-    if (!action || !VALID_ACTIONS.has(action)) {
-      return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
-    }
+    const validation = await validateRequestBody(request, logActivitySchema)
+    if (!validation.success) return validation.error
+    const { action, documentId, folderId, metadata } = validation.data
 
     // Get or create data room for company
     let dataRoom = await prisma.dataRoom.findUnique({

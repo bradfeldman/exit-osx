@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireSuperAdmin, isAdminError, logAdminAction } from '@/lib/admin'
+import { validateRequestBody, uuidSchema, shortText } from '@/lib/security/validation'
 
 export async function GET(
   request: NextRequest,
@@ -53,6 +55,13 @@ export async function GET(
   return NextResponse.json({ ticket })
 }
 
+const ticketUpdateSchema = z.object({
+  status: z.enum(['open', 'in_progress', 'waiting_on_user', 'resolved', 'closed']).optional(),
+  priority: z.enum(['low', 'normal', 'high', 'urgent']).optional(),
+  assignedToId: uuidSchema.optional().nullable(),
+  category: shortText.optional(),
+})
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -61,7 +70,10 @@ export async function PATCH(
   if (isAdminError(result)) return result.error
 
   const { id } = await params
-  const body = await request.json()
+
+  const validation = await validateRequestBody(request, ticketUpdateSchema)
+  if (!validation.success) return validation.error
+  const body = validation.data
 
   const currentTicket = await prisma.supportTicket.findUnique({
     where: { id },
@@ -75,7 +87,7 @@ export async function PATCH(
     )
   }
 
-  const allowedFields = ['status', 'priority', 'assignedToId', 'category']
+  const allowedFields: (keyof typeof body)[] = ['status', 'priority', 'assignedToId', 'category']
   const updateData: Record<string, unknown> = {}
   const changes: Record<string, { from: unknown; to: unknown }> = {}
 

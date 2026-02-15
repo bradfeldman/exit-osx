@@ -3,6 +3,19 @@ import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import { prisma } from '@/lib/prisma'
 import { ParticipantSide, ParticipantRole } from '@prisma/client'
 import { deriveSideRoleFromCategory, inferCategoryFromSideRole } from '@/lib/contact-system/constants'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const patchSchema = z.object({
+  category: z.enum(['PROSPECT', 'MANAGEMENT', 'ADVISOR', 'OTHER']).optional(),
+  description: z.string().max(5000).optional(),
+  notes: z.string().max(5000).optional(),
+  role: z.enum(['DEAL_LEAD', 'DECISION_MAKER', 'ADVISOR', 'LEGAL', 'FINANCE', 'OPERATIONS', 'OTHER']).optional(),
+  side: z.enum(['BUYER', 'SELLER', 'NEUTRAL']).optional(),
+  isPrimary: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+  dealBuyerId: z.string().uuid().nullable().optional(),
+})
 
 const PERSON_SELECT = {
   id: true,
@@ -79,7 +92,10 @@ export async function PATCH(
       return NextResponse.json({ error: 'Participant not found' }, { status: 404 })
     }
 
-    const body = await request.json()
+    const validation = await validateRequestBody(request, patchSchema)
+    if (!validation.success) return validation.error
+    const body = validation.data
+
     const data: Record<string, unknown> = {}
 
     // Handle category change — re-derive side/role

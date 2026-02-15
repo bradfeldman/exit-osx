@@ -5,6 +5,15 @@ import { prisma } from '@/lib/prisma'
 import type { BusinessProfile, Subcategory } from '@/lib/ai/types'
 import { DiagnosisSubcategory } from '@prisma/client'
 import { applyRateLimit, createRateLimitResponse, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limit'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const schema = z.object({
+  companyId: z.string().uuid(),
+  subcategory: z.string().max(200),
+  initialAnswer: z.string().max(5000).optional().nullable(),
+  initialScore: z.coerce.number().finite().min(0).max(100).optional().nullable(),
+})
 
 export async function POST(request: Request) {
   // SEC-034: Rate limit AI endpoints
@@ -21,21 +30,11 @@ export async function POST(request: Request) {
     )
   }
 
-  try {
-    const body = await request.json()
-    const { companyId, subcategory, initialAnswer, initialScore } = body as {
-      companyId: string
-      subcategory: Subcategory
-      initialAnswer: string
-      initialScore: number
-    }
+  const validation = await validateRequestBody(request, schema)
+  if (!validation.success) return validation.error
+  const { companyId, subcategory, initialAnswer, initialScore } = validation.data
 
-    if (!companyId || !subcategory) {
-      return NextResponse.json(
-        { error: 'Company ID and subcategory are required' },
-        { status: 400 }
-      )
-    }
+  try {
 
     // Get company and profile
     const company = await prisma.company.findUnique({

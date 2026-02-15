@@ -2,6 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snapshot'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+import type { Prisma } from '@prisma/client'
 
 export async function GET(
   request: Request,
@@ -49,6 +52,15 @@ export async function GET(
   }
 }
 
+const coreFactorsUpdateSchema = z.object({
+  revenueSizeCategory: z.enum(['UNDER_500K', 'FROM_500K_TO_1M', 'FROM_1M_TO_3M', 'FROM_3M_TO_10M', 'FROM_10M_TO_25M', 'OVER_25M']).optional(),
+  revenueModel: z.enum(['PROJECT_BASED', 'TRANSACTIONAL', 'RECURRING_CONTRACTS', 'SUBSCRIPTION_SAAS']).optional(),
+  grossMarginProxy: z.enum(['LOW', 'MODERATE', 'GOOD', 'EXCELLENT']).optional(),
+  laborIntensity: z.enum(['LOW', 'MODERATE', 'HIGH', 'VERY_HIGH']).optional(),
+  assetIntensity: z.enum(['ASSET_LIGHT', 'MODERATE', 'ASSET_HEAVY']).optional(),
+  ownerInvolvement: z.enum(['MINIMAL', 'LOW', 'MODERATE', 'HIGH', 'CRITICAL']).optional(),
+})
+
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -61,16 +73,19 @@ export async function PUT(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const validation = await validateRequestBody(request, coreFactorsUpdateSchema)
+  if (!validation.success) return validation.error
+
+  const {
+    revenueSizeCategory,
+    revenueModel,
+    grossMarginProxy,
+    laborIntensity,
+    assetIntensity,
+    ownerInvolvement
+  } = validation.data
+
   try {
-    const body = await request.json()
-    const {
-      revenueSizeCategory,
-      revenueModel,
-      grossMarginProxy,
-      laborIntensity,
-      assetIntensity,
-      ownerInvolvement
-    } = body
 
     // Verify user has access and get database user ID
     const company = await prisma.company.findUnique({
@@ -101,15 +116,6 @@ export async function PUT(
 
     const dbUserId = company.workspace.members[0].user.id
 
-    // Build update object with only defined values
-    const updateData: Record<string, string> = {}
-    if (revenueSizeCategory) updateData.revenueSizeCategory = revenueSizeCategory
-    if (revenueModel) updateData.revenueModel = revenueModel
-    if (grossMarginProxy) updateData.grossMarginProxy = grossMarginProxy
-    if (laborIntensity) updateData.laborIntensity = laborIntensity
-    if (assetIntensity) updateData.assetIntensity = assetIntensity
-    if (ownerInvolvement) updateData.ownerInvolvement = ownerInvolvement
-
     // Check if core factors already exist
     const existingFactors = await prisma.coreFactors.findUnique({
       where: { companyId }
@@ -118,6 +124,14 @@ export async function PUT(
     let coreFactors
     if (existingFactors) {
       // Update existing record with provided fields
+      const updateData: Prisma.CoreFactorsUpdateInput = {}
+      if (revenueSizeCategory) updateData.revenueSizeCategory = revenueSizeCategory
+      if (revenueModel) updateData.revenueModel = revenueModel
+      if (grossMarginProxy) updateData.grossMarginProxy = grossMarginProxy
+      if (laborIntensity) updateData.laborIntensity = laborIntensity
+      if (assetIntensity) updateData.assetIntensity = assetIntensity
+      if (ownerInvolvement) updateData.ownerInvolvement = ownerInvolvement
+
       coreFactors = await prisma.coreFactors.update({
         where: { companyId },
         data: updateData

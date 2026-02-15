@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { ACTIVITY_TYPES } from '@/lib/deal-tracker/constants'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const postSchema = z.object({
+  description: z.string().min(1).max(5000),
+  metadata: z.any().optional(),
+})
 
 /**
  * GET /api/companies/[id]/deal-tracker/buyers/[buyerId]/activities
@@ -82,12 +89,9 @@ export async function POST(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
-    const { description, metadata } = body
-
-    if (!description) {
-      return NextResponse.json({ error: 'Description is required' }, { status: 400 })
-    }
+    const validation = await validateRequestBody(request, postSchema)
+    if (!validation.success) return validation.error
+    const { description, metadata } = validation.data
 
     // Verify buyer belongs to company
     const buyer = await prisma.prospectiveBuyer.findFirst({

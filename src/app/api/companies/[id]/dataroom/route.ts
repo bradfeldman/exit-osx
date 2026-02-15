@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { getOrCreateDataRoom, calculateReadinessScore } from '@/lib/dataroom'
 import { prisma } from '@/lib/prisma'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 /**
  * GET /api/companies/[id]/dataroom
@@ -72,6 +74,12 @@ export async function GET(
   }
 }
 
+const updateDataRoomSchema = z.object({
+  name: z.string().max(500).optional(),
+  stage: z.enum(['PREPARATION', 'TEASER', 'POST_NDA', 'DUE_DILIGENCE', 'CLOSED']).optional(),
+  settings: z.any().optional(),
+})
+
 /**
  * PUT /api/companies/[id]/dataroom
  * Update data room settings (name, stage)
@@ -85,8 +93,9 @@ export async function PUT(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
-    const { name, stage, settings } = body
+    const validation = await validateRequestBody(request, updateDataRoomSchema)
+    if (!validation.success) return validation.error
+    const { name, stage, settings } = validation.data
 
     const dataRoom = await prisma.dataRoom.findUnique({
       where: { companyId },

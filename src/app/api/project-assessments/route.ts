@@ -14,6 +14,15 @@ import {
   recommendNextAssessmentFocus,
 } from '@/lib/project-assessments/prioritization-engine'
 import type { BriCategory } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const postSchema = z.object({
+  companyId: z.string().uuid(),
+  questionCount: z.coerce.number().int().min(8).max(15).default(10),
+  focusCategory: z.enum(['FINANCIAL', 'TRANSFERABILITY', 'OPERATIONAL', 'MARKET', 'LEGAL_TAX', 'PERSONAL']).optional().nullable(),
+  title: z.string().max(500).optional().nullable(),
+})
 
 /**
  * GET /api/project-assessments?companyId=xxx
@@ -113,12 +122,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const body = await request.json()
-  const { companyId, questionCount = 10, focusCategory, title } = body
-
-  if (!companyId) {
-    return NextResponse.json({ error: 'companyId is required' }, { status: 400 })
-  }
+  const validation = await validateRequestBody(request, postSchema)
+  if (!validation.success) return validation.error
+  const { companyId, questionCount, focusCategory, title } = validation.data
 
   // Verify user has access to this company
   const dbUser = await prisma.user.findUnique({

@@ -3,6 +3,20 @@ import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { DealDocumentType } from '@prisma/client'
 import { ACTIVITY_TYPES } from '@/lib/deal-tracker/constants'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const postSchema = z.object({
+  documentType: z.enum(['NDA', 'IOI', 'LOI', 'PSA', 'DD_REQUEST', 'DD_RESPONSE', 'FINANCIAL', 'LEGAL', 'OTHER']),
+  name: z.string().min(1).max(500),
+  description: z.string().max(5000).optional(),
+  filePath: z.string().max(2000).optional(),
+  fileName: z.string().max(500).optional(),
+  fileSize: z.coerce.number().finite().optional(),
+  mimeType: z.string().max(200).optional(),
+  receivedAt: z.string().max(100).optional(),
+  sentAt: z.string().max(100).optional(),
+})
 
 /**
  * GET /api/companies/[id]/deal-tracker/buyers/[buyerId]/documents
@@ -72,7 +86,8 @@ export async function POST(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
+    const validation = await validateRequestBody(request, postSchema)
+    if (!validation.success) return validation.error
     const {
       documentType,
       name,
@@ -83,14 +98,7 @@ export async function POST(
       mimeType,
       receivedAt,
       sentAt,
-    } = body
-
-    if (!documentType || !name) {
-      return NextResponse.json(
-        { error: 'Document type and name are required' },
-        { status: 400 }
-      )
-    }
+    } = validation.data
 
     // Verify buyer belongs to company
     const buyer = await prisma.prospectiveBuyer.findFirst({

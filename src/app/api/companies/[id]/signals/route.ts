@@ -5,6 +5,8 @@ import { createSignal } from '@/lib/signals/create-signal'
 import { processSignalsForDisplay, type RankableSignal } from '@/lib/signals/signal-ranking'
 import { applyConfidenceWeight } from '@/lib/signals/confidence-scoring'
 import type { SignalChannel, SignalResolutionStatus, SignalSeverity, BriCategory } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 export async function GET(
   request: NextRequest,
@@ -105,6 +107,15 @@ export async function GET(
   }
 }
 
+const createSignalSchema = z.object({
+  channel: z.enum(['DRIFT_REPORT', 'WORKFLOW_BASED', 'MARKET_RESEARCH', 'TASK_GENERATED', 'QUICKBOOKS_INTEGRATED', 'FINANCIAL_IMPORT', 'ACTIVITY_BASED', 'ASSESSMENT_RESPONSE', 'USER_REPORTED', 'MANUAL', 'SYSTEM']),
+  title: z.string().min(1).max(500),
+  description: z.string().max(5000).optional(),
+  category: z.enum(['FINANCIAL', 'TRANSFERABILITY', 'OPERATIONAL', 'MARKET', 'LEGAL_TAX', 'PERSONAL']).optional(),
+  estimatedValueImpact: z.coerce.number().finite().optional(),
+  metadata: z.any().optional(),
+})
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -115,22 +126,9 @@ export async function POST(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
-    const { channel, title, description, category, estimatedValueImpact, metadata } = body as {
-      channel: SignalChannel
-      title: string
-      description?: string
-      category?: BriCategory
-      estimatedValueImpact?: number
-      metadata?: Record<string, unknown>
-    }
-
-    if (!channel || !title) {
-      return NextResponse.json(
-        { error: 'channel and title are required' },
-        { status: 400 }
-      )
-    }
+    const validation = await validateRequestBody(request, createSignalSchema)
+    if (!validation.success) return validation.error
+    const { channel, title, description, category, estimatedValueImpact, metadata } = validation.data
 
     const signal = await createSignal({
       companyId,

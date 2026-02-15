@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
 
 export async function GET(request: Request) {
   const supabase = await createClient()
@@ -59,6 +61,11 @@ export async function GET(request: Request) {
   }
 }
 
+const postSchema = z.object({
+  companyId: z.string().uuid(),
+  assessmentType: z.enum(['INITIAL', 'QUARTERLY_CHECK_IN', 'AD_HOC']).default('INITIAL'),
+})
+
 export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -67,13 +74,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  try {
-    const body = await request.json()
-    const { companyId, assessmentType = 'INITIAL' } = body
+  const validation = await validateRequestBody(request, postSchema)
+  if (!validation.success) return validation.error
+  const { companyId, assessmentType } = validation.data
 
-    if (!companyId) {
-      return NextResponse.json({ error: 'Company ID required' }, { status: 400 })
-    }
+  try {
 
     // Verify user has access to this company
     const company = await prisma.company.findUnique({

@@ -116,7 +116,7 @@ export async function GET(
     if (unenrichedCount > 0) {
       // Fire-and-forget — next page load will show enriched tasks
       enrichTasksWithContext(companyId).catch(err => {
-        console.error('[ACTIONS] Lazy enrichment failed:', err)
+        console.error('[ACTIONS] Lazy enrichment failed:', err instanceof Error ? err.message : String(err))
       })
     }
 
