@@ -1,6 +1,7 @@
 'use client'
 
 import { DollarSign, AlertTriangle, CheckCircle, Clock, TrendingUp, TrendingDown } from 'lucide-react'
+import { formatDollar } from '@/lib/utils/currency'
 
 interface LedgerEntryData {
   id: string
@@ -34,12 +35,6 @@ function formatRelativeTime(dateStr: string): string {
   if (diffDays < 7) return `${diffDays}d ago`
   if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-}
-
-function formatDollar(amount: number): string {
-  if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`
-  if (amount >= 1_000) return `$${Math.round(amount / 1_000)}K`
-  return `$${Math.round(amount)}`
 }
 
 const EVENT_ICONS: Record<string, typeof CheckCircle> = {

@@ -7,14 +7,24 @@ import { PAGINATION } from '@/lib/contact-system/constants'
 /**
  * GET /api/deals
  * Get all deals the user has access to
+ * SECURITY: Requires companyId param to enforce company-level access check
  */
 export async function GET(request: NextRequest) {
-  const result = await checkPermission('COMPANY_VIEW')
+  const { searchParams } = new URL(request.url)
+  const companyId = searchParams.get('companyId')
+
+  if (!companyId) {
+    return NextResponse.json(
+      { error: 'companyId query parameter is required' },
+      { status: 400 }
+    )
+  }
+
+  // SECURITY FIX: Pass companyId to checkPermission for company-level access control
+  const result = await checkPermission('COMPANY_VIEW', companyId)
   if (isAuthError(result)) return result.error
 
   try {
-    const { searchParams } = new URL(request.url)
-    const companyId = searchParams.get('companyId')
     const status = searchParams.get('status') as DealStatus | 'all' | null
     const search = searchParams.get('search')
     const page = parseInt(searchParams.get('page') || String(PAGINATION.DEFAULT_PAGE))
@@ -23,12 +33,8 @@ export async function GET(request: NextRequest) {
       PAGINATION.MAX_LIMIT
     )
 
-    // Build filter
-    const where: Record<string, unknown> = {}
-
-    if (companyId) {
-      where.companyId = companyId
-    }
+    // Build filter — always scoped to the authorized company
+    const where: Record<string, unknown> = { companyId }
 
     if (status && status !== 'all') {
       where.status = status
@@ -60,9 +66,10 @@ export async function GET(request: NextRequest) {
       prisma.deal.count({ where }),
     ])
 
-    // Get summary by status
+    // Get summary by status — scoped to this company only
     const statusCounts = await prisma.deal.groupBy({
       by: ['status'],
+      where: { companyId },
       _count: true,
     })
 
@@ -100,9 +107,6 @@ export async function GET(request: NextRequest) {
  * Create a new deal
  */
 export async function POST(request: NextRequest) {
-  const result = await checkPermission('COMPANY_UPDATE')
-  if (isAuthError(result)) return result.error
-
   try {
     const body = await request.json()
     const {
@@ -119,6 +123,10 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // SECURITY FIX: Pass companyId to checkPermission for company-level access control
+    const result = await checkPermission('COMPANY_UPDATE', companyId)
+    if (isAuthError(result)) return result.error
 
     // Verify company exists
     const company = await prisma.company.findUnique({

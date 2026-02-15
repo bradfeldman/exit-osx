@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import {
   runFullMigration,
   validateMigrationReadiness,
@@ -21,13 +21,11 @@ export async function POST(
   request: NextRequest,
   { params }: { params: RouteParams }
 ) {
-  // SECURITY FIX (PROD-060): Was completely unauthenticated — anyone could run or rollback migrations.
-  // Requires COMPANY_UPDATE since migrations are destructive operations.
-  const result = await checkPermission('COMPANY_UPDATE')
-  if (isAuthError(result)) return result.error
+  const { dealId } = await params
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_UPDATE')
+  if (authResult instanceof NextResponse) return authResult
 
   try {
-    const { dealId } = await params
     const body = await request.json().catch(() => ({}))
     const { dryRun = false, skipDuplicateCheck = false } = body
 
@@ -76,11 +74,11 @@ export async function GET(
   request: NextRequest,
   { params }: { params: RouteParams }
 ) {
-  const getResult = await checkPermission('COMPANY_VIEW')
-  if (isAuthError(getResult)) return getResult.error
+  const { dealId } = await params
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_VIEW')
+  if (authResult instanceof NextResponse) return authResult
 
   try {
-    const { dealId } = await params
 
     const validation = await validateMigrationReadiness(dealId)
 
@@ -109,11 +107,11 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: RouteParams }
 ) {
-  const deleteResult = await checkPermission('COMPANY_UPDATE')
-  if (isAuthError(deleteResult)) return deleteResult.error
+  const { dealId } = await params
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_UPDATE')
+  if (authResult instanceof NextResponse) return authResult
 
   try {
-    const { dealId } = await params
     const { searchParams } = new URL(request.url)
     const dryRun = searchParams.get('dryRun') === 'true'
 

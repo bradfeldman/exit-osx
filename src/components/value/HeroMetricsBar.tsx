@@ -4,16 +4,11 @@ import { useSyncExternalStore } from 'react'
 import { motion } from '@/lib/motion'
 import { useCountUpCurrency, useCountUpScore } from '@/hooks/useCountUp'
 import { Badge } from '@/components/ui/badge'
+import { formatCurrency } from '@/lib/utils/currency'
 
 const emptySubscribe = () => () => {}
 function useIsClient() {
   return useSyncExternalStore(emptySubscribe, () => true, () => false)
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
-  if (value >= 1_000) return `$${Math.round(value / 1_000)}K`
-  return `$${Math.round(value)}`
 }
 
 function AnimatedCurrency({ value, delay = 0 }: { value: number; delay?: number }) {

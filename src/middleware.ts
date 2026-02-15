@@ -10,6 +10,17 @@ import {
   SESSION_COOKIE_MAX_AGE,
 } from '@/lib/security/constants'
 
+// SECURITY: Constant-time string comparison for Edge Runtime
+// (Cannot import from @/lib/security/timing-safe which uses Node.js crypto.timingSafeEqual)
+function edgeConstantTimeCompare(a: string, b: string): boolean {
+  const maxLength = Math.max(a.length, b.length)
+  let result = a.length ^ b.length // Non-zero if lengths differ
+  for (let i = 0; i < maxLength; i++) {
+    result |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0)
+  }
+  return result === 0
+}
+
 // SECURITY: Basic auth protection for staging environment
 function checkStagingAuth(request: NextRequest): NextResponse | null {
   const hostname = request.headers.get('host') || ''
@@ -48,7 +59,11 @@ function checkStagingAuth(request: NextRequest): NextResponse | null {
     })
   }
 
-  if (username !== validUsername || password !== validPassword) {
+  // SECURITY FIX: Use constant-time comparison to prevent timing attacks
+  // that could leak valid credentials one character at a time
+  const usernameMatch = edgeConstantTimeCompare(username, validUsername)
+  const passwordMatch = edgeConstantTimeCompare(password, validPassword)
+  if (!usernameMatch || !passwordMatch) {
     return new NextResponse('Invalid credentials', {
       status: 401,
       headers: {

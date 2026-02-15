@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { ConfidenceDots } from './ConfidenceDots'
 import { CategoryAssessmentFlow } from './CategoryAssessmentFlow'
 import { AnimatePresence } from '@/lib/motion'
+import { formatCurrency } from '@/lib/utils/currency'
 
 const CATEGORY_DOT_COLORS: Record<string, string> = {
   FINANCIAL: 'bg-blue-500',
@@ -22,12 +23,6 @@ function getScoreColor(score: number): string {
   if (score >= 60) return 'text-primary'
   if (score >= 40) return 'text-amber-600'
   return 'text-destructive'
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
-  if (value >= 1_000) return `$${Math.round(value / 1_000)}K`
-  return `$${Math.round(value)}`
 }
 
 interface CategoryPanelProps {

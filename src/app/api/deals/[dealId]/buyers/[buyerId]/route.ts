@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import { prisma } from '@/lib/prisma'
 import { ApprovalStatus } from '@prisma/client'
 import { revokeVDRAccessForBuyer } from '@/lib/contact-system/stage-service'
@@ -13,8 +13,8 @@ export async function GET(
   { params }: { params: Promise<{ dealId: string; buyerId: string }> }
 ) {
   const { dealId, buyerId } = await params
-  const result = await checkPermission('COMPANY_VIEW')
-  if (isAuthError(result)) return result.error
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_VIEW')
+  if (authResult instanceof NextResponse) return authResult
 
   try {
     const buyer = await prisma.dealBuyer.findUnique({
@@ -110,8 +110,9 @@ export async function PUT(
   { params }: { params: Promise<{ dealId: string; buyerId: string }> }
 ) {
   const { dealId, buyerId } = await params
-  const result = await checkPermission('COMPANY_UPDATE')
-  if (isAuthError(result)) return result.error
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_UPDATE')
+  if (authResult instanceof NextResponse) return authResult
+  const { auth } = authResult
 
   try {
     const existing = await prisma.dealBuyer.findUnique({
@@ -144,10 +145,10 @@ export async function PUT(
 
       if (approvalStatus === ApprovalStatus.APPROVED) {
         updateData.approvedAt = new Date()
-        updateData.approvedByUserId = result.auth.user.id
+        updateData.approvedByUserId = auth.user.id
       } else if (approvalStatus === ApprovalStatus.DENIED) {
         updateData.approvedAt = new Date()
-        updateData.approvedByUserId = result.auth.user.id
+        updateData.approvedByUserId = auth.user.id
       }
     }
 
@@ -176,7 +177,7 @@ export async function PUT(
           activityType: 'NOTE_ADDED',
           subject: `Approval status changed to ${approvalStatus}`,
           description: approvalNotes,
-          performedByUserId: result.auth.user.id,
+          performedByUserId: auth.user.id,
         },
       })
     }
@@ -197,8 +198,9 @@ export async function DELETE(
   { params }: { params: Promise<{ dealId: string; buyerId: string }> }
 ) {
   const { dealId, buyerId } = await params
-  const result = await checkPermission('COMPANY_UPDATE')
-  if (isAuthError(result)) return result.error
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_UPDATE')
+  if (authResult instanceof NextResponse) return authResult
+  const { auth } = authResult
 
   try {
     const buyer = await prisma.dealBuyer.findUnique({
@@ -218,7 +220,7 @@ export async function DELETE(
     }
 
     // Revoke VDR access before deletion
-    await revokeVDRAccessForBuyer(buyerId, result.auth.user.id)
+    await revokeVDRAccessForBuyer(buyerId, auth.user.id)
 
     // Delete related records and buyer in transaction
     await prisma.$transaction(async (tx) => {

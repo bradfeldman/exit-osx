@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 import { createClient } from '@supabase/supabase-js'
 import * as Sentry from '@sentry/nextjs'
+import { constantTimeCompare } from '@/lib/security/timing-safe'
 
 // Service health status type
 interface ServiceHealth {
@@ -11,7 +12,7 @@ interface ServiceHealth {
   lastChecked: string
 }
 
-interface HealthCheckResponse {
+interface DetailedHealthCheckResponse {
   status: 'healthy' | 'degraded' | 'unhealthy'
   timestamp: string
   services: {
@@ -25,13 +26,22 @@ interface HealthCheckResponse {
   version: string
 }
 
-// Check database connectivity
+// SECURITY: Verify the request has a valid health check secret
+function isAuthorizedHealthCheck(request: NextRequest): boolean {
+  const secret = process.env.HEALTH_CHECK_SECRET
+  if (!secret) return false
+
+  const headerSecret = request.headers.get('x-health-secret')
+  if (!headerSecret) return false
+
+  return constantTimeCompare(headerSecret, secret)
+}
+
+// Check database connectivity (uses Prisma singleton — no connection leak)
 async function checkDatabase(): Promise<ServiceHealth> {
   const start = Date.now()
   try {
-    const prisma = new PrismaClient()
     await prisma.$queryRaw`SELECT 1`
-    await prisma.$disconnect()
     return {
       status: 'healthy',
       latency: Date.now() - start,
@@ -64,7 +74,6 @@ async function checkSupabaseAuth(): Promise<ServiceHealth> {
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey)
-    // Simple health check - get session (will be null for anonymous, but confirms connectivity)
     await supabase.auth.getSession()
 
     return {
@@ -99,7 +108,6 @@ async function checkSupabaseStorage(): Promise<ServiceHealth> {
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey)
-    // List buckets to verify storage is accessible
     const { error } = await supabase.storage.listBuckets()
 
     if (error) throw error
@@ -134,7 +142,6 @@ async function checkOpenAI(): Promise<ServiceHealth> {
       }
     }
 
-    // Simple models list call to verify API key works
     const response = await fetch('https://api.openai.com/v1/models', {
       method: 'GET',
       headers: {
@@ -155,7 +162,7 @@ async function checkOpenAI(): Promise<ServiceHealth> {
   } catch (error) {
     Sentry.captureException(error, { tags: { service: 'openai' } })
     return {
-      status: 'degraded', // Degraded because keyword fallback exists
+      status: 'degraded',
       latency: Date.now() - start,
       error: 'OpenAI API check failed',
       lastChecked: new Date().toISOString(),
@@ -177,7 +184,6 @@ async function checkResend(): Promise<ServiceHealth> {
       }
     }
 
-    // Check API key validity by listing domains
     const response = await fetch('https://api.resend.com/domains', {
       method: 'GET',
       headers: {
@@ -220,8 +226,6 @@ async function checkQuickBooks(): Promise<ServiceHealth> {
       }
     }
 
-    // QuickBooks doesn't have a simple health endpoint, so we just verify credentials exist
-    // Actual API health is checked during OAuth flow
     return {
       status: 'healthy',
       latency: Date.now() - start,
@@ -239,34 +243,29 @@ async function checkQuickBooks(): Promise<ServiceHealth> {
 }
 
 // Determine overall health status
-function getOverallStatus(services: HealthCheckResponse['services']): 'healthy' | 'degraded' | 'unhealthy' {
+function getOverallStatus(services: DetailedHealthCheckResponse['services']): 'healthy' | 'degraded' | 'unhealthy' {
   const statuses = Object.values(services).map(s => s.status)
 
-  // If database is unhealthy, entire system is unhealthy
-  if (services.database.status === 'unhealthy') {
-    return 'unhealthy'
-  }
-
-  // If auth is unhealthy, entire system is unhealthy
-  if (services.supabaseAuth.status === 'unhealthy') {
-    return 'unhealthy'
-  }
-
-  // If any service is unhealthy, system is degraded
-  if (statuses.includes('unhealthy')) {
-    return 'degraded'
-  }
-
-  // If any service is degraded, system is degraded
-  if (statuses.includes('degraded')) {
-    return 'degraded'
-  }
+  if (services.database.status === 'unhealthy') return 'unhealthy'
+  if (services.supabaseAuth.status === 'unhealthy') return 'unhealthy'
+  if (statuses.includes('unhealthy')) return 'degraded'
+  if (statuses.includes('degraded')) return 'degraded'
 
   return 'healthy'
 }
 
-export async function GET() {
-  // Run all health checks in parallel
+export async function GET(request: NextRequest) {
+  // SECURITY: Public health check returns minimal info only.
+  // Full service details require HEALTH_CHECK_SECRET header.
+  if (!isAuthorizedHealthCheck(request)) {
+    // Public response: just confirms the app is running — no infrastructure details
+    return NextResponse.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+    })
+  }
+
+  // Authorized: run all health checks in parallel
   const [database, supabaseAuth, supabaseStorage, openai, resend, quickbooks] = await Promise.all([
     checkDatabase(),
     checkSupabaseAuth(),
@@ -285,14 +284,13 @@ export async function GET() {
     quickbooks,
   }
 
-  const response: HealthCheckResponse = {
+  const response: DetailedHealthCheckResponse = {
     status: getOverallStatus(services),
     timestamp: new Date().toISOString(),
     services,
     version: process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 7) || 'dev',
   }
 
-  // Return appropriate status code
   const statusCode = response.status === 'healthy' ? 200 : response.status === 'degraded' ? 200 : 503
 
   return NextResponse.json(response, { status: statusCode })

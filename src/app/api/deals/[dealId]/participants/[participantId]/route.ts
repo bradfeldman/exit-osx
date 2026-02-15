@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import { prisma } from '@/lib/prisma'
 import { ParticipantSide, ParticipantRole } from '@prisma/client'
 import { deriveSideRoleFromCategory, inferCategoryFromSideRole } from '@/lib/contact-system/constants'
@@ -25,8 +25,8 @@ export async function GET(
   { params }: { params: Promise<{ dealId: string; participantId: string }> }
 ) {
   const { dealId, participantId } = await params
-  const result = await checkPermission('COMPANY_VIEW')
-  if (isAuthError(result)) return result.error
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_VIEW')
+  if (authResult instanceof NextResponse) return authResult
 
   try {
     const participant = await prisma.dealParticipant.findUnique({
@@ -66,8 +66,9 @@ export async function PATCH(
   { params }: { params: Promise<{ dealId: string; participantId: string }> }
 ) {
   const { dealId, participantId } = await params
-  const result = await checkPermission('COMPANY_UPDATE')
-  if (isAuthError(result)) return result.error
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_UPDATE')
+  if (authResult instanceof NextResponse) return authResult
+  const { auth } = authResult
 
   try {
     const existing = await prisma.dealParticipant.findUnique({
@@ -124,7 +125,7 @@ export async function PATCH(
             dealId,
             canonicalCompanyId: companyId,
             currentStage: 'IDENTIFIED',
-            createdByUserId: result.auth.user.id,
+            createdByUserId: auth.user.id,
           },
         })
 
@@ -141,7 +142,7 @@ export async function PATCH(
             dealBuyerId: newBuyer.id,
             activityType: 'NOTE_ADDED',
             subject: `${participant.canonicalPerson.currentCompany.name} auto-added to pipeline`,
-            performedByUserId: result.auth.user.id,
+            performedByUserId: auth.user.id,
           },
         })
       } else if (!participant.dealBuyerId) {
@@ -173,8 +174,9 @@ export async function DELETE(
   { params }: { params: Promise<{ dealId: string; participantId: string }> }
 ) {
   const { dealId, participantId } = await params
-  const result = await checkPermission('COMPANY_UPDATE')
-  if (isAuthError(result)) return result.error
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_UPDATE')
+  if (authResult instanceof NextResponse) return authResult
+  const { auth } = authResult
 
   try {
     const existing = await prisma.dealParticipant.findUnique({
@@ -196,7 +198,7 @@ export async function DELETE(
         dealBuyerId: existing.dealBuyerId || undefined,
         activityType: 'NOTE_ADDED',
         subject: `${existing.canonicalPerson.firstName} ${existing.canonicalPerson.lastName} removed as participant`,
-        performedByUserId: result.auth.user.id,
+        performedByUserId: auth.user.id,
       },
     })
 

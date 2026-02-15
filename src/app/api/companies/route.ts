@@ -6,6 +6,14 @@ import { createClient } from '@/lib/supabase/server'
 import { serverAnalytics } from '@/lib/analytics/server'
 import { COMPANY_LIMITS, type PlanTier } from '@/lib/pricing'
 
+/** Typed error for company limit enforcement within serializable transactions */
+class CompanyLimitError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'CompanyLimitError'
+  }
+}
+
 export async function GET() {
   const result = await checkPermission('COMPANY_VIEW')
   if (isAuthError(result)) return result.error
@@ -182,54 +190,74 @@ export async function POST(request: Request) {
       : 'foundation' as PlanTier
     const companyLimit = COMPANY_LIMITS[workspacePlanTier] ?? 1
 
-    const activeCompanyCount = await prisma.company.count({
-      where: {
-        workspaceId: targetWorkspace.workspaceId,
-        deletedAt: null,
-      },
-    })
+    // =========================================================================
+    // SERIALIZABLE TRANSACTION: Count check + company creation + ownership.
+    // Serializable isolation prevents TOCTOU race where two concurrent requests
+    // both pass the limit check and create companies exceeding the plan limit.
+    // =========================================================================
+    let company: Awaited<ReturnType<typeof prisma.company.create>>
 
-    if (activeCompanyCount >= companyLimit) {
-      return NextResponse.json(
-        { error: 'Company limit reached for your plan' },
-        { status: 403 }
-      )
+    try {
+      company = await prisma.$transaction(async (tx) => {
+        const activeCompanyCount = await tx.company.count({
+          where: {
+            workspaceId: targetWorkspace.workspaceId,
+            deletedAt: null,
+          },
+        })
+
+        if (activeCompanyCount >= companyLimit) {
+          throw new CompanyLimitError('Company limit reached for your plan')
+        }
+
+        // Create the company in the target workspace
+        const newCompany = await tx.company.create({
+          data: {
+            workspaceId: targetWorkspace.workspaceId,
+            name,
+            icbIndustry,
+            icbSuperSector,
+            icbSector,
+            icbSubSector,
+            annualRevenue,
+            annualEbitda,
+            ownerCompensation,
+            businessDescription,
+            businessProfile,
+            profileQuestionsAnswered,
+          },
+          include: {
+            coreFactors: true,
+            ebitdaAdjustments: true
+          }
+        })
+
+        // Create company ownership record - creator becomes subscribing owner
+        await tx.companyOwnership.create({
+          data: {
+            companyId: newCompany.id,
+            userId: dbUser.id,
+            isSubscribingOwner: true,
+            ownershipPercent: 100,
+            status: 'ACTIVE',
+          }
+        })
+
+        return newCompany
+      }, {
+        isolationLevel: 'Serializable',
+      })
+    } catch (error) {
+      if (error instanceof CompanyLimitError) {
+        return NextResponse.json(
+          { error: error.message },
+          { status: 403 }
+        )
+      }
+      throw error // Re-throw to be caught by outer catch block
     }
 
-    // Create the company in the target workspace
-    const company = await prisma.company.create({
-      data: {
-        workspaceId: targetWorkspace.workspaceId,
-        name,
-        icbIndustry,
-        icbSuperSector,
-        icbSector,
-        icbSubSector,
-        annualRevenue,
-        annualEbitda,
-        ownerCompensation,
-        businessDescription,
-        businessProfile,
-        profileQuestionsAnswered,
-      },
-      include: {
-        coreFactors: true,
-        ebitdaAdjustments: true
-      }
-    })
-
-    // Create company ownership record - creator becomes subscribing owner
-    await prisma.companyOwnership.create({
-      data: {
-        companyId: company.id,
-        userId: dbUser.id,
-        isSubscribingOwner: true,
-        ownershipPercent: 100,
-        status: 'ACTIVE',
-      }
-    })
-
-    // Track company created (non-blocking)
+    // Track company created (non-blocking, outside transaction)
     serverAnalytics.company.created({
       userId: dbUser.id,
       companyId: company.id,

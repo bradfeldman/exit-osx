@@ -51,53 +51,53 @@ export async function POST(
     // Snapshot the current normalized value at completion time
     const completedValue = existingTask.normalizedValue
 
-    // Update the task to COMPLETED
-    const task = await prisma.task.update({
-      where: { id },
-      data: {
-        status: 'COMPLETED',
-        completedAt: new Date(),
-        completionNotes: completionNotes || null,
-        completedValue,
-        blockedAt: null,
-        blockedReason: null,
-      },
-    })
-
-    // Create a TaskNote if completion notes were provided
-    if (completionNotes && completionNotes.trim().length > 0) {
-      await prisma.taskNote.create({
+    // =========================================================================
+    // TRANSACTION: Core state mutations that MUST be atomic.
+    // If ANY of these fail, the entire completion is rolled back.
+    //
+    // Includes: task status update, completion note, evidence linking,
+    // and assessment answer upgrade. These are direct DB writes we control.
+    // =========================================================================
+    const task = await prisma.$transaction(async (tx) => {
+      // 1. Update the task to COMPLETED
+      const updatedTask = await tx.task.update({
+        where: { id },
         data: {
-          taskId: id,
-          userId: result.auth.user.id,
-          content: completionNotes.trim(),
-          noteType: 'COMPLETION',
+          status: 'COMPLETED',
+          completedAt: new Date(),
+          completionNotes: completionNotes || null,
+          completedValue,
+          blockedAt: null,
+          blockedReason: null,
         },
-      }).catch(err => {
-        console.error('[TaskNote] Failed to create completion note (non-blocking):', err)
       })
-    }
 
-    // Link evidence documents if provided
-    if (evidenceDocumentIds && evidenceDocumentIds.length > 0) {
-      await prisma.dataRoomDocument.updateMany({
-        where: {
-          id: { in: evidenceDocumentIds },
-          companyId: existingTask.companyId,
-        },
-        data: { linkedTaskId: id },
-      })
-    }
+      // 2. Create a TaskNote if completion notes were provided
+      if (completionNotes && completionNotes.trim().length > 0) {
+        await tx.taskNote.create({
+          data: {
+            taskId: id,
+            userId: result.auth.user.id,
+            content: completionNotes.trim(),
+            noteType: 'COMPLETION',
+          },
+        })
+      }
 
-    // Handle BRI update based on task type
-    let briImpact: { previousScore: number; newScore: number; categoryChanged: string } | null = null
-    let preSnapshot: { briScore: unknown; currentValue: unknown } | null = null
-    let postSnapshot: { briScore: unknown; currentValue: unknown } | null = null
+      // 3. Link evidence documents if provided
+      if (evidenceDocumentIds && evidenceDocumentIds.length > 0) {
+        await tx.dataRoomDocument.updateMany({
+          where: {
+            id: { in: evidenceDocumentIds },
+            companyId: existingTask.companyId,
+          },
+          data: { linkedTaskId: id },
+        })
+      }
 
-    if (existingTask.linkedQuestionId) {
-      // Assessment-linked task - use Answer Upgrade System
-      if (existingTask.upgradesToOptionId) {
-        const response = await prisma.assessmentResponse.findFirst({
+      // 4. Assessment answer upgrade (must be atomic with task completion)
+      if (existingTask.linkedQuestionId && existingTask.upgradesToOptionId) {
+        const response = await tx.assessmentResponse.findFirst({
           where: {
             questionId: existingTask.linkedQuestionId,
             assessment: {
@@ -109,23 +109,44 @@ export async function POST(
         })
 
         if (response) {
-          await prisma.assessmentResponse.update({
+          await tx.assessmentResponse.update({
             where: { id: response.id },
             data: { effectiveOptionId: existingTask.upgradesToOptionId },
           })
         }
       }
 
+      return updatedTask
+    })
+
+    // =========================================================================
+    // POST-TRANSACTION: Snapshot recalculation and downstream effects.
+    // These operations use their own prisma clients internally.
+    // If they fail, the task is already COMPLETED but the system can recover
+    // via manual recalculation. Each failure is logged with context.
+    // =========================================================================
+
+    // Handle BRI update based on task type
+    let briImpact: { previousScore: number; newScore: number; categoryChanged: string } | null = null
+    let preSnapshot: { briScore: unknown; currentValue: unknown } | null = null
+    let postSnapshot: { briScore: unknown; currentValue: unknown } | null = null
+
+    if (existingTask.linkedQuestionId) {
+      // Assessment-linked task - snapshot recalculation
       preSnapshot = await prisma.valuationSnapshot.findFirst({
         where: { companyId: existingTask.companyId },
         orderBy: { createdAt: 'desc' },
         select: { briScore: true, currentValue: true },
       })
 
-      await recalculateSnapshotForCompany(
+      const snapshotResult = await recalculateSnapshotForCompany(
         existingTask.companyId,
         `Task completed: ${existingTask.title}`
       )
+
+      if (!snapshotResult.success) {
+        console.error(`[TaskComplete] Snapshot recalculation failed for company ${existingTask.companyId}: ${snapshotResult.error}. Task ${id} is COMPLETED but snapshot may be stale.`)
+      }
 
       postSnapshot = await prisma.valuationSnapshot.findFirst({
         where: { companyId: existingTask.companyId },
@@ -141,7 +162,12 @@ export async function POST(
         }
       }
 
-      await generateNextLevelTasks(existingTask.companyId, existingTask.linkedQuestionId)
+      // Generate next-level tasks (non-critical, logged on failure)
+      try {
+        await generateNextLevelTasks(existingTask.companyId, existingTask.linkedQuestionId)
+      } catch (err) {
+        console.error(`[TaskComplete] Failed to generate next-level tasks for question ${existingTask.linkedQuestionId}:`, err)
+      }
     } else {
       // Onboarding task
       preSnapshot = await prisma.valuationSnapshot.findFirst({
@@ -150,13 +176,17 @@ export async function POST(
         select: { briScore: true, currentValue: true },
       })
 
-      await improveSnapshotForOnboardingTask({
+      const improveResult = await improveSnapshotForOnboardingTask({
         id: existingTask.id,
         companyId: existingTask.companyId,
         briCategory: existingTask.briCategory,
         rawImpact: existingTask.rawImpact,
         title: existingTask.title,
       })
+
+      if (!improveResult.success) {
+        console.error(`[TaskComplete] Onboarding snapshot improvement failed for company ${existingTask.companyId}: ${improveResult.error}. Task ${id} is COMPLETED but snapshot may be stale.`)
+      }
 
       postSnapshot = await prisma.valuationSnapshot.findFirst({
         where: { companyId: existingTask.companyId },
@@ -173,7 +203,13 @@ export async function POST(
       }
     }
 
-    // Create Value Ledger entry (non-blocking)
+    // =========================================================================
+    // SIDE EFFECTS: Non-critical operations that should not block the response.
+    // Each has its own error handling and logs failures with sufficient context
+    // for manual remediation.
+    // =========================================================================
+
+    // Create Value Ledger entry
     try {
       await createLedgerEntryForTaskCompletion({
         companyId: existingTask.companyId,
@@ -186,10 +222,10 @@ export async function POST(
         valueAfter: postSnapshot ? Number(postSnapshot.currentValue) : null,
       })
     } catch (err) {
-      console.error('[ValueLedger] Failed to create entry (non-blocking):', err)
+      console.error(`[ValueLedger] Failed to create entry for task ${id}, company ${existingTask.companyId}:`, err)
     }
 
-    // Create TASK_GENERATED signal with Value Ledger entry (non-blocking)
+    // Create TASK_GENERATED signal with Value Ledger entry
     try {
       const signalData: TaskGeneratedData = {
         taskId: id,
@@ -234,14 +270,24 @@ export async function POST(
           : `Task "${existingTask.title}" completed — ~${formatCurrency(weightedImpact)} value recovered`,
       })
     } catch (err) {
-      console.error('[Signal] Failed to create task signal (non-blocking):', err)
+      console.error(`[Signal] Failed to create task signal for task ${id}, company ${existingTask.companyId}:`, err)
     }
 
-    // Update company dossier (non-blocking)
+    // Update company dossier (fire-and-forget, non-blocking)
     triggerDossierUpdate(existingTask.companyId, 'task_completed', id)
 
-    await checkAssessmentTriggers(existingTask.companyId)
-    await onTaskStatusChange(id, 'COMPLETED', true)
+    // Assessment triggers and action plan update (non-critical)
+    try {
+      await checkAssessmentTriggers(existingTask.companyId)
+    } catch (err) {
+      console.error(`[TaskComplete] Assessment trigger check failed for company ${existingTask.companyId}:`, err)
+    }
+
+    try {
+      await onTaskStatusChange(id, 'COMPLETED', true)
+    } catch (err) {
+      console.error(`[TaskComplete] Action plan update failed for task ${id}:`, err)
+    }
 
     // Get next task
     const nextTask = await prisma.task.findFirst({

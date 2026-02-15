@@ -12,8 +12,6 @@ export async function GET(
   { params }: { params: Promise<{ dealId: string }> }
 ) {
   const { dealId } = await params
-  const result = await checkPermission('COMPANY_VIEW')
-  if (isAuthError(result)) return result.error
 
   try {
     const deal = await prisma.deal.findUnique({
@@ -79,6 +77,10 @@ export async function GET(
       return NextResponse.json({ error: 'Deal not found' }, { status: 404 })
     }
 
+    // SECURITY FIX: Verify user has access to this deal's company
+    const result = await checkPermission('COMPANY_VIEW', deal.companyId)
+    if (isAuthError(result)) return result.error
+
     // Get stage distribution
     const stageDistribution = await prisma.dealBuyer.groupBy({
       by: ['currentStage'],
@@ -115,8 +117,6 @@ export async function PUT(
   { params }: { params: Promise<{ dealId: string }> }
 ) {
   const { dealId } = await params
-  const result = await checkPermission('COMPANY_UPDATE')
-  if (isAuthError(result)) return result.error
 
   try {
     const existing = await prisma.deal.findUnique({
@@ -126,6 +126,10 @@ export async function PUT(
     if (!existing) {
       return NextResponse.json({ error: 'Deal not found' }, { status: 404 })
     }
+
+    // SECURITY FIX: Verify user has access to this deal's company
+    const result = await checkPermission('COMPANY_UPDATE', existing.companyId)
+    if (isAuthError(result)) return result.error
 
     const body = await request.json()
     const {
@@ -201,8 +205,6 @@ export async function DELETE(
   { params }: { params: Promise<{ dealId: string }> }
 ) {
   const { dealId } = await params
-  const result = await checkPermission('COMPANY_UPDATE')
-  if (isAuthError(result)) return result.error
 
   try {
     const deal = await prisma.deal.findUnique({
@@ -215,6 +217,10 @@ export async function DELETE(
     if (!deal) {
       return NextResponse.json({ error: 'Deal not found' }, { status: 404 })
     }
+
+    // SECURITY FIX: Verify user has access to this deal's company
+    const result = await checkPermission('COMPANY_UPDATE', deal.companyId)
+    if (isAuthError(result)) return result.error
 
     if (deal._count.buyers > 0) {
       return NextResponse.json(

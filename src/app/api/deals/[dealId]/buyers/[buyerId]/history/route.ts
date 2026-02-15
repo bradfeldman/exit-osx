@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import { prisma } from '@/lib/prisma'
 import { getTimeInStages, STAGE_LABELS } from '@/lib/contact-system/stage-service'
 
@@ -12,8 +12,8 @@ export async function GET(
   { params }: { params: Promise<{ dealId: string; buyerId: string }> }
 ) {
   const { dealId, buyerId } = await params
-  const result = await checkPermission('COMPANY_VIEW')
-  if (isAuthError(result)) return result.error
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_VIEW')
+  if (authResult instanceof NextResponse) return authResult
 
   try {
     // Verify buyer exists and belongs to deal

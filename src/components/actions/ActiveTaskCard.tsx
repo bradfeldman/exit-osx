@@ -9,12 +9,7 @@ import { RelatedTasksBlock } from './RelatedTasksBlock'
 import { TaskDetailsCollapsible } from './TaskDetailsCollapsible'
 import { TaskStatusActions } from './TaskStatusActions'
 import { TaskNotes } from './TaskNotes'
-
-function formatCurrency(value: number): string {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
-  if (value >= 1_000) return `$${Math.round(value / 1_000)}K`
-  return `$${Math.round(value)}`
-}
+import { formatCurrency } from '@/lib/utils/currency'
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })

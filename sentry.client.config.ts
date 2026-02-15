@@ -1,39 +1,43 @@
 import * as Sentry from "@sentry/nextjs"
 
-Sentry.init({
-  dsn: "https://8399378228d6a93cbe7a9a7e41766497@o4510802430132224.ingest.us.sentry.io/4510802444812288",
+const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN
 
-  // Performance monitoring
-  tracesSampleRate: 0.1, // 10% of transactions for performance monitoring
+if (SENTRY_DSN) {
+  Sentry.init({
+    dsn: SENTRY_DSN,
 
-  // Session replay for debugging (captures user sessions on errors)
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
+    // Performance monitoring
+    tracesSampleRate: 0.1, // 10% of transactions for performance monitoring
 
-  // Only enable in production
-  enabled: process.env.NODE_ENV === 'production',
+    // Session replay for debugging (captures user sessions on errors)
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
 
-  // Environment
-  environment: process.env.VERCEL_ENV || process.env.NODE_ENV,
+    // Only enable in production
+    enabled: process.env.NODE_ENV === 'production',
 
-  // Filter out noisy errors
-  ignoreErrors: [
-    // Browser extensions
-    /extensions\//i,
-    /^chrome-extension:\/\//,
-    // Network errors that are usually transient
-    'Network request failed',
-    'Failed to fetch',
-    'Load failed',
-    // User-initiated navigation
-    'AbortError',
-  ],
+    // Environment
+    environment: process.env.VERCEL_ENV || process.env.NODE_ENV,
 
-  beforeSend(event) {
-    // Don't send events in development
-    if (process.env.NODE_ENV !== 'production') {
-      return null
-    }
-    return event
-  },
-})
+    // Filter out noisy errors
+    ignoreErrors: [
+      // Browser extensions
+      /extensions\//i,
+      /^chrome-extension:\/\//,
+      // Network errors that are usually transient
+      'Network request failed',
+      'Failed to fetch',
+      'Load failed',
+      // User-initiated navigation
+      'AbortError',
+    ],
+
+    beforeSend(event) {
+      // Don't send events in development
+      if (process.env.NODE_ENV !== 'production') {
+        return null
+      }
+      return event
+    },
+  })
+}

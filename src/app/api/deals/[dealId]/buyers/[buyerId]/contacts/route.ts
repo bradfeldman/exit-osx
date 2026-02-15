@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import { prisma } from '@/lib/prisma'
 import { BuyerContactRole } from '@prisma/client'
 import { syncVDRAccessForBuyer } from '@/lib/contact-system/stage-service'
@@ -13,8 +13,8 @@ export async function GET(
   { params }: { params: Promise<{ dealId: string; buyerId: string }> }
 ) {
   const { dealId, buyerId } = await params
-  const result = await checkPermission('COMPANY_VIEW')
-  if (isAuthError(result)) return result.error
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_VIEW')
+  if (authResult instanceof NextResponse) return authResult
 
   try {
     // Verify buyer exists and belongs to deal
@@ -82,8 +82,9 @@ export async function POST(
   { params }: { params: Promise<{ dealId: string; buyerId: string }> }
 ) {
   const { dealId, buyerId } = await params
-  const result = await checkPermission('COMPANY_UPDATE')
-  if (isAuthError(result)) return result.error
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_UPDATE')
+  if (authResult instanceof NextResponse) return authResult
+  const { auth } = authResult
 
   try {
     // Verify buyer exists and belongs to deal
@@ -180,7 +181,7 @@ export async function POST(
     })
 
     // Sync VDR access for the buyer (will grant access to new contact based on stage)
-    await syncVDRAccessForBuyer(buyerId, buyer.currentStage, result.auth.user.id)
+    await syncVDRAccessForBuyer(buyerId, buyer.currentStage, auth.user.id)
 
     // Log activity
     await prisma.dealActivity2.create({
@@ -189,7 +190,7 @@ export async function POST(
         dealBuyerId: buyerId,
         activityType: 'NOTE_ADDED',
         subject: `Contact ${person.firstName} ${person.lastName} added`,
-        performedByUserId: result.auth.user.id,
+        performedByUserId: auth.user.id,
       },
     })
 

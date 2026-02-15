@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 
 type RouteParams = Promise<{ dealId: string; buyerId: string }>
 
@@ -12,12 +12,11 @@ export async function GET(
   request: NextRequest,
   { params }: { params: RouteParams }
 ) {
-  // SECURITY FIX (PROD-060): Was completely unauthenticated — anyone could access VDR activity data.
-  const result = await checkPermission('COMPANY_VIEW')
-  if (isAuthError(result)) return result.error
+  const { dealId, buyerId } = await params
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_VIEW')
+  if (authResult instanceof NextResponse) return authResult
 
   try {
-    const { dealId, buyerId } = await params
     const searchParams = request.nextUrl.searchParams
     const limit = parseInt(searchParams.get('limit') || '20', 10)
     const offset = parseInt(searchParams.get('offset') || '0', 10)

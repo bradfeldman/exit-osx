@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import { prisma } from '@/lib/prisma'
 import { DealStage, ApprovalStatus } from '@prisma/client'
 import { PAGINATION } from '@/lib/contact-system/constants'
@@ -13,18 +13,10 @@ export async function GET(
   { params }: { params: Promise<{ dealId: string }> }
 ) {
   const { dealId } = await params
-  const result = await checkPermission('COMPANY_VIEW')
-  if (isAuthError(result)) return result.error
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_VIEW')
+  if (authResult instanceof NextResponse) return authResult
 
   try {
-    // Verify deal exists
-    const deal = await prisma.deal.findUnique({
-      where: { id: dealId },
-    })
-
-    if (!deal) {
-      return NextResponse.json({ error: 'Deal not found' }, { status: 404 })
-    }
 
     const { searchParams } = new URL(request.url)
     const stage = searchParams.get('stage') as DealStage | 'all' | null
@@ -141,13 +133,15 @@ export async function POST(
   { params }: { params: Promise<{ dealId: string }> }
 ) {
   const { dealId } = await params
-  const result = await checkPermission('COMPANY_UPDATE')
-  if (isAuthError(result)) return result.error
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_UPDATE')
+  if (authResult instanceof NextResponse) return authResult
+  const { auth } = authResult
 
   try {
-    // Verify deal exists and is active
+    // Verify deal is active
     const deal = await prisma.deal.findUnique({
       where: { id: dealId },
+      select: { status: true, requireSellerApproval: true },
     })
 
     if (!deal) {
@@ -216,7 +210,7 @@ export async function POST(
         currentStage: needsApproval ? DealStage.IDENTIFIED : initialStage,
         approvalStatus,
         internalNotes: notes,
-        createdByUserId: result.auth.user.id,
+        createdByUserId: auth.user.id,
       },
       include: {
         canonicalCompany: {
@@ -236,7 +230,7 @@ export async function POST(
         fromStage: DealStage.IDENTIFIED,
         toStage: buyer.currentStage,
         note: 'Buyer added to deal',
-        changedByUserId: result.auth.user.id,
+        changedByUserId: auth.user.id,
       },
     })
 
@@ -248,7 +242,7 @@ export async function POST(
         activityType: 'NOTE_ADDED',
         subject: `Buyer ${canonicalCompany.name} added to deal`,
         description: notes,
-        performedByUserId: result.auth.user.id,
+        performedByUserId: auth.user.id,
       },
     })
 

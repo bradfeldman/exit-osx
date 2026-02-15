@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import { parseInput } from '@/lib/contact-system/smart-parser'
 import { findPersonMatches, findCompanyMatches } from '@/lib/contact-system/identity-resolution'
 import { inferRoleFromTitle } from '@/lib/contact-system/constants'
@@ -12,9 +12,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ dealId: string }> }
 ) {
-  await params // consume params
-  const result = await checkPermission('COMPANY_VIEW')
-  if (isAuthError(result)) return result.error
+  const { dealId } = await params
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_VIEW')
+  if (authResult instanceof NextResponse) return authResult
 
   try {
     const body = await request.json()

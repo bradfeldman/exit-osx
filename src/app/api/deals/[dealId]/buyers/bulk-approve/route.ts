@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import { ApprovalStatus, ActivityType } from '@prisma/client'
 
 type RouteParams = Promise<{ dealId: string }>
@@ -19,18 +19,15 @@ export async function POST(
   request: NextRequest,
   { params }: { params: RouteParams }
 ) {
-  // SECURITY FIX (PROD-060): Was completely unauthenticated — anyone could bulk-approve deal buyers.
-  // Also was accepting userId from the request body which is trivially spoofable.
-  const authResult = await checkPermission('COMPANY_VIEW')
-  if (isAuthError(authResult)) return authResult.error
-  const authenticatedUserId = authResult.auth.user.id
+  const { dealId } = await params
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_UPDATE')
+  if (authResult instanceof NextResponse) return authResult
+  const { auth } = authResult
+  const userId = auth.user.id
 
   try {
-    const { dealId } = await params
     const body = await request.json()
-    // SECURITY FIX (PROD-060): Ignore userId from body — use authenticated user ID instead.
     const { buyerIds, status, note } = body
-    const userId = authenticatedUserId
 
     // Validate inputs
     if (!Array.isArray(buyerIds) || buyerIds.length === 0) {

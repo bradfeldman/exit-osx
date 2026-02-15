@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import { prisma } from '@/lib/prisma'
 import { ParticipantSide, ParticipantRole, DealStage, ApprovalStatus } from '@prisma/client'
 import { inferCategoryFromSideRole, deriveSideRoleFromCategory } from '@/lib/contact-system/constants'
@@ -26,8 +26,8 @@ export async function GET(
   { params }: { params: Promise<{ dealId: string }> }
 ) {
   const { dealId } = await params
-  const result = await checkPermission('COMPANY_VIEW')
-  if (isAuthError(result)) return result.error
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_VIEW')
+  if (authResult instanceof NextResponse) return authResult
 
   try {
     const url = new URL(request.url)
@@ -36,15 +36,6 @@ export async function GET(
     const role = url.searchParams.get('role') as ParticipantRole | null
     const category = url.searchParams.get('category')
     const search = url.searchParams.get('search')
-
-    // Verify deal exists
-    const deal = await prisma.deal.findUnique({
-      where: { id: dealId },
-      select: { id: true },
-    })
-    if (!deal) {
-      return NextResponse.json({ error: 'Deal not found' }, { status: 404 })
-    }
 
     // Build where clause
     const where: Record<string, unknown> = { dealId, isActive: true }
@@ -130,8 +121,9 @@ export async function POST(
   { params }: { params: Promise<{ dealId: string }> }
 ) {
   const { dealId } = await params
-  const result = await checkPermission('COMPANY_UPDATE')
-  if (isAuthError(result)) return result.error
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_UPDATE')
+  if (authResult instanceof NextResponse) return authResult
+  const { auth } = authResult
 
   try {
     const body = await request.json()
@@ -270,7 +262,7 @@ export async function POST(
             canonicalCompanyId: person.currentCompanyId,
             currentStage: DealStage.IDENTIFIED,
             approvalStatus,
-            createdByUserId: result.auth.user.id,
+            createdByUserId: auth.user.id,
           },
         })
 
@@ -281,7 +273,7 @@ export async function POST(
             fromStage: DealStage.IDENTIFIED,
             toStage: DealStage.IDENTIFIED,
             note: 'Auto-created from prospect contact',
-            changedByUserId: result.auth.user.id,
+            changedByUserId: auth.user.id,
           },
         })
 
@@ -293,7 +285,7 @@ export async function POST(
             dealBuyerId: newBuyer.id,
             activityType: 'NOTE_ADDED',
             subject: `Buyer ${companyName} auto-added to pipeline from prospect contact`,
-            performedByUserId: result.auth.user.id,
+            performedByUserId: auth.user.id,
           },
         })
 
@@ -315,7 +307,7 @@ export async function POST(
         dealBuyerId: linkedBuyerId || undefined,
         activityType: 'NOTE_ADDED',
         subject: `${person.firstName} ${person.lastName} added as ${category ? category.toLowerCase() : side.toLowerCase()} participant`,
-        performedByUserId: result.auth.user.id,
+        performedByUserId: auth.user.id,
       },
     })
 

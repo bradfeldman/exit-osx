@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { formatCurrency as formatCurrencyUtil } from '@/lib/utils/currency'
 
 interface UseCountUpOptions {
   /** Starting value (default: 0) */

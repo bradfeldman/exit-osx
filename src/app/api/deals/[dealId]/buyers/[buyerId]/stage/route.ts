@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import { prisma } from '@/lib/prisma'
 import { DealStage, ApprovalStatus } from '@prisma/client'
 import {
@@ -17,8 +17,8 @@ export async function GET(
   { params }: { params: Promise<{ dealId: string; buyerId: string }> }
 ) {
   const { dealId, buyerId } = await params
-  const result = await checkPermission('COMPANY_VIEW')
-  if (isAuthError(result)) return result.error
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_VIEW')
+  if (authResult instanceof NextResponse) return authResult
 
   try {
     const buyer = await prisma.dealBuyer.findUnique({
@@ -68,8 +68,9 @@ export async function POST(
   { params }: { params: Promise<{ dealId: string; buyerId: string }> }
 ) {
   const { dealId, buyerId } = await params
-  const result = await checkPermission('COMPANY_UPDATE')
-  if (isAuthError(result)) return result.error
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_UPDATE')
+  if (authResult instanceof NextResponse) return authResult
+  const { auth } = authResult
 
   try {
     // Verify buyer exists and belongs to deal
@@ -133,7 +134,7 @@ export async function POST(
       skipValidation: skipValidation === true,
       ioiAmount,
       loiAmount,
-      performedByUserId: result.auth.user.id,
+      performedByUserId: auth.user.id,
     })
 
     if (!transitionResult.success) {

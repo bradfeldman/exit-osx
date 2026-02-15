@@ -1,41 +1,109 @@
 import crypto from 'crypto'
+import { constantTimeCompare } from '@/lib/security/timing-safe'
 
-const SECRET = process.env.REPORT_SHARE_SECRET || process.env.NEXTAUTH_SECRET || 'exit-osx-report-share-default'
+const DEFAULT_EXPIRY_SECONDS = 7 * 24 * 60 * 60
+
+// Grace period for legacy tokens (no timestamp). Remove after 2026-03-16.
+const LEGACY_TOKEN_CUTOFF = new Date('2026-03-16T00:00:00Z').getTime()
+
+function getSecret(): string {
+  const secret = process.env.REPORT_SHARE_SECRET || process.env.NEXTAUTH_SECRET
+  if (!secret) {
+    throw new Error(
+      'REPORT_SHARE_SECRET (or NEXTAUTH_SECRET) is not configured. ' +
+      'Set a strong random secret in your environment variables.'
+    )
+  }
+  return secret
+}
+
+function getExpirySeconds(): number {
+  const envValue = process.env.REPORT_TOKEN_EXPIRY_SECONDS
+  if (envValue) {
+    const parsed = parseInt(envValue, 10)
+    if (!isNaN(parsed) && parsed > 0) return parsed
+  }
+  return DEFAULT_EXPIRY_SECONDS
+}
 
 /**
- * Generate a signed share token for a company's exit readiness report.
- * Token format: base64url(companyId).base64url(hmac)
- * No DB migration needed — token is computed from companyId + server secret.
+ * Generate a signed, time-limited share token for a company's exit readiness report.
+ * Token format (v2): base64url(companyId).timestamp.base64url(hmac)
  */
 export function generateReportToken(companyId: string): string {
+  const secret = getSecret()
+  const timestamp = Math.floor(Date.now() / 1000).toString()
   const payload = Buffer.from(companyId).toString('base64url')
+
   const signature = crypto
-    .createHmac('sha256', SECRET)
-    .update(companyId)
+    .createHmac('sha256', secret)
+    .update(`${companyId}:${timestamp}`)
     .digest('base64url')
-  return `${payload}.${signature}`
+
+  return `${payload}.${timestamp}.${signature}`
 }
 
 /**
  * Verify and decode a report share token.
- * Returns the companyId if valid, null if tampered.
+ * Returns the companyId if valid and not expired, null otherwise.
+ * Accepts v2 (3-part) and legacy v1 (2-part) formats until LEGACY_TOKEN_CUTOFF.
  */
 export function verifyReportToken(token: string): string | null {
+  const secret = getSecret()
   const parts = token.split('.')
-  if (parts.length !== 2) return null
-
-  const [payload, signature] = parts
 
   try {
-    const companyId = Buffer.from(payload, 'base64url').toString('utf-8')
-    const expectedSignature = crypto
-      .createHmac('sha256', SECRET)
-      .update(companyId)
-      .digest('base64url')
+    if (parts.length === 3) {
+      return verifyV2Token(parts, secret)
+    }
 
-    if (signature !== expectedSignature) return null
-    return companyId
+    // TODO: Remove legacy support after 2026-03-16
+    if (parts.length === 2) {
+      return verifyLegacyToken(parts, secret)
+    }
+
+    return null
   } catch {
     return null
   }
+}
+
+function verifyV2Token(parts: string[], secret: string): string | null {
+  const [payload, timestampStr, signature] = parts
+
+  const companyId = Buffer.from(payload, 'base64url').toString('utf-8')
+  const timestamp = parseInt(timestampStr, 10)
+
+  if (isNaN(timestamp) || timestamp <= 0) return null
+
+  const nowSeconds = Math.floor(Date.now() / 1000)
+  const expirySeconds = getExpirySeconds()
+  if (nowSeconds - timestamp > expirySeconds) return null
+  if (timestamp > nowSeconds + 60) return null
+
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(`${companyId}:${timestampStr}`)
+    .digest('base64url')
+
+  if (!constantTimeCompare(signature, expectedSignature)) return null
+
+  return companyId
+}
+
+// TODO: Remove after 2026-03-16
+function verifyLegacyToken(parts: string[], secret: string): string | null {
+  if (Date.now() > LEGACY_TOKEN_CUTOFF) return null
+
+  const [payload, signature] = parts
+  const companyId = Buffer.from(payload, 'base64url').toString('utf-8')
+
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(companyId)
+    .digest('base64url')
+
+  if (!constantTimeCompare(signature, expectedSignature)) return null
+
+  return companyId
 }

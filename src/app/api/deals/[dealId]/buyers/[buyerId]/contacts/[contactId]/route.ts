@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { authorizeDealAccess } from '@/lib/deal-tracker/deal-auth'
 import { BuyerContactRole } from '@prisma/client'
 
 type RouteParams = Promise<{ dealId: string; buyerId: string; contactId: string }>
@@ -13,12 +13,11 @@ export async function GET(
   request: NextRequest,
   { params }: { params: RouteParams }
 ) {
-  // SECURITY FIX (PROD-060): Was completely unauthenticated — anyone could read/write deal contacts.
-  const result = await checkPermission('COMPANY_VIEW')
-  if (isAuthError(result)) return result.error
+  const { dealId, buyerId, contactId } = await params
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_VIEW')
+  if (authResult instanceof NextResponse) return authResult
 
   try {
-    const { dealId, buyerId, contactId } = await params
 
     const contact = await prisma.dealContact.findUnique({
       where: { id: contactId },
@@ -70,11 +69,11 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: RouteParams }
 ) {
-  const putResult = await checkPermission('COMPANY_UPDATE')
-  if (isAuthError(putResult)) return putResult.error
+  const { dealId, buyerId, contactId } = await params
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_UPDATE')
+  if (authResult instanceof NextResponse) return authResult
 
   try {
-    const { dealId, buyerId, contactId } = await params
     const body = await request.json()
     const { role, isPrimary } = body
 
@@ -162,11 +161,11 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: RouteParams }
 ) {
-  const deleteResult = await checkPermission('COMPANY_UPDATE')
-  if (isAuthError(deleteResult)) return deleteResult.error
+  const { dealId, buyerId, contactId } = await params
+  const authResult = await authorizeDealAccess(dealId, 'COMPANY_UPDATE')
+  if (authResult instanceof NextResponse) return authResult
 
   try {
-    const { dealId, buyerId, contactId } = await params
 
     // Verify contact exists and belongs to the buyer
     const existingContact = await prisma.dealContact.findUnique({
