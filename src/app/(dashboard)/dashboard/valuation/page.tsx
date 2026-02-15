@@ -73,6 +73,8 @@ export default function ValuationPage() {
   const [workingCapital, setWorkingCapital] = useState<{ t12: number | null; lastFY: number | null; threeYearAvg: number | null } | null>(null)
   const [fcfIsEstimated, setFcfIsEstimated] = useState(false)
   const [originalUseDCFValue, setOriginalUseDCFValue] = useState(false)
+  const [debtWeight, setDebtWeight] = useState(0.20)
+  const [equityWeight, setEquityWeight] = useState(0.80)
 
   // Analytics tracking
   const hasTrackedPageView = useRef(false)
@@ -139,8 +141,18 @@ export default function ValuationPage() {
           setUseDCFValue(dcfToggle)
           setOriginalUseDCFValue(dcfToggle)
         } else {
-          // No saved assumptions - use defaults and set original for change tracking
-          setOriginalAssumptions(DEFAULT_ASSUMPTIONS)
+          // No saved assumptions - use suggested defaults merged with generic defaults
+          const initial = { ...DEFAULT_ASSUMPTIONS }
+          if (data.suggestedDefaults) {
+            if (data.suggestedDefaults.sizeRiskPremium != null) initial.sizeRiskPremium = data.suggestedDefaults.sizeRiskPremium
+            if (data.suggestedDefaults.costOfDebt != null) initial.costOfDebtOverride = data.suggestedDefaults.costOfDebt
+            if (data.suggestedDefaults.taxRate != null) initial.taxRateOverride = data.suggestedDefaults.taxRate
+            if (data.suggestedDefaults.growthAssumptions) initial.growthAssumptions = data.suggestedDefaults.growthAssumptions
+            if (data.suggestedDefaults.debtWeight != null) setDebtWeight(data.suggestedDefaults.debtWeight)
+            if (data.suggestedDefaults.equityWeight != null) setEquityWeight(data.suggestedDefaults.equityWeight)
+          }
+          setAssumptions(initial)
+          setOriginalAssumptions(initial)
           setOriginalUseDCFValue(false)
         }
 
@@ -261,18 +273,11 @@ export default function ValuationPage() {
       assumptions.sizeRiskPremium
     )
 
-    // For small businesses, often 100% equity financed or minimal debt
-    // Use simple cost of equity as WACC for simplicity
-    // In a more complete implementation, we'd calculate proper debt/equity weights
     const costOfDebt = assumptions.costOfDebtOverride || 0.06 // 6% default
     const taxRate = assumptions.taxRateOverride || 0.25 // 25% default
 
-    // Assume 80% equity, 20% debt for small business
-    const equityWeight = 0.8
-    const debtWeight = 0.2
-
     return equityWeight * costOfEquity + debtWeight * costOfDebt * (1 - taxRate)
-  }, [assumptions])
+  }, [assumptions, debtWeight, equityWeight])
 
   // Calculate DCF results
   const dcfResults = useMemo<DCFResults | null>(() => {

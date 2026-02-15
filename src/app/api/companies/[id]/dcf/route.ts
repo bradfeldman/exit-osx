@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 
+// Size risk premium by revenue category (mirrors auto-dcf.ts)
+const SIZE_RISK_PREMIUM: Record<string, number> = {
+  UNDER_500K: 0.06,
+  FROM_500K_TO_1M: 0.06,
+  FROM_1M_TO_3M: 0.06,
+  FROM_3M_TO_10M: 0.04,
+  FROM_10M_TO_25M: 0.04,
+  OVER_25M: 0.025,
+}
+
+const TERMINAL_GROWTH_RATE = 0.025
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -77,7 +89,105 @@ export async function GET(
     }
 
     if (!dcfAssumptions) {
-      return NextResponse.json({ assumptions: null, financials, workingCapital })
+      // Derive smart defaults from financial data when no saved assumptions exist
+      const suggestedDefaults: Record<string, unknown> = {}
+
+      // Size risk premium from revenue category
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+        include: { coreFactors: true },
+      })
+      const revenueSizeCategory = company?.coreFactors?.revenueSizeCategory ?? null
+      if (revenueSizeCategory && SIZE_RISK_PREMIUM[revenueSizeCategory] != null) {
+        suggestedDefaults.sizeRiskPremium = SIZE_RISK_PREMIUM[revenueSizeCategory]
+      }
+
+      // Derive cost of debt, tax rate, and capital structure from latest period
+      if (latestPeriod?.incomeStatement && latestPeriod?.balanceSheet) {
+        const is = latestPeriod.incomeStatement
+        const bs = latestPeriod.balanceSheet
+
+        // Cost of debt = interest expense / total debt
+        const interestExpense = is.interestExpense ? Number(is.interestExpense) : 0
+        const totalDebt = Number(bs.longTermDebt) + Number(bs.currentPortionLtd)
+        if (interestExpense > 0 && totalDebt > 0) {
+          const derivedCostOfDebt = interestExpense / totalDebt
+          if (derivedCostOfDebt >= 0.01 && derivedCostOfDebt <= 0.20) {
+            suggestedDefaults.costOfDebt = Math.round(derivedCostOfDebt * 10000) / 10000
+          }
+        }
+
+        // Tax rate = tax expense / EBT
+        const taxExpense = is.taxExpense ? Number(is.taxExpense) : 0
+        const ebitdaVal = Number(is.ebitda)
+        const depreciation = is.depreciation ? Number(is.depreciation) : 0
+        const amortization = is.amortization ? Number(is.amortization) : 0
+        const ebt = ebitdaVal - depreciation - amortization - interestExpense
+        if (taxExpense > 0 && ebt > 0) {
+          const derivedTaxRate = taxExpense / ebt
+          if (derivedTaxRate >= 0.05 && derivedTaxRate <= 0.50) {
+            suggestedDefaults.taxRate = Math.round(derivedTaxRate * 10000) / 10000
+          }
+        }
+      }
+
+      // Capital structure from balance sheet
+      if (latestPeriod?.balanceSheet) {
+        const bs = latestPeriod.balanceSheet
+        const totalDebt = Number(bs.longTermDebt) + Number(bs.currentPortionLtd)
+        const totalEquity = Number(bs.totalEquity)
+        const totalCapital = totalDebt + totalEquity
+        if (totalCapital > 0 && totalEquity > 0) {
+          let debtWeight = totalDebt / totalCapital
+          let equityWeight = totalEquity / totalCapital
+          if (debtWeight > 0.80) {
+            debtWeight = 0.80
+            equityWeight = 0.20
+          }
+          suggestedDefaults.debtWeight = Math.round(debtWeight * 10000) / 10000
+          suggestedDefaults.equityWeight = Math.round(equityWeight * 10000) / 10000
+        }
+      }
+
+      // Growth rates from historical FCF YoY changes
+      if (periods.length >= 2) {
+        const historicalRates: number[] = []
+        for (let i = 0; i < periods.length - 1; i++) {
+          const currentFCF = periods[i].cashFlowStatement?.freeCashFlow
+            ? Number(periods[i].cashFlowStatement!.freeCashFlow)
+            : 0
+          const priorFCF = periods[i + 1].cashFlowStatement?.freeCashFlow
+            ? Number(periods[i + 1].cashFlowStatement!.freeCashFlow)
+            : 0
+          if (priorFCF > 0 && currentFCF > 0) {
+            historicalRates.push((currentFCF - priorFCF) / priorFCF)
+          }
+        }
+
+        if (historicalRates.length > 0) {
+          historicalRates.sort((a, b) => a - b)
+          const medianIdx = Math.floor(historicalRates.length / 2)
+          let medianRate = historicalRates.length % 2 === 0
+            ? (historicalRates[medianIdx - 1] + historicalRates[medianIdx]) / 2
+            : historicalRates[medianIdx]
+          medianRate = Math.max(0, Math.min(0.25, medianRate))
+
+          suggestedDefaults.growthAssumptions = {
+            year1: Math.round(medianRate * 10000) / 10000,
+            year2: Math.round((medianRate * 0.85 + TERMINAL_GROWTH_RATE * 0.15) * 10000) / 10000,
+            year3: Math.round((medianRate * 0.60 + TERMINAL_GROWTH_RATE * 0.40) * 10000) / 10000,
+            year4: Math.round((medianRate * 0.35 + TERMINAL_GROWTH_RATE * 0.65) * 10000) / 10000,
+            year5: TERMINAL_GROWTH_RATE,
+          }
+        }
+      }
+
+      return NextResponse.json({
+        assumptions: null,
+        financials,
+        workingCapital,
+        ...(Object.keys(suggestedDefaults).length > 0 ? { suggestedDefaults } : {}),
+      })
     }
 
     return NextResponse.json({
