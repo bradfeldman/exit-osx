@@ -28,12 +28,24 @@ export function AssessmentFlow() {
   const [results, setResults] = useState<AssessmentResults | null>(null)
   const [isCalculating, setIsCalculating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [classification, setClassification] = useState<{ primaryIndustry: { name: string }; [key: string]: unknown } | null>(null)
 
   const stepIndex = STEP_ORDER.indexOf(step)
 
   const handleBasicsComplete = useCallback((data: BusinessBasicsData) => {
     setBasics(data)
     setStep('profile')
+
+    // Classify in the background so we have industry context for Screen 2
+    // Non-blocking — Screen 2 works fine without it
+    fetch('/api/assess/classify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description: data.businessDescription }),
+    })
+      .then(res => res.ok ? res.json() : null)
+      .then(result => { if (result) setClassification(result) })
+      .catch(() => {}) // Silent fail — classification is optional for Screen 2
   }, [])
 
   const handleProfileComplete = useCallback((data: BusinessProfileData) => {
@@ -56,16 +68,17 @@ export function AssessmentFlow() {
     setError(null)
 
     try {
-      // Classify the business
-      const classifyRes = await fetch('/api/assess/classify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description: basics.businessDescription }),
-      })
-
-      let classification = null
-      if (classifyRes.ok) {
-        classification = await classifyRes.json()
+      // Use classification already fetched after Screen 1, or fetch now as fallback
+      let classificationData = classification
+      if (!classificationData) {
+        const classifyRes = await fetch('/api/assess/classify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description: basics.businessDescription }),
+        })
+        if (classifyRes.ok) {
+          classificationData = await classifyRes.json()
+        }
       }
 
       // Calculate BRI + valuation
@@ -76,7 +89,7 @@ export function AssessmentFlow() {
           annualRevenue: basics.annualRevenue,
           coreFactors: profile,
           buyerScan: scan,
-          classification,
+          classification: classificationData,
         }),
       })
 
@@ -93,7 +106,7 @@ export function AssessmentFlow() {
     } finally {
       setIsCalculating(false)
     }
-  }, [basics, profile, scan])
+  }, [basics, profile, scan, classification])
 
   return (
     <div className="min-h-screen bg-background">
@@ -166,7 +179,7 @@ export function AssessmentFlow() {
           )}
           {step === 'profile' && (
             <motion.div key="profile" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-              <BusinessProfileStep initialData={profile} onComplete={handleProfileComplete} onBack={() => setStep('basics')} />
+              <BusinessProfileStep initialData={profile} onComplete={handleProfileComplete} onBack={() => setStep('basics')} industryName={classification?.primaryIndustry?.name ?? null} />
             </motion.div>
           )}
           {step === 'scan' && (

@@ -15,15 +15,15 @@ const PROFILE_LABELS: Record<string, Record<string, string>> = {
     SUBSCRIPTION_SAAS: 'Subscription / SaaS',
   },
   laborIntensity: {
-    VERY_HIGH: 'Very people-dependent',
-    HIGH: 'Mostly people-dependent',
-    MODERATE: 'Balanced',
-    LOW: 'Systems-driven',
+    VERY_HIGH: 'More than most',
+    HIGH: 'Somewhat more',
+    MODERATE: 'About typical',
+    LOW: 'Less than most',
   },
   assetIntensity: {
-    ASSET_HEAVY: 'Asset-heavy',
-    MODERATE: 'Moderate',
-    ASSET_LIGHT: 'Asset-light',
+    ASSET_HEAVY: 'More than most',
+    MODERATE: 'About typical',
+    ASSET_LIGHT: 'Less than most',
   },
   ownerInvolvement: {
     CRITICAL: 'Business depends on me',
@@ -33,10 +33,10 @@ const PROFILE_LABELS: Record<string, Record<string, string>> = {
     MINIMAL: 'Rarely needed',
   },
   grossMarginProxy: {
-    LOW: 'Thin margins',
-    MODERATE: 'Moderate margins',
-    GOOD: 'Good margins',
-    EXCELLENT: 'Excellent margins',
+    LOW: 'Below average',
+    MODERATE: 'About average',
+    GOOD: 'Above average',
+    EXCELLENT: 'Well above average',
   },
 }
 

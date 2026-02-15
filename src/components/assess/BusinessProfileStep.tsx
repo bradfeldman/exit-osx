@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, ArrowLeft } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Building2 } from 'lucide-react'
 
 export interface BusinessProfileData {
   revenueModel: string
@@ -18,14 +18,17 @@ interface RadioGroupOption {
   description: string
 }
 
-const PROFILE_QUESTIONS: Array<{
+interface ProfileQuestion {
   key: keyof BusinessProfileData
   question: string
+  industryQuestion?: string // version that includes "{industry}" placeholder
   options: RadioGroupOption[]
-}> = [
+}
+
+const PROFILE_QUESTIONS: ProfileQuestion[] = [
   {
     key: 'revenueModel',
-    question: 'How does your business generate revenue?',
+    question: 'How does your business generate most of its revenue?',
     options: [
       { value: 'PROJECT_BASED', label: 'Project-based', description: 'One-time projects or engagements' },
       { value: 'TRANSACTIONAL', label: 'Transactional', description: 'Individual sales or transactions' },
@@ -35,21 +38,23 @@ const PROFILE_QUESTIONS: Array<{
   },
   {
     key: 'laborIntensity',
-    question: 'How dependent is your business on people to deliver?',
+    question: 'Compared to others in your industry, how people-dependent is your business?',
+    industryQuestion: 'Compared to other {industry} companies, how people-dependent is your business?',
     options: [
-      { value: 'VERY_HIGH', label: 'Very people-dependent', description: 'Revenue stops without specific people' },
-      { value: 'HIGH', label: 'Mostly people-dependent', description: 'Key roles are hard to replace' },
-      { value: 'MODERATE', label: 'Balanced', description: 'Mix of people and systems' },
-      { value: 'LOW', label: 'Systems-driven', description: 'Runs on processes and technology' },
+      { value: 'VERY_HIGH', label: 'More than most', description: 'Revenue stops without specific people' },
+      { value: 'HIGH', label: 'Somewhat more', description: 'Key roles are hard to replace' },
+      { value: 'MODERATE', label: 'About typical', description: 'Similar to others in our industry' },
+      { value: 'LOW', label: 'Less than most', description: 'Runs more on systems and technology' },
     ],
   },
   {
     key: 'assetIntensity',
-    question: 'How asset-heavy is your business?',
+    question: 'Compared to others in your industry, how much do you rely on physical assets?',
+    industryQuestion: 'Compared to other {industry} companies, how much do you rely on physical assets?',
     options: [
-      { value: 'ASSET_HEAVY', label: 'Asset-heavy', description: 'Significant equipment, real estate, or inventory' },
-      { value: 'MODERATE', label: 'Moderate', description: 'Some physical assets needed' },
-      { value: 'ASSET_LIGHT', label: 'Asset-light', description: 'Primarily intellectual property or services' },
+      { value: 'ASSET_HEAVY', label: 'More than most', description: 'Significant equipment, real estate, or inventory' },
+      { value: 'MODERATE', label: 'About typical', description: 'Similar to others in our industry' },
+      { value: 'ASSET_LIGHT', label: 'Less than most', description: 'Lighter on physical assets than peers' },
     ],
   },
   {
@@ -65,12 +70,13 @@ const PROFILE_QUESTIONS: Array<{
   },
   {
     key: 'grossMarginProxy',
-    question: 'How would you describe your profit margins?',
+    question: 'Compared to others in your industry, how would you describe your profit margins?',
+    industryQuestion: 'Compared to other {industry} companies, how would you describe your profit margins?',
     options: [
-      { value: 'LOW', label: 'Thin margins', description: 'Under 20% gross margin' },
-      { value: 'MODERATE', label: 'Moderate margins', description: '20-40% gross margin' },
-      { value: 'GOOD', label: 'Good margins', description: '40-60% gross margin' },
-      { value: 'EXCELLENT', label: 'Excellent margins', description: 'Over 60% gross margin' },
+      { value: 'LOW', label: 'Below average', description: 'Lower margins than most in our industry' },
+      { value: 'MODERATE', label: 'About average', description: 'In line with industry norms' },
+      { value: 'GOOD', label: 'Above average', description: 'Better margins than most peers' },
+      { value: 'EXCELLENT', label: 'Well above average', description: 'Significantly higher than industry norms' },
     ],
   },
 ]
@@ -79,9 +85,10 @@ interface BusinessProfileStepProps {
   initialData: BusinessProfileData | null
   onComplete: (data: BusinessProfileData) => void
   onBack: () => void
+  industryName?: string | null
 }
 
-export function BusinessProfileStep({ initialData, onComplete, onBack }: BusinessProfileStepProps) {
+export function BusinessProfileStep({ initialData, onComplete, onBack, industryName }: BusinessProfileStepProps) {
   const [answers, setAnswers] = useState<Partial<BusinessProfileData>>(initialData || {})
   const [error, setError] = useState<string | null>(null)
 
@@ -99,6 +106,13 @@ export function BusinessProfileStep({ initialData, onComplete, onBack }: Busines
     onComplete(answers as BusinessProfileData)
   }
 
+  const getQuestion = (q: ProfileQuestion) => {
+    if (industryName && q.industryQuestion) {
+      return q.industryQuestion.replace('{industry}', industryName)
+    }
+    return q.question
+  }
+
   const answeredCount = PROFILE_QUESTIONS.filter(q => answers[q.key]).length
 
   return (
@@ -112,12 +126,23 @@ export function BusinessProfileStep({ initialData, onComplete, onBack }: Busines
         </p>
       </div>
 
+      {industryName && (
+        <div className="flex items-start gap-3 p-4 rounded-lg bg-primary/5 border border-primary/15">
+          <Building2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+          <div className="text-sm">
+            <span className="text-muted-foreground">Based on your description, we identified your industry as </span>
+            <span className="font-semibold text-foreground">{industryName}</span>
+            <span className="text-muted-foreground">. The questions below are framed relative to your industry so we can understand what makes <em>your</em> business unique.</span>
+          </div>
+        </div>
+      )}
+
       <div className="space-y-8">
         {PROFILE_QUESTIONS.map((q, qi) => (
           <div key={q.key} className="space-y-3">
             <h3 className="font-semibold text-foreground">
               <span className="text-primary mr-2">{qi + 1}.</span>
-              {q.question}
+              {getQuestion(q)}
             </h3>
             <div className="grid gap-2">
               {q.options.map(opt => (
