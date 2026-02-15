@@ -8,6 +8,7 @@ import { Header } from './Header'
 import { TrialBanner } from '@/components/subscription/TrialBanner'
 import { SessionTimeoutWarning } from '@/components/session/SessionTimeoutWarning'
 import { FeedbackWidget } from '@/components/feedback/FeedbackWidget'
+import { BottomTabBar } from './BottomTabBar'
 import { EntryScreen } from './EntryScreen'
 import { DashboardLoadError } from './DashboardLoadError'
 import type { User } from '@supabase/supabase-js'
@@ -50,12 +51,13 @@ export function DashboardContent({ children, user }: DashboardContentProps) {
       <div className="lg:pl-64">
         <TrialBanner />
         <Header user={user} />
-        <main className="p-6">
+        <main className="p-6 pb-20 lg:pb-6">
           {children}
         </main>
       </div>
       <SessionTimeoutWarning />
       <FeedbackWidget />
+      <BottomTabBar />
     </div>
   )
 }

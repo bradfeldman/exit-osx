@@ -110,7 +110,7 @@ export function FeedbackWidget() {
       {/* Floating trigger button */}
       <button
         onClick={handleOpen}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-100 text-sm font-medium"
+        className="fixed bottom-20 lg:bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-100 text-sm font-medium"
         aria-label="Send feedback"
       >
         <MessageSquarePlus className="w-4 h-4" />
