@@ -120,7 +120,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('Error fetching questions:', error)
+    console.error('Error fetching questions:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -209,7 +209,7 @@ export async function POST(
 
     return NextResponse.json({ question: newQuestion }, { status: 201 })
   } catch (error) {
-    console.error('Error creating question:', error)
+    console.error('Error creating question:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

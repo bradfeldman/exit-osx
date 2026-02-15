@@ -160,7 +160,7 @@ export async function GET(
       totalBuyers,
     })
   } catch (error) {
-    console.error('Error fetching funnel data:', error)
+    console.error('Error fetching funnel data:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch funnel data' },
       { status: 500 }

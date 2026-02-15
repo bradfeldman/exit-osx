@@ -92,7 +92,7 @@ export async function POST(
       restoredFromVersion: versionToRestore.version,
     })
   } catch (error) {
-    console.error('Error restoring version:', error)
+    console.error('Error restoring version:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -180,7 +180,7 @@ export async function POST(
       skipped: result.skipped,
     }, { status: 201 })
   } catch (error) {
-    console.error('Error batch-creating financial periods:', error)
+    console.error('Error batch-creating financial periods:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to create financial periods' },
       { status: 500 }

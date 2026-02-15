@@ -40,7 +40,7 @@ export async function GET() {
       })),
     })
   } catch (error) {
-    console.error('Error fetching industry multiples:', error)
+    console.error('Error fetching industry multiples:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch industry multiples' },
       { status: 500 }
@@ -158,7 +158,7 @@ export async function POST(request: Request) {
       },
     })
   } catch (error) {
-    console.error('Error creating industry multiple:', error)
+    console.error('Error creating industry multiple:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to create industry multiple' },
       { status: 500 }
@@ -260,7 +260,7 @@ export async function DELETE() {
       })),
     })
   } catch (error) {
-    console.error('Error restoring default multiples:', error)
+    console.error('Error restoring default multiples:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to restore default multiples' },
       { status: 500 }

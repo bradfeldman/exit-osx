@@ -84,7 +84,7 @@ export async function POST(
       maxCapacity: MAX_ACTION_PLAN_TASKS,
     })
   } catch (error) {
-    console.error('Error refreshing action plan:', error)
+    console.error('Error refreshing action plan:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to refresh action plan' },
       { status: 500 }
@@ -146,7 +146,7 @@ export async function GET(
       canRefresh: actionPlanCount < MAX_ACTION_PLAN_TASKS && queueCount > 0,
     })
   } catch (error) {
-    console.error('Error getting action plan status:', error)
+    console.error('Error getting action plan status:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to get action plan status' },
       { status: 500 }

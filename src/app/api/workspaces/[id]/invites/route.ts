@@ -60,7 +60,7 @@ export async function GET(
 
     return NextResponse.json({ invites })
   } catch (error) {
-    console.error('Error fetching invites:', error)
+    console.error('Error fetching invites:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch invites' },
       { status: 500 }
@@ -444,7 +444,7 @@ export async function POST(
       }
     }, { status: 201 })
   } catch (error) {
-    console.error('Error creating invite:', error)
+    console.error('Error creating invite:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to create invite' },
       { status: 500 }
@@ -493,7 +493,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error canceling invite:', error)
+    console.error('Error canceling invite:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to cancel invite' },
       { status: 500 }

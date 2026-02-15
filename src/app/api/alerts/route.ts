@@ -215,7 +215,7 @@ export async function GET() {
       unreadCount: unreadCount + computedCount, // Computed alerts are always "unread"
     })
   } catch (error) {
-    console.error('Error fetching alerts:', error)
+    console.error('Error fetching alerts:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch alerts' },
       { status: 500 }
@@ -248,7 +248,7 @@ export async function POST(_request: Request) {
       markedCount: count,
     })
   } catch (error) {
-    console.error('Error marking alerts as read:', error)
+    console.error('Error marking alerts as read:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to mark alerts as read' },
       { status: 500 }

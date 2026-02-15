@@ -97,7 +97,7 @@ export async function GET(
       nextCursor,
     })
   } catch (error) {
-    console.error('[Signals] Error fetching signals:', error)
+    console.error('[Signals] Error fetching signals:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch signals' },
       { status: 500 }
@@ -145,7 +145,7 @@ export async function POST(
 
     return NextResponse.json({ signal }, { status: 201 })
   } catch (error) {
-    console.error('[Signals] Error creating signal:', error)
+    console.error('[Signals] Error creating signal:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to create signal' },
       { status: 500 }

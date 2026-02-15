@@ -104,7 +104,7 @@ export async function GET(request: Request) {
       signalsCreated,
     })
   } catch (error) {
-    console.error('[Cron] Error detecting financial staleness:', error)
+    console.error('[Cron] Error detecting financial staleness:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to process financial staleness' },
       { status: 500 }

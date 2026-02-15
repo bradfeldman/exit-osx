@@ -134,7 +134,7 @@ export async function GET(request: Request) {
 
         sent++
       } catch (error) {
-        console.error(`[WeeklyDigest] Error processing company ${company.id}:`, error)
+        console.error(`[WeeklyDigest] Error processing company ${company.id}:`, error instanceof Error ? error.message : String(error))
         errors++
       }
     }
@@ -149,7 +149,7 @@ export async function GET(request: Request) {
       totalCompanies: companies.length,
     })
   } catch (error) {
-    console.error('[WeeklyDigest] Cron error:', error)
+    console.error('[WeeklyDigest] Cron error:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to run weekly digest cron' },
       { status: 500 }

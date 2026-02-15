@@ -67,7 +67,7 @@ export async function GET(
       readiness,
     })
   } catch (error) {
-    console.error('[DataRoom API] Error fetching data room:', error)
+    console.error('[DataRoom API] Error fetching data room:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -108,7 +108,7 @@ export async function PUT(
 
     return NextResponse.json({ dataRoom: updated })
   } catch (error) {
-    console.error('Error updating data room:', error)
+    console.error('Error updating data room:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

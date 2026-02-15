@@ -64,7 +64,7 @@ export async function GET(
       hasMore: offset + limit < total,
     })
   } catch (error) {
-    console.error('Error fetching activities:', error)
+    console.error('Error fetching activities:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -110,7 +110,7 @@ export async function POST(
 
     return NextResponse.json({ activity }, { status: 201 })
   } catch (error) {
-    console.error('Error adding activity:', error)
+    console.error('Error adding activity:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

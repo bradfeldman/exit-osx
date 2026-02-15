@@ -253,7 +253,7 @@ export async function POST() {
       pendingInvite: null
     })
   } catch (error) {
-    console.error('Error syncing user:', error)
+    console.error('Error syncing user:', error instanceof Error ? error.message : String(error))
     // SECURITY FIX (PROD-060): Removed error.message from response to prevent leaking internal details
     return NextResponse.json(
       { error: 'Failed to sync user' },

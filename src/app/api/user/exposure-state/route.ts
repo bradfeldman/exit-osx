@@ -24,7 +24,7 @@ export async function GET(_request: NextRequest) {
 
     return NextResponse.json({ exposureState: dbUser.exposureState })
   } catch (error) {
-    console.error('Failed to fetch exposure state:', error)
+    console.error('Failed to fetch exposure state:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -55,7 +55,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ exposureState: updatedUser.exposureState })
   } catch (error) {
-    console.error('Failed to update exposure state:', error)
+    console.error('Failed to update exposure state:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -410,7 +410,7 @@ export async function GET(
       enrichmentAlert: enrichmentAlert ?? null,
     })
   } catch (error) {
-    console.error('Error fetching actions data:', error)
+    console.error('Error fetching actions data:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch actions data' },
       { status: 500 }

@@ -186,7 +186,7 @@ export async function GET(
 
     return NextResponse.json({ documents: documentsWithStatus })
   } catch (error) {
-    console.error('Error fetching data room documents:', error)
+    console.error('Error fetching data room documents:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -266,7 +266,7 @@ export async function POST(
 
     return NextResponse.json({ document })
   } catch (error) {
-    console.error('Error creating data room document:', error)
+    console.error('Error creating data room document:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

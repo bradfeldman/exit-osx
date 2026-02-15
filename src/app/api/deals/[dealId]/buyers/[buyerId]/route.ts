@@ -96,7 +96,7 @@ export async function GET(
 
     return NextResponse.json({ buyer })
   } catch (error) {
-    console.error('Error fetching deal buyer:', error)
+    console.error('Error fetching deal buyer:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -184,7 +184,7 @@ export async function PUT(
 
     return NextResponse.json({ buyer })
   } catch (error) {
-    console.error('Error updating deal buyer:', error)
+    console.error('Error updating deal buyer:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -250,7 +250,7 @@ export async function DELETE(
       buyerName: buyer.canonicalCompany.name,
     })
   } catch (error) {
-    console.error('Error deleting deal buyer:', error)
+    console.error('Error deleting deal buyer:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

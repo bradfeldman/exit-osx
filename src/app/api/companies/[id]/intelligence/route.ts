@@ -119,7 +119,7 @@ export async function GET(
 
     return NextResponse.json(intelligence)
   } catch (error) {
-    console.error('[Intelligence] Error building intelligence profile:', error)
+    console.error('[Intelligence] Error building intelligence profile:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to build intelligence profile' },
       { status: 500 }

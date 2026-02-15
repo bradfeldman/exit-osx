@@ -55,7 +55,7 @@ export async function GET() {
       recentCompany: companyInfo,
     })
   } catch (error) {
-    console.error('Error checking questions:', error)
+    console.error('Error checking questions:', error instanceof Error ? error.message : String(error))
     // SECURITY FIX (PROD-060): Removed String(error) to prevent leaking stack traces
     return NextResponse.json({ error: 'Failed to check questions' }, { status: 500 })
   }

@@ -108,7 +108,7 @@ export async function GET(
       latestCompletionDate: latestDate.toISOString(),
     } satisfies PaceData)
   } catch (error) {
-    console.error('Error calculating pace data:', error)
+    console.error('Error calculating pace data:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to calculate pace data' },
       { status: 500 }

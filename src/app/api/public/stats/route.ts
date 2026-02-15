@@ -35,7 +35,7 @@ export async function GET() {
       }
     )
   } catch (error) {
-    console.error('Failed to fetch public stats:', error)
+    console.error('Failed to fetch public stats:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { assessmentCount: null, avgValueGap: null },
       { status: 500 }

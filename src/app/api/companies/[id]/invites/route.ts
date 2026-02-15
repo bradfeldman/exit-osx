@@ -63,7 +63,7 @@ export async function GET(
       })),
     })
   } catch (error) {
-    console.error('Error fetching company invites:', error)
+    console.error('Error fetching company invites:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch invites' },
       { status: 500 }
@@ -197,7 +197,7 @@ export async function POST(
       },
     })
   } catch (error) {
-    console.error('Error creating company invite:', error)
+    console.error('Error creating company invite:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to create invite' },
       { status: 500 }
@@ -259,7 +259,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error canceling company invite:', error)
+    console.error('Error canceling company invite:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to cancel invite' },
       { status: 500 }

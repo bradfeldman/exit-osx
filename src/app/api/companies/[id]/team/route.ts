@@ -93,7 +93,7 @@ export async function GET(
       currentUserRole: currentUserCompanyMember?.role || null,
     })
   } catch (error) {
-    console.error('Error fetching team members:', error)
+    console.error('Error fetching team members:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch team members' },
       { status: 500 }
@@ -238,7 +238,7 @@ export async function POST(
       },
     }, { status: 201 })
   } catch (error) {
-    console.error('Error adding team member:', error)
+    console.error('Error adding team member:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to add team member' },
       { status: 500 }
@@ -330,7 +330,7 @@ export async function PATCH(
       },
     })
   } catch (error) {
-    console.error('Error updating team member:', error)
+    console.error('Error updating team member:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update team member' },
       { status: 500 }
@@ -422,7 +422,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error removing team member:', error)
+    console.error('Error removing team member:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to remove team member' },
       { status: 500 }

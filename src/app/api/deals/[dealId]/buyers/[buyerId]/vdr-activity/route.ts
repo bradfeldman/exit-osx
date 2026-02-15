@@ -155,7 +155,7 @@ export async function GET(
       }
     })
   } catch (error) {
-    console.error('Error fetching VDR activity:', error)
+    console.error('Error fetching VDR activity:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch VDR activity' },
       { status: 500 }

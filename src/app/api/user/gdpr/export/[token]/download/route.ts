@@ -86,7 +86,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('Error downloading export:', error)
+    console.error('Error downloading export:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to download export' },
       { status: 500 }

@@ -70,7 +70,7 @@ export async function POST(
       companies: companyResults,
     })
   } catch (error) {
-    console.error('Error in smart-add:', error)
+    console.error('Error in smart-add:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

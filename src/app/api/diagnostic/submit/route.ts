@@ -102,7 +102,7 @@ export async function POST(request: Request) {
       identifiedDrivers,
     })
   } catch (error) {
-    console.error('Error submitting diagnostic responses:', error)
+    console.error('Error submitting diagnostic responses:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to submit responses' },
       { status: 500 }

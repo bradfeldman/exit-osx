@@ -182,7 +182,7 @@ export async function GET(
       sections,
     })
   } catch (error) {
-    console.error('Error fetching diligence data:', error)
+    console.error('Error fetching diligence data:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch diligence data' },
       { status: 500 }

@@ -95,7 +95,7 @@ export async function GET(
       }
     })
   } catch (error) {
-    console.error('Error fetching balance sheet:', error)
+    console.error('Error fetching balance sheet:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch balance sheet' },
       { status: 500 }
@@ -310,7 +310,7 @@ export async function PUT(
       }
     })
   } catch (error) {
-    console.error('Error saving balance sheet:', error)
+    console.error('Error saving balance sheet:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to save balance sheet' },
       { status: 500 }

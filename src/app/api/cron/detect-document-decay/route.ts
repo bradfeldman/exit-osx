@@ -100,7 +100,7 @@ export async function GET(request: Request) {
       signalsCreated,
     })
   } catch (error) {
-    console.error('[Cron] Error detecting document decay:', error)
+    console.error('[Cron] Error detecting document decay:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to process document decay' },
       { status: 500 }

@@ -60,7 +60,7 @@ export async function POST(
       deletionRequest: updatedRequest,
     })
   } catch (error) {
-    console.error('Error confirming deletion request:', error)
+    console.error('Error confirming deletion request:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to confirm deletion request' },
       { status: 500 }

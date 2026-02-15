@@ -54,7 +54,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('Error fetching company invite:', error)
+    console.error('Error fetching company invite:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch invite' },
       { status: 500 }
@@ -186,7 +186,7 @@ export async function POST(
       role: invite.inviteType === 'GUEST_OWNER' ? 'owner' : 'staff',
     })
   } catch (error) {
-    console.error('Error accepting company invite:', error)
+    console.error('Error accepting company invite:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to accept invite' },
       { status: 500 }

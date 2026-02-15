@@ -160,7 +160,7 @@ export async function GET(request: NextRequest) {
       })
     }
   } catch (error) {
-    console.error('Error fetching duplicates:', error)
+    console.error('Error fetching duplicates:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -260,7 +260,7 @@ export async function POST(request: NextRequest) {
       message: `Found ${companyDuplicates.length} company and ${personDuplicates.length} person duplicate pairs. Saved ${savedCompany + savedPerson} new candidates.`,
     })
   } catch (error) {
-    console.error('Error running duplicate detection:', error)
+    console.error('Error running duplicate detection:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -99,7 +99,7 @@ export async function GET(
       total: sanitizedBuyers.length,
     })
   } catch (error) {
-    console.error('Error fetching seller buyers:', error)
+    console.error('Error fetching seller buyers:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch buyers' },
       { status: 500 }

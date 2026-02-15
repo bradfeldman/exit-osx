@@ -22,7 +22,7 @@ export async function POST(
 
     return NextResponse.json({ analysis })
   } catch (error) {
-    console.error('Error generating EBITDA bridge analysis:', error)
+    console.error('Error generating EBITDA bridge analysis:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to generate EBITDA bridge analysis' },
       { status: 500 }

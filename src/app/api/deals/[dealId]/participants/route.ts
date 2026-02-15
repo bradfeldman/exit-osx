@@ -107,7 +107,7 @@ export async function GET(
       categoryCounts,
     })
   } catch (error) {
-    console.error('Error fetching deal participants:', error)
+    console.error('Error fetching deal participants:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -335,7 +335,7 @@ export async function POST(
       autoCreatedBuyer,
     }, { status: 201 })
   } catch (error) {
-    console.error('Error adding deal participant:', error)
+    console.error('Error adding deal participant:', error instanceof Error ? error.message : String(error))
     // SECURITY FIX (PROD-060): Removed error.message from response to prevent leaking internal details
     return NextResponse.json({ error: 'Failed to add participant' }, { status: 500 })
   }

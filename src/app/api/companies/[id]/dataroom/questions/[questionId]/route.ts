@@ -83,7 +83,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('Error fetching question:', error)
+    console.error('Error fetching question:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -163,7 +163,7 @@ export async function POST(
 
     return NextResponse.json({ answer: newAnswer }, { status: 201 })
   } catch (error) {
-    console.error('Error answering question:', error)
+    console.error('Error answering question:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -205,7 +205,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting question:', error)
+    console.error('Error deleting question:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

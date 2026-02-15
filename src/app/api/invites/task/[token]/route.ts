@@ -69,7 +69,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('Error fetching invite:', error)
+    console.error('Error fetching invite:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch invite' },
       { status: 500 }
@@ -191,7 +191,7 @@ export async function POST(
       companyId: invite.task.companyId,
     })
   } catch (error) {
-    console.error('Error accepting invite:', error)
+    console.error('Error accepting invite:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to accept invite' },
       { status: 500 }
@@ -226,7 +226,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error declining invite:', error)
+    console.error('Error declining invite:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to decline invite' },
       { status: 500 }

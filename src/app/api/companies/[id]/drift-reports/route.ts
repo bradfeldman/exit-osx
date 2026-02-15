@@ -42,7 +42,7 @@ export async function GET(
       })),
     })
   } catch (error) {
-    console.error('[DriftReport] Error fetching reports:', error)
+    console.error('[DriftReport] Error fetching reports:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch drift reports' },
       { status: 500 }

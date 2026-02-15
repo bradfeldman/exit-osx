@@ -70,7 +70,7 @@ export async function GET(
       })),
     })
   } catch (error) {
-    console.error('Error fetching access requests:', error)
+    console.error('Error fetching access requests:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch access requests' },
       { status: 500 }
@@ -202,7 +202,7 @@ export async function POST(
       },
     })
   } catch (error) {
-    console.error('Error creating access request:', error)
+    console.error('Error creating access request:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to create access request' },
       { status: 500 }

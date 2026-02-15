@@ -233,7 +233,7 @@ export async function GET(
     // Non-PDFs: HTML viewer with watermark overlay
     return serveHtmlViewer(urlData.signedUrl, document, result.auth.user.email)
   } catch (error) {
-    console.error('Evidence view - unexpected error:', error)
+    console.error('Evidence view - unexpected error:', error instanceof Error ? error.message : String(error))
     return new NextResponse('Internal server error', { status: 500 })
   }
 }

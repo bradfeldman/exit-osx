@@ -123,7 +123,7 @@ export async function GET(
       }
     })
   } catch (error) {
-    console.error('Error fetching financial period:', error)
+    console.error('Error fetching financial period:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch financial period' },
       { status: 500 }
@@ -203,7 +203,7 @@ export async function PUT(
       }
     })
   } catch (error) {
-    console.error('Error updating financial period:', error)
+    console.error('Error updating financial period:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update financial period' },
       { status: 500 }
@@ -263,7 +263,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting financial period:', error)
+    console.error('Error deleting financial period:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to delete financial period' },
       { status: 500 }

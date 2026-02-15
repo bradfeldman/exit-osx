@@ -141,7 +141,7 @@ export async function PATCH(
       })
     }
   } catch (error) {
-    console.error('Error processing access request:', error)
+    console.error('Error processing access request:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to process access request' },
       { status: 500 }
@@ -215,7 +215,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('Error fetching access request:', error)
+    console.error('Error fetching access request:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch access request' },
       { status: 500 }

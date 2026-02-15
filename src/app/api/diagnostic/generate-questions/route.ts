@@ -93,7 +93,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ questions: data.questions })
   } catch (error) {
-    console.error('Error generating diagnostic questions:', error)
+    console.error('Error generating diagnostic questions:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to generate questions' },
       { status: 500 }

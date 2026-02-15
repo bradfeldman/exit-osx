@@ -104,7 +104,7 @@ export async function GET(
 
     return NextResponse.json(varResult)
   } catch (error) {
-    console.error('[Value-at-Risk] Error calculating value-at-risk:', error)
+    console.error('[Value-at-Risk] Error calculating value-at-risk:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to calculate value-at-risk' },
       { status: 500 }

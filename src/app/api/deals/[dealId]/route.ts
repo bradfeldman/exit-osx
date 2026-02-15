@@ -103,7 +103,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('Error fetching deal:', error)
+    console.error('Error fetching deal:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -191,7 +191,7 @@ export async function PUT(
 
     return NextResponse.json({ deal })
   } catch (error) {
-    console.error('Error updating deal:', error)
+    console.error('Error updating deal:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -236,7 +236,7 @@ export async function DELETE(
 
     return NextResponse.json({ deleted: true })
   } catch (error) {
-    console.error('Error deleting deal:', error)
+    console.error('Error deleting deal:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

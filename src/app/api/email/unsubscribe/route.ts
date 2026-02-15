@@ -108,7 +108,7 @@ export async function GET(request: Request) {
       }
     )
   } catch (error) {
-    console.error('[API] Error in email/unsubscribe:', error)
+    console.error('[API] Error in email/unsubscribe:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       // SECURITY FIX (PROD-060): Removed String(error) from response to prevent leaking stack traces
       { error: 'Failed to process request' },

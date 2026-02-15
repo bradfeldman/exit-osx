@@ -49,7 +49,7 @@ export async function GET(
 
     return NextResponse.json({ contact })
   } catch (error) {
-    console.error('Error fetching contact:', error)
+    console.error('Error fetching contact:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch contact' },
       { status: 500 }
@@ -145,7 +145,7 @@ export async function PUT(
 
     return NextResponse.json({ contact: updatedContact })
   } catch (error) {
-    console.error('Error updating contact:', error)
+    console.error('Error updating contact:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update contact' },
       { status: 500 }
@@ -196,7 +196,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting contact:', error)
+    console.error('Error deleting contact:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to delete contact' },
       { status: 500 }

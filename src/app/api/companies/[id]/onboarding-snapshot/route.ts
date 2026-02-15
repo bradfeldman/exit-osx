@@ -205,7 +205,7 @@ export async function POST(
       briScore: body.briScore,
     })
   } catch (error) {
-    console.error('Error creating onboarding snapshot:', error)
+    console.error('Error creating onboarding snapshot:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to create snapshot' },
       { status: 500 }

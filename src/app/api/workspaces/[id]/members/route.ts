@@ -46,7 +46,7 @@ export async function GET(
 
     return NextResponse.json({ members })
   } catch (error) {
-    console.error('Error fetching members:', error)
+    console.error('Error fetching members:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch members' },
       { status: 500 }
@@ -182,7 +182,7 @@ export async function PATCH(
 
     return NextResponse.json({ member: updated })
   } catch (error) {
-    console.error('Error updating member:', error)
+    console.error('Error updating member:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update member' },
       { status: 500 }
@@ -258,7 +258,7 @@ export async function DELETE(
 
       return NextResponse.json({ success: true, left: true })
     } catch (error) {
-      console.error('Error leaving workspace:', error)
+      console.error('Error leaving workspace:', error instanceof Error ? error.message : String(error))
       return NextResponse.json(
         { error: 'Failed to leave workspace' },
         { status: 500 }
@@ -304,7 +304,7 @@ export async function DELETE(
 
       return NextResponse.json({ success: true })
     } catch (error) {
-      console.error('Error removing member:', error)
+      console.error('Error removing member:', error instanceof Error ? error.message : String(error))
       return NextResponse.json(
         { error: 'Failed to remove member' },
         { status: 500 }

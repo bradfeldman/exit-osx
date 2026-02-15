@@ -68,7 +68,7 @@ export async function GET(
       primaryContact: contacts.find((c) => c.isPrimary),
     })
   } catch (error) {
-    console.error('Error fetching buyer contacts:', error)
+    console.error('Error fetching buyer contacts:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -196,7 +196,7 @@ export async function POST(
 
     return NextResponse.json({ contact }, { status: 201 })
   } catch (error) {
-    console.error('Error adding buyer contact:', error)
+    console.error('Error adding buyer contact:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

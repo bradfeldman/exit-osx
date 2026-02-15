@@ -42,7 +42,7 @@ export async function GET() {
       user: dbUser
     })
   } catch (error) {
-    console.error('Error fetching user:', error)
+    console.error('Error fetching user:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch user' },
       { status: 500 }

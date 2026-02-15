@@ -73,7 +73,7 @@ export async function GET(
       progress,
     })
   } catch (error) {
-    console.error('Error fetching assessment:', error)
+    console.error('Error fetching assessment:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch assessment' },
       { status: 500 }
@@ -123,7 +123,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting assessment:', error)
+    console.error('Error deleting assessment:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to delete assessment' },
       { status: 500 }

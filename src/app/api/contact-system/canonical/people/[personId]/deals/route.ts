@@ -102,7 +102,7 @@ export async function GET(
       stats
     })
   } catch (error) {
-    console.error('Error fetching person deal history:', error)
+    console.error('Error fetching person deal history:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch deal history' },
       { status: 500 }

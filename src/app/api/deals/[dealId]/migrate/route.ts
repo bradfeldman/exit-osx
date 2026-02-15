@@ -58,7 +58,7 @@ export async function POST(
       validationIssues: validation.issues,
     })
   } catch (error) {
-    console.error('Error running migration:', error)
+    console.error('Error running migration:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to run migration' },
       { status: 500 }
@@ -88,7 +88,7 @@ export async function GET(
       issues: validation.issues,
     })
   } catch (error) {
-    console.error('Error validating migration:', error)
+    console.error('Error validating migration:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to validate migration readiness' },
       { status: 500 }
@@ -123,7 +123,7 @@ export async function DELETE(
       ...result,
     })
   } catch (error) {
-    console.error('Error rolling back migration:', error)
+    console.error('Error rolling back migration:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to rollback migration' },
       { status: 500 }

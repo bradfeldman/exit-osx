@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       errors,
     })
   } catch (error) {
-    console.error('[Cron] Failed to refresh dossiers:', error)
+    console.error('[Cron] Failed to refresh dossiers:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to refresh dossiers' },
       { status: 500 }

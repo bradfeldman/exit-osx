@@ -104,7 +104,7 @@ export async function GET(
       total: snapshots.length,
     })
   } catch (error) {
-    console.error('Error fetching valuation history:', error)
+    console.error('Error fetching valuation history:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch valuation history' },
       { status: 500 }

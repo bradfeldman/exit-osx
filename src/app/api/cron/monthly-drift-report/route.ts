@@ -135,7 +135,7 @@ export async function GET(request: Request) {
 
         generated++
       } catch (error) {
-        console.error(`[DriftReport] Error generating report for company ${company.id}:`, error)
+        console.error(`[DriftReport] Error generating report for company ${company.id}:`, error instanceof Error ? error.message : String(error))
         errors++
       }
     }
@@ -150,7 +150,7 @@ export async function GET(request: Request) {
       totalCompanies: companies.length,
     })
   } catch (error) {
-    console.error('[DriftReport] Cron error:', error)
+    console.error('[DriftReport] Cron error:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to run monthly drift report cron' },
       { status: 500 }

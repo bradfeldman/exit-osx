@@ -63,7 +63,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       },
     })
   } catch (error) {
-    console.error('Error fetching last visit:', error)
+    console.error('Error fetching last visit:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     return NextResponse.json({ success: true, created: true })
   } catch (error) {
-    console.error('Error logging visit:', error)
+    console.error('Error logging visit:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

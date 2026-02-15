@@ -116,7 +116,7 @@ export async function POST(
       },
     })
   } catch (error) {
-    console.error('Error saving response:', error)
+    console.error('Error saving response:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to save response' },
       { status: 500 }
@@ -169,7 +169,7 @@ export async function GET(
 
     return NextResponse.json({ responses })
   } catch (error) {
-    console.error('Error fetching responses:', error)
+    console.error('Error fetching responses:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch responses' },
       { status: 500 }

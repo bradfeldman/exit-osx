@@ -175,7 +175,7 @@ export async function POST(
       workspace: invite.workspace,
     })
   } catch (error) {
-    console.error('Error accepting invite:', error)
+    console.error('Error accepting invite:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to accept invite' },
       { status: 500 }
@@ -267,7 +267,7 @@ export async function GET(
       }
     })
   } catch (error) {
-    console.error('Error fetching invite:', error)
+    console.error('Error fetching invite:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Invalid or expired invitation' },
       { status: 404 }

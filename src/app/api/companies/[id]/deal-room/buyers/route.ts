@@ -143,7 +143,7 @@ export async function POST(
       },
     })
   } catch (error) {
-    console.error('Error adding buyer:', error)
+    console.error('Error adding buyer:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to add buyer' },
       { status: 500 }

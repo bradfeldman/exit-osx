@@ -86,7 +86,7 @@ export async function GET(
       history: reportHistory.map(serializeHistoryItem),
     })
   } catch (error) {
-    console.error('[DriftAPI] Error fetching drift reports:', error)
+    console.error('[DriftAPI] Error fetching drift reports:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch drift reports' },
       { status: 500 }

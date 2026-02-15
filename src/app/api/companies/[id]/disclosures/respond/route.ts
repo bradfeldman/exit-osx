@@ -110,7 +110,7 @@ export async function POST(
       completed: isComplete,
     })
   } catch (error) {
-    console.error('[Disclosures] Error processing responses:', error)
+    console.error('[Disclosures] Error processing responses:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to process disclosure responses' },
       { status: 500 }

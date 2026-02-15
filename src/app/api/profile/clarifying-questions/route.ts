@@ -50,7 +50,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ questions: data.questions })
   } catch (error) {
-    console.error('Error generating clarifying questions:', error)
+    console.error('Error generating clarifying questions:', error instanceof Error ? error.message : String(error))
     // SECURITY FIX (PROD-060): Removed error.message from response to prevent leaking internal details
     const message = error instanceof Error ? error.message : 'Failed to generate questions'
     if (message.includes('ANTHROPIC_API_KEY')) {

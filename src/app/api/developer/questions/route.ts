@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('[TASK_ENGINE] Error creating question:', error)
+    console.error('[TASK_ENGINE] Error creating question:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { message: 'Failed to create question' },
       { status: 500 }
@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
       totalCount: questions.length,
     })
   } catch (error) {
-    console.error('[TASK_ENGINE] Error listing questions:', error)
+    console.error('[TASK_ENGINE] Error listing questions:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { message: 'Failed to list questions' },
       { status: 500 }

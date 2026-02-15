@@ -48,7 +48,7 @@ export async function GET(
 
     return NextResponse.json({ contacts })
   } catch (error) {
-    console.error('Error fetching contacts:', error)
+    console.error('Error fetching contacts:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -179,7 +179,7 @@ export async function POST(
 
     return NextResponse.json({ contact: contactWithAccess }, { status: 201 })
   } catch (error) {
-    console.error('Error adding contact:', error)
+    console.error('Error adding contact:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -275,7 +275,7 @@ export async function PUT(
 
     return NextResponse.json({ contact: updatedContact })
   } catch (error) {
-    console.error('Error updating contact:', error)
+    console.error('Error updating contact:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -343,7 +343,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting contact:', error)
+    console.error('Error deleting contact:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

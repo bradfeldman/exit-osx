@@ -40,7 +40,7 @@ export async function POST(
       dossierVersion: dossier.version,
     })
   } catch (error) {
-    console.error(`[Dossier] Question generation failed for company ${companyId}:`, error)
+    console.error(`[Dossier] Question generation failed for company ${companyId}:`, error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to generate questions' },
       { status: 500 }

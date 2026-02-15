@@ -8,8 +8,8 @@
 
 import { createHmac, randomBytes, timingSafeEqual } from 'crypto'
 
-// SECURITY: Require explicit secret
-const OAUTH_STATE_SECRET = process.env.OAUTH_STATE_SECRET || process.env.IMPERSONATION_SECRET
+// SECURITY: Require explicit secret — no fallback to other secrets
+const OAUTH_STATE_SECRET = process.env.OAUTH_STATE_SECRET
 if (!OAUTH_STATE_SECRET || OAUTH_STATE_SECRET.length < 32) {
   console.warn(
     'WARNING: OAUTH_STATE_SECRET not configured. OAuth flows may be vulnerable. ' +

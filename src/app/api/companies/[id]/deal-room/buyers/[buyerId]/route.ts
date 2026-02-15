@@ -137,7 +137,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true, stage: backendStage })
   } catch (error) {
-    console.error('Error updating buyer stage:', error)
+    console.error('Error updating buyer stage:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update buyer stage' },
       { status: 500 }

@@ -59,7 +59,7 @@ export async function GET(
 
     return NextResponse.json({ meetings: meetingsWithCreators })
   } catch (error) {
-    console.error('Error fetching meetings:', error)
+    console.error('Error fetching meetings:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -137,7 +137,7 @@ export async function POST(
 
     return NextResponse.json({ meeting }, { status: 201 })
   } catch (error) {
-    console.error('Error scheduling meeting:', error)
+    console.error('Error scheduling meeting:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -236,7 +236,7 @@ export async function PUT(
 
     return NextResponse.json({ meeting })
   } catch (error) {
-    console.error('Error updating meeting:', error)
+    console.error('Error updating meeting:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -284,7 +284,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting meeting:', error)
+    console.error('Error deleting meeting:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

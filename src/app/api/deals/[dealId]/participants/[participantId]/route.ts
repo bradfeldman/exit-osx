@@ -53,7 +53,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('Error fetching participant:', error)
+    console.error('Error fetching participant:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -161,7 +161,7 @@ export async function PATCH(
       },
     })
   } catch (error) {
-    console.error('Error updating participant:', error)
+    console.error('Error updating participant:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -204,7 +204,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting participant:', error)
+    console.error('Error deleting participant:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

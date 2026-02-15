@@ -183,7 +183,7 @@ export async function GET(request: NextRequest) {
       evidencePercentage,
     })
   } catch (error) {
-    console.error('Error fetching progression data:', error)
+    console.error('Error fetching progression data:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch progression data' },
       { status: 500 }

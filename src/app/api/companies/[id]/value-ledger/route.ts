@@ -76,7 +76,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('[ValueLedger] Error fetching entries:', error)
+    console.error('[ValueLedger] Error fetching entries:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch ledger entries' },
       { status: 500 }

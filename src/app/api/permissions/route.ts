@@ -83,7 +83,7 @@ export async function GET(request: Request) {
       permissionsByModule: groupPermissionsByModule(permissions),
     })
   } catch (error) {
-    console.error('Failed to get permissions:', error)
+    console.error('Failed to get permissions:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to get permissions' },
       { status: 500 }

@@ -98,7 +98,7 @@ export async function POST(
       } : null
     })
   } catch (error) {
-    console.error('Error recalculating BRI:', error)
+    console.error('Error recalculating BRI:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to recalculate BRI' },
       { status: 500 }

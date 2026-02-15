@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
       message: 'Canonical task created successfully. Note: Full database integration pending.',
     })
   } catch (error) {
-    console.error('[TASK_ENGINE] Error creating canonical task:', error)
+    console.error('[TASK_ENGINE] Error creating canonical task:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { message: 'Failed to create canonical task' },
       { status: 500 }
@@ -215,7 +215,7 @@ export async function GET(request: NextRequest) {
       note: 'Canonical task storage is currently in-memory. Full database integration pending.',
     })
   } catch (error) {
-    console.error('[TASK_ENGINE] Error listing canonical tasks:', error)
+    console.error('[TASK_ENGINE] Error listing canonical tasks:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { message: 'Failed to list canonical tasks' },
       { status: 500 }

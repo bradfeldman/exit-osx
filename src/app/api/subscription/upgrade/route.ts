@@ -154,7 +154,7 @@ export async function POST(request: Request) {
       checkoutUrl: session.url,
     })
   } catch (error) {
-    console.error('Error upgrading subscription:', error)
+    console.error('Error upgrading subscription:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to upgrade subscription' },
       { status: 500 }

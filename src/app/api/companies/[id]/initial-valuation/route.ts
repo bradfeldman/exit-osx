@@ -130,7 +130,7 @@ export async function GET(
       hasIndustryMultiple: !!industryMultiple,
     })
   } catch (error) {
-    console.error('Error calculating initial valuation:', error)
+    console.error('Error calculating initial valuation:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to calculate valuation' },
       { status: 500 }

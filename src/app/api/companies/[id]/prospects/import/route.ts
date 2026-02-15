@@ -345,7 +345,7 @@ export async function POST(
       errors: finalErrors.slice(0, 20), // Limit errors returned
     })
   } catch (error) {
-    console.error('Error importing prospects:', error)
+    console.error('Error importing prospects:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -388,7 +388,7 @@ export async function GET(
 
     return NextResponse.json({ batches })
   } catch (error) {
-    console.error('Error fetching import batches:', error)
+    console.error('Error fetching import batches:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

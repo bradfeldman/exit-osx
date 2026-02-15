@@ -51,7 +51,7 @@ export async function GET() {
       consentHistory: consents,
     })
   } catch (error) {
-    console.error('Error fetching consents:', error)
+    console.error('Error fetching consents:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch consents' },
       { status: 500 }
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
       consent,
     })
   } catch (error) {
-    console.error('Error recording consent:', error)
+    console.error('Error recording consent:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to record consent' },
       { status: 500 }
@@ -194,7 +194,7 @@ export async function PUT(request: NextRequest) {
       consents: createdConsents,
     })
   } catch (error) {
-    console.error('Error updating consents:', error)
+    console.error('Error updating consents:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update consents' },
       { status: 500 }

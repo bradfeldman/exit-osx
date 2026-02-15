@@ -41,7 +41,7 @@ export async function GET(
 
     return NextResponse.json({ coreFactors: company.coreFactors })
   } catch (error) {
-    console.error('Error fetching core factors:', error)
+    console.error('Error fetching core factors:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch core factors' },
       { status: 500 }
@@ -156,7 +156,7 @@ export async function PUT(
       snapshotId: snapshotResult.snapshotId,
     })
   } catch (error) {
-    console.error('Error updating core factors:', error)
+    console.error('Error updating core factors:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update core factors' },
       { status: 500 }

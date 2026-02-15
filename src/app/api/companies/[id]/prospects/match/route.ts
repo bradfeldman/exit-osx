@@ -159,7 +159,7 @@ export async function GET(
       exactMatch,
     })
   } catch (error) {
-    console.error('Error matching prospects:', error)
+    console.error('Error matching prospects:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

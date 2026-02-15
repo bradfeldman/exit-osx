@@ -84,7 +84,7 @@ export async function GET() {
       clientCount: enrichedClients.length,
     })
   } catch (error) {
-    console.error('Failed to get advisor clients:', error)
+    console.error('Failed to get advisor clients:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to get advisor clients' },
       { status: 500 }

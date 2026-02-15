@@ -41,7 +41,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('[DriftReport] Error fetching report:', error)
+    console.error('[DriftReport] Error fetching report:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch drift report' },
       { status: 500 }
@@ -71,7 +71,7 @@ export async function PATCH(
       },
     })
   } catch (error) {
-    console.error('[DriftReport] Error marking report viewed:', error)
+    console.error('[DriftReport] Error marking report viewed:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update drift report' },
       { status: 500 }

@@ -47,7 +47,7 @@ export async function GET() {
       categories,
     })
   } catch (error) {
-    console.error('Failed to get role templates:', error)
+    console.error('Failed to get role templates:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to get role templates' },
       { status: 500 }

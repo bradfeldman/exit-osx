@@ -45,7 +45,7 @@ export async function POST(
       message: `Successfully merged ${duplicateIds.length} person record(s) into the primary record`,
     })
   } catch (error) {
-    console.error('Error merging people:', error)
+    console.error('Error merging people:', error instanceof Error ? error.message : String(error))
 
     if (error instanceof Error && error.message.includes('not found or already merged')) {
       return NextResponse.json(

@@ -101,7 +101,7 @@ export async function GET(
       totalBuyers,
     })
   } catch (error) {
-    console.error('Error fetching buyer mix data:', error)
+    console.error('Error fetching buyer mix data:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch buyer mix data' },
       { status: 500 }

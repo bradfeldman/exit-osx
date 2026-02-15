@@ -92,7 +92,7 @@ export async function GET(
       }
     })
   } catch (error) {
-    console.error('Error fetching income statement:', error)
+    console.error('Error fetching income statement:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch income statement' },
       { status: 500 }
@@ -312,7 +312,7 @@ export async function PUT(
       valuationImpact,
     })
   } catch (error) {
-    console.error('Error saving income statement:', error)
+    console.error('Error saving income statement:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to save income statement' },
       { status: 500 }

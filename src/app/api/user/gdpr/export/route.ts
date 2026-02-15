@@ -46,7 +46,7 @@ export async function GET() {
 
     return NextResponse.json({ exportRequests })
   } catch (error) {
-    console.error('Error fetching export requests:', error)
+    console.error('Error fetching export requests:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch export requests' },
       { status: 500 }
@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
       exportRequest: updatedRequest,
     })
   } catch (error) {
-    console.error('Error creating export request:', error)
+    console.error('Error creating export request:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to create export request' },
       { status: 500 }
@@ -335,7 +335,7 @@ async function processExportRequest(
       },
     })
   } catch (error) {
-    console.error('Error processing export:', error)
+    console.error('Error processing export:', error instanceof Error ? error.message : String(error))
     await prisma.dataExportRequest.update({
       where: { id: requestId },
       data: {

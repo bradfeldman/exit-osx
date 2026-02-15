@@ -129,7 +129,7 @@ export async function PUT(
       vdrSync: vdrResult,
     })
   } catch (error) {
-    console.error('Error changing stage:', error)
+    console.error('Error changing stage:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

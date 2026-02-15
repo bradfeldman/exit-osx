@@ -31,7 +31,7 @@ export async function GET(
       summary,
     })
   } catch (error) {
-    console.error('Error fetching analytics:', error)
+    console.error('Error fetching analytics:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

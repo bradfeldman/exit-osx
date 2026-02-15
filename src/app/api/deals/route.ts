@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
       summary,
     })
   } catch (error) {
-    console.error('Error fetching deals:', error)
+    console.error('Error fetching deals:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -168,7 +168,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ deal }, { status: 201 })
   } catch (error) {
-    console.error('Error creating deal:', error)
+    console.error('Error creating deal:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

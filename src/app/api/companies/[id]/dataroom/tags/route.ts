@@ -34,7 +34,7 @@ export async function GET(
       })),
     })
   } catch (error) {
-    console.error('Error fetching tags:', error)
+    console.error('Error fetching tags:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -83,7 +83,7 @@ export async function POST(
 
     return NextResponse.json({ tag }, { status: 201 })
   } catch (error) {
-    console.error('Error creating tag:', error)
+    console.error('Error creating tag:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -149,7 +149,7 @@ export async function PUT(
       tags: updatedTags.map((t) => t.tag),
     })
   } catch (error) {
-    console.error('Error updating document tags:', error)
+    console.error('Error updating document tags:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -187,7 +187,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting tag:', error)
+    console.error('Error deleting tag:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

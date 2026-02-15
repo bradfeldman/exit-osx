@@ -81,7 +81,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ questions: data.questions })
   } catch (error) {
-    console.error('Error generating risk-focused questions:', error)
+    console.error('Error generating risk-focused questions:', error instanceof Error ? error.message : String(error))
     const message = error instanceof Error ? error.message : 'Failed to generate questions'
 
     if (message.includes('ANTHROPIC_API_KEY')) {

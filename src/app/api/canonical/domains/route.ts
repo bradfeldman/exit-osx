@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Error fetching canonical domains:', error)
+    console.error('Error fetching canonical domains:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ domain: domainRecord }, { status: 201 })
   } catch (error) {
-    console.error('Error creating canonical domain:', error)
+    console.error('Error creating canonical domain:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -185,7 +185,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ deleted: true })
   } catch (error) {
-    console.error('Error deleting canonical domain:', error)
+    console.error('Error deleting canonical domain:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

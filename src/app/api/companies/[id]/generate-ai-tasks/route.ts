@@ -31,7 +31,7 @@ export async function POST(
       skipped: taskResult.skipped,
     })
   } catch (error) {
-    console.error('[generate-ai-tasks] Error:', error)
+    console.error('[generate-ai-tasks] Error:', error instanceof Error ? error.message : String(error))
     // SECURITY FIX (PROD-060): Don't expose internal error messages to the client
     return NextResponse.json(
       { error: 'Failed to generate tasks' },

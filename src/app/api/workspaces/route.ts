@@ -81,7 +81,7 @@ export async function GET() {
 
     return NextResponse.json({ workspaces: workspacesWithRoles })
   } catch (error) {
-    console.error('Error fetching workspaces:', error)
+    console.error('Error fetching workspaces:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch workspaces' },
       { status: 500 }

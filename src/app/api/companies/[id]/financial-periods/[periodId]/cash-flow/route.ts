@@ -347,7 +347,7 @@ export async function GET(
       priorPeriodId: priorPeriod!.id,
     })
   } catch (error) {
-    console.error('Error fetching cash flow statement:', error)
+    console.error('Error fetching cash flow statement:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch cash flow statement' },
       { status: 500 }
@@ -561,7 +561,7 @@ export async function PUT(
       }
     })
   } catch (error) {
-    console.error('Error saving cash flow statement:', error)
+    console.error('Error saving cash flow statement:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to save cash flow statement' },
       { status: 500 }

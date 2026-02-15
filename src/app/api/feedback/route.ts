@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     )
   } catch (error) {
-    console.error('Error creating feedback ticket:', error)
+    console.error('Error creating feedback ticket:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to submit feedback' },
       { status: 500 }

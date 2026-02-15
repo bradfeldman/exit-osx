@@ -84,7 +84,7 @@ export async function PATCH(
       return NextResponse.json({ signal: updatedSignal })
     }
   } catch (error) {
-    console.error('[Signals] Error updating signal:', error)
+    console.error('[Signals] Error updating signal:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update signal' },
       { status: 500 }

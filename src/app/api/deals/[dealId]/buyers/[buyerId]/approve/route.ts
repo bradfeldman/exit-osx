@@ -138,7 +138,7 @@ export async function POST(
       newStatus: status,
     })
   } catch (error) {
-    console.error('Error updating approval status:', error)
+    console.error('Error updating approval status:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update approval status' },
       { status: 500 }

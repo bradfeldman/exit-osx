@@ -953,7 +953,7 @@ export async function GET(
       significantTasksCompleted,
     })
   } catch (error) {
-    console.error('Error fetching dashboard data:', error)
+    console.error('Error fetching dashboard data:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch dashboard data' },
       { status: 500 }

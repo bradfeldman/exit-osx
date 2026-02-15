@@ -85,7 +85,7 @@ export async function POST(request: Request) {
       logId: result.logId,
     })
   } catch (error) {
-    console.error('[API] Error in email/send:', error)
+    console.error('[API] Error in email/send:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to process request' },
       { status: 500 }

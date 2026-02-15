@@ -92,7 +92,7 @@ export async function GET(
       generatedAt: snapshot?.createdAt || new Date().toISOString(),
     })
   } catch (error) {
-    console.error('[Report API] Error fetching report data:', error)
+    console.error('[Report API] Error fetching report data:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Failed to load report' }, { status: 500 })
   }
 }

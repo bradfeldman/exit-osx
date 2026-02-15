@@ -120,7 +120,7 @@ export async function POST(
 
     return NextResponse.json({ activity })
   } catch (error) {
-    console.error('Error logging data room activity:', error)
+    console.error('Error logging data room activity:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -177,7 +177,7 @@ export async function GET(
 
     return NextResponse.json({ activities })
   } catch (error) {
-    console.error('Error fetching data room activities:', error)
+    console.error('Error fetching data room activities:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

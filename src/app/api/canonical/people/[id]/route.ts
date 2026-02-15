@@ -106,7 +106,7 @@ export async function GET(
 
     return NextResponse.json({ person })
   } catch (error) {
-    console.error('Error fetching canonical person:', error)
+    console.error('Error fetching canonical person:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -223,7 +223,7 @@ export async function PUT(
 
     return NextResponse.json({ person })
   } catch (error) {
-    console.error('Error updating canonical person:', error)
+    console.error('Error updating canonical person:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -282,7 +282,7 @@ export async function DELETE(
 
     return NextResponse.json({ deleted: true })
   } catch (error) {
-    console.error('Error deleting canonical person:', error)
+    console.error('Error deleting canonical person:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

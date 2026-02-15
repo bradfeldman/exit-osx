@@ -43,7 +43,7 @@ export async function GET() {
 
     return NextResponse.json({ deletionRequest })
   } catch (error) {
-    console.error('Error fetching deletion request:', error)
+    console.error('Error fetching deletion request:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch deletion request' },
       { status: 500 }
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Error creating deletion request:', error)
+    console.error('Error creating deletion request:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to create deletion request' },
       { status: 500 }

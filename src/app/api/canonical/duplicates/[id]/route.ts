@@ -95,7 +95,7 @@ export async function PUT(
         : `Marked as ${resolution.toLowerCase().replace('_', ' ')}`,
     })
   } catch (error) {
-    console.error('Error resolving duplicate:', error)
+    console.error('Error resolving duplicate:', error instanceof Error ? error.message : String(error))
 
     if (error instanceof Error && error.message.includes('not found or already merged')) {
       return NextResponse.json({ error: error.message }, { status: 400 })
@@ -131,7 +131,7 @@ export async function DELETE(
 
     return NextResponse.json({ deleted: true })
   } catch (error) {
-    console.error('Error deleting duplicate candidate:', error)
+    console.error('Error deleting duplicate candidate:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

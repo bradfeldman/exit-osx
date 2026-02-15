@@ -95,7 +95,7 @@ export async function GET(
       summary,
     })
   } catch (error) {
-    console.error('Error fetching prospects:', error)
+    console.error('Error fetching prospects:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -181,7 +181,7 @@ export async function POST(
 
     return NextResponse.json({ prospect }, { status: 201 })
   } catch (error) {
-    console.error('Error creating prospect:', error)
+    console.error('Error creating prospect:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -234,7 +234,7 @@ export async function DELETE(
 
     return NextResponse.json({ deleted: deleted.count })
   } catch (error) {
-    console.error('Error deleting prospects:', error)
+    console.error('Error deleting prospects:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

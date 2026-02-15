@@ -280,7 +280,7 @@ export async function GET(request: Request) {
       errors: recalculationErrors.length > 0 ? recalculationErrors : undefined,
     })
   } catch (error) {
-    console.error('[RefreshMultiples] Cron error:', error)
+    console.error('[RefreshMultiples] Cron error:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       {
         // SECURITY FIX (PROD-060): Removed error.message from response

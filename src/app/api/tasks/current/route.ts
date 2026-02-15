@@ -88,7 +88,7 @@ export async function GET(request: Request) {
       previousWeeks: previousWeeksWithTasks,
     })
   } catch (error) {
-    console.error('Error fetching current tasks:', error)
+    console.error('Error fetching current tasks:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch tasks' },
       { status: 500 }

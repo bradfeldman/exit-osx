@@ -355,7 +355,7 @@ export async function GET(
       contactsSummary,
     })
   } catch (error) {
-    console.error('Error fetching deal room data:', error)
+    console.error('Error fetching deal room data:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch deal room data' },
       { status: 500 }
@@ -423,7 +423,7 @@ export async function POST(
       dataRoomId: dataRoom.id,
     })
   } catch (error) {
-    console.error('Error activating deal room:', error)
+    console.error('Error activating deal room:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to activate deal room' },
       { status: 500 }

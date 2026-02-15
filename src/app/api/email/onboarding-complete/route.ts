@@ -59,7 +59,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('[API] Error in onboarding-complete email:', error)
+    console.error('[API] Error in onboarding-complete email:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to process request' },
       { status: 500 }

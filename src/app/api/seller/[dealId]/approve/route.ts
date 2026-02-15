@@ -159,7 +159,7 @@ export async function POST(
       newStatus,
     })
   } catch (error) {
-    console.error('Error processing seller approval:', error)
+    console.error('Error processing seller approval:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to process approval' },
       { status: 500 }

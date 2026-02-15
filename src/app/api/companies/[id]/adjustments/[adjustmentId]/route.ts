@@ -57,7 +57,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting adjustment:', error)
+    console.error('Error deleting adjustment:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to delete adjustment' },
       { status: 500 }

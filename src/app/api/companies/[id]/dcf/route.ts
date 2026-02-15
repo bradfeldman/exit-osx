@@ -232,7 +232,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('Error fetching DCF assumptions:', error)
+    console.error('Error fetching DCF assumptions:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch DCF assumptions' },
       { status: 500 }
@@ -356,7 +356,7 @@ export async function PUT(
       },
     })
   } catch (error) {
-    console.error('Error saving DCF assumptions:', error)
+    console.error('Error saving DCF assumptions:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to save DCF assumptions' },
       { status: 500 }

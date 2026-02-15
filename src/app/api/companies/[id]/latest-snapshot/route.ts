@@ -66,7 +66,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('Error fetching latest snapshot:', error)
+    console.error('Error fetching latest snapshot:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch latest snapshot' },
       { status: 500 }

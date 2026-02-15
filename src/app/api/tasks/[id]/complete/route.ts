@@ -346,7 +346,7 @@ export async function POST(
       },
     })
   } catch (error) {
-    console.error('Error completing task:', error)
+    console.error('Error completing task:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to complete task' },
       { status: 500 }

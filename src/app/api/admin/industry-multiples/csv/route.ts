@@ -66,7 +66,7 @@ export async function GET() {
       },
     })
   } catch (error) {
-    console.error('Error generating CSV:', error)
+    console.error('Error generating CSV:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to generate CSV' },
       { status: 500 }
@@ -259,7 +259,7 @@ export async function POST(request: Request) {
       },
     })
   } catch (error) {
-    console.error('Error processing CSV upload:', error)
+    console.error('Error processing CSV upload:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to process CSV upload' },
       { status: 500 }

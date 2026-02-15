@@ -76,7 +76,7 @@ export async function GET(
 
     return NextResponse.json({ promptSet })
   } catch (error) {
-    console.error('[Disclosures] Error fetching current prompt:', error)
+    console.error('[Disclosures] Error fetching current prompt:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch disclosure prompt' },
       { status: 500 }

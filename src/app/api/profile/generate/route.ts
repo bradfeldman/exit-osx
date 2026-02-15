@@ -65,7 +65,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ profile: data })
   } catch (error) {
-    console.error('Error generating business profile:', error)
+    console.error('Error generating business profile:', error instanceof Error ? error.message : String(error))
     // SECURITY FIX (PROD-060): Removed error.message from response to prevent leaking internal details
     const message = error instanceof Error ? error.message : 'Unknown error'
     if (message.includes('ANTHROPIC_API_KEY')) {

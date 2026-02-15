@@ -224,7 +224,7 @@ export async function POST(request: Request) {
       message: 'Loan inquiry submitted successfully',
     })
   } catch (error) {
-    console.error('Error processing loan inquiry:', error)
+    console.error('Error processing loan inquiry:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to process loan inquiry' },
       { status: 500 }

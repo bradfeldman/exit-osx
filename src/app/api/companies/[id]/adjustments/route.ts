@@ -54,7 +54,7 @@ export async function GET(
 
     return NextResponse.json({ adjustments })
   } catch (error) {
-    console.error('Error fetching adjustments:', error)
+    console.error('Error fetching adjustments:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch adjustments' },
       { status: 500 }
@@ -149,7 +149,7 @@ export async function POST(
 
     return NextResponse.json({ adjustment }, { status: 201 })
   } catch (error) {
-    console.error('Error creating adjustment:', error)
+    console.error('Error creating adjustment:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to create adjustment' },
       { status: 500 }
@@ -230,7 +230,7 @@ export async function PATCH(
 
     return NextResponse.json({ adjustment })
   } catch (error) {
-    console.error('Error updating adjustment:', error)
+    console.error('Error updating adjustment:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update adjustment' },
       { status: 500 }
@@ -292,7 +292,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true, deleted: result.count })
   } catch (error) {
-    console.error('Error deleting adjustment:', error)
+    console.error('Error deleting adjustment:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to delete adjustment' },
       { status: 500 }

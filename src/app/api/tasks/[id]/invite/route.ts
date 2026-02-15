@@ -183,7 +183,7 @@ export async function POST(
       isExistingUser: !!existingUser,
     })
   } catch (error) {
-    console.error('Error creating task invite:', error)
+    console.error('Error creating task invite:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to create invite' },
       { status: 500 }
@@ -255,7 +255,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting task invite:', error)
+    console.error('Error deleting task invite:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to delete invite' },
       { status: 500 }

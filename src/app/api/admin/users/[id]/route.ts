@@ -235,7 +235,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting user:', error)
+    console.error('Error deleting user:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to delete user' },
       { status: 500 }

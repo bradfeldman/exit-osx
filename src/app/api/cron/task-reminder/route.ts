@@ -131,7 +131,7 @@ export async function GET(request: Request) {
 
         sent++
       } catch (error) {
-        console.error(`[TaskReminder] Error processing company ${company.id}:`, error)
+        console.error(`[TaskReminder] Error processing company ${company.id}:`, error instanceof Error ? error.message : String(error))
         errors++
       }
     }
@@ -146,7 +146,7 @@ export async function GET(request: Request) {
       totalCompanies: companies.length,
     })
   } catch (error) {
-    console.error('[TaskReminder] Cron error:', error)
+    console.error('[TaskReminder] Cron error:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to run task reminder cron' },
       { status: 500 }

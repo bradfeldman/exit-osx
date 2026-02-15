@@ -42,7 +42,7 @@ export async function GET() {
       profile: user.advisorProfile,
     })
   } catch (error) {
-    console.error('Failed to get advisor profile:', error)
+    console.error('Failed to get advisor profile:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to get advisor profile' },
       { status: 500 }
@@ -91,7 +91,7 @@ export async function PUT(request: Request) {
 
     return NextResponse.json({ profile })
   } catch (error) {
-    console.error('Failed to update advisor profile:', error)
+    console.error('Failed to update advisor profile:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update advisor profile' },
       { status: 500 }

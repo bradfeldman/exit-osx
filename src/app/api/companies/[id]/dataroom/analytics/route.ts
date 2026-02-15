@@ -485,7 +485,7 @@ export async function GET(
 
     return NextResponse.json({ error: 'Invalid type or missing required parameters' }, { status: 400 })
   } catch (error) {
-    console.error('Error fetching analytics:', error)
+    console.error('Error fetching analytics:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

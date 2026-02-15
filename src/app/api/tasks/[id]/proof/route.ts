@@ -64,7 +64,7 @@ export async function GET(
 
     return NextResponse.json({ proofDocuments: documentsWithUrls })
   } catch (error) {
-    console.error('Error fetching proof documents:', error)
+    console.error('Error fetching proof documents:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -166,7 +166,7 @@ export async function POST(
       filePath,
     })
   } catch (error) {
-    console.error('Error creating proof document:', error)
+    console.error('Error creating proof document:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -250,7 +250,7 @@ export async function PATCH(
       task: updatedTask,
     })
   } catch (error) {
-    console.error('Error confirming proof upload:', error)
+    console.error('Error confirming proof upload:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -327,7 +327,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting proof document:', error)
+    console.error('Error deleting proof document:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

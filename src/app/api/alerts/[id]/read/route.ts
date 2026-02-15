@@ -36,7 +36,7 @@ export async function POST(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error marking alert as read:', error)
+    console.error('Error marking alert as read:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to mark alert as read' },
       { status: 500 }

@@ -144,8 +144,13 @@ function isAppDomain(hostname: string): boolean {
 // This helper copies all cookies from the Supabase response to the redirect.
 function createRedirect(url: string | URL, supabaseRes: NextResponse): NextResponse {
   const redirect = NextResponse.redirect(url)
+  const isProduction = process.env.NODE_ENV === 'production'
   supabaseRes.cookies.getAll().forEach(({ name, value, ...options }) => {
-    redirect.cookies.set(name, value, options)
+    redirect.cookies.set(name, value, {
+      ...options,
+      // SEC-036: Enforce Secure flag in production to prevent cookie leakage over HTTP
+      ...(isProduction && { secure: true }),
+    })
   })
   return redirect
 }

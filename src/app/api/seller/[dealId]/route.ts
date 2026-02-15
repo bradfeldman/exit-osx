@@ -86,7 +86,7 @@ export async function GET(
       accessRole: access.role,
     })
   } catch (error) {
-    console.error('Error fetching seller deal:', error)
+    console.error('Error fetching seller deal:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch deal' },
       { status: 500 }

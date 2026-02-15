@@ -29,7 +29,7 @@ export async function GET(
 
     return NextResponse.json({ company })
   } catch (error) {
-    console.error('Error fetching company:', error)
+    console.error('Error fetching company:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch company' },
       { status: 500 }
@@ -82,7 +82,7 @@ export async function PUT(
 
     return NextResponse.json({ company })
   } catch (error) {
-    console.error('Error updating company:', error)
+    console.error('Error updating company:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update company' },
       { status: 500 }
@@ -135,7 +135,7 @@ export async function DELETE(
       message: 'Company has been scheduled for deletion. It will be permanently removed after 30 days.'
     })
   } catch (error) {
-    console.error('Error deleting company:', error)
+    console.error('Error deleting company:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to delete company' },
       { status: 500 }

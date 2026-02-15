@@ -152,7 +152,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('Error exporting analytics:', error)
+    console.error('Error exporting analytics:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

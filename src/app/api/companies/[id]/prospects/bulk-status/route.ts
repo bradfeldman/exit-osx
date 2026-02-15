@@ -92,7 +92,7 @@ export async function PATCH(
 
     return NextResponse.json({ updated: updated.count })
   } catch (error) {
-    console.error('Error bulk updating prospects:', error)
+    console.error('Error bulk updating prospects:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

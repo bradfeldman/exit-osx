@@ -206,7 +206,7 @@ export async function GET(
       totalExits,
     })
   } catch (error) {
-    console.error('Error fetching exit analysis data:', error)
+    console.error('Error fetching exit analysis data:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch exit analysis data' },
       { status: 500 }

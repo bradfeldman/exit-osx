@@ -219,7 +219,7 @@ The icbSubSector MUST be one of the exact codes shown in parentheses in the list
       { status: 404 }
     )
   } catch (error) {
-    console.error('Error in industry matching:', error)
+    console.error('Error in industry matching:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to process industry matching request' },
       { status: 500 }

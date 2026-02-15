@@ -67,7 +67,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       resolvedPermissions: resolved.permissions,
     })
   } catch (error) {
-    console.error('Failed to get member permissions:', error)
+    console.error('Failed to get member permissions:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to get member permissions' },
       { status: 500 }
@@ -206,7 +206,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       resolvedPermissions: resolved.permissions,
     })
   } catch (error) {
-    console.error('Failed to update member permissions:', error)
+    console.error('Failed to update member permissions:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update member permissions' },
       { status: 500 }
@@ -241,7 +241,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Failed to reset member permissions:', error)
+    console.error('Failed to reset member permissions:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to reset member permissions' },
       { status: 500 }

@@ -40,7 +40,7 @@ async function getBriWeightsForCompany(companyBriWeights: unknown): Promise<Reco
       return setting.value as Record<string, number>
     }
   } catch (error) {
-    console.error('Error fetching global BRI weights:', error)
+    console.error('Error fetching global BRI weights:', error instanceof Error ? error.message : String(error))
   }
 
   // 3. Fall back to defaults
@@ -319,7 +319,7 @@ export async function POST(
       },
     })
   } catch (error) {
-    console.error('Error completing assessment:', error)
+    console.error('Error completing assessment:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to complete assessment' },
       { status: 500 }

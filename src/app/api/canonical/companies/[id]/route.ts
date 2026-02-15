@@ -85,7 +85,7 @@ export async function GET(
 
     return NextResponse.json({ company })
   } catch (error) {
-    console.error('Error fetching canonical company:', error)
+    console.error('Error fetching canonical company:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -175,7 +175,7 @@ export async function PUT(
 
     return NextResponse.json({ company })
   } catch (error) {
-    console.error('Error updating canonical company:', error)
+    console.error('Error updating canonical company:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -237,7 +237,7 @@ export async function DELETE(
 
     return NextResponse.json({ deleted: true })
   } catch (error) {
-    console.error('Error deleting canonical company:', error)
+    console.error('Error deleting canonical company:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

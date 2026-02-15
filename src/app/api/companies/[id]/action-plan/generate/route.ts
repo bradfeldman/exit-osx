@@ -94,7 +94,7 @@ export async function POST(
       newTasksAdded: result.newTasksAdded,
     })
   } catch (error) {
-    console.error('Error generating action plan:', error)
+    console.error('Error generating action plan:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to generate action plan' },
       { status: 500 }

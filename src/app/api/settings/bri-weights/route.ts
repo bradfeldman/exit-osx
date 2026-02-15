@@ -27,7 +27,7 @@ export async function GET() {
       isDefault: !setting,
     })
   } catch (error) {
-    console.error('Error fetching BRI weights:', error)
+    console.error('Error fetching BRI weights:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch BRI weights' },
       { status: 500 }
@@ -109,7 +109,7 @@ export async function PUT(request: Request) {
       companiesRecalculated: recalculated,
     })
   } catch (error) {
-    console.error('Error updating BRI weights:', error)
+    console.error('Error updating BRI weights:', error instanceof Error ? error.message : String(error))
     // SECURITY FIX (PROD-060): Removed error.message from response to prevent leaking internal details
     return NextResponse.json(
       { error: 'Failed to update BRI weights' },
@@ -159,7 +159,7 @@ export async function DELETE() {
       companiesRecalculated: recalculated,
     })
   } catch (error) {
-    console.error('Error restoring default BRI weights:', error)
+    console.error('Error restoring default BRI weights:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to restore default weights' },
       { status: 500 }

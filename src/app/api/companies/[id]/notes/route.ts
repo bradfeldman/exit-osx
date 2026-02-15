@@ -81,7 +81,7 @@ export async function GET(
       total: notes.length,
     })
   } catch (error) {
-    console.error('Error searching company notes:', error)
+    console.error('Error searching company notes:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       // SECURITY FIX (PROD-060): Removed error.message from response to prevent leaking internal details
       { error: 'Failed to search notes' },

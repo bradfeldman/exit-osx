@@ -180,7 +180,7 @@ export async function GET(request: Request) {
       errorDetails: errors > 0 ? errorDetails : undefined,
     })
   } catch (error) {
-    console.error('[GenerateDriftReports] Cron error:', error)
+    console.error('[GenerateDriftReports] Cron error:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       // SECURITY FIX (PROD-060): Removed String(error) details from response
       { error: 'Failed to run drift report generation cron' },

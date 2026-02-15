@@ -130,7 +130,7 @@ export async function GET(
       disclaimer: 'Comparable companies and their financial metrics are AI-estimated based on publicly available information. These estimates have not been independently verified and may contain inaccuracies. They should be validated with current market data before making financial decisions.',
     })
   } catch (error) {
-    console.error('Error fetching comparables:', error)
+    console.error('Error fetching comparables:', error instanceof Error ? error.message : String(error))
 
     // Distinguish AI errors from other errors
     const message = error instanceof Error ? error.message : 'Unknown error'

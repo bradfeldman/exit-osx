@@ -154,7 +154,7 @@ export async function GET(
       categories: categoryResults,
     })
   } catch (error) {
-    console.error('Error fetching assessment cadence:', error)
+    console.error('Error fetching assessment cadence:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch assessment cadence' },
       { status: 500 },
@@ -192,7 +192,7 @@ export async function PUT(
 
     return NextResponse.json({ success: true, cadence })
   } catch (error) {
-    console.error('Error updating assessment cadence:', error)
+    console.error('Error updating assessment cadence:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update assessment cadence' },
       { status: 500 },
@@ -238,7 +238,7 @@ export async function POST(
 
     return NextResponse.json({ success: true, promptCount: recentPrompts.length })
   } catch (error) {
-    console.error('Error recording cadence prompt:', error)
+    console.error('Error recording cadence prompt:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to record cadence prompt' },
       { status: 500 },

@@ -79,7 +79,7 @@ export async function GET(request: Request) {
       totalQuestions: questions.length,
     })
   } catch (error) {
-    console.error('Error fetching questions:', error)
+    console.error('Error fetching questions:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch questions' },
       { status: 500 }

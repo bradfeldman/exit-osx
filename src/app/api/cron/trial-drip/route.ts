@@ -261,7 +261,7 @@ export async function GET(request: Request) {
         errors++
         const errorMessage = error instanceof Error ? error.message : String(error)
         details.push({ workspace: workspace.name, email: owner.email, type: dripEntry.emailType, result: errorMessage })
-        console.error(`[TrialDrip] Error sending ${dripEntry.emailType} to ${owner.email}:`, error)
+        console.error(`[TrialDrip] Error sending ${dripEntry.emailType} to ${owner.email}:`, error instanceof Error ? error.message : String(error))
       }
     }
 
@@ -276,7 +276,7 @@ export async function GET(request: Request) {
       details,
     })
   } catch (error) {
-    console.error('[TrialDrip] Cron error:', error)
+    console.error('[TrialDrip] Cron error:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to run trial drip cron' },
       { status: 500 }

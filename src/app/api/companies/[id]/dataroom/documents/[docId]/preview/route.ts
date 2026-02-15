@@ -152,7 +152,7 @@ export async function GET(
       .createSignedUrl(document.filePath, SIGNED_URL_PREVIEW_EXPIRY_SECONDS)
 
     if (error) {
-      console.error('Error creating signed URL:', error)
+      console.error('Error creating signed URL:', error instanceof Error ? error.message : String(error))
       return NextResponse.json({ error: 'Failed to generate preview URL' }, { status: 500 })
     }
 
@@ -164,7 +164,7 @@ export async function GET(
       expiresIn: SIGNED_URL_PREVIEW_EXPIRY_SECONDS,
     })
   } catch (error) {
-    console.error('Error generating preview URL:', error)
+    console.error('Error generating preview URL:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

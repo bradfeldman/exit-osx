@@ -172,7 +172,7 @@ export async function POST(request: Request) {
       weekProgress,
     })
   } catch (error) {
-    console.error('Error generating tasks:', error)
+    console.error('Error generating tasks:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to generate tasks' },
       { status: 500 }
@@ -401,7 +401,7 @@ async function handleOnboardingTaskGeneration(body: {
       tasks: tasksWithIds,
     })
   } catch (error) {
-    console.error('Error generating onboarding tasks:', error)
+    console.error('Error generating onboarding tasks:', error instanceof Error ? error.message : String(error))
     // SECURITY FIX (PROD-060): Don't expose internal error messages to the client
     return NextResponse.json(
       { error: 'Failed to generate tasks' },

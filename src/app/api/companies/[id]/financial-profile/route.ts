@@ -313,7 +313,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('Error fetching financial profile:', error)
+    console.error('Error fetching financial profile:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch financial profile' },
       { status: 500 }

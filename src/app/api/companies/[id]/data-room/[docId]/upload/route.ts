@@ -82,7 +82,7 @@ export async function POST(
       publicUrl: urlData.publicUrl,
     })
   } catch (error) {
-    console.error('Error generating upload URL:', error)
+    console.error('Error generating upload URL:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -104,7 +104,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('Error fetching buyer history:', error)
+    console.error('Error fetching buyer history:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

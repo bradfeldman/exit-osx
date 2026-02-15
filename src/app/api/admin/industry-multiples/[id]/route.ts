@@ -41,7 +41,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('Error fetching industry multiple:', error)
+    console.error('Error fetching industry multiple:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch industry multiple' },
       { status: 500 }
@@ -197,7 +197,7 @@ export async function PUT(
       } : null,
     })
   } catch (error) {
-    console.error('Error updating industry multiple:', error)
+    console.error('Error updating industry multiple:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update industry multiple' },
       { status: 500 }
@@ -246,7 +246,7 @@ export async function DELETE(
       },
     })
   } catch (error) {
-    console.error('Error deleting industry multiple:', error)
+    console.error('Error deleting industry multiple:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to delete industry multiple' },
       { status: 500 }

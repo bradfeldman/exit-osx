@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
       query,
     })
   } catch (error) {
-    console.error('[TASK_ENGINE] Error searching questions:', error)
+    console.error('[TASK_ENGINE] Error searching questions:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { message: 'Failed to search questions' },
       { status: 500 }

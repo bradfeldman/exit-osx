@@ -76,7 +76,7 @@ export async function GET(
       versions: allVersions,
     })
   } catch (error) {
-    console.error('Error fetching versions:', error)
+    console.error('Error fetching versions:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

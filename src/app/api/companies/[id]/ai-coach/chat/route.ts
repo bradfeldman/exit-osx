@@ -77,7 +77,7 @@ export async function POST(
 
     return NextResponse.json({ message })
   } catch (error) {
-    console.error('[AICoach] Error:', error)
+    console.error('[AICoach] Error:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to generate response' },
       { status: 500 }

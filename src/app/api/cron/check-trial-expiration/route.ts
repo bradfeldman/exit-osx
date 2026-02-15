@@ -60,7 +60,7 @@ export async function GET(request: Request) {
     })
 
   } catch (error) {
-    console.error('[Cron] Error checking trial expiration:', error)
+    console.error('[Cron] Error checking trial expiration:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to process trial expirations' },
       { status: 500 }

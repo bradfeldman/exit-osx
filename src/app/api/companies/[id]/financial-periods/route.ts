@@ -75,7 +75,7 @@ export async function GET(
 
     return NextResponse.json({ periods })
   } catch (error) {
-    console.error('Error fetching financial periods:', error)
+    console.error('Error fetching financial periods:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch financial periods' },
       { status: 500 }
@@ -211,7 +211,7 @@ export async function POST(
       )
     }
 
-    console.error('Error creating financial period:', error)
+    console.error('Error creating financial period:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to create financial period' },
       { status: 500 }

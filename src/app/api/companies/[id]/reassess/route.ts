@@ -131,7 +131,7 @@ export async function GET(
       categories
     })
   } catch (error) {
-    console.error('Error fetching reassessment data:', error)
+    console.error('Error fetching reassessment data:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch assessment data' },
       { status: 500 }
@@ -255,7 +255,7 @@ export async function POST(
       snapshotId: snapshotResult.snapshotId,
     })
   } catch (error) {
-    console.error('Error updating reassessment:', error)
+    console.error('Error updating reassessment:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update assessment' },
       { status: 500 }

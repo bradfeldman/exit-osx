@@ -194,7 +194,7 @@ export async function GET(request: Request) {
           console.warn(`[DetectInactivity] Failed to send email to ${user.email}: ${emailResult.error}`)
         }
       } catch (error) {
-        console.error(`[DetectInactivity] Error processing user ${user.email}:`, error)
+        console.error(`[DetectInactivity] Error processing user ${user.email}:`, error instanceof Error ? error.message : String(error))
       }
     }
 
@@ -210,7 +210,7 @@ export async function GET(request: Request) {
       skipped,
     })
   } catch (error) {
-    console.error('[DetectInactivity] Cron error:', error)
+    console.error('[DetectInactivity] Cron error:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       // SECURITY FIX (PROD-060): Removed String(error) details from response
       { error: 'Failed to run inactivity detection cron' },

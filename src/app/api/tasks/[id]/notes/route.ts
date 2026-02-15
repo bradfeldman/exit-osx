@@ -40,7 +40,7 @@ export async function GET(
 
     return NextResponse.json({ notes })
   } catch (error) {
-    console.error('Error fetching task notes:', error)
+    console.error('Error fetching task notes:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch task notes' },
       { status: 500 }
@@ -105,7 +105,7 @@ export async function POST(
 
     return NextResponse.json({ note }, { status: 201 })
   } catch (error) {
-    console.error('Error creating task note:', error)
+    console.error('Error creating task note:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to create task note' },
       { status: 500 }

@@ -78,7 +78,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       }
     })
   } catch (error) {
-    console.error('Failed to get personal financials:', error)
+    console.error('Failed to get personal financials:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to get personal financials' },
       { status: 500 }
@@ -178,7 +178,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({ personalFinancials })
   } catch (error) {
-    console.error('Failed to update personal financials:', error)
+    console.error('Failed to update personal financials:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update personal financials' },
       { status: 500 }

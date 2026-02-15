@@ -147,7 +147,7 @@ export async function GET(
       cursor: lastActivity?.timestamp ?? null,
     })
   } catch (error) {
-    console.error('Error fetching deal room activity:', error)
+    console.error('Error fetching deal room activity:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch activity' },
       { status: 500 }

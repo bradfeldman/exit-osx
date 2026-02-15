@@ -54,7 +54,7 @@ export async function GET(
       canTransition: buyer.approvalStatus === ApprovalStatus.APPROVED && validNextStages.length > 0,
     })
   } catch (error) {
-    console.error('Error getting stage info:', error)
+    console.error('Error getting stage info:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -175,7 +175,7 @@ export async function POST(
       })),
     })
   } catch (error) {
-    console.error('Error transitioning stage:', error)
+    console.error('Error transitioning stage:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

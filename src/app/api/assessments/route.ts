@@ -51,7 +51,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ assessments })
   } catch (error) {
-    console.error('Error fetching assessments:', error)
+    console.error('Error fetching assessments:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch assessments' },
       { status: 500 }
@@ -137,7 +137,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ assessment, isExisting: false }, { status: 201 })
   } catch (error) {
-    console.error('Error creating assessment:', error)
+    console.error('Error creating assessment:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to create assessment' },
       { status: 500 }

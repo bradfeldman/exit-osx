@@ -68,7 +68,7 @@ export async function GET(
       defaultWeights: DEFAULT_BRI_WEIGHTS,
     })
   } catch (error) {
-    console.error('Error fetching company BRI weights:', error)
+    console.error('Error fetching company BRI weights:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to fetch BRI weights' },
       { status: 500 }
@@ -140,7 +140,7 @@ export async function PUT(
       snapshotId: recalcResult.snapshotId,
     })
   } catch (error) {
-    console.error('Error updating company BRI weights:', error)
+    console.error('Error updating company BRI weights:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to update BRI weights' },
       { status: 500 }
@@ -187,7 +187,7 @@ export async function DELETE(
       snapshotId: recalcResult.snapshotId,
     })
   } catch (error) {
-    console.error('Error removing company BRI weights:', error)
+    console.error('Error removing company BRI weights:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Failed to remove BRI weights' },
       { status: 500 }
