@@ -8,7 +8,7 @@ import { validateRequestBody } from '@/lib/security/validation'
 
 const postSchema = z.object({
   canonicalPersonId: z.string().uuid(),
-  role: z.enum(['DEAL_LEAD', 'ADVISOR', 'LEGAL', 'FINANCIAL', 'OPERATIONS', 'OTHER'] as const satisfies readonly BuyerContactRole[]).default('DEAL_LEAD'),
+  role: z.enum(['PRIMARY', 'DECISION_MAKER', 'DEAL_LEAD', 'DILIGENCE', 'LEGAL', 'FINANCE', 'OPERATIONS'] as const satisfies readonly BuyerContactRole[]).default('DEAL_LEAD'),
   isPrimary: z.boolean().default(false),
 })
 

@@ -17,7 +17,7 @@ const postContactSchema = z.object({
   lastName: z.string().min(1).max(100),
   title: z.string().max(200).optional().nullable(),
   phone: z.string().max(50).optional().nullable(),
-  role: z.enum(['DEAL_LEAD', 'ADVISOR', 'LEGAL', 'FINANCIAL', 'OPERATIONS', 'OTHER'] as const satisfies readonly BuyerContactRole[]).default('DEAL_LEAD'),
+  role: z.enum(['PRIMARY', 'DECISION_MAKER', 'DEAL_LEAD', 'DILIGENCE', 'LEGAL', 'FINANCE', 'OPERATIONS'] as const satisfies readonly BuyerContactRole[]).default('DEAL_LEAD'),
   isPrimary: z.boolean().default(false),
   grantVDRAccess: z.boolean().default(true),
 })
@@ -29,7 +29,7 @@ const putContactSchema = z.object({
   lastName: z.string().min(1).max(100).optional(),
   title: z.string().max(200).optional().nullable(),
   phone: z.string().max(50).optional().nullable(),
-  role: z.enum(['DEAL_LEAD', 'ADVISOR', 'LEGAL', 'FINANCIAL', 'OPERATIONS', 'OTHER'] as const satisfies readonly BuyerContactRole[]).optional(),
+  role: z.enum(['PRIMARY', 'DECISION_MAKER', 'DEAL_LEAD', 'DILIGENCE', 'LEGAL', 'FINANCE', 'OPERATIONS'] as const satisfies readonly BuyerContactRole[]).optional(),
   isPrimary: z.boolean().optional(),
   isActive: z.boolean().optional(),
 })

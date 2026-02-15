@@ -10,7 +10,7 @@ type RouteParams = Promise<{ dealId: string; buyerId: string }>
 const postSchema = z.object({
   activityType: z.enum([
     'STAGE_CHANGED', 'NOTE_ADDED', 'EMAIL_SENT', 'EMAIL_RECEIVED',
-    'CALL_MADE', 'CALL_RECEIVED', 'MEETING_SCHEDULED', 'MEETING_COMPLETED',
+    'CALL_OUTBOUND', 'CALL_INBOUND', 'MEETING_SCHEDULED', 'MEETING_COMPLETED',
     'DOCUMENT_SENT', 'DOCUMENT_RECEIVED', 'APPROVAL_GRANTED', 'APPROVAL_DENIED'
   ] as const satisfies readonly ActivityType[]),
   subject: z.string().min(1).max(500),

@@ -22,7 +22,7 @@ const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
 
 const subcategoryTaskGenSchema = z.object({
   companyId: z.string().uuid(),
-  subcategory: z.string().max(100),
+  subcategory: z.enum(['SCALABILITY', 'TECHNOLOGY', 'VENDOR', 'RETENTION']),
   valueAtStake: z.coerce.number().finite().optional(),
 })
 

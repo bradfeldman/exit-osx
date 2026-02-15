@@ -8,7 +8,7 @@ import { validateRequestBody } from '@/lib/security/validation'
 
 const postSchema = z.object({
   canonicalCompanyId: z.string().uuid(),
-  initialStage: z.enum(['IDENTIFIED', 'CONTACTED', 'ENGAGED', 'NDA_SENT', 'NDA_EXECUTED', 'CIM_SENT', 'IOI_RECEIVED', 'SELECTED', 'LOI_RECEIVED', 'DD_IN_PROGRESS', 'CLOSED', 'WITHDRAWN', 'TERMINATED']).default('IDENTIFIED'),
+  initialStage: z.enum(['IDENTIFIED', 'SELLER_REVIEWING', 'APPROVED', 'DECLINED', 'TEASER_SENT', 'INTERESTED', 'PASSED', 'NDA_SENT', 'NDA_NEGOTIATING', 'NDA_EXECUTED', 'CIM_ACCESS', 'LEVEL_2_ACCESS', 'LEVEL_3_ACCESS', 'MANAGEMENT_MEETING_SCHEDULED', 'MANAGEMENT_MEETING_COMPLETED', 'IOI_REQUESTED', 'IOI_RECEIVED', 'IOI_ACCEPTED', 'IOI_DECLINED', 'LOI_REQUESTED', 'LOI_RECEIVED', 'LOI_SELECTED', 'LOI_BACKUP', 'DUE_DILIGENCE', 'PA_DRAFTING', 'PA_NEGOTIATING', 'CLOSING', 'CLOSED', 'WITHDRAWN', 'TERMINATED']).default('IDENTIFIED'),
   notes: z.string().max(5000).optional(),
   requireSellerApproval: z.boolean().optional(),
 })

@@ -108,7 +108,7 @@ export async function GET(
 }
 
 const createSignalSchema = z.object({
-  channel: z.enum(['DRIFT_REPORT', 'WORKFLOW_BASED', 'MARKET_RESEARCH', 'TASK_GENERATED', 'QUICKBOOKS_INTEGRATED', 'FINANCIAL_IMPORT', 'ACTIVITY_BASED', 'ASSESSMENT_RESPONSE', 'USER_REPORTED', 'MANUAL', 'SYSTEM']),
+  channel: z.enum(['PROMPTED_DISCLOSURE', 'TASK_GENERATED', 'TIME_DECAY', 'EXTERNAL', 'ADVISOR']),
   title: z.string().min(1).max(500),
   description: z.string().max(5000).optional(),
   category: z.enum(['FINANCIAL', 'TRANSFERABILITY', 'OPERATIONAL', 'MARKET', 'LEGAL_TAX', 'PERSONAL']).optional(),

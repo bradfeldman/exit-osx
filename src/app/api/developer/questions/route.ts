@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { validateRequestBody } from '@/lib/security/validation'
 
 const postQuestionSchema = z.object({
-  category: z.string().max(100),
+  category: z.enum(['FINANCIAL', 'TRANSFERABILITY', 'OPERATIONAL', 'MARKET', 'LEGAL_TAX', 'PERSONAL']),
   subCategory: z.string().max(100).optional().nullable(),
   questionText: z.string().min(1).max(500),
   helpText: z.string().max(1000).optional().nullable(),
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       where: { briCategory: category },
       _max: { displayOrder: true },
     })
-    const nextDisplayOrder = (maxOrderResult._max.displayOrder || 0) + 1
+    const nextDisplayOrder = (maxOrderResult._max?.displayOrder || 0) + 1
 
     // Default max impact points (equal weighting within category)
     const maxImpactPoints = 0.25

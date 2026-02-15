@@ -20,7 +20,7 @@ export async function POST(
   if (!validation.success) return validation.error
   const { reason } = validation.data
 
-  const impersonationResult = await startImpersonation(result.admin, id, reason)
+  const impersonationResult = await startImpersonation(result.admin, id, reason ?? '')
 
   if (!impersonationResult.success) {
     return NextResponse.json(

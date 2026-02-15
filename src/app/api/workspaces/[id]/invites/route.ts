@@ -178,7 +178,7 @@ export async function POST(
         invitedBy: auth.user.id,
         expiresAt,
         roleTemplateId: roleTemplateId || null,
-        customPermissions: customPermissions || null,
+        ...(customPermissions ? { customPermissions } : {}),
         isExternalAdvisor,
       },
       include: {

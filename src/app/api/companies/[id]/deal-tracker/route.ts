@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
-import { DealStage, BuyerType, BuyerTier } from '@prisma/client'
+import { DealStage, BuyerType, BuyerTier, BuyerContactRole } from '@prisma/client'
 import { ACTIVITY_TYPES } from '@/lib/deal-tracker/constants'
 import { z } from 'zod'
 import { validateRequestBody } from '@/lib/security/validation'
@@ -226,7 +226,7 @@ export async function POST(
             lastName: contact.lastName,
             title: contact.title,
             phone: contact.phone,
-            role: contact.role || 'DEAL_LEAD',
+            role: (contact.role || 'DEAL_LEAD') as BuyerContactRole,
             isPrimary: index === 0 || contact.isPrimary || false,
           })),
         },

@@ -10,7 +10,7 @@ import { validateRequestBody } from '@/lib/security/validation'
 
 const schema = z.object({
   companyId: z.string().uuid(),
-  subcategory: z.string().max(200),
+  subcategory: z.enum(['SCALABILITY', 'TECHNOLOGY', 'VENDOR', 'RETENTION']),
   initialAnswer: z.string().max(5000).optional().nullable(),
   initialScore: z.coerce.number().finite().min(0).max(100).optional().nullable(),
 })

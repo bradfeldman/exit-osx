@@ -175,7 +175,11 @@ export async function DELETE(request: NextRequest) {
 
   try {
     // Can delete by ID or domain string
-    const where = domainId ? { id: domainId } : domain ? { domain: domain.toLowerCase() } : null
+    const where = domainId ? { id: domainId } : domain ? { domain: domain.toLowerCase() } : undefined
+
+    if (!where) {
+      return NextResponse.json({ error: 'Either domainId or domain is required' }, { status: 400 })
+    }
 
     const existing = await prisma.canonicalDomain.findFirst({ where })
 

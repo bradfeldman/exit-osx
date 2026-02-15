@@ -174,8 +174,8 @@ export async function PUT(
     if (industryName !== undefined) updateData.industryName = industryName?.trim() || null
     if (headquarters !== undefined) updateData.headquarters = headquarters?.trim() || null
     if (country !== undefined) updateData.country = country?.trim() || null
-    if (employeeCount !== undefined) updateData.employeeCount = employeeCount ? parseInt(employeeCount) : null
-    if (foundedYear !== undefined) updateData.foundedYear = foundedYear ? parseInt(foundedYear) : null
+    if (employeeCount !== undefined) updateData.employeeCount = employeeCount ? String(employeeCount) : null
+    if (foundedYear !== undefined) updateData.foundedYear = foundedYear ? String(foundedYear) : null
     if (aum !== undefined) updateData.aum = aum || null
     if (description !== undefined) updateData.description = description?.trim() || null
     if (dataQuality !== undefined) {

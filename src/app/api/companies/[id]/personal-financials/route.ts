@@ -3,6 +3,7 @@
 
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { requireGranularPermission } from '@/lib/auth/check-granular-permission'
 import { validateRequestBody, personalFinancialsSchema } from '@/lib/security/validation'
@@ -113,31 +114,33 @@ export async function PUT(request: Request, { params }: RouteParams) {
     } = validation.data
 
     // Upsert personal financials (user-scoped)
+    // Prisma Json? fields need Prisma.JsonNull for explicit null, not JS null
+    const jsonOrNull = (val: unknown) => val ?? Prisma.JsonNull
     const personalFinancials = await prisma.personalFinancials.upsert({
       where: { userId },
       update: {
-        retirementAccounts: retirementAccounts || null,
+        retirementAccounts: jsonOrNull(retirementAccounts),
         totalRetirement: totalRetirement !== undefined ? totalRetirement : null,
-        personalAssets: personalAssets || null,
-        personalLiabilities: personalLiabilities || null,
+        personalAssets: jsonOrNull(personalAssets),
+        personalLiabilities: jsonOrNull(personalLiabilities),
         netWorth: netWorth !== undefined ? netWorth : null,
         exitGoalAmount: exitGoalAmount !== undefined ? exitGoalAmount : null,
         retirementAge: retirementAge !== undefined ? retirementAge : null,
         currentAge: currentAge !== undefined ? currentAge : null,
-        businessOwnership: businessOwnership !== undefined ? businessOwnership : null,
+        businessOwnership: jsonOrNull(businessOwnership),
         notes: notes || null,
       },
       create: {
         userId,
-        retirementAccounts: retirementAccounts || null,
+        retirementAccounts: jsonOrNull(retirementAccounts),
         totalRetirement: totalRetirement !== undefined ? totalRetirement : null,
-        personalAssets: personalAssets || null,
-        personalLiabilities: personalLiabilities || null,
+        personalAssets: jsonOrNull(personalAssets),
+        personalLiabilities: jsonOrNull(personalLiabilities),
         netWorth: netWorth !== undefined ? netWorth : null,
         exitGoalAmount: exitGoalAmount !== undefined ? exitGoalAmount : null,
         retirementAge: retirementAge !== undefined ? retirementAge : null,
         currentAge: currentAge !== undefined ? currentAge : null,
-        businessOwnership: businessOwnership !== undefined ? businessOwnership : null,
+        businessOwnership: jsonOrNull(businessOwnership),
         notes: notes || null,
       },
     })

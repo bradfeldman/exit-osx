@@ -20,6 +20,7 @@ const postSchema = z.object({
   topTask: z.object({
     title: z.string().max(500),
     category: z.string().max(100),
+    estimatedValue: z.coerce.number().finite(),
   }).optional().nullable(),
 })
 
