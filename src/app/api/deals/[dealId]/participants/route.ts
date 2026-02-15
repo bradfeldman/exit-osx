@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
-import { ParticipantSide, ParticipantRole } from '@prisma/client'
+import { ParticipantSide, ParticipantRole, DealStage, ApprovalStatus } from '@prisma/client'
 import { inferCategoryFromSideRole, deriveSideRoleFromCategory } from '@/lib/contact-system/constants'
 
 const PERSON_SELECT = {
@@ -167,7 +167,7 @@ export async function POST(
     // Verify deal exists and is active
     const deal = await prisma.deal.findUnique({
       where: { id: dealId },
-      select: { id: true, status: true },
+      select: { id: true, status: true, requireSellerApproval: true },
     })
     if (!deal) {
       return NextResponse.json({ error: 'Deal not found' }, { status: 404 })
@@ -182,7 +182,7 @@ export async function POST(
     // Verify person exists
     const person = await prisma.canonicalPerson.findUnique({
       where: { id: canonicalPersonId },
-      select: { id: true, firstName: true, lastName: true },
+      select: { id: true, firstName: true, lastName: true, currentCompanyId: true, currentCompany: { select: { id: true, name: true } } },
     })
     if (!person) {
       return NextResponse.json({ error: 'Person not found' }, { status: 404 })
@@ -239,22 +239,108 @@ export async function POST(
       },
     })
 
+    // Auto-create DealBuyer for PROSPECT participants
+    let autoCreatedBuyer = false
+    let linkedBuyerId = dealBuyerId || null
+
+    if (category === 'PROSPECT' && !dealBuyerId && person.currentCompanyId) {
+      // Check if a DealBuyer already exists for this company
+      const existingBuyer = await prisma.dealBuyer.findUnique({
+        where: {
+          dealId_canonicalCompanyId: {
+            dealId,
+            canonicalCompanyId: person.currentCompanyId,
+          },
+        },
+        select: { id: true },
+      })
+
+      if (existingBuyer) {
+        linkedBuyerId = existingBuyer.id
+      } else {
+        // Create a new DealBuyer at IDENTIFIED stage
+        const needsApproval = deal.requireSellerApproval
+        const approvalStatus = needsApproval
+          ? ApprovalStatus.PENDING
+          : ApprovalStatus.APPROVED
+
+        const newBuyer = await prisma.dealBuyer.create({
+          data: {
+            dealId,
+            canonicalCompanyId: person.currentCompanyId,
+            currentStage: DealStage.IDENTIFIED,
+            approvalStatus,
+            createdByUserId: result.auth.user.id,
+          },
+        })
+
+        // Create initial stage history
+        await prisma.dealStageHistory2.create({
+          data: {
+            dealBuyerId: newBuyer.id,
+            fromStage: DealStage.IDENTIFIED,
+            toStage: DealStage.IDENTIFIED,
+            note: 'Auto-created from prospect contact',
+            changedByUserId: result.auth.user.id,
+          },
+        })
+
+        // Log auto-creation activity
+        const companyName = person.currentCompany?.name ?? 'Unknown'
+        await prisma.dealActivity2.create({
+          data: {
+            dealId,
+            dealBuyerId: newBuyer.id,
+            activityType: 'NOTE_ADDED',
+            subject: `Buyer ${companyName} auto-added to pipeline from prospect contact`,
+            performedByUserId: result.auth.user.id,
+          },
+        })
+
+        linkedBuyerId = newBuyer.id
+        autoCreatedBuyer = true
+      }
+
+      // Link participant to the buyer
+      await prisma.dealParticipant.update({
+        where: { id: participant.id },
+        data: { dealBuyerId: linkedBuyerId },
+      })
+    }
+
     // Log activity
     await prisma.dealActivity2.create({
       data: {
         dealId,
-        dealBuyerId: dealBuyerId || undefined,
+        dealBuyerId: linkedBuyerId || undefined,
         activityType: 'NOTE_ADDED',
         subject: `${person.firstName} ${person.lastName} added as ${category ? category.toLowerCase() : side.toLowerCase()} participant`,
         performedByUserId: result.auth.user.id,
       },
     })
 
+    // Re-fetch participant with updated dealBuyer link
+    const finalParticipant = linkedBuyerId && !dealBuyerId
+      ? await prisma.dealParticipant.findUnique({
+          where: { id: participant.id },
+          include: {
+            canonicalPerson: { select: PERSON_SELECT },
+            dealBuyer: {
+              select: {
+                id: true,
+                canonicalCompany: { select: { id: true, name: true } },
+              },
+            },
+          },
+        })
+      : participant
+
     return NextResponse.json({
       participant: {
-        ...participant,
-        category: participant.category ?? inferCategoryFromSideRole(participant.side, participant.role),
+        ...(finalParticipant ?? participant),
+        category: (finalParticipant ?? participant).category ?? inferCategoryFromSideRole(participant.side, participant.role),
       },
+      autoCreatedBuyer,
     }, { status: 201 })
   } catch (error) {
     console.error('Error adding deal participant:', error)
