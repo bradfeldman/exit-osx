@@ -125,6 +125,9 @@ export async function GET(
       },
       // Warnings from the analysis
       warnings: comparableResult.warnings,
+      // FIX 2.1: AI-estimated data disclaimer
+      dataSource: 'ai_estimated',
+      disclaimer: 'Comparable companies and their financial metrics are AI-estimated based on publicly available information. These estimates have not been independently verified and may contain inaccuracies. They should be validated with current market data before making financial decisions.',
     })
   } catch (error) {
     console.error('Error fetching comparables:', error)

@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useRef, useCallback } from 'react'
+import { Fragment, useRef, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -24,22 +24,21 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
   const router = useRouter()
   const { companies, selectedCompanyId, setSelectedCompanyId, isLoading } = useCompany()
   const { progressionData } = useProgression()
-  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const drawerRef = useRef<HTMLDivElement>(null)
 
-  // Delayed close to prevent accidental closes when hovering near edge or using dropdowns
-  const handleMouseLeave = useCallback(() => {
-    closeTimeoutRef.current = setTimeout(() => {
-      onClose()
-    }, 150)
-  }, [onClose])
+  // Close on touch outside the drawer (works alongside backdrop click)
+  useEffect(() => {
+    if (!isOpen) return
 
-  // Cancel close if mouse re-enters
-  const handleMouseEnter = useCallback(() => {
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current)
-      closeTimeoutRef.current = null
+    function handleTouchStart(e: TouchEvent) {
+      if (drawerRef.current && !drawerRef.current.contains(e.target as Node)) {
+        onClose()
+      }
     }
-  }, [])
+
+    document.addEventListener('touchstart', handleTouchStart)
+    return () => document.removeEventListener('touchstart', handleTouchStart)
+  }, [isOpen, onClose])
 
   const handleCompanyChange = (companyId: string) => {
     if (companyId === '___add_new___') {
@@ -71,11 +70,10 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
         onClick={onClose}
       />
 
-      {/* Drawer - closes when mouse leaves (with delay) */}
+      {/* Drawer — closes via backdrop tap, close button, or touch outside */}
       <div
+        ref={drawerRef}
         className="fixed inset-y-0 left-0 z-50 w-72 bg-sidebar lg:hidden overflow-y-auto"
-        onMouseLeave={handleMouseLeave}
-        onMouseEnter={handleMouseEnter}
       >
         <div className="flex flex-col h-full px-4 pb-4">
           {/* Close button */}
