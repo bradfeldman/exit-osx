@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
+import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 
 interface RouteContext {
   params: Promise<{ id: string }>
@@ -9,24 +9,13 @@ interface RouteContext {
 // GET - Retrieve the last visit for the current user
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    const authId = user.id
-
     const { id: companyId } = await context.params
 
-    // Get the user from database
-    const dbUser = await prisma.user.findUnique({
-      where: { authId },
-      select: { id: true },
-    })
+    // SECURITY FIX (SEC-040): Verify workspace membership to prevent IDOR
+    const authResult = await checkPermission('COMPANY_VIEW', companyId)
+    if (isAuthError(authResult)) return authResult.error
 
-    if (!dbUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
+    const dbUser = authResult.auth.user
 
     // Get the most recent visit (excluding the current one by looking for visits > 1 hour ago)
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
@@ -71,25 +60,14 @@ export async function GET(request: NextRequest, context: RouteContext) {
 // POST - Log a new visit
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    const authId = user.id
-
     const { id: companyId } = await context.params
+
+    // SECURITY FIX (SEC-040): Verify workspace membership to prevent IDOR
+    const authResult = await checkPermission('COMPANY_UPDATE', companyId)
+    if (isAuthError(authResult)) return authResult.error
+
+    const dbUser = authResult.auth.user
     const body = await request.json()
-
-    // Get the user from database
-    const dbUser = await prisma.user.findUnique({
-      where: { authId },
-      select: { id: true },
-    })
-
-    if (!dbUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
 
     // Check if there's a recent visit (within last hour) to avoid duplicate logging
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)

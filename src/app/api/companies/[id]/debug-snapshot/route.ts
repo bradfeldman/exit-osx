@@ -1,19 +1,21 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  // SECURITY FIX (SEC-039): Block debug endpoint in production
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
   const { id: companyId } = await params
+
+  // SECURITY FIX (SEC-039): Verify workspace membership even in dev
+  const result = await checkPermission('COMPANY_VIEW', companyId)
+  if (isAuthError(result)) return result.error
 
   // Get latest snapshot
   const latestSnapshot = await prisma.valuationSnapshot.findFirst({

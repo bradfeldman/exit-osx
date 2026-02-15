@@ -107,6 +107,48 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // SECURITY: Prevent caching of financial and company data API responses
+        source: '/api/companies/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+        ],
+      },
+      {
+        // SECURITY: Prevent caching of deal data API responses
+        source: '/api/deals/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+        ],
+      },
+      {
+        // SECURITY: Prevent caching of subscription data API responses
+        source: '/api/subscription/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+        ],
+      },
+      {
         // Evidence document viewer serves HTML from an API route — needs
         // a permissive CSP so inline styles and Supabase-hosted images load.
         // Placed after the general /api/:path* entry so it overrides the

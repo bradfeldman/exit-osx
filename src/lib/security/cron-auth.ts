@@ -11,6 +11,7 @@
  */
 
 import { NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 
 /**
  * Verify that a request is authorized to trigger a cron job.
@@ -49,7 +50,12 @@ export function verifyCronAuth(request: Request): NextResponse | null {
 
   const authHeader = request.headers.get('authorization')
 
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  // SECURITY FIX: Use constant-time comparison to prevent timing attacks
+  const expected = `Bearer ${cronSecret}`
+  const actual = authHeader || ''
+  const expectedBuf = Buffer.from(expected)
+  const actualBuf = Buffer.from(actual)
+  if (expectedBuf.length !== actualBuf.length || !timingSafeEqual(expectedBuf, actualBuf)) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
