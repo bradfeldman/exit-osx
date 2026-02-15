@@ -177,9 +177,19 @@ export async function POST(request: Request) {
     })
 
     // Send Day 0 results email (non-blocking)
-    const topRisk = results.categoryBreakdown
-      ?.sort((a, b) => a.score - b.score)[0]
-      ?? { category: 'OPERATIONAL', label: 'Operations', score: 50 }
+    const CATEGORY_LABELS: Record<string, string> = {
+      FINANCIAL: 'Financial',
+      TRANSFERABILITY: 'Transferability',
+      OPERATIONAL: 'Operations',
+      MARKET: 'Market',
+      LEGAL_TAX: 'Legal & Tax',
+      PERSONAL: 'Personal',
+    }
+    const breakdown = results.categoryBreakdown ?? {}
+    const topRiskEntry = Object.entries(breakdown).sort(([, a], [, b]) => a - b)[0]
+    const topRisk = topRiskEntry
+      ? { category: topRiskEntry[0], label: CATEGORY_LABELS[topRiskEntry[0]] || topRiskEntry[0], score: topRiskEntry[1] * 100 }
+      : { category: 'OPERATIONAL', label: 'Operations', score: 50 }
     const topTask = results.topTasks?.[0] ?? null
     const reportToken = generateReportToken(dbResult.company.id)
 

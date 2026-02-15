@@ -19,7 +19,7 @@ interface OnboardingCompleteEmailParams {
   topTask: {
     title: string
     category: string
-    estimatedValue: number
+    estimatedImpact: number
   } | null
   reportToken: string
 }
@@ -202,9 +202,9 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
                       ${topTask.title}
                     </p>
 
-                    ${topTask.estimatedValue > 0 ? `
+                    ${topTask.estimatedImpact > 0 ? `
                     <p style="margin: 0 0 20px 0; font-size: 14px; color: #10B981;">
-                      Could add <strong>${formatCurrency(topTask.estimatedValue)}</strong> to your valuation
+                      Could add <strong>${formatCurrency(topTask.estimatedImpact)}</strong> to your valuation
                     </p>
                     ` : ''}
 

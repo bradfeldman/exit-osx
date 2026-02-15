@@ -469,15 +469,11 @@ export const assessSaveSchema = z.object({
     valueGap: financialAmount,
     baseMultiple: z.coerce.number().finite().min(0).max(100),
     finalMultiple: z.coerce.number().finite().min(0).max(100),
-    categoryBreakdown: z.array(z.object({
-      category: z.string().max(100),
-      label: z.string().max(200),
-      score: z.coerce.number().finite().min(0).max(100),
-    })).optional(),
+    categoryBreakdown: z.record(z.string(), z.coerce.number().finite().min(0).max(1)).optional(),
     topTasks: z.array(z.object({
       title: z.string().max(500),
       category: z.string().max(100),
-      estimatedValue: financialAmount,
+      estimatedImpact: financialAmount,
     })).max(10).optional(),
   }),
 })
