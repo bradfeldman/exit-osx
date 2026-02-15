@@ -81,6 +81,30 @@ const ADMIN_ROUTE_PATTERNS = [
   '/api/admin',
 ]
 
+// SECURITY (SEC-030): CSRF protection via Origin header validation
+// Routes that legitimately receive cross-origin or server-to-server requests
+const CSRF_EXEMPT_ROUTES = [
+  '/api/stripe/webhook',   // Stripe uses signature verification
+  '/api/cron/',            // Vercel cron uses Bearer CRON_SECRET
+  '/api/health',           // Health check (GET, but exempted for monitoring)
+  '/api/public/',          // Public endpoints
+]
+
+// SECURITY (SEC-030): Allowed origins for CSRF validation
+function isAllowedOrigin(origin: string): boolean {
+  const allowed = [
+    'https://app.exitosx.com',
+    'https://exitosx.com',
+    'https://www.exitosx.com',
+    'https://staging.exitosx.com',
+    'https://admin.exitosx.com',
+  ]
+  if (process.env.NODE_ENV !== 'production') {
+    allowed.push('http://localhost:3000', 'http://localhost:3001')
+  }
+  return allowed.includes(origin)
+}
+
 // SECURITY: Auth API routes that need strict rate limiting (POST only)
 const AUTH_API_RATE_LIMITED_ROUTES = [
   '/api/auth',
@@ -200,6 +224,44 @@ export async function middleware(request: NextRequest) {
     if (!rateLimitResult.success) {
       return createRateLimitResponse(rateLimitResult)
     }
+  }
+
+  // SECURITY (SEC-030): CSRF protection — validate Origin for state-changing API requests
+  // SameSite=Lax cookies provide baseline protection; this adds defense-in-depth
+  const isMutatingRequest = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(request.method)
+  const isCsrfExempt = CSRF_EXEMPT_ROUTES.some(route => pathname.startsWith(route))
+
+  if (isApiRoute && isMutatingRequest && !isCsrfExempt) {
+    const origin = request.headers.get('origin')
+    const referer = request.headers.get('referer')
+
+    if (origin) {
+      // Origin header present — must match allowed origins
+      if (!isAllowedOrigin(origin)) {
+        return NextResponse.json(
+          { error: 'Forbidden', message: 'Cross-origin request blocked' },
+          { status: 403 }
+        )
+      }
+    } else if (referer) {
+      // No Origin but Referer present — validate referer origin
+      try {
+        const refererOrigin = new URL(referer).origin
+        if (!isAllowedOrigin(refererOrigin)) {
+          return NextResponse.json(
+            { error: 'Forbidden', message: 'Cross-origin request blocked' },
+            { status: 403 }
+          )
+        }
+      } catch {
+        return NextResponse.json(
+          { error: 'Forbidden', message: 'Invalid referer' },
+          { status: 403 }
+        )
+      }
+    }
+    // No Origin or Referer: allow through (server-to-server calls, curl, etc.)
+    // CSRF requires a browser — SameSite=Lax already handles browser-based attacks
   }
 
   // Add pathname and URL headers for server components to detect route
