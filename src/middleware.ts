@@ -311,7 +311,9 @@ export async function middleware(request: NextRequest) {
   const cspHeader = [
     "default-src 'self'",
     `script-src 'self' ${isDev ? "'unsafe-eval' " : ""}'nonce-${nonce}' https://js.stripe.com https://vercel.live https://www.googletagmanager.com https://www.google-analytics.com https://*.sentry.io https://browser.sentry-cdn.com`,
-    "style-src 'self' 'unsafe-inline'",
+    "style-src 'self' 'unsafe-inline'", // Fallback for older browsers
+    "style-src-elem 'self'", // SEC-072: Modern browsers — block injected <style> tags
+    "style-src-attr 'unsafe-inline'", // SEC-072: Allow React inline style={} attributes
     "img-src 'self' blob: data: https://*.supabase.co https://www.gravatar.com https://www.googletagmanager.com https://www.google-analytics.com",
     "font-src 'self'",
     "object-src 'none'",

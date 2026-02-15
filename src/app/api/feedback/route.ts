@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Add the initial message with full context
+    // SEC-074: User-agent removed — unnecessary PII (GDPR concern)
     const messageContent = [
       description.trim(),
       '',
@@ -75,7 +76,6 @@ export async function POST(request: NextRequest) {
       `Submitted by: ${userName} (${userEmail})`,
       `Category: ${categoryLabel}`,
       currentPage ? `Page: ${currentPage}` : null,
-      `User Agent: ${(request.headers.get('user-agent') || 'unknown').slice(0, 150).replace(/[<>]/g, '')}`,
     ].filter(Boolean).join('\n')
 
     await prisma.ticketMessage.create({
