@@ -361,40 +361,37 @@ export const companyUpdateSchema = z.object({
   fiscalYearEndDay: z.coerce.number().int().min(1).max(31).optional().nullable(),
 })
 
-// SEC-045: Bounded JSON array for Prisma Json? fields — prevents DoS via oversized payloads
-// Validates array shape + max items while preserving Prisma type compatibility
-const boundedJsonArray = z.any().optional().refine(
-  (val) => {
-    if (val === undefined || val === null) return true
-    if (!Array.isArray(val)) return false
-    if (val.length > 100) return false
-    return val.every((item: unknown) => typeof item === 'object' && item !== null && !Array.isArray(item))
-  },
-  'Must be an array of objects (max 100 items)'
-)
+// SEC-061: Typed JSON schemas for Prisma Json? fields (replaces z.any())
+const financialAccountItem = z.object({
+  name: z.string().max(200),
+  type: z.string().max(100).optional(),
+  value: z.coerce.number().finite().optional(),
+  balance: z.coerce.number().finite().optional(),
+  institution: z.string().max(200).optional(),
+  notes: z.string().max(1000).optional(),
+}).passthrough() // allow extra fields for forward compatibility
 
-// SEC-045: Bounded JSON value for Prisma Json? — accepts object, array, or primitive with size limit
-const boundedJsonValue = z.any().optional().refine(
-  (val) => {
-    if (val === undefined || val === null) return true
-    try {
-      return JSON.stringify(val).length <= 10_000 // 10KB max
-    } catch { return false }
-  },
-  'JSON value too large (max 10KB)'
-)
+const financialJsonArray = z.array(financialAccountItem).max(100).optional().nullable()
+
+const businessOwnershipSchema = z.object({
+  percentage: z.coerce.number().finite().min(0).max(100).optional(),
+  shares: z.coerce.number().finite().min(0).optional(),
+  shareClass: z.string().max(100).optional(),
+  vestingComplete: z.boolean().optional(),
+  notes: z.string().max(1000).optional(),
+}).passthrough().optional().nullable()
 
 /** Personal Financials PUT */
 export const personalFinancialsSchema = z.object({
-  retirementAccounts: boundedJsonArray,     // Json? in Prisma — array of account objects
+  retirementAccounts: financialJsonArray,
   totalRetirement: optionalFinancialAmount,
-  personalAssets: boundedJsonArray,          // Json? in Prisma — array of asset objects
-  personalLiabilities: boundedJsonArray,     // Json? in Prisma — array of liability objects
+  personalAssets: financialJsonArray,
+  personalLiabilities: financialJsonArray,
   netWorth: optionalFinancialAmount,
   exitGoalAmount: optionalFinancialAmount,
   retirementAge: z.coerce.number().int().min(0).max(120).optional().nullable(),
   currentAge: z.coerce.number().int().min(0).max(120).optional().nullable(),
-  businessOwnership: boundedJsonValue,       // Json? in Prisma — ownership data
+  businessOwnership: businessOwnershipSchema,
   notes: longText.optional().nullable(),
 })
 

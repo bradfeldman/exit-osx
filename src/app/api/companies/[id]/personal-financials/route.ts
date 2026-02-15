@@ -16,8 +16,8 @@ export async function GET(request: Request, { params }: RouteParams) {
   try {
     const { id: companyId } = await params
 
-    // Check basic auth first
-    const auth = await checkPermission('COMPANY_VIEW')
+    // SEC-062: Pass companyId to checkPermission for company-scoped auth
+    const auth = await checkPermission('COMPANY_VIEW', companyId)
     if (isAuthError(auth)) {
       return auth.error
     }
@@ -35,24 +35,6 @@ export async function GET(request: Request, { params }: RouteParams) {
           { status: 403 }
         )
       }
-    }
-
-    // Verify company exists and user has access
-    const company = await prisma.company.findFirst({
-      where: {
-        id: companyId,
-        deletedAt: null,
-        workspace: {
-          members: {
-            some: { userId: auth.auth.user.id }
-          }
-        }
-      },
-      select: { id: true }
-    })
-
-    if (!company) {
-      return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
     const userId = auth.auth.user.id
@@ -92,8 +74,8 @@ export async function PUT(request: Request, { params }: RouteParams) {
   try {
     const { id: companyId } = await params
 
-    // Check basic auth first
-    const auth = await checkPermission('COMPANY_UPDATE')
+    // SEC-062: Pass companyId to checkPermission for company-scoped auth
+    const auth = await checkPermission('COMPANY_UPDATE', companyId)
     if (isAuthError(auth)) {
       return auth.error
     }
@@ -110,24 +92,6 @@ export async function PUT(request: Request, { params }: RouteParams) {
           { status: 403 }
         )
       }
-    }
-
-    // Verify company exists and user has access
-    const company = await prisma.company.findFirst({
-      where: {
-        id: companyId,
-        deletedAt: null,
-        workspace: {
-          members: {
-            some: { userId: auth.auth.user.id }
-          }
-        }
-      },
-      select: { workspaceId: true }
-    })
-
-    if (!company) {
-      return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
     const userId = auth.auth.user.id

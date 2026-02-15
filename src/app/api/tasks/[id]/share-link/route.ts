@@ -6,6 +6,7 @@ import { generateTaskShareToken } from '@/lib/task-share-token'
 /**
  * POST /api/tasks/[id]/share-link
  * Generate a shareable link for a task (authenticated).
+ * SEC-071: Verifies the task belongs to a company the user has access to.
  */
 export async function POST(
   _request: NextRequest,
@@ -15,8 +16,19 @@ export async function POST(
   const result = await checkPermission('TASK_VIEW')
   if (isAuthError(result)) return result.error
 
-  const task = await prisma.task.findUnique({
-    where: { id },
+  // SEC-071: Verify task exists AND belongs to a company the user has access to
+  const task = await prisma.task.findFirst({
+    where: {
+      id,
+      company: {
+        deletedAt: null,
+        workspace: {
+          members: {
+            some: { userId: result.auth.user.id }
+          }
+        }
+      }
+    },
     select: { id: true },
   })
 
