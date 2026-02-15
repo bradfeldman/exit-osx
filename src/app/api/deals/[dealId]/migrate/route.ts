@@ -33,9 +33,9 @@ export async function POST(
   if (authResult instanceof NextResponse) return authResult
 
   try {
-    const validation = await validateRequestBody(request, postSchema)
-    if (!validation.success) return validation.error
-    const { dryRun, skipDuplicateCheck } = validation.data
+    const input = await validateRequestBody(request, postSchema)
+    if (!input.success) return input.error
+    const { dryRun, skipDuplicateCheck } = input.data
 
     // Validate migration readiness
     const validation = await validateMigrationReadiness(dealId)
