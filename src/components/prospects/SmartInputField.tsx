@@ -32,7 +32,7 @@ export function SmartInputField({
 
   // Stable ref for the callback to avoid re-parse loops
   const onParsedRef = useRef(onParsed)
-  onParsedRef.current = onParsed
+  useEffect(() => { onParsedRef.current = onParsed }, [onParsed])
 
   // Only re-parse when the actual input value changes
   useEffect(() => {
