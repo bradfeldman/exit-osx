@@ -120,7 +120,7 @@ const canonicalPersonUpdateSchema = z.object({
   phone: z.string().max(50).optional().nullable(),
   linkedInUrl: z.string().max(2000).optional().nullable(),
   currentTitle: shortText.optional().nullable(),
-  currentCompanyId: uuidSchema.optional().nullable(),
+  currentCompanyId: z.string().min(1).optional().nullable(),
   companyName: shortText.optional().nullable(),
   dataQuality: z.enum(['PROVISIONAL', 'SUGGESTED', 'VERIFIED', 'ENRICHED']).optional(),
 })

@@ -133,7 +133,7 @@ const canonicalPersonCreateSchema = z.object({
   phone: z.string().max(50).optional().nullable(),
   linkedInUrl: z.string().max(2000).optional().nullable(),
   currentTitle: shortText.optional().nullable(),
-  currentCompanyId: uuidSchema.optional().nullable(),
+  currentCompanyId: z.string().min(1).optional().nullable(),
   currentCompanyName: shortText.optional().nullable(),
   skipDuplicateCheck: z.boolean().optional(),
 })
