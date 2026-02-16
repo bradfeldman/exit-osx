@@ -422,6 +422,8 @@ model ValuationSnapshot {
   dcfPerpetualGrowthRate Decimal?  @map("dcf_perpetual_growth_rate") @db.Decimal(5, 4)
   dcfNetDebt             Decimal?  @map("dcf_net_debt") @db.Decimal(15, 2)
   dcfImpliedMultiple     Decimal?  @map("dcf_implied_multiple") @db.Decimal(6, 2)
+  dcfCompanySpecificRisk Decimal?  @map("dcf_company_specific_risk") @db.Decimal(5, 4)
+  dcfEbitdaTier          String?   @map("dcf_ebitda_tier")
   dcfSource              String?   @map("dcf_source") // 'auto' | 'manual'
   createdAt            DateTime @default(now()) @map("created_at")
   company              Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -1036,8 +1038,10 @@ model DCFAssumptions {
   marketRiskPremium          Decimal  @map("market_risk_premium") @db.Decimal(5, 4)
   beta                       Decimal  @db.Decimal(6, 2)
   sizeRiskPremium            Decimal  @map("size_risk_premium") @db.Decimal(5, 4)
+  companySpecificRisk        Decimal? @map("company_specific_risk") @db.Decimal(5, 4)
   costOfDebtOverride         Decimal? @map("cost_of_debt_override") @db.Decimal(5, 4)
   taxRateOverride            Decimal? @map("tax_rate_override") @db.Decimal(5, 4)
+  debtWeightOverride         Decimal? @map("debt_weight_override") @db.Decimal(5, 4)
   growthAssumptions          Json     @map("growth_assumptions")
   terminalMethod             String   @map("terminal_method")
   perpetualGrowthRate        Decimal  @map("perpetual_growth_rate") @db.Decimal(5, 4)
@@ -1045,6 +1049,8 @@ model DCFAssumptions {
   calculatedWACC             Decimal? @map("calculated_wacc") @db.Decimal(5, 4)
   enterpriseValue            Decimal? @map("enterprise_value") @db.Decimal(15, 2)
   equityValue                Decimal? @map("equity_value") @db.Decimal(15, 2)
+  useMidYearConvention       Boolean  @default(true) @map("use_mid_year_convention")
+  ebitdaTier                 String?  @map("ebitda_tier")
   useDCFValue                Boolean  @default(false) @map("use_dcf_value") // When true, scorecard uses DCF value instead of EBITDA multiple
   isManuallyConfigured       Boolean  @default(false) @map("is_manually_configured") // When true, auto-DCF is skipped
   ebitdaMultipleLowOverride  Decimal? @map("ebitda_multiple_low_override") @db.Decimal(6, 2)

@@ -28,23 +28,29 @@ interface DCFAssumptions {
   marketRiskPremium: number
   beta: number
   sizeRiskPremium: number
+  companySpecificRisk: number
   costOfDebtOverride: number | null
   taxRateOverride: number | null
+  debtWeightOverride: number | null
   terminalMethod: 'gordon' | 'exit_multiple'
   perpetualGrowthRate: number
   exitMultiple: number | null
   growthAssumptions: Record<string, number>
+  useMidYearConvention: boolean
+  ebitdaTier: string | null
   ebitdaMultipleLowOverride: number | null
   ebitdaMultipleHighOverride: number | null
 }
 
 const DEFAULT_ASSUMPTIONS: DCFAssumptions = {
-  riskFreeRate: 0.0425, // 4.25% - Jan 2026 10Y Treasury
-  marketRiskPremium: 0.055, // 5.5%
+  riskFreeRate: 0.041, // 4.1% - Feb 2026 10Y Treasury
+  marketRiskPremium: 0.050, // 5.0% - Duff & Phelps / Kroll 2026
   beta: 1.0,
-  sizeRiskPremium: 0.02, // 2%
+  sizeRiskPremium: 0.04, // 4% - default for ~$1M EBITDA
+  companySpecificRisk: 0.05, // 5% - default, driven by BRI score
   costOfDebtOverride: null,
   taxRateOverride: null,
+  debtWeightOverride: null,
   terminalMethod: 'gordon',
   perpetualGrowthRate: 0.025, // 2.5%
   exitMultiple: null,
@@ -55,6 +61,8 @@ const DEFAULT_ASSUMPTIONS: DCFAssumptions = {
     year4: 0.025,
     year5: 0.02,
   },
+  useMidYearConvention: true,
+  ebitdaTier: null,
   ebitdaMultipleLowOverride: null,
   ebitdaMultipleHighOverride: null,
 }
@@ -111,11 +119,18 @@ export default function ValuationPage() {
             beta: Number(data.assumptions.beta) || DEFAULT_ASSUMPTIONS.beta,
             sizeRiskPremium:
               Number(data.assumptions.sizeRiskPremium) || DEFAULT_ASSUMPTIONS.sizeRiskPremium,
+            companySpecificRisk:
+              data.assumptions.companySpecificRisk != null
+                ? Number(data.assumptions.companySpecificRisk)
+                : DEFAULT_ASSUMPTIONS.companySpecificRisk,
             costOfDebtOverride: data.assumptions.costOfDebtOverride
               ? Number(data.assumptions.costOfDebtOverride)
               : null,
             taxRateOverride: data.assumptions.taxRateOverride
               ? Number(data.assumptions.taxRateOverride)
+              : null,
+            debtWeightOverride: data.assumptions.debtWeightOverride
+              ? Number(data.assumptions.debtWeightOverride)
               : null,
             terminalMethod: data.assumptions.terminalMethod || 'gordon',
             perpetualGrowthRate:
@@ -126,6 +141,8 @@ export default function ValuationPage() {
               : null,
             growthAssumptions:
               data.assumptions.growthAssumptions || DEFAULT_ASSUMPTIONS.growthAssumptions,
+            useMidYearConvention: data.assumptions.useMidYearConvention ?? true,
+            ebitdaTier: data.assumptions.ebitdaTier ?? null,
             ebitdaMultipleLowOverride: data.assumptions.ebitdaMultipleLowOverride
               ? Number(data.assumptions.ebitdaMultipleLowOverride)
               : null,
@@ -136,18 +153,29 @@ export default function ValuationPage() {
           setAssumptions(loadedAssumptions)
           setOriginalAssumptions(loadedAssumptions)
 
+          // Set debt/equity weights from override or keep defaults
+          if (data.assumptions.debtWeightOverride) {
+            setDebtWeight(Number(data.assumptions.debtWeightOverride))
+            setEquityWeight(1 - Number(data.assumptions.debtWeightOverride))
+          }
+
           // Load useDCFValue toggle
           const dcfToggle = data.assumptions.useDCFValue ?? false
           setUseDCFValue(dcfToggle)
           setOriginalUseDCFValue(dcfToggle)
         } else {
-          // No saved assumptions - use suggested defaults merged with generic defaults
+          // No saved assumptions - use calibrated defaults from WACC engine
           const initial = { ...DEFAULT_ASSUMPTIONS }
           if (data.suggestedDefaults) {
+            if (data.suggestedDefaults.riskFreeRate != null) initial.riskFreeRate = data.suggestedDefaults.riskFreeRate
+            if (data.suggestedDefaults.marketRiskPremium != null) initial.marketRiskPremium = data.suggestedDefaults.marketRiskPremium
+            if (data.suggestedDefaults.beta != null) initial.beta = data.suggestedDefaults.beta
             if (data.suggestedDefaults.sizeRiskPremium != null) initial.sizeRiskPremium = data.suggestedDefaults.sizeRiskPremium
+            if (data.suggestedDefaults.companySpecificRisk != null) initial.companySpecificRisk = data.suggestedDefaults.companySpecificRisk
             if (data.suggestedDefaults.costOfDebt != null) initial.costOfDebtOverride = data.suggestedDefaults.costOfDebt
             if (data.suggestedDefaults.taxRate != null) initial.taxRateOverride = data.suggestedDefaults.taxRate
             if (data.suggestedDefaults.growthAssumptions) initial.growthAssumptions = data.suggestedDefaults.growthAssumptions
+            if (data.suggestedDefaults.ebitdaTier) initial.ebitdaTier = data.suggestedDefaults.ebitdaTier
             if (data.suggestedDefaults.debtWeight != null) setDebtWeight(data.suggestedDefaults.debtWeight)
             if (data.suggestedDefaults.equityWeight != null) setEquityWeight(data.suggestedDefaults.equityWeight)
           }
@@ -236,6 +264,8 @@ export default function ValuationPage() {
           enterpriseValue: dcfResults?.enterpriseValue ?? null,
           equityValue: dcfResults?.equityValue ?? null,
           useDCFValue,
+          useMidYearConvention: assumptions.useMidYearConvention,
+          ebitdaTier: assumptions.ebitdaTier,
           ebitdaMultipleLowOverride: assumptions.ebitdaMultipleLowOverride,
           ebitdaMultipleHighOverride: assumptions.ebitdaMultipleHighOverride,
         }),
@@ -270,10 +300,11 @@ export default function ValuationPage() {
       assumptions.riskFreeRate,
       assumptions.marketRiskPremium,
       assumptions.beta,
-      assumptions.sizeRiskPremium
+      assumptions.sizeRiskPremium,
+      assumptions.companySpecificRisk
     )
 
-    const costOfDebt = assumptions.costOfDebtOverride || 0.06 // 6% default
+    const costOfDebt = assumptions.costOfDebtOverride || 0.10 // 10% default (calibrated)
     const taxRate = assumptions.taxRateOverride || 0.25 // 25% default
 
     return equityWeight * costOfEquity + debtWeight * costOfDebt * (1 - taxRate)
@@ -299,6 +330,7 @@ export default function ValuationPage() {
       perpetualGrowthRate: assumptions.perpetualGrowthRate,
       exitMultiple: assumptions.exitMultiple || undefined,
       netDebt,
+      useMidYearConvention: assumptions.useMidYearConvention,
     }
 
     try {
@@ -315,6 +347,7 @@ export default function ValuationPage() {
     marketRiskPremium: assumptions.marketRiskPremium,
     beta: assumptions.beta,
     sizeRiskPremium: assumptions.sizeRiskPremium,
+    companySpecificRisk: assumptions.companySpecificRisk,
     costOfDebt: assumptions.costOfDebtOverride,
     taxRate: assumptions.taxRateOverride,
   }
@@ -402,6 +435,7 @@ export default function ValuationPage() {
       perpetualGrowthRate: assumptions.perpetualGrowthRate,
       exitMultiple: assumptions.exitMultiple || undefined,
       netDebt,
+      useMidYearConvention: assumptions.useMidYearConvention,
     }),
     [assumptions, baseFCF, calculatedWACC, netDebt]
   )
@@ -480,6 +514,7 @@ export default function ValuationPage() {
             inputs={waccInputs}
             onInputChange={handleWACCInputChange}
             calculatedWACC={calculatedWACC}
+            ebitdaTier={assumptions.ebitdaTier}
           />
 
           <GrowthAssumptions

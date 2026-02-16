@@ -3,18 +3,10 @@ import { prisma } from '@/lib/prisma'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { validateRequestBody, dcfAssumptionsSchema } from '@/lib/security/validation'
 import { getIndustryMultiples, estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
-
-// Size risk premium by revenue category (mirrors auto-dcf.ts)
-const SIZE_RISK_PREMIUM: Record<string, number> = {
-  UNDER_500K: 0.06,
-  FROM_500K_TO_1M: 0.06,
-  FROM_1M_TO_3M: 0.06,
-  FROM_3M_TO_10M: 0.04,
-  FROM_10M_TO_25M: 0.04,
-  OVER_25M: 0.025,
-}
-
-const TERMINAL_GROWTH_RATE = 0.025
+import {
+  calculateWACCDefaults,
+  DEFAULT_TERMINAL_GROWTH_RATE,
+} from '@/lib/valuation/wacc-defaults'
 
 export async function GET(
   request: NextRequest,
@@ -135,60 +127,77 @@ export async function GET(
     }
 
     if (!dcfAssumptions) {
-      // Derive smart defaults from financial data when no saved assumptions exist
-      const suggestedDefaults: Record<string, unknown> = {}
+      // Use WACC defaults engine for calibrated suggested defaults
+      const adjustedEbitda = ebitda && ebitda > 0 ? ebitda : null
+      const baseFCFEstimate = financials?.freeCashFlow ?? financials?.estimatedFCF ?? null
 
-      // Size risk premium from revenue category
-      const revenueSizeCategory = company?.coreFactors?.revenueSizeCategory ?? null
-      if (revenueSizeCategory && SIZE_RISK_PREMIUM[revenueSizeCategory] != null) {
-        suggestedDefaults.sizeRiskPremium = SIZE_RISK_PREMIUM[revenueSizeCategory]
-      }
+      // Derive financial inputs for WACC defaults
+      let derivedCostOfDebt: number | null = null
+      let derivedTaxRate: number | null = null
+      let derivedDebtWeight: number | null = null
 
-      // Derive cost of debt, tax rate, and capital structure from latest period
       if (latestPeriod?.incomeStatement && latestPeriod?.balanceSheet) {
         const is = latestPeriod.incomeStatement
         const bs = latestPeriod.balanceSheet
-
-        // Cost of debt = interest expense / total debt
         const interestExpense = is.interestExpense ? Number(is.interestExpense) : 0
         const totalDebt = Number(bs.longTermDebt) + Number(bs.currentPortionLtd)
         if (interestExpense > 0 && totalDebt > 0) {
-          const derivedCostOfDebt = interestExpense / totalDebt
-          if (derivedCostOfDebt >= 0.01 && derivedCostOfDebt <= 0.20) {
-            suggestedDefaults.costOfDebt = Math.round(derivedCostOfDebt * 10000) / 10000
-          }
+          const derived = interestExpense / totalDebt
+          if (derived >= 0.03 && derived <= 0.20) derivedCostOfDebt = derived
         }
-
-        // Tax rate = tax expense / EBT
         const taxExpense = is.taxExpense ? Number(is.taxExpense) : 0
         const ebitdaVal = Number(is.ebitda)
         const depreciation = is.depreciation ? Number(is.depreciation) : 0
         const amortization = is.amortization ? Number(is.amortization) : 0
         const ebt = ebitdaVal - depreciation - amortization - interestExpense
         if (taxExpense > 0 && ebt > 0) {
-          const derivedTaxRate = taxExpense / ebt
-          if (derivedTaxRate >= 0.05 && derivedTaxRate <= 0.50) {
-            suggestedDefaults.taxRate = Math.round(derivedTaxRate * 10000) / 10000
-          }
+          const derived = taxExpense / ebt
+          if (derived >= 0.05 && derived <= 0.50) derivedTaxRate = derived
         }
       }
-
-      // Capital structure from balance sheet
       if (latestPeriod?.balanceSheet) {
         const bs = latestPeriod.balanceSheet
         const totalDebt = Number(bs.longTermDebt) + Number(bs.currentPortionLtd)
         const totalEquity = Number(bs.totalEquity)
         const totalCapital = totalDebt + totalEquity
         if (totalCapital > 0 && totalEquity > 0) {
-          let debtWeight = totalDebt / totalCapital
-          let equityWeight = totalEquity / totalCapital
-          if (debtWeight > 0.80) {
-            debtWeight = 0.80
-            equityWeight = 0.20
-          }
-          suggestedDefaults.debtWeight = Math.round(debtWeight * 10000) / 10000
-          suggestedDefaults.equityWeight = Math.round(equityWeight * 10000) / 10000
+          let dw = totalDebt / totalCapital
+          if (dw > 0.80) dw = 0.80
+          derivedDebtWeight = dw
         }
+      }
+
+      // Fetch latest BRI score for CSR calculation
+      const latestSnapshot = await prisma.valuationSnapshot.findFirst({
+        where: { companyId },
+        orderBy: { createdAt: 'desc' },
+        select: { briScore: true },
+      })
+      const briScore = latestSnapshot ? Number(latestSnapshot.briScore) : 0.5
+
+      // Get calibrated defaults from the engine
+      const ebitdaForTier = adjustedEbitda ?? (baseFCFEstimate ? baseFCFEstimate / 0.7 : 500_000)
+      const defaults = calculateWACCDefaults({
+        adjustedEbitda: ebitdaForTier,
+        briScore,
+        derivedCostOfDebt,
+        derivedTaxRate,
+        derivedDebtWeight,
+      })
+
+      const suggestedDefaults: Record<string, unknown> = {
+        riskFreeRate: defaults.riskFreeRate,
+        marketRiskPremium: defaults.equityRiskPremium,
+        beta: defaults.beta,
+        sizeRiskPremium: defaults.sizeRiskPremium,
+        companySpecificRisk: defaults.companySpecificRisk,
+        costOfDebt: defaults.preTaxCostOfDebt,
+        taxRate: defaults.taxRate,
+        debtWeight: defaults.debtWeight,
+        equityWeight: defaults.equityWeight,
+        computedWacc: defaults.computedWacc,
+        ebitdaTier: defaults.ebitdaTier,
+        useMidYearConvention: true,
       }
 
       // Growth rates from historical FCF YoY changes
@@ -216,10 +225,10 @@ export async function GET(
 
           suggestedDefaults.growthAssumptions = {
             year1: Math.round(medianRate * 10000) / 10000,
-            year2: Math.round((medianRate * 0.85 + TERMINAL_GROWTH_RATE * 0.15) * 10000) / 10000,
-            year3: Math.round((medianRate * 0.60 + TERMINAL_GROWTH_RATE * 0.40) * 10000) / 10000,
-            year4: Math.round((medianRate * 0.35 + TERMINAL_GROWTH_RATE * 0.65) * 10000) / 10000,
-            year5: TERMINAL_GROWTH_RATE,
+            year2: Math.round((medianRate * 0.85 + DEFAULT_TERMINAL_GROWTH_RATE * 0.15) * 10000) / 10000,
+            year3: Math.round((medianRate * 0.60 + DEFAULT_TERMINAL_GROWTH_RATE * 0.40) * 10000) / 10000,
+            year4: Math.round((medianRate * 0.35 + DEFAULT_TERMINAL_GROWTH_RATE * 0.65) * 10000) / 10000,
+            year5: DEFAULT_TERMINAL_GROWTH_RATE,
           }
         }
       }
@@ -228,7 +237,7 @@ export async function GET(
         assumptions: null,
         financials,
         workingCapital,
-        ...(Object.keys(suggestedDefaults).length > 0 ? { suggestedDefaults } : {}),
+        suggestedDefaults,
       })
     }
 
@@ -243,11 +252,17 @@ export async function GET(
         marketRiskPremium: Number(dcfAssumptions.marketRiskPremium),
         beta: Number(dcfAssumptions.beta),
         sizeRiskPremium: Number(dcfAssumptions.sizeRiskPremium),
+        companySpecificRisk: dcfAssumptions.companySpecificRisk
+          ? Number(dcfAssumptions.companySpecificRisk)
+          : null,
         costOfDebtOverride: dcfAssumptions.costOfDebtOverride
           ? Number(dcfAssumptions.costOfDebtOverride)
           : null,
         taxRateOverride: dcfAssumptions.taxRateOverride
           ? Number(dcfAssumptions.taxRateOverride)
+          : null,
+        debtWeightOverride: dcfAssumptions.debtWeightOverride
+          ? Number(dcfAssumptions.debtWeightOverride)
           : null,
         growthAssumptions: dcfAssumptions.growthAssumptions,
         terminalMethod: dcfAssumptions.terminalMethod,
@@ -264,6 +279,8 @@ export async function GET(
         equityValue: dcfAssumptions.equityValue
           ? Number(dcfAssumptions.equityValue)
           : null,
+        useMidYearConvention: dcfAssumptions.useMidYearConvention,
+        ebitdaTier: dcfAssumptions.ebitdaTier,
         useDCFValue: dcfAssumptions.useDCFValue,
         ebitdaMultipleLowOverride: dcfAssumptions.ebitdaMultipleLowOverride
           ? Number(dcfAssumptions.ebitdaMultipleLowOverride)
@@ -300,8 +317,10 @@ export async function PUT(
       marketRiskPremium,
       beta,
       sizeRiskPremium,
+      companySpecificRisk,
       costOfDebtOverride,
       taxRateOverride,
+      debtWeightOverride,
       growthAssumptions,
       terminalMethod,
       perpetualGrowthRate,
@@ -309,6 +328,8 @@ export async function PUT(
       calculatedWACC,
       enterpriseValue,
       equityValue,
+      useMidYearConvention,
+      ebitdaTier,
       useDCFValue,
       ebitdaMultipleLowOverride,
       ebitdaMultipleHighOverride,
@@ -323,8 +344,10 @@ export async function PUT(
         marketRiskPremium,
         beta,
         sizeRiskPremium,
+        companySpecificRisk: companySpecificRisk ?? null,
         costOfDebtOverride: costOfDebtOverride ?? null,
         taxRateOverride: taxRateOverride ?? null,
+        debtWeightOverride: debtWeightOverride ?? null,
         growthAssumptions: growthAssumptions || [10, 8, 6, 4, 3],
         terminalMethod: terminalMethod || 'gordon',
         perpetualGrowthRate: perpetualGrowthRate || 2.5,
@@ -332,6 +355,8 @@ export async function PUT(
         calculatedWACC: calculatedWACC ?? null,
         enterpriseValue: enterpriseValue ?? null,
         equityValue: equityValue ?? null,
+        useMidYearConvention: useMidYearConvention ?? true,
+        ebitdaTier: ebitdaTier ?? null,
         useDCFValue: useDCFValue ?? false,
         isManuallyConfigured: true, // Manual save = skip auto-DCF
         ebitdaMultipleLowOverride: ebitdaMultipleLowOverride ?? null,
@@ -343,8 +368,10 @@ export async function PUT(
         marketRiskPremium,
         beta,
         sizeRiskPremium,
+        companySpecificRisk: companySpecificRisk ?? null,
         costOfDebtOverride: costOfDebtOverride ?? null,
         taxRateOverride: taxRateOverride ?? null,
+        debtWeightOverride: debtWeightOverride ?? null,
         growthAssumptions: growthAssumptions || [10, 8, 6, 4, 3],
         terminalMethod: terminalMethod || 'gordon',
         perpetualGrowthRate: perpetualGrowthRate || 2.5,
@@ -352,6 +379,8 @@ export async function PUT(
         calculatedWACC: calculatedWACC ?? null,
         enterpriseValue: enterpriseValue ?? null,
         equityValue: equityValue ?? null,
+        useMidYearConvention: useMidYearConvention ?? true,
+        ebitdaTier: ebitdaTier ?? null,
         useDCFValue: useDCFValue ?? false,
         isManuallyConfigured: true, // Manual save = skip auto-DCF
         ebitdaMultipleLowOverride: ebitdaMultipleLowOverride ?? null,
@@ -368,11 +397,17 @@ export async function PUT(
         marketRiskPremium: Number(dcfAssumptions.marketRiskPremium),
         beta: Number(dcfAssumptions.beta),
         sizeRiskPremium: Number(dcfAssumptions.sizeRiskPremium),
+        companySpecificRisk: dcfAssumptions.companySpecificRisk
+          ? Number(dcfAssumptions.companySpecificRisk)
+          : null,
         costOfDebtOverride: dcfAssumptions.costOfDebtOverride
           ? Number(dcfAssumptions.costOfDebtOverride)
           : null,
         taxRateOverride: dcfAssumptions.taxRateOverride
           ? Number(dcfAssumptions.taxRateOverride)
+          : null,
+        debtWeightOverride: dcfAssumptions.debtWeightOverride
+          ? Number(dcfAssumptions.debtWeightOverride)
           : null,
         growthAssumptions: dcfAssumptions.growthAssumptions,
         terminalMethod: dcfAssumptions.terminalMethod,
@@ -389,6 +424,8 @@ export async function PUT(
         equityValue: dcfAssumptions.equityValue
           ? Number(dcfAssumptions.equityValue)
           : null,
+        useMidYearConvention: dcfAssumptions.useMidYearConvention,
+        ebitdaTier: dcfAssumptions.ebitdaTier,
         useDCFValue: dcfAssumptions.useDCFValue,
         ebitdaMultipleLowOverride: dcfAssumptions.ebitdaMultipleLowOverride
           ? Number(dcfAssumptions.ebitdaMultipleLowOverride)

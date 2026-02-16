@@ -264,7 +264,7 @@ export async function recalculateSnapshotForCompany(
       })
 
       if (!dcfAssumptions?.isManuallyConfigured) {
-        const dcfResult = await calculateAutoDCF(companyId)
+        const dcfResult = await calculateAutoDCF(companyId, briScore, adjustedEbitda)
         if (dcfResult.success) {
           dcfData = {
             dcfEnterpriseValue: dcfResult.enterpriseValue,
@@ -276,9 +276,10 @@ export async function recalculateSnapshotForCompany(
             dcfPerpetualGrowthRate: dcfResult.perpetualGrowthRate,
             dcfNetDebt: dcfResult.netDebt,
             dcfImpliedMultiple: dcfResult.impliedMultiple,
+            dcfCompanySpecificRisk: dcfResult.companySpecificRisk,
             dcfSource: 'auto',
           }
-          console.log(`[AUTO-DCF] Company ${companyId}: EV=${dcfResult.enterpriseValue.toFixed(0)}, WACC=${(dcfResult.wacc * 100).toFixed(1)}%, baseFCF=${dcfResult.baseFcf.toFixed(0)}`)
+          console.log(`[AUTO-DCF] Company ${companyId}: EV=${dcfResult.enterpriseValue.toFixed(0)}, WACC=${(dcfResult.wacc * 100).toFixed(1)}%, CSR=${(dcfResult.companySpecificRisk * 100).toFixed(1)}%, baseFCF=${dcfResult.baseFcf.toFixed(0)}`)
         } else {
           console.log(`[AUTO-DCF] Company ${companyId}: Skipped — ${dcfResult.reason}`)
         }

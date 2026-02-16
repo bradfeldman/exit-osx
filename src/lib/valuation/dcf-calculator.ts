@@ -12,6 +12,7 @@ export interface DCFInputs {
   // VAL-002 FIX: Separate EBITDA growth rates for exit multiple method
   ebitdaGrowthRates?: number[] // Optional separate EBITDA growth rates
   fcfToEbitdaRatio?: number // FCF to EBITDA conversion ratio (typically 0.6-0.8)
+  useMidYearConvention?: boolean // Mid-year discounting (default: true)
 }
 
 export interface DCFResults {
@@ -29,6 +30,7 @@ export interface WACCInputs {
   marketRiskPremium: number
   beta: number
   sizeRiskPremium: number
+  companySpecificRisk?: number // CSR premium from BRI score (defaults to 0 for backwards compat)
   costOfDebt: number
   taxRate: number
   debtWeight: number // Percentage of capital structure that is debt
@@ -36,16 +38,17 @@ export interface WACCInputs {
 }
 
 /**
- * Calculate Cost of Equity using CAPM
- * Re = Rf + beta * (Rm - Rf) + Size Premium
+ * Calculate Cost of Equity using CAPM + Build-Up
+ * Re = Rf + beta * (Rm - Rf) + Size Premium + Company-Specific Risk
  */
 export function calculateCostOfEquity(
   riskFreeRate: number,
   marketRiskPremium: number,
   beta: number,
-  sizeRiskPremium: number
+  sizeRiskPremium: number,
+  companySpecificRisk: number = 0
 ): number {
-  return riskFreeRate + beta * marketRiskPremium + sizeRiskPremium
+  return riskFreeRate + beta * marketRiskPremium + sizeRiskPremium + companySpecificRisk
 }
 
 /**
@@ -57,7 +60,8 @@ export function calculateWACC(inputs: WACCInputs): number {
     inputs.riskFreeRate,
     inputs.marketRiskPremium,
     inputs.beta,
-    inputs.sizeRiskPremium
+    inputs.sizeRiskPremium,
+    inputs.companySpecificRisk ?? 0
   )
 
   const afterTaxCostOfDebt = inputs.costOfDebt * (1 - inputs.taxRate)
@@ -81,14 +85,18 @@ export function calculateProjectedFCF(baseFCF: number, growthRates: number[]): n
 }
 
 /**
- * Calculate present value of a future cash flow
+ * Calculate present value of a future cash flow.
+ * Mid-year convention discounts at (n - 0.5) instead of n,
+ * reflecting that cash flows arrive throughout the year.
  */
 export function calculatePresentValue(
   futureValue: number,
   discountRate: number,
-  years: number
+  years: number,
+  midYear: boolean = false
 ): number {
-  return futureValue / Math.pow(1 + discountRate, years)
+  const period = midYear ? years - 0.5 : years
+  return futureValue / Math.pow(1 + discountRate, period)
 }
 
 /**
@@ -122,12 +130,14 @@ export function calculateTerminalValueExitMultiple(
  * Run full DCF valuation
  */
 export function calculateDCF(inputs: DCFInputs, finalEBITDA?: number): DCFResults {
+  const useMidYear = inputs.useMidYearConvention ?? true
+
   // Calculate projected FCF for years 1-5
   const projectedFCF = calculateProjectedFCF(inputs.baseFCF, inputs.growthRates)
 
   // Calculate present value of each year's FCF
   const presentValueFCF = projectedFCF.map((fcf, index) =>
-    calculatePresentValue(fcf, inputs.wacc, index + 1)
+    calculatePresentValue(fcf, inputs.wacc, index + 1, useMidYear)
   )
 
   // Calculate terminal value

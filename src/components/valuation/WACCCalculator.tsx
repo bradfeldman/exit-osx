@@ -11,6 +11,7 @@ export interface WACCInputs {
   marketRiskPremium: number
   beta: number
   sizeRiskPremium: number
+  companySpecificRisk: number
   costOfDebt: number | null
   taxRate: number | null
 }
@@ -19,23 +20,26 @@ interface WACCCalculatorProps {
   inputs: WACCInputs
   onInputChange: <K extends keyof WACCInputs>(key: K, value: WACCInputs[K]) => void
   calculatedWACC: number
+  ebitdaTier?: string | null
 }
 
 const INPUT_RANGES = {
-  riskFreeRate: { min: 0.035, max: 0.055, step: 0.001, default: 0.0425 },
-  marketRiskPremium: { min: 0.04, max: 0.07, step: 0.001, default: 0.055 },
+  riskFreeRate: { min: 0.030, max: 0.060, step: 0.001, default: 0.041 },
+  marketRiskPremium: { min: 0.04, max: 0.07, step: 0.001, default: 0.050 },
   beta: { min: 0.5, max: 2.0, step: 0.01, default: 1.0 },
-  sizeRiskPremium: { min: 0, max: 0.06, step: 0.001, default: 0.02 },
-  costOfDebt: { min: 0.03, max: 0.15, step: 0.001, default: 0.06 },
-  taxRate: { min: 0.15, max: 0.35, step: 0.01, default: 0.25 },
+  sizeRiskPremium: { min: 0.010, max: 0.080, step: 0.001, default: 0.04 },
+  companySpecificRisk: { min: 0, max: 0.120, step: 0.001, default: 0.05 },
+  costOfDebt: { min: 0.05, max: 0.15, step: 0.001, default: 0.10 },
+  taxRate: { min: 0.15, max: 0.40, step: 0.01, default: 0.25 },
 }
 
-export function WACCCalculator({ inputs, onInputChange, calculatedWACC }: WACCCalculatorProps) {
+export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTier }: WACCCalculatorProps) {
   const costOfEquity = calculateCostOfEquity(
     inputs.riskFreeRate,
     inputs.marketRiskPremium,
     inputs.beta,
-    inputs.sizeRiskPremium
+    inputs.sizeRiskPremium,
+    inputs.companySpecificRisk
   )
 
   const handleSliderChange = (key: keyof WACCInputs, value: number) => {
@@ -107,27 +111,40 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC }: WACCCa
       <CardContent className="space-y-5">
         {/* Cost of Equity Section */}
         <div>
-          <h4 className="text-sm font-medium text-gray-800 mb-4">Cost of Equity (CAPM)</h4>
+          <div className="flex justify-between items-center mb-4">
+            <h4 className="text-sm font-medium text-gray-800">Cost of Equity (CAPM + Build-Up)</h4>
+            {ebitdaTier && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium">
+                {ebitdaTier} tier
+              </span>
+            )}
+          </div>
           <div className="space-y-4">
             {renderSliderInput('riskFreeRate', 'Risk-Free Rate')}
-            {renderSliderInput('marketRiskPremium', 'Market Risk Premium')}
+            {renderSliderInput('marketRiskPremium', 'Equity Risk Premium')}
             {renderSliderInput('beta', 'Beta', true, true)}
             {renderSliderInput('sizeRiskPremium', 'Size Risk Premium')}
+            {renderSliderInput('companySpecificRisk', 'Company-Specific Risk')}
           </div>
 
           {/* Cost of Equity Formula Display */}
           <div className="mt-4 p-3 bg-gray-50 rounded-lg">
             <div className="text-xs text-gray-500 mb-1">Cost of Equity Formula</div>
             <div className="text-sm font-mono text-gray-700">
-              Re = Rf + beta(Rm-Rf) + Size Premium
+              Re = Rf + &beta;(ERP) + Size + CSR
             </div>
             <div className="text-sm font-mono text-gray-700 mt-1">
-              Re = {formatPercent(inputs.riskFreeRate)} + {inputs.beta.toFixed(2)} x{' '}
-              {formatPercent(inputs.marketRiskPremium)} + {formatPercent(inputs.sizeRiskPremium)}
+              Re = {formatPercent(inputs.riskFreeRate)} + {inputs.beta.toFixed(2)} &times;{' '}
+              {formatPercent(inputs.marketRiskPremium)} + {formatPercent(inputs.sizeRiskPremium)} + {formatPercent(inputs.companySpecificRisk)}
             </div>
             <div className="text-sm font-semibold text-primary mt-2">
               Cost of Equity = {formatPercent(costOfEquity)}
             </div>
+            {inputs.companySpecificRisk > 0 && (
+              <div className="text-xs text-gray-500 mt-1">
+                CSR is driven by your Business Readiness Index score
+              </div>
+            )}
           </div>
         </div>
 
