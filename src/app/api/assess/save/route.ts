@@ -18,8 +18,6 @@ import { validateRequestBody, assessSaveSchema } from '@/lib/security/validation
 import { ALPHA, calculateCoreScore, type CoreFactors } from '@/lib/valuation/calculate-valuation'
 import { estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
 import { getOrResearchMultiples } from '@/lib/valuation/multiple-freshness'
-import { generateReportToken } from '@/lib/report-token'
-import { sendOnboardingCompleteEmail } from '@/lib/email/send-onboarding-complete-email'
 import { classifyBusiness } from '@/lib/ai/business-classifier'
 
 /**
@@ -92,13 +90,19 @@ export async function POST(request: Request) {
       const magicLinkUrl = `${baseUrl}/auth/confirm?token_hash=${encodeURIComponent(linkData.properties.hashed_token)}&type=${verifyType}&next=/dashboard`
 
       try {
-        const { sendMagicLinkEmail } = await import('@/lib/email/send-magic-link-email')
-        const emailResult = await sendMagicLinkEmail({ email: normalizedEmail, magicLinkUrl })
+        const { sendWelcomeEmail } = await import('@/lib/email/send-welcome-email')
+        const emailResult = await sendWelcomeEmail({
+          email: normalizedEmail,
+          magicLinkUrl,
+          companyName: basics.companyName,
+          briScore: body.scan.briScore,
+          currentValue: results.currentValue,
+        })
         if (emailResult.success) {
           magicLinkStatus = 'sent'
         } else {
           magicLinkStatus = `send_failed: ${emailResult.error}`
-          console.error('[assess/save] Magic link email failed:', emailResult.error)
+          console.error('[assess/save] Welcome email failed:', emailResult.error)
         }
       } catch (emailErr) {
         magicLinkStatus = `send_threw: ${emailErr instanceof Error ? emailErr.message : String(emailErr)}`
@@ -255,47 +259,30 @@ export async function POST(request: Request) {
       return { company, user, workspace }
     })
 
-    // Send Day 0 results email (non-blocking)
-    const CATEGORY_LABELS: Record<string, string> = {
-      FINANCIAL: 'Financial',
-      TRANSFERABILITY: 'Transferability',
-      OPERATIONAL: 'Operations',
-      MARKET: 'Market',
-      LEGAL_TAX: 'Legal & Tax',
-      PERSONAL: 'Personal',
-    }
-    const breakdown = results.categoryBreakdown ?? {}
-    const topRiskEntry = Object.entries(breakdown).sort(([, a], [, b]) => a - b)[0]
-    const topRisk = topRiskEntry
-      ? { category: topRiskEntry[0], label: CATEGORY_LABELS[topRiskEntry[0]] || topRiskEntry[0], score: topRiskEntry[1] * 100 }
-      : { category: 'OPERATIONAL', label: 'Operations', score: 50 }
-    const topTask = results.topTasks?.[0] ?? null
-    const reportToken = generateReportToken(dbResult.company.id)
-
-    sendOnboardingCompleteEmail({
-      email: normalizedEmail,
-      name: basics.companyName,
-      companyName: basics.companyName,
-      companyId: dbResult.company.id,
-      currentValue: results.currentValue,
-      potentialValue: results.potentialValue,
-      valueGap: results.valueGap,
-      briScore: results.briScore,
-      topRisk,
-      topTask,
-      reportToken,
-    }).catch(err => console.error('[assess/save] Day 0 email failed:', err instanceof Error ? err.message : String(err)))
-
     // High-value prospect alert to Brad (revenue >$3M or value gap >$1M)
     const isHighValue = basics.annualRevenue >= 3_000_000 || results.valueGap >= 1_000_000
     if (isHighValue) {
+      const CATEGORY_LABELS: Record<string, string> = {
+        FINANCIAL: 'Financial',
+        TRANSFERABILITY: 'Transferability',
+        OPERATIONAL: 'Operations',
+        MARKET: 'Market',
+        LEGAL_TAX: 'Legal & Tax',
+        PERSONAL: 'Personal',
+      }
+      const breakdown = results.categoryBreakdown ?? {}
+      const topRiskEntry = Object.entries(breakdown).sort(([, a], [, b]) => a - b)[0]
+      const topRiskLabel = topRiskEntry
+        ? (CATEGORY_LABELS[topRiskEntry[0]] || topRiskEntry[0])
+        : 'Operations'
+
       sendProspectAlert({
         email: normalizedEmail,
         companyName: basics.companyName,
         annualRevenue: basics.annualRevenue,
         briScore: results.briScore,
         valueGap: results.valueGap,
-        topRiskCategory: topRisk.label,
+        topRiskCategory: topRiskLabel,
       }).catch(err => console.error('[assess/save] Prospect alert failed:', err instanceof Error ? err.message : String(err)))
     }
 

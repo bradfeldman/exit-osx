@@ -344,7 +344,7 @@ export async function sendMagicLink(
     }
 
     const { sendAccountExistsEmail } = await import('@/lib/email/send-account-exists-email')
-    const { sendMagicLinkEmail } = await import('@/lib/email/send-magic-link-email')
+    const { sendWelcomeEmail } = await import('@/lib/email/send-welcome-email')
     const { createServiceClient } = await import('@/lib/supabase/server')
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.exitosx.com'
@@ -402,7 +402,7 @@ export async function sendMagicLink(
     const magicLinkUrl = `${baseUrl}/auth/confirm?token_hash=${encodeURIComponent(hashedToken)}&type=${verificationType}&next=/activate`
 
     // Send branded email via Resend (all links point to app.exitosx.com)
-    const emailResult = await sendMagicLinkEmail({ email: normalizedEmail, magicLinkUrl })
+    const emailResult = await sendWelcomeEmail({ email: normalizedEmail, magicLinkUrl })
     if (!emailResult.success) {
       console.error('[Auth] Failed to send magic link email via Resend:', emailResult.error)
       return { success: false, error: 'Unable to send verification email. Please try again.' }
@@ -532,4 +532,136 @@ export async function completeAuthCallback() {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
   })
+}
+
+/**
+ * Server action to handle email verification.
+ * Called after verifyOtp succeeds on the confirm page.
+ * Sets emailVerified = true and sends the congrats email with the full onboarding report.
+ */
+export async function handleEmailVerification(): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return { success: false, error: 'Not authenticated' }
+    }
+
+    const { prisma } = await import('@/lib/prisma')
+
+    const dbUser = await prisma.user.findUnique({
+      where: { authId: user.id },
+      select: { id: true, email: true, emailVerified: true },
+    })
+
+    if (!dbUser) {
+      return { success: false, error: 'User not found' }
+    }
+
+    // Idempotent: if already verified, return early
+    if (dbUser.emailVerified) {
+      return { success: true }
+    }
+
+    // Mark as verified
+    await prisma.user.update({
+      where: { id: dbUser.id },
+      data: { emailVerified: true },
+    })
+
+    // Find the user's company (via WorkspaceMember → Workspace → Company)
+    const workspaceMember = await prisma.workspaceMember.findFirst({
+      where: { userId: dbUser.id },
+      include: {
+        workspace: {
+          include: {
+            companies: {
+              take: 1,
+              orderBy: { createdAt: 'asc' },
+            },
+          },
+        },
+      },
+    })
+
+    const company = workspaceMember?.workspace?.companies?.[0]
+    if (!company) {
+      // User verified but has no company yet (e.g., magic link signup flow)
+      return { success: true }
+    }
+
+    // Fetch latest ValuationSnapshot for the congrats email
+    const latestSnapshot = await prisma.valuationSnapshot.findFirst({
+      where: { companyId: company.id },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    if (!latestSnapshot) {
+      // No snapshot = no report data to send
+      return { success: true }
+    }
+
+    // Build top risk from category scores
+    const CATEGORY_LABELS: Record<string, string> = {
+      FINANCIAL: 'Financial',
+      TRANSFERABILITY: 'Transferability',
+      OPERATIONAL: 'Operations',
+      MARKET: 'Market',
+      LEGAL_TAX: 'Legal & Tax',
+      PERSONAL: 'Personal',
+    }
+
+    const categoryScores: [string, number][] = [
+      ['FINANCIAL', Number(latestSnapshot.briFinancial)],
+      ['TRANSFERABILITY', Number(latestSnapshot.briTransferability)],
+      ['OPERATIONAL', Number(latestSnapshot.briOperational)],
+      ['MARKET', Number(latestSnapshot.briMarket)],
+      ['LEGAL_TAX', Number(latestSnapshot.briLegalTax)],
+    ]
+    categoryScores.sort(([, a], [, b]) => a - b)
+
+    const topRiskEntry = categoryScores[0]
+    const topRisk = {
+      category: topRiskEntry[0],
+      label: CATEGORY_LABELS[topRiskEntry[0]] || topRiskEntry[0],
+      score: topRiskEntry[1] * 100,
+    }
+
+    // Get top task
+    const topTaskRecord = await prisma.task.findFirst({
+      where: { companyId: company.id, inActionPlan: true },
+      orderBy: [{ priorityRank: 'asc' }, { createdAt: 'asc' }],
+      select: { title: true, briCategory: true, normalizedValue: true },
+    })
+
+    const topTask = topTaskRecord
+      ? { title: topTaskRecord.title, category: topTaskRecord.briCategory, estimatedImpact: Number(topTaskRecord.normalizedValue) }
+      : null
+
+    // Generate report token
+    const { generateReportToken } = await import('@/lib/report-token')
+    const reportToken = generateReportToken(company.id)
+
+    // Send congrats email (non-blocking)
+    const { sendVerificationCongratsEmail } = await import('@/lib/email/send-verification-congrats-email')
+    sendVerificationCongratsEmail({
+      userId: dbUser.id,
+      email: dbUser.email,
+      companyName: company.name,
+      companyId: company.id,
+      currentValue: Number(latestSnapshot.currentValue),
+      potentialValue: Number(latestSnapshot.potentialValue),
+      valueGap: Number(latestSnapshot.valueGap),
+      briScore: Number(latestSnapshot.briScore) * 100,
+      topRisk,
+      topTask,
+      reportToken,
+    }).catch(err => console.error('[Auth] Congrats email failed:', err instanceof Error ? err.message : String(err)))
+
+    return { success: true }
+  } catch (error) {
+    console.error('[Auth] handleEmailVerification error:', error instanceof Error ? error.message : String(error))
+    return { success: false, error: 'Verification processing failed' }
+  }
 }

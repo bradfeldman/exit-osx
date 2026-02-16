@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { requireEmailVerified } from '@/lib/auth/check-permission'
 import { sendTaskDelegationEmail } from '@/lib/email/send-task-delegation-email'
 import { z } from 'zod'
 import { validateRequestBody } from '@/lib/security/validation'
@@ -36,6 +37,10 @@ export async function POST(
     if (!currentUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
+
+    // Require email verification before sending task invites
+    const verificationError = await requireEmailVerified(currentUser.id)
+    if (verificationError) return verificationError
 
     // Verify user has access to the task
     const task = await prisma.task.findUnique({

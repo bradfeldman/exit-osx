@@ -12,16 +12,21 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { CompanyAvatar } from '@/components/ui/company-avatar'
+import { GraduationCap, ClipboardCheck, ChevronRight } from 'lucide-react'
 
 interface Alert {
   id: string
   type: 'NO_ASSESSMENT' | 'STALE_ASSESSMENT' | 'QUARTERLY_REMINDER' | 'OPEN_ASSESSMENT' | 'ASSESSMENT_AVAILABLE'
+    | 'ACCESS_REQUEST' | 'ACCESS_GRANTED' | 'ACCESS_DENIED' | 'STAFF_PAUSED' | 'OWNERSHIP_TRANSFER'
+    | 'TRIAL_ENDING' | 'TRIAL_EXPIRED' | 'ACTION_PLAN_UPDATED' | 'ONBOARDING_TOUR' | 'ONBOARDING_ASSESSMENT'
   title: string
   message: string
   actionUrl: string
-  companyId: string
-  companyName: string
+  companyId?: string
+  companyName?: string
   severity: 'info' | 'warning' | 'urgent'
+  isRead?: boolean
+  persistent?: boolean
   createdAt: string
 }
 
@@ -50,25 +55,24 @@ export function NotificationBell() {
     }
 
     fetchAlerts()
-    // Refresh alerts every 5 minutes
     const interval = setInterval(fetchAlerts, 5 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [pathname]) // Re-fetch when route changes
+  }, [pathname])
 
   const handleAlertClick = (alert: Alert) => {
-    // Switch to the company and navigate to the action URL
-    setSelectedCompanyId(alert.companyId)
-    router.push(alert.actionUrl)
+    if (alert.companyId) {
+      setSelectedCompanyId(alert.companyId)
+    }
+    if (alert.actionUrl) {
+      router.push(alert.actionUrl)
+    }
   }
 
   const getSeverityColor = (severity: Alert['severity']) => {
     switch (severity) {
-      case 'urgent':
-        return 'text-red-600 bg-red-50'
-      case 'warning':
-        return 'text-amber-600 bg-amber-50'
-      case 'info':
-        return 'text-blue-600 bg-blue-50'
+      case 'urgent': return 'text-red-600 bg-red-50'
+      case 'warning': return 'text-amber-600 bg-amber-50'
+      case 'info': return 'text-blue-600 bg-blue-50'
     }
   }
 
@@ -95,6 +99,14 @@ export function NotificationBell() {
     }
   }
 
+  // Separate onboarding alerts from regular alerts
+  const onboardingAlerts = alerts.filter(
+    a => (a.type === 'ONBOARDING_TOUR' || a.type === 'ONBOARDING_ASSESSMENT') && !a.isRead
+  )
+  const regularAlerts = alerts.filter(
+    a => a.type !== 'ONBOARDING_TOUR' && a.type !== 'ONBOARDING_ASSESSMENT'
+  )
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -106,7 +118,6 @@ export function NotificationBell() {
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
           </svg>
-          {/* Badge with count */}
           {count > 0 && (
             <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white ring-2 ring-white">
               {count > 9 ? '9+' : count}
@@ -139,20 +150,62 @@ export function NotificationBell() {
           </div>
         ) : (
           <div className="max-h-[400px] overflow-y-auto">
-            {alerts.map((alert) => (
+            {/* GET STARTED section for onboarding alerts */}
+            {onboardingAlerts.length > 0 && (
+              <>
+                <div className="px-3 py-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Get Started
+                  </p>
+                </div>
+                {onboardingAlerts.map((alert) => (
+                  <DropdownMenuItem
+                    key={alert.id}
+                    className="flex items-start gap-3 p-3 cursor-pointer focus:bg-accent border-l-2 border-primary mx-1 rounded-r-lg bg-primary/5"
+                    onClick={() => handleAlertClick(alert)}
+                  >
+                    <div className="shrink-0 mt-0.5 h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      {alert.type === 'ONBOARDING_TOUR' ? (
+                        <GraduationCap className="h-4 w-4 text-primary" />
+                      ) : (
+                        <ClipboardCheck className="h-4 w-4 text-primary" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{alert.title}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{alert.message}</p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
+                  </DropdownMenuItem>
+                ))}
+                {regularAlerts.length > 0 && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <div className="px-3 py-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Notifications
+                      </p>
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+
+            {/* Regular alerts */}
+            {regularAlerts.map((alert) => (
               <DropdownMenuItem
                 key={alert.id}
                 className="flex flex-col items-start gap-1 p-3 cursor-pointer focus:bg-accent"
                 onClick={() => handleAlertClick(alert)}
               >
-                {/* Company identifier row */}
-                <div className="flex items-center gap-2 w-full mb-1">
-                  <CompanyAvatar name={alert.companyName} size="xs" />
-                  <span className="text-xs font-medium text-muted-foreground truncate">
-                    {alert.companyName}
-                  </span>
-                </div>
-                {/* Alert content row */}
+                {alert.companyName && (
+                  <div className="flex items-center gap-2 w-full mb-1">
+                    <CompanyAvatar name={alert.companyName} size="xs" />
+                    <span className="text-xs font-medium text-muted-foreground truncate">
+                      {alert.companyName}
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-start gap-2 w-full">
                   <div className="shrink-0 mt-0.5">
                     {getSeverityIcon(alert.severity)}

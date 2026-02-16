@@ -1,5 +1,7 @@
 import { type EvidenceCategory } from './evidence-categories'
 
+export type RefreshCadence = 'MONTHLY' | 'QUARTERLY' | 'ANNUALLY' | 'AS_NEEDED' | 'ONE_TIME'
+
 export interface ExpectedDocument {
   id: string
   name: string
@@ -7,6 +9,7 @@ export interface ExpectedDocument {
   buyerExplanation: string
   importance: 'required' | 'expected' | 'helpful'
   sortOrder: number
+  refreshCadence: RefreshCadence
 }
 
 export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
@@ -18,6 +21,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Buyers need 3 years of audited or reviewed financials to assess trend lines, margins, and revenue quality. This is the first document requested in every deal.',
     importance: 'required',
     sortOrder: 1,
+    refreshCadence: 'ANNUALLY',
   },
   {
     id: 'fin-monthly-pl',
@@ -26,6 +30,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Monthly granularity reveals seasonality, one-time events, and run-rate accuracy. Buyers use this to validate annual numbers and project forward.',
     importance: 'required',
     sortOrder: 2,
+    refreshCadence: 'MONTHLY',
   },
   {
     id: 'fin-balance-sheet',
@@ -34,6 +39,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Working capital, debt levels, and asset composition directly affect purchase price structure and cash-at-close calculations.',
     importance: 'required',
     sortOrder: 3,
+    refreshCadence: 'QUARTERLY',
   },
   {
     id: 'fin-tax-returns',
@@ -42,6 +48,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Required in 100% of acquisitions. Buyers cross-reference tax returns against financials. Discrepancies raise red flags that delay or kill deals.',
     importance: 'required',
     sortOrder: 4,
+    refreshCadence: 'ANNUALLY',
   },
   {
     id: 'fin-budget-projections',
@@ -50,6 +57,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Projections show management credibility. Realistic, assumption-backed projections strengthen valuation. Aggressive projections without support damage credibility.',
     importance: 'expected',
     sortOrder: 5,
+    refreshCadence: 'QUARTERLY',
   },
   {
     id: 'fin-ar-aging',
@@ -58,6 +66,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'AR aging reveals collection efficiency and revenue quality. High concentrations in 60-90+ days signal cash flow risk to buyers.',
     importance: 'expected',
     sortOrder: 6,
+    refreshCadence: 'MONTHLY',
   },
   {
     id: 'fin-debt-schedule',
@@ -66,6 +75,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Every acquisition involves assumption or payoff of debt. Buyers need a complete picture of all obligations to calculate true enterprise value.',
     importance: 'expected',
     sortOrder: 7,
+    refreshCadence: 'QUARTERLY',
   },
   {
     id: 'fin-revenue-by-customer',
@@ -74,6 +84,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Revenue concentration analysis helps buyers assess customer dependency risk. Top 10 customers with percentages is standard.',
     importance: 'helpful',
     sortOrder: 8,
+    refreshCadence: 'QUARTERLY',
   },
 
   // Legal (6 documents, weight 0.20)
@@ -84,6 +95,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Articles of incorporation, certificates of formation, and amendments prove the entity\'s legal existence and authority to transact.',
     importance: 'required',
     sortOrder: 1,
+    refreshCadence: 'ONE_TIME',
   },
   {
     id: 'legal-operating-agreement',
@@ -92,6 +104,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Governance documents reveal transfer restrictions, consent requirements, and authority provisions that directly affect deal structure.',
     importance: 'required',
     sortOrder: 2,
+    refreshCadence: 'ONE_TIME',
   },
   {
     id: 'legal-material-contracts',
@@ -100,6 +113,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Contracts with customers, vendors, and partners are evaluated for assignment clauses, change-of-control provisions, and termination rights.',
     importance: 'required',
     sortOrder: 3,
+    refreshCadence: 'AS_NEEDED',
   },
   {
     id: 'legal-litigation',
@@ -108,6 +122,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Pending or threatened litigation is a deal-killer if undisclosed. A clean litigation summary builds confidence; surprises during DD destroy it.',
     importance: 'expected',
     sortOrder: 4,
+    refreshCadence: 'QUARTERLY',
   },
   {
     id: 'legal-insurance',
@@ -116,6 +131,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Current coverage levels, claims history, and policy gaps are standard diligence items. Missing coverage creates post-close liability risk.',
     importance: 'expected',
     sortOrder: 5,
+    refreshCadence: 'ANNUALLY',
   },
   {
     id: 'legal-licenses',
@@ -124,6 +140,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Industry-specific licenses and permits must transfer with the business. Non-transferable licenses can delay or restructure deals.',
     importance: 'helpful',
     sortOrder: 6,
+    refreshCadence: 'ANNUALLY',
   },
 
   // Operations (5 documents, weight 0.15)
@@ -134,6 +151,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Buyers need to understand the management team, reporting structure, and key person dependencies. The org chart is their first map of the business.',
     importance: 'required',
     sortOrder: 1,
+    refreshCadence: 'QUARTERLY',
   },
   {
     id: 'ops-sops',
@@ -142,6 +160,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Documented processes prove the business can run without the owner. This is the #1 transferability signal buyers evaluate.',
     importance: 'required',
     sortOrder: 2,
+    refreshCadence: 'AS_NEEDED',
   },
   {
     id: 'ops-vendor-contracts',
@@ -150,6 +169,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Material vendor relationships, contract terms, and concentration risk affect operations continuity post-acquisition.',
     importance: 'expected',
     sortOrder: 3,
+    refreshCadence: 'AS_NEEDED',
   },
   {
     id: 'ops-facility-leases',
@@ -158,6 +178,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Lease terms, assignment provisions, and remaining obligations are standard diligence items that affect deal structure.',
     importance: 'expected',
     sortOrder: 4,
+    refreshCadence: 'ONE_TIME',
   },
   {
     id: 'ops-equipment',
@@ -166,6 +187,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'A depreciation schedule and condition assessment of major equipment helps buyers understand capital requirements.',
     importance: 'helpful',
     sortOrder: 5,
+    refreshCadence: 'ANNUALLY',
   },
 
   // Customers (4 documents, weight 0.15)
@@ -176,6 +198,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Revenue by customer with contract status shows concentration risk and revenue durability. This is evaluated in every deal.',
     importance: 'required',
     sortOrder: 1,
+    refreshCadence: 'QUARTERLY',
   },
   {
     id: 'cust-contracts',
@@ -184,6 +207,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Buyers review key customer contracts for terms, assignability, auto-renewal provisions, and termination clauses.',
     importance: 'required',
     sortOrder: 2,
+    refreshCadence: 'AS_NEEDED',
   },
   {
     id: 'cust-concentration',
@@ -192,6 +216,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'A clear analysis of revenue concentration with mitigation strategy demonstrates management awareness and reduces buyer risk perception.',
     importance: 'expected',
     sortOrder: 3,
+    refreshCadence: 'QUARTERLY',
   },
   {
     id: 'cust-pipeline',
@@ -200,6 +225,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Pipeline visibility and historical churn rates help buyers project future revenue and assess growth trajectory.',
     importance: 'helpful',
     sortOrder: 4,
+    refreshCadence: 'MONTHLY',
   },
 
   // Team/HR (5 documents, weight 0.10)
@@ -210,14 +236,16 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Headcount, tenure, roles, and compensation structure help buyers assess workforce stability and integration complexity.',
     importance: 'required',
     sortOrder: 1,
+    refreshCadence: 'QUARTERLY',
   },
   {
     id: 'team-key-agreements',
     name: 'Key Employee Agreements',
     category: 'team',
-    buyerExplanation: 'Employment agreements for key employees — including non-competes, non-solicits, and IP assignments — protect deal value post-close.',
+    buyerExplanation: 'Employment agreements for key employees \u2014 including non-competes, non-solicits, and IP assignments \u2014 protect deal value post-close.',
     importance: 'required',
     sortOrder: 2,
+    refreshCadence: 'ONE_TIME',
   },
   {
     id: 'team-compensation',
@@ -226,6 +254,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Total compensation including benefits, bonuses, and equity helps buyers model post-close operating costs.',
     importance: 'expected',
     sortOrder: 3,
+    refreshCadence: 'ANNUALLY',
   },
   {
     id: 'team-handbook',
@@ -234,6 +263,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'A current handbook demonstrates HR compliance and reduces post-close employment liability risk.',
     importance: 'expected',
     sortOrder: 4,
+    refreshCadence: 'ANNUALLY',
   },
   {
     id: 'team-benefits',
@@ -242,6 +272,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Health, retirement, and equity plan details are needed to assess continuation costs and integration complexity.',
     importance: 'helpful',
     sortOrder: 5,
+    refreshCadence: 'ANNUALLY',
   },
 
   // IP/Tech (2 documents, weight 0.10)
@@ -252,6 +283,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Buyers verify that all intellectual property is owned by the entity, not individuals. Missing IP assignments can kill a deal in diligence.',
     importance: 'required',
     sortOrder: 1,
+    refreshCadence: 'ONE_TIME',
   },
   {
     id: 'ip-licenses',
@@ -260,6 +292,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     buyerExplanation: 'Technology stack, third-party dependencies, and license compliance are evaluated for risk and scalability.',
     importance: 'expected',
     sortOrder: 2,
+    refreshCadence: 'ANNUALLY',
   },
 ]
 

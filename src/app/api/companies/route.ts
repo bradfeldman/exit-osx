@@ -5,6 +5,7 @@ import { getUserAccessibleCompanies } from '@/lib/access'
 import { createClient } from '@/lib/supabase/server'
 import { serverAnalytics } from '@/lib/analytics/server'
 import { COMPANY_LIMITS, type PlanTier } from '@/lib/pricing'
+import { createOnboardingAlerts } from '@/lib/alerts'
 import { z } from 'zod'
 import { validateRequestBody, shortText, financialAmount, optionalFinancialAmount } from '@/lib/security/validation'
 import type { Prisma } from '@prisma/client'
@@ -277,6 +278,11 @@ export async function POST(request: Request) {
       companyId: company.id,
       industry: icbSubSector,
     }).catch(() => {})
+
+    // Create onboarding alerts for new users (non-blocking)
+    createOnboardingAlerts(dbUser.id).catch((err) =>
+      console.error('Failed to create onboarding alerts:', err instanceof Error ? err.message : String(err))
+    )
 
     return NextResponse.json({
       company: {

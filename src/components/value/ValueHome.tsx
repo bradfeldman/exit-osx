@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { useExposure } from '@/contexts/ExposureContext'
@@ -136,6 +136,7 @@ export function ValueHome() {
   const { progressionData } = useProgression()
   const hasFullAssessment = progressionData?.hasFullAssessment ?? false
   const router = useRouter()
+  const searchParams = useSearchParams()
   const isFreeUser = planTier === 'foundation'
   const [data, setData] = useState<DashboardData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -184,6 +185,16 @@ export function ValueHome() {
       return () => clearTimeout(timer)
     }
   }, [isLoading, data])
+
+  // Open tour from notification link (?tour=open)
+  useEffect(() => {
+    if (!isLoading && data && searchParams.get('tour') === 'open') {
+      setTourKey((k) => k + 1)
+      setShowTour(true)
+      // Clean up URL
+      router.replace('/dashboard', { scroll: false })
+    }
+  }, [isLoading, data, searchParams, router])
 
   const handleTourComplete = useCallback(() => {
     localStorage.setItem('exitosx-tour-seen', 'true')

@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { completeAuthCallback } from '@/app/actions/auth'
+import { completeAuthCallback, handleEmailVerification } from '@/app/actions/auth'
 
 /**
  * Client-side magic link confirmation page.
@@ -62,6 +62,7 @@ function ConfirmContent() {
         }
 
         await completeAuthCallback()
+        await handleEmailVerification()
         window.location.href = sanitizedNext
         return
       }

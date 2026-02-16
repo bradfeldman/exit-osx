@@ -50,6 +50,12 @@ export function ExposureProvider({ children }: { children: ReactNode }) {
       if (response.ok) {
         setExposureState('ACTING')
       }
+      // Clear the onboarding tour notification (non-blocking)
+      fetch('/api/alerts/clear-onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'ONBOARDING_TOUR' }),
+      }).catch(() => {})
     } catch (err) {
       console.error('Failed to update exposure state:', err)
     }

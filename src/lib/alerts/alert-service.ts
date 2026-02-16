@@ -8,6 +8,7 @@ export interface CreateAlertData {
   message: string
   actionUrl?: string
   metadata?: Record<string, unknown>
+  persistent?: boolean
 }
 
 export interface AlertListOptions {
@@ -41,6 +42,7 @@ export async function createAlert(data: CreateAlertData): Promise<AlertWithMeta>
       message: data.message,
       actionUrl: data.actionUrl,
       metadata: data.metadata as Prisma.InputJsonValue | undefined,
+      persistent: data.persistent ?? false,
     },
   })
 
@@ -117,6 +119,7 @@ export async function markAllAsRead(userId: string): Promise<number> {
     where: {
       recipientId: userId,
       isRead: false,
+      persistent: false, // Skip persistent alerts — they clear only when action is taken
     },
     data: {
       isRead: true,
@@ -300,6 +303,60 @@ export async function createTrialExpiredAlert(userId: string): Promise<AlertWith
     title: 'Trial Expired',
     message: 'Your trial has ended. Subscribe to regain access to premium features.',
     actionUrl: `/dashboard/settings?tab=billing`,
+  })
+}
+
+/**
+ * Create onboarding alerts (tour + assessments) for a new user
+ */
+export async function createOnboardingAlerts(recipientId: string): Promise<void> {
+  // Only create once — skip if onboarding alerts already exist for this user
+  const existing = await prisma.alert.count({
+    where: {
+      recipientId,
+      type: { in: ['ONBOARDING_TOUR', 'ONBOARDING_ASSESSMENT'] },
+    },
+  })
+  if (existing > 0) return
+
+  await Promise.all([
+    createAlert({
+      recipientId,
+      type: 'ONBOARDING_TOUR',
+      title: 'Take the Platform Tour',
+      message: 'Get oriented with a quick walkthrough of your command center.',
+      actionUrl: '/dashboard?tour=open',
+      persistent: true,
+    }),
+    createAlert({
+      recipientId,
+      type: 'ONBOARDING_ASSESSMENT',
+      title: 'Complete Your Assessments',
+      message: 'Answer questions across 6 categories to build your exit readiness profile.',
+      actionUrl: '/dashboard/diagnosis',
+      persistent: true,
+    }),
+  ])
+}
+
+/**
+ * Clear a persistent onboarding alert by type
+ */
+export async function clearOnboardingAlert(
+  userId: string,
+  type: 'ONBOARDING_TOUR' | 'ONBOARDING_ASSESSMENT'
+): Promise<void> {
+  await prisma.alert.updateMany({
+    where: {
+      recipientId: userId,
+      type,
+      persistent: true,
+      isRead: false,
+    },
+    data: {
+      isRead: true,
+      readAt: new Date(),
+    },
   })
 }
 

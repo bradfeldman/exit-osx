@@ -1007,6 +1007,10 @@ export interface AnalyticsEventMap {
   'tour_started': TourStartedParams
   'tour_completed': TourCompletedParams
   'tour_skipped': TourSkippedParams
+
+  // AI Coach
+  'ai_coach_gated': BaseEventParams & { question: string; attemptNumber: number }
+  'ai_coach_upgrade_clicked': BaseEventParams & { variant: string; attemptNumber: number; source: string }
 }
 
 export type AnalyticsEventName = keyof AnalyticsEventMap

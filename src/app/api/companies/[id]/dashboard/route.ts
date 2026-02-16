@@ -1096,6 +1096,19 @@ export async function GET(
       criticalTasksTotal,
       criticalTasksCompleted,
       significantTasksCompleted,
+      // Email verification status
+      emailVerified: await (async () => {
+        try {
+          const userId = (result as AuthSuccess).auth.user.id
+          const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { emailVerified: true },
+          })
+          return user?.emailVerified ?? false
+        } catch {
+          return false
+        }
+      })(),
     })
   } catch (error) {
     console.error('Error fetching dashboard data:', error instanceof Error ? error.message : String(error))

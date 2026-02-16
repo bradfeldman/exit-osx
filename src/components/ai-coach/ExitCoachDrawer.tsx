@@ -3,9 +3,13 @@
 import { useState, useCallback } from 'react'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useExitCoach } from '@/contexts/ExitCoachContext'
+import { useSubscription } from '@/contexts/SubscriptionContext'
 import { X, Sparkles } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
 import { ExitCoachMessages } from './ExitCoachMessages'
 import { ExitCoachInput } from './ExitCoachInput'
+import { analytics } from '@/lib/analytics'
 
 const SUGGESTED_QUESTIONS = [
   "What's my biggest risk right now?",
@@ -13,11 +17,19 @@ const SUGGESTED_QUESTIONS = [
   'What should I focus on this month?',
 ]
 
+const MAX_FREE_ATTEMPTS = 3
+
 export function ExitCoachDrawer() {
   const { selectedCompanyId } = useCompany()
   const { isOpen, setIsOpen, messages, addMessage } = useExitCoach()
+  const { canAccessFeature } = useSubscription()
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [attemptCount, setAttemptCount] = useState(0)
+
+  const hasAICoachAccess = canAccessFeature('ai-coach')
+  const showFinalUpgrade = !hasAICoachAccess && attemptCount >= MAX_FREE_ATTEMPTS
 
   const sendMessage = useCallback(async (content: string) => {
     if (!selectedCompanyId || isLoading) return
@@ -27,6 +39,29 @@ export function ExitCoachDrawer() {
     setIsLoading(true)
     setError(null)
 
+    // Free user: show fake loading, then upgrade card
+    if (!hasAICoachAccess) {
+      const newAttempt = attemptCount + 1
+      setAttemptCount(newAttempt)
+
+      analytics.track('ai_coach_gated', {
+        question: content.slice(0, 100),
+        attemptNumber: newAttempt,
+      })
+
+      // Brief loading to build anticipation
+      await new Promise(resolve => setTimeout(resolve, 1200))
+      setIsLoading(false)
+
+      addMessage({
+        role: 'upgrade',
+        content: '',
+        upgradeAttempt: newAttempt,
+      })
+      return
+    }
+
+    // Paid user: normal flow
     try {
       const allMessages = [...messages, userMessage]
       const res = await fetch(`/api/companies/${selectedCompanyId}/ai-coach/chat`, {
@@ -52,7 +87,7 @@ export function ExitCoachDrawer() {
     } finally {
       setIsLoading(false)
     }
-  }, [selectedCompanyId, isLoading, messages, addMessage])
+  }, [selectedCompanyId, isLoading, messages, addMessage, hasAICoachAccess, attemptCount])
 
   if (!isOpen) return null
 
@@ -115,8 +150,30 @@ export function ExitCoachDrawer() {
           </div>
         )}
 
-        {/* Input */}
-        <ExitCoachInput onSend={sendMessage} disabled={isLoading} />
+        {/* Input or Final Upgrade CTA */}
+        {showFinalUpgrade ? (
+          <div className="border-t bg-card px-4 py-4">
+            <div className="rounded-xl border border-border bg-gradient-to-br from-primary/5 to-transparent p-4 text-center">
+              <p className="text-sm font-medium mb-1">You&apos;ve explored what Exit Coach can do.</p>
+              <p className="text-xs text-muted-foreground mb-3">Ready to get answers?</p>
+              <Button
+                className="w-full"
+                onClick={() => {
+                  analytics.track('ai_coach_upgrade_clicked', {
+                    variant: 'final',
+                    attemptNumber: attemptCount,
+                    source: 'coach_drawer',
+                  })
+                  router.push('/dashboard/settings?tab=billing&upgrade=growth')
+                }}
+              >
+                Upgrade to Growth
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <ExitCoachInput onSend={sendMessage} disabled={isLoading} />
+        )}
       </div>
     </div>
   )

@@ -39,6 +39,8 @@ async function checkRateLimit(userId: string, emailType: EmailType): Promise<boo
     PARTNER_NUDGE: 7 * 24 * 60 * 60 * 1000, // 7 days
     ONBOARDING_COMPLETE: 0, // No limit
     ACCOUNT_EXISTS: 0, // No limit
+    WELCOME_VERIFICATION: 5 * 60 * 1000, // 5 minutes
+    VERIFICATION_CONGRATS: 0, // No limit (sent once on verification)
     TRIAL_WELCOME: 365 * 24 * 60 * 60 * 1000, // Once per year (effectively once-ever)
     TRIAL_MIDPOINT: 365 * 24 * 60 * 60 * 1000,
     TRIAL_ENDING_SOON: 365 * 24 * 60 * 60 * 1000,
@@ -122,6 +124,24 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
     if (!canSend) {
       const logId = await logEmail(userId, companyId, emailType, to, subject, false, 'User preference blocked')
       return { success: false, error: 'User has disabled this email type', logId }
+    }
+
+    // Gate ongoing emails on email verification
+    // Auth/verification emails bypass this check
+    const SKIP_VERIFICATION_CHECK: EmailType[] = [
+      'WELCOME_VERIFICATION',
+      'VERIFICATION_CONGRATS',
+      'ACCOUNT_EXISTS',
+    ]
+    if (!SKIP_VERIFICATION_CHECK.includes(emailType)) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { emailVerified: true },
+      })
+      if (user && !user.emailVerified) {
+        const logId = await logEmail(userId, companyId, emailType, to, subject, false, 'Email not verified')
+        return { success: false, error: 'Email not verified', logId }
+      }
     }
 
     // Check rate limit

@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch all progression-related data in parallel
     const [
-      latestSnapshot,
+      snapshots,
       completedTaskCount,
       financialPeriodCount,
       financialEvidenceCount,
@@ -48,13 +48,16 @@ export async function GET(request: NextRequest) {
       evidenceCounts,
       dataRoom,
     ] = await Promise.all([
-      // Get latest valuation snapshot (indicates assessment complete)
-      prisma.valuationSnapshot.findFirst({
+      // Get latest 2 valuation snapshots (for current + previous value comparison)
+      prisma.valuationSnapshot.findMany({
         where: { companyId },
         orderBy: { createdAt: 'desc' },
+        take: 2,
         select: {
           id: true,
           briScore: true,
+          currentValue: true,
+          createdAt: true,
         },
       }),
 
@@ -126,6 +129,10 @@ export async function GET(request: NextRequest) {
       }),
     ])
 
+    // Extract latest and previous snapshots from array
+    const latestSnapshot = snapshots[0] ?? null
+    const previousSnapshot = snapshots[1] ?? null
+
     // Check for DCF valuation data
     const hasDcfValuation = latestSnapshot !== null
 
@@ -168,6 +175,10 @@ export async function GET(request: NextRequest) {
     const briScore = latestSnapshot?.briScore ? Number(latestSnapshot.briScore) : null
     const isExitReady = briScore !== null && briScore >= EXIT_READY_BRI_THRESHOLD
 
+    // Valuation data for header ticker
+    const currentValue = latestSnapshot ? Number(latestSnapshot.currentValue) : null
+    const previousValue = previousSnapshot ? Number(previousSnapshot.currentValue) : null
+
     return NextResponse.json({
       // Milestones
       hasAssessment,
@@ -182,6 +193,9 @@ export async function GET(request: NextRequest) {
       assessedCategoryCount,
       assessedCategories: Array.from(assessedCategorySet),
       evidencePercentage,
+      // Valuation summary (for header ticker)
+      currentValue,
+      previousValue,
     })
   } catch (error) {
     console.error('Error fetching progression data:', error instanceof Error ? error.message : String(error))

@@ -292,3 +292,24 @@ export async function requireAdmin(companyId?: string): Promise<AuthResult> {
 export async function requireTeamLeader(companyId?: string): Promise<AuthResult> {
   return checkPermission('TASK_ASSIGN', companyId)
 }
+
+/**
+ * Check if the user has verified their email.
+ * Returns a 403 NextResponse if not verified, or null if verified.
+ * Use after permission check, before the action.
+ */
+export async function requireEmailVerified(userId: string): Promise<NextResponse | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { emailVerified: true },
+  })
+
+  if (user && !user.emailVerified) {
+    return NextResponse.json(
+      { error: 'Email verification required', code: 'EMAIL_NOT_VERIFIED' },
+      { status: 403 }
+    )
+  }
+
+  return null
+}

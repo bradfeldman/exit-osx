@@ -25,6 +25,18 @@ export async function POST(
   if (!validation.success) return validation.error
   const { messages } = validation.data
 
+  // Plan check: AI Coach requires Growth plan or higher
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { workspace: { select: { planTier: true } } },
+  })
+  if (company?.workspace?.planTier === 'FOUNDATION') {
+    return NextResponse.json(
+      { error: 'AI Coach requires Growth plan or higher.' },
+      { status: 403 }
+    )
+  }
+
   // Rate limit: max 20 messages/day per company
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
   const recentCount = await prisma.aIGenerationLog.count({

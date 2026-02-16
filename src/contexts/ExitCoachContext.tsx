@@ -2,9 +2,10 @@
 
 import { createContext, useContext, useState, type ReactNode } from 'react'
 
-interface Message {
-  role: 'user' | 'assistant'
+export interface Message {
+  role: 'user' | 'assistant' | 'upgrade'
   content: string
+  upgradeAttempt?: number
 }
 
 interface ExitCoachContextType {

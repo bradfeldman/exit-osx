@@ -7,6 +7,7 @@ import { generateAITasksForCompany } from '@/lib/dossier/ai-tasks'
 import { getIndustryMultiples, estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
 import { getMarketSalary } from '@/lib/valuation/recalculate-snapshot'
 import { triggerDossierUpdate } from '@/lib/dossier/build-dossier'
+import { clearOnboardingAlert } from '@/lib/alerts'
 import {
   ALPHA,
   calculateCoreScore,
@@ -303,6 +304,9 @@ export async function POST(
 
     // Update company dossier (non-blocking)
     triggerDossierUpdate(assessment.companyId, 'assessment_completed', assessmentId)
+
+    // Clear onboarding assessment notification (non-blocking)
+    clearOnboardingAlert(dbUserId, 'ONBOARDING_ASSESSMENT').catch(() => {})
 
     return NextResponse.json({
       assessment: completedAssessment,

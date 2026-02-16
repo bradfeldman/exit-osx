@@ -22,6 +22,8 @@ interface ProgressionData {
   assessedCategoryCount: number    // 0-6, how many of 6 BRI categories assessed
   assessedCategories: string[]     // which BRI categories have been assessed
   evidencePercentage: number       // 0-100, percentage of expected evidence uploaded
+  currentValue: number | null      // Current enterprise value from latest snapshot
+  previousValue: number | null     // Previous enterprise value for delta display
 }
 
 /**
@@ -104,6 +106,8 @@ export function ProgressionProvider({ children }: { children: ReactNode }) {
           assessedCategoryCount: 0,
           assessedCategories: [],
           evidencePercentage: 0,
+          currentValue: null,
+          previousValue: null,
         })
       }
       setIsLoading(false)

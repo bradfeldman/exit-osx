@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { isUserSubscribingOwner, checkCanInviteStaff, checkCanInviteOwner } from '@/lib/access'
+import { requireEmailVerified } from '@/lib/auth/check-permission'
 import { z } from 'zod'
 import { validateRequestBody, emailSchema } from '@/lib/security/validation'
 
@@ -113,6 +114,10 @@ export async function POST(
     if (!isOwner) {
       return NextResponse.json({ error: 'Only the subscribing owner can invite members' }, { status: 403 })
     }
+
+    // Require email verification before sending invites
+    const verificationError = await requireEmailVerified(dbUser.id)
+    if (verificationError) return verificationError
 
     // Check plan limits
     if (type === 'STAFF') {

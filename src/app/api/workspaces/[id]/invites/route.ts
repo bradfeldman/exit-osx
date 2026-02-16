@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
-import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { checkPermission, isAuthError, requireEmailVerified } from '@/lib/auth/check-permission'
 import { WorkspaceRole, FunctionalCategory } from '@prisma/client'
 import { GRANULAR_PERMISSIONS } from '@/lib/auth/permissions'
 import { Resend } from 'resend'
@@ -103,6 +103,10 @@ export async function POST(
     customPermissions,
     isExternalAdvisor,
   } = validation.data
+
+  // Require email verification before sending invites
+  const verificationError = await requireEmailVerified(auth.user.id)
+  if (verificationError) return verificationError
 
   try {
     // Validate role template if provided
