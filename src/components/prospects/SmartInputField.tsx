@@ -1,12 +1,23 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from '@/lib/motion'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { parseInput, ParsedInput } from '@/lib/contact-system/smart-parser'
 import { Sparkles, User, Building2, Mail, Phone, Linkedin, Globe, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+const EMPTY_PARSED: ParsedInput = {
+  people: [],
+  companies: [],
+  emails: [],
+  phones: [],
+  urls: [],
+  linkedInUrls: [],
+  domains: [],
+  raw: '',
+}
 
 interface SmartInputFieldProps {
   value: string
@@ -29,38 +40,30 @@ export function SmartInputField({
 }: SmartInputFieldProps) {
   const [isParsing, setIsParsing] = useState(false)
   const [parsed, setParsed] = useState<ParsedInput | null>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Stable ref for the callback to avoid re-parse loops
-  const onParsedRef = useRef(onParsed)
-  useEffect(() => { onParsedRef.current = onParsed }, [onParsed])
+  // Handle input changes with debounced parsing — no effects needed
+  const handleChange = useCallback((newValue: string) => {
+    onChange(newValue)
 
-  // Only re-parse when the actual input value changes
-  useEffect(() => {
-    if (!value.trim()) {
+    // Clear any pending parse
+    if (timerRef.current) clearTimeout(timerRef.current)
+
+    if (!newValue.trim()) {
       setParsed(null)
-      onParsedRef.current({
-        people: [],
-        companies: [],
-        emails: [],
-        phones: [],
-        urls: [],
-        linkedInUrls: [],
-        domains: [],
-        raw: '',
-      })
+      setIsParsing(false)
+      onParsed(EMPTY_PARSED)
       return
     }
 
     setIsParsing(true)
-    const timer = setTimeout(() => {
-      const result = parseInput(value)
+    timerRef.current = setTimeout(() => {
+      const result = parseInput(newValue)
       setParsed(result)
-      onParsedRef.current(result)
+      onParsed(result)
       setIsParsing(false)
     }, 300)
-
-    return () => clearTimeout(timer)
-  }, [value])
+  }, [onChange, onParsed])
 
   const hasContent = value.trim().length > 0
   const hasResults = parsed && (parsed.people.length > 0 || parsed.companies.length > 0 || parsed.emails.length > 0)
@@ -90,7 +93,7 @@ export function SmartInputField({
       <div>
         <Textarea
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => handleChange(e.target.value)}
           placeholder={placeholder}
           disabled={disabled}
           rows={minRows}
