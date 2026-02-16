@@ -29,12 +29,18 @@ export function AssessmentFlow() {
   const [isCalculating, setIsCalculating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [classification, setClassification] = useState<{ primaryIndustry: { name: string }; [key: string]: unknown } | null>(null)
+  const [returnToReview, setReturnToReview] = useState(false)
 
   const stepIndex = STEP_ORDER.indexOf(step)
 
   const handleBasicsComplete = useCallback((data: BusinessBasicsData) => {
     setBasics(data)
-    setStep('profile')
+    if (returnToReview) {
+      setReturnToReview(false)
+      setStep('review')
+    } else {
+      setStep('profile')
+    }
 
     // Classify in the background so we have industry context for Screen 2
     // Non-blocking — Screen 2 works fine without it
@@ -46,19 +52,26 @@ export function AssessmentFlow() {
       .then(res => res.ok ? res.json() : null)
       .then(result => { if (result) setClassification(result) })
       .catch(() => {}) // Silent fail — classification is optional for Screen 2
-  }, [])
+  }, [returnToReview])
 
   const handleProfileComplete = useCallback((data: BusinessProfileData) => {
     setProfile(data)
-    setStep('scan')
-  }, [])
+    if (returnToReview) {
+      setReturnToReview(false)
+      setStep('review')
+    } else {
+      setStep('scan')
+    }
+  }, [returnToReview])
 
   const handleScanComplete = useCallback((data: BuyerScanData) => {
     setScan(data)
+    setReturnToReview(false)
     setStep('review')
   }, [])
 
   const handleEditStep = useCallback((target: AssessStep) => {
+    setReturnToReview(true)
     setStep(target)
   }, [])
 

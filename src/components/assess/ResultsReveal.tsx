@@ -6,7 +6,7 @@ import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2, TrendingUp, Shield, AlertTriangle } from 'lucide-react'
+import { Loader2, TrendingUp, Shield, AlertTriangle, Eye, EyeOff } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/currency'
 import type { BusinessBasicsData } from './BusinessBasicsStep'
 import type { BusinessProfileData } from './BusinessProfileStep'
@@ -78,6 +78,7 @@ export function ResultsReveal({ results, email, basics, profile, scan }: Results
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   // Phased reveal animation
   useEffect(() => {
@@ -300,15 +301,25 @@ export function ResultsReveal({ results, email, basics, profile, scan }: Results
                 </div>
                 <div>
                   <Label htmlFor="save-password">Set a Password</Label>
-                  <Input
-                    id="save-password"
-                    type="password"
-                    placeholder="At least 8 characters"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="h-10"
-                    autoFocus
-                  />
+                  <div className="relative">
+                    <Input
+                      id="save-password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="At least 8 characters"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="h-10 pr-10"
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
 
                 {saveError && (

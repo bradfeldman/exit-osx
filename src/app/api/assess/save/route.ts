@@ -69,6 +69,7 @@ export async function POST(request: Request) {
     const authId = authData.user.id
 
     // Generate magic link for login convenience email
+    let magicLinkStatus = 'pending'
     const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
       type: 'magiclink',
       email: normalizedEmail,
@@ -79,6 +80,7 @@ export async function POST(request: Request) {
 
     if (linkError) {
       console.error('[assess/save] generateLink error:', linkError.message)
+      magicLinkStatus = `generateLink_error: ${linkError.message}`
     }
 
     // Send branded login email if we have a link
@@ -89,13 +91,18 @@ export async function POST(request: Request) {
       try {
         const { sendMagicLinkEmail } = await import('@/lib/email/send-magic-link-email')
         const emailResult = await sendMagicLinkEmail({ email: normalizedEmail, magicLinkUrl })
-        if (!emailResult.success) {
+        if (emailResult.success) {
+          magicLinkStatus = 'sent'
+        } else {
+          magicLinkStatus = `send_failed: ${emailResult.error}`
           console.error('[assess/save] Magic link email failed:', emailResult.error)
         }
       } catch (emailErr) {
+        magicLinkStatus = `send_threw: ${emailErr instanceof Error ? emailErr.message : String(emailErr)}`
         console.error('[assess/save] Email send threw:', emailErr instanceof Error ? emailErr.message : String(emailErr))
       }
-    } else {
+    } else if (!linkError) {
+      magicLinkStatus = `no_token: ${JSON.stringify(linkData)}`
       console.error('[assess/save] No hashed_token from generateLink — linkData:', JSON.stringify(linkData))
     }
 
@@ -233,6 +240,7 @@ export async function POST(request: Request) {
       success: true,
       companyId: dbResult.company.id,
       userId: dbResult.user.id,
+      _debug: { magicLinkStatus },
     })
   } catch (err) {
     console.error('[assess/save] Error:', err instanceof Error ? err.message : String(err))
