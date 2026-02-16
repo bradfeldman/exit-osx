@@ -5,6 +5,7 @@ import {
   type CoreFactors,
 } from '@/lib/valuation/calculate-valuation'
 import { getIndustryMultiples, estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
+import { getOrResearchMultiples } from '@/lib/valuation/multiple-freshness'
 import { getMarketSalary } from '@/lib/valuation/recalculate-snapshot'
 import {
   applyRateLimit,
@@ -61,14 +62,21 @@ export async function POST(request: Request) {
     // BRI score from quick scan (0-100 scale from client, convert to 0-1)
     const briScore = Math.max(0, Math.min(100, buyerScan.briScore)) / 100
 
-    // Get industry multiples
+    // Get industry multiples (with on-demand AI research if stale)
     const primary = classification?.primaryIndustry
-    const multiples = await getIndustryMultiples(
-      primary?.icbSubSector || 'professional-services',
-      primary?.icbSector,
-      primary?.icbSuperSector,
-      primary?.icbIndustry
-    )
+    const icbSubSector = primary?.icbSubSector || 'PROFESSIONAL_SERVICES'
+    let multiples
+    try {
+      multiples = await getOrResearchMultiples(icbSubSector)
+    } catch {
+      // Fall back to cascading lookup if research fails
+      multiples = await getIndustryMultiples(
+        icbSubSector,
+        primary?.icbSector,
+        primary?.icbSuperSector,
+        primary?.icbIndustry
+      )
+    }
 
     // Estimate adjusted EBITDA from revenue
     const estimatedEbitda = estimateEbitdaFromRevenue(annualRevenue, multiples)
@@ -95,6 +103,15 @@ export async function POST(request: Request) {
     // Generate top 3 task suggestions based on risks
     const topTasks = generateTopTasks(buyerScan.answers, valuation.valueGap)
 
+    // Determine confidence level from multiples source
+    const confidenceLevel = multiples.isDefault
+      ? 'low'
+      : multiples.source?.includes('high confidence')
+        ? 'high'
+        : multiples.source?.includes('low confidence')
+          ? 'low'
+          : 'medium'
+
     return NextResponse.json({
       briScore: buyerScan.briScore,
       currentValue: Math.round(valuation.currentValue),
@@ -104,6 +121,7 @@ export async function POST(request: Request) {
       finalMultiple: valuation.finalMultiple,
       categoryBreakdown,
       topTasks,
+      confidenceLevel,
       // SECURITY: Internal calculation details removed from public response (SEC-052)
       // The save endpoint recalculates server-side — no need to expose algorithm internals
     })

@@ -27,6 +27,7 @@ export interface AssessmentResults {
     estimatedImpact: number
   }>
   categoryBreakdown: Record<string, number>
+  confidenceLevel?: 'high' | 'medium' | 'low'
 }
 
 interface ResultsRevealProps {
@@ -238,6 +239,16 @@ export function ResultsReveal({ results, email, basics, profile, scan }: Results
           {results.currentValue === 0 && (
             <p className="text-sm text-muted-foreground mt-3 text-center">
               Your reported expenses may exceed revenue. Accurate financials will improve this estimate.
+            </p>
+          )}
+          {results.confidenceLevel === 'medium' && results.currentValue > 0 && (
+            <p className="text-sm text-muted-foreground mt-3 text-center">
+              Based on available market data for your industry.
+            </p>
+          )}
+          {results.confidenceLevel === 'low' && results.currentValue > 0 && (
+            <p className="text-sm text-muted-foreground mt-3 text-center">
+              As you add more details about your business — especially financials — we&apos;ll be able to provide a more precise estimate of enterprise value.
             </p>
           )}
         </motion.div>

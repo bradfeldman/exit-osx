@@ -1,15 +1,15 @@
 /**
- * Business Classification Engine (PROD-002)
+ * Business Classification Engine (PROD-002, upgraded for dual-taxonomy)
  *
  * Hybrid rules + AI system for classifying businesses from freeform descriptions.
  *
  * Architecture:
  * 1. RULES LAYER: Keyword-based pre-classification for known patterns (fast, deterministic)
- * 2. AI LAYER: Claude Haiku for nuanced classification with explanation
+ * 2. AI LAYER: Claude Sonnet for dual ICB/GICS classification with reference companies
  * 3. FALLBACK: Keyword match if AI fails, then default to Professional Services
  *
  * The classifier returns ICB codes that match the existing industry data hierarchy,
- * ensuring compatibility with the IndustryMultiple table and valuation calculations.
+ * plus optional GICS cross-reference for enhanced accuracy.
  */
 
 import { generateJSON } from '@/lib/ai/anthropic'
@@ -36,12 +36,22 @@ export interface SuggestedMultipleRange {
   revenue: { low: number; mid: number; high: number }
 }
 
+export interface ReferenceCompany {
+  name: string
+  ticker: string
+  whyComparable: string
+}
+
 export interface ClassificationResult {
   primaryIndustry: IndustryClassification
   secondaryIndustry: IndustryClassification | null
   explanation: string
   suggestedMultipleRange: SuggestedMultipleRange
   source: 'ai' | 'keyword' | 'default'
+  // Enhanced fields (may be null for keyword/default fallbacks)
+  referenceCompanies?: ReferenceCompany[]
+  gicsClassification?: { subIndustry: string; sector: string } | null
+  classificationMethod?: 'icb' | 'gics' | 'hybrid'
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────
@@ -58,16 +68,13 @@ const DEFAULT_MULTIPLES: SuggestedMultipleRange = {
 
 interface KeywordRule {
   keywords: string[]
-  /** Weight multiplier for longer keyword matches */
   icbSubSector: string
-  /** Minimum keyword matches required */
   minMatches?: number
 }
 
 /**
  * Deterministic keyword rules for common business types.
  * Ordered by specificity: more specific rules first.
- * Each rule maps a set of keywords to an ICB sub-sector code.
  *
  * These serve as:
  * 1. Fast path for obvious classifications (skips AI call)
@@ -132,10 +139,6 @@ export const KEYWORD_RULES: KeywordRule[] = [
 /**
  * Score a business description against keyword rules.
  * Returns matches sorted by relevance score (highest first).
- *
- * Scoring logic:
- * - Each keyword match adds points equal to the keyword length (longer = more specific)
- * - Multiple keyword matches from the same rule compound the score
  */
 export function scoreKeywordMatches(
   description: string
@@ -160,7 +163,6 @@ export function scoreKeywordMatches(
     }
   }
 
-  // Sort by score descending, deduplicate by icbSubSector (keep highest)
   results.sort((a, b) => b.score - a.score)
 
   const seen = new Set<string>()
@@ -191,19 +193,26 @@ export function classifyByKeywords(
   return { primary, secondary }
 }
 
-// ─── AI Classification ──────────────────────────────────────────────────
+// ─── Enhanced AI Classification (Dual-Taxonomy) ─────────────────────────
 
-interface AIClassificationResponse {
+interface EnhancedAIResponse {
   primarySubSector: string
   primaryConfidence: number
   secondarySubSector: string | null
   secondaryConfidence: number | null
   explanation: string
+  gicsSubIndustry: string | null
+  gicsSector: string | null
+  classificationMethod: 'icb' | 'gics' | 'hybrid'
+  referenceCompanies: Array<{
+    name: string
+    ticker: string
+    whyComparable: string
+  }>
 }
 
 /**
  * Build a compact industry reference for the AI prompt.
- * Groups sub-sectors by their parent industry for context.
  */
 function buildIndustryReference(): string {
   const allIndustries = getFlattenedIndustryOptions()
@@ -225,57 +234,72 @@ function buildIndustryReference(): string {
   return result
 }
 
-const SYSTEM_PROMPT = `You are an industry classification expert for business valuation purposes. You classify SMB (small and medium business) descriptions into the ICB (Industry Classification Benchmark) taxonomy.
+const ENHANCED_SYSTEM_PROMPT = `You are an industry classification expert for business valuation purposes. Your goal is to determine the single most accurate industry classification for an SMB (small and medium business) by considering BOTH the ICB (Industry Classification Benchmark) and GICS (Global Industry Classification Standard) taxonomies together.
 
 Your job:
-1. Read the business description carefully
-2. Select the BEST matching sub-sector from the provided industry list
-3. Optionally select a secondary sub-sector if the business spans multiple industries
-4. Provide a brief explanation of why these classifications were chosen
-5. Assign confidence scores (0.0 to 1.0) based on how well the description matches
+1. Read the business description and annual revenue carefully
+2. Consider both ICB and GICS taxonomies to determine the best fit:
+   - ICB has better granularity for traditional industries (manufacturing, construction, energy, real estate)
+   - GICS has better precision for technology and professional services
+   - Use whichever provides the most accurate classification, cross-referencing with the other for context
+3. Select the BEST matching sub-sector from the provided ICB list (this is the primary output)
+4. Also identify the closest GICS sub-industry for cross-reference
+5. Identify 2-4 real, publicly traded companies comparable in business model (not scale)
+6. Assign a confidence score (0.0 to 1.0)
 
 Guidelines:
-- Choose the most SPECIFIC sub-sector that fits. If a dental supply company, pick MEDICAL_SUPPLIES_SUB, not HEALTHCARE_FACILITIES.
-- Confidence should reflect match quality: 0.9+ for clear fits, 0.6-0.8 for reasonable matches, below 0.6 for uncertain.
-- Only include a secondary classification if the business genuinely spans two industries.
-- Keep the explanation under 100 words, focused on WHY these classifications fit.
-- Return ONLY valid JSON. No markdown code blocks, no extra text.`
+- Choose the most SPECIFIC sub-sector. A dental supply company → MEDICAL_SUPPLIES_SUB, not HEALTHCARE_FACILITIES.
+- Revenue level matters: a $500K landscaping company classifies differently than a $50M facilities management company. Consider the scale when selecting comparables.
+- Reference companies must be REAL publicly traded companies with valid tickers.
+- For GICS, use the standard GICS sub-industry names (e.g., "Environmental & Facilities Services", "Human Resource & Employment Services").
+- classificationMethod: use "icb" if ICB provided the best classification path, "gics" if GICS reasoning drove the decision, "hybrid" if both contributed equally.
+- Keep the explanation under 150 words, focused on the reasoning chain.
+- Return ONLY valid JSON. No markdown code blocks.`
 
 /**
- * Classify a business description using Claude Haiku.
- *
- * Returns structured classification with confidence scores and explanation.
- * Validates AI output against the actual industry hierarchy to prevent hallucinated codes.
+ * Classify using Claude Sonnet with dual ICB/GICS taxonomy.
+ * Revenue-aware for more accurate comparables.
  */
 async function classifyWithAI(
-  description: string
+  description: string,
+  annualRevenue?: number
 ): Promise<{
-  result: AIClassificationResponse
+  result: EnhancedAIResponse
   usage: { inputTokens: number; outputTokens: number }
 }> {
   const industryList = buildIndustryReference()
 
-  const prompt = `Classify this business into the ICB industry taxonomy. Use ONLY sub-sector codes from the list below.
+  const revenueContext = annualRevenue
+    ? `\nANNUAL REVENUE: $${annualRevenue.toLocaleString()}`
+    : ''
+
+  const prompt = `Determine the most accurate industry classification for this business by considering both ICB and GICS taxonomies together. Use whichever provides the best fit, and cross-reference with the other for context. Use ONLY sub-sector codes from the ICB list below for the primary output.
 
 BUSINESS DESCRIPTION:
-"${description}"
+"${description}"${revenueContext}
 
-AVAILABLE SUB-SECTORS:
+AVAILABLE ICB SUB-SECTORS:
 ${industryList}
 
 Return ONLY this JSON structure:
 {
-  "primarySubSector": "EXACT_CODE_FROM_LIST",
+  "primarySubSector": "EXACT_ICB_CODE_FROM_LIST",
   "primaryConfidence": 0.85,
   "secondarySubSector": null,
   "secondaryConfidence": null,
-  "explanation": "Brief explanation of why these classifications fit."
+  "explanation": "Considered both ICB and GICS: ICB sub-sector A fits because... GICS sub-industry B also relevant because... Best classification is A via [icb/gics/hybrid] because...",
+  "gicsSubIndustry": "GICS Sub-Industry Name or null",
+  "gicsSector": "GICS Sector Name or null",
+  "classificationMethod": "icb",
+  "referenceCompanies": [
+    { "name": "Company Name", "ticker": "TICK", "whyComparable": "Similar business model because..." }
+  ]
 }`
 
-  const { data, usage } = await generateJSON<AIClassificationResponse>(prompt, SYSTEM_PROMPT, {
-    model: 'claude-haiku',
-    temperature: 0.3,
-    maxTokens: 512,
+  const { data, usage } = await generateJSON<EnhancedAIResponse>(prompt, ENHANCED_SYSTEM_PROMPT, {
+    model: 'claude-sonnet',
+    temperature: 0.2,
+    maxTokens: 1024,
   })
 
   return { result: data, usage }
@@ -283,10 +307,6 @@ Return ONLY this JSON structure:
 
 // ─── Multiple Range Lookup ──────────────────────────────────────────────
 
-/**
- * Look up suggested multiple ranges from the IndustryMultiple table.
- * Falls back to default ranges if no data is available.
- */
 async function lookupMultipleRange(icbSubSector: string): Promise<SuggestedMultipleRange> {
   try {
     const multiple = await prisma.industryMultiple.findFirst({
@@ -327,7 +347,7 @@ async function lookupMultipleRange(icbSubSector: string): Promise<SuggestedMulti
  *
  * Decision flow:
  * 1. Validate input
- * 2. Try AI classification (Claude Haiku)
+ * 2. Try enhanced AI classification (Claude Sonnet, dual taxonomy)
  * 3. Validate AI output against known industry codes
  * 4. If AI fails, fall back to keyword matching
  * 5. If keywords fail, default to Professional Services
@@ -336,11 +356,12 @@ async function lookupMultipleRange(icbSubSector: string): Promise<SuggestedMulti
  *
  * @param description - Freeform business description (10-1000 chars)
  * @param companyId - Optional company ID for logging
- * @returns Structured classification result with confidence scores
+ * @param annualRevenue - Optional annual revenue for revenue-aware classification
  */
 export async function classifyBusiness(
   description: string,
-  companyId?: string
+  companyId?: string,
+  annualRevenue?: number
 ): Promise<ClassificationResult> {
   // ── Input validation ───────────────────────────────────────────────
   if (!description || typeof description !== 'string') {
@@ -357,12 +378,12 @@ export async function classifyBusiness(
 
   const sanitized = trimmed.slice(0, MAX_DESCRIPTION_LENGTH)
 
-  // ── Try AI classification ──────────────────────────────────────────
+  // ── Try enhanced AI classification ─────────────────────────────────
   const startTime = Date.now()
   let aiError: string | null = null
 
   try {
-    const { result: aiResult, usage } = await classifyWithAI(sanitized)
+    const { result: aiResult, usage } = await classifyWithAI(sanitized, annualRevenue)
 
     // Validate primary classification against known codes
     const primaryOption = getFlattenedOptionBySubSector(aiResult.primarySubSector)
@@ -393,18 +414,27 @@ export async function classifyBusiness(
         }
       }
 
-      // Look up multiples
+      // Validate reference companies (filter out obviously invalid ones)
+      const referenceCompanies = (aiResult.referenceCompanies || [])
+        .filter(c => c.name && c.ticker && c.ticker.length <= 6)
+        .slice(0, 4)
+
       const multipleRange = await lookupMultipleRange(primaryOption.icbSubSector)
 
       // Log to AIGenerationLog
       await logClassification({
         companyId,
         description: sanitized,
+        annualRevenue,
         result: {
           primary: primaryClassification,
           secondary: secondaryClassification,
           explanation: aiResult.explanation,
           source: 'ai',
+          gicsSubIndustry: aiResult.gicsSubIndustry,
+          gicsSector: aiResult.gicsSector,
+          classificationMethod: aiResult.classificationMethod,
+          referenceCompanies,
         },
         usage,
         latencyMs: Date.now() - startTime,
@@ -417,6 +447,11 @@ export async function classifyBusiness(
         explanation: aiResult.explanation || 'Classification based on business description analysis.',
         suggestedMultipleRange: multipleRange,
         source: 'ai',
+        referenceCompanies,
+        gicsClassification: aiResult.gicsSubIndustry
+          ? { subIndustry: aiResult.gicsSubIndustry, sector: aiResult.gicsSector || '' }
+          : null,
+        classificationMethod: aiResult.classificationMethod || 'icb',
       }
     }
   } catch (err) {
@@ -435,10 +470,10 @@ export async function classifyBusiness(
 
     const multipleRange = await lookupMultipleRange(primary.icbSubSector)
 
-    // Log the fallback
     await logClassification({
       companyId,
       description: sanitized,
+      annualRevenue,
       result: {
         primary: primaryClassification,
         secondary: secondaryClassification,
@@ -467,6 +502,7 @@ export async function classifyBusiness(
   await logClassification({
     companyId,
     description: sanitized,
+    annualRevenue,
     result: {
       primary: defaultClassification,
       secondary: null,
@@ -512,11 +548,16 @@ function clampConfidence(value: number): number {
 async function logClassification(params: {
   companyId?: string
   description: string
+  annualRevenue?: number
   result: {
     primary: IndustryClassification
     secondary: IndustryClassification | null
     explanation: string
     source: string
+    gicsSubIndustry?: string | null
+    gicsSector?: string | null
+    classificationMethod?: string
+    referenceCompanies?: ReferenceCompany[]
   }
   usage: { inputTokens: number; outputTokens: number } | null
   latencyMs: number
@@ -527,9 +568,12 @@ async function logClassification(params: {
       data: {
         companyId: params.companyId ?? null,
         generationType: 'business_classification',
-        inputData: { description: params.description },
+        inputData: {
+          description: params.description,
+          ...(params.annualRevenue && { annualRevenue: params.annualRevenue }),
+        },
         outputData: JSON.parse(JSON.stringify(params.result ?? {})),
-        modelUsed: params.usage ? 'claude-3-5-haiku-latest' : null,
+        modelUsed: params.usage ? 'claude-sonnet-4-20250514' : null,
         inputTokens: params.usage?.inputTokens ?? null,
         outputTokens: params.usage?.outputTokens ?? null,
         latencyMs: params.latencyMs,
@@ -537,7 +581,6 @@ async function logClassification(params: {
       },
     })
   } catch (err) {
-    // Logging should never block the classification response
     console.error('[BusinessClassifier] Failed to log classification:', err)
   }
 }

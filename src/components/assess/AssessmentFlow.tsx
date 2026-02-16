@@ -7,8 +7,9 @@ import { BusinessProfileStep, type BusinessProfileData } from './BusinessProfile
 import { BuyerScanStep, type BuyerScanData } from './BuyerScanStep'
 import { ReviewStep } from './ReviewStep'
 import { ResultsReveal, type AssessmentResults } from './ResultsReveal'
+import { CalculatingScreen } from './CalculatingScreen'
 
-export type AssessStep = 'basics' | 'profile' | 'scan' | 'review' | 'results'
+export type AssessStep = 'basics' | 'profile' | 'scan' | 'review' | 'calculating' | 'results'
 
 const STEP_ORDER: AssessStep[] = ['basics', 'profile', 'scan', 'review', 'results']
 
@@ -17,6 +18,7 @@ const STEP_LABELS: Record<AssessStep, string> = {
   profile: 'Profile',
   scan: 'Buyer Scan',
   review: 'Review',
+  calculating: 'Results',
   results: 'Results',
 }
 
@@ -28,7 +30,14 @@ export function AssessmentFlow() {
   const [results, setResults] = useState<AssessmentResults | null>(null)
   const [isCalculating, setIsCalculating] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [classification, setClassification] = useState<{ primaryIndustry: { name: string }; [key: string]: unknown } | null>(null)
+  const [classification, setClassification] = useState<{
+    primaryIndustry: { name: string; icbSubSector: string; icbSector: string; icbSuperSector: string; icbIndustry: string };
+    source: 'ai' | 'keyword' | 'default';
+    [key: string]: unknown;
+  } | null>(null)
+  const [classificationOverride, setClassificationOverride] = useState<{
+    icbIndustry: string; icbSuperSector: string; icbSector: string; icbSubSector: string
+  } | null>(null)
   const [returnToReview, setReturnToReview] = useState(false)
 
   const stepIndex = STEP_ORDER.indexOf(step)
@@ -47,7 +56,7 @@ export function AssessmentFlow() {
     fetch('/api/assess/classify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ description: data.businessDescription }),
+      body: JSON.stringify({ description: data.businessDescription, annualRevenue: data.annualRevenue }),
     })
       .then(res => res.ok ? res.json() : null)
       .then(result => { if (result) setClassification(result) })
@@ -79,6 +88,7 @@ export function AssessmentFlow() {
     if (!basics || !profile || !scan) return
     setIsCalculating(true)
     setError(null)
+    setStep('calculating')
 
     try {
       // Use classification already fetched after Screen 1, or fetch now as fallback
@@ -87,10 +97,26 @@ export function AssessmentFlow() {
         const classifyRes = await fetch('/api/assess/classify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ description: basics.businessDescription }),
+          body: JSON.stringify({ description: basics.businessDescription, annualRevenue: basics.annualRevenue }),
         })
         if (classifyRes.ok) {
           classificationData = await classifyRes.json()
+        }
+      }
+
+      // Apply user override if they changed the industry classification
+      if (classificationOverride && classificationData) {
+        classificationData = {
+          ...classificationData,
+          primaryIndustry: {
+            ...classificationData.primaryIndustry,
+            ...classificationOverride,
+          },
+        }
+      } else if (classificationOverride) {
+        classificationData = {
+          primaryIndustry: { name: '', ...classificationOverride },
+          source: 'ai' as const,
         }
       }
 
@@ -116,10 +142,11 @@ export function AssessmentFlow() {
       setStep('results')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+      setStep('review')
     } finally {
       setIsCalculating(false)
     }
-  }, [basics, profile, scan, classification])
+  }, [basics, profile, scan, classification, classificationOverride])
 
   return (
     <div className="min-h-screen bg-background">
@@ -132,14 +159,14 @@ export function AssessmentFlow() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/wordmark.svg" alt="Exit OSx" width={100} height={28} className="h-6 w-auto" />
           </a>
-          {step !== 'results' && (
+          {step !== 'results' && step !== 'calculating' && (
             <span className="text-sm text-muted-foreground">
               {stepIndex + 1} of {STEP_ORDER.length}
             </span>
           )}
         </div>
         {/* Progress bar */}
-        {step !== 'results' && (
+        {step !== 'results' && step !== 'calculating' && (
           <div className="h-1 bg-muted">
             <motion.div
               className="h-full bg-primary"
@@ -152,7 +179,7 @@ export function AssessmentFlow() {
       </header>
 
       {/* Step label pills */}
-      {step !== 'results' && (
+      {step !== 'results' && step !== 'calculating' && (
         <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-6">
           <div className="flex items-center gap-2 overflow-x-auto pb-2">
             {STEP_ORDER.filter(s => s !== 'results').map((s, i) => (
@@ -192,7 +219,20 @@ export function AssessmentFlow() {
           )}
           {step === 'profile' && (
             <motion.div key="profile" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-              <BusinessProfileStep initialData={profile} onComplete={handleProfileComplete} onBack={() => setStep('basics')} industryName={classification?.primaryIndustry?.name ?? null} />
+              <BusinessProfileStep
+                initialData={profile}
+                onComplete={handleProfileComplete}
+                onBack={() => setStep('basics')}
+                industryName={classification?.primaryIndustry?.name ?? null}
+                classificationSource={classification?.source as 'ai' | 'keyword' | 'default' | undefined ?? undefined}
+                classificationValue={classificationOverride ?? (classification ? {
+                  icbIndustry: classification.primaryIndustry.icbIndustry,
+                  icbSuperSector: classification.primaryIndustry.icbSuperSector,
+                  icbSector: classification.primaryIndustry.icbSector,
+                  icbSubSector: classification.primaryIndustry.icbSubSector,
+                } : undefined)}
+                onClassificationChange={setClassificationOverride}
+              />
             </motion.div>
           )}
           {step === 'scan' && (
@@ -211,6 +251,11 @@ export function AssessmentFlow() {
                 isCalculating={isCalculating}
                 onBack={() => setStep('scan')}
               />
+            </motion.div>
+          )}
+          {step === 'calculating' && (
+            <motion.div key="calculating" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <CalculatingScreen companyName={basics?.companyName} />
             </motion.div>
           )}
           {step === 'results' && results && basics && (

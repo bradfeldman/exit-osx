@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, ArrowLeft, Building2 } from 'lucide-react'
+import { IndustryCombobox } from '@/components/company/IndustryCombobox'
+import { ArrowRight, ArrowLeft, Building2, AlertCircle } from 'lucide-react'
 
 export interface BusinessProfileData {
   revenueModel: string
@@ -81,16 +82,29 @@ const PROFILE_QUESTIONS: ProfileQuestion[] = [
   },
 ]
 
+interface ClassificationValue {
+  icbIndustry: string
+  icbSuperSector: string
+  icbSector: string
+  icbSubSector: string
+}
+
 interface BusinessProfileStepProps {
   initialData: BusinessProfileData | null
   onComplete: (data: BusinessProfileData) => void
   onBack: () => void
   industryName?: string | null
+  classificationSource?: 'ai' | 'keyword' | 'default'
+  classificationValue?: ClassificationValue
+  onClassificationChange?: (value: ClassificationValue) => void
 }
 
-export function BusinessProfileStep({ initialData, onComplete, onBack, industryName }: BusinessProfileStepProps) {
+export function BusinessProfileStep({ initialData, onComplete, onBack, industryName, classificationSource, classificationValue, onClassificationChange }: BusinessProfileStepProps) {
   const [answers, setAnswers] = useState<Partial<BusinessProfileData>>(initialData || {})
   const [error, setError] = useState<string | null>(null)
+
+  const classificationFailed = classificationSource === 'default' || (!classificationSource && !industryName)
+  const hasClassification = !!industryName && !classificationFailed
 
   const handleSelect = (key: keyof BusinessProfileData, value: string) => {
     setAnswers(prev => ({ ...prev, [key]: value }))
@@ -98,6 +112,11 @@ export function BusinessProfileStep({ initialData, onComplete, onBack, industryN
   }
 
   const handleSubmit = () => {
+    // If classification failed and user hasn't selected an industry, require it
+    if (classificationFailed && !classificationValue?.icbSubSector) {
+      setError('Please select your industry above so we can provide the most accurate valuation.')
+      return
+    }
     const missing = PROFILE_QUESTIONS.filter(q => !answers[q.key])
     if (missing.length > 0) {
       setError(`Please answer all questions (${missing.length} remaining)`)
@@ -126,16 +145,36 @@ export function BusinessProfileStep({ initialData, onComplete, onBack, industryN
         </p>
       </div>
 
-      {industryName && (
-        <div className="flex items-start gap-3 p-4 rounded-lg bg-primary/5 border border-primary/15">
-          <Building2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-          <div className="text-sm">
-            <span className="text-muted-foreground">Based on your description, we identified your industry as </span>
-            <span className="font-semibold text-foreground">{industryName}</span>
-            <span className="text-muted-foreground">. The questions below are framed relative to your industry so we can understand what makes <em>your</em> business unique.</span>
+      {/* Industry Classification */}
+      {hasClassification ? (
+        <div className="space-y-3">
+          <div className="flex items-start gap-3 p-4 rounded-lg bg-primary/5 border border-primary/15">
+            <Building2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+            <div className="text-sm">
+              <span className="text-muted-foreground">We identified your industry as </span>
+              <span className="font-semibold text-foreground">{industryName}</span>
+              <span className="text-muted-foreground">. You can change this if needed.</span>
+            </div>
           </div>
+          <IndustryCombobox
+            value={classificationValue}
+            onSelect={(selection) => onClassificationChange?.(selection)}
+          />
         </div>
-      )}
+      ) : classificationFailed ? (
+        <div className="space-y-3">
+          <div className="flex items-start gap-3 p-4 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
+            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-foreground">
+              Please select your industry so we can provide the most accurate valuation.
+            </div>
+          </div>
+          <IndustryCombobox
+            value={classificationValue}
+            onSelect={(selection) => onClassificationChange?.(selection)}
+          />
+        </div>
+      ) : null}
 
       <div className="space-y-8">
         {PROFILE_QUESTIONS.map((q, qi) => (

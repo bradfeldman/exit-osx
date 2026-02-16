@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
-import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
+import { checkPermission, isAuthError, type AuthSuccess } from '@/lib/auth/check-permission'
 import { formatIcbName } from '@/lib/utils/format-icb'
 import {
   calculateCoreScore as calculateCoreScoreShared,
@@ -997,6 +997,87 @@ export async function GET(
           multipleBasedValue,
           divergenceRatio,
           confidenceSignal,
+        }
+      })(),
+      // Since-last-visit events
+      sinceLastVisit: await (async () => {
+        try {
+          const userId = (result as AuthSuccess).auth.user.id
+          const lastSession = await prisma.userSession.findFirst({
+            where: { userId, revokedAt: null },
+            orderBy: { lastActiveAt: 'desc' },
+            select: { lastActiveAt: true },
+          })
+          if (!lastSession) return []
+
+          const sinceDate = lastSession.lastActiveAt
+          const events: Array<{ type: string; message: string; date: string }> = []
+
+          // Market multiple changes since last visit
+          const marketSignals = await prisma.signal.findMany({
+            where: {
+              companyId,
+              eventType: 'MARKET_MULTIPLE_CHANGE',
+              createdAt: { gt: sinceDate },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 3,
+            select: { title: true, createdAt: true },
+          })
+          for (const s of marketSignals) {
+            events.push({ type: 'market', message: s.title, date: s.createdAt.toISOString() })
+          }
+
+          // New valuation snapshots since last visit
+          const newSnapshots = await prisma.valuationSnapshot.findMany({
+            where: {
+              companyId,
+              createdAt: { gt: sinceDate },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 2,
+            select: { snapshotReason: true, createdAt: true },
+          })
+          for (const snap of newSnapshots) {
+            const label = getAnnotationLabel(snap.snapshotReason)
+            if (label) {
+              events.push({ type: 'valuation', message: label, date: snap.createdAt.toISOString() })
+            }
+          }
+
+          // Drift alerts since last visit
+          const driftSignals = await prisma.signal.findMany({
+            where: {
+              companyId,
+              eventType: 'DRIFT_DETECTED',
+              createdAt: { gt: sinceDate },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 2,
+            select: { title: true, createdAt: true },
+          })
+          for (const s of driftSignals) {
+            events.push({ type: 'drift', message: s.title, date: s.createdAt.toISOString() })
+          }
+
+          // Sort by date desc, limit to 3
+          events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+          return events.slice(0, 3)
+        } catch {
+          return []
+        }
+      })(),
+      lastVisitAt: await (async () => {
+        try {
+          const userId = (result as AuthSuccess).auth.user.id
+          const lastSession = await prisma.userSession.findFirst({
+            where: { userId, revokedAt: null },
+            orderBy: { lastActiveAt: 'desc' },
+            select: { lastActiveAt: true },
+          })
+          return lastSession?.lastActiveAt?.toISOString() ?? null
+        } catch {
+          return null
         }
       })(),
       // Re-assessment trigger data

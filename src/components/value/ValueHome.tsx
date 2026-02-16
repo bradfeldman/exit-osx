@@ -26,6 +26,7 @@ import { UpgradeModal } from '@/components/subscription/UpgradeModal'
 import { PlatformTour } from './PlatformTour'
 import { Compass } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { SinceLastVisitBanner } from './SinceLastVisitBanner'
 import type { CoreFactors } from '@/lib/valuation/calculate-valuation'
 
 interface DashboardData {
@@ -122,6 +123,8 @@ interface DashboardData {
   } | null
   coreFactors: (CoreFactors & { coreScore: number | null }) | null
   hasAssessment: boolean
+  sinceLastVisit?: Array<{ type: string; message: string; date: string }>
+  lastVisitAt?: string | null
 }
 
 export function ValueHome() {
@@ -203,6 +206,7 @@ export function ValueHome() {
           Tour
         </Button>
       </div>
+      <SinceLastVisitBanner events={data.sinceLastVisit ?? []} lastVisitAt={data.lastVisitAt ?? null} />
       <AnimatedStagger className="space-y-8" staggerDelay={0.15}>
         {/* Check-In: show only ONE at a time — Weekly takes priority over Quick Check */}
         {hasFullAssessment && (
