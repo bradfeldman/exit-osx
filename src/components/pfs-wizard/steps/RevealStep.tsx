@@ -75,17 +75,20 @@ function AnimatedCounter({
   )
 }
 
+// Pre-generate confetti particle randomness outside render
+const CONFETTI_COLORS = ['#B87333', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6']
+const CONFETTI_PARTICLES = Array.from({ length: 30 }, (_, i) => ({
+  id: i,
+  color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+  angle: (i * 12) + (((i * 7 + 3) % 10)),
+  velocity: 300 + ((i * 13 + 5) % 200),
+  size: 6 + ((i * 3 + 1) % 6),
+  rotation: (i * 37) % 360,
+}))
+
 // CSS-based confetti burst
 function ConfettiBurst() {
-  const colors = ['#B87333', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6']
-  const particles = Array.from({ length: 30 }, (_, i) => ({
-    id: i,
-    color: colors[i % colors.length],
-    angle: (i * 12) + Math.random() * 10,
-    velocity: 300 + Math.random() * 200,
-    size: 6 + Math.random() * 6,
-    rotation: Math.random() * 360,
-  }))
+  const particles = CONFETTI_PARTICLES
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
