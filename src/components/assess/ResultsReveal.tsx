@@ -278,6 +278,9 @@ export function ResultsReveal({ results, email, basics, profile, scan }: Results
               <h3 className="text-xl font-semibold text-foreground">Account Created!</h3>
               <p className="text-muted-foreground">
                 Check your email for a verification link to access your full dashboard.
+                <span className="block text-sm mt-1 text-muted-foreground/70">
+                  Not seeing it? Check your Updates or Spam folder.
+                </span>
               </p>
               <Button asChild size="lg" className="mt-2">
                 <Link href="/login">Go to Login</Link>

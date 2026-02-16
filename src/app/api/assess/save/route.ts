@@ -240,7 +240,7 @@ export async function POST(request: Request) {
       success: true,
       companyId: dbResult.company.id,
       userId: dbResult.user.id,
-      _debug: { magicLinkStatus },
+      // _debug: { magicLinkStatus },
     })
   } catch (err) {
     console.error('[assess/save] Error:', err instanceof Error ? err.message : String(err))
