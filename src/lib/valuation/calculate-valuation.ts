@@ -114,7 +114,7 @@ export interface ValuationResult {
  *    - High BRI = minimal discount, Low BRI = significant discount
  *
  * 4. currentValue = adjustedEbitda × finalMultiple
- * 5. potentialValue = adjustedEbitda × baseMultiple (assumes perfect BRI)
+ * 5. potentialValue = adjustedEbitda × industryMultipleHigh (industry ceiling)
  * 6. valueGap = potentialValue - currentValue
  *
  * @param inputs - The valuation calculation inputs
@@ -153,7 +153,8 @@ export function calculateValuation(inputs: ValuationInputs): ValuationResult {
 
   // Step 4-6: Calculate values
   const currentValue = adjustedEbitda * finalMultiple
-  const potentialValue = adjustedEbitda * baseMultiple
+  // Potential value = industry max multiple × EBITDA (best-case for your industry)
+  const potentialValue = adjustedEbitda * industryMultipleHigh
   const valueGap = potentialValue - currentValue
 
   return {

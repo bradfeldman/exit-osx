@@ -176,7 +176,8 @@ export function calculateRevenueBasedValuation(
 
   // Calculate valuations
   const currentValue = revenue * finalMultiple
-  const potentialValue = revenue * baseMultiple
+  // Potential value = industry max multiple × revenue (best-case for your industry)
+  const potentialValue = revenue * revenueMultipleHigh
   const valueGap = potentialValue - currentValue
 
   return {

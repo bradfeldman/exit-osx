@@ -246,9 +246,9 @@ export async function recalculateSnapshotForCompany(
     // Calculate valuations
     // Current value uses current EBITDA with BRI-discounted multiple (from shared utility)
     const currentValue = valuation.currentValue
-    // Potential value uses improved EBITDA with full base multiple (no BRI discount)
-    // This differs from the basic formula because it considers EBITDA improvement potential
-    const potentialValue = potentialEbitda * baseMultiple
+    // Potential value = improved EBITDA × industry max multiple (industry ceiling)
+    // Uses potentialEbitda (accounts for BRI-driven EBITDA improvements) × industryMultipleHigh
+    const potentialValue = potentialEbitda * industryMultipleHigh
     const valueGap = potentialValue - currentValue
 
     // Helper to get category score (uses imported utility)

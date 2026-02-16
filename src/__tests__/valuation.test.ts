@@ -1120,7 +1120,7 @@ describe('Valuation Calculations', () => {
       expect(result.currentValue).toBeGreaterThan(linearCurrent)
     })
 
-    it('Bug #2: potentialValue should be EBITDA * baseMultiple (not multipleHigh when core < 1)', () => {
+    it('Bug #2: potentialValue should be EBITDA * industryMultipleHigh (industry ceiling)', () => {
       const result = calculateValuation({
         adjustedEbitda: 150000,
         industryMultipleLow: 3.0,
@@ -1131,10 +1131,8 @@ describe('Valuation Calculations', () => {
 
       // baseMultiple = 3.0 + 0.7 * 3.0 = 5.1
       expect(result.baseMultiple).toBeCloseTo(5.1, 4)
-      // potentialValue = EBITDA * baseMultiple (NOT multipleHigh)
-      expect(result.potentialValue).toBeCloseTo(150000 * 5.1, 0)
-      // With coreScore < 1.0, potentialValue should be LESS than EBITDA * multipleHigh
-      expect(result.potentialValue).toBeLessThan(150000 * 6.0)
+      // potentialValue = EBITDA * industryMultipleHigh (industry best-case)
+      expect(result.potentialValue).toBeCloseTo(150000 * 6.0, 0)
     })
 
     it('Bug #3: Core Score uses 5 factors (not 6) even when revenueSizeCategory is present in data', () => {
@@ -1586,11 +1584,12 @@ describe('Valuation Calculations', () => {
         briScore: 0.7,
       })
 
-      // Higher core score = higher valuation
+      // Higher core score = higher current valuation
       expect(highValuation.currentValue).toBeGreaterThan(lowValuation.currentValue)
       expect(highValuation.baseMultiple).toBeGreaterThan(lowValuation.baseMultiple)
       expect(highValuation.finalMultiple).toBeGreaterThan(lowValuation.finalMultiple)
-      expect(highValuation.potentialValue).toBeGreaterThan(lowValuation.potentialValue)
+      // Potential value is industry ceiling (same regardless of core score)
+      expect(highValuation.potentialValue).toBe(lowValuation.potentialValue)
     })
   })
 
@@ -1847,7 +1846,8 @@ describe('Valuation Calculations', () => {
       // Server produces correct values
       const expectedBase = multipleLow + coreScore * (multipleHigh - multipleLow)
       expect(serverResult.baseMultiple).toBeCloseTo(expectedBase, 6)
-      expect(serverResult.potentialValue).toBeCloseTo(adjustedEbitda * expectedBase, 0)
+      // potentialValue = EBITDA × industryMultipleHigh (industry ceiling)
+      expect(serverResult.potentialValue).toBeCloseTo(adjustedEbitda * multipleHigh, 0)
       expect(serverResult.currentValue).toBeLessThanOrEqual(serverResult.potentialValue)
       expect(serverResult.valueGap).toBeGreaterThanOrEqual(0)
     })
