@@ -339,7 +339,7 @@ export const dcfAssumptionsSchema = z.object({
     z.array(z.coerce.number().finite()),
   ]).optional().nullable(),
   terminalMethod: z.enum(['gordon', 'exit_multiple']).optional().nullable(),
-  perpetualGrowthRate: z.coerce.number().finite().min(0).max(1).optional().nullable(),
+  perpetualGrowthRate: z.coerce.number().finite().min(0).max(0.10).optional().nullable(),
   exitMultiple: z.coerce.number().finite().min(0).max(100).optional().nullable(),
   calculatedWACC: z.coerce.number().finite().min(0).max(1).optional().nullable(),
   enterpriseValue: optionalFinancialAmount,

@@ -576,11 +576,13 @@ export async function GET(
         briScore: snapshotBriScore,
       })
 
-      const currentValueForBridge = dcfEnterpriseValue ?? recalculated.currentValue
+      // Bridge uses blended value (midpoint) when DCF is available
+      const multipleBasedForBridge = recalculated.currentValue
+      const currentValueForBridge = dcfEnterpriseValue
+        ? (multipleBasedForBridge + dcfEnterpriseValue) / 2
+        : multipleBasedForBridge
       const industryBasedPotential = adjustedEbitda * effectiveMultipleHigh
-      const potentialValueForBridge = useDCF && currentValueForBridge > industryBasedPotential
-        ? currentValueForBridge
-        : industryBasedPotential
+      const potentialValueForBridge = industryBasedPotential
       const totalValueGap = Math.max(0, potentialValueForBridge - currentValueForBridge)
 
       if (totalValueGap <= 0) return []
@@ -768,24 +770,28 @@ export async function GET(
             briScore: snapshotBriScore,
           })
 
-          // If using DCF, use that value and calculate implied multiple
-          // Otherwise, use EBITDA x recalculated multiple
-          const currentValueRaw = dcfEnterpriseValue ?? recalculated.currentValue
-          const currentValue = Math.max(0, currentValueRaw)
-          const impliedMultiple = dcfImpliedMultiple ?? recalculated.finalMultiple
+          // Enterprise Value: when DCF is enabled, blend as midpoint of EBITDA-multiple and DCF
+          // rather than using DCF as standalone (QA: DCF should not be standalone selection method)
+          const multipleBasedValue = recalculated.currentValue
           const industryBasedPotential = adjustedEbitda * effectiveMultipleHigh
 
-          // When DCF value exceeds industry-based potential, show DCF as both current and potential
-          // This prevents the confusing situation where "potential" < "current"
-          const potentialValueRaw = useDCF && currentValue > industryBasedPotential
-            ? currentValue
-            : industryBasedPotential
-          const potentialValue = Math.max(0, potentialValueRaw)
+          let currentValue: number
+          let impliedMultiple: number
+          if (dcfEnterpriseValue && dcfEnterpriseValue > 0) {
+            // Midpoint blend of EBITDA-multiple and DCF enterprise values
+            currentValue = Math.max(0, (multipleBasedValue + dcfEnterpriseValue) / 2)
+            impliedMultiple = adjustedEbitda > 0 ? currentValue / adjustedEbitda : recalculated.finalMultiple
+          } else {
+            currentValue = Math.max(0, multipleBasedValue)
+            impliedMultiple = recalculated.finalMultiple
+          }
+
+          const potentialValue = Math.max(0, industryBasedPotential)
 
           // Value gap: positive when below potential, zero when at or above
           const valueGap = Math.max(0, potentialValue - currentValue)
-          // Market premium: positive when DCF exceeds industry max (indicates premium valuation)
-          const marketPremium = useDCF ? Math.max(0, currentValue - industryBasedPotential) : 0
+          // Market premium: positive when blended value exceeds industry max
+          const marketPremium = dcfEnterpriseValue ? Math.max(0, currentValue - industryBasedPotential) : 0
 
           return {
             currentValue,
@@ -806,22 +812,26 @@ export async function GET(
           }
         } else {
           // No snapshot - estimate values based on industry multiples (or overrides)
-          // Still respect DCF value if enabled
-          const currentValueRaw = dcfEnterpriseValue ?? (adjustedEbitda * estimatedMultiple)
-          const currentValue = Math.max(0, currentValueRaw)
-          const impliedMultiple = dcfImpliedMultiple ?? estimatedMultiple
+          // When DCF exists, blend as midpoint with EBITDA-multiple estimate
+          const multipleBasedValue = adjustedEbitda * estimatedMultiple
           const industryBasedPotential = adjustedEbitda * multipleHigh
 
-          // When DCF value exceeds industry-based potential, show DCF as both current and potential
-          const potentialValueRaw = useDCF && currentValue > industryBasedPotential
-            ? currentValue
-            : industryBasedPotential
-          const potentialValue = Math.max(0, potentialValueRaw)
+          let currentValue: number
+          let impliedMultiple: number
+          if (dcfEnterpriseValue && dcfEnterpriseValue > 0) {
+            currentValue = Math.max(0, (multipleBasedValue + dcfEnterpriseValue) / 2)
+            impliedMultiple = adjustedEbitda > 0 ? currentValue / adjustedEbitda : estimatedMultiple
+          } else {
+            currentValue = Math.max(0, multipleBasedValue)
+            impliedMultiple = estimatedMultiple
+          }
+
+          const potentialValue = Math.max(0, industryBasedPotential)
 
           // Value gap: positive when below potential, zero when at or above
           const valueGap = Math.max(0, potentialValue - currentValue)
-          // Market premium: positive when DCF exceeds industry max (indicates premium valuation)
-          const marketPremium = useDCF ? Math.max(0, currentValue - industryBasedPotential) : 0
+          // Market premium: positive when blended value exceeds industry max
+          const marketPremium = dcfEnterpriseValue ? Math.max(0, currentValue - industryBasedPotential) : 0
 
           return {
             currentValue,
@@ -836,7 +846,7 @@ export async function GET(
               high: multipleHigh,
             },
             industryName: buildIndustryPath(company),
-            isEstimated: !useDCF,
+            isEstimated: !dcfEnterpriseValue,
             useDCFValue: useDCF,
             hasCustomMultiples: hasMultipleOverride,
           }

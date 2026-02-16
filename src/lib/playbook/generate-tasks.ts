@@ -18,31 +18,82 @@ type NumberLike = string | number | { toString(): string }
 type IssueTier = 'CRITICAL' | 'SIGNIFICANT' | 'OPTIMIZATION'
 
 /**
- * Helper function to create TaskSubStep records from richDescription.subTasks
+ * Default atomic sub-steps by action type.
+ * Every task gets actionable sub-steps: upload, write, connect, or validate.
  */
-async function createSubStepsForTask(taskId: string, richDescription: unknown) {
-  if (!hasRichDescription(richDescription)) return
+const DEFAULT_SUBSTEPS_BY_ACTION: Record<string, string[]> = {
+  TYPE_I_EVIDENCE: [
+    'Gather the required source documents',
+    'Upload documents to Evidence page',
+    'Verify uploaded documents are current and complete',
+  ],
+  TYPE_II_DOCUMENTATION: [
+    'Draft the required document or policy',
+    'Review with relevant stakeholders',
+    'Upload final version to Evidence page',
+  ],
+  TYPE_III_OPERATIONAL: [
+    'Identify the specific operational gap',
+    'Implement the operational change',
+    'Document the new process or procedure',
+    'Validate the change is working as expected',
+  ],
+  TYPE_IV_INSTITUTIONALIZE: [
+    'Document current owner-dependent process',
+    'Assign and train a delegate or team member',
+    'Validate the process runs without owner involvement',
+  ],
+  TYPE_V_RISK_REDUCTION: [
+    'Identify and quantify the specific risk',
+    'Implement the mitigation strategy',
+    'Document the risk reduction for buyer diligence',
+  ],
+  TYPE_VI_ALIGNMENT: [
+    'Review current state against buyer expectations',
+    'Make the required alignment changes',
+    'Upload supporting evidence or documentation',
+  ],
+  TYPE_VII_READINESS: [
+    'Assess current readiness state',
+    'Complete the readiness preparation steps',
+    'Validate readiness with a review or checklist',
+  ],
+  TYPE_VIII_SIGNALING: [
+    'Identify the key signal to communicate',
+    'Prepare the supporting materials',
+    'Upload evidence that demonstrates the signal',
+  ],
+}
 
-  const rd = richDescription as RichTaskDescription
-  if (!rd.subTasks || rd.subTasks.length === 0) return
+/**
+ * Helper function to create TaskSubStep records from richDescription.subTasks
+ * Falls back to action-type-based atomic sub-steps when no rich description exists
+ */
+async function createSubStepsForTask(taskId: string, richDescription: unknown, actionType?: string) {
+  let subStepsToCreate: Array<{ taskId: string; title: string; order: number }> = []
 
-  const subStepsToCreate: Array<{ taskId: string; title: string; order: number }> = []
-  let orderIndex = 0
+  if (hasRichDescription(richDescription)) {
+    const rd = richDescription as RichTaskDescription
+    if (rd.subTasks && rd.subTasks.length > 0) {
+      let orderIndex = 0
+      for (const group of rd.subTasks) {
+        for (const item of group.items) {
+          subStepsToCreate.push({ taskId, title: item, order: orderIndex++ })
+        }
+      }
+    }
+  }
 
-  for (const group of rd.subTasks) {
-    for (const item of group.items) {
-      subStepsToCreate.push({
-        taskId,
-        title: item,
-        order: orderIndex++,
-      })
+  // Fallback: generate default atomic sub-steps from action type
+  if (subStepsToCreate.length === 0 && actionType) {
+    const defaults = DEFAULT_SUBSTEPS_BY_ACTION[actionType]
+    if (defaults) {
+      subStepsToCreate = defaults.map((title, i) => ({ taskId, title, order: i }))
     }
   }
 
   if (subStepsToCreate.length > 0) {
-    await prisma.taskSubStep.createMany({
-      data: subStepsToCreate,
-    })
+    await prisma.taskSubStep.createMany({ data: subStepsToCreate })
   }
 }
 
@@ -307,10 +358,8 @@ export async function generateTasksForCompany(
         },
       })
 
-      // Create sub-steps if richDescription has subTasks
-      if (task.richDescription) {
-        await createSubStepsForTask(newTask.id, task.richDescription)
-      }
+      // Create sub-steps from richDescription or default atomic steps by action type
+      await createSubStepsForTask(newTask.id, task.richDescription, task.actionType)
 
       created++
     } catch (error) {

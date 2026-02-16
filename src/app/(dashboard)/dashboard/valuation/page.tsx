@@ -557,7 +557,7 @@ export default function ValuationPage() {
           <Card className={useDCFValue ? 'border-primary/50 bg-primary/5' : ''}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-medium">Use DCF for Valuation</CardTitle>
+                <CardTitle className="text-base font-medium">Include DCF in Valuation</CardTitle>
                 <Switch
                   checked={useDCFValue}
                   onCheckedChange={handleDcfToggleChange}
@@ -566,8 +566,8 @@ export default function ValuationPage() {
               </div>
               <CardDescription>
                 {useDCFValue
-                  ? 'DCF enterprise value is being used across the platform'
-                  : 'Using EBITDA multiple-based valuation (default)'}
+                  ? 'Enterprise value is blended: midpoint of EBITDA-multiple and DCF methods'
+                  : 'Using EBITDA multiple-based valuation only'}
               </CardDescription>
             </CardHeader>
             {useDCFValue && dcfResults && (
@@ -576,13 +576,12 @@ export default function ValuationPage() {
                   <div className="flex items-start gap-2 text-sm">
                     <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                     <div className="text-muted-foreground">
-                      <p className="font-medium text-foreground mb-1">This DCF value will be used for:</p>
+                      <p className="font-medium text-foreground mb-1">Blended valuation uses the midpoint of:</p>
                       <ul className="list-disc list-inside space-y-0.5">
-                        <li>Dashboard Scorecard company value</li>
-                        <li>Personal Financial Statement business assets</li>
-                        <li>Retirement Calculator business value</li>
-                        <li>Business Loan collateral calculations</li>
+                        <li>EBITDA multiple-based value (BRI-adjusted)</li>
+                        <li>DCF enterprise value (cash flow-based)</li>
                       </ul>
+                      <p className="mt-1.5 text-xs">This triangulated value flows to all platform modules.</p>
                     </div>
                   </div>
                   <div className="text-sm pt-2 border-t border-primary/20">

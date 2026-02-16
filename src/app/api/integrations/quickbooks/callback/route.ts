@@ -5,6 +5,7 @@ import { exchangeCodeForTokens, getCompanyInfo } from '@/lib/integrations/quickb
 import { syncQuickBooksData } from '@/lib/integrations/quickbooks/sync'
 import { verifySignedOAuthState } from '@/lib/security/oauth-state'
 import { encryptToken } from '@/lib/security/token-encryption'
+import { alertIntegrationFailure } from '@/lib/observability/slack-alerts'
 
 // GET - OAuth callback handler
 export async function GET(request: NextRequest) {
@@ -162,6 +163,7 @@ export async function GET(request: NextRequest) {
     // which may contain token data from the OAuth exchange.
     const errMsg = error instanceof Error ? error.message : 'Unknown error'
     console.error('[QuickBooks] Callback error:', errMsg)
+    alertIntegrationFailure('QuickBooks', error, { stage: 'oauth_callback' })
     // Pass a user-safe error detail via query param (truncated, no secrets)
     const safeDetail = encodeURIComponent(errMsg.slice(0, 200))
     return NextResponse.redirect(

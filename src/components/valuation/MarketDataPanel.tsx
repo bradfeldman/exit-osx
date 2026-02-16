@@ -11,6 +11,7 @@ import {
 import { formatPercent, formatCurrency } from '@/lib/valuation/dcf-calculator'
 import { Settings2, RotateCcw } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { RISK_FREE_RATE, EQUITY_RISK_PREMIUM, EBITDA_TIERS } from '@/lib/valuation/wacc-defaults'
 
 interface MarketDataPanelProps {
   industryBetaLow?: number
@@ -28,23 +29,15 @@ interface MarketDataPanelProps {
   workingCapital?: { t12: number | null; lastFY: number | null; threeYearAvg: number | null } | null
 }
 
-// Market data as of January 2026
+// Market data sourced from wacc-defaults.ts (single source of truth)
+// Sources: FRED (10Y Treasury), Duff & Phelps / Kroll (ERP), Pepperdine (Size Premium)
 const MARKET_DATA = {
-  riskFreeRate: 0.0425, // 10-Year Treasury ~4.24-4.26%
-  riskFreeRateRange: { low: 0.0424, high: 0.0426 },
-  marketRiskPremium: { low: 0.043, high: 0.06 }, // 4.3% - 6.0%
-  sizeRiskPremiumByRevenue: [
-    { tier: 'Under $5M', premium: 0.06 },
-    { tier: '$5M - $25M', premium: 0.04 },
-    { tier: '$25M - $100M', premium: 0.025 },
-    { tier: '$100M - $500M', premium: 0.015 },
-    { tier: 'Over $500M', premium: 0.0 },
-  ],
-  lastUpdated: new Date().toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }),
+  riskFreeRate: RISK_FREE_RATE,
+  marketRiskPremium: EQUITY_RISK_PREMIUM,
+  sizeRiskPremiumByEbitda: EBITDA_TIERS.filter(t => t.label !== 'Enterprise').map(t => ({
+    tier: t.label,
+    premium: (t.sizeRiskPremium.low + t.sizeRiskPremium.high) / 2,
+  })),
 }
 
 // Clean number input component
@@ -159,7 +152,7 @@ export function MarketDataPanel({
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium text-gray-900 flex items-center justify-between">
             <span>Market Data</span>
-            <span className="text-xs font-normal text-gray-500">WSJ / Federal Reserve</span>
+            <span className="text-xs font-normal text-gray-500">FRED / Kroll / Pepperdine</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
@@ -174,18 +167,17 @@ export function MarketDataPanel({
 
             {/* Market Risk Premium */}
             <div className="flex justify-between items-center py-1 border-b border-gray-100">
-              <span className="text-sm text-gray-600">Market Risk Premium</span>
+              <span className="text-sm text-gray-600">Equity Risk Premium</span>
               <span className="text-sm font-medium text-gray-900">
-                {formatPercent(MARKET_DATA.marketRiskPremium.low)} -{' '}
-                {formatPercent(MARKET_DATA.marketRiskPremium.high)}
+                {formatPercent(MARKET_DATA.marketRiskPremium)}
               </span>
             </div>
 
             {/* Size Risk Premium */}
             <div className="py-1">
-              <span className="text-sm text-gray-600 block mb-2">Size Risk Premium (by Revenue)</span>
+              <span className="text-sm text-gray-600 block mb-2">Size Risk Premium (by EBITDA)</span>
               <div className="space-y-1 pl-2">
-                {MARKET_DATA.sizeRiskPremiumByRevenue.map((tier) => (
+                {MARKET_DATA.sizeRiskPremiumByEbitda.map((tier) => (
                   <div key={tier.tier} className="flex justify-between text-xs">
                     <span className="text-gray-500">{tier.tier}</span>
                     <span className="font-medium text-gray-700">{formatPercent(tier.premium)}</span>
@@ -196,7 +188,7 @@ export function MarketDataPanel({
           </div>
 
           <div className="mt-3 pt-2 border-t border-gray-100">
-            <span className="text-xs text-gray-400">Last updated: {MARKET_DATA.lastUpdated}</span>
+            <span className="text-xs text-gray-400">Source: wacc-defaults.ts — validated Feb 2026</span>
           </div>
         </CardContent>
       </Card>
@@ -346,33 +338,6 @@ export function MarketDataPanel({
             )}
           </div>
 
-          {/* Working Capital */}
-          {workingCapital && (workingCapital.t12 != null || workingCapital.lastFY != null || workingCapital.threeYearAvg != null) && (
-            <div className="pt-3 mt-3 border-t border-gray-100">
-              <span className="text-sm text-gray-600 block mb-2">Working Capital</span>
-              <div className="space-y-1 pl-2">
-                {workingCapital.t12 != null && (
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">Trailing 12 Months</span>
-                    <span className="font-medium text-gray-700">{formatCurrency(workingCapital.t12)}</span>
-                  </div>
-                )}
-                {workingCapital.lastFY != null && (
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">Last Fiscal Year</span>
-                    <span className="font-medium text-gray-700">{formatCurrency(workingCapital.lastFY)}</span>
-                  </div>
-                )}
-                {workingCapital.threeYearAvg != null && (
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">3-Year Average</span>
-                    <span className="font-medium text-gray-700">{formatCurrency(workingCapital.threeYearAvg)}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
           <div className="mt-3 pt-2 border-t border-gray-100">
             <span className="text-xs text-gray-400">
               Source: {hasOverride ? 'Custom' : industrySource}
@@ -380,6 +345,42 @@ export function MarketDataPanel({
           </div>
         </CardContent>
       </Card>
+
+      {/* Working Capital — separate from Industry Benchmarks (QA: was incorrectly grouped) */}
+      {workingCapital && (workingCapital.t12 != null || workingCapital.lastFY != null || workingCapital.threeYearAvg != null) && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-gray-900">
+              Working Capital
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-2">
+              {workingCapital.t12 != null && (
+                <div className="flex justify-between items-center py-1 border-b border-gray-100">
+                  <span className="text-sm text-gray-600">Trailing 12 Months</span>
+                  <span className="text-sm font-medium text-gray-900">{formatCurrency(workingCapital.t12)}</span>
+                </div>
+              )}
+              {workingCapital.lastFY != null && (
+                <div className="flex justify-between items-center py-1 border-b border-gray-100">
+                  <span className="text-sm text-gray-600">Last Fiscal Year</span>
+                  <span className="text-sm font-medium text-gray-900">{formatCurrency(workingCapital.lastFY)}</span>
+                </div>
+              )}
+              {workingCapital.threeYearAvg != null && (
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-sm text-gray-600">3-Year Average</span>
+                  <span className="text-sm font-medium text-gray-900">{formatCurrency(workingCapital.threeYearAvg)}</span>
+                </div>
+              )}
+            </div>
+            <div className="mt-3 pt-2 border-t border-gray-100">
+              <span className="text-xs text-gray-400">AR + Inventory − AP from financial statements</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
