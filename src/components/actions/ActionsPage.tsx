@@ -15,6 +15,8 @@ import { EmptyState } from './EmptyState'
 import { AllCompletedState } from './AllCompletedState'
 import { ActionsLoading } from './ActionsLoading'
 import { ActionsError } from './ActionsError'
+import { AssessmentPriorityCard } from './AssessmentPriorityCard'
+import { RefinementBanner } from './RefinementBanner'
 import { EnrichmentBanner } from './EnrichmentBanner'
 import { TaskCompletionDialog } from './TaskCompletionDialog'
 import { UpgradeModal } from '@/components/subscription/UpgradeModal'
@@ -171,6 +173,14 @@ interface ActionsData {
   hasMoreInQueue: boolean
   totalQueueSize: number
   enrichmentAlert: { id: string; message: string; createdAt: string } | null
+  refinementEvents?: Array<{
+    id: string
+    briCategory: string
+    tasksAdded: number
+    tasksUpdated: number
+    tasksRemoved: number
+    createdAt: string
+  }>
 }
 
 function getEnrichmentTier(task: ActiveTask): 'HIGH' | 'MODERATE' | 'LOW' | 'NONE' {
@@ -434,6 +444,26 @@ export function ActionsPage() {
   return (
     <div className="max-w-[800px] mx-auto px-6 py-8">
       <AnimatedStagger className="space-y-6" staggerDelay={0.1}>
+        <AnimatedItem>
+          <AssessmentPriorityCard />
+        </AnimatedItem>
+
+        {data.refinementEvents && data.refinementEvents.length > 0 && (
+          <AnimatedItem>
+            <RefinementBanner
+              events={data.refinementEvents}
+              onDismiss={async (eventId) => {
+                try {
+                  await fetch(`/api/task-refinement-events/${eventId}`, { method: 'PATCH' })
+                  fetchData()
+                } catch {
+                  // Silently fail
+                }
+              }}
+            />
+          </AnimatedItem>
+        )}
+
         {data.enrichmentAlert && (
           <AnimatedItem>
             <EnrichmentBanner

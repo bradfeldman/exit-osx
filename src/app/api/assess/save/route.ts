@@ -189,6 +189,32 @@ export async function POST(request: Request) {
         },
       })
 
+      // Generate preliminary tasks based on initial scan results
+      const categoryBreakdown = results.categoryBreakdown ?? {}
+      const preliminaryTasks = generatePreliminaryTasks(categoryBreakdown, profile.ownerInvolvement)
+      if (preliminaryTasks.length > 0) {
+        await Promise.all(preliminaryTasks.map((task, index) =>
+          tx.task.create({
+            data: {
+              companyId: company.id,
+              title: task.title,
+              description: task.description,
+              actionType: 'TYPE_I_EVIDENCE',
+              briCategory: task.category as import('@prisma/client').BriCategory,
+              rawImpact: task.estimatedValue,
+              normalizedValue: task.estimatedValue,
+              effortLevel: 'LOW',
+              complexity: 'SIMPLE',
+              estimatedHours: task.estimatedHours,
+              inActionPlan: true,
+              priorityRank: index + 1,
+              sourceType: 'ONBOARDING_PRELIMINARY',
+              buyerConsequence: task.buyerConsequence,
+            },
+          })
+        ))
+      }
+
       return { company, user, workspace }
     })
 
@@ -307,4 +333,94 @@ function getRevenueSizeCategory(revenue: number): string {
   if (revenue < 10000000) return 'FROM_3M_TO_10M'
   if (revenue < 25000000) return 'FROM_10M_TO_25M'
   return 'OVER_25M'
+}
+
+/**
+ * Generate deterministic preliminary tasks based on initial scan category scores.
+ * These are universal high-confidence tasks that don't require AI — they give
+ * the user something actionable immediately after onboarding.
+ */
+const PRELIMINARY_TASK_TEMPLATES: Record<string, {
+  title: string
+  description: string
+  estimatedValue: number
+  estimatedHours: number
+  buyerConsequence: string
+}[]> = {
+  FINANCIAL: [
+    {
+      title: 'Gather your last 3 years of financial statements',
+      description: 'Collect P&L, balance sheet, and cash flow statements for the last 3 fiscal years. Buyers will request these in due diligence. Having them organized shows financial maturity.',
+      estimatedValue: 5000,
+      estimatedHours: 2,
+      buyerConsequence: 'Buyers discount businesses that can\'t quickly produce clean financials. This is table stakes for any transaction.',
+    },
+  ],
+  TRANSFERABILITY: [
+    {
+      title: 'List your top 5 customer relationships and concentration risk',
+      description: 'Document your top 5 customers by revenue, their contract terms, tenure, and key contacts. Calculate what % of revenue each represents. This addresses buyer concern about customer concentration.',
+      estimatedValue: 5000,
+      estimatedHours: 1,
+      buyerConsequence: 'Customer concentration is a top deal-killer. Buyers want to know if the revenue base survives the transition.',
+    },
+  ],
+  OPERATIONAL: [
+    {
+      title: 'Document your 3 most critical business processes',
+      description: 'Write a brief (1-page each) description of your 3 most important workflows — how work gets done, who does what, and what tools are used. Focus on processes that would be hardest to figure out without you.',
+      estimatedValue: 5000,
+      estimatedHours: 3,
+      buyerConsequence: 'Buyers see risk in businesses without documented processes. This proves the business can run without you.',
+    },
+  ],
+  LEGAL_TAX: [
+    {
+      title: 'Review your key contracts and agreements',
+      description: 'Compile a list of your most important contracts: leases, vendor agreements, customer contracts, employment agreements. Note expiration dates, change-of-control clauses, and any verbal-only agreements that need to be formalized.',
+      estimatedValue: 5000,
+      estimatedHours: 2,
+      buyerConsequence: 'Buyers walk away from businesses with unresolved legal exposure. Missing or expired contracts are red flags in due diligence.',
+    },
+  ],
+  MARKET: [
+    {
+      title: 'Identify your competitive advantages and market position',
+      description: 'Write a brief summary of what makes your business defensible: proprietary processes, brand strength, customer loyalty, barriers to entry. Be honest about vulnerabilities too — buyers will find them.',
+      estimatedValue: 3000,
+      estimatedHours: 1,
+      buyerConsequence: 'Buyers pay premiums for defensible market positions. Articulating your moat builds buyer confidence.',
+    },
+  ],
+}
+
+function generatePreliminaryTasks(
+  categoryBreakdown: Record<string, number>,
+  ownerInvolvement: string,
+): { title: string; description: string; category: string; estimatedValue: number; estimatedHours: number; buyerConsequence: string }[] {
+  // Sort categories by score (lowest first) — target the weakest areas
+  const sorted = Object.entries(categoryBreakdown)
+    .filter(([cat]) => cat !== 'PERSONAL') // Exclude personal readiness from tasks
+    .sort(([, a], [, b]) => a - b)
+
+  const tasks: { title: string; description: string; category: string; estimatedValue: number; estimatedHours: number; buyerConsequence: string }[] = []
+
+  // Pick tasks from the 3 lowest-scoring categories
+  for (const [category] of sorted.slice(0, 3)) {
+    const templates = PRELIMINARY_TASK_TEMPLATES[category]
+    if (templates && templates.length > 0) {
+      tasks.push({ ...templates[0], category })
+    }
+  }
+
+  // Always add a transferability task if owner involvement is HIGH or CRITICAL
+  if ((ownerInvolvement === 'HIGH' || ownerInvolvement === 'CRITICAL') &&
+      !tasks.some(t => t.category === 'TRANSFERABILITY')) {
+    const template = PRELIMINARY_TASK_TEMPLATES['TRANSFERABILITY'][0]
+    if (template && tasks.length < 5) {
+      tasks.push({ ...template, category: 'TRANSFERABILITY' })
+    }
+  }
+
+  return tasks
 }

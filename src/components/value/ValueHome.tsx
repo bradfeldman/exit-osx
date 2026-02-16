@@ -20,6 +20,7 @@ import { DriftReportBanner } from '@/components/drift-report/DriftReportBanner'
 import { WeeklyCheckInTrigger } from '@/components/weekly-check-in/WeeklyCheckInTrigger'
 import { BenchmarkComparison } from './BenchmarkComparison'
 import { BRIRangeGauge } from '@/components/diagnosis/BRIRangeGauge'
+import { CoreScoreCard } from './CoreScoreCard'
 import { WhatIfScenarios } from './WhatIfScenarios'
 import { UpgradeModal } from '@/components/subscription/UpgradeModal'
 import { PlatformTour } from './PlatformTour'
@@ -119,7 +120,7 @@ interface DashboardData {
     divergenceRatio: number | null
     confidenceSignal: 'high' | 'moderate' | 'low'
   } | null
-  coreFactors: CoreFactors | null
+  coreFactors: (CoreFactors & { coreScore: number | null }) | null
   hasAssessment: boolean
 }
 
@@ -245,6 +246,17 @@ export function ValueHome() {
             />
           </AnimatedItem>
         </div>
+
+        {/* Core Score Card — shows what drives your base multiple */}
+        {data.coreFactors?.coreScore != null && tier1 && (
+          <AnimatedItem>
+            <CoreScoreCard
+              coreFactors={data.coreFactors as { revenueModel: string; grossMarginProxy: string; laborIntensity: string; assetIntensity: string; ownerInvolvement: string; coreScore: number | null }}
+              multipleRange={tier1.multipleRange}
+              finalMultiple={tier1.finalMultiple}
+            />
+          </AnimatedItem>
+        )}
 
         {/* Valuation Bridge */}
         <AnimatedItem>

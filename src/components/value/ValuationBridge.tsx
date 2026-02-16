@@ -19,6 +19,7 @@ const BRI_CATEGORY_COLORS: Record<string, string> = {
   OPERATIONAL: '#eab308',
   MARKET: '#8b5cf6',
   LEGAL_TAX: '#ef4444',
+  CORE_STRUCTURE: '#64748b',
 }
 
 interface BridgeCategory {
@@ -76,7 +77,7 @@ export function ValuationBridge({
           </div>
         )}
 
-        <div className="h-[280px]">
+        <div className={bridgeCategories.length > 5 ? 'h-[330px]' : 'h-[280px]'}>
           {bridgeCategories.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart

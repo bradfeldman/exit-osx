@@ -550,10 +550,48 @@ export async function GET(
       : null
 
     // --- Valuation Bridge Categories (PROD-016 fix: uses shared utility for reconciliation) ---
+    // PROD-070: Bridge now uses the same totalValueGap as tier1 hero metrics.
+    // The BRI-driven portion is distributed across 5 categories.
+    // The remaining Core Score gap is shown as a "Business Structure" bar.
     const bridgeCategories = (() => {
       if (!latestSnapshot) return []
-      const valueGap = Number(latestSnapshot.valueGap)
-      if (valueGap <= 0) return []
+
+      // Use override multiples if set, otherwise use snapshot's original industry multiples
+      const effectiveMultipleLow = hasMultipleOverride
+        ? multipleLow
+        : Number(latestSnapshot.industryMultipleLow)
+      const effectiveMultipleHigh = hasMultipleOverride
+        ? multipleHigh
+        : Number(latestSnapshot.industryMultipleHigh)
+
+      const snapshotCoreScore = Number(latestSnapshot.coreScore)
+      const snapshotBriScore = Number(latestSnapshot.briScore)
+
+      // Recalculate consistently with tier1
+      const recalculated = calculateValuation({
+        adjustedEbitda,
+        industryMultipleLow: effectiveMultipleLow,
+        industryMultipleHigh: effectiveMultipleHigh,
+        coreScore: snapshotCoreScore,
+        briScore: snapshotBriScore,
+      })
+
+      const currentValueForBridge = dcfEnterpriseValue ?? recalculated.currentValue
+      const industryBasedPotential = adjustedEbitda * effectiveMultipleHigh
+      const potentialValueForBridge = useDCF && currentValueForBridge > industryBasedPotential
+        ? currentValueForBridge
+        : industryBasedPotential
+      const totalValueGap = Math.max(0, potentialValueForBridge - currentValueForBridge)
+
+      if (totalValueGap <= 0) return []
+
+      // BRI gap: the portion closeable by improving BRI scores
+      // This is EBITDA × (baseMultiple - finalMultiple)
+      const briGap = Math.max(0, recalculated.potentialValue - recalculated.currentValue)
+
+      // Core gap: the portion only improvable by changing business structure
+      // This is the difference between the total gap (vs industry max) and the BRI gap
+      const coreGap = Math.max(0, totalValueGap - briGap)
 
       const CATEGORY_LABELS: Record<string, string> = {
         FINANCIAL: 'Financial Health',
@@ -571,9 +609,10 @@ export async function GET(
         { category: 'LEGAL_TAX', score: Number(latestSnapshot.briLegalTax), weight: BRI_WEIGHTS['LEGAL_TAX'] || 0 },
       ]
 
-      const gaps = calculateCategoryValueGaps(categoryInputs, valueGap)
+      // Distribute only the BRI-closeable gap across the 5 categories
+      const gaps = calculateCategoryValueGaps(categoryInputs, briGap)
 
-      return gaps.map(g => ({
+      const result = gaps.map(g => ({
         category: g.category,
         label: CATEGORY_LABELS[g.category] || g.category,
         score: Math.round(g.score * 100),
@@ -581,6 +620,20 @@ export async function GET(
         weight: g.weight,
         buyerExplanation: BUYER_EXPLANATIONS[g.category] || '',
       }))
+
+      // Add the Business Structure bar for the Core Score gap
+      if (coreGap > 0) {
+        result.push({
+          category: 'CORE_STRUCTURE',
+          label: 'Business Structure',
+          score: Math.round(snapshotCoreScore * 100),
+          dollarImpact: Math.round(coreGap),
+          weight: 0,
+          buyerExplanation: 'Your business model, margins, and owner involvement determine your base position in the industry range.',
+        })
+      }
+
+      return result
     })()
 
     // --- NEW: Next Move Task ---
@@ -913,6 +966,7 @@ export async function GET(
         laborIntensity: company.coreFactors.laborIntensity,
         assetIntensity: company.coreFactors.assetIntensity,
         ownerInvolvement: company.coreFactors.ownerInvolvement,
+        coreScore: calculatedCoreScore,
       } : null,
       hasAssessment: !!latestSnapshot,
       // Auto-DCF valuation (from snapshot pipeline)

@@ -20,6 +20,7 @@ interface ProgressionData {
   briScore: number | null
   completedTaskCount: number
   assessedCategoryCount: number    // 0-6, how many of 6 BRI categories assessed
+  assessedCategories: string[]     // which BRI categories have been assessed
   evidencePercentage: number       // 0-100, percentage of expected evidence uploaded
 }
 
@@ -101,6 +102,7 @@ export function ProgressionProvider({ children }: { children: ReactNode }) {
           isExitReady: false,
           briScore: null,
           assessedCategoryCount: 0,
+          assessedCategories: [],
           evidencePercentage: 0,
         })
       }

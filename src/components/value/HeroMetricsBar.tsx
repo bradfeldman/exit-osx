@@ -89,13 +89,13 @@ export function HeroMetricsBar({
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {/* BRI Score */}
       <motion.div
-        className="bg-card border border-border rounded-xl p-6"
+        className="min-w-0 bg-card border border-border rounded-xl p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
         <p className="text-sm font-medium text-muted-foreground">Buyer Readiness Score</p>
-        <p className={`text-3xl font-bold mt-1 ${getBriColor()}`}>
+        <p className={`text-3xl font-bold mt-1 truncate ${getBriColor()}`}>
           {briPercent != null
             ? isClient ? animatedBri : `${briPercent}`
             : '—'}
@@ -109,13 +109,13 @@ export function HeroMetricsBar({
 
       {/* Current Value */}
       <motion.div
-        className="bg-card border border-border rounded-xl p-6"
+        className="min-w-0 bg-card border border-border rounded-xl p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.05 }}
       >
         <p className="text-sm font-medium text-muted-foreground">Current Value</p>
-        <p className="text-3xl font-bold text-foreground mt-1">
+        <p className="text-3xl font-bold text-foreground mt-1 truncate">
           {isClient ? <AnimatedCurrency value={currentValue} delay={200} /> : formatCurrency(currentValue)}
         </p>
         {!hasAssessment && (
@@ -128,13 +128,13 @@ export function HeroMetricsBar({
 
       {/* Potential Value */}
       <motion.div
-        className="bg-card border border-border rounded-xl p-6"
+        className="min-w-0 bg-card border border-border rounded-xl p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
       >
         <p className="text-sm font-medium text-muted-foreground">Potential Value</p>
-        <p className="text-3xl font-bold text-foreground mt-1">
+        <p className="text-3xl font-bold text-foreground mt-1 truncate">
           {isClient ? <AnimatedCurrency value={potentialValue} delay={300} /> : formatCurrency(potentialValue)}
         </p>
         <p className="text-xs text-muted-foreground mt-2">If all gaps closed</p>
@@ -142,13 +142,13 @@ export function HeroMetricsBar({
 
       {/* Value Gap + Delta */}
       <motion.div
-        className="bg-card border border-border rounded-xl p-6"
+        className="min-w-0 bg-card border border-border rounded-xl p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.15 }}
       >
         <p className="text-sm font-medium text-muted-foreground">Value Gap</p>
-        <p className="text-3xl font-bold text-primary mt-1">
+        <p className="text-3xl font-bold text-primary mt-1 truncate">
           {isClient ? <AnimatedCurrency value={valueGap} delay={400} /> : formatCurrency(valueGap)}
         </p>
         <motion.p

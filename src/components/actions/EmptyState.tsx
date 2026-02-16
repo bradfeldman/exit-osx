@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ListChecks, Loader2, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCompany } from '@/contexts/CompanyContext'
+import { AssessmentPriorityCard } from './AssessmentPriorityCard'
 
 export function EmptyState() {
   const router = useRouter()
@@ -38,14 +39,17 @@ export function EmptyState() {
   }
 
   return (
-    <div className="max-w-[800px] mx-auto px-6 py-8">
-      <div className="flex flex-col items-center justify-center py-16 text-center">
+    <div className="max-w-[800px] mx-auto px-6 py-8 space-y-6">
+      {/* Assessment priority card — gives user a clear next step */}
+      <AssessmentPriorityCard />
+
+      <div className="flex flex-col items-center justify-center py-12 text-center">
         <ListChecks className="w-12 h-12 text-muted-foreground/40" />
         <h2 className="text-lg font-semibold text-foreground mt-4">
-          Your action queue is empty
+          Your action plan is being built
         </h2>
         <p className="text-sm text-muted-foreground mt-2 max-w-md">
-          Complete your diagnosis to generate personalized tasks that increase your business value.
+          Complete your assessment to generate personalized tasks that close your value gap.
         </p>
         {error && (
           <p className="text-sm text-destructive mt-2">{error}</p>

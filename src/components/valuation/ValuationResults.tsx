@@ -2,7 +2,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { formatCurrency, formatPercent, type DCFResults } from '@/lib/valuation/dcf-calculator'
+import { formatCurrency } from '@/lib/utils/currency'
+import { formatPercent, type DCFResults } from '@/lib/valuation/dcf-calculator'
 
 interface ValuationResultsProps {
   results: DCFResults | null
@@ -53,15 +54,15 @@ export function ValuationResults({ results, wacc, netDebt, isLoading, workingCap
       <CardContent className="space-y-6">
         {/* Key Metrics Summary */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="p-4 bg-primary/5 rounded-lg">
+          <div className="min-w-0 p-4 bg-primary/5 rounded-lg">
             <p className="text-xs text-gray-500 uppercase tracking-wide">Enterprise Value</p>
-            <p className="text-2xl font-bold text-primary mt-1">
+            <p className="text-xl md:text-2xl font-bold text-primary mt-1 truncate">
               {formatCurrency(results.enterpriseValue)}
             </p>
           </div>
-          <div className="p-4 bg-green-50 rounded-lg">
+          <div className="min-w-0 p-4 bg-green-50 rounded-lg">
             <p className="text-xs text-gray-500 uppercase tracking-wide">Equity Value</p>
-            <p className="text-2xl font-bold text-green-700 mt-1">
+            <p className="text-xl md:text-2xl font-bold text-green-700 mt-1 truncate">
               {formatCurrency(results.equityValue)}
             </p>
           </div>

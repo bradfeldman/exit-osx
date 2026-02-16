@@ -231,21 +231,8 @@ export function generateSensitivityTable(
   return results
 }
 
-/**
- * Format currency for display
- */
-export function formatCurrency(value: number): string {
-  if (value >= 1000000000) {
-    return `$${(value / 1000000000).toFixed(2)}B`
-  }
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(2)}M`
-  }
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(1)}K`
-  }
-  return `$${value.toFixed(0)}`
-}
+// Re-export formatCurrency from canonical source
+export { formatCurrency } from '@/lib/utils/currency'
 
 /**
  * Format percentage for display

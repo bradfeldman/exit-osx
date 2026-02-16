@@ -274,10 +274,16 @@ export function CategoryAssessmentFlow({
         console.error('Failed to recalculate BRI:', await res.text())
       }
 
-      // Fire-and-forget: regenerate AI tasks based on updated answers
-      fetch(`/api/companies/${companyId}/generate-ai-tasks`, {
-        method: 'POST',
-      }).catch(() => {})
+      // Regenerate AI tasks — await so refinement events are created before navigating
+      try {
+        await fetch(`/api/companies/${companyId}/generate-ai-tasks`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ category }),
+        })
+      } catch {
+        // Task generation failure shouldn't block completion
+      }
 
       onComplete()
     } catch (err) {

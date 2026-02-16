@@ -222,6 +222,7 @@ model Company {
   // Assessment Cadence Control (PROD-017)
   assessmentCadence        String                       @default("monthly") @map("assessment_cadence") // 'weekly' | 'monthly' | 'manual'
   cadencePromptsShownAt    DateTime[]                   @default([]) @map("cadence_prompts_shown_at") // Timestamps of prompts shown (for weekly limit)
+  taskRefinementEvents     TaskRefinementEvent[]
 
   @@map("companies")
 }
@@ -491,6 +492,8 @@ model Task {
   completedValue       Decimal?           @map("completed_value") @db.Decimal(15, 2)
   startedAt            DateTime?          @map("started_at")
   assigneeRole         String?            @map("assignee_role")
+  sourceType           TaskSourceType     @default(ASSESSMENT) @map("source_type")
+  supersededById       String?            @map("superseded_by_id")
   proofDocuments       DataRoomDocument[] @relation("TaskProofDocuments")
   assignments          TaskAssignment[]
   invites              TaskInvite[]
@@ -500,6 +503,8 @@ model Task {
   primaryAssignee      User?              @relation("TaskPrimaryAssignee", fields: [primaryAssigneeId], references: [id])
   upgradesFromOption   QuestionOption?    @relation("TaskUpgradeFrom", fields: [upgradesFromOptionId], references: [id])
   upgradesToOption     QuestionOption?    @relation("TaskUpgradeTo", fields: [upgradesToOptionId], references: [id])
+  supersededBy         Task?              @relation("TaskSupersedes", fields: [supersededById], references: [id])
+  supersedes           Task[]             @relation("TaskSupersedes")
   valueLedgerEntries   ValueLedgerEntry[]
 
   @@index([companyId, status])
@@ -569,6 +574,22 @@ model TaskNote {
   @@index([taskId, createdAt])
   @@index([userId])
   @@map("task_notes")
+}
+
+model TaskRefinementEvent {
+  id            String      @id @default(cuid())
+  companyId     String      @map("company_id")
+  briCategory   BriCategory @map("bri_category")
+  tasksAdded    Int         @default(0) @map("tasks_added")
+  tasksUpdated  Int         @default(0) @map("tasks_updated")
+  tasksRemoved  Int         @default(0) @map("tasks_removed")
+  details       Json?
+  dismissedAt   DateTime?   @map("dismissed_at")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  company       Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, dismissedAt])
+  @@map("task_refinement_events")
 }
 
 model IndustryMultiple {
@@ -1792,6 +1813,12 @@ enum IssueTier {
   CRITICAL
   SIGNIFICANT
   OPTIMIZATION
+}
+
+enum TaskSourceType {
+  ONBOARDING_PRELIMINARY
+  ASSESSMENT
+  AI_ENRICHMENT
 }
 
 enum PeriodType {

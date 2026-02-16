@@ -180,6 +180,7 @@ export async function GET(request: NextRequest) {
       briScore,
       completedTaskCount,
       assessedCategoryCount,
+      assessedCategories: Array.from(assessedCategorySet),
       evidencePercentage,
     })
   } catch (error) {

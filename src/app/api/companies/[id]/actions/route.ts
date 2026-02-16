@@ -397,6 +397,35 @@ export async function GET(
       select: { id: true, message: true, createdAt: true },
     })
 
+    // Fetch undismissed refinement events for banner
+    let refinementEvents: Array<{
+      id: string
+      briCategory: string
+      tasksAdded: number
+      tasksUpdated: number
+      tasksRemoved: number
+      createdAt: Date
+    }> = []
+    try {
+      refinementEvents = await prisma.taskRefinementEvent.findMany({
+        where: {
+          companyId,
+          dismissedAt: null,
+        },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          briCategory: true,
+          tasksAdded: true,
+          tasksUpdated: true,
+          tasksRemoved: true,
+          createdAt: true,
+        },
+      })
+    } catch {
+      // Table may not exist yet
+    }
+
     return NextResponse.json({
       summary,
       activeTasks: activeTasksFormatted,
@@ -408,6 +437,14 @@ export async function GET(
       hasMoreInQueue: false,
       totalQueueSize: pendingTasks.length + blockedTasks.length,
       enrichmentAlert: enrichmentAlert ?? null,
+      refinementEvents: refinementEvents.map(e => ({
+        id: e.id,
+        briCategory: e.briCategory,
+        tasksAdded: e.tasksAdded,
+        tasksUpdated: e.tasksUpdated,
+        tasksRemoved: e.tasksRemoved,
+        createdAt: e.createdAt.toISOString(),
+      })),
     })
   } catch (error) {
     console.error('Error fetching actions data:', error instanceof Error ? error.message : String(error))
