@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { motion } from '@/lib/motion'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -297,7 +298,7 @@ export function ResultsReveal({ results, email, basics, profile, scan }: Results
                 Log in with the email and password you just set.
               </p>
               <Button asChild size="lg" className="mt-2">
-                <a href="/login">Go to Login</a>
+                <Link href="/login">Go to Login</Link>
               </Button>
             </div>
           ) : (
