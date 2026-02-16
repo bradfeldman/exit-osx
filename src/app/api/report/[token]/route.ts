@@ -63,17 +63,27 @@ export async function GET(
       { category: 'Personal', score: Math.round(Number(snapshot.briPersonal) * 100) },
     ].sort((a, b) => a.score - b.score) : []
 
-    // Compute valuation
+    // Use stored valuation values (preferred) with recalculation fallback
     const briScore = snapshot ? Math.round(Number(snapshot.briScore) * 100) : 0
-    const ebitda = snapshot ? Number(snapshot.adjustedEbitda) : 0
-    const multLow = snapshot ? Number(snapshot.industryMultipleLow) : 0
-    const multHigh = snapshot ? Number(snapshot.industryMultipleHigh) : 0
-    const coreScore = snapshot ? Number(snapshot.coreScore) : 0
 
-    const midMultiple = (multLow + multHigh) / 2
-    const currentValue = ebitda * midMultiple * coreScore
-    const potentialValue = ebitda * midMultiple
-    const valueGap = potentialValue - currentValue
+    let currentValue = 0
+    let potentialValue = 0
+    let valueGap = 0
+
+    if (snapshot?.currentValue && Number(snapshot.currentValue) > 0) {
+      // Use directly stored values from the assessment
+      currentValue = Number(snapshot.currentValue)
+      potentialValue = Number(snapshot.potentialValue)
+      valueGap = Number(snapshot.valueGap)
+    } else if (snapshot) {
+      // Fallback: recalculate from EBITDA and multiples
+      const ebitda = Number(snapshot.adjustedEbitda)
+      const midMultiple = (Number(snapshot.industryMultipleLow) + Number(snapshot.industryMultipleHigh)) / 2
+      const coreScore = Number(snapshot.coreScore)
+      currentValue = ebitda * midMultiple * coreScore
+      potentialValue = ebitda * midMultiple
+      valueGap = potentialValue - currentValue
+    }
 
     return NextResponse.json({
       companyName: company.name,
