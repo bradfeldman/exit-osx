@@ -631,6 +631,41 @@ export interface PfsCompletedParams extends BaseEventParams {
   sensitiveFieldsCompleted: boolean
 }
 
+// PFS Wizard events
+export interface PfsWizardStartedParams extends BaseEventParams {
+  entryPoint: string
+  hasExistingData: boolean
+}
+
+export interface PfsWizardStepCompletedParams extends BaseEventParams {
+  stepNumber: number
+  stepName: string
+  timeSpentMs: number
+  fieldsCompleted: number
+}
+
+export interface PfsWizardStepSkippedParams extends BaseEventParams {
+  stepNumber: number
+  stepName: string
+}
+
+export interface PfsWizardCompletedParams extends BaseEventParams {
+  totalTimeMs: number
+  stepsSkipped: number
+  netWorth: number
+  wealthConcentration: number
+}
+
+export interface PfsWizardAbandonedParams extends BaseEventParams {
+  lastStep: number
+  totalTimeMs: number
+}
+
+export interface PfsWizardSaveFailedParams extends BaseEventParams {
+  error: string
+  retryCount: number
+}
+
 export interface RetirementCalcViewedParams extends BaseEventParams {
   entryPoint: string
 }
@@ -927,6 +962,12 @@ export interface AnalyticsEventMap {
   // Phase 6: Personal Planning
   'pfs_started': PfsStartedParams
   'pfs_completed': PfsCompletedParams
+  'pfs_wizard_started': PfsWizardStartedParams
+  'pfs_wizard_step_completed': PfsWizardStepCompletedParams
+  'pfs_wizard_step_skipped': PfsWizardStepSkippedParams
+  'pfs_wizard_completed': PfsWizardCompletedParams
+  'pfs_wizard_abandoned': PfsWizardAbandonedParams
+  'pfs_wizard_save_failed': PfsWizardSaveFailedParams
   'retirement_calc_viewed': RetirementCalcViewedParams
   'retirement_inputs_entered': RetirementInputsEnteredParams
   'retirement_gap_displayed': RetirementGapDisplayedParams

@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
+import { PFSWizardFlow } from '@/components/pfs-wizard/PFSWizardFlow'
 
 // Animation variants for row animations
 const rowVariants = {
@@ -207,6 +208,7 @@ export default function PersonalFinancialStatementPage() {
   const [currentAge, setCurrentAge] = useState<number | null>(null)
   const [retirementAge, setRetirementAge] = useState<number | null>(null)
   const [exitGoalAmount, setExitGoalAmount] = useState<number>(0)
+  const [showWizard, setShowWizard] = useState<boolean | null>(null) // null = not yet determined
 
   // Track original state for dirty checking
   const [originalState, setOriginalState] = useState<{
@@ -258,10 +260,16 @@ export default function PersonalFinancialStatementPage() {
     async function loadAllData() {
       if (!permissionsLoading && canViewPersonal) {
         // Load personal financials first (if company selected)
-        let loadedPersonalData = { assets: [] as PersonalAsset[], liabilities: [] as PersonalLiability[], currentAge: null as number | null, retirementAge: null as number | null, exitGoalAmount: 0, businessOwnership: null as Record<string, number> | null }
+        let loadedPersonalData = { assets: [] as PersonalAsset[], liabilities: [] as PersonalLiability[], currentAge: null as number | null, retirementAge: null as number | null, exitGoalAmount: 0, businessOwnership: null as Record<string, number> | null, hasData: false }
         if (selectedCompanyId) {
           loadedPersonalData = await loadPersonalFinancials(selectedCompanyId)
         }
+
+        // Show wizard if no existing PFS data
+        if (showWizard === null) {
+          setShowWizard(!loadedPersonalData.hasData)
+        }
+
         // Then load companies (which will set the complete original state)
         await loadCompaniesWithOriginalState(loadedPersonalData)
       }
@@ -332,7 +340,7 @@ export default function PersonalFinancialStatementPage() {
     }
   }
 
-  async function loadPersonalFinancials(companyId: string): Promise<{ assets: PersonalAsset[], liabilities: PersonalLiability[], currentAge: number | null, retirementAge: number | null, exitGoalAmount: number, businessOwnership: Record<string, number> | null }> {
+  async function loadPersonalFinancials(companyId: string): Promise<{ assets: PersonalAsset[], liabilities: PersonalLiability[], currentAge: number | null, retirementAge: number | null, exitGoalAmount: number, businessOwnership: Record<string, number> | null, hasData: boolean }> {
     try {
       const response = await fetch(`/api/companies/${companyId}/personal-financials`)
       if (response.ok) {
@@ -344,19 +352,23 @@ export default function PersonalFinancialStatementPage() {
           const loadedRetirementAge = data.personalFinancials.retirementAge ?? null
           const loadedExitGoal = data.personalFinancials.exitGoalAmount ? Number(data.personalFinancials.exitGoalAmount) : 0
           const loadedOwnership = data.personalFinancials.businessOwnership ?? null
+          // Check if there's real data (not just an empty record)
+          const hasData = data.personalFinancials.id !== null && (
+            loadedAssets.length > 0 || loadedLiabilities.length > 0 || loadedCurrentAge !== null
+          )
           setPersonalAssets(loadedAssets)
           setPersonalLiabilities(loadedLiabilities)
           setCurrentAge(loadedCurrentAge)
           setRetirementAge(loadedRetirementAge)
           setExitGoalAmount(loadedExitGoal)
-          return { assets: loadedAssets, liabilities: loadedLiabilities, currentAge: loadedCurrentAge, retirementAge: loadedRetirementAge, exitGoalAmount: loadedExitGoal, businessOwnership: loadedOwnership }
+          return { assets: loadedAssets, liabilities: loadedLiabilities, currentAge: loadedCurrentAge, retirementAge: loadedRetirementAge, exitGoalAmount: loadedExitGoal, businessOwnership: loadedOwnership, hasData }
         }
       }
     } catch (error) {
       console.error('Failed to load personal financials:', error)
       loadSavedDataFromLocalStorage()
     }
-    return { assets: [], liabilities: [], currentAge: null, retirementAge: null, exitGoalAmount: 0, businessOwnership: null }
+    return { assets: [], liabilities: [], currentAge: null, retirementAge: null, exitGoalAmount: 0, businessOwnership: null, hasData: false }
   }
 
   function loadSavedDataFromLocalStorage() {
@@ -370,7 +382,7 @@ export default function PersonalFinancialStatementPage() {
     }
   }
 
-  async function loadCompaniesWithOriginalState(personalData: { assets: PersonalAsset[], liabilities: PersonalLiability[], currentAge: number | null, retirementAge: number | null, exitGoalAmount: number, businessOwnership: Record<string, number> | null }) {
+  async function loadCompaniesWithOriginalState(personalData: { assets: PersonalAsset[], liabilities: PersonalLiability[], currentAge: number | null, retirementAge: number | null, exitGoalAmount: number, businessOwnership: Record<string, number> | null, hasData: boolean }) {
     setLoading(true)
     try {
       const response = await fetch('/api/companies')
@@ -607,6 +619,29 @@ export default function PersonalFinancialStatementPage() {
             </CardContent>
           </Card>
         ))}
+      </div>
+    )
+  }
+
+  // PFS Wizard for first-time users
+  if (showWizard) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <PFSWizardFlow
+          onComplete={() => {
+            // Wizard saved data — reload the page data and show the full form
+            setShowWizard(false)
+            setLoading(true)
+            async function reloadAfterWizard() {
+              if (selectedCompanyId) {
+                const reloaded = await loadPersonalFinancials(selectedCompanyId)
+                await loadCompaniesWithOriginalState(reloaded)
+              }
+            }
+            reloadAfterWizard()
+          }}
+          onSkip={() => setShowWizard(false)}
+        />
       </div>
     )
   }
