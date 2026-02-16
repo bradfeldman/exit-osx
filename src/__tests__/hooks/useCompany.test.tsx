@@ -153,13 +153,14 @@ describe('useCompany Hook', () => {
     })
 
     it('should handle API error gracefully', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'))
+      // Must reject all calls to cover retry attempts
+      mockFetch.mockRejectedValue(new Error('Network error'))
 
       const { result } = renderHook(() => useCompany(), { wrapper })
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false)
-      })
+      }, { timeout: 10000 })
 
       expect(result.current.companies).toEqual([])
     })

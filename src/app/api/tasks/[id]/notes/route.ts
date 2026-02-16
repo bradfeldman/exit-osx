@@ -51,7 +51,7 @@ export async function GET(
 }
 
 const postTaskNoteSchema = z.object({
-  content: z.string().min(1).max(5000),
+  content: z.string().trim().min(1, 'Note content is required').max(5000),
   noteType: z.enum(['GENERAL', 'COMPLETION', 'STATUS_CHANGE', 'ASSIGNMENT']).default('GENERAL'),
 })
 

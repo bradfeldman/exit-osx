@@ -361,7 +361,7 @@ describe('classifyBusiness', () => {
     const logCall = mockPrisma.aIGenerationLog.create.mock.calls[0][0]
     expect(logCall.data.companyId).toBe('company-123')
     expect(logCall.data.generationType).toBe('business_classification')
-    expect(logCall.data.modelUsed).toBe('claude-3-5-haiku-latest')
+    expect(logCall.data.modelUsed).toBe('claude-sonnet-4-20250514')
     expect(logCall.data.inputTokens).toBe(500)
     expect(logCall.data.outputTokens).toBe(100)
     expect(logCall.data.errorMessage).toBeNull()
@@ -407,7 +407,7 @@ describe('classifyBusiness', () => {
 
   // ── AI model configuration ────────────────────────────────────────
 
-  it('uses haiku model with low temperature', async () => {
+  it('uses sonnet model with low temperature', async () => {
     mockGenerateJSON.mockResolvedValueOnce(makeAIResponse())
 
     await classifyBusiness('Dental mouthguard company')
@@ -416,9 +416,9 @@ describe('classifyBusiness', () => {
       expect.any(String),
       expect.any(String),
       expect.objectContaining({
-        model: 'claude-haiku',
-        temperature: 0.3,
-        maxTokens: 512,
+        model: 'claude-sonnet',
+        temperature: 0.2,
+        maxTokens: 1024,
       })
     )
   })

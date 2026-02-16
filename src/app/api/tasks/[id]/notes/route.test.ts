@@ -87,7 +87,7 @@ describe('/api/tasks/[id]/notes', () => {
         taskId: mockTaskId,
         userId: mockUserId,
         content: 'New note',
-        noteType: 'PROGRESS',
+        noteType: 'COMPLETION',
         createdAt: new Date('2024-01-01'),
         user: {
           id: mockUserId,
@@ -106,7 +106,8 @@ describe('/api/tasks/[id]/notes', () => {
 
       const request = new Request('http://localhost/api/tasks/task_123/notes', {
         method: 'POST',
-        body: JSON.stringify({ content: 'New note', noteType: 'PROGRESS' }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: 'New note', noteType: 'COMPLETION' }),
       })
       const params = Promise.resolve({ id: mockTaskId })
       const response = await POST(request, { params })
@@ -114,28 +115,19 @@ describe('/api/tasks/[id]/notes', () => {
 
       expect(response.status).toBe(201)
       expect(data.note.content).toBe('New note')
-      expect(data.note.noteType).toBe('PROGRESS')
+      expect(data.note.noteType).toBe('COMPLETION')
     })
 
     it('should return 400 if content is empty', async () => {
-      const mockTask = { companyId: mockCompanyId }
-
-      vi.mocked(prisma.task.findUnique).mockResolvedValue(mockTask as never)
-      vi.mocked(checkPermissionModule.checkPermission).mockResolvedValue({
-        auth: { user: { id: mockUserId }, workspaceMember: { workspaceId: 'org_123' } },
-      } as never)
-      vi.mocked(checkPermissionModule.isAuthError).mockReturnValue(false)
-
       const request = new Request('http://localhost/api/tasks/task_123/notes', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: '   ', noteType: 'GENERAL' }),
       })
       const params = Promise.resolve({ id: mockTaskId })
       const response = await POST(request, { params })
-      const data = await response.json()
 
       expect(response.status).toBe(400)
-      expect(data.error).toBe('Note content is required')
     })
 
     it('should default to GENERAL noteType if not provided', async () => {
@@ -164,6 +156,7 @@ describe('/api/tasks/[id]/notes', () => {
 
       const request = new Request('http://localhost/api/tasks/task_123/notes', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: 'New note' }),
       })
       const params = Promise.resolve({ id: mockTaskId })

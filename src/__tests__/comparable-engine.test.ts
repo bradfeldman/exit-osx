@@ -932,7 +932,8 @@ describe('PROD-004: Multiple Adjustments', () => {
       // Only growth, margin, and recurring apply
       const expected = 0.20 + 0.15 + 0.25
       expect(result.totalAdjustment).toBeCloseTo(expected)
-      expect(result.adjustmentMultiplier).toBeCloseTo(1 + expected)
+      // adjustmentMultiplier is capped at 1.5 to prevent unrealistic inflation
+      expect(result.adjustmentMultiplier).toBeCloseTo(1.5)
     })
 
     it('should have all adjustments enabled by default', () => {

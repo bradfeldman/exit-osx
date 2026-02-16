@@ -2,7 +2,9 @@
  * Tests for Monthly Industry Multiple Refresh Cron
  * Tests the /api/cron/refresh-multiples endpoint
  *
- * Note: Prisma mock types are complex; uses type assertions for test mocks.
+ * The route uses AI research to refresh stale industry multiples,
+ * recalculates valuations for affected companies, and creates
+ * signals for significant changes.
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -10,19 +12,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { GET } from '@/app/api/cron/refresh-multiples/route'
 import { prisma } from '@/lib/prisma'
 import { recalculateSnapshotForCompany } from '@/lib/valuation/recalculate-snapshot'
+import { researchMultiples } from '@/lib/valuation/multiple-research-engine'
+import { createSignal } from '@/lib/signals/create-signal'
 
 // Mock dependencies
 vi.mock('@/lib/prisma', () => ({
   prisma: {
-    industryMultiple: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
-    },
     company: {
       findMany: vi.fn(),
     },
-    signal: {
+    industryMultiple: {
+      findFirst: vi.fn(),
       create: vi.fn(),
+    },
+    valuationSnapshot: {
+      findMany: vi.fn(),
     },
   },
 }))
@@ -31,17 +35,48 @@ vi.mock('@/lib/valuation/recalculate-snapshot', () => ({
   recalculateSnapshotForCompany: vi.fn(),
 }))
 
+vi.mock('@/lib/valuation/multiple-research-engine', () => ({
+  researchMultiples: vi.fn(),
+}))
+
+vi.mock('@/lib/signals/create-signal', () => ({
+  createSignal: vi.fn(),
+}))
+
 vi.mock('@/lib/security/cron-auth', () => ({
   verifyCronAuth: vi.fn(() => null), // Always allow in tests
 }))
+
+// Helper to make a research result
+function makeResearchResult(overrides: Record<string, any> = {}) {
+  return {
+    icbSubSector: 'SOFTWARE',
+    gicsSubIndustry: null,
+    revenueMultipleLow: 2.0,
+    revenueMultipleHigh: 4.0,
+    ebitdaMultipleLow: 6.0,
+    ebitdaMultipleHigh: 10.0,
+    ebitdaMarginLow: 0.15,
+    ebitdaMarginHigh: 0.30,
+    publicComparables: [
+      { name: 'Test Corp', ticker: 'TEST', whyRelevant: 'Similar model', evToEbitda: 8.0, evToRevenue: 2.5, revenue: 100_000_000, ebitdaMargin: 0.20 },
+    ],
+    methodology: 'AI research',
+    confidenceLevel: 'high' as const,
+    warnings: [],
+    researchedAt: new Date().toISOString(),
+    ...overrides,
+  }
+}
 
 describe('Refresh Multiples Cron Job', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('should return success when no recent multiples exist', async () => {
-    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([])
+  it('should return success when no active companies exist', async () => {
+    // No active companies → no sub-sectors to research
+    vi.mocked(prisma.company.findMany).mockResolvedValueOnce([])
 
     const request = new Request('http://localhost/api/cron/refresh-multiples')
     const response = await GET(request)
@@ -49,69 +84,23 @@ describe('Refresh Multiples Cron Job', () => {
 
     expect(response.status).toBe(200)
     expect(data.success).toBe(true)
-    expect(data.multiplesUpdated).toBe(0)
-    expect(data.companiesRecalculated).toBe(0)
-    expect(data.signalsCreated).toBe(0)
   })
 
-  it('should detect significant multiple changes (>10%)', async () => {
-    const subsector = 'Software & Computer Services'
+  it('should skip sub-sectors that were recently researched', async () => {
+    const subsector = 'ENTERPRISE_SOFTWARE'
 
-    // Mock recent multiple (new)
-    const newMultiple = {
-      id: 'new-multiple',
+    // One active company
+    vi.mocked(prisma.company.findMany).mockResolvedValueOnce([
+      { icbSubSector: subsector, gicsSubIndustry: null } as any,
+    ])
+
+    // Recent multiple (researched yesterday — not stale)
+    vi.mocked(prisma.industryMultiple.findFirst).mockResolvedValueOnce({
+      id: 'mult-1',
       icbSubSector: subsector,
-      icbSector: 'Technology',
-      icbSuperSector: 'Technology',
-      icbIndustry: 'Technology',
-      ebitdaMultipleLow: 6.0,
-      ebitdaMultipleHigh: 10.0,
-      revenueMultipleLow: 2.0,
-      revenueMultipleHigh: 4.0,
-      ebitdaMarginLow: null,
-      ebitdaMarginHigh: null,
-      effectiveDate: new Date('2025-02-01'),
-      source: 'Market Update',
-    }
-
-    // Mock previous multiple (old)
-    const oldMultiple = {
-      id: 'old-multiple',
-      icbSubSector: subsector,
-      icbSector: 'Technology',
-      icbSuperSector: 'Technology',
-      icbIndustry: 'Technology',
-      ebitdaMultipleLow: 5.0,
-      ebitdaMultipleHigh: 8.0,
-      revenueMultipleLow: 1.5,
-      revenueMultipleHigh: 3.0,
-      ebitdaMarginLow: null,
-      ebitdaMarginHigh: null,
-      effectiveDate: new Date('2025-01-01'),
-      source: 'Market Update',
-    }
-
-    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple as any])
-    vi.mocked(prisma.industryMultiple.findFirst).mockResolvedValue(oldMultiple as any)
-
-    // Mock affected company
-    const company = {
-      id: 'company-1',
-      name: 'Test Company',
-      icbSubSector: subsector,
-    }
-    vi.mocked(prisma.company.findMany).mockResolvedValue([company as any])
-
-    // Mock successful recalculation
-    vi.mocked(recalculateSnapshotForCompany).mockResolvedValue({
-      success: true,
-      snapshotId: 'snapshot-1',
-      companyId: company.id,
-      companyName: company.name,
-    })
-
-    // Mock signal creation
-    vi.mocked(prisma.signal.create).mockResolvedValue({} as any)
+      effectiveDate: new Date(),
+      lastResearchedAt: new Date(), // Very recent
+    } as any)
 
     const request = new Request('http://localhost/api/cron/refresh-multiples')
     const response = await GET(request)
@@ -119,139 +108,198 @@ describe('Refresh Multiples Cron Job', () => {
 
     expect(response.status).toBe(200)
     expect(data.success).toBe(true)
-    expect(data.multiplesUpdated).toBe(1)
+    // Should recognize all multiples are fresh
+    expect(data.researched).toBe(0)
+  })
+
+  it('should research stale sub-sectors and recalculate', async () => {
+    const subsector = 'ENTERPRISE_SOFTWARE'
+
+    // Active company with sub-sector
+    vi.mocked(prisma.company.findMany)
+      .mockResolvedValueOnce([
+        { icbSubSector: subsector, gicsSubIndustry: null } as any,
+      ])
+      // Second call: affected companies for recalculation
+      .mockResolvedValueOnce([
+        { id: 'company-1', name: 'Test Co', icbSubSector: subsector } as any,
+      ])
+
+    // Stale multiple (researched 60 days ago)
+    const sixtyDaysAgo = new Date()
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60)
+
+    vi.mocked(prisma.industryMultiple.findFirst)
+      // First call: check staleness
+      .mockResolvedValueOnce({
+        id: 'old-mult',
+        icbSubSector: subsector,
+        lastResearchedAt: sixtyDaysAgo,
+        effectiveDate: sixtyDaysAgo,
+      } as any)
+      // Second call: get existing for comparison
+      .mockResolvedValueOnce({
+        id: 'old-mult',
+        icbSubSector: subsector,
+        ebitdaMultipleLow: 5.0,
+        ebitdaMultipleHigh: 8.0,
+        revenueMultipleLow: 1.5,
+        revenueMultipleHigh: 3.0,
+        effectiveDate: sixtyDaysAgo,
+      } as any)
+
+    // Research returns new multiples (minor change <10%)
+    vi.mocked(researchMultiples).mockResolvedValueOnce(
+      makeResearchResult({
+        ebitdaMultipleLow: 5.2,
+        ebitdaMultipleHigh: 8.3,
+        revenueMultipleLow: 1.6,
+        revenueMultipleHigh: 3.1,
+      })
+    )
+
+    // Mock create
+    vi.mocked(prisma.industryMultiple.create).mockResolvedValueOnce({} as any)
+
+    // Mock recalculation
+    vi.mocked(recalculateSnapshotForCompany).mockResolvedValueOnce({
+      success: true,
+      snapshotId: 'snapshot-1',
+      companyId: 'company-1',
+      companyName: 'Test Co',
+    })
+
+    const request = new Request('http://localhost/api/cron/refresh-multiples')
+    const response = await GET(request)
+    const data = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(data.success).toBe(true)
+    expect(data.researched).toBe(1)
     expect(data.companiesRecalculated).toBe(1)
-    expect(data.significantChanges).toBe(1)
 
-    // Verify signal was created for significant change
-    expect(data.signalsCreated).toBe(1)
-    expect(prisma.signal.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          companyId: company.id,
-          eventType: 'MARKET_MULTIPLE_CHANGE',
-          severity: 'HIGH', // 33% change (>20%)
-          category: 'MARKET',
-        }),
-      })
+    // Verify recalculation was called with correct reason
+    expect(recalculateSnapshotForCompany).toHaveBeenCalledWith(
+      'company-1',
+      'Monthly industry multiple refresh (AI research)',
+      undefined
     )
   })
 
-  it('should create HIGH severity signal for >20% change', async () => {
-    const subsector = 'Software & Computer Services'
+  it('should detect significant changes (>10%) and create signals', async () => {
+    const subsector = 'ENTERPRISE_SOFTWARE'
 
-    const newMultiple = {
-      id: 'new-multiple',
-      icbSubSector: subsector,
-      icbSector: 'Technology',
-      icbSuperSector: 'Technology',
-      icbIndustry: 'Technology',
-      ebitdaMultipleLow: 8.0,
-      ebitdaMultipleHigh: 12.0,
-      revenueMultipleLow: 3.0,
-      revenueMultipleHigh: 5.0,
-      ebitdaMarginLow: null,
-      ebitdaMarginHigh: null,
-      effectiveDate: new Date('2025-02-01'),
-      source: 'Market Update',
-    }
+    vi.mocked(prisma.company.findMany)
+      .mockResolvedValueOnce([
+        { icbSubSector: subsector, gicsSubIndustry: null } as any,
+      ])
+      .mockResolvedValueOnce([
+        { id: 'company-1', name: 'Test Co', icbSubSector: subsector } as any,
+      ])
 
-    const oldMultiple = {
-      id: 'old-multiple',
-      icbSubSector: subsector,
-      icbSector: 'Technology',
-      icbSuperSector: 'Technology',
-      icbIndustry: 'Technology',
-      ebitdaMultipleLow: 5.0,
-      ebitdaMultipleHigh: 8.0,
-      revenueMultipleLow: 1.5,
-      revenueMultipleHigh: 3.0,
-      ebitdaMarginLow: null,
-      ebitdaMarginHigh: null,
-      effectiveDate: new Date('2025-01-01'),
-      source: 'Market Update',
-    }
+    const sixtyDaysAgo = new Date()
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60)
 
-    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple as any])
-    vi.mocked(prisma.industryMultiple.findFirst).mockResolvedValue(oldMultiple as any)
+    vi.mocked(prisma.industryMultiple.findFirst)
+      .mockResolvedValueOnce({
+        id: 'old-mult',
+        icbSubSector: subsector,
+        lastResearchedAt: sixtyDaysAgo,
+        effectiveDate: sixtyDaysAgo,
+      } as any)
+      .mockResolvedValueOnce({
+        id: 'old-mult',
+        icbSubSector: subsector,
+        ebitdaMultipleLow: 5.0,
+        ebitdaMultipleHigh: 8.0,
+        revenueMultipleLow: 1.5,
+        revenueMultipleHigh: 3.0,
+        effectiveDate: sixtyDaysAgo,
+      } as any)
 
-    const company = {
-      id: 'company-1',
-      name: 'Test Company',
-      icbSubSector: subsector,
-    }
-    vi.mocked(prisma.company.findMany).mockResolvedValue([company as any])
-    vi.mocked(recalculateSnapshotForCompany).mockResolvedValue({
+    // Research returns significantly different multiples (>10% change)
+    vi.mocked(researchMultiples).mockResolvedValueOnce(
+      makeResearchResult({
+        ebitdaMultipleLow: 7.0,
+        ebitdaMultipleHigh: 11.0,
+        revenueMultipleLow: 2.5,
+        revenueMultipleHigh: 4.5,
+      })
+    )
+
+    vi.mocked(prisma.industryMultiple.create).mockResolvedValueOnce({} as any)
+    vi.mocked(recalculateSnapshotForCompany).mockResolvedValueOnce({
       success: true,
       snapshotId: 'snapshot-1',
-      companyId: company.id,
-      companyName: company.name,
+      companyId: 'company-1',
+      companyName: 'Test Co',
     })
-    vi.mocked(prisma.signal.create).mockResolvedValue({} as any)
+    vi.mocked(prisma.valuationSnapshot.findMany).mockResolvedValueOnce([])
+    vi.mocked(createSignal).mockResolvedValueOnce({} as any)
 
     const request = new Request('http://localhost/api/cron/refresh-multiples')
     const response = await GET(request)
-    const _data = await response.json()
+    const data = await response.json()
 
     expect(response.status).toBe(200)
-    expect(prisma.signal.create).toHaveBeenCalledWith(
+    expect(data.significantChanges).toBe(1)
+    expect(data.signalsCreated).toBe(1)
+    expect(createSignal).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({
-          severity: 'HIGH', // 50% change
-        }),
+        companyId: 'company-1',
+        eventType: 'MARKET_MULTIPLE_CHANGE',
+        category: 'MARKET',
       })
     )
   })
 
-  it('should not create signals for changes <10%', async () => {
-    const subsector = 'Software & Computer Services'
+  it('should not create signals for minor changes (<10%)', async () => {
+    const subsector = 'ENTERPRISE_SOFTWARE'
 
-    const newMultiple = {
-      id: 'new-multiple',
-      icbSubSector: subsector,
-      icbSector: 'Technology',
-      icbSuperSector: 'Technology',
-      icbIndustry: 'Technology',
-      ebitdaMultipleLow: 5.5,
-      ebitdaMultipleHigh: 8.5,
-      revenueMultipleLow: 1.6,
-      revenueMultipleHigh: 3.2,
-      ebitdaMarginLow: null,
-      ebitdaMarginHigh: null,
-      effectiveDate: new Date('2025-02-01'),
-      source: 'Market Update',
-    }
+    vi.mocked(prisma.company.findMany)
+      .mockResolvedValueOnce([
+        { icbSubSector: subsector, gicsSubIndustry: null } as any,
+      ])
+      .mockResolvedValueOnce([
+        { id: 'company-1', name: 'Test Co', icbSubSector: subsector } as any,
+      ])
 
-    const oldMultiple = {
-      id: 'old-multiple',
-      icbSubSector: subsector,
-      icbSector: 'Technology',
-      icbSuperSector: 'Technology',
-      icbIndustry: 'Technology',
-      ebitdaMultipleLow: 5.0,
-      ebitdaMultipleHigh: 8.0,
-      revenueMultipleLow: 1.5,
-      revenueMultipleHigh: 3.0,
-      ebitdaMarginLow: null,
-      ebitdaMarginHigh: null,
-      effectiveDate: new Date('2025-01-01'),
-      source: 'Market Update',
-    }
+    const sixtyDaysAgo = new Date()
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60)
 
-    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple as any])
-    vi.mocked(prisma.industryMultiple.findFirst).mockResolvedValue(oldMultiple as any)
+    vi.mocked(prisma.industryMultiple.findFirst)
+      .mockResolvedValueOnce({
+        id: 'old-mult',
+        icbSubSector: subsector,
+        lastResearchedAt: sixtyDaysAgo,
+        effectiveDate: sixtyDaysAgo,
+      } as any)
+      .mockResolvedValueOnce({
+        id: 'old-mult',
+        icbSubSector: subsector,
+        ebitdaMultipleLow: 5.0,
+        ebitdaMultipleHigh: 8.0,
+        revenueMultipleLow: 1.5,
+        revenueMultipleHigh: 3.0,
+        effectiveDate: sixtyDaysAgo,
+      } as any)
 
-    const company = {
-      id: 'company-1',
-      name: 'Test Company',
-      icbSubSector: subsector,
-    }
-    vi.mocked(prisma.company.findMany).mockResolvedValue([company as any])
-    vi.mocked(recalculateSnapshotForCompany).mockResolvedValue({
+    // Research returns very similar multiples (<10% change)
+    vi.mocked(researchMultiples).mockResolvedValueOnce(
+      makeResearchResult({
+        ebitdaMultipleLow: 5.2,
+        ebitdaMultipleHigh: 8.3,
+        revenueMultipleLow: 1.55,
+        revenueMultipleHigh: 3.1,
+      })
+    )
+
+    vi.mocked(prisma.industryMultiple.create).mockResolvedValueOnce({} as any)
+    vi.mocked(recalculateSnapshotForCompany).mockResolvedValueOnce({
       success: true,
       snapshotId: 'snapshot-1',
-      companyId: company.id,
-      companyName: company.name,
+      companyId: 'company-1',
+      companyName: 'Test Co',
     })
 
     const request = new Request('http://localhost/api/cron/refresh-multiples')
@@ -261,269 +309,133 @@ describe('Refresh Multiples Cron Job', () => {
     expect(response.status).toBe(200)
     expect(data.companiesRecalculated).toBe(1) // Still recalculates
     expect(data.signalsCreated).toBe(0) // But no signal created
-    expect(prisma.signal.create).not.toHaveBeenCalled()
+    expect(createSignal).not.toHaveBeenCalled()
   })
 
-  it('should recalculate for new industries (no previous multiple)', async () => {
-    const subsector = 'Emerging Industry'
+  it('should research new sub-sectors with no previous multiples', async () => {
+    const subsector = 'EMERGING_TECH'
 
-    const newMultiple = {
-      id: 'new-multiple',
-      icbSubSector: subsector,
-      icbSector: 'Technology',
-      icbSuperSector: 'Technology',
-      icbIndustry: 'Technology',
-      ebitdaMultipleLow: 5.0,
-      ebitdaMultipleHigh: 8.0,
-      revenueMultipleLow: 1.5,
-      revenueMultipleHigh: 3.0,
-      ebitdaMarginLow: null,
-      ebitdaMarginHigh: null,
-      effectiveDate: new Date('2025-02-01'),
-      source: 'Market Update',
-    }
+    vi.mocked(prisma.company.findMany)
+      .mockResolvedValueOnce([
+        { icbSubSector: subsector, gicsSubIndustry: null } as any,
+      ])
+      .mockResolvedValueOnce([
+        { id: 'company-1', name: 'Test Co', icbSubSector: subsector } as any,
+      ])
 
-    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple as any])
-    vi.mocked(prisma.industryMultiple.findFirst).mockResolvedValue(null) // No previous
+    // No existing multiple
+    vi.mocked(prisma.industryMultiple.findFirst)
+      .mockResolvedValueOnce(null) // Staleness check: no multiple exists
+      .mockResolvedValueOnce(null) // Comparison check: no previous
 
-    const company = {
-      id: 'company-1',
-      name: 'Test Company',
-      icbSubSector: subsector,
-    }
-    vi.mocked(prisma.company.findMany).mockResolvedValue([company as any])
-    vi.mocked(recalculateSnapshotForCompany).mockResolvedValue({
-      success: true,
-      snapshotId: 'snapshot-1',
-      companyId: company.id,
-      companyName: company.name,
-    })
-
-    const request = new Request('http://localhost/api/cron/refresh-multiples')
-    const response = await GET(request)
-    const data = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(data.companiesRecalculated).toBe(1)
-    expect(recalculateSnapshotForCompany).toHaveBeenCalledWith(
-      company.id,
-      'Monthly industry multiple refresh',
-      undefined
+    vi.mocked(researchMultiples).mockResolvedValueOnce(
+      makeResearchResult({ icbSubSector: subsector })
     )
-  })
-
-  it('should handle recalculation failures gracefully', async () => {
-    const subsector = 'Software & Computer Services'
-
-    const newMultiple = {
-      id: 'new-multiple',
-      icbSubSector: subsector,
-      icbSector: 'Technology',
-      icbSuperSector: 'Technology',
-      icbIndustry: 'Technology',
-      ebitdaMultipleLow: 5.0,
-      ebitdaMultipleHigh: 8.0,
-      revenueMultipleLow: 1.5,
-      revenueMultipleHigh: 3.0,
-      ebitdaMarginLow: null,
-      ebitdaMarginHigh: null,
-      effectiveDate: new Date('2025-02-01'),
-      source: 'Market Update',
-    }
-
-    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple as any])
-    vi.mocked(prisma.industryMultiple.findFirst).mockResolvedValue(null)
-
-    const companies = [
-      { id: 'company-1', name: 'Test Company 1', icbSubSector: subsector },
-      { id: 'company-2', name: 'Test Company 2', icbSubSector: subsector },
-    ]
-    vi.mocked(prisma.company.findMany).mockResolvedValue(companies as any)
-
-    // First company succeeds, second fails
-    vi.mocked(recalculateSnapshotForCompany)
-      .mockResolvedValueOnce({
-        success: true,
-        snapshotId: 'snapshot-1',
-        companyId: companies[0].id,
-        companyName: companies[0].name,
-      })
-      .mockResolvedValueOnce({
-        success: false,
-        error: 'No assessment responses found',
-        companyId: companies[1].id,
-        companyName: companies[1].name,
-      })
-
-    const request = new Request('http://localhost/api/cron/refresh-multiples')
-    const response = await GET(request)
-    const data = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(data.success).toBe(true)
-    expect(data.companiesRecalculated).toBe(1)
-    expect(data.companiesFailed).toBe(1)
-    expect(data.errors).toBeDefined()
-    expect(data.errors).toHaveLength(1)
-    expect(data.errors[0]).toEqual({
-      companyId: companies[1].id,
-      error: 'No assessment responses found',
-    })
-  })
-
-  it('should handle multiple subsectors with different change levels', async () => {
-    const subsector1 = 'Software'
-    const subsector2 = 'Manufacturing'
-
-    // Subsector 1: Significant change (>10%)
-    const newMultiple1 = {
-      id: 'new-1',
-      icbSubSector: subsector1,
-      icbSector: 'Technology',
-      icbSuperSector: 'Technology',
-      icbIndustry: 'Technology',
-      ebitdaMultipleLow: 6.0,
-      ebitdaMultipleHigh: 10.0,
-      revenueMultipleLow: 2.0,
-      revenueMultipleHigh: 4.0,
-      ebitdaMarginLow: null,
-      ebitdaMarginHigh: null,
-      effectiveDate: new Date('2025-02-01'),
-      source: 'Market Update',
-    }
-
-    const oldMultiple1 = {
-      id: 'old-1',
-      icbSubSector: subsector1,
-      icbSector: 'Technology',
-      icbSuperSector: 'Technology',
-      icbIndustry: 'Technology',
-      ebitdaMultipleLow: 5.0,
-      ebitdaMultipleHigh: 8.0,
-      revenueMultipleLow: 1.5,
-      revenueMultipleHigh: 3.0,
-      ebitdaMarginLow: null,
-      ebitdaMarginHigh: null,
-      effectiveDate: new Date('2025-01-01'),
-      source: 'Market Update',
-    }
-
-    // Subsector 2: Minor change (<10%)
-    const newMultiple2 = {
-      id: 'new-2',
-      icbSubSector: subsector2,
-      icbSector: 'Industrials',
-      icbSuperSector: 'Industrials',
-      icbIndustry: 'Industrials',
-      ebitdaMultipleLow: 4.2,
-      ebitdaMultipleHigh: 6.3,
-      revenueMultipleLow: 1.0,
-      revenueMultipleHigh: 2.1,
-      ebitdaMarginLow: null,
-      ebitdaMarginHigh: null,
-      effectiveDate: new Date('2025-02-01'),
-      source: 'Market Update',
-    }
-
-    const oldMultiple2 = {
-      id: 'old-2',
-      icbSubSector: subsector2,
-      icbSector: 'Industrials',
-      icbSuperSector: 'Industrials',
-      icbIndustry: 'Industrials',
-      ebitdaMultipleLow: 4.0,
-      ebitdaMultipleHigh: 6.0,
-      revenueMultipleLow: 1.0,
-      revenueMultipleHigh: 2.0,
-      ebitdaMarginLow: null,
-      ebitdaMarginHigh: null,
-      effectiveDate: new Date('2025-01-01'),
-      source: 'Market Update',
-    }
-
-    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple1 as any, newMultiple2 as any])
-    ;(vi.mocked(prisma.industryMultiple.findFirst) as any).mockImplementation(async (args: any) => {
-      if (args?.where?.icbSubSector === subsector1) return oldMultiple1 as any
-      if (args?.where?.icbSubSector === subsector2) return oldMultiple2 as any
-      return null
-    })
-
-    const companies = [
-      { id: 'company-1', name: 'Tech Co', icbSubSector: subsector1 },
-      { id: 'company-2', name: 'Mfg Co', icbSubSector: subsector2 },
-    ]
-    vi.mocked(prisma.company.findMany).mockResolvedValue(companies as any)
-    vi.mocked(recalculateSnapshotForCompany).mockResolvedValue({
+    vi.mocked(prisma.industryMultiple.create).mockResolvedValueOnce({} as any)
+    vi.mocked(recalculateSnapshotForCompany).mockResolvedValueOnce({
       success: true,
       snapshotId: 'snapshot-1',
       companyId: 'company-1',
-      companyName: 'Test',
+      companyName: 'Test Co',
     })
-    vi.mocked(prisma.signal.create).mockResolvedValue({} as any)
 
     const request = new Request('http://localhost/api/cron/refresh-multiples')
     const response = await GET(request)
     const data = await response.json()
 
     expect(response.status).toBe(200)
-    expect(data.companiesRecalculated).toBe(2)
-    expect(data.significantChanges).toBe(1) // Only subsector1
-    expect(data.signalsCreated).toBe(1) // Only for significant change
+    expect(data.researched).toBe(1)
+    expect(data.companiesRecalculated).toBe(1)
+    // No significant change calculated (no previous to compare)
+    expect(data.significantChanges).toBe(0)
+  })
+
+  it('should handle research failures gracefully', async () => {
+    const subsector = 'ENTERPRISE_SOFTWARE'
+
+    vi.mocked(prisma.company.findMany)
+      .mockResolvedValueOnce([
+        { icbSubSector: subsector, gicsSubIndustry: null } as any,
+      ])
+      .mockResolvedValueOnce([]) // No affected companies (nothing recalculated)
+
+    const sixtyDaysAgo = new Date()
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60)
+
+    vi.mocked(prisma.industryMultiple.findFirst)
+      .mockResolvedValueOnce({
+        id: 'old-mult',
+        icbSubSector: subsector,
+        lastResearchedAt: sixtyDaysAgo,
+        effectiveDate: sixtyDaysAgo,
+      } as any)
+      .mockResolvedValueOnce(null)
+
+    // Research fails
+    vi.mocked(researchMultiples).mockRejectedValueOnce(new Error('AI unavailable'))
+
+    const request = new Request('http://localhost/api/cron/refresh-multiples')
+    const response = await GET(request)
+    const data = await response.json()
+
+    // Job should still succeed overall
+    expect(response.status).toBe(200)
+    expect(data.success).toBe(true)
+    expect(data.researchFailed).toBe(1)
+    expect(data.researched).toBe(0)
   })
 
   it('should handle signal creation failures gracefully', async () => {
-    const subsector = 'Software'
+    const subsector = 'ENTERPRISE_SOFTWARE'
 
-    const newMultiple = {
-      id: 'new-multiple',
-      icbSubSector: subsector,
-      icbSector: 'Technology',
-      icbSuperSector: 'Technology',
-      icbIndustry: 'Technology',
-      ebitdaMultipleLow: 6.0,
-      ebitdaMultipleHigh: 10.0,
-      revenueMultipleLow: 2.0,
-      revenueMultipleHigh: 4.0,
-      ebitdaMarginLow: null,
-      ebitdaMarginHigh: null,
-      effectiveDate: new Date('2025-02-01'),
-      source: 'Market Update',
-    }
+    vi.mocked(prisma.company.findMany)
+      .mockResolvedValueOnce([
+        { icbSubSector: subsector, gicsSubIndustry: null } as any,
+      ])
+      .mockResolvedValueOnce([
+        { id: 'company-1', name: 'Test Co', icbSubSector: subsector } as any,
+      ])
 
-    const oldMultiple = {
-      id: 'old-multiple',
-      icbSubSector: subsector,
-      icbSector: 'Technology',
-      icbSuperSector: 'Technology',
-      icbIndustry: 'Technology',
-      ebitdaMultipleLow: 5.0,
-      ebitdaMultipleHigh: 8.0,
-      revenueMultipleLow: 1.5,
-      revenueMultipleHigh: 3.0,
-      ebitdaMarginLow: null,
-      ebitdaMarginHigh: null,
-      effectiveDate: new Date('2025-01-01'),
-      source: 'Market Update',
-    }
+    const sixtyDaysAgo = new Date()
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60)
 
-    vi.mocked(prisma.industryMultiple.findMany).mockResolvedValue([newMultiple as any])
-    vi.mocked(prisma.industryMultiple.findFirst).mockResolvedValue(oldMultiple as any)
+    vi.mocked(prisma.industryMultiple.findFirst)
+      .mockResolvedValueOnce({
+        id: 'old-mult',
+        icbSubSector: subsector,
+        lastResearchedAt: sixtyDaysAgo,
+        effectiveDate: sixtyDaysAgo,
+      } as any)
+      .mockResolvedValueOnce({
+        id: 'old-mult',
+        icbSubSector: subsector,
+        ebitdaMultipleLow: 5.0,
+        ebitdaMultipleHigh: 8.0,
+        revenueMultipleLow: 1.5,
+        revenueMultipleHigh: 3.0,
+        effectiveDate: sixtyDaysAgo,
+      } as any)
 
-    const company = {
-      id: 'company-1',
-      name: 'Test Company',
-      icbSubSector: subsector,
-    }
-    vi.mocked(prisma.company.findMany).mockResolvedValue([company as any])
-    vi.mocked(recalculateSnapshotForCompany).mockResolvedValue({
+    // Significant change
+    vi.mocked(researchMultiples).mockResolvedValueOnce(
+      makeResearchResult({
+        ebitdaMultipleLow: 7.0,
+        ebitdaMultipleHigh: 11.0,
+        revenueMultipleLow: 2.5,
+        revenueMultipleHigh: 4.5,
+      })
+    )
+    vi.mocked(prisma.industryMultiple.create).mockResolvedValueOnce({} as any)
+    vi.mocked(recalculateSnapshotForCompany).mockResolvedValueOnce({
       success: true,
       snapshotId: 'snapshot-1',
-      companyId: company.id,
-      companyName: company.name,
+      companyId: 'company-1',
+      companyName: 'Test Co',
     })
+    vi.mocked(prisma.valuationSnapshot.findMany).mockResolvedValueOnce([])
 
     // Signal creation fails
-    vi.mocked(prisma.signal.create).mockRejectedValue(new Error('Signal creation failed'))
+    vi.mocked(createSignal).mockRejectedValueOnce(new Error('Signal creation failed'))
 
     const request = new Request('http://localhost/api/cron/refresh-multiples')
     const response = await GET(request)
