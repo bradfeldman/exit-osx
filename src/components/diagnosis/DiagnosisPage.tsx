@@ -12,8 +12,7 @@ import { CategoryPanel } from './CategoryPanel'
 import { RiskDriversSection } from './RiskDriversSection'
 import { DiagnosisLoading } from './DiagnosisLoading'
 import { DiagnosisError } from './DiagnosisError'
-import { SharpenDiagnosisBanner } from './SharpenDiagnosisBanner'
-import { CadencePromptBanner } from './CadencePromptBanner'
+import { DiagnosisActionBanner } from './DiagnosisActionBanner'
 import { LowestConfidencePrompt } from './LowestConfidencePrompt'
 import { UpgradeModal } from '@/components/subscription/UpgradeModal'
 
@@ -83,6 +82,8 @@ export function DiagnosisPage() {
   const { planTier } = useSubscription()
   const { progressionData } = useProgression()
   const hasFullAssessment = progressionData?.hasFullAssessment ?? false
+  const assessedCategoryCount = progressionData?.assessedCategoryCount ?? 0
+  const assessedCategories = progressionData?.assessedCategories ?? []
   const isFreeUser = planTier === 'foundation'
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -94,12 +95,6 @@ export function DiagnosisPage() {
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
   const [sharpenActive, setSharpenActive] = useState(false)
   const sharpenConsumedRef = useRef(false)
-  const [cadencePrompt, setCadencePrompt] = useState<{
-    categoryId: string
-    categoryLabel: string
-    reason: string
-    urgency: 'low' | 'medium' | 'high'
-  } | null>(null)
   const [cadenceNextDates, setCadenceNextDates] = useState<Record<string, string | null>>({})
 
   const fetchData = useCallback(async () => {
@@ -142,18 +137,13 @@ export function DiagnosisPage() {
     }
   }, [selectedCompanyId])
 
-  // Fetch cadence data in parallel with diagnosis data
+  // Fetch cadence data in parallel with diagnosis data (for per-category next dates)
   const fetchCadence = useCallback(async () => {
     if (!selectedCompanyId) return
     try {
       const res = await fetch(`/api/companies/${selectedCompanyId}/assessment-cadence`)
       if (res.ok) {
         const cadenceData = await res.json()
-        if (cadenceData.topPrompt) {
-          setCadencePrompt(cadenceData.topPrompt)
-        } else {
-          setCadencePrompt(null)
-        }
         // Build next-date map for per-category display
         const nextDates: Record<string, string | null> = {}
         for (const cat of cadenceData.categories ?? []) {
@@ -238,34 +228,25 @@ export function DiagnosisPage() {
           />
         </AnimatedItem>
 
-        {/* Cadence Prompt Banner — shown when cadence rules say it's time to re-assess */}
-        {cadencePrompt && selectedCompanyId && (
-          <AnimatedItem>
-            <CadencePromptBanner
-              prompt={cadencePrompt}
-              companyId={selectedCompanyId}
-              onExpand={(categoryId) => {
-                setExpandedCategory(categoryId)
-                setCadencePrompt(null)
-              }}
-              onDismiss={() => setCadencePrompt(null)}
-            />
-          </AnimatedItem>
-        )}
-
-        {/* Re-Assess Banner (only after full 6-category baseline) */}
-        {hasFullAssessment && (allQuestionsAnswered || sharpenActive) && (
-          <AnimatedItem>
-            <SharpenDiagnosisBanner
-              companyId={selectedCompanyId}
-              autoGenerate={sharpenActive}
-              onComplete={() => {
-                setSharpenActive(false)
-                fetchData()
-              }}
-            />
-          </AnimatedItem>
-        )}
+        {/* Smart Action Banner — replaces CadencePromptBanner + SharpenDiagnosisBanner */}
+        <AnimatedItem>
+          <DiagnosisActionBanner
+            assessedCategoryCount={assessedCategoryCount}
+            assessedCategories={assessedCategories}
+            hasFullAssessment={hasFullAssessment}
+            allQuestionsAnswered={allQuestionsAnswered}
+            lastAssessmentDate={data.lastAssessmentDate}
+            companyId={selectedCompanyId}
+            onExpandCategory={(categoryId) => {
+              setExpandedCategory(categoryId)
+            }}
+            onReassessComplete={() => {
+              setSharpenActive(false)
+              fetchData()
+            }}
+            autoGenerate={sharpenActive}
+          />
+        </AnimatedItem>
 
         {/* Category Grid */}
         <AnimatedItem>
@@ -293,11 +274,12 @@ export function DiagnosisPage() {
           </div>
         </AnimatedItem>
 
-        {/* Risk Drivers */}
+        {/* Value at Risk */}
         <AnimatedItem>
           <RiskDriversSection
             riskDrivers={data.riskDrivers}
             hasAssessment={data.hasAssessment}
+            assessedCategoryCount={assessedCategoryCount}
             isFreeUser={isFreeUser}
             onUpgrade={() => setUpgradeModalOpen(true)}
             onExpandCategory={handleExpandCategory}

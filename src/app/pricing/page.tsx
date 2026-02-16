@@ -146,7 +146,7 @@ export default function PricingPage() {
               <Link href="/login">
                 <Button variant="ghost" size="sm">Sign In</Button>
               </Link>
-              <Link href="/signup">
+              <Link href="/assess">
                 <Button size="sm">Get Your Score</Button>
               </Link>
             </div>
@@ -305,7 +305,7 @@ export default function PricingPage() {
                     </div>
 
                     <Link
-                      href={`/signup?plan=${plan.id}`}
+                      href={`/assess?plan=${plan.id}`}
                       className="mb-8"
                       onClick={() => handlePlanCtaClick(plan)}
                     >
@@ -380,7 +380,7 @@ export default function PricingPage() {
                 90-Day Outcome Guarantee
               </h3>
               <p className="text-muted-foreground leading-relaxed">
-                If your Buyer Readiness Score doesn&apos;t improve within 90 days of following your
+                If your Buyer Readiness Index doesn&apos;t improve within 90 days of following your
                 action plan, we&apos;ll refund your last 3 months. No questions asked.
               </p>
               <p className="text-sm text-muted-foreground/70 mt-4">
@@ -510,7 +510,7 @@ export default function PricingPage() {
             <div className="border-t border-border">
               <FAQItem
                 question="How long does the assessment take?"
-                answer="About 10 minutes. You'll answer questions about your business across six risk categories. You get your Buyer Readiness Score and a buyer-perspective diagnostic immediately."
+                answer="About 10 minutes. You'll answer questions about your business across six risk categories. You get your Buyer Readiness Index and a buyer-perspective diagnostic immediately."
               />
               <FAQItem
                 question="Is my data secure?"
@@ -549,9 +549,9 @@ export default function PricingPage() {
               <br />
               Then decide if you want to fix what&apos;s costing you.
             </p>
-            <Link href="/signup">
+            <Link href="/assess">
               <Button variant="secondary" size="lg" className="text-base px-8 h-14 btn-hover">
-                Get Your Buyer Readiness Score
+                Get Your Buyer Readiness Index
               </Button>
             </Link>
             <p className="text-sm text-primary-foreground/60 mt-4">
@@ -606,7 +606,7 @@ export default function PricingPage() {
             <div>
               <h4 className="font-semibold text-foreground mb-4">Get Started</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/signup" className="text-muted-foreground hover:text-foreground">Create Account</Link></li>
+                <li><Link href="/assess" className="text-muted-foreground hover:text-foreground">Get Your Free Score</Link></li>
                 <li><Link href="/login" className="text-muted-foreground hover:text-foreground">Sign In</Link></li>
                 <li><a href="mailto:support@exitosx.com" className="text-muted-foreground hover:text-foreground">Contact</a></li>
               </ul>

@@ -688,7 +688,7 @@ export function AssessmentWizard({ companyId, companyName, title: _title = 'Buye
                     {briScore}
                   </motion.span>
                   <span className="text-sm text-muted-foreground uppercase tracking-wide">
-                    Buyer Readiness Score
+                    Buyer Readiness Index
                   </span>
                 </div>
               </div>

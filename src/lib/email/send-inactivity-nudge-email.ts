@@ -86,7 +86,7 @@ export async function sendInactivityNudgeEmail(params: InactivityNudgeEmailParam
                       <li>Documentation falls out of date</li>
                     </ul>
                     <p style="margin: 16px 0 0 0; font-size: 13px; color: #EF4444;">
-                      Every week you wait, your Buyer Readiness Score likely drops. And so does your valuation.
+                      Every week you wait, your Buyer Readiness Index likely drops. And so does your valuation.
                     </p>
                   </td>
                 </tr>

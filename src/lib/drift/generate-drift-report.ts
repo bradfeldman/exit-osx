@@ -378,7 +378,7 @@ function buildNarrativeSummary(
   const briVerb = drift.briScoreChange >= 0 ? 'improved' : 'declined'
   const valVerb = drift.valuationChange >= 0 ? 'grew' : 'decreased'
 
-  let summary = `In ${monthName}, your Buyer Readiness Score ${briVerb} by ${briChangePoints} points`
+  let summary = `In ${monthName}, your Buyer Readiness Index ${briVerb} by ${briChangePoints} points`
   summary += ` and your estimated valuation ${valVerb} by ${valuationChangeFormatted}.`
 
   if (tasksCompletedCount > 0) {

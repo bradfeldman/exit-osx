@@ -84,7 +84,7 @@ export function RiskResultsStep({
           className="text-center mb-6"
         >
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">
-            Buyer Readiness Score
+            Buyer Readiness Index
           </p>
           <div className="flex items-baseline justify-center gap-1">
             <motion.span

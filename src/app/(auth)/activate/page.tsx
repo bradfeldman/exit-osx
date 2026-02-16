@@ -158,7 +158,7 @@ export default function ActivatePage() {
             <div className="space-y-4 pt-4">
               {[
                 'Real-time business valuation',
-                'Buyer Readiness Score across 6 dimensions',
+                'Buyer Readiness Index across 6 dimensions',
                 'Prioritized value-building playbook'
               ].map((text) => (
                 <div key={text} className="flex items-center gap-3">

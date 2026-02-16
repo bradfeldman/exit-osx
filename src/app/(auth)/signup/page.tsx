@@ -432,7 +432,7 @@ function SignupPageContent() {
               <ul className="space-y-2 text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
-                  <span>Your Buyer Readiness Score</span>
+                  <span>Your Buyer Readiness Index</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
@@ -588,7 +588,7 @@ function SignupPageContent() {
           <ul className="space-y-3 text-muted-foreground">
             <li className="flex items-start gap-3">
               <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
-              <span>Your Buyer Readiness Score</span>
+              <span>Your Buyer Readiness Index</span>
             </li>
             <li className="flex items-start gap-3">
               <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />

@@ -67,7 +67,7 @@ export function LandingPage() {
               <Link href="/login">
                 <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">Sign In</Button>
               </Link>
-              <Link href="/signup">
+              <Link href="/assess">
                 <Button size="sm" className="text-xs sm:text-sm px-2.5 sm:px-3">Get Your Free Score</Button>
               </Link>
             </div>
@@ -128,7 +128,7 @@ export function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.55 }}
               >
-                <Link href="/signup" className="w-full sm:w-auto">
+                <Link href="/assess" className="w-full sm:w-auto">
                   <Button size="lg" className="text-base px-10 h-14 text-lg btn-hover w-full sm:w-auto">
                     Get Your Free Score
                   </Button>
@@ -173,7 +173,7 @@ export function LandingPage() {
                 That gap is your opportunity.
               </p>
 
-              <Link href="/signup">
+              <Link href="/assess">
                 <Button variant="outline" size="lg" className="btn-hover">
                   Find Your Gap
                 </Button>
@@ -248,7 +248,7 @@ export function LandingPage() {
               <p className="text-lg text-muted-foreground mb-6">
                 It takes 10 minutes to find out if it&apos;s coming for you.
               </p>
-              <Link href="/signup">
+              <Link href="/assess">
                 <Button size="lg" className="btn-hover">
                   Check Your Risk
                 </Button>
@@ -341,7 +341,7 @@ export function LandingPage() {
             </AnimatedStagger>
 
             <AnimatedSection className="text-center mt-10">
-              <Link href="/signup">
+              <Link href="/assess">
                 <Button size="lg" className="btn-hover">
                   Get Your Free Score
                 </Button>
@@ -382,7 +382,7 @@ export function LandingPage() {
                 {
                   num: 4,
                   title: 'Track',
-                  desc: 'Watch your Buyer Readiness Score climb. See your projected valuation increase in real-time.',
+                  desc: 'Watch your Buyer Readiness Index climb. See your projected valuation increase in real-time.',
                 },
               ].map((step) => (
                 <AnimatedItem key={step.num}>
@@ -398,7 +398,7 @@ export function LandingPage() {
             </AnimatedStagger>
 
             <AnimatedSection className="text-center mt-12">
-              <Link href="/signup">
+              <Link href="/assess">
                 <Button size="lg" className="text-base px-8 btn-hover">
                   Get Your Free Score
                 </Button>
@@ -561,7 +561,7 @@ export function LandingPage() {
                 },
                 {
                   q: '"How long does the assessment take?"',
-                  a: '10 minutes. You\'ll get your Buyer Readiness Score, a valuation estimate, and a breakdown of where buyers will focus immediately.',
+                  a: '10 minutes. You\'ll get your Buyer Readiness Index, a valuation estimate, and a breakdown of where buyers will focus immediately.',
                 },
                 {
                   q: '"Is my data secure?"',
@@ -596,7 +596,7 @@ export function LandingPage() {
               <p className="text-base text-primary-foreground/60 mb-10 max-w-2xl mx-auto">
                 Every quarter you wait is a quarter of unmanaged risk compounding against your exit price.
               </p>
-              <Link href="/signup">
+              <Link href="/assess">
                 <Button size="lg" variant="secondary" className="text-base px-10 h-14 text-lg btn-hover">
                   Get Your Free Score
                 </Button>
@@ -610,32 +610,61 @@ export function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-border">
+      <footer className="py-12 border-t border-border bg-muted/30">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Image
-                src="/logo.webp"
-                alt="Exit OSx"
-                width={24}
-                height={24}
-                className="h-6 w-6"
-              />
-              <span className="text-sm text-muted-foreground">
-                &copy; {new Date().getFullYear()} Exit OSx. All rights reserved.
-              </span>
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Image
+                  src="/logo.webp"
+                  alt="Exit OSx"
+                  width={24}
+                  height={24}
+                  className="h-6 w-6"
+                />
+                <Image
+                  src="/wordmark.svg"
+                  alt="Exit OSx"
+                  width={80}
+                  height={22}
+                  className="h-5 w-auto"
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Stop guessing. Start building value.
+              </p>
             </div>
-            <div className="flex items-center gap-6 text-sm">
-              <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
-                Pricing
-              </Link>
-              <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
-                Privacy Policy
-              </Link>
-              <Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
-                Terms of Service
-              </Link>
+
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Product</h4>
+              <ul className="space-y-2 text-sm">
+                <li><Link href="/" className="text-muted-foreground hover:text-foreground">Home</Link></li>
+                <li><Link href="/pricing" className="text-muted-foreground hover:text-foreground">Pricing</Link></li>
+              </ul>
             </div>
+
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm">
+                <li><Link href="/privacy" className="text-muted-foreground hover:text-foreground">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="text-muted-foreground hover:text-foreground">Terms of Service</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Get Started</h4>
+              <ul className="space-y-2 text-sm">
+                <li><Link href="/assess" className="text-muted-foreground hover:text-foreground">Get Your Free Score</Link></li>
+                <li><Link href="/login" className="text-muted-foreground hover:text-foreground">Sign In</Link></li>
+                <li><a href="mailto:support@exitosx.com" className="text-muted-foreground hover:text-foreground">Contact</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-muted-foreground">
+              &copy; {new Date().getFullYear()} Exit OSx. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>

@@ -175,7 +175,7 @@ export function ValuationRevealStep({
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                  Buyer Readiness Score
+                  Buyer Readiness Index
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   How attractive you are to buyers

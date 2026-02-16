@@ -47,8 +47,8 @@ export default function ForgotPasswordPage() {
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
-        <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground">
-          <Link href="/" className="flex items-center gap-3">
+        <div className="relative z-10 flex flex-col p-12 text-primary-foreground">
+          <a href="https://exitosx.com" className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo-icon.png"
@@ -65,17 +65,16 @@ export default function ForgotPasswordPage() {
               height={34}
               className="h-8 w-auto brightness-0 invert"
             />
-          </Link>
+          </a>
 
-          <div className="space-y-6">
-            <h1 className="text-4xl font-bold leading-tight">
+          <div className="space-y-6 mt-auto mb-auto">
+            <h1 className="text-4xl font-bold font-display leading-tight tracking-tight">
               Build a Business<br />Buyers Want to Own
             </h1>
             <p className="text-lg opacity-90 max-w-md">
-              Get your valuation estimate, Buyer Readiness Score, and a personalized roadmap to maximize your exit outcome.
+              Get your valuation estimate, Buyer Readiness Index, and a personalized roadmap to maximize your exit outcome.
             </p>
           </div>
-
         </div>
       </div>
 

@@ -258,7 +258,7 @@ export default function AdvisorClientPage() {
             </Card>
             <Card>
               <CardContent className="pt-6">
-                <p className="text-sm text-muted-foreground">Buyer Readiness Score</p>
+                <p className="text-sm text-muted-foreground">Buyer Readiness Index</p>
                 <p className="text-2xl font-bold">
                   {dashboard.tier1.briScore.toFixed(0)}
                 </p>

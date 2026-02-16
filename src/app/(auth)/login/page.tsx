@@ -253,12 +253,12 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
               Build a Business<br />Buyers Want to Own
             </h1>
             <p className="text-lg opacity-90 max-w-md">
-              Get your valuation estimate, Buyer Readiness Score, and a personalized roadmap to maximize your exit outcome.
+              Get your valuation estimate, Buyer Readiness Index, and a personalized roadmap to maximize your exit outcome.
             </p>
             <div className="space-y-4 pt-4">
               {[
                 'Real-time business valuation',
-                'Buyer Readiness Score across 6 dimensions',
+                'Buyer Readiness Index across 6 dimensions',
                 'Prioritized value-building playbook'
               ].map((text) => (
                 <div
@@ -478,7 +478,7 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
           <div className="text-center space-y-4">
             <p className="text-sm text-muted-foreground">
               Don&apos;t have an account?{' '}
-              <Link href={buildUrlWithRedirect('/signup', redirectUrl)} className="font-medium text-primary hover:underline">
+              <Link href="/assess" className="font-medium text-primary hover:underline">
                 Create one for free
               </Link>
             </p>

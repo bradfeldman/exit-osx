@@ -1,10 +1,8 @@
-import { Resend } from 'resend'
+import { sendEmail } from './service'
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
-
-interface OnboardingCompleteEmailParams {
+interface VerificationCongratsEmailParams {
+  userId: string
   email: string
-  name?: string
   companyName: string
   companyId: string
   currentValue: number
@@ -32,9 +30,9 @@ function getRiskLabel(score: number): string {
 }
 
 function getRiskColor(score: number): string {
-  if (score >= 75) return '#10B981'  // green
-  if (score >= 50) return '#F59E0B'  // amber
-  return '#EF4444'                   // red
+  if (score >= 75) return '#10B981'
+  if (score >= 50) return '#F59E0B'
+  return '#EF4444'
 }
 
 function formatCurrency(value: number): string {
@@ -48,36 +46,24 @@ function formatCurrency(value: number): string {
 }
 
 /**
- * Sends the "Exit Readiness Report" email after onboarding completion.
- * This delivers immediate value and gives them ONE clear action.
+ * Sends the "You're Verified" congrats email after email verification.
+ * Includes the full onboarding report (same design as the old Day 0 email)
+ * since this is now the user's first time seeing their results in email.
  */
-export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmailParams): Promise<{ success: boolean; error?: string }> {
-  const { email, name, companyName, currentValue, potentialValue, valueGap, briScore, topRisk, topTask, reportToken } = params
-
-  if (!resend) {
-    console.warn('[Email] Resend not configured, skipping onboarding complete email')
-    return { success: false, error: 'Email service not configured' }
-  }
+export async function sendVerificationCongratsEmail(params: VerificationCongratsEmailParams): Promise<{ success: boolean; error?: string }> {
+  const { userId, email, companyName, companyId, currentValue, potentialValue, valueGap, briScore, topRisk, topTask, reportToken } = params
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.exitosx.com'
   const roundedBRI = Math.round(briScore)
-  const _firstName = name?.split(' ')[0] || 'there' // Reserved for future personalization
-
-  // Determine BRI color and status
   const briColor = roundedBRI >= 70 ? '#10B981' : roundedBRI >= 50 ? '#F59E0B' : '#EF4444'
   const briStatus = roundedBRI >= 70 ? 'Strong' : roundedBRI >= 50 ? 'Moderate' : 'Needs Work'
 
-  try {
-    await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'Exit OSx <noreply@exitosx.com>',
-      to: email,
-      subject: `${companyName}'s Exit Readiness Report`,
-      html: `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Exit Readiness Report - Exit OSx</title>
+  <title>Email Verified - Exit OSx</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
@@ -92,20 +78,54 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
             </td>
           </tr>
 
+          <!-- Verified Badge -->
+          <tr>
+            <td style="padding: 32px 40px 16px 40px; text-align: center;">
+              <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 16px auto;">
+                <tr>
+                  <td style="width: 56px; height: 56px; background-color: #F0FDF4; border-radius: 50%; text-align: center; vertical-align: middle;">
+                    <span style="font-size: 28px; color: #10B981;">&#10003;</span>
+                  </td>
+                </tr>
+              </table>
+              <h1 style="margin: 0 0 8px 0; font-size: 28px; font-weight: 700; color: #3D3D3D; letter-spacing: -0.5px;">
+                Email Verified
+              </h1>
+              <p style="margin: 0; font-size: 16px; color: #666666;">
+                You now have full access to Exit OSx.
+              </p>
+            </td>
+          </tr>
+
+          <!-- What's Unlocked -->
+          <tr>
+            <td style="padding: 0 40px 24px 40px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #F0FDF4; border-radius: 8px; border: 1px solid #BBF7D0;">
+                <tr>
+                  <td style="padding: 16px 20px;">
+                    <p style="margin: 0 0 8px 0; font-size: 13px; font-weight: 600; color: #166534;">Now unlocked:</p>
+                    <p style="margin: 0; font-size: 13px; color: #166534; line-height: 1.8;">
+                      Detailed reports &bull; Team invites &bull; Task delegation &bull; Weekly digests &bull; Signal alerts
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
           <!-- Hero Section - Valuation -->
           <tr>
             <td style="padding: 24px 40px 40px 40px; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); text-align: center;">
               <p style="margin: 0 0 8px 0; font-size: 14px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px;">
                 Your Exit Readiness Report
               </p>
-              <h1 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 600; color: #ffffff;">
+              <h2 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 600; color: #ffffff;">
                 ${companyName}
-              </h1>
+              </h2>
               <p style="margin: 0 0 24px 0; font-size: 14px; color: rgba(255,255,255,0.6);">
                 Based on your risk assessment
               </p>
 
-              <!-- Current Value -->
               <p style="margin: 0 0 4px 0; font-size: 14px; color: rgba(255,255,255,0.7);">
                 Current Estimated Value
               </p>
@@ -113,7 +133,6 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
                 ${formatCurrency(currentValue)}
               </p>
 
-              <!-- Value Gap Alert -->
               ${valueGap > 0 ? `
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto; background-color: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px;">
                 <tr>
@@ -155,9 +174,6 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
                   </td>
                 </tr>
               </table>
-              <p style="margin: 16px 0 0 0; font-size: 14px; color: #666666;">
-                ${roundedBRI >= 70 ? 'Your business is well-positioned for buyer interest.' : roundedBRI >= 50 ? "There's room to improve before going to market." : 'Addressing key risks could significantly increase your sale price.'}
-              </p>
             </td>
           </tr>
 
@@ -244,7 +260,7 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
                 <tr>
                   <td style="border-radius: 8px; background-color: #B87333;">
                     <a href="${baseUrl}/dashboard/actions" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
-                      View Your Action Plan
+                      Start Your First Task
                     </a>
                   </td>
                 </tr>
@@ -271,16 +287,6 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
             </td>
           </tr>
 
-          <!-- Social Proof -->
-          <tr>
-            <td style="padding: 24px 40px; background-color: #F0FDF4; border-top: 1px solid #BBF7D0;">
-              <p style="margin: 0; font-size: 14px; color: #166534; text-align: center;">
-                <strong>Buyers pay premium valuations</strong> for businesses that clear their readiness bar on day one.
-                <span style="display: block; margin-top: 4px; font-size: 12px; color: #22C55E;">— Exit Planning Institute, 2025</span>
-              </p>
-            </td>
-          </tr>
-
           <!-- Footer -->
           <tr>
             <td style="padding: 24px 40px; text-align: center; border-top: 1px solid #f0f0f0;">
@@ -295,13 +301,15 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
     </tr>
   </table>
 </body>
-</html>`,
-    })
+</html>`
 
-    console.log(`[Email] Sent onboarding complete email to ${email}`)
-    return { success: true }
-  } catch (error) {
-    console.error('[Email] Failed to send onboarding complete email:', error)
-    return { success: false, error: String(error) }
-  }
+  return sendEmail({
+    userId,
+    companyId,
+    emailType: 'VERIFICATION_CONGRATS',
+    to: email,
+    subject: "You're Verified — Here's Your Exit Readiness Report",
+    html,
+    skipPreferenceCheck: true,
+  })
 }

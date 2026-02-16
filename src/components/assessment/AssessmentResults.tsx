@@ -91,7 +91,7 @@ export function AssessmentResults({ results, onViewDashboard }: AssessmentResult
         </div>
         <h1 className="text-2xl font-bold text-gray-900">Assessment Complete!</h1>
         <p className="text-gray-600 mt-2">
-          Your Buyer Readiness Score has been calculated
+          Your Buyer Readiness Index has been calculated
         </p>
       </div>
 
@@ -99,7 +99,7 @@ export function AssessmentResults({ results, onViewDashboard }: AssessmentResult
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="border-primary bg-primary/10">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-primary">Buyer Readiness Score</CardTitle>
+            <CardTitle className="text-sm font-medium text-primary">Buyer Readiness Index</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-end gap-2">
@@ -108,7 +108,7 @@ export function AssessmentResults({ results, onViewDashboard }: AssessmentResult
               </span>
               <span className="text-2xl text-gray-500 mb-1">/ 100</span>
             </div>
-            <p className="text-sm text-primary mt-2">Buyer Readiness Score</p>
+            <p className="text-sm text-primary mt-2">Buyer Readiness Index</p>
           </CardContent>
         </Card>
 

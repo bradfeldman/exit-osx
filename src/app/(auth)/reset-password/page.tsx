@@ -125,7 +125,7 @@ export default function ResetPasswordPage() {
               Build a Business<br />Buyers Want to Own
             </h1>
             <p className="text-lg opacity-90 max-w-md">
-              Get your valuation estimate, Buyer Readiness Score, and a personalized roadmap to maximize your exit outcome.
+              Get your valuation estimate, Buyer Readiness Index, and a personalized roadmap to maximize your exit outcome.
             </p>
           </div>
 

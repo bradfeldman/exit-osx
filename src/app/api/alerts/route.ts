@@ -6,7 +6,7 @@ import { getUserAlerts, markAllAsRead } from '@/lib/alerts'
 
 // Combined alert types
 type AssessmentAlertType = 'NO_ASSESSMENT' | 'STALE_ASSESSMENT' | 'QUARTERLY_REMINDER' | 'OPEN_ASSESSMENT' | 'ASSESSMENT_AVAILABLE'
-type SystemAlertType = 'ACCESS_REQUEST' | 'ACCESS_GRANTED' | 'ACCESS_DENIED' | 'STAFF_PAUSED' | 'OWNERSHIP_TRANSFER' | 'TRIAL_ENDING' | 'TRIAL_EXPIRED' | 'ACTION_PLAN_UPDATED'
+type SystemAlertType = 'ACCESS_REQUEST' | 'ACCESS_GRANTED' | 'ACCESS_DENIED' | 'STAFF_PAUSED' | 'OWNERSHIP_TRANSFER' | 'TRIAL_ENDING' | 'TRIAL_EXPIRED' | 'ACTION_PLAN_UPDATED' | 'ONBOARDING_TOUR' | 'ONBOARDING_ASSESSMENT'
 
 interface Alert {
   id: string
@@ -18,6 +18,7 @@ interface Alert {
   companyName?: string
   severity: 'info' | 'warning' | 'urgent'
   isRead?: boolean
+  persistent?: boolean
   createdAt: string
   source: 'computed' | 'database'
 }
@@ -69,7 +70,7 @@ export async function GET() {
           id: `no-assessment-${company.id}`,
           type: 'NO_ASSESSMENT',
           title: 'Complete Your Assessment',
-          message: `${company.name} needs an initial assessment to calculate your Buyer Readiness Score and valuation.`,
+          message: `${company.name} needs an initial assessment to calculate your Buyer Readiness Index and valuation.`,
           actionUrl: '/dashboard/diagnosis',
           companyId: company.id,
           companyName: company.name,
@@ -181,7 +182,15 @@ export async function GET() {
           'TRIAL_ENDING': 'urgent',
           'TRIAL_EXPIRED': 'urgent',
           'ACTION_PLAN_UPDATED': 'info',
+          'ONBOARDING_TOUR': 'info',
+          'ONBOARDING_ASSESSMENT': 'info',
         }
+
+        // Fetch persistent flag for this alert
+        const fullAlert = await prisma.alert.findUnique({
+          where: { id: dbAlert.id },
+          select: { persistent: true },
+        })
 
         alerts.push({
           id: dbAlert.id,
@@ -191,6 +200,7 @@ export async function GET() {
           actionUrl: dbAlert.actionUrl,
           severity: severityMap[dbAlert.type] || 'info',
           isRead: dbAlert.isRead,
+          persistent: fullAlert?.persistent ?? false,
           createdAt: dbAlert.createdAt.toISOString(),
           source: 'database',
         })

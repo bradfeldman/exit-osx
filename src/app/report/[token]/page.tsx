@@ -141,7 +141,7 @@ export default function SharedReportPage() {
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-semibold text-slate-900">Buyer Readiness Score</h2>
+              <h2 className="text-sm font-semibold text-slate-900">Buyer Readiness Index</h2>
               <p className="text-xs text-slate-500 mt-0.5">How attractive this business is to potential buyers</p>
             </div>
             <div className="text-right">

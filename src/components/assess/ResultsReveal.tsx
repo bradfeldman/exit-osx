@@ -156,7 +156,7 @@ export function ResultsReveal({ results, email, basics, profile, scan }: Results
         className="text-center"
       >
         <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">
-          Buyer Readiness Score
+          Buyer Readiness Index
         </p>
         <div className={`text-7xl sm:text-8xl font-bold tabular-nums ${getBriColor(results.briScore)}`}>
           {results.briScore}

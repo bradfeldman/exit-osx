@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     template: "%s | Exit OSx",
   },
   description:
-    "Get your real-time business valuation, Buyer Readiness Score, and personalized playbook to maximize your exit outcome. Start free today.",
+    "Get your real-time business valuation, Buyer Readiness Index, and personalized playbook to maximize your exit outcome. Start free today.",
   keywords: [
     "business exit planning",
     "M&A readiness",
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     siteName: "Exit OSx",
     title: "Exit OSx - Build a Business Buyers Want to Own",
     description:
-      "Real-time valuation, Buyer Readiness Score, and actionable playbook to maximize your exit.",
+      "Real-time valuation, Buyer Readiness Index, and actionable playbook to maximize your exit.",
   },
 };
 

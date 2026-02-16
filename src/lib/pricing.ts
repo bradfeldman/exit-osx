@@ -28,7 +28,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       { name: 'Exit Readiness Assessment', included: true },
       { name: 'Valuation Estimate', included: true },
-      { name: 'Buyer Readiness Score', included: true, limit: 'Overview only' },
+      { name: 'Buyer Readiness Index', included: true, limit: 'Overview only' },
       { name: 'Full Risk Diagnostic', included: false },
       { name: 'Personal Readiness Check', included: false },
       { name: 'Value Improvement Action Plan', included: false },
@@ -55,7 +55,8 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       { name: 'Exit Readiness Assessment', included: true },
       { name: 'Valuation Estimate', included: true },
-      { name: 'Buyer Readiness Score', included: true, limit: 'Full breakdown' },
+      { name: 'Buyer Readiness Index', included: true, limit: 'Full breakdown' },
+      { name: 'AI Exit Coach', included: true },
       { name: 'Full Risk Diagnostic', included: true },
       { name: 'Personal Readiness Check', included: true },
       { name: 'Value Improvement Action Plan', included: true },
@@ -81,7 +82,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       { name: 'Exit Readiness Assessment', included: true },
       { name: 'Valuation Estimate', included: true },
-      { name: 'Buyer Readiness Score', included: true, limit: 'Full breakdown + trends' },
+      { name: 'Buyer Readiness Index', included: true, limit: 'Full breakdown + trends' },
       { name: 'Full Risk Diagnostic', included: true },
       { name: 'Personal Readiness Check', included: true },
       { name: 'Value Improvement Action Plan', included: true },
@@ -121,6 +122,7 @@ export const FEATURE_REQUIREMENTS: Record<string, PlanTier> = {
   'bri-overview': 'foundation',
 
   // Growth required
+  'ai-coach': 'growth',
   'company-assessment': 'growth',
   'risk-assessment': 'growth',
   'personal-assessment': 'growth',

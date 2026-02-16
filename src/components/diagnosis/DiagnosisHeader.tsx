@@ -44,7 +44,7 @@ export function DiagnosisHeader({ briScore, isEstimated }: DiagnosisHeaderProps)
             >
               {isClient ? animatedScore : briScore}
             </motion.div>
-            <p className="text-sm text-muted-foreground">Buyer Readiness Score</p>
+            <p className="text-sm text-muted-foreground">Buyer Readiness Index</p>
             {isEstimated && (
               <Badge variant="secondary" className="mt-1">Estimated</Badge>
             )}
@@ -52,7 +52,7 @@ export function DiagnosisHeader({ briScore, isEstimated }: DiagnosisHeaderProps)
         ) : (
           <>
             <div className="text-5xl font-bold text-muted-foreground/30">—</div>
-            <p className="text-sm text-muted-foreground">Buyer Readiness Score</p>
+            <p className="text-sm text-muted-foreground">Buyer Readiness Index</p>
           </>
         )}
       </div>

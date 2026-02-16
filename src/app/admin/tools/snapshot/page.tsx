@@ -383,7 +383,7 @@ export default function AdminSnapshotPage() {
                     </CardHeader>
                     <CardContent>
                       <DataRow
-                        label="Buyer Readiness Score"
+                        label="Buyer Readiness Index"
                         value={formatScore(snapshot.briScore)}
                         description="Weighted average of all categories (0-100)"
                       />
