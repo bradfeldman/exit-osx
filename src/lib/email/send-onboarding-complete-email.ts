@@ -24,6 +24,19 @@ interface OnboardingCompleteEmailParams {
   reportToken: string
 }
 
+function getRiskLabel(score: number): string {
+  if (score >= 75) return 'Low Risk'
+  if (score >= 50) return 'Some Risk'
+  if (score > 0) return 'High Risk'
+  return 'At Risk'
+}
+
+function getRiskColor(score: number): string {
+  if (score >= 75) return '#10B981'  // green
+  if (score >= 50) return '#F59E0B'  // amber
+  return '#EF4444'                   // red
+}
+
 function formatCurrency(value: number): string {
   if (value >= 1000000) {
     return `$${(value / 1000000).toFixed(1)}M`
@@ -154,25 +167,27 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
               <p style="margin: 0 0 16px 0; font-size: 12px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px;">
                 Your Biggest Gap
               </p>
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #FEF3C7; border-radius: 8px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: ${getRiskColor(topRisk.score)}10; border: 1px solid ${getRiskColor(topRisk.score)}30; border-radius: 8px;">
                 <tr>
                   <td style="padding: 16px;">
-                    <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #92400E;">
-                      ${topRisk.label}
-                    </p>
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                       <tr>
-                        <td style="width: 80%;">
-                          <div style="background-color: rgba(146, 64, 14, 0.2); border-radius: 4px; height: 8px;">
-                            <div style="background-color: #D97706; border-radius: 4px; height: 8px; width: ${topRisk.score}%;"></div>
-                          </div>
+                        <td>
+                          <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #3D3D3D;">
+                            ${topRisk.label}
+                          </p>
                         </td>
-                        <td style="text-align: right; padding-left: 12px;">
-                          <span style="font-size: 14px; font-weight: 600; color: #92400E;">${topRisk.score}/100</span>
+                        <td style="text-align: right;">
+                          <span style="display: inline-block; padding: 4px 12px; background-color: ${getRiskColor(topRisk.score)}20; border-radius: 20px; font-size: 13px; font-weight: 600; color: ${getRiskColor(topRisk.score)};">
+                            ${getRiskLabel(topRisk.score)}
+                          </span>
                         </td>
                       </tr>
                     </table>
-                    <p style="margin: 8px 0 0 0; font-size: 13px; color: #A16207;">
+                    <div style="background-color: ${getRiskColor(topRisk.score)}20; border-radius: 4px; height: 8px; margin-bottom: 12px;">
+                      <div style="background-color: ${getRiskColor(topRisk.score)}; border-radius: 4px; height: 8px; width: ${Math.max(topRisk.score, 8)}%;"></div>
+                    </div>
+                    <p style="margin: 0; font-size: 13px; color: #666666;">
                       This is the area where focused improvement will have the biggest impact on your valuation.
                     </p>
                   </td>
