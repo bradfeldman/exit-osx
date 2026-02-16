@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from '@/lib/motion'
+import { X } from 'lucide-react'
 import { BusinessBasicsStep, type BusinessBasicsData } from './BusinessBasicsStep'
 import { BusinessProfileStep, type BusinessProfileData } from './BusinessProfileStep'
 import { BuyerScanStep, type BuyerScanData } from './BuyerScanStep'
@@ -168,12 +169,10 @@ export function AssessmentFlow() {
             {step !== 'results' && step !== 'calculating' && (
               <a
                 href="https://exitosx.com"
-                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="p-2 -mr-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 aria-label="Exit assessment"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <X className="w-5 h-5" />
               </a>
             )}
           </div>
