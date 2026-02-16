@@ -104,7 +104,7 @@ export function GrowthAssumptions({
           </div>
           {fcfIsEstimated && (
             <p className="text-xs text-amber-600 mt-1">
-              Estimated from EBITDA × 70%. Edit to refine based on actual cash flows.
+              Estimated from your revenue and industry benchmarks. Add detailed financials for a more accurate figure.
             </p>
           )}
         </div>

@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion } from '@/lib/motion'
+import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -73,6 +74,7 @@ function getCategoryBarWidth(score: number): number {
 }
 
 export function ResultsReveal({ results, email, basics, profile, scan }: ResultsRevealProps) {
+  const router = useRouter()
   const [phase, setPhase] = useState(0) // 0=BRI, 1=categories, 2=valuation, 3=tasks, 4=CTA
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -119,7 +121,22 @@ export function ResultsReveal({ results, email, basics, profile, scan }: Results
         throw new Error(data.error || 'Failed to save results')
       }
 
-      setSaved(true)
+      // Auto-sign in with the password they just set
+      const supabase = createClient()
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (signInError) {
+        // Sign-in failed — fall back to showing "Go to Login"
+        console.error('[assess] Auto sign-in failed:', signInError.message)
+        setSaved(true)
+        return
+      }
+
+      // Redirect straight to dashboard
+      router.push('/dashboard')
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
@@ -277,13 +294,10 @@ export function ResultsReveal({ results, email, basics, profile, scan }: Results
               </div>
               <h3 className="text-xl font-semibold text-foreground">Account Created!</h3>
               <p className="text-muted-foreground">
-                Check your email for a verification link to access your full dashboard.
-                <span className="block text-sm mt-1 text-muted-foreground/70">
-                  Not seeing it? Check your Updates or Spam folder.
-                </span>
+                Log in with the email and password you just set.
               </p>
               <Button asChild size="lg" className="mt-2">
-                <Link href="/login">Go to Login</Link>
+                <a href="/login">Go to Login</a>
               </Button>
             </div>
           ) : (

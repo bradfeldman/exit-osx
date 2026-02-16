@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { validateRequestBody, dcfAssumptionsSchema } from '@/lib/security/validation'
+import { getIndustryMultiples, estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
 
 // Size risk premium by revenue category (mirrors auto-dcf.ts)
 const SIZE_RISK_PREMIUM: Record<string, number> = {
@@ -36,6 +37,12 @@ export async function GET(
       include: { cashFlowStatement: true, incomeStatement: true, balanceSheet: true },
     })
 
+    // Fetch company data (needed for estimation fallback and suggestedDefaults)
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      include: { coreFactors: true },
+    })
+
     // Split into T12 and fiscal year periods
     const t12Period = periods.find((p) => p.label?.startsWith('T12'))
     const fyPeriods = periods.filter((p) => !p.label?.startsWith('T12'))
@@ -54,7 +61,7 @@ export async function GET(
     // FCF ≈ EBITDA × 0.70 (accounts for taxes, capex, and WC changes typical of SMBs)
     const estimatedFCF = !actualFCF && ebitda ? Math.round(ebitda * 0.70) : null
 
-    const financials = latestPeriod
+    let financials = latestPeriod
       ? {
           freeCashFlow: actualFCF,
           estimatedFCF,
@@ -67,6 +74,44 @@ export async function GET(
             : null,
         }
       : null
+
+    // Fallback: estimate from company revenue/EBITDA when no financial periods exist
+    if (!financials && company) {
+      const revenue = company.annualRevenue ? Number(company.annualRevenue) : 0
+      const companyEbitda = company.annualEbitda ? Number(company.annualEbitda) : 0
+
+      if (companyEbitda > 0) {
+        // Use EBITDA from company profile directly
+        const estFCF = Math.round(companyEbitda * 0.70)
+        financials = {
+          freeCashFlow: null,
+          estimatedFCF: estFCF,
+          fcfIsEstimated: true,
+          ebitda: companyEbitda,
+          netDebt: null,
+        }
+      } else if (revenue > 0) {
+        // Estimate EBITDA from revenue using industry multiples
+        const multiples = await getIndustryMultiples(
+          company.icbSubSector || '',
+          company.icbSector || undefined,
+          company.icbSuperSector || undefined,
+          company.icbIndustry || undefined,
+        )
+        const estEbitda = estimateEbitdaFromRevenue(revenue, multiples)
+        const estFCF = estEbitda > 0 ? Math.round(estEbitda * 0.70) : 0
+
+        if (estFCF > 0) {
+          financials = {
+            freeCashFlow: null,
+            estimatedFCF: estFCF,
+            fcfIsEstimated: true,
+            ebitda: estEbitda,
+            netDebt: null,
+          }
+        }
+      }
+    }
 
     // Build working capital data
     const t12WorkingCapital = t12Period?.balanceSheet?.workingCapital != null
@@ -94,10 +139,6 @@ export async function GET(
       const suggestedDefaults: Record<string, unknown> = {}
 
       // Size risk premium from revenue category
-      const company = await prisma.company.findUnique({
-        where: { id: companyId },
-        include: { coreFactors: true },
-      })
       const revenueSizeCategory = company?.coreFactors?.revenueSizeCategory ?? null
       if (revenueSizeCategory && SIZE_RISK_PREMIUM[revenueSizeCategory] != null) {
         suggestedDefaults.sizeRiskPremium = SIZE_RISK_PREMIUM[revenueSizeCategory]
