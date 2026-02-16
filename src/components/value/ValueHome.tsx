@@ -279,6 +279,7 @@ export function ValueHome() {
 
         {/* What-If Scenarios (only after full 6-category baseline assessment) */}
         <AnimatedItem>
+          <div id="what-if-scenarios" />
           <WhatIfScenarios
             coreFactors={data.coreFactors}
             adjustedEbitda={data.tier2?.adjustedEbitda ?? 0}

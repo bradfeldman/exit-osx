@@ -1,6 +1,7 @@
 'use client'
 
 import { CORE_FACTOR_SCORES } from '@/lib/valuation/calculate-valuation'
+import { ChevronRight } from 'lucide-react'
 
 const FACTOR_LABELS: Record<string, string> = {
   revenueModel: 'Revenue Model',
@@ -43,6 +44,63 @@ const FACTOR_VALUE_LABELS: Record<string, Record<string, string>> = {
   },
 }
 
+/** What a buyer thinks when they see each factor at different levels */
+const FACTOR_BUYER_CONTEXT: Record<string, Record<string, string>> = {
+  revenueModel: {
+    PROJECT_BASED: 'Buyers see unpredictable cash flow — harder to forecast',
+    TRANSACTIONAL: 'Revenue depends on ongoing sales effort',
+    RECURRING_CONTRACTS: 'Predictable revenue stream — buyers pay more for this',
+    SUBSCRIPTION_SAAS: 'Highly predictable — the most valued revenue type',
+  },
+  grossMarginProxy: {
+    LOW: 'Thin margins limit growth potential and buyer interest',
+    MODERATE: 'Acceptable margins — room to improve',
+    GOOD: 'Healthy margins signal a strong business model',
+    EXCELLENT: 'Premium margins — very attractive to buyers',
+  },
+  laborIntensity: {
+    VERY_HIGH: 'Heavy reliance on people makes scaling expensive',
+    HIGH: 'Buyer sees significant labor costs that compress value',
+    MODERATE: 'Balanced — manageable labor cost structure',
+    LOW: 'Lean operation — scales efficiently',
+  },
+  assetIntensity: {
+    ASSET_HEAVY: 'Capital-intensive — requires ongoing investment to maintain',
+    MODERATE: 'Some capital required — typical for your industry',
+    ASSET_LIGHT: 'Minimal capital needs — more cash flow available to buyer',
+  },
+  ownerInvolvement: {
+    CRITICAL: 'Business may not survive the transition — biggest risk for buyers',
+    HIGH: 'Buyer needs to replace you — adds cost and risk',
+    MODERATE: 'Some transition needed, but manageable',
+    LOW: 'Business runs with limited owner input — attractive',
+    MINIMAL: 'Fully systematized — ideal for acquisition',
+  },
+}
+
+type ImpactLevel = 'helping' | 'neutral' | 'limiting'
+
+function getImpactLevel(score: number): ImpactLevel {
+  if (score >= 0.75) return 'helping'
+  if (score >= 0.5) return 'neutral'
+  return 'limiting'
+}
+
+const IMPACT_CONFIG: Record<ImpactLevel, { label: string; className: string }> = {
+  helping: {
+    label: 'Helping',
+    className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  },
+  neutral: {
+    label: 'Neutral',
+    className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  },
+  limiting: {
+    label: 'Limiting',
+    className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  },
+}
+
 interface CoreScoreCardProps {
   coreFactors: {
     revenueModel: string
@@ -56,101 +114,70 @@ interface CoreScoreCardProps {
   finalMultiple: number
 }
 
-export function CoreScoreCard({ coreFactors, multipleRange, finalMultiple }: CoreScoreCardProps) {
+export function CoreScoreCard({ coreFactors }: CoreScoreCardProps) {
   const coreScore = coreFactors.coreScore
   if (coreScore === null) return null
 
   const factors = ['revenueModel', 'grossMarginProxy', 'laborIntensity', 'assetIntensity', 'ownerInvolvement'] as const
-  const baseMultiple = multipleRange.low + coreScore * (multipleRange.high - multipleRange.low)
 
-  // Position as percentage within range for the dot
-  const rangeSpan = multipleRange.high - multipleRange.low
-  const positionPct = rangeSpan > 0 ? ((baseMultiple - multipleRange.low) / rangeSpan) * 100 : 50
+  const limitingCount = factors.filter(f => {
+    const score = CORE_FACTOR_SCORES[f]?.[coreFactors[f]] ?? 0.5
+    return getImpactLevel(score) === 'limiting'
+  }).length
 
   return (
     <div className="bg-card border border-border rounded-xl p-6">
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold text-foreground">YOUR BUSINESS PROFILE</h2>
-        <p className="text-sm text-muted-foreground">
-          These structural factors determine your base position in the industry range. BRI then adjusts up or down from there.
+      <div className="mb-5">
+        <h2 className="text-lg font-semibold text-foreground">What Drives Your Multiple</h2>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          These five structural factors determine where buyers start when valuing your business.
         </p>
       </div>
 
-      {/* Multiple positioning visual */}
-      <div className="mb-6 p-4 bg-muted/30 rounded-lg">
-        <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
-          <span>{multipleRange.low.toFixed(1)}x</span>
-          <span className="font-medium text-foreground">Base: {baseMultiple.toFixed(1)}x</span>
-          <span>{multipleRange.high.toFixed(1)}x</span>
-        </div>
-        <div className="relative h-2 bg-muted rounded-full">
-          <div
-            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-primary border-2 border-background shadow-sm"
-            style={{ left: `clamp(6px, calc(${positionPct}% - 6px), calc(100% - 6px))` }}
-          />
-          {/* Show final multiple (after BRI discount) as a second marker if different */}
-          {Math.abs(finalMultiple - baseMultiple) > 0.05 && (() => {
-            const finalPct = rangeSpan > 0
-              ? ((Math.max(multipleRange.low, Math.min(finalMultiple, multipleRange.high)) - multipleRange.low) / rangeSpan) * 100
-              : 50
-            return (
-              <div
-                className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-amber-500 border-2 border-background shadow-sm"
-                style={{ left: `clamp(5px, calc(${finalPct}% - 5px), calc(100% - 5px))` }}
-                title={`Current: ${finalMultiple.toFixed(1)}x (after BRI adjustment)`}
-              />
-            )
-          })()}
-        </div>
-        <div className="flex justify-between text-[11px] text-muted-foreground mt-1">
-          <span>Industry Low</span>
-          <span>Industry High</span>
-        </div>
-      </div>
-
-      {/* Factor breakdown */}
-      <div className="space-y-3">
+      {/* Factor rows */}
+      <div className="space-y-1">
         {factors.map(factor => {
           const value = coreFactors[factor]
           const score = CORE_FACTOR_SCORES[factor]?.[value] ?? 0.5
           const label = FACTOR_LABELS[factor]
           const valueLabel = FACTOR_VALUE_LABELS[factor]?.[value] ?? value
+          const impact = getImpactLevel(score)
+          const config = IMPACT_CONFIG[impact]
+          const buyerContext = FACTOR_BUYER_CONTEXT[factor]?.[value] ?? ''
 
           return (
-            <div key={factor} className="flex items-center justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="flex justify-between items-baseline mb-1">
-                  <span className="text-sm font-medium text-foreground">{label}</span>
-                  <span className="text-xs text-muted-foreground ml-2 truncate">{valueLabel}</span>
+            <div key={factor} className="py-3 border-b border-border last:border-b-0">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-foreground">{label}</span>
+                    <span className="text-xs text-muted-foreground">{valueLabel}</span>
+                  </div>
                 </div>
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${score * 100}%`,
-                      backgroundColor: score >= 0.75 ? '#22c55e' : score >= 0.5 ? '#3b82f6' : '#f59e0b',
-                    }}
-                  />
-                </div>
+                <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full whitespace-nowrap ${config.className}`}>
+                  {config.label}
+                </span>
               </div>
+              {buyerContext && (
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{buyerContext}</p>
+              )}
             </div>
           )
         })}
       </div>
 
-      <div className="mt-4 pt-3 border-t border-border">
-        <p className="text-xs text-muted-foreground">
-          <span className="inline-block w-3 h-3 rounded-full bg-primary mr-1.5 align-middle" />
-          Base multiple ({baseMultiple.toFixed(1)}x) from business profile
-          {Math.abs(finalMultiple - baseMultiple) > 0.05 && (
-            <>
-              {' '}&middot;{' '}
-              <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-500 mr-1 align-middle" />
-              Current ({finalMultiple.toFixed(1)}x) after BRI adjustment
-            </>
-          )}
-        </p>
-      </div>
+      {/* Footer — bridge to What-If Scenarios */}
+      {limitingCount > 0 && (
+        <div className="mt-4 pt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span>
+            {limitingCount} factor{limitingCount > 1 ? 's' : ''} limiting your multiple.
+          </span>
+          <a href="#what-if-scenarios" className="inline-flex items-center gap-0.5 text-primary hover:underline font-medium">
+            Model improvements
+            <ChevronRight className="w-3 h-3" />
+          </a>
+        </div>
+      )}
     </div>
   )
 }
