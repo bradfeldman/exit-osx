@@ -159,11 +159,24 @@ export function AssessmentFlow() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/wordmark.svg" alt="Exit OSx" width={100} height={28} className="h-6 w-auto" />
           </a>
-          {step !== 'results' && step !== 'calculating' && (
-            <span className="text-sm text-muted-foreground">
-              {stepIndex + 1} of {STEP_ORDER.length}
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            {step !== 'results' && step !== 'calculating' && (
+              <span className="text-sm text-muted-foreground">
+                {stepIndex + 1} of {STEP_ORDER.length}
+              </span>
+            )}
+            {step !== 'results' && step !== 'calculating' && (
+              <a
+                href="https://exitosx.com"
+                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                aria-label="Exit assessment"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </a>
+            )}
+          </div>
         </div>
         {/* Progress bar */}
         {step !== 'results' && step !== 'calculating' && (
