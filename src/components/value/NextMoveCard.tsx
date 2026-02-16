@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Clock, DollarSign, ChevronDown, ChevronUp } from 'lucide-react'
+import { Clock, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getBRICategoryLabel, getBRICategoryColor } from '@/lib/constants/bri-categories'
@@ -113,7 +113,6 @@ export function NextMoveCard({ task, comingUp, isFreeUser = false, onUpgrade }: 
         )}
         {task.rawImpact > 0 && (
           <span className="flex items-center gap-1">
-            <DollarSign className="h-4 w-4" />
             ~{formatCurrency(task.rawImpact)} value impact
           </span>
         )}

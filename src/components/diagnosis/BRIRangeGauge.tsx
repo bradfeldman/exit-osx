@@ -40,16 +40,16 @@ export function BRIRangeGauge({ briScore, isEstimated = false }: BRIRangeGaugePr
 
     if (briScore < 40) {
       z = 'critical'
-      label = 'Critical'
+      label = 'Poor'
       msg = 'Significant gaps that will concern buyers. Focus on high-impact fixes.'
     } else if (briScore < 60) {
       z = 'developing'
-      label = 'Developing'
-      msg = 'On the right track, but buyers will see risk. Strong zone starts at 60.'
-    } else if (briScore < 75) {
+      label = 'Average'
+      msg = 'On the right track, but buyers will see risk. Good zone starts at 60.'
+    } else if (briScore < 80) {
       z = 'strong'
-      label = 'Strong'
-      msg = 'Buyer-ready with minor gaps. Excellent zone starts at 75.'
+      label = 'Good'
+      msg = 'Buyer-ready with minor gaps. Excellent zone starts at 80.'
     } else {
       z = 'excellent'
       label = 'Excellent'
@@ -76,26 +76,36 @@ export function BRIRangeGauge({ briScore, isEstimated = false }: BRIRangeGaugePr
       <CardContent className="space-y-4">
         {/* Gauge Bar */}
         <div className="space-y-2">
+          {/* Score number above bead */}
+          <div className="relative h-5">
+            <div
+              className="absolute -translate-x-1/2 text-sm font-bold text-foreground"
+              style={{ left: `${position}%` }}
+            >
+              {briScore}
+            </div>
+          </div>
+
           <div className="relative h-3 rounded-full overflow-hidden bg-zinc-100">
-            {/* Critical zone (0-40) */}
+            {/* Poor zone (0-40) */}
             <div
               className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-300 to-red-200"
               style={{ width: '40%' }}
             />
-            {/* Developing zone (40-60) */}
+            {/* Average zone (40-60) */}
             <div
               className="absolute inset-y-0 bg-gradient-to-r from-amber-200 to-amber-100"
               style={{ left: '40%', width: '20%' }}
             />
-            {/* Strong zone (60-75) */}
+            {/* Good zone (60-80) */}
             <div
               className="absolute inset-y-0 bg-gradient-to-r from-zinc-200 to-zinc-300"
-              style={{ left: '60%', width: '15%' }}
+              style={{ left: '60%', width: '20%' }}
             />
-            {/* Excellent zone (75-100) */}
+            {/* Excellent zone (80-100) */}
             <div
               className="absolute inset-y-0 bg-gradient-to-r from-emerald-200 to-emerald-300"
-              style={{ left: '75%', width: '25%' }}
+              style={{ left: '80%', width: '20%' }}
             />
 
             {/* Zone boundary markers */}
@@ -109,10 +119,10 @@ export function BRIRangeGauge({ briScore, isEstimated = false }: BRIRangeGaugePr
             />
             <div
               className="absolute top-0 bottom-0 w-px bg-zinc-400/40"
-              style={{ left: '75%' }}
+              style={{ left: '80%' }}
             />
 
-            {/* Current position marker - positioned proportionally between 0 and 100 */}
+            {/* Current position marker */}
             <div
               className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-5 w-5 rounded-full border-2 border-white shadow-md z-10"
               style={{
@@ -129,20 +139,18 @@ export function BRIRangeGauge({ briScore, isEstimated = false }: BRIRangeGaugePr
             />
           </div>
 
-          {/* Labels */}
-          <div className="flex justify-between text-[11px] text-muted-foreground">
-            <span>0</span>
-            <span className="font-medium text-foreground">
-              You: {briScore} ({zoneLabel})
-            </span>
-            <span>100</span>
+          {/* Zone labels */}
+          <div className="flex text-[10px] text-muted-foreground">
+            <span className="text-center" style={{ width: '40%' }}>Poor</span>
+            <span className="text-center" style={{ width: '20%' }}>Average</span>
+            <span className="text-center" style={{ width: '20%' }}>Good</span>
+            <span className="text-center" style={{ width: '20%' }}>Excellent</span>
           </div>
 
-          {/* Zone markers */}
-          <div className="flex justify-between text-[10px] text-muted-foreground/60">
-            <span style={{ marginLeft: '20%' }}>40</span>
-            <span style={{ marginLeft: '10%' }}>60</span>
-            <span style={{ marginLeft: '5%' }}>75</span>
+          {/* Endpoint labels */}
+          <div className="flex justify-between text-[11px] text-muted-foreground">
+            <span>0</span>
+            <span>100</span>
           </div>
         </div>
 

@@ -54,7 +54,7 @@ export function HeroMetricsBar({
 
   const getDeltaDisplay = () => {
     if (valueGapDelta === null) {
-      return { text: 'First month', className: 'text-muted-foreground' }
+      return { text: 'As of today', className: 'text-muted-foreground' }
     }
     if (valueGapDelta === 0) {
       return { text: 'No change this month', className: 'text-muted-foreground' }
@@ -85,6 +85,13 @@ export function HeroMetricsBar({
     return 'text-amber-600'
   }
 
+  // Compute blended current value: midpoint of EBITDA-multiple value and DCF value (if available)
+  const blendedCurrentValue = _dcfValuation
+    ? Math.round((currentValue + _dcfValuation.enterpriseValue) / 2)
+    : currentValue
+  const rangeMin = Math.round(blendedCurrentValue * 0.95)
+  const rangeMax = Math.round(blendedCurrentValue * 1.05)
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {/* BRI Score */}
@@ -94,14 +101,14 @@ export function HeroMetricsBar({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <p className="text-sm font-medium text-muted-foreground">Buyer Readiness Score</p>
+        <p className="text-sm font-medium text-muted-foreground">Buyer Readiness Index</p>
         <p className={`text-3xl font-bold mt-1 truncate ${getBriColor()}`}>
           {briPercent != null
             ? isClient ? animatedBri : `${briPercent}`
             : '—'}
         </p>
         {briPercent != null ? (
-          <p className="text-xs text-muted-foreground mt-2">Buyer Readiness Index</p>
+          <p className="text-xs text-muted-foreground mt-2">Score 0 – 100</p>
         ) : (
           <Badge variant="secondary" className="mt-2">Not assessed</Badge>
         )}
@@ -116,14 +123,11 @@ export function HeroMetricsBar({
       >
         <p className="text-sm font-medium text-muted-foreground">Current Value</p>
         <p className="text-3xl font-bold text-foreground mt-1 truncate">
-          {isClient ? <AnimatedCurrency value={currentValue} delay={200} /> : formatCurrency(currentValue)}
+          {isClient ? <AnimatedCurrency value={blendedCurrentValue} delay={200} /> : formatCurrency(blendedCurrentValue)}
         </p>
-        {!hasAssessment && (
-          <Badge variant="secondary" className="mt-2">Industry Preview</Badge>
-        )}
-        {hasAssessment && isEbitdaFromFinancials && (
-          <Badge variant="secondary" className="mt-2">Based on your financials</Badge>
-        )}
+        <p className="text-xs text-muted-foreground mt-2">
+          {formatCurrency(rangeMin)} – {formatCurrency(rangeMax)}
+        </p>
       </motion.div>
 
       {/* Potential Value */}
@@ -133,7 +137,7 @@ export function HeroMetricsBar({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
       >
-        <p className="text-sm font-medium text-muted-foreground">Potential Value</p>
+        <p className="text-sm font-medium text-muted-foreground">Target Value</p>
         <p className="text-3xl font-bold text-foreground mt-1 truncate">
           {isClient ? <AnimatedCurrency value={potentialValue} delay={300} /> : formatCurrency(potentialValue)}
         </p>

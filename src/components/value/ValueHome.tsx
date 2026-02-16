@@ -27,6 +27,7 @@ import { PlatformTour } from './PlatformTour'
 import { Compass } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SinceLastVisitBanner } from './SinceLastVisitBanner'
+import { EmailVerificationBanner } from './EmailVerificationBanner'
 import type { CoreFactors } from '@/lib/valuation/calculate-valuation'
 
 interface DashboardData {
@@ -125,12 +126,13 @@ interface DashboardData {
   hasAssessment: boolean
   sinceLastVisit?: Array<{ type: string; message: string; date: string }>
   lastVisitAt?: string | null
+  emailVerified?: boolean
 }
 
 export function ValueHome() {
   const { selectedCompanyId } = useCompany()
   const { planTier } = useSubscription()
-  const { isLearning, isLoading: exposureLoading } = useExposure()
+  useExposure() // keep context mounted
   const { progressionData } = useProgression()
   const hasFullAssessment = progressionData?.hasFullAssessment ?? false
   const router = useRouter()
@@ -172,16 +174,16 @@ export function ValueHome() {
     fetchData()
   }, [fetchData])
 
-  // Auto-open platform tour on first visit (only in LEARNING state)
+  // Auto-open platform tour on first visit to Value page
   useEffect(() => {
-    if (!isLoading && !exposureLoading && data && isLearning && !localStorage.getItem('exitosx-tour-seen')) {
+    if (!isLoading && data && !localStorage.getItem('exitosx-tour-seen')) {
       const timer = setTimeout(() => {
         setTourKey((k) => k + 1)
         setShowTour(true)
       }, 600)
       return () => clearTimeout(timer)
     }
-  }, [isLoading, exposureLoading, data, isLearning])
+  }, [isLoading, data])
 
   const handleTourComplete = useCallback(() => {
     localStorage.setItem('exitosx-tour-seen', 'true')
@@ -197,15 +199,16 @@ export function ValueHome() {
     <div className="max-w-5xl mx-auto px-6 py-8">
       <div className="flex justify-end mb-2">
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
-          className="text-muted-foreground gap-1.5"
+          className="gap-1.5"
           onClick={() => { setTourKey((k) => k + 1); setShowTour(true) }}
         >
           <Compass className="h-4 w-4" />
-          Tour
+          Take Tour
         </Button>
       </div>
+      <EmailVerificationBanner emailVerified={data.emailVerified ?? true} />
       <SinceLastVisitBanner events={data.sinceLastVisit ?? []} lastVisitAt={data.lastVisitAt ?? null} />
       <AnimatedStagger className="space-y-8" staggerDelay={0.15}>
         {/* Check-In: show only ONE at a time — Weekly takes priority over Quick Check */}
@@ -214,13 +217,6 @@ export function ValueHome() {
             <CheckInSlot onRefresh={fetchData} />
           </AnimatedItem>
         )}
-
-        {/* Company Name */}
-        <AnimatedItem>
-          <h1 className="text-2xl font-bold font-display text-foreground">
-            {data.company.name}
-          </h1>
-        </AnimatedItem>
 
         {/* Hero Metrics Bar */}
         <AnimatedItem>
@@ -254,6 +250,9 @@ export function ValueHome() {
               hasAssessment={data.hasAssessment}
               isFreeUser={isFreeUser}
               onUpgrade={() => handleUpgrade('company-assessment', 'Industry Benchmarks')}
+              adjustedEbitda={data.tier2?.adjustedEbitda}
+              isEbitdaFromFinancials={data.tier2?.isEbitdaFromFinancials}
+              ebitdaSource={data.tier2?.ebitdaSource}
             />
           </AnimatedItem>
         </div>

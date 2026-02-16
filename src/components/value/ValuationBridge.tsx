@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils/currency'
-import { ChevronRight, ArrowRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 interface BridgeCategory {
   category: string
@@ -63,7 +63,7 @@ export function ValuationBridge({
         <h2 className="text-lg font-semibold text-foreground">Where to Improve</h2>
         <p className="text-sm text-muted-foreground mt-0.5">
           {totalGap > 0
-            ? `These categories account for ${formatCurrency(totalGap)} in recoverable value. Tap any area to dig deeper.`
+            ? <>These categories account for <strong className="font-semibold text-foreground">{formatCurrency(totalGap)}</strong> in recoverable value. Tap any area to dig deeper.</>
             : 'How each part of your business contributes to your overall readiness.'}
         </p>
       </div>
@@ -89,7 +89,7 @@ export function ValuationBridge({
               return (
                 <button
                   key={cat.category}
-                  className="w-full text-left px-5 py-4 hover:bg-muted/40 transition-colors group flex items-start gap-4"
+                  className="w-full text-left px-5 py-4 hover:bg-muted/60 active:bg-muted/80 transition-all duration-150 cursor-pointer group flex items-start gap-4"
                   onClick={() => onCategoryClick?.(cat.category)}
                 >
                   {/* Health dot */}
@@ -98,20 +98,10 @@ export function ValuationBridge({
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-sm font-medium text-foreground">{cat.label}</span>
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${config.tagClass}`}>
-                          {config.label}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        {cat.dollarImpact > 0 && (
-                          <span className="text-xs text-muted-foreground">
-                            {formatCurrency(cat.dollarImpact)} at stake
-                          </span>
-                        )}
-                        <ChevronRight className="w-4 h-4 text-muted-foreground/50 group-hover:text-foreground transition-colors" />
-                      </div>
+                      <span className="text-sm font-medium text-foreground">{cat.label}</span>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0 ${config.tagClass}`}>
+                        {config.label}
+                      </span>
                     </div>
                     {cat.buyerExplanation && (
                       <p className="text-xs text-muted-foreground mt-1 leading-relaxed pr-6">

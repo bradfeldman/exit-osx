@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Lock, ArrowRight } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils/currency'
 
 interface BenchmarkComparisonProps {
   industryName: string
@@ -13,6 +14,9 @@ interface BenchmarkComparisonProps {
   hasAssessment: boolean
   isFreeUser?: boolean
   onUpgrade?: () => void
+  adjustedEbitda?: number
+  isEbitdaFromFinancials?: boolean
+  ebitdaSource?: string
 }
 
 export function BenchmarkComparison({
@@ -23,6 +27,9 @@ export function BenchmarkComparison({
   hasAssessment,
   isFreeUser = false,
   onUpgrade,
+  adjustedEbitda,
+  isEbitdaFromFinancials = false,
+  ebitdaSource,
 }: BenchmarkComparisonProps) {
   const { percentile, quartile, message } = useMemo(() => {
     const range = industryMultipleHigh - industryMultipleLow
@@ -79,7 +86,7 @@ export function BenchmarkComparison({
           Industry Benchmark
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Your multiple vs. {industryName}
+          Your EBITDA multiple vs. {industryName}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -131,6 +138,15 @@ export function BenchmarkComparison({
 
         {/* Contextual message */}
         <p className="text-xs text-muted-foreground">{message}</p>
+
+        {/* EBITDA basis */}
+        {adjustedEbitda != null && adjustedEbitda > 0 && (
+          <p className="text-xs text-muted-foreground border-t border-border pt-3">
+            {isEbitdaFromFinancials
+              ? `Based on ${ebitdaSource === 'trailing12' ? 'Trailing 12-Month' : 'most recent year'} EBITDA of ${formatCurrency(adjustedEbitda)}`
+              : `Est. EBITDA of ${formatCurrency(adjustedEbitda)} based on industry assumptions`}
+          </p>
+        )}
       </CardContent>
     </Card>
   )
