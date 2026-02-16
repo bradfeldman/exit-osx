@@ -163,6 +163,11 @@ model Company {
   icbSuperSector           String                       @map("icb_super_sector")
   icbSector                String                       @map("icb_sector")
   icbSubSector             String                       @map("icb_sub_sector")
+  gicsIndustryGroup        String?                      @map("gics_industry_group")
+  gicsSector               String?                      @map("gics_sector")
+  gicsSubIndustry          String?                      @map("gics_sub_industry")
+  classificationMethod     String?                      @map("classification_method")
+  classificationConfidence Decimal?                     @map("classification_confidence") @db.Decimal(3, 2)
   annualRevenue            Decimal                      @map("annual_revenue") @db.Decimal(15, 2)
   annualEbitda             Decimal                      @map("annual_ebitda") @db.Decimal(15, 2)
   ownerCompensation        Decimal                      @default(0) @map("owner_compensation") @db.Decimal(15, 2)
@@ -608,6 +613,9 @@ model IndustryMultiple {
   ebitdaMarginHigh    Decimal? @map("ebitda_margin_high") @db.Decimal(5, 2)
   effectiveDate       DateTime @map("effective_date")
   source              String?
+  gicsSubIndustry     String?  @map("gics_sub_industry")
+  lastResearchedAt    DateTime? @map("last_researched_at")
+  researchSources     Json?    @map("research_sources")
 
   @@unique([icbSubSector, effectiveDate])
   @@map("industry_multiples")

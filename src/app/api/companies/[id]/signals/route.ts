@@ -25,10 +25,13 @@ export async function GET(
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '20', 10), 50)
   const cursor = searchParams.get('cursor')
 
+  const eventType = searchParams.get('eventType')
+
   const where: Record<string, unknown> = { companyId }
   if (status) where.resolutionStatus = status
   if (channel) where.channel = channel
   if (severity) where.severity = severity
+  if (eventType) where.eventType = eventType
 
   try {
     const signals = await prisma.signal.findMany({

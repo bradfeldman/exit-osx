@@ -16,9 +16,11 @@ import {
 } from '@/lib/security/rate-limit'
 import { validateRequestBody, assessSaveSchema } from '@/lib/security/validation'
 import { ALPHA, calculateCoreScore, type CoreFactors } from '@/lib/valuation/calculate-valuation'
-import { getIndustryMultiples, estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
+import { estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
+import { getOrResearchMultiples } from '@/lib/valuation/multiple-freshness'
 import { generateReportToken } from '@/lib/report-token'
 import { sendOnboardingCompleteEmail } from '@/lib/email/send-onboarding-complete-email'
+import { classifyBusiness } from '@/lib/ai/business-classifier'
 
 /**
  * POST /api/assess/save
@@ -107,9 +109,26 @@ export async function POST(request: Request) {
       console.error('[assess/save] No hashed_token from generateLink — linkData:', JSON.stringify(linkData))
     }
 
+    // Classify the business server-side (don't rely on client classification)
+    let classification: Awaited<ReturnType<typeof classifyBusiness>> | null = null
+    try {
+      classification = await classifyBusiness(basics.businessDescription, undefined, basics.annualRevenue)
+    } catch (err) {
+      console.warn('[assess/save] Classification failed, using defaults:', err instanceof Error ? err.message : String(err))
+    }
+
+    const icbIndustry = classification?.primaryIndustry?.icbIndustry ?? 'Industrials'
+    const icbSuperSector = classification?.primaryIndustry?.icbSuperSector ?? 'Industrial Goods and Services'
+    const icbSector = classification?.primaryIndustry?.icbSector ?? 'Industrial Support Services'
+    const icbSubSector = classification?.primaryIndustry?.icbSubSector ?? 'PROFESSIONAL_SERVICES'
+    const gicsSubIndustry = classification?.gicsClassification?.subIndustry ?? null
+    const gicsSector = classification?.gicsClassification?.sector ?? null
+    const classificationMethod = classification?.classificationMethod ?? null
+    const classificationConfidence = classification?.primaryIndustry?.confidence ?? null
+
     // Recalculate valuation inputs server-side (don't trust client values for storage)
     const coreScore = calculateCoreScore(profile as CoreFactors)
-    const multiples = await getIndustryMultiples('professional-services')
+    const multiples = await getOrResearchMultiples(icbSubSector, gicsSubIndustry ?? undefined)
     const estimatedEbitda = estimateEbitdaFromRevenue(basics.annualRevenue, multiples)
     const briScore = Math.max(0, Math.min(100, body.scan.briScore)) / 100
     const discountFraction = Math.pow(1 - briScore, ALPHA)
@@ -150,10 +169,20 @@ export async function POST(request: Request) {
           annualEbitda: 0,
           ownerCompensation: 0,
           businessDescription: basics.businessDescription,
-          icbIndustry: 'Industrials',
-          icbSuperSector: 'Industrial Goods and Services',
-          icbSector: 'Industrial Support Services',
-          icbSubSector: 'professional-services',
+          icbIndustry,
+          icbSuperSector,
+          icbSector,
+          icbSubSector,
+          gicsSubIndustry,
+          gicsSector,
+          classificationMethod,
+          classificationConfidence,
+          ...(classification?.referenceCompanies && classification.referenceCompanies.length > 0 && {
+            businessProfile: JSON.parse(JSON.stringify({
+              referenceCompanies: classification.referenceCompanies,
+              classificationExplanation: classification.explanation,
+            })),
+          }),
         },
       })
 
