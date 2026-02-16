@@ -215,6 +215,13 @@ export function ValueHome() {
           </AnimatedItem>
         )}
 
+        {/* Company Name */}
+        <AnimatedItem>
+          <h1 className="text-2xl font-bold font-display text-foreground">
+            {data.company.name}
+          </h1>
+        </AnimatedItem>
+
         {/* Hero Metrics Bar */}
         <AnimatedItem>
           <HeroMetricsBar

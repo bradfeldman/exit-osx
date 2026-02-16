@@ -25,6 +25,12 @@ function truncate(str: string, max: number): string {
   return str.length > max ? str.slice(0, max) + '…' : str
 }
 
+function getImpactIndicator(rawImpact: number): { color: string; label: string } {
+  if (rawImpact >= 100000) return { color: 'bg-emerald-500', label: 'High' }
+  if (rawImpact >= 25000) return { color: 'bg-blue-500', label: 'Med' }
+  return { color: 'bg-muted-foreground/40', label: 'Low' }
+}
+
 export function ComingUpList({ tasks }: ComingUpListProps) {
   const router = useRouter()
 
@@ -36,22 +42,26 @@ export function ComingUpList({ tasks }: ComingUpListProps) {
       <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">
         COMING UP
       </p>
-      {tasks.map(task => (
-        <div
-          key={task.id}
-          className="flex justify-between items-center py-2 text-sm cursor-pointer hover:text-foreground transition-colors"
-          onClick={() => router.push('/dashboard/actions')}
-        >
-          <span className="text-muted-foreground">
-            {truncate(task.title, 40)}
-          </span>
-          <span className="text-muted-foreground/70 text-xs whitespace-nowrap ml-4">
-            {task.estimatedHours ? formatTime(task.estimatedHours) : ''}
-            {task.estimatedHours && task.rawImpact ? ' · ' : ''}
-            {task.rawImpact ? `~${formatCurrency(task.rawImpact)}` : ''}
-          </span>
-        </div>
-      ))}
+      {tasks.map(task => {
+        const impact = getImpactIndicator(task.rawImpact)
+        return (
+          <div
+            key={task.id}
+            className="flex items-center py-2 text-sm cursor-pointer hover:text-foreground transition-colors"
+            onClick={() => router.push('/dashboard/actions')}
+          >
+            <span className={`w-2 h-2 rounded-full ${impact.color} flex-shrink-0 mr-2.5`} />
+            <span className="text-muted-foreground flex-1 min-w-0 truncate">
+              {truncate(task.title, 40)}
+            </span>
+            <span className="text-muted-foreground/70 text-xs whitespace-nowrap ml-4">
+              {task.estimatedHours ? formatTime(task.estimatedHours) : ''}
+              {task.estimatedHours && task.rawImpact ? ' · ' : ''}
+              {task.rawImpact ? `~${formatCurrency(task.rawImpact)}` : ''}
+            </span>
+          </div>
+        )
+      })}
     </div>
   )
 }

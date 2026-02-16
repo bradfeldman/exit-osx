@@ -22,8 +22,7 @@ interface DebtsStepProps extends PFSWizardStepProps {
 export function DebtsStep({ data, onUpdate, onNext, onBack, onSkip }: DebtsStepProps) {
   const canProceed =
     data.hasOtherDebts === false ||
-    (data.hasOtherDebts === true && data.debts.length > 0 &&
-     data.debts.some(d => d.amount > 0))
+    (data.hasOtherDebts === true && data.debts.length > 0)
 
   function addDebt() {
     onUpdate({
@@ -148,7 +147,7 @@ export function DebtsStep({ data, onUpdate, onNext, onBack, onSkip }: DebtsStepP
                       inputMode="numeric"
                       value={formatInputValue(debt.amount)}
                       onChange={(e) => updateDebt(debt.id, 'amount', parseInputValue(e.target.value))}
-                      placeholder="Amount owed"
+                      placeholder="e.g. 25,000"
                       className="pl-7 h-10"
                     />
                   </div>

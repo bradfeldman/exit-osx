@@ -22,8 +22,7 @@ interface RetirementStepProps extends PFSWizardStepProps {
 export function RetirementStep({ data, onUpdate, onNext, onBack, onSkip }: RetirementStepProps) {
   const canProceed =
     data.hasRetirementAccounts === false ||
-    (data.hasRetirementAccounts === true && data.retirementAccounts.length > 0 &&
-     data.retirementAccounts.some(a => a.value > 0))
+    (data.hasRetirementAccounts === true && data.retirementAccounts.length > 0)
 
   function addAccount() {
     onUpdate({
@@ -159,7 +158,7 @@ export function RetirementStep({ data, onUpdate, onNext, onBack, onSkip }: Retir
                         inputMode="numeric"
                         value={formatInputValue(account.value)}
                         onChange={(e) => updateAccount(account.id, 'value', parseInputValue(e.target.value))}
-                        placeholder="Approximate balance"
+                        placeholder="e.g. 150,000"
                         className="pl-7 h-10"
                       />
                     </div>

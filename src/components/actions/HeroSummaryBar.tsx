@@ -81,7 +81,7 @@ export function HeroSummaryBar({
           {completedThisMonth > 0 ? (
             <div className="space-y-0.5">
               <p>
-                <span>This Month: </span>
+                <span>{new Date().toLocaleString('en-US', { month: 'long' })}: </span>
                 <span className="font-semibold text-foreground">
                   {completedThisMonth} completed
                 </span>
@@ -97,7 +97,7 @@ export function HeroSummaryBar({
               )}
             </div>
           ) : (
-            <p>This Month: Ready to start</p>
+            <p>{new Date().toLocaleString('en-US', { month: 'long' })}: Ready to start</p>
           )}
         </div>
       </div>

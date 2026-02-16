@@ -24,36 +24,18 @@ export function AgeStep({ data, onUpdate, onNext }: PFSWizardStepProps) {
         <label className="block text-sm font-medium text-foreground">
           How old are you?
         </label>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => onUpdate({ currentAge: Math.max(18, (data.currentAge || 50) - 1) })}
-            disabled={data.currentAge !== null && data.currentAge <= 18}
-            className="w-10 h-10 rounded-lg border border-input hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 transition-colors flex items-center justify-center text-foreground font-medium text-lg"
-          >
-            -
-          </button>
-          <Input
-            type="text"
-            inputMode="numeric"
-            value={data.currentAge !== null ? String(data.currentAge) : ''}
-            onChange={(e) => {
-              const v = e.target.value.replace(/[^0-9]/g, '')
-              if (!v) { onUpdate({ currentAge: null }); return }
-              onUpdate({ currentAge: Math.min(100, Math.max(18, parseInt(v))) })
-            }}
-            placeholder="e.g. 52"
-            className="w-20 h-10 text-center text-lg font-semibold"
-          />
-          <button
-            type="button"
-            onClick={() => onUpdate({ currentAge: Math.min(100, (data.currentAge || 49) + 1) })}
-            disabled={data.currentAge !== null && data.currentAge >= 100}
-            className="w-10 h-10 rounded-lg border border-input hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 transition-colors flex items-center justify-center text-foreground font-medium text-lg"
-          >
-            +
-          </button>
-        </div>
+        <Input
+          type="text"
+          inputMode="numeric"
+          value={data.currentAge !== null ? String(data.currentAge) : ''}
+          onChange={(e) => {
+            const v = e.target.value.replace(/[^0-9]/g, '')
+            if (!v) { onUpdate({ currentAge: null }); return }
+            onUpdate({ currentAge: Math.min(100, Math.max(18, parseInt(v))) })
+          }}
+          placeholder="e.g. 52"
+          className="w-24 h-11 text-lg font-semibold"
+        />
         {data.currentAge !== null && (data.currentAge < 18 || data.currentAge > 100) && (
           <p className="text-xs text-destructive">Please enter your age (18-100)</p>
         )}

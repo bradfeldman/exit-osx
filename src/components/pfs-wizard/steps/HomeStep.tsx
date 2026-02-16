@@ -13,7 +13,7 @@ interface HomeStepProps extends PFSWizardStepProps {
 export function HomeStep({ data, onUpdate, onNext, onBack, onSkip }: HomeStepProps) {
   const canProceed =
     data.ownsHome === false ||
-    (data.ownsHome === true && data.homeValue > 0)
+    (data.ownsHome === true && data.homeValue >= 0)
 
   return (
     <div className="space-y-8">

@@ -987,6 +987,12 @@ export function AssessmentWizard({ companyId, companyName, title: _title = 'Buye
                     <motion.button
                       key={option.id}
                       onClick={() => !saving && handleAnswer(option.id)}
+                      onKeyDown={(e) => {
+                        if ((e.key === 'Enter' || e.key === ' ') && !saving) {
+                          e.preventDefault()
+                          handleAnswer(option.id)
+                        }
+                      }}
                       disabled={saving}
                       className={cn(
                         "w-full text-left p-4 rounded-xl border-2 transition-all duration-200",
