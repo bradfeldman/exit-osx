@@ -47,6 +47,15 @@ export function ValuationBridge({
     onCategoryClick?.(data.category)
   }
 
+  // Ensure $0 categories show a thin line instead of being invisible
+  const maxImpact = Math.max(...bridgeCategories.map(c => c.dollarImpact), 1)
+  const minBarValue = maxImpact * 0.008 // thin visible line
+  const chartData = bridgeCategories.map(c => ({
+    ...c,
+    displayImpact: c.dollarImpact > 0 ? c.dollarImpact : minBarValue,
+    isZero: c.dollarImpact === 0,
+  }))
+
   return (
     <div>
       <div className="mb-4">
@@ -71,7 +80,7 @@ export function ValuationBridge({
           {bridgeCategories.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={bridgeCategories}
+                data={chartData}
                 layout="vertical"
                 margin={{ top: 0, right: 40, left: 120, bottom: 0 }}
               >
@@ -92,21 +101,22 @@ export function ValuationBridge({
                 />
                 <Tooltip content={<BridgeTooltip />} />
                 <Bar
-                  dataKey="dollarImpact"
+                  dataKey="displayImpact"
                   radius={[0, 6, 6, 0]}
                   barSize={32}
                   isAnimationActive={true}
                   animationDuration={800}
                   animationBegin={200}
                   onClick={(_data, _index) => {
-                    const entry = bridgeCategories[_index]
+                    const entry = chartData[_index]
                     if (entry) handleBarClick(entry)
                   }}
                 >
-                  {bridgeCategories.map((entry, index) => (
+                  {chartData.map((entry, index) => (
                     <Cell
                       key={index}
                       fill={BRI_CATEGORY_COLORS[entry.category] || '#6b7280'}
+                      opacity={entry.isZero ? 0.35 : 1}
                       cursor="pointer"
                     />
                   ))}

@@ -24,12 +24,14 @@ export function BridgeTooltip({ active, payload }: BridgeTooltipProps) {
       <div className="font-semibold text-foreground text-sm">
         {data.label}: {data.score}/100
       </div>
-      <div className="text-primary font-bold text-sm mt-1">
-        Costing you ~{formatCurrency(data.dollarImpact)}
+      <div className={`font-bold text-sm mt-1 ${data.dollarImpact === 0 ? 'text-emerald-600' : 'text-primary'}`}>
+        {data.dollarImpact === 0 ? 'No discount — strong here' : `Costing you ~${formatCurrency(data.dollarImpact)}`}
       </div>
-      <div className="text-muted-foreground text-xs mt-1 italic">
-        &ldquo;{data.buyerExplanation}&rdquo;
-      </div>
+      {data.buyerExplanation && (
+        <div className="text-muted-foreground text-xs mt-1 italic">
+          &ldquo;{data.buyerExplanation}&rdquo;
+        </div>
+      )}
     </div>
   )
 }
