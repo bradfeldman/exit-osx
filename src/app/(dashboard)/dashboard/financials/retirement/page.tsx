@@ -167,9 +167,12 @@ export default function RetirementCalculatorPage() {
                   marketValue = dashboardData.tier1?.currentValue || 0
                 }
               } catch {
-                marketValue = company.valuationSnapshots?.[0]?.currentValue
-                  ? Number(company.valuationSnapshots[0].currentValue)
-                  : 0
+                // Dashboard failed — silent fallback
+              }
+
+              // Fallback to latest snapshot if dashboard didn't provide a value
+              if (!marketValue && company.valuationSnapshots?.[0]?.currentValue) {
+                marketValue = Number(company.valuationSnapshots[0].currentValue)
               }
 
               const ownershipPercent = ownership[company.id] ?? 100

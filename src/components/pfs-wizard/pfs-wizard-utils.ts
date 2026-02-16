@@ -206,7 +206,7 @@ export function wizardToApiPayload(data: PFSWizardData, stepsSkipped: number[]) 
     currentAge: data.currentAge,
     retirementAge: null, // Not collected in wizard — set on full PFS page
     exitGoalAmount: null,
-    businessOwnership: {}, // Default — set on full PFS page
+    businessOwnership: null, // Default — set on full PFS page
     notes: wizardToNotes(data, stepsSkipped),
   }
 }

@@ -116,14 +116,21 @@ export function DiagnosisPage() {
       // If no assessment exists yet (e.g., user only did quick-scan onboarding),
       // create one so the inline assessment buttons are enabled
       if (!json.assessmentId) {
-        const createRes = await fetch('/api/assessments', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ companyId: selectedCompanyId, assessmentType: 'INITIAL' }),
-        })
-        if (createRes.ok) {
-          const { assessment } = await createRes.json()
-          json.assessmentId = assessment.id
+        try {
+          const createRes = await fetch('/api/assessments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ companyId: selectedCompanyId, assessmentType: 'INITIAL' }),
+          })
+          if (createRes.ok) {
+            const { assessment } = await createRes.json()
+            json.assessmentId = assessment.id
+          } else {
+            const errBody = await createRes.json().catch(() => ({}))
+            console.error('[Diagnosis] Assessment creation failed:', createRes.status, errBody)
+          }
+        } catch (createErr) {
+          console.error('[Diagnosis] Assessment creation error:', createErr)
         }
       }
 

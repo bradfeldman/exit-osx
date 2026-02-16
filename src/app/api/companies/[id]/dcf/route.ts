@@ -67,8 +67,9 @@ export async function GET(
         }
       : null
 
-    // Fallback: estimate from company revenue/EBITDA when no financial periods exist
-    if (!financials && company) {
+    // Fallback: estimate FCF from company revenue/EBITDA when financial periods
+    // don't provide FCF or EBITDA (e.g., user entered only balance sheet data)
+    if ((!financials || (!financials.freeCashFlow && !financials.estimatedFCF)) && company) {
       const revenue = company.annualRevenue ? Number(company.annualRevenue) : 0
       const companyEbitda = company.annualEbitda ? Number(company.annualEbitda) : 0
 
@@ -76,11 +77,12 @@ export async function GET(
         // Use EBITDA from company profile directly
         const estFCF = Math.round(companyEbitda * 0.70)
         financials = {
-          freeCashFlow: null,
+          ...financials,
+          freeCashFlow: financials?.freeCashFlow ?? null,
           estimatedFCF: estFCF,
           fcfIsEstimated: true,
           ebitda: companyEbitda,
-          netDebt: null,
+          netDebt: financials?.netDebt ?? null,
         }
       } else if (revenue > 0) {
         // Estimate EBITDA from revenue using industry multiples
@@ -95,11 +97,12 @@ export async function GET(
 
         if (estFCF > 0) {
           financials = {
-            freeCashFlow: null,
+            ...financials,
+            freeCashFlow: financials?.freeCashFlow ?? null,
             estimatedFCF: estFCF,
             fcfIsEstimated: true,
             ebitda: estEbitda,
-            netDebt: null,
+            netDebt: financials?.netDebt ?? null,
           }
         }
       }
@@ -335,15 +338,23 @@ export async function PUT(
       ebitdaMultipleHighOverride,
     } = validation.data
 
+    // Build update object — only include WACC fields when provided (partial update support)
+    const waccFields = {
+      ...(riskFreeRate != null ? { riskFreeRate } : {}),
+      ...(marketRiskPremium != null ? { marketRiskPremium } : {}),
+      ...(beta != null ? { beta } : {}),
+      ...(sizeRiskPremium != null ? { sizeRiskPremium } : {}),
+    }
+
     const dcfAssumptions = await prisma.dCFAssumptions.upsert({
       where: { companyId },
       create: {
         companyId,
         baseFCF: baseFCF ?? null,
-        riskFreeRate,
-        marketRiskPremium,
-        beta,
-        sizeRiskPremium,
+        riskFreeRate: riskFreeRate ?? 0.045,
+        marketRiskPremium: marketRiskPremium ?? 0.062,
+        beta: beta ?? 1.0,
+        sizeRiskPremium: sizeRiskPremium ?? 0.06,
         companySpecificRisk: companySpecificRisk ?? null,
         costOfDebtOverride: costOfDebtOverride ?? null,
         taxRateOverride: taxRateOverride ?? null,
@@ -364,10 +375,7 @@ export async function PUT(
       },
       update: {
         baseFCF: baseFCF ?? null,
-        riskFreeRate,
-        marketRiskPremium,
-        beta,
-        sizeRiskPremium,
+        ...waccFields,
         companySpecificRisk: companySpecificRisk ?? null,
         costOfDebtOverride: costOfDebtOverride ?? null,
         taxRateOverride: taxRateOverride ?? null,

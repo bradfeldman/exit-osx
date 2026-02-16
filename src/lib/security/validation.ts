@@ -326,10 +326,10 @@ export const cashFlowSchema = z.object({
 /** DCF Assumptions PUT */
 export const dcfAssumptionsSchema = z.object({
   baseFCF: optionalFinancialAmount,
-  riskFreeRate: z.coerce.number().finite().min(0).max(1),
-  marketRiskPremium: z.coerce.number().finite().min(0).max(1),
-  beta: z.coerce.number().finite().min(0).max(5),
-  sizeRiskPremium: z.coerce.number().finite().min(0).max(1),
+  riskFreeRate: z.coerce.number().finite().min(0).max(1).optional().nullable(),
+  marketRiskPremium: z.coerce.number().finite().min(0).max(1).optional().nullable(),
+  beta: z.coerce.number().finite().min(0).max(5).optional().nullable(),
+  sizeRiskPremium: z.coerce.number().finite().min(0).max(1).optional().nullable(),
   companySpecificRisk: optionalRate,
   costOfDebtOverride: optionalRate,
   taxRateOverride: optionalRate,

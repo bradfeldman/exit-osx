@@ -42,7 +42,21 @@ export async function exchangeCodeForTokens(url: string): Promise<{
   realmId: string
 }> {
   const oauthClient = createQuickBooksClient()
-  const authResponse = await oauthClient.createToken(url)
+
+  let authResponse
+  try {
+    authResponse = await oauthClient.createToken(url)
+  } catch (err: unknown) {
+    // intuit-oauth throws errors with { error, error_description, intuit_tid }
+    const oauthError = err as { error?: string; error_description?: string; intuit_tid?: string; message?: string }
+    const detail = oauthError.error_description || oauthError.error || oauthError.message || 'Unknown OAuth error'
+    console.error('[QuickBooks] Token exchange failed:', {
+      error: oauthError.error,
+      description: oauthError.error_description,
+      tid: oauthError.intuit_tid,
+    })
+    throw new Error(`QuickBooks authentication failed: ${detail}`)
+  }
 
   const token = authResponse.getJson()
 
