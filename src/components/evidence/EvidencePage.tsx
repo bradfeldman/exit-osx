@@ -1,36 +1,41 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
 import { AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
-import { HeroEvidenceBar } from './HeroEvidenceBar'
-import { EvidenceCategoryTable } from './EvidenceCategoryTable'
-import { MissingDocumentsSection } from './MissingDocumentsSection'
-import { RecentlyAddedSection } from './RecentlyAddedSection'
+import { ReadinessHeader } from './ReadinessHeader'
+import { CategoryNav } from './CategoryNav'
+import { DocumentShelf } from './DocumentShelf'
 import { DealRoomTeaser } from './DealRoomTeaser'
 import { EvidenceLoading } from './EvidenceLoading'
 import { EvidenceError } from './EvidenceError'
-import { EvidenceEmptyState } from './EvidenceEmptyState'
+import type { RefreshCadence } from '@/lib/evidence/expected-documents'
 
-interface UploadedDoc {
-  id: string
-  name: string
-  uploadedAt: string
-  source: 'direct' | 'task' | 'integration'
-  sourceLabel: string | null
-  isStale: boolean
-  staleReason: string | null
-  mimeType: string | null
-  fileSize: number | null
-  version: number
-  matchedExpectedId: string | null
-}
-
-interface MissingDoc {
-  id: string
-  name: string
+interface DocumentSlot {
+  expectedDocId: string
+  slotName: string
+  importance: 'required' | 'expected' | 'helpful' | 'custom'
   buyerExplanation: string
-  importance: 'required' | 'expected' | 'helpful'
+  sortOrder: number
+  refreshCadence: RefreshCadence
+  isFilled: boolean
+  document: {
+    id: string
+    fileName: string
+    fileSize: number | null
+    mimeType: string | null
+    uploadedAt: string
+    uploadedByName: string | null
+    source: 'direct' | 'task' | 'integration'
+    sourceLabel: string | null
+    freshnessState: 'fresh' | 'current' | 'due_soon' | 'overdue'
+    nextUpdateDue: string | null
+    version: number
+    hasPreviousVersions: boolean
+  } | null
+  pendingRequest: null
+  linkedActionItem: null
 }
 
 interface EvidenceCategory {
@@ -41,27 +46,7 @@ interface EvidenceCategory {
   documentsUploaded: number
   documentsExpected: number
   percentage: number
-  dots: number
-  uploadedDocuments: UploadedDoc[]
-  missingDocuments: MissingDoc[]
-}
-
-interface TopMissing {
-  id: string
-  name: string
-  category: string
-  categoryLabel: string
-  buyerExplanation: string
-  importance: 'required' | 'expected' | 'helpful'
-}
-
-interface RecentDoc {
-  id: string
-  name: string
-  category: string
-  categoryLabel: string
-  addedAt: string
-  source: 'direct' | 'task' | 'integration'
+  documentSlots: DocumentSlot[]
 }
 
 interface EvidenceData {
@@ -71,11 +56,10 @@ interface EvidenceData {
     documentsUploaded: number
     documentsExpected: number
     lastUploadAt: string | null
+    staleCount: number
+    dueSoonCount: number
   }
   categories: EvidenceCategory[]
-  topMissing: TopMissing[]
-  totalMissing: number
-  recentlyAdded: RecentDoc[]
   dealRoom: {
     eligible: boolean
     scoreReady: boolean
@@ -87,9 +71,24 @@ interface EvidenceData {
 
 export function EvidencePage() {
   const { selectedCompanyId } = useCompany()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [data, setData] = useState<EvidenceData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // URL-synced tab state
+  const activeTab = searchParams.get('tab') || 'all'
+
+  const setActiveTab = useCallback((tab: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (tab === 'all') {
+      params.delete('tab')
+    } else {
+      params.set('tab', tab)
+    }
+    router.replace(`?${params.toString()}`, { scroll: false })
+  }, [router, searchParams])
 
   const fetchData = useCallback(async () => {
     if (!selectedCompanyId) return
@@ -116,22 +115,40 @@ export function EvidencePage() {
   if (isLoading) return <EvidenceLoading />
   if (error || !data) return <EvidenceError onRetry={fetchData} />
 
-  const isEmpty = data.score.documentsUploaded === 0
-  const showGuidance = data.score.percentage < 50
+  const showGuidance = data.score.percentage < 25
+  const isDetailMode = activeTab !== 'all'
+  const filteredCategories = isDetailMode
+    ? data.categories.filter(c => c.id === activeTab)
+    : data.categories
+
+  const handleViewDocument = (docId: string) => {
+    if (!selectedCompanyId) return
+    window.open(`/api/companies/${selectedCompanyId}/evidence/documents/${docId}/view`, '_blank')
+  }
 
   return (
-    <div className="max-w-[900px] mx-auto px-6 py-8">
-      <AnimatedStagger className="space-y-8" staggerDelay={0.1}>
+    <div className="max-w-[960px] mx-auto px-6 py-8">
+      <AnimatedStagger className="space-y-6" staggerDelay={0.1}>
+        {/* Readiness Header */}
         <AnimatedItem>
-          <HeroEvidenceBar
+          <ReadinessHeader
             percentage={data.score.percentage}
             documentsUploaded={data.score.documentsUploaded}
             documentsExpected={data.score.documentsExpected}
             lastUploadAt={data.score.lastUploadAt}
+            staleCount={data.score.staleCount}
+            dueSoonCount={data.score.dueSoonCount}
+            categories={data.categories.map(c => ({
+              id: c.id,
+              label: c.label,
+              documentsUploaded: c.documentsUploaded,
+              documentsExpected: c.documentsExpected,
+              percentage: c.percentage,
+            }))}
           />
         </AnimatedItem>
 
-        {/* Contextual guidance (BF-009) — shows when evidence is low */}
+        {/* Guidance card — only when < 25% complete */}
         {showGuidance && (
           <AnimatedItem>
             <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
@@ -152,52 +169,51 @@ export function EvidencePage() {
                   <p className="text-xs">Missing documents are the #1 reason deals fall through. Get ahead of it now.</p>
                 </div>
               </div>
-              {isEmpty && (
+              {data.score.documentsUploaded === 0 && (
                 <p className="text-xs text-muted-foreground mt-4 border-t border-primary/10 pt-3">
-                  Start with <span className="font-medium text-foreground">Financial</span> documents (tax returns, P&amp;L) &mdash; buyers request these in every deal. Then work through each category below.
+                  Start with <span className="font-medium text-foreground">Financial</span> documents &mdash; buyers request these in every deal.
                 </p>
               )}
             </div>
           </AnimatedItem>
         )}
 
-        {isEmpty ? (
-          <AnimatedItem>
-            <EvidenceEmptyState onUploadSuccess={fetchData} />
+        {/* Category Navigation */}
+        <AnimatedItem>
+          <CategoryNav
+            categories={data.categories.map(c => ({
+              id: c.id,
+              label: c.label,
+              documentsUploaded: c.documentsUploaded,
+              documentsExpected: c.documentsExpected,
+            }))}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
+        </AnimatedItem>
+
+        {/* Document Shelves */}
+        {filteredCategories.map(category => (
+          <AnimatedItem key={category.id}>
+            <DocumentShelf
+              category={category}
+              isDetailMode={isDetailMode}
+              onUploadSuccess={fetchData}
+              onViewDocument={handleViewDocument}
+            />
           </AnimatedItem>
-        ) : (
-          <>
-            <AnimatedItem>
-              <EvidenceCategoryTable categories={data.categories} onUploadSuccess={fetchData} />
-            </AnimatedItem>
+        ))}
 
-            {data.topMissing.length > 0 && (
-              <AnimatedItem>
-                <MissingDocumentsSection
-                  documents={data.topMissing}
-                  totalMissing={data.totalMissing}
-                  onUploadSuccess={fetchData}
-                />
-              </AnimatedItem>
-            )}
-
-            {data.recentlyAdded.length > 0 && (
-              <AnimatedItem>
-                <RecentlyAddedSection documents={data.recentlyAdded} />
-              </AnimatedItem>
-            )}
-
-            {data.dealRoom.eligible && data.score.percentage >= 60 && (
-              <AnimatedItem>
-                <DealRoomTeaser
-                  percentage={data.score.percentage}
-                  canActivate={data.dealRoom.canActivate}
-                  isActivated={data.dealRoom.isActivated}
-                  documentsToUnlock={data.dealRoom.documentsToUnlock}
-                />
-              </AnimatedItem>
-            )}
-          </>
+        {/* Deal Room Teaser */}
+        {data.dealRoom.eligible && data.score.percentage >= 60 && (
+          <AnimatedItem>
+            <DealRoomTeaser
+              percentage={data.score.percentage}
+              canActivate={data.dealRoom.canActivate}
+              isActivated={data.dealRoom.isActivated}
+              documentsToUnlock={data.dealRoom.documentsToUnlock}
+            />
+          </AnimatedItem>
         )}
       </AnimatedStagger>
     </div>
