@@ -30,11 +30,11 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(new URL('/dashboard/financials', request.url))
       }
 
-      // Actual error - show error message
-      const errorDescription = searchParams.get('error_description') || 'Authorization failed'
+      // SEC-083: Log details server-side but don't forward raw error_description to client
+      const errorDescription = searchParams.get('error_description') || 'unknown'
       console.error('QuickBooks OAuth error:', error, errorDescription)
       return NextResponse.redirect(
-        new URL(`/dashboard/financials?qb_error=${encodeURIComponent(errorDescription)}`, request.url)
+        new URL('/dashboard/financials?qb_error=authorization_failed', request.url)
       )
     }
 

@@ -1,6 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { Resend } from 'resend'
 import { formatIcbName } from '@/lib/utils/format-icb'
 import { z } from 'zod'
@@ -69,22 +69,17 @@ const postSchema = z.object({
 })
 
 export async function POST(request: Request) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   const validation = await validateRequestBody(request, postSchema)
   if (!validation.success) return validation.error
   const { companyId, requestedAmount, loanPurpose, qualification } = validation.data
 
-  try {
+  // SEC-086: Use standard checkPermission — VIEWER role cannot submit loan inquiries
+  const authResult = await checkPermission('COMPANY_UPDATE', companyId)
+  if (isAuthError(authResult)) return authResult.error
 
-    // Get current user details
+  try {
     const currentUser = await prisma.user.findUnique({
-      where: { authId: user.id },
+      where: { id: authResult.auth.user.id },
     })
 
     if (!currentUser) {
@@ -105,18 +100,6 @@ export async function POST(request: Request) {
 
     if (!company) {
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
-    }
-
-    // Verify user has access to this company
-    const hasAccess = await prisma.workspaceMember.findFirst({
-      where: {
-        workspaceId: company.workspaceId,
-        userId: currentUser.id,
-      },
-    })
-
-    if (!hasAccess) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     // Build the email content

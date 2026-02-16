@@ -285,8 +285,9 @@ export async function middleware(request: NextRequest) {
       // SEC-064: No Origin or Referer — require X-Requested-With as CSRF proof.
       // Legitimate browser requests from our app include this header via fetch().
       // Server-to-server calls (cron, webhooks) are already in CSRF_EXEMPT_ROUTES.
+      // SEC-088: Require specific value, not just presence
       const xRequestedWith = request.headers.get('x-requested-with')
-      if (!xRequestedWith) {
+      if (xRequestedWith !== 'XMLHttpRequest') {
         return NextResponse.json(
           { error: 'Forbidden', message: 'Missing required request headers' },
           { status: 403 }
@@ -408,7 +409,7 @@ export async function middleware(request: NextRequest) {
   // Public routes that don't require auth
   // SECURITY FIX (PROD-060): Removed /api/diag (now behind requireDevEndpoint),
   // /api/industries (now requires auth — calls OpenAI which has cost abuse risk)
-  const publicRoutes = ['/login', '/signup', '/activate', '/auth/callback', '/auth/confirm', '/pricing', '/terms', '/privacy', '/invite', '/api/invites', '/api/cron', '/api/health', '/api/public', '/api/report', '/report', '/api/task-share', '/task', '/forgot-password', '/reset-password', '/api/stripe/webhook', '/assess', '/api/assess']
+  const publicRoutes = ['/login', '/signup', '/activate', '/auth/callback', '/auth/confirm', '/pricing', '/terms', '/privacy', '/invite', '/api/invites', '/api/cron', '/api/health', '/api/public', '/api/report', '/report', '/api/task-share', '/task', '/forgot-password', '/reset-password', '/api/stripe/webhook', '/assess', '/api/assess', '/api/email/unsubscribe']
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
 
   // Admin public routes (login/forgot-password on admin subdomain)
