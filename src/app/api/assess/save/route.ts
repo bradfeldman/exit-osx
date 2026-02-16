@@ -15,7 +15,8 @@ import {
   createRateLimitResponse,
 } from '@/lib/security/rate-limit'
 import { validateRequestBody, assessSaveSchema } from '@/lib/security/validation'
-import { ALPHA } from '@/lib/valuation/calculate-valuation'
+import { ALPHA, calculateCoreScore, type CoreFactors } from '@/lib/valuation/calculate-valuation'
+import { getIndustryMultiples, estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
 import { generateReportToken } from '@/lib/report-token'
 import { sendOnboardingCompleteEmail } from '@/lib/email/send-onboarding-complete-email'
 
@@ -106,6 +107,13 @@ export async function POST(request: Request) {
       console.error('[assess/save] No hashed_token from generateLink — linkData:', JSON.stringify(linkData))
     }
 
+    // Recalculate valuation inputs server-side (don't trust client values for storage)
+    const coreScore = calculateCoreScore(profile as CoreFactors)
+    const multiples = await getIndustryMultiples('professional-services')
+    const estimatedEbitda = estimateEbitdaFromRevenue(basics.annualRevenue, multiples)
+    const briScore = Math.max(0, Math.min(100, body.scan.briScore)) / 100
+    const discountFraction = Math.pow(1 - briScore, ALPHA)
+
     // Create database records in a transaction
     const revenueSizeCategory = getRevenueSizeCategory(basics.annualRevenue)
 
@@ -167,11 +175,11 @@ export async function POST(request: Request) {
         data: {
           companyId: company.id,
           createdByUserId: user.id,
-          adjustedEbitda: 0,
-          industryMultipleLow: 3.0,
-          industryMultipleHigh: 6.0,
-          coreScore: 0.5,
-          briScore: body.scan.briScore / 100,
+          adjustedEbitda: estimatedEbitda,
+          industryMultipleLow: multiples.ebitdaMultipleLow,
+          industryMultipleHigh: multiples.ebitdaMultipleHigh,
+          coreScore,
+          briScore,
           briFinancial: results.categoryBreakdown?.FINANCIAL ?? 0,
           briTransferability: results.categoryBreakdown?.TRANSFERABILITY ?? 0,
           briOperational: results.categoryBreakdown?.OPERATIONAL ?? 0,
@@ -179,7 +187,7 @@ export async function POST(request: Request) {
           briLegalTax: results.categoryBreakdown?.LEGAL_TAX ?? 0,
           briPersonal: results.categoryBreakdown?.PERSONAL ?? 0,
           baseMultiple: results.baseMultiple,
-          discountFraction: 0,
+          discountFraction,
           finalMultiple: results.finalMultiple,
           currentValue: results.currentValue,
           potentialValue: results.potentialValue,
