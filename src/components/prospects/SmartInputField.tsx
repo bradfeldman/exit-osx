@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from '@/lib/motion'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -30,11 +30,15 @@ export function SmartInputField({
   const [isParsing, setIsParsing] = useState(false)
   const [parsed, setParsed] = useState<ParsedInput | null>(null)
 
-  // Debounced parsing
-  const doParse = useCallback(() => {
+  // Stable ref for the callback to avoid re-parse loops
+  const onParsedRef = useRef(onParsed)
+  onParsedRef.current = onParsed
+
+  // Only re-parse when the actual input value changes
+  useEffect(() => {
     if (!value.trim()) {
       setParsed(null)
-      onParsed({
+      onParsedRef.current({
         people: [],
         companies: [],
         emails: [],
@@ -48,19 +52,15 @@ export function SmartInputField({
     }
 
     setIsParsing(true)
-    // Small delay to show parsing indicator
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       const result = parseInput(value)
       setParsed(result)
-      onParsed(result)
+      onParsedRef.current(result)
       setIsParsing(false)
-    }, 150)
-  }, [value, onParsed])
+    }, 300)
 
-  useEffect(() => {
-    const timer = setTimeout(doParse, 300)
     return () => clearTimeout(timer)
-  }, [doParse])
+  }, [value])
 
   const hasContent = value.trim().length > 0
   const hasResults = parsed && (parsed.people.length > 0 || parsed.companies.length > 0 || parsed.emails.length > 0)
