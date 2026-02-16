@@ -31,6 +31,7 @@ model User {
   id                       String                    @id @default(cuid())
   authId                   String                    @unique @map("auth_id")
   email                    String                    @unique
+  emailVerified            Boolean                   @default(false) @map("email_verified")
   name                     String?
   avatarUrl                String?                   @map("avatar_url")
   isSuperAdmin             Boolean                   @default(false) @map("is_super_admin")
@@ -1647,6 +1648,7 @@ model Alert {
   metadata    Json?
   isRead      Boolean   @default(false) @map("is_read")
   readAt      DateTime? @map("read_at")
+  persistent  Boolean   @default(false) @map("is_persistent")
   createdAt   DateTime  @default(now()) @map("created_at")
   recipient   User      @relation(fields: [recipientId], references: [id], onDelete: Cascade)
 
@@ -2176,6 +2178,8 @@ enum AlertType {
   TRIAL_EXPIRED
   PARTNER_NUDGE
   ACTION_PLAN_UPDATED
+  ONBOARDING_TOUR
+  ONBOARDING_ASSESSMENT
 }
 
 enum CompanyMemberStatus {
