@@ -14,7 +14,13 @@ const postSchema = z.object({
   dealBuyerId: z.string().uuid().nullable().optional(),
   isPrimary: z.boolean().default(false),
   side: z.enum(['BUYER', 'SELLER', 'NEUTRAL']).optional(),
-  role: z.enum(['DEAL_LEAD', 'DECISION_MAKER', 'ADVISOR', 'LEGAL', 'FINANCE', 'OPERATIONS', 'OTHER']).optional(),
+  role: z.enum([
+    'DEAL_LEAD', 'DECISION_MAKER', 'DILIGENCE', 'BUYER_LEGAL', 'BUYER_FINANCE', 'BUYER_OPERATIONS',
+    'CPA', 'ATTORNEY', 'BROKER', 'MA_ADVISOR', 'WEALTH_PLANNER',
+    'COO', 'CFO', 'GM', 'KEY_EMPLOYEE', 'BOARD_MEMBER',
+    'BANKER', 'ESCROW_AGENT', 'INSURANCE_BROKER',
+    'PRIMARY_CONTACT', 'OTHER',
+  ]).optional(),
 })
 
 const PERSON_SELECT = {

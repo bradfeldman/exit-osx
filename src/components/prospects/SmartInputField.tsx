@@ -87,7 +87,7 @@ export function SmartInputField({
         </AnimatePresence>
       </div>
 
-      <div className="relative">
+      <div>
         <Textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -100,14 +100,14 @@ export function SmartInputField({
           )}
         />
 
-        {/* Quick Stats Bar */}
+        {/* Quick Stats Bar — below the textarea */}
         <AnimatePresence>
           {hasContent && parsed && !isParsing && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="absolute bottom-2 left-2 right-2 flex items-center gap-3 text-xs text-muted-foreground bg-background/90 backdrop-blur-sm rounded-md px-2 py-1.5 border"
+              exit={{ opacity: 0, y: -4 }}
+              className="flex items-center gap-3 text-xs text-muted-foreground rounded-md px-1 py-1.5 mt-1.5"
             >
               {parsed.people.length > 0 && (
                 <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">

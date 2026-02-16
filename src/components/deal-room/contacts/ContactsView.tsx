@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
-import { Plus, Search, Users, X, Loader2, User, Building2 } from 'lucide-react'
+import { Search, Users, X, Loader2, User, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -34,7 +34,7 @@ export function ContactsView({ dealId, companyId: _companyId }: ContactsViewProp
   // Inline add state
   const [smartInput, setSmartInput] = useState('')
   const [parsed, setParsed] = useState<ParsedInput | null>(null)
-  const [addCategory, setAddCategory] = useState<string>('ADVISOR')
+  const [addCategory, setAddCategory] = useState<string>('PROSPECT')
   const [addDescription, setAddDescription] = useState('')
   const [isAdding, setIsAdding] = useState(false)
   const [addError, setAddError] = useState<string | null>(null)
@@ -92,6 +92,25 @@ export function ContactsView({ dealId, companyId: _companyId }: ContactsViewProp
     setParsed(result)
     setAddError(null)
 
+    // First, check if the parsed company matches an existing participant's company
+    // If so, inherit that participant's category
+    if (result.companies.length > 0 && result.companies[0].name) {
+      const parsedCompanyName = result.companies[0].name.toLowerCase()
+      // Find the most recently added participant from the same company
+      const matchingParticipant = [...participants]
+        .reverse()
+        .find(p => {
+          const companyName =
+            p.canonicalPerson.currentCompany?.name ??
+            p.dealBuyer?.canonicalCompany?.name
+          return companyName?.toLowerCase() === parsedCompanyName
+        })
+      if (matchingParticipant?.category) {
+        setAddCategory(matchingParticipant.category)
+        return
+      }
+    }
+
     // Auto-infer category from title
     if (result.people.length > 0 && result.people[0].title) {
       const role = inferRoleFromTitle(result.people[0].title)
@@ -101,19 +120,30 @@ export function ContactsView({ dealId, companyId: _companyId }: ContactsViewProp
         if (advisorRoles.includes(role)) setAddCategory('ADVISOR')
         else if (mgmtRoles.includes(role)) setAddCategory('MANAGEMENT')
         else setAddCategory('PROSPECT')
+        return
       }
     }
-  }, [])
+
+    // Default to Prospect if no title-based inference
+    setAddCategory('PROSPECT')
+  }, [participants])
 
   // Add contact from smart paste
   const handleAddFromPaste = async () => {
     if (!parsed?.people[0]) return
+
+    const person = parsed.people[0]
+
+    // Validate required fields before making API calls
+    if (!person.firstName?.trim() || !person.lastName?.trim()) {
+      setAddError('Could not detect a first and last name. Please check the input.')
+      return
+    }
+
     setIsAdding(true)
     setAddError(null)
 
     try {
-      const person = parsed.people[0]
-
       // Create company if parsed
       let currentCompanyId: string | undefined
       if (parsed.companies[0]) {
@@ -145,10 +175,10 @@ export function ContactsView({ dealId, companyId: _companyId }: ContactsViewProp
         body: JSON.stringify({
           firstName: person.firstName,
           lastName: person.lastName,
-          email: person.email,
-          phone: person.phone,
-          currentTitle: person.title,
-          linkedInUrl: person.linkedInUrl,
+          email: person.email || undefined,
+          phone: person.phone || undefined,
+          currentTitle: person.title || undefined,
+          linkedInUrl: person.linkedInUrl || undefined,
           currentCompanyId,
         }),
       })
@@ -165,7 +195,8 @@ export function ContactsView({ dealId, companyId: _companyId }: ContactsViewProp
         if (existingId) {
           canonicalPersonId = existingId
         } else {
-          throw new Error(data?.error || 'Failed to create contact')
+          const details = data?.details?.map((d: { field: string; message: string }) => d.message).join(', ')
+          throw new Error(details || data?.error || data?.message || 'Failed to create contact')
         }
       }
 
@@ -180,7 +211,7 @@ export function ContactsView({ dealId, companyId: _companyId }: ContactsViewProp
       setSmartInput('')
       setParsed(null)
       setAddDescription('')
-      setAddCategory('ADVISOR')
+      setAddCategory('PROSPECT')
     } catch (err) {
       setAddError(err instanceof Error ? err.message : 'Failed to add contact')
     } finally {
@@ -308,10 +339,7 @@ export function ContactsView({ dealId, companyId: _companyId }: ContactsViewProp
             {isAdding ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <>
-                <Plus className="h-4 w-4 mr-1" />
-                Add Contact
-              </>
+              'Submit'
             )}
           </Button>
         </div>
