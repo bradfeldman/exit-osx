@@ -136,8 +136,8 @@ export function ResultsReveal({ results, email, basics, profile, scan }: Results
         return
       }
 
-      // Redirect straight to dashboard
-      router.push('/dashboard')
+      // Full page navigation so middleware sets the activity cookie
+      window.location.href = '/dashboard'
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {

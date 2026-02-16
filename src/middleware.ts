@@ -419,10 +419,14 @@ export async function middleware(request: NextRequest) {
   // SECURITY: Check for stale sessions (user was inactive > 30 min or closed browser)
   // The last_activity cookie has max-age=1800 — the browser auto-deletes it when it expires.
   // If Supabase auth cookies exist but last_activity is gone, the session is stale.
+  // IMPORTANT: Only redirect if getUser() also failed (!user). If the user is valid,
+  // this is a new session (e.g., auto-login after assessment) where the activity cookie
+  // was never set. The activity cookie will be set on the response (line ~397) and the
+  // client-side useIdleTimeout hook handles ongoing inactivity tracking.
   const lastActivity = request.cookies.get(SESSION_COOKIE_NAME)
   const hasAuthCookies = request.cookies.getAll().some(c => c.name.startsWith('sb-'))
 
-  if (!lastActivity && hasAuthCookies && !isPublicRoute && !isApiRoute && !isAdminPublicRoute) {
+  if (!lastActivity && hasAuthCookies && !user && !isPublicRoute && !isApiRoute && !isAdminPublicRoute) {
     // Session is stale — clear Supabase cookies to force re-login
     const redirectUrl = new URL('/login?reason=timeout', request.url)
     const response = NextResponse.redirect(redirectUrl)
