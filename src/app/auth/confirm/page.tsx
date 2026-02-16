@@ -99,10 +99,10 @@ function ConfirmContent() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="w-full max-w-md space-y-4 text-center">
-          <p className="text-destructive font-medium">This link has expired.</p>
-          <p className="text-sm text-muted-foreground">Please request a new signup link.</p>
-          <Link href="/signup" className="text-sm text-primary hover:underline">
-            Go to signup
+          <p className="text-destructive font-medium">This verification link has expired.</p>
+          <p className="text-sm text-muted-foreground">Your account is still active. You can log in with your email and password.</p>
+          <Link href="/login" className="text-sm text-primary hover:underline">
+            Go to login
           </Link>
         </div>
       </div>
@@ -113,9 +113,10 @@ function ConfirmContent() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="w-full max-w-md space-y-4 text-center">
-          <p className="text-destructive font-medium">Authentication failed. Please try again.</p>
-          <Link href="/signup" className="text-sm text-primary hover:underline">
-            Go to signup
+          <p className="text-destructive font-medium">This verification link is no longer valid.</p>
+          <p className="text-sm text-muted-foreground">Your account is still active. You can log in with your email and password.</p>
+          <Link href="/login" className="text-sm text-primary hover:underline">
+            Go to login
           </Link>
         </div>
       </div>
@@ -126,7 +127,7 @@ function ConfirmContent() {
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="text-center space-y-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-        <p className="text-muted-foreground">Confirming your account...</p>
+        <p className="text-muted-foreground">Verifying your email...</p>
       </div>
     </div>
   )
