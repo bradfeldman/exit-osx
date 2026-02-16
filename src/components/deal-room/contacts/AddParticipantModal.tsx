@@ -245,7 +245,7 @@ export function AddParticipantModal({
             // Duplicate detected — use the matched company
             try {
               const dupData = await companyRes.json()
-              const topMatch = dupData.matchResult?.matches?.[0]
+              const topMatch = dupData.matchResult?.matchedEntity
               if (topMatch?.id) currentCompanyId = topMatch.id
             } catch { /* ignore parse errors */ }
           }
@@ -263,7 +263,7 @@ export function AddParticipantModal({
           try { data = await personRes.json() } catch { /* not JSON */ }
 
           // If duplicate found, use the existing person
-          const existingId = data?.existingPerson?.id || data?.matchResult?.matches?.[0]?.id
+          const existingId = data?.existingPerson?.id || data?.matchResult?.matchedEntity?.id
           if (existingId) {
             canonicalPersonId = existingId
           } else {

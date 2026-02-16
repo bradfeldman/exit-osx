@@ -7,11 +7,11 @@ import { z } from 'zod'
 import { validateRequestBody } from '@/lib/security/validation'
 
 const postSchema = z.object({
-  canonicalPersonId: z.string().uuid(),
+  canonicalPersonId: z.string().min(1),
   category: z.enum(['PROSPECT', 'MANAGEMENT', 'ADVISOR', 'OTHER']).optional(),
   description: z.string().max(5000).optional(),
   notes: z.string().max(5000).optional(),
-  dealBuyerId: z.string().uuid().nullable().optional(),
+  dealBuyerId: z.string().min(1).nullable().optional(),
   isPrimary: z.boolean().default(false),
   side: z.enum(['BUYER', 'SELLER', 'NEUTRAL']).optional(),
   role: z.enum([

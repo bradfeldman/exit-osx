@@ -162,7 +162,7 @@ export function ContactsView({ dealId, companyId: _companyId }: ContactsViewProp
         } else if (companyRes.status === 409) {
           try {
             const dupData = await companyRes.json()
-            const topMatch = dupData.matchResult?.matches?.[0]
+            const topMatch = dupData.matchResult?.matchedEntity
             if (topMatch?.id) currentCompanyId = topMatch.id
           } catch { /* ignore */ }
         }
@@ -191,7 +191,7 @@ export function ContactsView({ dealId, companyId: _companyId }: ContactsViewProp
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let data: any = null
         try { data = await personRes.json() } catch { /* not JSON */ }
-        const existingId = data?.existingPerson?.id || data?.matchResult?.matches?.[0]?.id
+        const existingId = data?.existingPerson?.id || data?.matchResult?.matchedEntity?.id
         if (existingId) {
           canonicalPersonId = existingId
         } else {
