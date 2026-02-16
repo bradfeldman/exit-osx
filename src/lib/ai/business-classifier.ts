@@ -111,7 +111,9 @@ export const KEYWORD_RULES: KeywordRule[] = [
 
   // Industrials
   { keywords: ['construction', 'contractor', 'general contractor', 'building', 'renovation'], icbSubSector: 'CONSTRUCTION_SERVICES' },
-  { keywords: ['manufacture', 'manufacturing', 'factory', 'production line', 'fabricat'], icbSubSector: 'INDUSTRIAL_MACHINERY' },
+  { keywords: ['industrial equipment', 'machinery manufacturer', 'machine shop', 'metal fabricat', 'tool and die'], icbSubSector: 'INDUSTRIAL_MACHINERY' },
+  { keywords: ['shampoo', 'soap', 'lotion', 'personal care', 'cosmetic', 'beauty product', 'skincare', 'hair care'], icbSubSector: 'PERSONAL_PRODUCTS_SUB' },
+  { keywords: ['packaged goods', 'consumer products manufacturer', 'household product'], icbSubSector: 'PERSONAL_PRODUCTS_SUB' },
   { keywords: ['staffing', 'recruiting', 'employment agency', 'hr services', 'temp agency', 'headhunter'], icbSubSector: 'STAFFING' },
   { keywords: ['professional services', 'consulting firm', 'business consulting', 'management consulting'], icbSubSector: 'PROFESSIONAL_SERVICES' },
   { keywords: ['accounting', 'bookkeeping', 'tax preparation', 'cpa firm', 'audit firm'], icbSubSector: 'PROFESSIONAL_SERVICES' },
@@ -248,6 +250,7 @@ Your job:
 6. Assign a confidence score (0.0 to 1.0)
 
 Guidelines:
+- Classify by WHAT the business produces or sells, not HOW it operates. A company that manufactures shampoo is a Personal Products company, not Industrial Machinery. A company that manufactures medical devices is Medical Equipment, not General Industrials. The end product defines the industry.
 - Choose the most SPECIFIC sub-sector. A dental supply company → MEDICAL_SUPPLIES_SUB, not HEALTHCARE_FACILITIES.
 - Revenue level matters: a $500K landscaping company classifies differently than a $50M facilities management company. Consider the scale when selecting comparables.
 - Reference companies must be REAL publicly traded companies with valid tickers.
