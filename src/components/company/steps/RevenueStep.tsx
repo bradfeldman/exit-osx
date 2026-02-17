@@ -43,15 +43,15 @@ export function RevenueStep({ formData, updateFormData }: RevenueStepProps) {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
         )}
 
-        <div className="relative flex items-baseline gap-3">
-          <span className="text-4xl sm:text-5xl font-bold text-primary/60">$</span>
+        <div className="relative flex items-baseline gap-1 sm:gap-3">
+          <span className="text-3xl sm:text-5xl font-bold text-primary/60 leading-none">$</span>
           <input
             type="text"
             inputMode="numeric"
             value={formData.annualRevenue > 0 ? formData.annualRevenue.toLocaleString() : ''}
             onChange={(e) => updateFormData({ annualRevenue: parseCurrency(e.target.value) })}
             placeholder="0"
-            className="flex-1 text-4xl sm:text-5xl font-bold text-foreground bg-transparent border-none outline-none placeholder:text-muted-foreground/20 tracking-tight"
+            className="flex-1 min-w-0 text-3xl sm:text-5xl font-bold text-foreground bg-transparent border-none outline-none placeholder:text-muted-foreground/20 tracking-tight leading-none"
           />
         </div>
       </motion.div>
