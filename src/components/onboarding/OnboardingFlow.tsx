@@ -39,11 +39,11 @@ const initialFormData: CompanyFormData = {
   annualEbitda: 0,
   revenueSizeCategory: '',
   ownerCompensation: 0,
-  revenueModel: 'SUBSCRIPTION_SAAS',
-  grossMarginProxy: 'EXCELLENT',
-  laborIntensity: 'LOW',
-  assetIntensity: 'ASSET_LIGHT',
-  ownerInvolvement: 'MINIMAL',
+  revenueModel: 'TRANSACTIONAL',
+  grossMarginProxy: 'MODERATE',
+  laborIntensity: 'MODERATE',
+  assetIntensity: 'MODERATE',
+  ownerInvolvement: 'MODERATE',
   adjustments: [],
 }
 

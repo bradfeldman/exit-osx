@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { getIndustryMultiples, estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
+import { getMarketSalary } from '@/lib/valuation/recalculate-snapshot'
 import { generateTasksFromProjectAssessment } from '@/lib/playbook/generate-tasks'
 import { updateActionPlan } from '@/lib/tasks/action-plan'
 import {
@@ -257,7 +258,9 @@ export async function POST(
       .filter(a => a.type === 'DEDUCTION')
       .reduce((sum, a) => sum + Number(a.amount), 0)
 
-    const marketSalary = Math.min(ownerComp, 150000)
+    const revenueSizeCategory = company.coreFactors?.revenueSizeCategory ?? null
+    const marketSalaryBenchmark = getMarketSalary(revenueSizeCategory)
+    const marketSalary = Math.min(ownerComp, marketSalaryBenchmark)
     const excessComp = Math.max(0, ownerComp - marketSalary)
 
     let adjustedEbitda: number
