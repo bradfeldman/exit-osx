@@ -406,6 +406,7 @@ export const companyUpdateSchema = z.object({
   ownerCompensation: optionalFinancialAmount,
   fiscalYearEndMonth: z.coerce.number().int().min(1).max(12).optional().nullable(),
   fiscalYearEndDay: z.coerce.number().int().min(1).max(31).optional().nullable(),
+  entityType: z.enum(['C_CORP', 'S_CORP', 'LLC', 'SOLE_PROP', 'PARTNERSHIP']).optional().nullable(),
 })
 
 // SEC-061: Typed JSON schemas for Prisma Json? fields (replaces z.any())

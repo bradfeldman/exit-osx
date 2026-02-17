@@ -181,6 +181,7 @@ model Company {
   fiscalYearEndMonth       Int                          @default(12) @map("fiscal_year_end_month")
   businessDescription      String?                      @map("business_description")
   businessProfile          Json?                        @map("business_profile")
+  entityType               String?                      @map("entity_type")
   profileQuestionsAnswered Json?                        @map("profile_questions_answered")
   assessments              Assessment[]
   buyerProspects           BuyerProspect[]

@@ -133,6 +133,7 @@ export const FEATURE_REQUIREMENTS: Record<string, PlanTier> = {
   'business-financials': 'growth',
   'quickbooks': 'growth',
   'team-members': 'growth', // limit: 3
+  'proceeds-waterfall': 'growth',
 
   // Exit-Ready required
   'data-room': 'exit-ready',

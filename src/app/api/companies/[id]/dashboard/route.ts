@@ -135,6 +135,7 @@ export async function GET(
           include: {
             incomeStatement: true,
             adjustments: true,
+            balanceSheet: true,
           },
         },
       },
@@ -158,6 +159,13 @@ export async function GET(
         ebitdaMultipleLowOverride: true,
         ebitdaMultipleHighOverride: true,
       },
+    })
+
+    // Fetch personal financials for business ownership percentage
+    const userId = (result as AuthSuccess).auth.user.id
+    const personalFinancials = await prisma.personalFinancials.findUnique({
+      where: { userId },
+      select: { businessOwnership: true },
     })
 
     // Fetch industry multiple range - prioritize most specific match
@@ -995,6 +1003,55 @@ export async function GET(
         ownerInvolvement: company.coreFactors.ownerInvolvement,
         coreScore: calculatedCoreScore,
       } : null,
+      // Proceeds waterfall inputs
+      proceedsInputs: (() => {
+        // Current value: replicate tier1 logic
+        let currentValue = 0
+        if (latestSnapshot) {
+          const effectiveMultipleLow = hasMultipleOverride ? multipleLow : Number(latestSnapshot.industryMultipleLow)
+          const effectiveMultipleHigh = hasMultipleOverride ? multipleHigh : Number(latestSnapshot.industryMultipleHigh)
+          const recalc = calculateValuation({
+            adjustedEbitda,
+            industryMultipleLow: effectiveMultipleLow,
+            industryMultipleHigh: effectiveMultipleHigh,
+            coreScore: Number(latestSnapshot.coreScore),
+            briScore: Number(latestSnapshot.briScore),
+          })
+          currentValue = dcfEnterpriseValue
+            ? Math.max(0, (recalc.currentValue + dcfEnterpriseValue) / 2)
+            : Math.max(0, recalc.currentValue)
+        } else {
+          const multipleBasedValue = adjustedEbitda * estimatedMultiple
+          currentValue = dcfEnterpriseValue
+            ? Math.max(0, (multipleBasedValue + dcfEnterpriseValue) / 2)
+            : Math.max(0, multipleBasedValue)
+        }
+
+        // Net debt: snapshot dcfNetDebt → balance sheet → 0
+        let netDebt = 0
+        if (latestSnapshot?.dcfNetDebt != null) {
+          netDebt = Number(latestSnapshot.dcfNetDebt)
+        } else if (selectedFinancialPeriod?.balanceSheet) {
+          const bs = selectedFinancialPeriod.balanceSheet
+          netDebt = Number(bs.longTermDebt) + Number(bs.currentPortionLtd) - Number(bs.cash)
+        }
+
+        // Ownership: from PersonalFinancials.businessOwnership JSON → default 100
+        let ownershipPercent = 100
+        if (personalFinancials?.businessOwnership) {
+          const ownership = personalFinancials.businessOwnership as { percentage?: number }
+          if (typeof ownership.percentage === 'number') {
+            ownershipPercent = ownership.percentage
+          }
+        }
+
+        return {
+          currentValue,
+          netDebt,
+          ownershipPercent,
+          entityType: company.entityType ?? null,
+        }
+      })(),
       hasAssessment: !!latestSnapshot,
       // Auto-DCF valuation (from snapshot pipeline)
       dcfValuation: (() => {

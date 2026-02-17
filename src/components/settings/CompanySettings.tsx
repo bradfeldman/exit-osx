@@ -8,10 +8,19 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useCompany } from '@/contexts/CompanyContext'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { IndustryListInline } from '@/components/company/IndustryListInline'
 import { AccountabilityPartnerCard } from '@/components/settings/AccountabilityPartnerCard'
 import { AssessmentCadenceCard } from '@/components/settings/AssessmentCadenceCard'
 import { getFlattenedOptionBySubSector } from '@/lib/data/industries'
+
+const ENTITY_TYPES = [
+  { value: 'C_CORP', label: 'C-Corporation' },
+  { value: 'S_CORP', label: 'S-Corporation' },
+  { value: 'LLC', label: 'LLC' },
+  { value: 'SOLE_PROP', label: 'Sole Proprietorship' },
+  { value: 'PARTNERSHIP', label: 'Partnership' },
+]
 
 interface CompanyData {
   id: string
@@ -25,6 +34,7 @@ interface CompanyData {
   icbSubSector: string
   fiscalYearEndMonth: number
   fiscalYearEndDay: number
+  entityType: string | null
 }
 
 const _MONTHS = [
@@ -63,6 +73,7 @@ export function CompanySettings() {
   const [icbSubSector, setIcbSubSector] = useState('')
   const [fiscalYearEndMonth, setFiscalYearEndMonth] = useState(12)
   const [fiscalYearEndDay, setFiscalYearEndDay] = useState(31)
+  const [entityType, setEntityType] = useState<string | null>(null)
 
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
   const [deleteReason, setDeleteReason] = useState('')
@@ -100,6 +111,7 @@ export function CompanySettings() {
           setIcbSubSector(data.company.icbSubSector || '')
           setFiscalYearEndMonth(data.company.fiscalYearEndMonth || 12)
           setFiscalYearEndDay(data.company.fiscalYearEndDay || 31)
+          setEntityType(data.company.entityType || null)
         }
       } catch (error) {
         console.error('Error loading company:', error)
@@ -193,6 +205,7 @@ export function CompanySettings() {
           icbSubSector,
           fiscalYearEndMonth,
           fiscalYearEndDay,
+          entityType,
         }),
       })
 
@@ -443,6 +456,33 @@ export function CompanySettings() {
               )}
             </>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Entity Type */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Entity Type</CardTitle>
+          <CardDescription>
+            Your business entity structure affects tax treatment of sale proceeds
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Select
+            value={entityType || ''}
+            onValueChange={(val) => setEntityType(val || null)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select entity type" />
+            </SelectTrigger>
+            <SelectContent>
+              {ENTITY_TYPES.map((et) => (
+                <SelectItem key={et.value} value={et.value}>
+                  {et.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </CardContent>
       </Card>
 

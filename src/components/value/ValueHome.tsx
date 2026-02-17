@@ -22,6 +22,7 @@ import { BenchmarkComparison } from './BenchmarkComparison'
 import { BRIRangeGauge } from '@/components/diagnosis/BRIRangeGauge'
 import { CoreScoreCard } from './CoreScoreCard'
 import { WhatIfScenarios } from './WhatIfScenarios'
+import { ProceedsWaterfall } from './ProceedsWaterfall'
 import { UpgradeModal } from '@/components/subscription/UpgradeModal'
 import { PlatformTour } from './PlatformTour'
 import { Compass } from 'lucide-react'
@@ -114,6 +115,12 @@ interface DashboardData {
       briCategory: string
     }>
   }
+  proceedsInputs?: {
+    currentValue: number
+    netDebt: number
+    ownershipPercent: number
+    entityType: string | null
+  } | null
   dcfValuation: {
     enterpriseValue: number
     equityValue: number | null
@@ -314,6 +321,17 @@ export function ValueHome() {
             onUpgrade={() => handleUpgrade('company-assessment', 'What-If Scenarios')}
             companyId={selectedCompanyId ?? undefined}
             onCoreFactorSaved={fetchData}
+          />
+          </div>
+        </AnimatedItem>
+
+        {/* Proceeds Waterfall — hidden on mobile (complex interactive tool) */}
+        <AnimatedItem>
+          <div className="hidden sm:block">
+          <ProceedsWaterfall
+            isFreeUser={isFreeUser}
+            onUpgrade={() => handleUpgrade('proceeds-waterfall', 'Net Proceeds Calculator')}
+            proceedsInputs={data.proceedsInputs}
           />
           </div>
         </AnimatedItem>

@@ -73,6 +73,7 @@ export async function PUT(
     if (body.ownerCompensation !== undefined) updateData.ownerCompensation = body.ownerCompensation
     if (body.fiscalYearEndMonth !== undefined) updateData.fiscalYearEndMonth = body.fiscalYearEndMonth
     if (body.fiscalYearEndDay !== undefined) updateData.fiscalYearEndDay = body.fiscalYearEndDay
+    if (body.entityType !== undefined) updateData.entityType = body.entityType
 
     // Update company
     const company = await prisma.company.update({
