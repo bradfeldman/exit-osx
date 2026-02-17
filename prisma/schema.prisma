@@ -2597,6 +2597,9 @@ model DealBuyer {
   internalNotes String?  @map("internal_notes")
   tags          String[]
 
+  // Quality assessment
+  qualityScore  Int? @map("quality_score") // 1 (best) to 5 (worst)
+
   // Timestamps
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")

@@ -1,21 +1,55 @@
 'use client'
 
-import { useState } from 'react'
-import { X, ChevronDown, Archive } from 'lucide-react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { X, ChevronDown, Archive, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { BuyerTypeBadge } from '../shared/BuyerTypeBadge'
-import { TierBadge } from '../shared/TierBadge'
-import { EngagementDot } from '../shared/EngagementDot'
+import { toast } from 'sonner'
 import type { PipelineBuyer } from './BuyerCard'
 
 const STAGE_OPTIONS = [
-  { value: 'identified', label: 'Target Identified' },
-  { value: 'engaged', label: 'Initial Contact' },
-  { value: 'under_nda', label: 'NDA / Confidentiality' },
-  { value: 'offer_received', label: 'LOI / Offer' },
-  { value: 'diligence', label: 'Due Diligence' },
-  { value: 'closed', label: 'Closing' },
+  { value: 'identified', label: 'Prospect' },
+  { value: 'engaged', label: 'Teaser Sent' },
+  { value: 'under_nda', label: 'NDA Signed' },
+  { value: 'offer_received', label: 'Offer Received' },
+  { value: 'diligence', label: 'Diligence' },
+  { value: 'closed', label: 'Closed' },
 ]
+
+const APPROVAL_OPTIONS = [
+  { value: 'PENDING', label: 'Pending', color: 'text-muted-foreground' },
+  { value: 'APPROVED', label: 'Approved', color: 'text-emerald-600' },
+  { value: 'HOLD', label: 'Hold', color: 'text-amber-600' },
+  { value: 'DENIED', label: 'Denied', color: 'text-red-600' },
+]
+
+const BUYER_TYPE_OPTIONS = [
+  { value: 'STRATEGIC', label: 'Strategic' },
+  { value: 'FINANCIAL', label: 'Financial' },
+  { value: 'INDIVIDUAL', label: 'Individual' },
+  { value: 'MANAGEMENT', label: 'Management' },
+  { value: 'ESOP', label: 'ESOP' },
+  { value: 'OTHER', label: 'Other' },
+]
+
+const QUALITY_OPTIONS = [
+  { value: 1, label: '1 - Excellent' },
+  { value: 2, label: '2 - Good' },
+  { value: 3, label: '3 - Average' },
+  { value: 4, label: '4 - Below Average' },
+  { value: 5, label: '5 - Poor' },
+]
+
+interface Participant {
+  id: string
+  canonicalPersonId: string
+  firstName: string
+  lastName: string
+  currentTitle: string | null
+  email: string | null
+  isPrimary: boolean
+  role: string
+  category: string | null
+}
 
 interface BuyerDetailPanelProps {
   buyer: PipelineBuyer
@@ -28,15 +62,98 @@ export function BuyerDetailPanel({ buyer, companyId, onClose, onStageChange }: B
   const [showStageSelect, setShowStageSelect] = useState(false)
   const [isChangingStage, setIsChangingStage] = useState(false)
   const [isArchiving, setIsArchiving] = useState(false)
-  const offerAmount = buyer.loiAmount ?? buyer.ioiAmount
 
-  const formatAmount = (amount: number) =>
-    new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: amount >= 1_000_000 ? 1 : 0,
-      notation: amount >= 1_000_000 ? 'compact' : 'standard',
-    }).format(amount)
+  // Editable fields (local state)
+  const [approvalStatus, setApprovalStatus] = useState(buyer.approvalStatus)
+  const [buyerType, setBuyerType] = useState(buyer.buyerType)
+  const [qualityScore, setQualityScore] = useState<number | ''>(buyer.qualityScore ?? '')
+  const [notes, setNotes] = useState(buyer.internalNotes ?? '')
+
+  // Contacts
+  const [participants, setParticipants] = useState<Participant[]>([])
+  const [isLoadingParticipants, setIsLoadingParticipants] = useState(false)
+
+  const notesRef = useRef<HTMLTextAreaElement>(null)
+
+  const patchBuyer = useCallback(async (data: Record<string, unknown>) => {
+    if (!companyId) return
+    try {
+      const res = await fetch(
+        `/api/companies/${companyId}/deal-room/buyers/${buyer.id}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        }
+      )
+      if (!res.ok) throw new Error('Failed to update')
+    } catch {
+      toast.error('Failed to save changes')
+    }
+  }, [companyId, buyer.id])
+
+  // Fetch participants on mount
+  useEffect(() => {
+    if (!companyId) return
+    setIsLoadingParticipants(true)
+    fetch(`/api/companies/${companyId}/deal-room/buyers/${buyer.id}/participants`)
+      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(data => setParticipants(data.participants ?? []))
+      .catch(() => {})
+      .finally(() => setIsLoadingParticipants(false))
+  }, [companyId, buyer.id])
+
+  const handleApprovalChange = (value: string) => {
+    setApprovalStatus(value as PipelineBuyer['approvalStatus'])
+    patchBuyer({ approvalStatus: value })
+  }
+
+  const handleBuyerTypeChange = (value: string) => {
+    setBuyerType(value)
+    patchBuyer({ buyerType: value })
+  }
+
+  const handleQualityChange = (value: string) => {
+    const num = parseInt(value)
+    if (isNaN(num)) return
+    setQualityScore(num)
+    patchBuyer({ qualityScore: num })
+  }
+
+  const handleNotesBlur = () => {
+    if (notes !== (buyer.internalNotes ?? '')) {
+      patchBuyer({ internalNotes: notes })
+    }
+  }
+
+  const handleSetLead = async (participantId: string) => {
+    if (!companyId) return
+    try {
+      const res = await fetch(
+        `/api/companies/${companyId}/deal-room/buyers/${buyer.id}/participants`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ participantId, isPrimary: true }),
+        }
+      )
+      if (!res.ok) throw new Error('Failed to update')
+      // Update local state
+      setParticipants(prev =>
+        prev.map(p => ({ ...p, isPrimary: p.id === participantId }))
+          .sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0))
+      )
+      toast.success('Lead contact updated')
+    } catch {
+      toast.error('Failed to update lead contact')
+    }
+  }
+
+  const dateAdded = new Date(buyer.createdAt).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
 
   return (
     <>
@@ -56,13 +173,7 @@ export function BuyerDetailPanel({ buyer, companyId, onClose, onStageChange }: B
           >
             <X className="w-5 h-5" />
           </button>
-
           <h2 className="text-lg font-semibold text-foreground pr-8">{buyer.companyName}</h2>
-          <div className="flex items-center gap-2 mt-1">
-            <BuyerTypeBadge type={buyer.buyerType} />
-            <TierBadge tier={buyer.tier} />
-            <EngagementDot level={buyer.engagementLevel} />
-          </div>
         </div>
 
         {/* Content */}
@@ -72,138 +183,116 @@ export function BuyerDetailPanel({ buyer, companyId, onClose, onStageChange }: B
             <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-3">
               Overview
             </h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Current Stage</span>
-                <span className="font-medium">{buyer.stageLabel}</span>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Date Added</span>
+                <span>{dateAdded}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Stage Updated</span>
-                <span>{new Date(buyer.stageUpdatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Approval Status</span>
+                <select
+                  value={approvalStatus}
+                  onChange={e => handleApprovalChange(e.target.value)}
+                  className={`text-sm bg-transparent border border-border/50 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[var(--burnt-orange)] ${
+                    APPROVAL_OPTIONS.find(o => o.value === approvalStatus)?.color ?? ''
+                  }`}
+                >
+                  {APPROVAL_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
               </div>
-              {buyer.primaryContact && (
-                <>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Primary Contact</span>
-                    <span>{buyer.primaryContact.name}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Email</span>
-                    <span className="text-xs">{buyer.primaryContact.email}</span>
-                  </div>
-                  {buyer.primaryContact.title && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Title</span>
-                      <span>{buyer.primaryContact.title}</span>
-                    </div>
-                  )}
-                </>
-              )}
+
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Buyer Type</span>
+                <select
+                  value={buyerType}
+                  onChange={e => handleBuyerTypeChange(e.target.value)}
+                  className="text-sm bg-transparent border border-border/50 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[var(--burnt-orange)]"
+                >
+                  {BUYER_TYPE_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Quality Score</span>
+                <select
+                  value={qualityScore}
+                  onChange={e => handleQualityChange(e.target.value)}
+                  className="text-sm bg-transparent border border-border/50 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[var(--burnt-orange)]"
+                >
+                  <option value="">Not rated</option>
+                  {QUALITY_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </section>
 
-          {/* Engagement */}
+          {/* Contacts */}
           <section>
             <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-3">
-              Data Room Engagement
+              Contacts
             </h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Docs viewed (7d)</span>
-                <span className="font-medium">{buyer.docViewsLast7Days}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Last activity</span>
-                <span>
-                  {buyer.lastActivity
-                    ? new Date(buyer.lastActivity).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                    : 'None'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Engagement</span>
-                <div className="flex items-center gap-1.5">
-                  <EngagementDot level={buyer.engagementLevel} />
-                  <span className="text-xs capitalize">{buyer.engagementLevel}</span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Offers */}
-          {offerAmount && buyer.offerType && (
-            <section>
-              <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-3">
-                Offer Details
-              </h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Amount</span>
-                  <span className="font-bold text-[var(--burnt-orange)]">
-                    {formatAmount(offerAmount)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Type</span>
-                  <span>{buyer.offerType}</span>
-                </div>
-                {buyer.offerDeadline && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Deadline</span>
-                    <span>
-                      {new Date(buyer.offerDeadline).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                    </span>
-                  </div>
-                )}
-                {buyer.exclusivityEnd && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Exclusivity Ends</span>
-                    <span>
-                      {new Date(buyer.exclusivityEnd).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </section>
-          )}
-
-          {/* Tags */}
-          {buyer.tags.length > 0 && (
-            <section>
-              <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-3">
-                Tags
-              </h3>
-              <div className="flex flex-wrap gap-1">
-                {buyer.tags.map(tag => (
-                  <span
-                    key={tag}
-                    className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground"
+            {isLoadingParticipants ? (
+              <p className="text-xs text-muted-foreground">Loading...</p>
+            ) : participants.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No contacts linked to this buyer</p>
+            ) : (
+              <div className="space-y-2">
+                {participants.map(p => (
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between py-1.5"
                   >
-                    {tag}
-                  </span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      {p.isPrimary && (
+                        <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />
+                      )}
+                      <div className="min-w-0">
+                        <span className={`text-sm block truncate ${p.isPrimary ? 'font-semibold' : ''}`}>
+                          {p.firstName} {p.lastName}
+                        </span>
+                        {p.currentTitle && (
+                          <span className="text-xs text-muted-foreground block truncate">
+                            {p.currentTitle}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {!p.isPrimary && (
+                      <button
+                        onClick={() => handleSetLead(p.id)}
+                        className="text-[10px] text-muted-foreground hover:text-[var(--burnt-orange)] transition-colors shrink-0 ml-2"
+                      >
+                        Set Lead
+                      </button>
+                    )}
+                  </div>
                 ))}
               </div>
-            </section>
-          )}
+            )}
+          </section>
 
           {/* Notes */}
-          {buyer.internalNotes && (
-            <section>
-              <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-3">
-                Notes
-              </h3>
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                {buyer.internalNotes}
-              </p>
-            </section>
-          )}
+          <section>
+            <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-3">
+              Notes
+            </h3>
+            <textarea
+              ref={notesRef}
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              onBlur={handleNotesBlur}
+              placeholder="Add notes about this buyer..."
+              rows={4}
+              className="w-full text-sm bg-transparent border border-border/50 rounded-md px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-[var(--burnt-orange)] placeholder:text-muted-foreground/50"
+            />
+          </section>
         </div>
 
         {/* Actions */}

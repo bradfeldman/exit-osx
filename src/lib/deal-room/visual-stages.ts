@@ -12,19 +12,19 @@ export interface VisualStageConfig {
 export const VISUAL_STAGES: VisualStageConfig[] = [
   {
     id: 'identified',
-    label: 'Identified',
+    label: 'Prospect',
     color: 'slate',
     backendStages: [DealStage.IDENTIFIED, DealStage.SELLER_REVIEWING, DealStage.APPROVED],
   },
   {
     id: 'engaged',
-    label: 'Engaged',
+    label: 'Teaser Sent',
     color: 'blue',
     backendStages: [DealStage.TEASER_SENT, DealStage.INTERESTED, DealStage.NDA_SENT, DealStage.NDA_NEGOTIATING],
   },
   {
     id: 'under_nda',
-    label: 'Under NDA',
+    label: 'NDA Signed',
     color: 'indigo',
     backendStages: [DealStage.NDA_EXECUTED, DealStage.CIM_ACCESS, DealStage.LEVEL_2_ACCESS, DealStage.LEVEL_3_ACCESS, DealStage.MANAGEMENT_MEETING_SCHEDULED, DealStage.MANAGEMENT_MEETING_COMPLETED],
   },

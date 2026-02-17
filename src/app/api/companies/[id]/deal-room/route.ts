@@ -205,6 +205,10 @@ export async function GET(
             currentStage: b.currentStage,
             stageUpdatedAt: b.stageUpdatedAt.toISOString(),
             stageLabel: getStageLabel(b.currentStage),
+            approvalStatus: b.approvalStatus,
+            createdAt: b.createdAt.toISOString(),
+            qualityScore: b.qualityScore,
+            canonicalCompanyId: b.canonicalCompanyId,
             primaryContact: primaryContact ? {
               name: `${primaryContact.canonicalPerson.firstName} ${primaryContact.canonicalPerson.lastName}`,
               email: primaryContact.canonicalPerson.email ?? '',

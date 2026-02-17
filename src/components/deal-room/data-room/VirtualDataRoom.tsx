@@ -621,12 +621,12 @@ export function VirtualDataRoom() {
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">
                         <span className="text-sm text-muted-foreground">
-                          {formatDate(doc.updatedAt)}
+                          {hasFile ? formatDate(doc.updatedAt) : '—'}
                         </span>
                       </TableCell>
                       <TableCell className="hidden xl:table-cell">
                         <span className="text-sm text-muted-foreground tabular-nums">
-                          {formatFileSize(doc.fileSize)}
+                          {hasFile ? formatFileSize(doc.fileSize) : '—'}
                         </span>
                       </TableCell>
                       <TableCell>

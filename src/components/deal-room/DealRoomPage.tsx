@@ -14,6 +14,28 @@ import { DealRoomLoading } from './DealRoomLoading'
 import { DealRoomError } from './DealRoomError'
 import type { PipelineBuyer } from './pipeline/BuyerCard'
 
+interface PipelineStage {
+  visualStage: string
+  label: string
+  buyerCount: number
+  buyers: PipelineBuyer[]
+}
+
+interface PipelineData {
+  totalBuyers: number
+  activeBuyers: number
+  exitedBuyers: number
+  offersReceived: number
+  stages: PipelineStage[]
+  exitedBuyersSummary: Array<{
+    id: string
+    companyName: string
+    exitStage: string
+    exitReason: string | null
+    exitedAt: string
+  }>
+}
+
 interface DealRoomData {
   activation: {
     evidenceReady: boolean
@@ -29,25 +51,7 @@ interface DealRoomData {
     startedAt: string
     targetCloseDate: string | null
   } | null
-  pipeline: {
-    totalBuyers: number
-    activeBuyers: number
-    exitedBuyers: number
-    offersReceived: number
-    stages: Array<{
-      visualStage: string
-      label: string
-      buyerCount: number
-      buyers: PipelineBuyer[]
-    }>
-    exitedBuyersSummary: Array<{
-      id: string
-      companyName: string
-      exitStage: string
-      exitReason: string | null
-      exitedAt: string
-    }>
-  } | null
+  pipeline: PipelineData | null
   offers: Array<{
     buyerId: string
     companyName: string
@@ -84,6 +88,7 @@ interface DealRoomData {
 export function DealRoomPage() {
   const { selectedCompanyId } = useCompany()
   const [data, setData] = useState<DealRoomData | null>(null)
+  const [localPipeline, setLocalPipeline] = useState<PipelineData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(false)
   const [activeTab, setActiveTab] = useState<DealRoomTab>('contacts')
@@ -101,6 +106,7 @@ export function DealRoomPage() {
       if (!res.ok) throw new Error('Failed to fetch')
       const json = await res.json()
       setData(json)
+      setLocalPipeline(json.pipeline)
     } catch {
       setError(true)
     } finally {
@@ -122,7 +128,6 @@ export function DealRoomPage() {
       if (!res.ok) throw new Error('Failed to activate')
       await fetchData()
     } catch {
-      // Re-fetch to show current state
       await fetchData()
     } finally {
       setIsActivating(false)
@@ -158,15 +163,47 @@ export function DealRoomPage() {
   }
 
   const handleStageChange = async (buyerId: string, newVisualStage: string) => {
-    if (!selectedCompanyId) return
+    if (!selectedCompanyId || !localPipeline) return
 
-    // Find buyer name for toast message
-    const buyer = data?.pipeline?.stages
-      .flatMap(s => s.buyers)
-      .find(b => b.id === buyerId)
+    // Find buyer and current stage
+    let movedBuyer: PipelineBuyer | undefined
+    let sourceStageIdx = -1
+    for (let i = 0; i < localPipeline.stages.length; i++) {
+      const found = localPipeline.stages[i].buyers.find(b => b.id === buyerId)
+      if (found) {
+        movedBuyer = found
+        sourceStageIdx = i
+        break
+      }
+    }
+    if (!movedBuyer || sourceStageIdx === -1) return
 
-    const stageName = newVisualStage.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+    const targetStageIdx = localPipeline.stages.findIndex(s => s.visualStage === newVisualStage)
+    if (targetStageIdx === -1 || targetStageIdx === sourceStageIdx) return
 
+    const stageName = localPipeline.stages[targetStageIdx].label
+
+    // Save pre-move state for rollback
+    const previousPipeline = localPipeline
+
+    // Optimistically move the buyer
+    setLocalPipeline(prev => {
+      if (!prev) return prev
+      const newStages = prev.stages.map((stage, idx) => {
+        if (idx === sourceStageIdx) {
+          const newBuyers = stage.buyers.filter(b => b.id !== buyerId)
+          return { ...stage, buyers: newBuyers, buyerCount: newBuyers.length }
+        }
+        if (idx === targetStageIdx) {
+          const newBuyers = [...stage.buyers, movedBuyer!]
+          return { ...stage, buyers: newBuyers, buyerCount: newBuyers.length }
+        }
+        return stage
+      })
+      return { ...prev, stages: newStages }
+    })
+
+    // Fire PATCH in background
     try {
       const res = await fetch(
         `/api/companies/${selectedCompanyId}/deal-room/buyers/${buyerId}`,
@@ -178,23 +215,17 @@ export function DealRoomPage() {
       )
       if (!res.ok) throw new Error('Failed to update stage')
 
-      toast.success(
-        buyer
-          ? `${buyer.companyName} moved to ${stageName}`
-          : `Stage updated to ${stageName}`
-      )
-
-      await fetchData()
-    } catch (error) {
-      console.error('Failed to update buyer stage:', error)
+      toast.success(`${movedBuyer.companyName} moved to ${stageName}`)
+    } catch {
+      // Rollback on failure
+      setLocalPipeline(previousPipeline)
       toast.error('Failed to update stage. Please try again.')
-      // Re-fetch to ensure UI is in sync
       await fetchData()
     }
   }
 
   // Find the selected buyer across all stages
-  const selectedBuyer = data?.pipeline?.stages
+  const selectedBuyer = localPipeline?.stages
     .flatMap(s => s.buyers)
     .find(b => b.id === selectedBuyerId) ?? null
 
@@ -227,9 +258,9 @@ export function DealRoomPage() {
       />
 
       {/* Tab Content */}
-      {activeTab === 'pipeline' && data.pipeline && (
+      {activeTab === 'pipeline' && localPipeline && (
         <PipelineView
-          pipeline={data.pipeline}
+          pipeline={localPipeline}
           offers={data.offers}
           companyId={selectedCompanyId}
           onBuyerClick={handleBuyerClick}

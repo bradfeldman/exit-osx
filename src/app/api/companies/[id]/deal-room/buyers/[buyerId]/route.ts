@@ -13,6 +13,10 @@ const VALID_VISUAL_STAGES: VisualStage[] = [
 const patchSchema = z.object({
   stage: z.enum(['identified', 'engaged', 'under_nda', 'offer_received', 'diligence', 'closed']).optional(),
   action: z.enum(['archive', 'restore']).optional(),
+  internalNotes: z.string().max(5000).optional(),
+  approvalStatus: z.enum(['PENDING', 'APPROVED', 'HOLD', 'DENIED']).optional(),
+  qualityScore: z.number().int().min(1).max(5).optional(),
+  buyerType: z.enum(['STRATEGIC', 'FINANCIAL', 'INDIVIDUAL', 'MANAGEMENT', 'ESOP', 'OTHER']).optional(),
 })
 
 export async function PATCH(
@@ -28,7 +32,47 @@ export async function PATCH(
 
     const validation = await validateRequestBody(request, patchSchema)
     if (!validation.success) return validation.error
-    const { stage, action } = validation.data
+    const { stage, action, internalNotes, approvalStatus, qualityScore, buyerType } = validation.data
+
+    // Handle field updates (internalNotes, approvalStatus, qualityScore, buyerType)
+    if (internalNotes !== undefined || approvalStatus !== undefined || qualityScore !== undefined || buyerType !== undefined) {
+      const buyer = await prisma.dealBuyer.findFirst({
+        where: {
+          id: buyerId,
+          deal: { companyId, status: 'ACTIVE' },
+        },
+      })
+
+      if (!buyer) {
+        return NextResponse.json({ error: 'Buyer not found' }, { status: 404 })
+      }
+
+      // Update DealBuyer fields
+      const dealBuyerUpdates: Record<string, unknown> = {}
+      if (internalNotes !== undefined) dealBuyerUpdates.internalNotes = internalNotes
+      if (approvalStatus !== undefined) dealBuyerUpdates.approvalStatus = approvalStatus
+      if (qualityScore !== undefined) dealBuyerUpdates.qualityScore = qualityScore
+
+      if (Object.keys(dealBuyerUpdates).length > 0) {
+        await prisma.dealBuyer.update({
+          where: { id: buyerId },
+          data: dealBuyerUpdates,
+        })
+      }
+
+      // Update CanonicalCompany.companyType if buyerType provided
+      if (buyerType !== undefined) {
+        await prisma.canonicalCompany.update({
+          where: { id: buyer.canonicalCompanyId },
+          data: { companyType: buyerType },
+        })
+      }
+
+      // If no stage/action change, return success now
+      if (!stage && !action) {
+        return NextResponse.json({ success: true })
+      }
+    }
 
     // Handle archive/restore actions
     if (action === 'archive' || action === 'restore') {
