@@ -145,7 +145,7 @@ export async function GET(
     }
 
     const latestSnapshot = company.valuationSnapshots[0]
-    console.log(`[DASHBOARD] Company ${companyId}: latestSnapshot exists: ${!!latestSnapshot}, snapshot count: ${company.valuationSnapshots.length}`)
+
 
     // Fetch DCF assumptions to check if DCF value should be used
     // Also fetch EBITDA multiple overrides for custom valuation ranges
@@ -760,8 +760,6 @@ export async function GET(
           const snapshotBriScore = Number(latestSnapshot.briScore)
 
           // Always recalculate using shared calculateValuation() for consistency
-          console.log(`[DASHBOARD] Company ${companyId}: Fresh calculation - adjustedEbitda: ${adjustedEbitda}, coreScore: ${snapshotCoreScore}, briScore: ${snapshotBriScore}, multipleLow: ${effectiveMultipleLow}, multipleHigh: ${effectiveMultipleHigh}`)
-
           const recalculated = calculateValuation({
             adjustedEbitda,
             industryMultipleLow: effectiveMultipleLow,

@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { aggregateDrivers } from '@/lib/ai/diagnosis'
 import { prisma } from '@/lib/prisma'
 import type { Subcategory, DiagnosticQuestion } from '@/lib/ai/types'
@@ -7,6 +6,7 @@ import { DiagnosisSubcategory } from '@prisma/client'
 import { applyRateLimit, createRateLimitResponse, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limit'
 import { z } from 'zod'
 import { validateRequestBody } from '@/lib/security/validation'
+import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 
 const schema = z.object({
   companyId: z.string().uuid(),
@@ -22,19 +22,13 @@ export async function POST(request: Request) {
   const rl = await applyRateLimit(request, RATE_LIMIT_CONFIGS.AI)
   if (!rl.success) return createRateLimitResponse(rl)
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    )
-  }
-
   const validation = await validateRequestBody(request, schema)
   if (!validation.success) return validation.error
   const { companyId, subcategory, responses } = validation.data
+
+  // SEC-102: Verify user has permission to update this company (prevents IDOR)
+  const authResult = await checkPermission('COMPANY_UPDATE', companyId)
+  if (isAuthError(authResult)) return authResult.error
 
   try {
 
