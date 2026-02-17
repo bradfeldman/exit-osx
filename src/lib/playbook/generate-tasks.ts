@@ -24,7 +24,7 @@ interface TypedSubStep {
   subTaskType: SubTaskType
   acceptedTypes?: string
   placeholder?: string
-  questionOptions?: unknown
+  questionOptions?: Prisma.InputJsonValue
   integrationKey?: string
 }
 
@@ -80,7 +80,7 @@ async function createSubStepsForTask(taskId: string, richDescription: unknown, a
   let subStepsToCreate: Array<{
     taskId: string; title: string; order: number
     subTaskType?: SubTaskType; acceptedTypes?: string; placeholder?: string
-    questionOptions?: unknown; integrationKey?: string
+    questionOptions?: Prisma.InputJsonValue; integrationKey?: string
   }> = []
 
   if (hasRichDescription(richDescription)) {
