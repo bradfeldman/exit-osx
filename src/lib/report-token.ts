@@ -1,7 +1,9 @@
 import crypto from 'crypto'
 import { constantTimeCompare } from '@/lib/security/timing-safe'
 
-const DEFAULT_EXPIRY_SECONDS = 7 * 24 * 60 * 60
+// SECURITY FIX (SEC-093): Reduced default from 7 days to 48 hours.
+// TODO: Implement a ReportTokenRevocation table for explicit token revocation.
+const DEFAULT_EXPIRY_SECONDS = 48 * 60 * 60
 
 // Grace period for legacy tokens (no timestamp). Remove after 2026-03-16.
 const LEGACY_TOKEN_CUTOFF = new Date('2026-03-16T00:00:00Z').getTime()

@@ -164,10 +164,11 @@ export async function GET(request: NextRequest) {
     const errMsg = error instanceof Error ? error.message : 'Unknown error'
     console.error('[QuickBooks] Callback error:', errMsg)
     alertIntegrationFailure('QuickBooks', error, { stage: 'oauth_callback' })
-    // Pass a user-safe error detail via query param (truncated, no secrets)
-    const safeDetail = encodeURIComponent(errMsg.slice(0, 200))
+    // SECURITY FIX (SEC-092): Do not forward error details to client URL.
+    // error.message may contain OAuth tokens, realm IDs, or internal API details.
+    // The full error is already logged server-side above.
     return NextResponse.redirect(
-      new URL(`/dashboard/financials?qb_error=connection_failed&qb_detail=${safeDetail}`, request.url)
+      new URL('/dashboard/financials?qb_error=connection_failed', request.url)
     )
   }
 }

@@ -5,7 +5,7 @@
  * SECURITY: Secrets are stored encrypted in the database
  */
 
-import { createHmac, randomBytes, createCipheriv, createDecipheriv } from 'crypto'
+import { createHmac, randomBytes, createCipheriv, createDecipheriv, timingSafeEqual } from 'crypto'
 
 // TOTP Configuration
 const TOTP_PERIOD = 30 // seconds
@@ -185,15 +185,14 @@ function getEncryptionKey(): Buffer {
   return hmac.digest()
 }
 
+/**
+ * SECURITY FIX (SEC-097): Use crypto.timingSafeEqual for constant-time comparison.
+ * The previous hand-rolled implementation was functional but crypto.timingSafeEqual
+ * is the Node.js standard and is audited/maintained by the Node.js security team.
+ */
 function constantTimeCompare(a: string, b: string): boolean {
-  const maxLength = Math.max(a.length, b.length)
-  const aPadded = a.padEnd(maxLength, '\0')
-  const bPadded = b.padEnd(maxLength, '\0')
-  let result = a.length ^ b.length
-  for (let i = 0; i < maxLength; i++) {
-    result |= aPadded.charCodeAt(i) ^ bPadded.charCodeAt(i)
-  }
-  return result === 0
+  if (a.length !== b.length) return false
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b))
 }
 
 // Base32 encoding/decoding (RFC 4648)

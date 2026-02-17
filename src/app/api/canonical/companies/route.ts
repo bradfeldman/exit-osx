@@ -142,9 +142,12 @@ const canonicalCompanyCreateSchema = z.object({
 /**
  * POST /api/canonical/companies
  * Create a new canonical company
+ * SECURITY FIX (SEC-090): Elevated to ORG_MANAGE_MEMBERS — canonical entities are
+ * global/shared records. Write operations require admin-level workspace permission
+ * to prevent cross-tenant data pollution.
  */
 export async function POST(request: NextRequest) {
-  const result = await checkPermission('COMPANY_UPDATE')
+  const result = await checkPermission('ORG_MANAGE_MEMBERS')
   if (isAuthError(result)) return result.error
 
   try {

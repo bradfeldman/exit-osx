@@ -218,16 +218,10 @@ export async function POST(request: Request) {
         // The user submitted successfully, email delivery is a secondary concern
       }
     } else {
-      // Log the inquiry if Resend is not configured (development)
-      console.log('=== LOAN INQUIRY (Email not sent - Resend not configured) ===')
-      console.log('To: bfeldman@pasadena-private.com')
-      console.log('Subject:', emailSubject)
-      console.log('User:', userEmail)
-      console.log('Company:', company.name)
-      console.log('Requested Amount:', formatCurrency(requestedAmount))
-      console.log('Purpose:', formatLoanPurpose(loanPurpose))
-      console.log('Max Qualified:', formatCurrency(qualification?.maxLoan || 0))
-      console.log('============================================')
+      // SECURITY FIX (SEC-096): Do not log financial data (amounts, qualification details)
+      // to console. In containerized environments, console output goes to log aggregators
+      // where it may be accessible to broader teams or third-party services.
+      console.log('[Loan Inquiry] Email not sent - Resend not configured. User:', userEmail)
     }
 
     // Optionally: Store the inquiry in the database for tracking

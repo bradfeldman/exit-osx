@@ -73,6 +73,12 @@ export async function PATCH(
 
   const { auth } = result
 
+  // SECURITY FIX (SEC-091): Verify the requesting user belongs to this workspace.
+  // Without this check, an admin of workspace A could modify roles in workspace B.
+  if (auth.workspaceMember.workspaceId !== workspaceId) {
+    return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+  }
+
   const validation = await validateRequestBody(request, patchSchema)
   if (!validation.success) return validation.error
   const { userId, workspaceRole, functionalCategories } = validation.data
@@ -247,6 +253,12 @@ export async function DELETE(
     if (isAuthError(result)) return result.error
 
     const { auth } = result
+
+    // SECURITY FIX (SEC-091): Verify the requesting admin belongs to this workspace.
+    // Without this check, an admin of workspace A could remove members from workspace B.
+    if (auth.workspaceMember.workspaceId !== workspaceId) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    }
 
     try {
       // Prevent removing yourself through this path (use leave instead)

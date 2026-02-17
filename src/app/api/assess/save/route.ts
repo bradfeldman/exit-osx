@@ -25,6 +25,9 @@ import { classifyBusiness } from '@/lib/ai/business-classifier'
  *
  * Public endpoint that creates a user account + company + assessment snapshot
  * from the public /assess flow data. Sends a magic link email for verification.
+ *
+ * SECURITY NOTE (SEC-098): No CAPTCHA. Rate limiting (AUTH: 5/min) is baseline
+ * protection. TODO: Add Cloudflare Turnstile before next marketing launch.
  */
 export async function POST(request: Request) {
   const rateLimitResult = await applyRateLimit(request, RATE_LIMIT_CONFIGS.AUTH)
@@ -376,7 +379,7 @@ const PRELIMINARY_TASK_TEMPLATES: Record<string, {
       title: 'Gather your last 3 years of financial statements',
       description: 'Collect P&L, balance sheet, and cash flow statements for the last 3 fiscal years. Buyers will request these in due diligence. Having them organized shows financial maturity.',
       estimatedValue: 5000,
-      estimatedHours: 2,
+      estimatedHours: 0.25,
       buyerConsequence: 'Buyers discount businesses that can\'t quickly produce clean financials. This is table stakes for any transaction.',
     },
   ],
