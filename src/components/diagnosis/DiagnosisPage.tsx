@@ -210,8 +210,8 @@ export function DiagnosisPage() {
   if (error || !data) return <DiagnosisError onRetry={fetchData} />
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8">
-      <AnimatedStagger className="space-y-8" staggerDelay={0.1}>
+    <div className="max-w-5xl mx-auto sm:px-2 py-2 sm:py-8">
+      <AnimatedStagger className="space-y-4 sm:space-y-8" staggerDelay={0.1}>
         {/* Page Header */}
         <AnimatedItem>
           <DiagnosisHeader
@@ -252,27 +252,41 @@ export function DiagnosisPage() {
 
         {/* Category Grid */}
         <AnimatedItem>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {data.categories.map(cat => (
-              <CategoryPanel
-                key={cat.category}
-                category={cat.category}
-                label={cat.label}
-                score={cat.score}
-                dollarImpact={cat.dollarImpact}
-                isAssessed={cat.isAssessed}
-                confidence={cat.confidence}
-                isLowestConfidence={cat.isLowestConfidence}
-                assessmentId={data.assessmentId}
-                companyId={selectedCompanyId}
-                onAssessmentComplete={handleAssessmentComplete}
-                isExpanded={expandedCategory === cat.category}
-                onExpand={() => setExpandedCategory(cat.category)}
-                onCollapse={() => setExpandedCategory(null)}
-                nextPromptDate={cadenceNextDates[cat.category] ?? null}
-                financialContext={cat.financialContext}
-              />
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            {data.categories.map(cat => {
+              // Free users who have completed both free categories (FINANCIAL, OPERATIONAL)
+              // should see an upgrade prompt when clicking the remaining 4 locked categories
+              const freeCats = ['FINANCIAL', 'OPERATIONAL']
+              const allFreeDone = isFreeUser && freeCats.every(c => assessedCategories.includes(c))
+              const isLockedForFree = allFreeDone && !freeCats.includes(cat.category)
+
+              return (
+                <CategoryPanel
+                  key={cat.category}
+                  category={cat.category}
+                  label={cat.label}
+                  score={cat.score}
+                  dollarImpact={cat.dollarImpact}
+                  isAssessed={cat.isAssessed}
+                  confidence={cat.confidence}
+                  isLowestConfidence={cat.isLowestConfidence}
+                  assessmentId={data.assessmentId}
+                  companyId={selectedCompanyId}
+                  onAssessmentComplete={handleAssessmentComplete}
+                  isExpanded={expandedCategory === cat.category}
+                  onExpand={() => {
+                    if (isLockedForFree) {
+                      setUpgradeModalOpen(true)
+                    } else {
+                      setExpandedCategory(cat.category)
+                    }
+                  }}
+                  onCollapse={() => setExpandedCategory(null)}
+                  nextPromptDate={cadenceNextDates[cat.category] ?? null}
+                  financialContext={cat.financialContext}
+                />
+              )
+            })}
           </div>
         </AnimatedItem>
 

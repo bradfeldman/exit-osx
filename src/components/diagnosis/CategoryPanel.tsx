@@ -131,10 +131,8 @@ export function CategoryPanel({
 
   return (
     <div className={cn(
-      'bg-card border rounded-xl p-5 transition-all',
-      // PROD-014: Visually distinguish unassessed categories
-      !isAssessed && 'border-dashed border-border/60 bg-muted/30',
-      isAssessed && 'border-border hover:border-primary/20 hover:shadow-sm',
+      'bg-card border rounded-xl p-4 sm:p-5 transition-all',
+      'border-border hover:border-primary/20 hover:shadow-sm',
       isLowestConfidence && isAssessed && 'border-amber-300/50',
       isExpanded && 'border-primary/40 shadow-md border-solid'
     )}>
@@ -143,21 +141,16 @@ export function CategoryPanel({
         <div className="flex items-center gap-2">
           <div className={cn(
             'h-2.5 w-2.5 rounded-full',
-            isAssessed
-              ? (CATEGORY_DOT_COLORS[category] || 'bg-gray-400')
-              : 'bg-gray-300'
+            CATEGORY_DOT_COLORS[category] || 'bg-gray-400'
           )} />
-          <span className={cn(
-            'text-sm font-semibold',
-            isAssessed ? 'text-foreground' : 'text-muted-foreground'
-          )}>{label}</span>
+          <span className="text-sm font-semibold text-foreground">{label}</span>
         </div>
         {isAssessed ? (
           <span className={cn('text-lg font-bold', getScoreColor(score))}>
             {score}/100
           </span>
         ) : (
-          <span className="text-sm font-medium text-muted-foreground/60 italic">
+          <span className="text-sm font-medium text-muted-foreground">
             Not Assessed
           </span>
         )}
@@ -233,17 +226,18 @@ export function CategoryPanel({
 
       {/* CTAs - hidden when expanded */}
       {!isExpanded && (
-        <div className="flex items-center gap-2 mt-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-3">
           <Button
             size="sm"
             variant={isMaintaining ? 'ghost' : 'default'}
             disabled={isMaintaining || !assessmentId || !companyId}
             onClick={handlePrimaryClick}
+            className="min-h-[44px] sm:min-h-0"
           >
             {ctaLabel} {!isMaintaining && '→'}
           </Button>
           {showSecondary && (
-            <Button variant="ghost" size="sm" onClick={handleSecondaryClick}>
+            <Button variant="ghost" size="sm" onClick={handleSecondaryClick} className="min-h-[44px] sm:min-h-0">
               Review Answers
             </Button>
           )}

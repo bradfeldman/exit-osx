@@ -38,21 +38,24 @@ export function Header({ user }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-border bg-card px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 flex h-14 sm:h-16 shrink-0 items-center gap-x-3 border-b border-border bg-card/95 backdrop-blur-md px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
       {/* Mobile logo */}
-      <div className="lg:hidden flex items-center gap-2">
+      <div className="lg:hidden flex items-center gap-2 min-w-0">
         <Image
           src="/logo.webp"
           alt="Exit OSx"
           width={28}
           height={28}
-          className="h-7 w-7"
+          className="h-7 w-7 shrink-0"
         />
-        <span className="text-lg font-semibold text-foreground">Exit OSx</span>
+        {/* Show company name on mobile instead of app name */}
+        <span className="text-base font-semibold text-foreground truncate">
+          {selectedCompany?.name || 'Exit OSx'}
+        </span>
       </div>
 
       <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-        {/* Company name — prominent, personal */}
+        {/* Company name — prominent, personal (desktop) */}
         <div className="hidden lg:flex items-center gap-6 flex-1 min-w-0">
           {selectedCompany && (
             <span className="text-lg font-bold text-foreground truncate">
@@ -64,12 +67,12 @@ export function Header({ user }: HeaderProps) {
         <div className="flex flex-1 lg:hidden" />
 
         {/* User menu */}
-        <div className="flex items-center gap-x-4 lg:gap-x-6">
+        <div className="flex items-center gap-x-2 sm:gap-x-4 lg:gap-x-6">
           <ExitCoachButton />
           <NotificationBell />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="relative rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+              <button className="relative rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[44px] min-w-[44px] flex items-center justify-center">
                 <UserAvatar
                   email={user.email || ''}
                   name={user.user_metadata?.name}

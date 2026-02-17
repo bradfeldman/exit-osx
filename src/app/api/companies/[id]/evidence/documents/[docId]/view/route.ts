@@ -202,6 +202,19 @@ export async function GET(
       return new NextResponse('Failed to generate view URL', { status: 500 })
     }
 
+    // Download mode: force browser download instead of inline view
+    const isDownload = request.nextUrl.searchParams.get('download') === '1'
+    if (isDownload) {
+      const downloadName = document.fileName || document.documentName || 'document'
+      return new NextResponse(null, {
+        status: 302,
+        headers: {
+          Location: urlData.signedUrl,
+          'Content-Disposition': `attachment; filename="${downloadName}"`,
+        },
+      })
+    }
+
     const isPdf = document.mimeType === 'application/pdf' ||
                   document.fileName?.toLowerCase().endsWith('.pdf')
 

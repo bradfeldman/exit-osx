@@ -7,10 +7,11 @@ import { getUserAlerts, markAllAsRead } from '@/lib/alerts'
 // Combined alert types
 type AssessmentAlertType = 'NO_ASSESSMENT' | 'STALE_ASSESSMENT' | 'QUARTERLY_REMINDER' | 'OPEN_ASSESSMENT' | 'ASSESSMENT_AVAILABLE'
 type SystemAlertType = 'ACCESS_REQUEST' | 'ACCESS_GRANTED' | 'ACCESS_DENIED' | 'STAFF_PAUSED' | 'OWNERSHIP_TRANSFER' | 'TRIAL_ENDING' | 'TRIAL_EXPIRED' | 'ACTION_PLAN_UPDATED' | 'ONBOARDING_TOUR' | 'ONBOARDING_ASSESSMENT'
+type OnboardingAlertType = 'ONBOARDING_VERIFY_EMAIL' | 'ONBOARDING_BASELINE'
 
 interface Alert {
   id: string
-  type: AssessmentAlertType | SystemAlertType
+  type: AssessmentAlertType | SystemAlertType | OnboardingAlertType
   title: string
   message: string
   actionUrl: string | null
@@ -160,6 +161,60 @@ export async function GET() {
             source: 'computed',
           })
         }
+      }
+    }
+
+    // --- Onboarding notification: Verify your email ---
+    if (!user.email_confirmed_at) {
+      alerts.push({
+        id: 'onboarding-verify-email',
+        type: 'ONBOARDING_VERIFY_EMAIL',
+        title: 'Verify your email',
+        message: 'Check your inbox and click the confirmation link to secure your account.',
+        actionUrl: null,
+        severity: 'warning',
+        persistent: true,
+        createdAt: user.created_at,
+        source: 'computed',
+      })
+    }
+
+    // --- Onboarding notification: Complete baseline assessments ---
+    // Check if all 6 BRI categories have at least one answered question
+    if (companies.length > 0) {
+      const primaryCompany = companies[0]
+      const allResponses = await prisma.assessmentResponse.findMany({
+        where: {
+          assessment: { companyId: primaryCompany.id },
+          selectedOptionId: { not: null },
+        },
+        include: {
+          question: { select: { briCategory: true } },
+        },
+      })
+
+      const assessedCategories = new Set<string>(
+        allResponses.map(r => r.question.briCategory)
+      )
+
+      const allBriCategories = ['FINANCIAL', 'TRANSFERABILITY', 'OPERATIONAL', 'MARKET', 'LEGAL_TAX', 'PERSONAL']
+      const missingCategories = allBriCategories.filter(c => !assessedCategories.has(c))
+
+      if (missingCategories.length > 0) {
+        const completedCount = allBriCategories.length - missingCategories.length
+        alerts.push({
+          id: `onboarding-baseline-${primaryCompany.id}`,
+          type: 'ONBOARDING_BASELINE',
+          title: 'Complete your baseline assessments',
+          message: `${completedCount} of 6 categories assessed. Complete all 6 to unlock your full Buyer Readiness Index.`,
+          actionUrl: '/dashboard/diagnosis',
+          companyId: primaryCompany.id,
+          companyName: primaryCompany.name,
+          severity: 'info',
+          persistent: true,
+          createdAt: primaryCompany.createdAt.toISOString(),
+          source: 'computed',
+        })
       }
     }
 

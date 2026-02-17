@@ -69,7 +69,7 @@ export function RiskDriversSection({
             </div>
             <div>
               <p className="text-2xl font-bold text-destructive">$200K &ndash; $1.2M</p>
-              <p className="text-sm text-muted-foreground mt-1">in preventable value gaps</p>
+              <p className="text-sm text-muted-foreground mt-1">in quick-win value gaps you could close within 30 days</p>
             </div>
             <p className="text-sm text-muted-foreground">
               The average business we assess has significant gaps that buyers will discount. Most owners don&apos;t know where theirs are.

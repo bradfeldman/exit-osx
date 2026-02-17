@@ -536,8 +536,8 @@ export function ActionsPage() {
   const showQueue = otherActiveTasks.length > 0 || remainingUpNext.length > 0
 
   return (
-    <div className="max-w-[800px] mx-auto px-6 py-8">
-      <AnimatedStagger className="space-y-6" staggerDelay={0.1}>
+    <div className="max-w-[800px] mx-auto sm:px-2 py-2 sm:py-8">
+      <AnimatedStagger className="space-y-4 sm:space-y-6" staggerDelay={0.1}>
         <AnimatedItem>
           <AssessmentPriorityCard />
         </AnimatedItem>

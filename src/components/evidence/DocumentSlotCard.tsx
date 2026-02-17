@@ -10,6 +10,7 @@ import {
   Loader2,
   CheckCircle,
   Eye,
+  Download,
   RefreshCw,
   Trash2,
 } from 'lucide-react'
@@ -48,6 +49,7 @@ interface DocumentSlotCardProps {
   showBuyerExplanation?: boolean
   onUploadSuccess?: () => void
   onViewDocument?: (docId: string) => void
+  onDownloadDocument?: (docId: string) => void
 }
 
 const IMPORTANCE_LABELS: Record<string, string> = {
@@ -83,6 +85,31 @@ const FRESHNESS_LABELS: Record<string, string> = {
   current: 'Current',
   due_soon: 'Update due',
   overdue: 'Overdue',
+}
+
+const EVIDENCE_ACCEPTED_TYPES = new Set([
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/plain',
+  'image/png',
+  'image/jpeg',
+])
+
+const EVIDENCE_MAX_SIZE = 2 * 1024 * 1024 // 2 MB
+
+/** Types that can be previewed inline in the browser */
+const VIEWABLE_MIME_TYPES = new Set([
+  'application/pdf',
+  'image/png',
+  'image/jpeg',
+])
+
+function isViewableFile(mimeType: string | null): boolean {
+  if (!mimeType) return false
+  return VIEWABLE_MIME_TYPES.has(mimeType)
 }
 
 function formatFileSize(bytes: number | null): string {
@@ -123,6 +150,7 @@ export function DocumentSlotCard({
   showBuyerExplanation = false,
   onUploadSuccess,
   onViewDocument,
+  onDownloadDocument,
 }: DocumentSlotCardProps) {
   const { selectedCompanyId } = useCompany()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -135,9 +163,15 @@ export function DocumentSlotCard({
   const uploadFile = useCallback(async (file: File) => {
     if (!selectedCompanyId) return
 
-    if (file.size > 50 * 1024 * 1024) {
+    if (!EVIDENCE_ACCEPTED_TYPES.has(file.type)) {
       setUploadStatus('error')
-      setUploadError(`${file.name} is too large. Maximum size is 50MB.`)
+      setUploadError('File type not accepted. Upload PDF, Word, TXT, PNG, JPEG, or Excel files only.')
+      return
+    }
+
+    if (file.size > EVIDENCE_MAX_SIZE) {
+      setUploadStatus('error')
+      setUploadError('File must be under 2 MB')
       return
     }
 
@@ -210,9 +244,13 @@ export function DocumentSlotCard({
   const handleViewClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     if (slot.document) {
-      onViewDocument?.(slot.document.id)
+      if (isViewableFile(slot.document.mimeType)) {
+        onViewDocument?.(slot.document.id)
+      } else {
+        onDownloadDocument?.(slot.document.id)
+      }
     }
-  }, [slot.document, onViewDocument])
+  }, [slot.document, onViewDocument, onDownloadDocument])
 
   const handleReplaceClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
@@ -375,8 +413,17 @@ export function DocumentSlotCard({
                 onClick={handleViewClick}
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--burnt-orange)] hover:underline"
               >
-                <Eye className="w-3.5 h-3.5" />
-                View
+                {isViewableFile(doc.mimeType) ? (
+                  <>
+                    <Eye className="w-3.5 h-3.5" />
+                    View
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-3.5 h-3.5" />
+                    Download
+                  </>
+                )}
               </button>
               <button
                 type="button"
@@ -402,6 +449,7 @@ export function DocumentSlotCard({
           ref={fileInputRef}
           type="file"
           className="hidden"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg,image/*"
           onChange={handleFileInputChange}
         />
       </div>
@@ -448,6 +496,7 @@ export function DocumentSlotCard({
             ref={fileInputRef}
             type="file"
             className="hidden"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg,image/*"
             onChange={handleFileInputChange}
           />
           <button
@@ -547,6 +596,7 @@ export function DocumentSlotCard({
           ref={fileInputRef}
           type="file"
           className="hidden"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg,image/*"
           onChange={handleFileInputChange}
         />
         <button

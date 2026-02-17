@@ -102,11 +102,19 @@ export async function initializeTwoFactor(): Promise<TwoFactorSetupResult> {
       backupCodes,
     }
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const isMissingKey = errorMessage.includes('TOTP_ENCRYPTION_KEY')
     securityLogger.error('2fa.setup_error', 'Error initializing 2FA', {
       userEmail: user.email,
-      metadata: { error: String(error) },
+      metadata: { error: errorMessage, isMissingKey },
     })
-    return { success: false, error: 'Failed to initialize two-factor authentication' }
+    console.error('[2FA] initializeTwoFactor failed:', errorMessage)
+    return {
+      success: false,
+      error: isMissingKey
+        ? 'Two-factor authentication is not configured. Please contact support.'
+        : `Failed to initialize two-factor authentication: ${errorMessage}`,
+    }
   }
 }
 
@@ -163,11 +171,13 @@ export async function verifyAndEnableTwoFactor(code: string): Promise<TwoFactorV
 
     return { success: true }
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
     securityLogger.error('2fa.verify_error', 'Error verifying 2FA', {
       userEmail: user.email,
-      metadata: { error: String(error) },
+      metadata: { error: errorMessage },
     })
-    return { success: false, error: 'Failed to verify code' }
+    console.error('[2FA] verifyAndEnableTwoFactor failed:', errorMessage)
+    return { success: false, error: `Failed to verify code: ${errorMessage}` }
   }
 }
 
@@ -223,11 +233,13 @@ export async function disableTwoFactor(code: string): Promise<TwoFactorVerifyRes
 
     return { success: true }
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
     securityLogger.error('2fa.disable_error', 'Error disabling 2FA', {
       userEmail: user.email,
-      metadata: { error: String(error) },
+      metadata: { error: errorMessage },
     })
-    return { success: false, error: 'Failed to disable two-factor authentication' }
+    console.error('[2FA] disableTwoFactor failed:', errorMessage)
+    return { success: false, error: `Failed to disable two-factor authentication: ${errorMessage}` }
   }
 }
 

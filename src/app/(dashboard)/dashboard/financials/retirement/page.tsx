@@ -13,6 +13,7 @@ import {
   ProjectionChart,
   SensitivityTable,
 } from '@/components/retirement'
+import { FeatureGate } from '@/components/subscription'
 import {
   type TaxTreatment,
   type RetirementAsset,
@@ -382,6 +383,7 @@ export default function RetirementCalculatorPage() {
   }
 
   return (
+    <FeatureGate feature="retirement-calculator" featureDisplayName="Retirement Calculator">
     <div className="space-y-6">
       {/* Header - Emotionally Connected */}
       <div className="flex items-start justify-between">
@@ -1001,5 +1003,6 @@ export default function RetirementCalculatorPage() {
         personal circumstances. Consult a qualified financial advisor for personalized guidance.
       </p>
     </div>
+    </FeatureGate>
   )
 }

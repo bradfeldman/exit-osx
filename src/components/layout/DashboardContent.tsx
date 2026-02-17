@@ -51,7 +51,7 @@ export function DashboardContent({ children, user }: DashboardContentProps) {
       <div className="lg:pl-64">
         <TrialBanner />
         <Header user={user} />
-        <main className="p-6 pb-20 lg:pb-6">
+        <main className="px-4 py-4 pb-24 sm:px-6 sm:py-6 lg:pb-6">
           {children}
         </main>
       </div>

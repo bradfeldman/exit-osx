@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Mail, Phone, Linkedin, ExternalLink, Pencil, Check, MapPin } from 'lucide-react'
+import { X, Mail, Phone, Linkedin, ExternalLink, Pencil, Check, MapPin, ArrowRight, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -12,20 +12,25 @@ import {
   CONTACT_CATEGORY_LABELS,
 } from '@/lib/contact-system/constants'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 import type { DealParticipantData } from '@/hooks/useContactSystem'
 
 interface ParticipantDetailPanelProps {
   participant: DealParticipantData
   dealId: string
+  companyId: string | null
   onClose: () => void
   onUpdate: () => void
+  onNavigateToPipeline?: () => void
 }
 
 export function ParticipantDetailPanel({
   participant,
   dealId,
+  companyId,
   onClose,
   onUpdate,
+  onNavigateToPipeline,
 }: ParticipantDetailPanelProps) {
   const [isUpdating, setIsUpdating] = useState(false)
   const [editDescription, setEditDescription] = useState(participant.description ?? '')
@@ -46,6 +51,7 @@ export function ParticipantDetailPanel({
     state: participant.canonicalPerson.state ?? '',
     zip: participant.canonicalPerson.zip ?? '',
   })
+  const [isAddingToPipeline, setIsAddingToPipeline] = useState(false)
   const { updateParticipant, removeParticipant } = useDealParticipants(dealId)
 
   const { canonicalPerson, isPrimary, isActive, dealBuyer, createdAt } = participant
@@ -116,6 +122,37 @@ export function ParticipantDetailPanel({
       // silently fail
     } finally {
       setIsUpdating(false)
+    }
+  }
+
+  const handleAddToPipeline = async () => {
+    if (!companyId || !canonicalPerson) return
+    setIsAddingToPipeline(true)
+    try {
+      const companyName = canonicalPerson.currentCompany?.name ?? `${canonicalPerson.firstName} ${canonicalPerson.lastName}`
+      const res = await fetch(`/api/companies/${companyId}/deal-room/buyers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyName,
+          buyerType: 'INDIVIDUAL',
+          contactName: `${canonicalPerson.firstName} ${canonicalPerson.lastName}`,
+          contactEmail: canonicalPerson.email ?? '',
+          notes: participant.description ?? '',
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to add to pipeline')
+      }
+      toast.success(`${companyName} added to pipeline`)
+      onUpdate()
+      onNavigateToPipeline?.()
+      onClose()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to add to pipeline')
+    } finally {
+      setIsAddingToPipeline(false)
     }
   }
 
@@ -528,21 +565,6 @@ export function ParticipantDetailPanel({
             />
           </section>
 
-          {/* Buyer Link */}
-          {dealBuyer && (
-            <section>
-              <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-3">
-                Buyer Link
-              </h3>
-              <div className="text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Company</span>
-                  <span>{dealBuyer.canonicalCompany.name}</span>
-                </div>
-              </div>
-            </section>
-          )}
-
           {/* Metadata */}
           <section>
             <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-3">
@@ -567,6 +589,56 @@ export function ParticipantDetailPanel({
               </div>
             </div>
           </section>
+
+          {/* Add to Pipeline CTA — shown for PROSPECT contacts not yet in pipeline */}
+          {category === 'PROSPECT' && !dealBuyer && (
+            <section>
+              <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10 p-3">
+                <p className="text-xs font-medium text-amber-800 dark:text-amber-200 mb-1.5">
+                  Not in pipeline yet
+                </p>
+                <p className="text-xs text-amber-700 dark:text-amber-300 mb-3">
+                  This prospect is in your contacts but hasn&apos;t been added to the deal pipeline. Add them to start tracking their progress through deal stages.
+                </p>
+                <Button
+                  size="sm"
+                  className="w-full gap-1.5 bg-amber-600 hover:bg-amber-700 text-white"
+                  onClick={handleAddToPipeline}
+                  disabled={isAddingToPipeline || isUpdating}
+                >
+                  {isAddingToPipeline ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  )}
+                  Add to Pipeline
+                </Button>
+              </div>
+            </section>
+          )}
+
+          {/* Pipeline link — shown when already in pipeline */}
+          {dealBuyer && (
+            <section>
+              <div className="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-900/10 p-3">
+                <p className="text-xs font-medium text-emerald-800 dark:text-emerald-200 mb-1">
+                  In pipeline
+                </p>
+                <p className="text-xs text-emerald-700 dark:text-emerald-300">
+                  Linked to <strong>{dealBuyer.canonicalCompany.name}</strong> in the pipeline.{' '}
+                  {onNavigateToPipeline && (
+                    <button
+                      type="button"
+                      onClick={() => { onNavigateToPipeline(); onClose() }}
+                      className="text-emerald-600 hover:underline font-medium"
+                    >
+                      View pipeline
+                    </button>
+                  )}
+                </p>
+              </div>
+            </section>
+          )}
 
           {/* Actions */}
           <section className="pt-2 border-t space-y-2">

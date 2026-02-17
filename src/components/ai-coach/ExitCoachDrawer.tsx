@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useExitCoach } from '@/contexts/ExitCoachContext'
 import { useSubscription } from '@/contexts/SubscriptionContext'
-import { X, Sparkles } from 'lucide-react'
+import { X, Sparkles, SquarePen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { ExitCoachMessages } from './ExitCoachMessages'
@@ -21,12 +21,19 @@ const MAX_FREE_ATTEMPTS = 3
 
 export function ExitCoachDrawer() {
   const { selectedCompanyId } = useCompany()
-  const { isOpen, setIsOpen, messages, addMessage } = useExitCoach()
+  const { isOpen, setIsOpen, messages, addMessage, clearMessages } = useExitCoach()
   const { canAccessFeature } = useSubscription()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [attemptCount, setAttemptCount] = useState(0)
+
+  const startNewConversation = useCallback(() => {
+    clearMessages()
+    setError(null)
+    setIsLoading(false)
+    setAttemptCount(0)
+  }, [clearMessages])
 
   const hasAICoachAccess = canAccessFeature('ai-coach')
   const showFinalUpgrade = !hasAICoachAccess && attemptCount >= MAX_FREE_ATTEMPTS
@@ -109,12 +116,23 @@ export function ExitCoachDrawer() {
               <p className="text-[11px] text-muted-foreground">AI-powered exit advice</p>
             </div>
           </div>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="text-muted-foreground hover:text-foreground p-1"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            {messages.length > 0 && (
+              <button
+                onClick={startNewConversation}
+                title="New conversation"
+                className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted transition-colors"
+              >
+                <SquarePen className="h-4 w-4" />
+              </button>
+            )}
+            <button
+              onClick={() => setIsOpen(false)}
+              className="text-muted-foreground hover:text-foreground p-1"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* Messages */}

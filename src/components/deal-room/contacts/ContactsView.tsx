@@ -21,11 +21,12 @@ import type { ParsedInput } from '@/lib/contact-system/smart-parser'
 interface ContactsViewProps {
   dealId: string
   companyId: string | null
+  onNavigateToPipeline?: () => void
 }
 
 type CategoryFilter = 'ALL' | 'PROSPECT' | 'MANAGEMENT' | 'ADVISOR' | 'OTHER'
 
-export function ContactsView({ dealId, companyId: _companyId }: ContactsViewProps) {
+export function ContactsView({ dealId, companyId, onNavigateToPipeline }: ContactsViewProps) {
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('ALL')
   const [companyFilter, setCompanyFilter] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -551,8 +552,10 @@ export function ContactsView({ dealId, companyId: _companyId }: ContactsViewProp
         <ParticipantDetailPanel
           participant={selectedParticipant}
           dealId={dealId}
+          companyId={companyId}
           onClose={() => setSelectedParticipantId(null)}
           onUpdate={refresh}
+          onNavigateToPipeline={onNavigateToPipeline}
         />
       )}
     </div>

@@ -253,7 +253,7 @@ export function DealRoomPage() {
   // Not activated — show activation gate
   if (!data.activation.isActivated) {
     return (
-      <div className="max-w-[1200px] mx-auto px-6 py-8">
+      <div className="max-w-[1200px] mx-auto sm:px-2 py-2 sm:py-8">
         <ActivationGate
           activation={data.activation}
           onActivate={handleActivate}
@@ -264,7 +264,7 @@ export function DealRoomPage() {
   }
 
   return (
-    <div className="max-w-[1200px] mx-auto px-6 py-8">
+    <div className="max-w-[1200px] mx-auto sm:px-2 py-2 sm:py-8">
       {/* Tabs */}
       <DealRoomTabs
         activeTab={activeTab}
@@ -290,7 +290,11 @@ export function DealRoomPage() {
       )}
 
       {activeTab === 'contacts' && data.deal && (
-        <ContactsView dealId={data.deal.id} companyId={selectedCompanyId} />
+        <ContactsView
+          dealId={data.deal.id}
+          companyId={selectedCompanyId}
+          onNavigateToPipeline={() => setActiveTab('pipeline')}
+        />
       )}
 
       {activeTab === 'data-room' && (

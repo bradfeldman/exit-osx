@@ -24,6 +24,19 @@ const IMPORTANCE_STYLES: Record<string, string> = {
   helpful: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
 }
 
+const EVIDENCE_ACCEPTED_TYPES = new Set([
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/plain',
+  'image/png',
+  'image/jpeg',
+])
+
+const EVIDENCE_MAX_SIZE = 2 * 1024 * 1024 // 2 MB
+
 export function MissingDocumentCard({
   id,
   name,
@@ -45,10 +58,17 @@ export function MissingDocumentCard({
   const uploadFiles = useCallback(async (files: File[]) => {
     if (!selectedCompanyId || files.length === 0) return
 
-    const oversized = files.find(f => f.size > 50 * 1024 * 1024)
+    const invalidType = files.find(f => !EVIDENCE_ACCEPTED_TYPES.has(f.type))
+    if (invalidType) {
+      setUploadStatus('error')
+      setUploadError('File type not accepted. Upload PDF, Word, TXT, PNG, JPEG, or Excel files only.')
+      return
+    }
+
+    const oversized = files.find(f => f.size > EVIDENCE_MAX_SIZE)
     if (oversized) {
       setUploadStatus('error')
-      setUploadError(`${oversized.name} is too large. Maximum size is 50MB.`)
+      setUploadError(`${oversized.name} is too large. File must be under 2 MB`)
       return
     }
 
@@ -209,6 +229,7 @@ export function MissingDocumentCard({
               ref={fileInputRef}
               type="file"
               multiple
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg,image/*"
               className="hidden"
               onChange={handleFileInputChange}
             />

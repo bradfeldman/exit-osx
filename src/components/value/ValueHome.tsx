@@ -207,8 +207,8 @@ export function ValueHome() {
   const tier1 = data.tier1
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8">
-      <div className="flex justify-end mb-2">
+    <div className="max-w-5xl mx-auto sm:px-2 py-2 sm:py-8">
+      <div className="hidden sm:flex justify-end mb-2">
         <Button
           variant="outline"
           size="sm"
@@ -245,7 +245,7 @@ export function ValueHome() {
         </AnimatedItem>
 
         {/* BRI Range Gauge + Benchmark Comparison */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
           <AnimatedItem>
             <BRIRangeGauge
               briScore={tier1?.briScore ?? null}
@@ -289,7 +289,7 @@ export function ValueHome() {
               router.push(`/dashboard/diagnosis?expand=${category}`)
             }}
             onAssessmentStart={() => {
-              router.push('/dashboard/diagnosis')
+              router.push('/dashboard/diagnosis?expand=FINANCIAL')
             }}
           />
         </AnimatedItem>

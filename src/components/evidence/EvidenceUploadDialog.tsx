@@ -28,9 +28,26 @@ export function EvidenceUploadDialog({
 
   const [isDragOver, setIsDragOver] = useState(false)
 
+  const ACCEPTED_TYPES = new Set([
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/plain',
+    'image/png',
+    'image/jpeg',
+  ])
+
+  const MAX_SIZE = 2 * 1024 * 1024 // 2 MB
+
   const validateAndSetFile = (file: File) => {
-    if (file.size > 50 * 1024 * 1024) {
-      setErrorMessage('File too large. Maximum size is 50MB.')
+    if (!ACCEPTED_TYPES.has(file.type)) {
+      setErrorMessage('File type not accepted. Upload PDF, Word, TXT, PNG, JPEG, or Excel files only.')
+      return
+    }
+    if (file.size > MAX_SIZE) {
+      setErrorMessage('File must be under 2 MB')
       return
     }
     setSelectedFile(file)
@@ -124,7 +141,7 @@ export function EvidenceUploadDialog({
           type="file"
           className="hidden"
           onChange={handleFileChange}
-          accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
         />
 
         {!selectedFile ? (
@@ -142,7 +159,7 @@ export function EvidenceUploadDialog({
           >
             <Upload className={`h-8 w-8 mx-auto mb-2 ${isDragOver ? 'text-primary' : 'text-muted-foreground/60'}`} />
             <p className="text-sm font-medium text-foreground">Drag and drop or click to select a file</p>
-            <p className="text-xs text-muted-foreground mt-1">PDF, DOC, XLS, CSV, or images up to 50MB</p>
+            <p className="text-xs text-muted-foreground mt-1">PDF, Word, Excel, TXT, PNG, or JPEG up to 2 MB</p>
           </button>
         ) : (
           <div className="border border-border rounded-lg p-4">

@@ -1,8 +1,36 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { MoreHorizontal, AlertTriangle, Clock, XCircle, UserPlus, Mail, X } from 'lucide-react'
+import { MoreHorizontal, AlertTriangle, Clock, XCircle, UserPlus, Mail, X, Upload, Link2, ClipboardList, ArrowRight } from 'lucide-react'
+
+/**
+ * Completion types define how a task is completed:
+ * - upload_document: requires uploading a document to Evidence Room
+ * - connect_integration: requires connecting QuickBooks or similar
+ * - answer_questions: requires completing an assessment
+ * - manual: the classic "Mark Complete" (fallback)
+ */
+export type CompletionType = 'upload_document' | 'connect_integration' | 'answer_questions' | 'manual'
+
+const COMPLETION_CTA: Record<Exclude<CompletionType, 'manual'>, { label: string; href: string; icon: React.ElementType }> = {
+  upload_document: {
+    label: 'Upload to Evidence Room',
+    href: '/dashboard/evidence',
+    icon: Upload,
+  },
+  connect_integration: {
+    label: 'Connect QuickBooks',
+    href: '/dashboard/evidence',
+    icon: Link2,
+  },
+  answer_questions: {
+    label: 'Start Assessment',
+    href: '/dashboard/diagnosis',
+    icon: ClipboardList,
+  },
+}
 
 interface TaskStatusActionsProps {
   taskId: string
@@ -16,6 +44,7 @@ interface TaskStatusActionsProps {
   isAssignedToCurrentUser: boolean
   pendingInvite?: { email: string; sentAt: string } | null
   onRefresh?: () => void
+  completionType?: CompletionType
 }
 
 export function TaskStatusActions({
@@ -30,8 +59,22 @@ export function TaskStatusActions({
   isAssignedToCurrentUser,
   pendingInvite,
   onRefresh,
+  completionType = 'manual',
 }: TaskStatusActionsProps) {
   const [showMenu, setShowMenu] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!showMenu) return
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showMenu])
+
   const [showBlockInput, setShowBlockInput] = useState(false)
   const [blockReason, setBlockReason] = useState('')
   const [showDeferInput, setShowDeferInput] = useState(false)
@@ -184,12 +227,25 @@ export function TaskStatusActions({
             <Button onClick={onStart}>
               Start Task
             </Button>
+          ) : completionType !== 'manual' && COMPLETION_CTA[completionType] ? (
+            <>
+              <Link href={COMPLETION_CTA[completionType].href}>
+                <Button className="gap-2">
+                  {(() => { const Icon = COMPLETION_CTA[completionType].icon; return <Icon className="h-4 w-4" />; })()}
+                  {COMPLETION_CTA[completionType].label}
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
+              </Link>
+              <Button variant="ghost" size="sm" onClick={onComplete} className="text-muted-foreground text-xs">
+                Mark Complete Manually
+              </Button>
+            </>
           ) : (
             <Button onClick={onComplete}>
               Mark Complete
             </Button>
           )}
-          <div className="relative">
+          <div className="relative" ref={menuRef}>
             <Button
               variant="ghost"
               size="icon"

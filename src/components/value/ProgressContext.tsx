@@ -45,9 +45,9 @@ export function ProgressContext({
     : 'No change'
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
       {/* Recovered */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-1">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50">
             <TrendingUp className="h-4 w-4 text-emerald-600" />
@@ -63,7 +63,7 @@ export function ProgressContext({
       </div>
 
       {/* At Risk */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-1">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50">
             <AlertTriangle className="h-4 w-4 text-amber-600" />
@@ -79,7 +79,7 @@ export function ProgressContext({
       </div>
 
       {/* Gap Remaining */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-1">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100">
             <Target className="h-4 w-4 text-zinc-600" />

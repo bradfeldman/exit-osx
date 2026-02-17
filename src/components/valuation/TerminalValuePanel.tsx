@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { TextNumericInput } from '@/components/ui/text-numeric-input'
 
 interface TerminalValuePanelProps {
   terminalMethod: 'gordon' | 'exit_multiple'
@@ -14,61 +13,6 @@ interface TerminalValuePanelProps {
   onExitMultipleChange: (value: number | null) => void
   industryMultipleLow?: number
   industryMultipleHigh?: number
-}
-
-function TextNumericInput({
-  id,
-  value,
-  onCommit,
-  multiplier = 1,
-  decimals = 1,
-  className,
-  placeholder,
-}: {
-  id?: string
-  value: number | null
-  onCommit: (value: number | null) => void
-  multiplier?: number
-  decimals?: number
-  className?: string
-  placeholder?: string
-}) {
-  const [text, setText] = useState(() =>
-    value === null ? '' : (value * multiplier).toFixed(decimals)
-  )
-  const [focused, setFocused] = useState(false)
-
-  useEffect(() => {
-    if (!focused) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setText(value === null ? '' : (value * multiplier).toFixed(decimals))
-    }
-  }, [value, focused, multiplier, decimals])
-
-  return (
-    <Input
-      id={id}
-      type="text"
-      inputMode="decimal"
-      value={text}
-      onChange={(e) => {
-        const v = e.target.value
-        if (v === '' || /^-?\d*\.?\d*$/.test(v)) setText(v)
-      }}
-      onFocus={() => setFocused(true)}
-      onBlur={() => {
-        setFocused(false)
-        if (text !== '') {
-          const num = parseFloat(text)
-          if (!isNaN(num)) onCommit(num / multiplier)
-        } else {
-          onCommit(null)
-        }
-      }}
-      placeholder={placeholder}
-      className={className}
-    />
-  )
 }
 
 export function TerminalValuePanel({

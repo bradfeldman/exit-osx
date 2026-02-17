@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { CompanyRole } from '@prisma/client'
 import { z } from 'zod'
-import { validateRequestBody, uuidSchema } from '@/lib/security/validation'
+import { uuidSchema } from '@/lib/security/validation'
 
 // GET - Get all team members for a company (from CompanyMember)
 export async function GET(
@@ -121,10 +121,27 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const validation = await validateRequestBody(request, teamMemberAddSchema)
-  if (!validation.success) return validation.error
+  let addBody: Record<string, unknown>
+  try {
+    addBody = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
 
-  const { userId, role } = validation.data
+  const addParse = teamMemberAddSchema.safeParse(addBody)
+  if (!addParse.success) {
+    const details = addParse.error.issues.map(issue => ({
+      field: issue.path.join('.'),
+      message: issue.message,
+    }))
+    const fieldErrors = details.map(d => `${d.field}: ${d.message}`).join('; ')
+    return NextResponse.json(
+      { error: `Validation failed: ${fieldErrors}`, details },
+      { status: 400 }
+    )
+  }
+
+  const { userId, role } = addParse.data
 
   try {
 
@@ -265,10 +282,27 @@ export async function PATCH(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const validation = await validateRequestBody(request, teamMemberUpdateSchema)
-  if (!validation.success) return validation.error
+  let patchBody: Record<string, unknown>
+  try {
+    patchBody = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
 
-  const { memberId, role } = validation.data
+  const patchParse = teamMemberUpdateSchema.safeParse(patchBody)
+  if (!patchParse.success) {
+    const details = patchParse.error.issues.map(issue => ({
+      field: issue.path.join('.'),
+      message: issue.message,
+    }))
+    const fieldErrors = details.map(d => `${d.field}: ${d.message}`).join('; ')
+    return NextResponse.json(
+      { error: `Validation failed: ${fieldErrors}`, details },
+      { status: 400 }
+    )
+  }
+
+  const { memberId, role } = patchParse.data
 
   try {
 

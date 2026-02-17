@@ -47,20 +47,20 @@ const FACTOR_VALUE_LABELS: Record<string, Record<string, string>> = {
 /** What a buyer thinks when they see each factor at different levels */
 const FACTOR_BUYER_CONTEXT: Record<string, Record<string, string>> = {
   revenueModel: {
-    PROJECT_BASED: 'Buyers see unpredictable cash flow — harder to forecast',
+    PROJECT_BASED: 'Buyers may see unpredictable cash flow - harder to forecast',
     TRANSACTIONAL: 'Revenue depends on ongoing sales effort',
     RECURRING_CONTRACTS: 'Predictable revenue stream — buyers pay more for this',
     SUBSCRIPTION_SAAS: 'Highly predictable — the most valued revenue type',
   },
   grossMarginProxy: {
     LOW: 'Thin margins limit growth potential and buyer interest',
-    MODERATE: 'Acceptable margins — room to improve',
+    MODERATE: 'Acceptable margins — may be room to improve',
     GOOD: 'Healthy margins signal a strong business model',
     EXCELLENT: 'Premium margins — very attractive to buyers',
   },
   laborIntensity: {
     VERY_HIGH: 'Heavy reliance on people makes scaling expensive',
-    HIGH: 'Buyer sees significant labor costs that compress value',
+    HIGH: 'Buyer sees significant labor costs that may compress value',
     MODERATE: 'Balanced — manageable labor cost structure',
     LOW: 'Lean operation — scales efficiently',
   },

@@ -146,7 +146,7 @@ function ModerateTierBlock({ context, taskId }: { context: CompanyContextData; t
 
       {context.addFinancialsCTA && (
         <Link
-          href="/dashboard/financials/statements"
+          href="/dashboard/evidence"
           className="inline-flex items-center gap-1 mt-3 text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
           onClick={() => analytics.track('financial_upload_cta_clicked', {
             taskId,
@@ -182,7 +182,7 @@ function LowTierBlock({ taskId }: { taskId: string }) {
       {/* CTA overlay */}
       <div className="absolute inset-0 flex items-center justify-center bg-background/60">
         <Link
-          href="/dashboard/financials/statements"
+          href="/dashboard/evidence"
           className="px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90 transition-opacity"
           onClick={() => analytics.track('financial_upload_cta_clicked', {
             taskId,

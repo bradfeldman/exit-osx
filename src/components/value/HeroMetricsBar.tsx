@@ -89,8 +89,26 @@ export function HeroMetricsBar({
   const blendedCurrentValue = _dcfValuation
     ? Math.round((currentValue + _dcfValuation.enterpriseValue) / 2)
     : currentValue
-  const rangeMin = Math.round(blendedCurrentValue * 0.95)
-  const rangeMax = Math.round(blendedCurrentValue * 1.05)
+
+  // When DCF data is available, show a real range between the two methodologies
+  const hasDcfRange = _dcfValuation !== null && _dcfValuation !== undefined
+  const rangeLow = hasDcfRange
+    ? Math.min(currentValue, _dcfValuation.enterpriseValue)
+    : Math.round(blendedCurrentValue * 0.95)
+  const rangeHigh = hasDcfRange
+    ? Math.max(currentValue, _dcfValuation.enterpriseValue)
+    : Math.round(blendedCurrentValue * 1.05)
+
+  // Determine the subtitle note for the Current Value card
+  const getValueSubtitle = () => {
+    if (hasDcfRange) {
+      return 'Based on two valuation methods'
+    }
+    if (_isEstimated && !isEbitdaFromFinancials) {
+      return 'Connect QuickBooks to narrow your valuation range'
+    }
+    return formatCurrency(rangeLow) + ' \u2013 ' + formatCurrency(rangeHigh)
+  }
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -105,10 +123,10 @@ export function HeroMetricsBar({
         <p className={`text-3xl font-bold mt-1 truncate ${getBriColor()}`}>
           {briPercent != null
             ? isClient ? animatedBri : `${briPercent}`
-            : '—'}
+            : '\u2014'}
         </p>
         {briPercent != null ? (
-          <p className="text-xs text-muted-foreground mt-2">Score 0 – 100</p>
+          <p className="text-xs text-muted-foreground mt-2">Score 0 &ndash; 100</p>
         ) : (
           <Badge variant="secondary" className="mt-2">Not assessed</Badge>
         )}
@@ -122,11 +140,23 @@ export function HeroMetricsBar({
         transition={{ duration: 0.5, delay: 0.05 }}
       >
         <p className="text-sm font-medium text-muted-foreground">Current Value</p>
-        <p className="text-3xl font-bold text-foreground mt-1 truncate">
-          {isClient ? <AnimatedCurrency value={blendedCurrentValue} delay={200} /> : formatCurrency(blendedCurrentValue)}
-        </p>
+        {hasDcfRange ? (
+          /* Range display when both EBITDA-multiple and DCF are available */
+          <p className="text-3xl font-bold text-foreground mt-1 truncate">
+            {isClient ? (
+              <><AnimatedCurrency value={rangeLow} delay={200} />{' \u2013 '}<AnimatedCurrency value={rangeHigh} delay={200} /></>
+            ) : (
+              <>{formatCurrency(rangeLow)} &ndash; {formatCurrency(rangeHigh)}</>
+            )}
+          </p>
+        ) : (
+          /* Single blended value when only one methodology */
+          <p className="text-3xl font-bold text-foreground mt-1 truncate">
+            {isClient ? <AnimatedCurrency value={blendedCurrentValue} delay={200} /> : formatCurrency(blendedCurrentValue)}
+          </p>
+        )}
         <p className="text-xs text-muted-foreground mt-2">
-          {formatCurrency(rangeMin)} – {formatCurrency(rangeMax)}
+          {getValueSubtitle()}
         </p>
       </motion.div>
 

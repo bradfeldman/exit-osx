@@ -1,7 +1,6 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { formatCurrency } from '@/lib/utils/currency'
 
 interface ComingUpTask {
   id: string
@@ -54,11 +53,11 @@ export function ComingUpList({ tasks }: ComingUpListProps) {
             <span className="text-muted-foreground flex-1 min-w-0 truncate">
               {truncate(task.title, 40)}
             </span>
-            <span className="text-muted-foreground/70 text-xs whitespace-nowrap ml-4">
-              {task.estimatedHours ? formatTime(task.estimatedHours) : ''}
-              {task.estimatedHours && task.rawImpact ? ' · ' : ''}
-              {task.rawImpact ? `~${formatCurrency(task.rawImpact)}` : ''}
-            </span>
+            {task.estimatedHours ? (
+              <span className="text-muted-foreground/70 text-xs whitespace-nowrap ml-4">
+                {formatTime(task.estimatedHours)}
+              </span>
+            ) : null}
           </div>
         )
       })}

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Slider } from '@/components/ui/slider'
+import { TextNumericInput } from '@/components/ui/text-numeric-input'
 import {
   type RetirementAssumptions,
   formatCurrency,
@@ -121,11 +122,11 @@ export function SpendingPanel({
           <div className="flex justify-between items-center">
             <Label className="text-sm text-gray-700">Inflation Rate</Label>
             <div className="flex items-center gap-1">
-              <Input
-                type="number"
-                step={0.1}
-                value={(assumptions.inflationRate * 100).toFixed(1)}
-                onChange={(e) => onAssumptionChange('inflationRate', Number(e.target.value) / 100)}
+              <TextNumericInput
+                value={assumptions.inflationRate}
+                onCommit={(v) => onAssumptionChange('inflationRate', v ?? 0.03)}
+                multiplier={100}
+                decimals={1}
                 className="w-16 h-8 text-sm text-right"
               />
               <span className="text-gray-500 text-sm">%</span>

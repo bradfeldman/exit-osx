@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CookieSettingsButton } from '@/components/gdpr/CookieConsent'
@@ -231,12 +230,12 @@ export function GDPRSettings() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-3">
-            <Link href="/privacy">
+            <a href="/privacy" target="_blank" rel="noopener noreferrer">
               <Button variant="outline">Privacy Policy</Button>
-            </Link>
-            <Link href="/terms">
+            </a>
+            <a href="/terms" target="_blank" rel="noopener noreferrer">
               <Button variant="outline">Terms of Service</Button>
-            </Link>
+            </a>
           </div>
         </CardContent>
       </Card>

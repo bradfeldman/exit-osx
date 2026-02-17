@@ -46,6 +46,7 @@ interface DocumentShelfProps {
   isDetailMode: boolean
   onUploadSuccess?: () => void
   onViewDocument?: (docId: string) => void
+  onDownloadDocument?: (docId: string) => void
 }
 
 export function DocumentShelf({
@@ -53,6 +54,7 @@ export function DocumentShelf({
   isDetailMode,
   onUploadSuccess,
   onViewDocument,
+  onDownloadDocument,
 }: DocumentShelfProps) {
   const [showAddDialog, setShowAddDialog] = useState(false)
 
@@ -80,6 +82,7 @@ export function DocumentShelf({
             showBuyerExplanation={isDetailMode}
             onUploadSuccess={onUploadSuccess}
             onViewDocument={onViewDocument}
+            onDownloadDocument={onDownloadDocument}
           />
         ))}
       </div>

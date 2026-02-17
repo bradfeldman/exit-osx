@@ -2,12 +2,16 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useCompany } from '@/contexts/CompanyContext'
-import { Loader2 } from 'lucide-react'
+import { Loader2, LayoutGrid, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 import { DATA_ROOM_COLUMNS } from '@/lib/deal-room/data-room-stages'
 import { DataRoomColumn } from './DataRoomColumn'
+import { ProspectAccessPanel } from './ProspectAccessPanel'
 import type { DataRoomDoc } from './DataRoomDocCard'
+
+type DataRoomSubTab = 'stage-view' | 'prospect-access'
 
 export function VirtualDataRoom() {
   const { selectedCompanyId } = useCompany()
@@ -15,6 +19,7 @@ export function VirtualDataRoom() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(false)
   const [draggedDocId, setDraggedDocId] = useState<string | null>(null)
+  const [subTab, setSubTab] = useState<DataRoomSubTab>('stage-view')
 
   const fetchDocuments = useCallback(async () => {
     if (!selectedCompanyId) return
@@ -132,31 +137,75 @@ export function VirtualDataRoom() {
     )
   }
 
+  const subTabs: { id: DataRoomSubTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { id: 'stage-view', label: 'Stage View', icon: LayoutGrid },
+    { id: 'prospect-access', label: 'Prospect Access', icon: Users },
+  ]
+
   return (
     <div className="space-y-4">
+      {/* Header */}
       <div>
         <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
           DATA ROOM
         </h2>
         <p className="text-xs text-muted-foreground mt-1">
-          Drag documents between stages to control buyer access. Documents are visible at their assigned stage and all later stages.
+          Manage which documents prospects can see — by deal stage or individually per prospect.
         </p>
       </div>
 
-      <div className="flex gap-3 overflow-x-auto pb-4">
-        {DATA_ROOM_COLUMNS.map((col) => (
-          <DataRoomColumn
-            key={col.id}
-            columnId={col.id}
-            label={col.label}
-            docs={columnDocs[col.id] || []}
-            draggedDocId={draggedDocId}
-            onDragStart={setDraggedDocId}
-            onDragEnd={() => setDraggedDocId(null)}
-            onDrop={handleDrop}
-          />
-        ))}
+      {/* Sub-tabs */}
+      <div className="flex gap-1 border-b border-border/50 pb-0">
+        {subTabs.map(tab => {
+          const Icon = tab.icon
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setSubTab(tab.id)}
+              className={cn(
+                'flex items-center gap-1.5 px-3 pb-2 text-sm font-medium transition-colors border-b-2 -mb-px',
+                subTab === tab.id
+                  ? 'text-foreground border-[var(--burnt-orange)]'
+                  : 'text-muted-foreground border-transparent hover:text-foreground'
+              )}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {tab.label}
+            </button>
+          )
+        })}
       </div>
+
+      {/* Sub-tab content */}
+      {subTab === 'stage-view' && (
+        <div className="space-y-3">
+          <p className="text-xs text-muted-foreground">
+            Drag documents between stages to control buyer access. Documents are visible at their assigned stage and all later stages.
+          </p>
+          <div className="flex gap-3 overflow-x-auto pb-4">
+            {DATA_ROOM_COLUMNS.map((col) => (
+              <DataRoomColumn
+                key={col.id}
+                columnId={col.id}
+                label={col.label}
+                docs={columnDocs[col.id] || []}
+                draggedDocId={draggedDocId}
+                onDragStart={setDraggedDocId}
+                onDragEnd={() => setDraggedDocId(null)}
+                onDrop={handleDrop}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {subTab === 'prospect-access' && selectedCompanyId && (
+        <ProspectAccessPanel
+          companyId={selectedCompanyId}
+          documents={documents}
+        />
+      )}
     </div>
   )
 }

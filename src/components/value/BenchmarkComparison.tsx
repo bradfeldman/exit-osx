@@ -57,7 +57,7 @@ export function BenchmarkComparison({
 
   if (!hasAssessment) {
     return (
-      <Card className="border-dashed border-muted-foreground/30">
+      <Card className="h-full border-dashed border-muted-foreground/30">
         <CardContent className="flex flex-col items-center justify-center py-10">
           <Lock className="h-8 w-8 text-muted-foreground/40 mb-3" />
           <p className="text-sm font-medium text-muted-foreground mb-1">
@@ -80,7 +80,7 @@ export function BenchmarkComparison({
   }
 
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader className="pb-4">
         <CardTitle className="text-base font-semibold">
           Industry Benchmark

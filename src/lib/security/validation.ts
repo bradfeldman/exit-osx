@@ -116,6 +116,24 @@ export const ALLOWED_MIME_TYPES = new Set([
   'application/zip',
 ])
 
+/** Allowed MIME types for Evidence Room uploads (stricter subset) */
+export const EVIDENCE_ALLOWED_MIME_TYPES = new Set([
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/plain',
+  'image/png',
+  'image/jpeg',
+])
+
+/** Evidence Room max file size: 2 MB */
+export const EVIDENCE_MAX_FILE_SIZE = 2 * 1024 * 1024
+
+/** Evidence Room accepted file extensions for HTML accept attribute */
+export const EVIDENCE_ACCEPTED_EXTENSIONS = '.pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg'
+
 /** Blocked file extensions (even if MIME type is spoofed) */
 export const BLOCKED_EXTENSIONS = new Set([
   'exe', 'bat', 'cmd', 'sh', 'bash', 'ps1', 'psm1',
@@ -250,6 +268,24 @@ export async function validateRequestBody<T extends z.ZodTypeAny>(
 export const financialAmount = z.coerce.number().finite().min(-10_000_000_000).max(10_000_000_000)
 export const optionalFinancialAmount = financialAmount.optional().nullable()
 
+/** Lenient financial amount: accepts null/undefined/NaN/empty-string and coerces to 0 */
+export const lenientFinancialAmount = z.preprocess(
+  (val) => {
+    if (val === null || val === undefined || val === '') return 0
+    const n = Number(val)
+    return Number.isFinite(n) ? n : 0
+  },
+  z.number().finite().min(-10_000_000_000).max(10_000_000_000)
+)
+export const optionalLenientFinancialAmount = z.preprocess(
+  (val) => {
+    if (val === null || val === undefined || val === '') return null
+    const n = Number(val)
+    return Number.isFinite(n) ? n : null
+  },
+  z.number().finite().min(-10_000_000_000).max(10_000_000_000).nullable().optional()
+)
+
 /** Rate/percentage: 0-1 range (e.g., 0.05 = 5%) */
 export const rateSchema = z.coerce.number().finite().min(0).max(1)
 export const optionalRate = rateSchema.optional().nullable()
@@ -369,11 +405,17 @@ export const companyUpdateSchema = z.object({
 const financialAccountItem = z.object({
   name: z.string().max(200),
   type: z.string().max(100).optional(),
-  value: z.coerce.number().finite().optional(),
-  balance: z.coerce.number().finite().optional(),
+  value: z.preprocess(
+    (val) => { const n = Number(val); return Number.isFinite(n) ? n : 0 },
+    z.number().finite()
+  ).optional(),
+  balance: z.preprocess(
+    (val) => { const n = Number(val); return Number.isFinite(n) ? n : 0 },
+    z.number().finite()
+  ).optional(),
   institution: z.string().max(200).optional(),
   notes: z.string().max(1000).optional(),
-}) // SEC-080: Strip unknown fields instead of passing through
+}).passthrough() // SEC-080: Allow extra fields from wizard (id, category, description, amount)
 
 const financialJsonArray = z.array(financialAccountItem).max(100).optional().nullable()
 
@@ -388,13 +430,27 @@ const businessOwnershipSchema = z.object({
 /** Personal Financials PUT */
 export const personalFinancialsSchema = z.object({
   retirementAccounts: financialJsonArray,
-  totalRetirement: optionalFinancialAmount,
+  totalRetirement: optionalLenientFinancialAmount,
   personalAssets: financialJsonArray,
   personalLiabilities: financialJsonArray,
-  netWorth: optionalFinancialAmount,
-  exitGoalAmount: optionalFinancialAmount,
-  retirementAge: z.coerce.number().int().min(0).max(120).optional().nullable(),
-  currentAge: z.coerce.number().int().min(0).max(120).optional().nullable(),
+  netWorth: optionalLenientFinancialAmount,
+  exitGoalAmount: optionalLenientFinancialAmount,
+  retirementAge: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined || val === '') return null
+      const n = Number(val)
+      return Number.isFinite(n) ? Math.round(n) : null
+    },
+    z.number().int().min(0).max(120).nullable().optional()
+  ),
+  currentAge: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined || val === '') return null
+      const n = Number(val)
+      return Number.isFinite(n) ? Math.round(n) : null
+    },
+    z.number().int().min(0).max(120).nullable().optional()
+  ),
   businessOwnership: businessOwnershipSchema,
   notes: longText.optional().nullable(),
 })

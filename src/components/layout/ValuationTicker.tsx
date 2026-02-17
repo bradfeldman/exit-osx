@@ -23,8 +23,14 @@ export function ValuationTicker() {
 
   const currentValue = progressionData?.currentValue ?? null
   const previousValue = progressionData?.previousValue ?? null
+  const dcfEnterpriseValue = progressionData?.dcfEnterpriseValue ?? null
 
   if (currentValue === null) return null
+
+  // Determine if we can show a range (both EBITDA-multiple and DCF values available)
+  const hasRange = dcfEnterpriseValue !== null && dcfEnterpriseValue > 0
+  const rangeLow = hasRange ? Math.min(currentValue, dcfEnterpriseValue) : null
+  const rangeHigh = hasRange ? Math.max(currentValue, dcfEnterpriseValue) : null
 
   const delta = previousValue !== null ? currentValue - previousValue : null
   const pctChange = previousValue !== null && previousValue > 0
@@ -36,26 +42,46 @@ export function ValuationTicker() {
 
   return (
     <div className="hidden lg:flex flex-col items-end justify-center min-w-0">
-      {/* Current value — stock ticker style */}
+      {/* Valuation display — gradient shimmer with glow */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={currentValue}
-          initial={{ opacity: 0.6 }}
+          key={hasRange ? `${rangeLow}-${rangeHigh}` : currentValue}
+          initial={{ opacity: 0, scale: 0.97 }}
           animate={{
             opacity: 1,
-            filter: isUp
-              ? ['brightness(1)', 'brightness(1.15)', 'brightness(1)']
-              : undefined,
+            scale: 1,
           }}
           transition={{
-            opacity: { duration: 0.3 },
-            filter: { duration: 2, ease: 'easeOut' },
+            opacity: { duration: 0.4 },
+            scale: { duration: 0.5, ease: 'easeOut' },
           }}
-          className="text-lg font-bold tabular-nums text-foreground tracking-tight"
+          className="valuation-glow"
         >
-          {isClient ? <AnimatedValue value={currentValue} /> : formatCurrency(currentValue)}
+          <div className="valuation-shimmer-text text-xl font-extrabold tabular-nums tracking-tight leading-tight">
+            {hasRange && rangeLow !== null && rangeHigh !== null ? (
+              // Range display: "$14.4M - $17.5M"
+              isClient ? (
+                <><AnimatedValue value={rangeLow} />{' \u2013 '}<AnimatedValue value={rangeHigh} /></>
+              ) : (
+                <>{formatCurrency(rangeLow)} &ndash; {formatCurrency(rangeHigh)}</>
+              )
+            ) : (
+              // Single value display
+              isClient ? <AnimatedValue value={currentValue} /> : formatCurrency(currentValue)
+            )}
+          </div>
         </motion.div>
       </AnimatePresence>
+
+      {/* Label */}
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.6, duration: 0.4 }}
+        className="text-[10px] font-medium text-muted-foreground tracking-wide uppercase mt-0.5"
+      >
+        {hasRange ? 'Valuation Range' : 'Est. Valuation'}
+      </motion.p>
 
       {/* Delta row */}
       {delta !== null && pctChange !== null && (

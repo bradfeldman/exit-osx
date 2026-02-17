@@ -57,6 +57,7 @@ export async function GET(request: NextRequest) {
           id: true,
           briScore: true,
           currentValue: true,
+          dcfEnterpriseValue: true,
           createdAt: true,
         },
       }),
@@ -178,6 +179,9 @@ export async function GET(request: NextRequest) {
     // Valuation data for header ticker
     const currentValue = latestSnapshot ? Number(latestSnapshot.currentValue) : null
     const previousValue = previousSnapshot ? Number(previousSnapshot.currentValue) : null
+    const dcfEnterpriseValue = latestSnapshot?.dcfEnterpriseValue
+      ? Number(latestSnapshot.dcfEnterpriseValue)
+      : null
 
     return NextResponse.json({
       // Milestones
@@ -196,6 +200,7 @@ export async function GET(request: NextRequest) {
       // Valuation summary (for header ticker)
       currentValue,
       previousValue,
+      dcfEnterpriseValue,
     })
   } catch (error) {
     console.error('Error fetching progression data:', error instanceof Error ? error.message : String(error))

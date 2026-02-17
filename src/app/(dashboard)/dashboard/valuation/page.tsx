@@ -4,8 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useCompany } from '@/contexts/CompanyContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Switch } from '@/components/ui/switch'
-import { Loader2, Save, Calculator, Info } from 'lucide-react'
+import { Loader2, Save, Calculator } from 'lucide-react'
 import { analytics } from '@/lib/analytics'
 import {
   MarketDataPanel,
@@ -552,48 +551,6 @@ export default function ValuationPage() {
             isLoading={false}
             workingCapital={workingCapital}
           />
-
-          {/* Use DCF Value Toggle */}
-          <Card className={useDCFValue ? 'border-primary/50 bg-primary/5' : ''}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-medium">Include DCF in Valuation</CardTitle>
-                <Switch
-                  checked={useDCFValue}
-                  onCheckedChange={handleDcfToggleChange}
-                  disabled={!dcfResults}
-                />
-              </div>
-              <CardDescription>
-                {useDCFValue
-                  ? 'Enterprise value is blended: midpoint of EBITDA-multiple and DCF methods'
-                  : 'Using EBITDA multiple-based valuation only'}
-              </CardDescription>
-            </CardHeader>
-            {useDCFValue && dcfResults && (
-              <CardContent className="pt-0">
-                <div className="p-3 bg-primary/10 rounded-lg space-y-2">
-                  <div className="flex items-start gap-2 text-sm">
-                    <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <div className="text-muted-foreground">
-                      <p className="font-medium text-foreground mb-1">Blended valuation uses the midpoint of:</p>
-                      <ul className="list-disc list-inside space-y-0.5">
-                        <li>EBITDA multiple-based value (BRI-adjusted)</li>
-                        <li>DCF enterprise value (cash flow-based)</li>
-                      </ul>
-                      <p className="mt-1.5 text-xs">This triangulated value flows to all platform modules.</p>
-                    </div>
-                  </div>
-                  <div className="text-sm pt-2 border-t border-primary/20">
-                    <span className="text-muted-foreground">Implied EBITDA Multiple: </span>
-                    <span className="font-semibold text-foreground">
-                      {ebitda > 0 ? `${(dcfResults.enterpriseValue / ebitda).toFixed(1)}x` : 'N/A'}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            )}
-          </Card>
 
           {baseFCF > 0 && (
             <SensitivityTable

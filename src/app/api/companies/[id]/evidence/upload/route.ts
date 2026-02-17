@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
-import { validateUploadedFile, handleApiError } from '@/lib/security'
+import { validateUploadedFile, handleApiError, EVIDENCE_ALLOWED_MIME_TYPES, EVIDENCE_MAX_FILE_SIZE } from '@/lib/security'
 import { createDocumentUploadSignal } from '@/lib/signals/create-document-signal'
 import type { EvidenceCategory } from '@/lib/evidence/evidence-categories'
 import type { DataRoomCategory } from '@prisma/client'
@@ -48,8 +48,15 @@ export async function POST(
       return NextResponse.json({ error: `Invalid evidence category: ${evidenceCategory}` }, { status: 400 })
     }
 
-    if (file.size > 50 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File too large. Maximum size is 50MB.' }, { status: 400 })
+    if (file.size > EVIDENCE_MAX_FILE_SIZE) {
+      return NextResponse.json({ error: 'File must be under 2 MB' }, { status: 400 })
+    }
+
+    if (!EVIDENCE_ALLOWED_MIME_TYPES.has(file.type)) {
+      return NextResponse.json(
+        { error: 'File type not accepted. Upload PDF, Word, TXT, PNG, JPEG, or Excel files only.' },
+        { status: 400 }
+      )
     }
 
     const fileValidation = await validateUploadedFile(file)

@@ -7,7 +7,7 @@ import { CompanyContextBlock } from './CompanyContextBlock'
 import { BuyerContextBlock } from './BuyerContextBlock'
 import { RelatedTasksBlock } from './RelatedTasksBlock'
 import { TaskDetailsCollapsible } from './TaskDetailsCollapsible'
-import { TaskStatusActions } from './TaskStatusActions'
+import { TaskStatusActions, type CompletionType } from './TaskStatusActions'
 import { TaskNotes } from './TaskNotes'
 import { AutomationBanner } from './AutomationBanner'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -103,6 +103,55 @@ interface ActiveTaskCardProps {
   onRefresh?: () => void
   onFocusTask?: (taskId: string) => void
   disabled?: boolean
+}
+
+/**
+ * Derive how a task should be completed based on its title, description, and sub-steps.
+ * Tasks whose titles/descriptions indicate uploads go to Evidence Room,
+ * integration connections go to the integrations page,
+ * assessments go to Diagnosis, and everything else is manual.
+ */
+function deriveCompletionType(task: ActiveTask): CompletionType {
+  const title = task.title.toLowerCase()
+  const description = task.description.toLowerCase()
+  const combined = `${title} ${description}`
+
+  // Integration tasks: QuickBooks, connect, integration
+  if (
+    combined.includes('quickbooks') ||
+    combined.includes('connect your accounting') ||
+    (title.includes('connect') && (combined.includes('integration') || combined.includes('accounting')))
+  ) {
+    return 'connect_integration'
+  }
+
+  // Assessment/diagnosis tasks
+  if (
+    combined.includes('complete baseline') ||
+    combined.includes('complete.*assessment') ||
+    (title.includes('assessment') && (combined.includes('diagnosis') || combined.includes('category'))) ||
+    title.includes('category assessment')
+  ) {
+    return 'answer_questions'
+  }
+
+  // Upload/evidence tasks: upload, financial statements, evidence
+  if (
+    title.includes('upload') ||
+    combined.includes('upload to evidence') ||
+    combined.includes('financial statement') ||
+    (combined.includes('evidence room') && (combined.includes('upload') || combined.includes('document')))
+  ) {
+    return 'upload_document'
+  }
+
+  // Check sub-steps for file upload types
+  const hasFileUploadSteps = task.subSteps.some(s => s.subTaskType === 'FILE_UPLOAD')
+  if (hasFileUploadSteps && title.includes('upload')) {
+    return 'upload_document'
+  }
+
+  return 'manual'
 }
 
 export function ActiveTaskCard({ task, onSubStepToggle, onSubStepUpdate, onSubStepUpload, onComplete, onStart, onBlock, onDefer, onRefresh, onFocusTask, disabled = false }: ActiveTaskCardProps) {
@@ -208,6 +257,7 @@ export function ActiveTaskCard({ task, onSubStepToggle, onSubStepUpdate, onSubSt
         isAssignedToCurrentUser={task.isAssignedToCurrentUser}
         pendingInvite={task.pendingInvite}
         onRefresh={onRefresh}
+        completionType={deriveCompletionType(task)}
       />
 
       {/* Task notes */}

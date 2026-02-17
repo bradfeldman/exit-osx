@@ -127,9 +127,14 @@ export function EvidencePage() {
     window.open(`/api/companies/${selectedCompanyId}/evidence/documents/${docId}/view`, '_blank')
   }
 
+  const handleDownloadDocument = (docId: string) => {
+    if (!selectedCompanyId) return
+    window.open(`/api/companies/${selectedCompanyId}/evidence/documents/${docId}/view?download=1`, '_blank')
+  }
+
   return (
-    <div className="max-w-[960px] mx-auto px-6 py-8">
-      <AnimatedStagger className="space-y-6" staggerDelay={0.1}>
+    <div className="max-w-[960px] mx-auto sm:px-2 py-2 sm:py-8">
+      <AnimatedStagger className="space-y-4 sm:space-y-6" staggerDelay={0.1}>
         {/* Readiness Header */}
         <AnimatedItem>
           <ReadinessHeader
@@ -201,6 +206,7 @@ export function EvidencePage() {
               isDetailMode={isDetailMode}
               onUploadSuccess={fetchData}
               onViewDocument={handleViewDocument}
+              onDownloadDocument={handleDownloadDocument}
             />
           </AnimatedItem>
         ))}

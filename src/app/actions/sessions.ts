@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { securityLogger } from '@/lib/security'
 import { headers } from 'next/headers'
@@ -221,11 +222,21 @@ export async function revokeSession(sessionId: string): Promise<SessionActionRes
       return { success: false, error: 'Cannot revoke current session' }
     }
 
-    // Revoke the session
+    // Revoke the session in DB
     await prisma.userSession.update({
       where: { id: sessionId },
       data: { revokedAt: new Date() },
     })
+
+    // Also invalidate the Supabase session via Admin API using the stored JWT
+    // This tells Supabase to revoke that specific session token
+    try {
+      const adminClient = createServiceClient()
+      await adminClient.auth.admin.signOut(targetSession.sessionToken, 'local')
+    } catch (adminError) {
+      // Non-fatal: DB revocation is already done
+      console.warn('Failed to revoke Supabase session via admin API:', adminError)
+    }
 
     securityLogger.info('session.revoked', 'Session revoked by user', {
       userId: dbUser.id,
@@ -266,7 +277,17 @@ export async function revokeAllOtherSessions(): Promise<SessionActionResult> {
       return { success: false, error: 'User not found' }
     }
 
-    // Revoke all sessions except current
+    // Get all other session tokens before revoking (needed for Supabase admin signOut)
+    const otherSessions = await prisma.userSession.findMany({
+      where: {
+        userId: dbUser.id,
+        ...(session ? { sessionToken: { not: session.access_token } } : {}),
+        revokedAt: null,
+      },
+      select: { sessionToken: true },
+    })
+
+    // Revoke all sessions except current in DB
     const result = await prisma.userSession.updateMany({
       where: {
         userId: dbUser.id,
@@ -275,6 +296,17 @@ export async function revokeAllOtherSessions(): Promise<SessionActionResult> {
       },
       data: { revokedAt: new Date() },
     })
+
+    // Also invalidate each session via Supabase Admin API
+    try {
+      const adminClient = createServiceClient()
+      await Promise.allSettled(
+        otherSessions.map(s => adminClient.auth.admin.signOut(s.sessionToken, 'local'))
+      )
+    } catch (adminError) {
+      // Non-fatal: DB revocation is already done
+      console.warn('Failed to revoke Supabase sessions via admin API:', adminError)
+    }
 
     securityLogger.security('session.revoke_all', 'All other sessions revoked by user', {
       userId: dbUser.id,

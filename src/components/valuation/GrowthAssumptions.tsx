@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { TextNumericInput, CurrencyInput } from '@/components/ui/text-numeric-input'
 import { formatPercent, formatCurrency } from '@/lib/valuation/dcf-calculator'
 import {
   AreaChart,
@@ -39,61 +38,6 @@ function FCFTooltip({ active, payload }: { active?: boolean; payload?: Array<{ p
     )
   }
   return null
-}
-
-function TextNumericInput({
-  id,
-  value,
-  onCommit,
-  multiplier = 1,
-  decimals = 1,
-  className,
-  placeholder,
-}: {
-  id?: string
-  value: number | null
-  onCommit: (value: number | null) => void
-  multiplier?: number
-  decimals?: number
-  className?: string
-  placeholder?: string
-}) {
-  const [text, setText] = useState(() =>
-    value === null ? '' : (value * multiplier).toFixed(decimals)
-  )
-  const [focused, setFocused] = useState(false)
-
-  useEffect(() => {
-    if (!focused) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setText(value === null ? '' : (value * multiplier).toFixed(decimals))
-    }
-  }, [value, focused, multiplier, decimals])
-
-  return (
-    <Input
-      id={id}
-      type="text"
-      inputMode="decimal"
-      value={text}
-      onChange={(e) => {
-        const v = e.target.value
-        if (v === '' || /^-?\d*\.?\d*$/.test(v)) setText(v)
-      }}
-      onFocus={() => setFocused(true)}
-      onBlur={() => {
-        setFocused(false)
-        if (text !== '') {
-          const num = parseFloat(text)
-          if (!isNaN(num)) onCommit(num / multiplier)
-        } else {
-          onCommit(null)
-        }
-      }}
-      placeholder={placeholder}
-      className={className}
-    />
-  )
 }
 
 export function GrowthAssumptions({
@@ -148,12 +92,10 @@ export function GrowthAssumptions({
           </Label>
           <div className="flex items-center gap-2">
             <span className="text-gray-500">$</span>
-            <TextNumericInput
+            <CurrencyInput
               id="baseFCF"
               value={baseFCF}
-              onCommit={(v) => onBaseFCFChange(v ?? 0)}
-              multiplier={1}
-              decimals={0}
+              onChange={(v) => onBaseFCFChange(v)}
               className="flex-1"
             />
           </div>

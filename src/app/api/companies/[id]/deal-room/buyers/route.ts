@@ -8,7 +8,7 @@ const postSchema = z.object({
   companyName: z.string().min(1).max(500),
   buyerType: z.enum(['STRATEGIC', 'FINANCIAL', 'INDIVIDUAL', 'MANAGEMENT', 'ESOP', 'OTHER']).default('OTHER'),
   contactName: z.string().min(1).max(500),
-  contactEmail: z.string().email().max(500),
+  contactEmail: z.union([z.string().email().max(500), z.literal('')]).optional(),
   contactTitle: z.string().max(500).optional(),
   notes: z.string().max(5000).optional(),
   tier: z.enum(['A_TIER', 'B_TIER', 'C_TIER', 'D_TIER']).default('B_TIER'),
@@ -72,10 +72,13 @@ export async function POST(
     const firstName = nameParts[0] ?? contactName.trim()
     const lastName = nameParts.slice(1).join(' ') || ''
     const normalizedPersonName = `${firstName} ${lastName}`.toLowerCase().trim()
+    const normalizedEmail = contactEmail?.trim() ? contactEmail.toLowerCase().trim() : null
 
-    let canonicalPerson = await prisma.canonicalPerson.findFirst({
-      where: { email: contactEmail.toLowerCase().trim() },
-    })
+    let canonicalPerson = normalizedEmail
+      ? await prisma.canonicalPerson.findFirst({
+          where: { email: normalizedEmail },
+        })
+      : null
 
     if (!canonicalPerson) {
       canonicalPerson = await prisma.canonicalPerson.create({
@@ -83,7 +86,7 @@ export async function POST(
           firstName,
           lastName,
           normalizedName: normalizedPersonName,
-          email: contactEmail.toLowerCase().trim(),
+          email: normalizedEmail,
           currentTitle: contactTitle ?? null,
           currentCompanyId: canonicalCompany.id,
         },

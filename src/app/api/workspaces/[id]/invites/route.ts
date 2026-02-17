@@ -5,7 +5,7 @@ import { WorkspaceRole, FunctionalCategory } from '@prisma/client'
 import { GRANULAR_PERMISSIONS } from '@/lib/auth/permissions'
 import { Resend } from 'resend'
 import { z } from 'zod'
-import { validateRequestBody, emailSchema, uuidSchema } from '@/lib/security/validation'
+import { emailSchema, uuidSchema } from '@/lib/security/validation'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
@@ -93,8 +93,25 @@ export async function POST(
 
   const { auth } = result
 
-  const validation = await validateRequestBody(request, postSchema)
-  if (!validation.success) return validation.error
+  let body: Record<string, unknown>
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+
+  const parseResult = postSchema.safeParse(body)
+  if (!parseResult.success) {
+    const details = parseResult.error.issues.map(issue => ({
+      field: issue.path.join('.'),
+      message: issue.message,
+    }))
+    const fieldErrors = details.map(d => `${d.field}: ${d.message}`).join('; ')
+    return NextResponse.json(
+      { error: `Validation failed: ${fieldErrors}`, details },
+      { status: 400 }
+    )
+  }
   const {
     email,
     role,
@@ -102,7 +119,7 @@ export async function POST(
     roleTemplateId,
     customPermissions,
     isExternalAdvisor,
-  } = validation.data
+  } = parseResult.data
 
   // Require email verification before sending invites
   const verificationError = await requireEmailVerified(auth.user.id)

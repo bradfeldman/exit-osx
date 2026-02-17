@@ -6,7 +6,6 @@ import { Clock, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getBRICategoryLabel, getBRICategoryColor } from '@/lib/constants/bri-categories'
-import { formatCurrency } from '@/lib/utils/currency'
 import { ComingUpList } from './ComingUpList'
 
 interface NextMoveTask {
@@ -43,16 +42,12 @@ function formatTime(hours: number | null): string {
   return `${hours} hours`
 }
 
-export function NextMoveCard({ task, comingUp, isFreeUser = false, onUpgrade }: NextMoveCardProps) {
+export function NextMoveCard({ task, comingUp, isFreeUser: _isFreeUser = false, onUpgrade: _onUpgrade }: NextMoveCardProps) {
   const router = useRouter()
   const [showRationale, setShowRationale] = useState(false)
   const isInProgress = task?.status === 'IN_PROGRESS'
 
   const handleStart = async () => {
-    if (isFreeUser) {
-      onUpgrade?.()
-      return
-    }
     if (task) {
       // Start the task immediately (mark as IN_PROGRESS) then navigate
       if (task.status !== 'IN_PROGRESS') {
@@ -111,11 +106,6 @@ export function NextMoveCard({ task, comingUp, isFreeUser = false, onUpgrade }: 
             {isInProgress ? ' remaining' : ''}
           </span>
         )}
-        {task.rawImpact > 0 && (
-          <span className="flex items-center gap-1">
-            ~{formatCurrency(task.rawImpact)} value impact
-          </span>
-        )}
         <Badge variant="secondary" className={getBRICategoryColor(task.briCategory)}>
           {getBRICategoryLabel(task.briCategory)}
         </Badge>
@@ -128,21 +118,10 @@ export function NextMoveCard({ task, comingUp, isFreeUser = false, onUpgrade }: 
         </p>
       )}
 
-      {/* In Progress: show when started */}
-      {isInProgress && task.startedAt && (
-        <p className="text-xs text-muted-foreground mt-2">
-          Started {new Date(task.startedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-        </p>
-      )}
-
       {/* Button Row */}
       <div className="flex items-center gap-3 mt-5">
         <Button size="lg" onClick={handleStart}>
-          {isFreeUser
-            ? 'Upgrade to Start Closing Your Gap →'
-            : isInProgress
-              ? 'Continue →'
-              : 'Start This Task'}
+          {isInProgress ? 'Continue →' : 'Start This Task'}
         </Button>
         <Button
           variant="ghost"

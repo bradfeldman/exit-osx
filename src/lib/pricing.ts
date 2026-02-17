@@ -66,7 +66,7 @@ export const PRICING_PLANS: PricingPlan[] = [
       { name: 'Buyer-Ready Data Room', included: false },
       { name: 'Financial Health Diagnostic', included: true, limit: 'P&L, Balance Sheet, Add-backs' },
       { name: 'Automated Financial Sync', included: true },
-      { name: 'Discounted Cash Flow Analysis', included: false },
+      { name: 'Discounted Cash Flow Analysis', included: true },
       { name: 'Deal Pipeline Manager', included: false },
       { name: 'Team Access', included: true, limit: 'Up to 3' },
       { name: 'Multi-Company Portfolio', included: false },
@@ -136,7 +136,7 @@ export const FEATURE_REQUIREMENTS: Record<string, PlanTier> = {
 
   // Exit-Ready required
   'data-room': 'exit-ready',
-  'dcf-valuation': 'exit-ready',
+  'dcf-valuation': 'growth',
   'deal-tracker': 'exit-ready',
   'unlimited-team': 'exit-ready',
   'multiple-companies': 'exit-ready',

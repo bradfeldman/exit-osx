@@ -24,6 +24,7 @@ interface ProgressionData {
   evidencePercentage: number       // 0-100, percentage of expected evidence uploaded
   currentValue: number | null      // Current enterprise value from latest snapshot
   previousValue: number | null     // Previous enterprise value for delta display
+  dcfEnterpriseValue: number | null // DCF enterprise value from latest snapshot (for range display)
 }
 
 /**
@@ -108,6 +109,7 @@ export function ProgressionProvider({ children }: { children: ReactNode }) {
           evidencePercentage: 0,
           currentValue: null,
           previousValue: null,
+          dcfEnterpriseValue: null,
         })
       }
       setIsLoading(false)

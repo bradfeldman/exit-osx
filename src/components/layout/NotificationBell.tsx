@@ -12,16 +12,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { CompanyAvatar } from '@/components/ui/company-avatar'
-import { GraduationCap, ClipboardCheck, ChevronRight } from 'lucide-react'
+import { GraduationCap, ClipboardCheck, ChevronRight, Mail, BarChart3 } from 'lucide-react'
 
 interface Alert {
   id: string
   type: 'NO_ASSESSMENT' | 'STALE_ASSESSMENT' | 'QUARTERLY_REMINDER' | 'OPEN_ASSESSMENT' | 'ASSESSMENT_AVAILABLE'
     | 'ACCESS_REQUEST' | 'ACCESS_GRANTED' | 'ACCESS_DENIED' | 'STAFF_PAUSED' | 'OWNERSHIP_TRANSFER'
     | 'TRIAL_ENDING' | 'TRIAL_EXPIRED' | 'ACTION_PLAN_UPDATED' | 'ONBOARDING_TOUR' | 'ONBOARDING_ASSESSMENT'
+    | 'ONBOARDING_VERIFY_EMAIL' | 'ONBOARDING_BASELINE'
   title: string
   message: string
-  actionUrl: string
+  actionUrl: string | null
   companyId?: string
   companyName?: string
   severity: 'info' | 'warning' | 'urgent'
@@ -45,7 +46,7 @@ export function NotificationBell() {
         if (response.ok) {
           const data = await response.json()
           setAlerts(data.alerts)
-          setCount(data.count)
+          setCount(data.unreadCount)
         }
       } catch (error) {
         console.error('Failed to fetch alerts:', error)
@@ -100,11 +101,12 @@ export function NotificationBell() {
   }
 
   // Separate onboarding alerts from regular alerts
+  const onboardingTypes = ['ONBOARDING_TOUR', 'ONBOARDING_ASSESSMENT', 'ONBOARDING_VERIFY_EMAIL', 'ONBOARDING_BASELINE'] as const
   const onboardingAlerts = alerts.filter(
-    a => (a.type === 'ONBOARDING_TOUR' || a.type === 'ONBOARDING_ASSESSMENT') && !a.isRead
+    a => (onboardingTypes as readonly string[]).includes(a.type) && !a.isRead
   )
   const regularAlerts = alerts.filter(
-    a => a.type !== 'ONBOARDING_TOUR' && a.type !== 'ONBOARDING_ASSESSMENT'
+    a => !(onboardingTypes as readonly string[]).includes(a.type)
   )
 
   return (
@@ -167,6 +169,10 @@ export function NotificationBell() {
                     <div className="shrink-0 mt-0.5 h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                       {alert.type === 'ONBOARDING_TOUR' ? (
                         <GraduationCap className="h-4 w-4 text-primary" />
+                      ) : alert.type === 'ONBOARDING_VERIFY_EMAIL' ? (
+                        <Mail className="h-4 w-4 text-primary" />
+                      ) : alert.type === 'ONBOARDING_BASELINE' ? (
+                        <BarChart3 className="h-4 w-4 text-primary" />
                       ) : (
                         <ClipboardCheck className="h-4 w-4 text-primary" />
                       )}

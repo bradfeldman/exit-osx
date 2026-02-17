@@ -64,7 +64,7 @@ export function BRIRangeGauge({ briScore, isEstimated = false }: BRIRangeGaugePr
   }
 
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader className="pb-4">
         <CardTitle className="text-base font-semibold">
           Buyer Readiness Position

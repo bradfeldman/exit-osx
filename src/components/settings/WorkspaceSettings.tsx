@@ -443,7 +443,8 @@ export function WorkspaceSettings() {
       const data = await response.json()
 
       if (!response.ok) {
-        setInviteError(data.error || 'Failed to send invite')
+        const errorMsg = data.error || 'Failed to send invite'
+        setInviteError(errorMsg)
         return
       }
 

@@ -25,6 +25,7 @@ import {
   Settings,
   LogOut,
   Building2,
+  Monitor,
 } from 'lucide-react'
 import packageJson from '../../../package.json'
 
@@ -88,11 +89,11 @@ export function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pb-4">
+        <div className="flex items-center justify-between px-5 pb-3">
           <h2 className="text-lg font-semibold text-foreground">More</h2>
           <button
             onClick={onClose}
-            className="rounded-full p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="rounded-full p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors active:scale-95"
           >
             <X className="h-5 w-5" />
           </button>
@@ -100,12 +101,12 @@ export function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
 
         {/* Company Selector */}
         {!isLoading && companies.length > 0 && (
-          <div className="px-6 pb-4">
+          <div className="px-5 pb-4">
             <Select
               value={isOnSetupPage ? '___add_new___' : (selectedCompanyId || undefined)}
               onValueChange={handleCompanyChange}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full h-12">
                 <div className="flex items-center gap-2 truncate">
                   {isOnSetupPage ? (
                     <>
@@ -137,7 +138,7 @@ export function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
           </div>
         )}
 
-        <div className="px-6 space-y-6 pb-6">
+        <div className="px-5 space-y-5 pb-6">
           {/* Core */}
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Core</p>
@@ -146,13 +147,13 @@ export function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
                 href="/dashboard/deal-room"
                 onClick={handleLinkClick}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                  'flex items-center gap-3 rounded-xl px-4 py-3 min-h-[48px] text-base font-medium transition-colors active:scale-[0.98]',
                   isActive('/dashboard/deal-room')
                     ? 'bg-primary/10 text-primary'
                     : 'text-foreground hover:bg-muted'
                 )}
               >
-                <DealRoomIcon className="h-5 w-5" />
+                <DealRoomIcon className="h-5 w-5 shrink-0" />
                 Deal Room
               </Link>
             </nav>
@@ -167,52 +168,64 @@ export function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
                   href="/dashboard/financials"
                   onClick={handleLinkClick}
                   className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                    'flex items-center gap-3 rounded-xl px-4 py-3 min-h-[48px] text-base font-medium transition-colors active:scale-[0.98]',
                     isActive('/dashboard/financials', true) || pathname.startsWith('/dashboard/financials/statements')
                       ? 'bg-primary/10 text-primary'
                       : 'text-foreground hover:bg-muted'
                   )}
                 >
-                  <Banknote className="h-5 w-5" />
-                  Business Financials
+                  <Banknote className="h-5 w-5 shrink-0" />
+                  <div className="flex flex-col min-w-0">
+                    <span>Business Financials</span>
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Monitor className="h-3 w-3" />
+                      Best on desktop
+                    </span>
+                  </div>
                 </Link>
                 <Link
                   href="/dashboard/valuation"
                   onClick={handleLinkClick}
                   className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                    'flex items-center gap-3 rounded-xl px-4 py-3 min-h-[48px] text-base font-medium transition-colors active:scale-[0.98]',
                     isActive('/dashboard/valuation')
                       ? 'bg-primary/10 text-primary'
                       : 'text-foreground hover:bg-muted'
                   )}
                 >
-                  <BarChart3 className="h-5 w-5" />
-                  DCF Valuation
+                  <BarChart3 className="h-5 w-5 shrink-0" />
+                  <div className="flex flex-col min-w-0">
+                    <span>DCF Valuation</span>
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Monitor className="h-3 w-3" />
+                      Best on desktop
+                    </span>
+                  </div>
                 </Link>
                 <Link
                   href="/dashboard/financials/personal"
                   onClick={handleLinkClick}
                   className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                    'flex items-center gap-3 rounded-xl px-4 py-3 min-h-[48px] text-base font-medium transition-colors active:scale-[0.98]',
                     isActive('/dashboard/financials/personal')
                       ? 'bg-primary/10 text-primary'
                       : 'text-foreground hover:bg-muted'
                   )}
                 >
-                  <Wallet className="h-5 w-5" />
+                  <Wallet className="h-5 w-5 shrink-0" />
                   Personal Financial Statement
                 </Link>
                 <Link
                   href="/dashboard/financials/retirement"
                   onClick={handleLinkClick}
                   className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                    'flex items-center gap-3 rounded-xl px-4 py-3 min-h-[48px] text-base font-medium transition-colors active:scale-[0.98]',
                     isActive('/dashboard/financials/retirement')
                       ? 'bg-primary/10 text-primary'
                       : 'text-foreground hover:bg-muted'
                   )}
                 >
-                  <Calculator className="h-5 w-5" />
+                  <Calculator className="h-5 w-5 shrink-0" />
                   Retirement Calculator
                 </Link>
               </nav>
@@ -228,13 +241,13 @@ export function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
                   href="/dashboard/loans/business"
                   onClick={handleLinkClick}
                   className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                    'flex items-center gap-3 rounded-xl px-4 py-3 min-h-[48px] text-base font-medium transition-colors active:scale-[0.98]',
                     isActive('/dashboard/loans')
                       ? 'bg-primary/10 text-primary'
                       : 'text-foreground hover:bg-muted'
                   )}
                 >
-                  <Landmark className="h-5 w-5" />
+                  <Landmark className="h-5 w-5 shrink-0" />
                   Business Loans
                 </Link>
               </nav>
@@ -247,27 +260,27 @@ export function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
               href="/dashboard/settings"
               onClick={handleLinkClick}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                'flex items-center gap-3 rounded-xl px-4 py-3 min-h-[48px] text-base font-medium transition-colors active:scale-[0.98]',
                 isActive('/dashboard/settings')
                   ? 'bg-primary/10 text-primary'
                   : 'text-foreground hover:bg-muted'
               )}
             >
-              <Settings className="h-5 w-5" />
+              <Settings className="h-5 w-5 shrink-0" />
               Settings
             </Link>
             <button
               onClick={handleSignOut}
               disabled={signingOut}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+              className="flex w-full items-center gap-3 rounded-xl px-4 py-3 min-h-[48px] text-base font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50 active:scale-[0.98]"
             >
-              <LogOut className="h-5 w-5" />
+              <LogOut className="h-5 w-5 shrink-0" />
               {signingOut ? 'Signing out...' : 'Sign Out'}
             </button>
           </div>
 
           {/* Version */}
-          <p className="text-xs text-muted-foreground text-center">
+          <p className="text-xs text-muted-foreground text-center pb-2">
             Exit OSx v{packageJson.version}
           </p>
         </div>
