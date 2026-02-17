@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,6 +14,60 @@ interface TerminalValuePanelProps {
   onExitMultipleChange: (value: number | null) => void
   industryMultipleLow?: number
   industryMultipleHigh?: number
+}
+
+function TextNumericInput({
+  id,
+  value,
+  onCommit,
+  multiplier = 1,
+  decimals = 1,
+  className,
+  placeholder,
+}: {
+  id?: string
+  value: number | null
+  onCommit: (value: number | null) => void
+  multiplier?: number
+  decimals?: number
+  className?: string
+  placeholder?: string
+}) {
+  const [text, setText] = useState(() =>
+    value === null ? '' : (value * multiplier).toFixed(decimals)
+  )
+  const [focused, setFocused] = useState(false)
+
+  useEffect(() => {
+    if (!focused) {
+      setText(value === null ? '' : (value * multiplier).toFixed(decimals))
+    }
+  }, [value, focused, multiplier, decimals])
+
+  return (
+    <Input
+      id={id}
+      type="text"
+      inputMode="decimal"
+      value={text}
+      onChange={(e) => {
+        const v = e.target.value
+        if (v === '' || /^-?\d*\.?\d*$/.test(v)) setText(v)
+      }}
+      onFocus={() => setFocused(true)}
+      onBlur={() => {
+        setFocused(false)
+        if (text !== '') {
+          const num = parseFloat(text)
+          if (!isNaN(num)) onCommit(num / multiplier)
+        } else {
+          onCommit(null)
+        }
+      }}
+      placeholder={placeholder}
+      className={className}
+    />
+  )
 }
 
 export function TerminalValuePanel({
@@ -67,14 +122,12 @@ export function TerminalValuePanel({
                   Perpetual Growth Rate
                 </Label>
                 <div className="flex items-center gap-2">
-                  <Input
+                  <TextNumericInput
                     id="perpetualGrowth"
-                    type="number"
-                    min={0}
-                    max={99.9}
-                    step={0.1}
-                    value={(perpetualGrowthRate * 100).toFixed(1)}
-                    onChange={(e) => onPerpetualGrowthChange(parseFloat(e.target.value) / 100 || 0)}
+                    value={perpetualGrowthRate}
+                    onCommit={(v) => onPerpetualGrowthChange(v ?? 0)}
+                    multiplier={100}
+                    decimals={1}
                     className="w-20 h-7 text-sm text-right"
                   />
                   <span className="text-xs text-gray-500">%</span>
@@ -101,16 +154,12 @@ export function TerminalValuePanel({
                   Exit EBITDA Multiple
                 </Label>
                 <div className="flex items-center gap-2">
-                  <Input
+                  <TextNumericInput
                     id="exitMultiple"
-                    type="number"
-                    min={0}
-                    max={99.9}
-                    step={0.1}
-                    value={exitMultiple?.toFixed(1) || ''}
-                    onChange={(e) =>
-                      onExitMultipleChange(e.target.value ? parseFloat(e.target.value) : null)
-                    }
+                    value={exitMultiple}
+                    onCommit={(v) => onExitMultipleChange(v)}
+                    multiplier={1}
+                    decimals={1}
                     className="w-20 h-7 text-sm text-right"
                   />
                   <span className="text-xs text-gray-500">x</span>

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -32,6 +33,60 @@ const INPUT_RANGES = {
   taxRate: { min: 0, max: 0.999, step: 0.01, default: 0.25 },
 }
 
+function TextNumericInput({
+  id,
+  value,
+  onCommit,
+  multiplier = 1,
+  decimals = 1,
+  className,
+  placeholder,
+}: {
+  id?: string
+  value: number | null
+  onCommit: (value: number | null) => void
+  multiplier?: number
+  decimals?: number
+  className?: string
+  placeholder?: string
+}) {
+  const [text, setText] = useState(() =>
+    value === null ? '' : (value * multiplier).toFixed(decimals)
+  )
+  const [focused, setFocused] = useState(false)
+
+  useEffect(() => {
+    if (!focused) {
+      setText(value === null ? '' : (value * multiplier).toFixed(decimals))
+    }
+  }, [value, focused, multiplier, decimals])
+
+  return (
+    <Input
+      id={id}
+      type="text"
+      inputMode="decimal"
+      value={text}
+      onChange={(e) => {
+        const v = e.target.value
+        if (v === '' || /^-?\d*\.?\d*$/.test(v)) setText(v)
+      }}
+      onFocus={() => setFocused(true)}
+      onBlur={() => {
+        setFocused(false)
+        if (text !== '') {
+          const num = parseFloat(text)
+          if (!isNaN(num)) onCommit(num / multiplier)
+        } else {
+          onCommit(null)
+        }
+      }}
+      placeholder={placeholder}
+      className={className}
+    />
+  )
+}
+
 export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTier }: WACCCalculatorProps) {
   const costOfEquity = calculateCostOfEquity(
     inputs.riskFreeRate,
@@ -40,17 +95,6 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
     inputs.sizeRiskPremium,
     inputs.companySpecificRisk
   )
-
-  const handleInputChange = (key: keyof WACCInputs, value: string) => {
-    const numValue = parseFloat(value) / 100
-    if (!isNaN(numValue)) {
-      if (key === 'beta') {
-        onInputChange(key, parseFloat(value))
-      } else {
-        onInputChange(key, numValue)
-      }
-    }
-  }
 
   const renderInput = (
     key: keyof WACCInputs,
@@ -68,14 +112,14 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
             {label}
           </Label>
           <div className="flex items-center gap-2">
-            <Input
+            <TextNumericInput
               id={key}
-              type="number"
-              min={0}
-              max={99.9}
-              step={isBeta ? 0.01 : 0.1}
-              value={isBeta ? (value as number).toFixed(2) : ((value as number) * 100).toFixed(1)}
-              onChange={(e) => handleInputChange(key, e.target.value)}
+              value={value as number}
+              onCommit={(v) => {
+                if (v !== null) onInputChange(key, v as WACCInputs[typeof key])
+              }}
+              multiplier={isBeta ? 1 : 100}
+              decimals={isBeta ? 2 : 1}
               className="w-20 h-7 text-sm text-right"
             />
             {isPercent && !isBeta && <span className="text-xs text-gray-500">%</span>}
@@ -140,22 +184,13 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
                   Cost of Debt (Override)
                 </Label>
                 <div className="flex items-center gap-2">
-                  <Input
+                  <TextNumericInput
                     id="costOfDebt"
-                    type="number"
-                    min={0}
-                    max={99.9}
-                    step={0.1}
+                    value={inputs.costOfDebt}
+                    onCommit={(v) => onInputChange('costOfDebt', v)}
+                    multiplier={100}
+                    decimals={1}
                     placeholder="Auto"
-                    value={
-                      inputs.costOfDebt !== null ? (inputs.costOfDebt * 100).toFixed(1) : ''
-                    }
-                    onChange={(e) =>
-                      onInputChange(
-                        'costOfDebt',
-                        e.target.value ? parseFloat(e.target.value) / 100 : null
-                      )
-                    }
                     className="w-20 h-7 text-sm text-right"
                   />
                   <span className="text-xs text-gray-500">%</span>
@@ -169,20 +204,13 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
                   Tax Rate (Override)
                 </Label>
                 <div className="flex items-center gap-2">
-                  <Input
+                  <TextNumericInput
                     id="taxRate"
-                    type="number"
-                    min={0}
-                    max={99.9}
-                    step={0.1}
+                    value={inputs.taxRate}
+                    onCommit={(v) => onInputChange('taxRate', v)}
+                    multiplier={100}
+                    decimals={0}
                     placeholder="25%"
-                    value={inputs.taxRate !== null ? (inputs.taxRate * 100).toFixed(0) : ''}
-                    onChange={(e) =>
-                      onInputChange(
-                        'taxRate',
-                        e.target.value ? parseFloat(e.target.value) / 100 : null
-                      )
-                    }
                     className="w-20 h-7 text-sm text-right"
                   />
                   <span className="text-xs text-gray-500">%</span>

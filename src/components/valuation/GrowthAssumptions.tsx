@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -38,6 +39,60 @@ function FCFTooltip({ active, payload }: { active?: boolean; payload?: Array<{ p
     )
   }
   return null
+}
+
+function TextNumericInput({
+  id,
+  value,
+  onCommit,
+  multiplier = 1,
+  decimals = 1,
+  className,
+  placeholder,
+}: {
+  id?: string
+  value: number | null
+  onCommit: (value: number | null) => void
+  multiplier?: number
+  decimals?: number
+  className?: string
+  placeholder?: string
+}) {
+  const [text, setText] = useState(() =>
+    value === null ? '' : (value * multiplier).toFixed(decimals)
+  )
+  const [focused, setFocused] = useState(false)
+
+  useEffect(() => {
+    if (!focused) {
+      setText(value === null ? '' : (value * multiplier).toFixed(decimals))
+    }
+  }, [value, focused, multiplier, decimals])
+
+  return (
+    <Input
+      id={id}
+      type="text"
+      inputMode="decimal"
+      value={text}
+      onChange={(e) => {
+        const v = e.target.value
+        if (v === '' || /^-?\d*\.?\d*$/.test(v)) setText(v)
+      }}
+      onFocus={() => setFocused(true)}
+      onBlur={() => {
+        setFocused(false)
+        if (text !== '') {
+          const num = parseFloat(text)
+          if (!isNaN(num)) onCommit(num / multiplier)
+        } else {
+          onCommit(null)
+        }
+      }}
+      placeholder={placeholder}
+      className={className}
+    />
+  )
 }
 
 export function GrowthAssumptions({
@@ -92,12 +147,12 @@ export function GrowthAssumptions({
           </Label>
           <div className="flex items-center gap-2">
             <span className="text-gray-500">$</span>
-            <Input
+            <TextNumericInput
               id="baseFCF"
-              type="number"
-              step={10000}
               value={baseFCF}
-              onChange={(e) => onBaseFCFChange(parseFloat(e.target.value) || 0)}
+              onCommit={(v) => onBaseFCFChange(v ?? 0)}
+              multiplier={1}
+              decimals={0}
               className="flex-1"
             />
           </div>
@@ -118,14 +173,12 @@ export function GrowthAssumptions({
                   Year {index + 1}
                 </Label>
                 <div className="flex flex-col gap-2">
-                  <Input
+                  <TextNumericInput
                     id={year}
-                    type="number"
-                    min={0}
-                    max={99.9}
-                    step={0.1}
-                    value={((growthRates[year] || 0) * 100).toFixed(1)}
-                    onChange={(e) => onGrowthRateChange(year, parseFloat(e.target.value) / 100 || 0)}
+                    value={growthRates[year] || 0}
+                    onCommit={(v) => onGrowthRateChange(year, v ?? 0)}
+                    multiplier={100}
+                    decimals={1}
                     className="text-sm h-8 text-center min-w-0"
                   />
                   <span className="text-xs text-gray-400 text-center">%</span>

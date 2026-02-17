@@ -770,80 +770,48 @@ export default function PersonalFinancialStatementPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1.5">Current Age</label>
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => setCurrentAge(prev => prev ? Math.max(18, prev - 1) : null)}
-                  disabled={!canEditPersonal || !currentAge || currentAge <= 18}
-                  className="w-9 h-9 rounded-md border border-input hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 transition-colors flex items-center justify-center text-foreground font-medium"
-                >
-                  −
-                </button>
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  value={currentAge !== null ? String(currentAge) : ''}
-                  onChange={(e) => {
-                    const v = e.target.value.replace(/[^0-9]/g, '')
-                    if (!v) { setCurrentAge(null); return }
-                    setCurrentAge(Math.min(100, Math.max(18, parseInt(v))))
-                  }}
-                  placeholder="e.g. 52"
-                  className="h-9 text-center"
-                  disabled={!canEditPersonal}
-                />
-                <button
-                  type="button"
-                  onClick={() => setCurrentAge(prev => prev ? Math.min(100, prev + 1) : 50)}
-                  disabled={!canEditPersonal || (currentAge !== null && currentAge >= 100)}
-                  className="w-9 h-9 rounded-md border border-input hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 transition-colors flex items-center justify-center text-foreground font-medium"
-                >
-                  +
-                </button>
-              </div>
+              <Input
+                type="text"
+                inputMode="numeric"
+                value={currentAge !== null ? String(currentAge) : ''}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^0-9]/g, '')
+                  if (!v) { setCurrentAge(null); return }
+                  setCurrentAge(parseInt(v))
+                }}
+                onBlur={() => {
+                  if (currentAge !== null) {
+                    setCurrentAge(Math.min(125, Math.max(0, currentAge)))
+                  }
+                }}
+                placeholder="e.g. 52"
+                className="h-9 w-24"
+                disabled={!canEditPersonal}
+              />
               <p className="text-xs text-muted-foreground mt-1">
                 Used for retirement planning calculations
               </p>
             </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1.5">Retirement Age</label>
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const minAge = currentAge ? currentAge + 5 : 30
-                    setRetirementAge(prev => prev ? Math.max(minAge, prev - 1) : null)
-                  }}
-                  disabled={!canEditPersonal || !retirementAge || (currentAge && retirementAge <= currentAge + 5) || (!currentAge && retirementAge <= 30)}
-                  className="w-9 h-9 rounded-md border border-input hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 transition-colors flex items-center justify-center text-foreground font-medium"
-                >
-                  −
-                </button>
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  value={retirementAge !== null ? String(retirementAge) : ''}
-                  onChange={(e) => {
-                    const v = e.target.value.replace(/[^0-9]/g, '')
-                    if (!v) { setRetirementAge(null); return }
-                    const minAge = currentAge ? currentAge + 5 : 30
-                    setRetirementAge(Math.min(85, Math.max(minAge, parseInt(v))))
-                  }}
-                  placeholder="e.g. 65"
-                  className="h-9 text-center"
-                  disabled={!canEditPersonal}
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRetirementAge(prev => prev ? Math.min(85, prev + 1) : 65)
-                  }}
-                  disabled={!canEditPersonal || (retirementAge !== null && retirementAge >= 85)}
-                  className="w-9 h-9 rounded-md border border-input hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 transition-colors flex items-center justify-center text-foreground font-medium"
-                >
-                  +
-                </button>
-              </div>
+              <Input
+                type="text"
+                inputMode="numeric"
+                value={retirementAge !== null ? String(retirementAge) : ''}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^0-9]/g, '')
+                  if (!v) { setRetirementAge(null); return }
+                  setRetirementAge(parseInt(v))
+                }}
+                onBlur={() => {
+                  if (retirementAge !== null) {
+                    setRetirementAge(Math.min(125, Math.max(0, retirementAge)))
+                  }
+                }}
+                placeholder="e.g. 65"
+                className="h-9 w-24"
+                disabled={!canEditPersonal}
+              />
               <p className="text-xs text-muted-foreground mt-1">
                 Target age for retirement planning
               </p>
