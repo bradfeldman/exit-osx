@@ -44,7 +44,7 @@ interface QuickBooksCompanyInfo {
 }
 
 // Make authenticated request to QuickBooks API
-async function makeQuickBooksRequest<T>(
+export async function makeQuickBooksRequest<T>(
   integrationId: string,
   endpoint: string,
   method: 'GET' | 'POST' = 'GET',

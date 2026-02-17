@@ -229,6 +229,8 @@ model Company {
   assessmentCadence        String                       @default("monthly") @map("assessment_cadence") // 'weekly' | 'monthly' | 'manual'
   cadencePromptsShownAt    DateTime[]                   @default([]) @map("cadence_prompts_shown_at") // Timestamps of prompts shown (for weekly limit)
   taskRefinementEvents     TaskRefinementEvent[]
+  qbTransactions           QBTransaction[]
+  transactionFlags         TransactionFlag[]
 
   @@map("companies")
 }
@@ -293,18 +295,20 @@ model PersonalFinancials {
 }
 
 model EbitdaAdjustment {
-  id          String           @id @default(cuid())
-  companyId   String           @map("company_id")
-  periodId    String?          @map("period_id")
-  description String
-  amount      Decimal          @db.Decimal(15, 2)
-  type        String
-  frequency   String           @default("ANNUAL")
-  category    String?          @map("category")
-  aiSuggested Boolean          @default(false) @map("ai_suggested")
-  createdAt   DateTime         @default(now()) @map("created_at")
-  company     Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  period      FinancialPeriod? @relation(fields: [periodId], references: [id])
+  id              String            @id @default(cuid())
+  companyId       String            @map("company_id")
+  periodId        String?           @map("period_id")
+  description     String
+  amount          Decimal           @db.Decimal(15, 2)
+  type            String
+  frequency       String            @default("ANNUAL")
+  category        String?           @map("category")
+  aiSuggested     Boolean           @default(false) @map("ai_suggested")
+  source          AdjustmentSource  @default(MANUAL)
+  createdAt       DateTime          @default(now()) @map("created_at")
+  company         Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  period          FinancialPeriod?  @relation(fields: [periodId], references: [id])
+  transactionFlag TransactionFlag?
 
   @@index([companyId, periodId])
   @@map("ebitda_adjustments")
@@ -905,6 +909,7 @@ model Integration {
   createdAt           DateTime             @default(now()) @map("created_at")
   updatedAt           DateTime             @updatedAt @map("updated_at")
   syncLogs            IntegrationSyncLog[]
+  qbTransactions      QBTransaction[]
   company             Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@unique([companyId, provider])
@@ -3409,4 +3414,82 @@ model EmailLog {
   @@index([userId, emailType, sentAt])
   @@index([companyId])
   @@map("email_logs")
+}
+
+// ─── Transaction Analysis (EBITDA Add-Back Detection) ───────────────
+
+enum TransactionFlagType {
+  OWNER_PERSONAL
+  ONE_TIME
+  RELATED_PARTY
+  TRANSACTION_COST
+  NORMALIZATION
+  LOCATION_ANOMALY
+  REVIEW_NEEDED
+}
+
+enum TransactionFlagStatus {
+  PENDING
+  ACCEPTED
+  DISMISSED
+}
+
+enum AdjustmentSource {
+  MANUAL
+  AI_SUMMARY
+  TRANSACTION
+}
+
+model QBTransaction {
+  id            String      @id @default(cuid())
+  integrationId String      @map("integration_id")
+  companyId     String      @map("company_id")
+  qbId          String      @map("qb_id")
+  txnDate       DateTime    @map("txn_date")
+  txnType       String      @map("txn_type")
+  docNumber     String?     @map("doc_number")
+  vendorName    String?     @map("vendor_name")
+  memo          String?
+  accountName   String?     @map("account_name")
+  amount        Decimal     @db.Decimal(15, 2)
+  qbAccountType String?     @map("qb_account_type")
+  rawData       Json?       @map("raw_data")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  integration   Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  company       Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  flags         TransactionFlag[]
+
+  @@unique([companyId, qbId, txnType])
+  @@index([companyId, txnDate])
+  @@index([companyId, vendorName])
+  @@index([integrationId])
+  @@map("qb_transactions")
+}
+
+model TransactionFlag {
+  id              String                @id @default(cuid())
+  transactionId   String?               @map("transaction_id")
+  companyId       String                @map("company_id")
+  flagType        TransactionFlagType   @map("flag_type")
+  category        String?
+  description     String
+  suggestedAmount Decimal?              @map("suggested_amount") @db.Decimal(15, 2)
+  personalPct     Decimal?              @map("personal_pct") @db.Decimal(5, 4)
+  confidence      Decimal               @db.Decimal(3, 2)
+  aiGenerated     Boolean               @default(false) @map("ai_generated")
+  status          TransactionFlagStatus @default(PENDING)
+  sourceRule      String?               @map("source_rule")
+  vendorName      String?               @map("vendor_name")
+  vendorTxnCount  Int?                  @map("vendor_txn_count")
+  vendorTotalSpend Decimal?             @map("vendor_total_spend") @db.Decimal(15, 2)
+  adjustmentId    String?               @unique @map("adjustment_id")
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+  transaction     QBTransaction?        @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  company         Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  adjustment      EbitdaAdjustment?     @relation(fields: [adjustmentId], references: [id], onDelete: SetNull)
+
+  @@index([companyId, status])
+  @@index([companyId, flagType])
+  @@map("transaction_flags")
 }

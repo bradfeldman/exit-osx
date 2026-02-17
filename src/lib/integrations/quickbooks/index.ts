@@ -8,9 +8,11 @@ export {
 } from './client'
 
 export {
+  makeQuickBooksRequest,
   getCompanyInfo,
   getProfitAndLossReport,
   getBalanceSheetReport,
 } from './api'
 
 export { syncQuickBooksData } from './sync'
+export { syncTransactions } from './transactions'

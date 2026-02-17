@@ -4,10 +4,11 @@ import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Sparkles, Loader2, AlertTriangle, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react'
+import { Sparkles, Loader2, AlertTriangle, TrendingUp, ChevronDown, ChevronUp, Search } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/currency'
 import { EbitdaBridgeChart, buildWaterfallData, type WaterfallItem } from './EbitdaBridgeChart'
 import { BridgeSuggestionCard } from './BridgeSuggestionCard'
+import { TransactionFlagCard, type TransactionFlagData } from './TransactionFlagCard'
 import type { BridgeAnalysis, AdjustmentReview } from '@/lib/ai/ebitda-bridge'
 
 interface Adjustment {
@@ -84,6 +85,18 @@ export function EbitdaBridgePanel({ companyId }: EbitdaBridgePanelProps) {
   const [acceptingId, setAcceptingId] = useState<string | null>(null)
   const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<number>>(new Set())
 
+  // Transaction analysis state
+  const [txnFlags, setTxnFlags] = useState<TransactionFlagData[]>([])
+  const [isScanning, setIsScanning] = useState(false)
+  const [scanError, setScanError] = useState<string | null>(null)
+  const [scanSummary, setScanSummary] = useState<{
+    transactionsSynced: number
+    totalAddBackAmount: number
+    buyerNarrative: string
+  } | null>(null)
+  const [hasQBConnection, setHasQBConnection] = useState(false)
+  const [txnFlagsLoaded, setTxnFlagsLoaded] = useState(false)
+
   // Load data
   const loadData = useCallback(async () => {
     setIsLoading(true)
@@ -129,6 +142,46 @@ export function EbitdaBridgePanel({ companyId }: EbitdaBridgePanelProps) {
           setLatestEbitda(Number(annualPeriods[0].incomeStatement.ebitda))
         }
       }
+
+      // Check QB connection and load existing flags
+      try {
+        const integrationsRes = await fetch(`/api/companies/${companyId}`)
+        if (integrationsRes.ok) {
+          const intData = await integrationsRes.json()
+          const integrations = intData.company?.integrations || []
+          const hasQB = integrations.some(
+            (i: { provider: string; disconnectedAt: string | null }) =>
+              i.provider === 'QUICKBOOKS' && !i.disconnectedAt
+          )
+          setHasQBConnection(hasQB)
+        }
+      } catch {
+        // non-critical
+      }
+
+      try {
+        const flagsRes = await fetch(`/api/companies/${companyId}/transaction-analysis`)
+        if (flagsRes.ok) {
+          const flagsData = await flagsRes.json()
+          const flags = (flagsData.flags || []).map((f: Record<string, unknown>) => ({
+            id: f.id as string,
+            flagType: f.flagType as string,
+            category: (f.category as string) || null,
+            description: f.description as string,
+            suggestedAmount: Number(f.suggestedAmount || 0),
+            personalPct: f.personalPct != null ? Number(f.personalPct) : null,
+            confidence: Number(f.confidence || 0),
+            aiGenerated: Boolean(f.aiGenerated),
+            vendorName: (f.vendorName as string) || null,
+            vendorTxnCount: f.vendorTxnCount != null ? Number(f.vendorTxnCount) : null,
+            vendorTotalSpend: f.vendorTotalSpend != null ? Number(f.vendorTotalSpend) : null,
+          }))
+          setTxnFlags(flags)
+          setTxnFlagsLoaded(true)
+        }
+      } catch {
+        // non-critical
+      }
     } catch (err) {
       console.error('Error loading bridge data:', err)
     } finally {
@@ -161,6 +214,80 @@ export function EbitdaBridgePanel({ companyId }: EbitdaBridgePanelProps) {
     .filter((a) => a.type === 'DEDUCTION')
     .reduce((sum, a) => sum + a.amount, 0)
   const adjustedEbitda = reportedEbitda + ownerCompAdjustment + totalAddBacks - totalDeductions
+
+  // Transaction scanning
+  const handleScanTransactions = async () => {
+    setIsScanning(true)
+    setScanError(null)
+
+    try {
+      const res = await fetch(`/api/companies/${companyId}/transaction-analysis`, {
+        method: 'POST',
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Scan failed')
+      }
+
+      const flags = (data.flags || []).map((f: Record<string, unknown>) => ({
+        id: f.id as string,
+        flagType: f.flagType as string,
+        category: (f.category as string) || null,
+        description: f.description as string,
+        suggestedAmount: Number(f.suggestedAmount || 0),
+        personalPct: f.personalPct != null ? Number(f.personalPct) : null,
+        confidence: Number(f.confidence || 0),
+        aiGenerated: Boolean(f.aiGenerated),
+        vendorName: (f.vendorName as string) || null,
+        vendorTxnCount: f.vendorTxnCount != null ? Number(f.vendorTxnCount) : null,
+        vendorTotalSpend: f.vendorTotalSpend != null ? Number(f.vendorTotalSpend) : null,
+      }))
+      setTxnFlags(flags)
+      setTxnFlagsLoaded(true)
+      setScanSummary(data.summary || null)
+    } catch (err) {
+      setScanError(err instanceof Error ? err.message : 'Scan failed')
+    } finally {
+      setIsScanning(false)
+    }
+  }
+
+  const handleAcceptFlag = async (flagId: string, amount: number) => {
+    setAcceptingId(flagId)
+    try {
+      const res = await fetch(`/api/companies/${companyId}/transaction-analysis`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flagId, action: 'accept', amount }),
+      })
+      if (res.ok) {
+        setTxnFlags((prev) => prev.filter((f) => f.id !== flagId))
+        await loadData()
+      }
+    } catch (err) {
+      console.error('Error accepting flag:', err)
+    } finally {
+      setAcceptingId(null)
+    }
+  }
+
+  const handleDismissFlag = async (flagId: string) => {
+    setAcceptingId(flagId)
+    try {
+      const res = await fetch(`/api/companies/${companyId}/transaction-analysis`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flagId, action: 'dismiss' }),
+      })
+      if (res.ok) {
+        setTxnFlags((prev) => prev.filter((f) => f.id !== flagId))
+      }
+    } catch (err) {
+      console.error('Error dismissing flag:', err)
+    } finally {
+      setAcceptingId(null)
+    }
+  }
 
   // AI analysis
   const handleAnalyze = async () => {
@@ -291,6 +418,102 @@ export function EbitdaBridgePanel({ companyId }: EbitdaBridgePanelProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Transaction Analysis Card */}
+      {hasQBConnection && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Search className="h-4 w-4 text-emerald-500" />
+                Transaction Analysis
+              </CardTitle>
+              <Button
+                size="sm"
+                variant={txnFlagsLoaded ? 'outline' : 'default'}
+                onClick={handleScanTransactions}
+                disabled={isScanning}
+              >
+                {isScanning ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                    Scanning...
+                  </>
+                ) : txnFlagsLoaded ? (
+                  <>
+                    <Search className="h-4 w-4 mr-1.5" />
+                    Re-scan
+                  </>
+                ) : (
+                  <>
+                    <Search className="h-4 w-4 mr-1.5" />
+                    Scan Transactions
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardHeader>
+
+          {scanError && (
+            <CardContent>
+              <div className="flex items-center gap-2 text-sm text-destructive">
+                <AlertTriangle className="h-4 w-4" />
+                {scanError}
+              </div>
+            </CardContent>
+          )}
+
+          {isScanning && (
+            <CardContent>
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <Loader2 className="h-8 w-8 animate-spin text-emerald-500 mb-3" />
+                <p className="text-sm font-medium text-foreground">Scanning QuickBooks transactions...</p>
+                <p className="text-xs text-muted-foreground mt-1">This may take 60-90 seconds</p>
+              </div>
+            </CardContent>
+          )}
+
+          {!isScanning && txnFlags.length > 0 && (
+            <CardContent className="space-y-4">
+              {/* Summary */}
+              {scanSummary && (
+                <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-3">
+                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                    Found {txnFlags.length} potential add-back{txnFlags.length !== 1 ? 's' : ''} totaling{' '}
+                    {formatCurrency(txnFlags.reduce((sum, f) => sum + (f.suggestedAmount || 0), 0))}
+                  </p>
+                  {scanSummary.buyerNarrative && (
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 italic">
+                      {scanSummary.buyerNarrative}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Flag cards */}
+              <div className="space-y-3">
+                {txnFlags.map((flag) => (
+                  <TransactionFlagCard
+                    key={flag.id}
+                    flag={flag}
+                    onAccept={handleAcceptFlag}
+                    onDismiss={handleDismissFlag}
+                    isAccepting={acceptingId === flag.id}
+                  />
+                ))}
+              </div>
+            </CardContent>
+          )}
+
+          {!isScanning && txnFlagsLoaded && txnFlags.length === 0 && (
+            <CardContent>
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No potential add-backs found. All expenses look like legitimate business costs.
+              </p>
+            </CardContent>
+          )}
+        </Card>
+      )}
 
       {/* AI Analysis Card */}
       <Card>
