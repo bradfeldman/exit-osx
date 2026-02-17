@@ -285,10 +285,9 @@ export function DocumentSlotCard({
     return (
       <div
         className={cn(
-          'rounded-xl border border-border/50 bg-card p-4 cursor-pointer border-l-[3px] hover:shadow-sm transition-shadow',
+          'rounded-xl border border-border/50 bg-card p-4 border-l-[3px] hover:shadow-sm transition-shadow',
           borderColor,
         )}
-        onClick={handleViewClick}
       >
         {/* Header with icon and slot name */}
         <div className="flex items-start gap-2 mb-3">
