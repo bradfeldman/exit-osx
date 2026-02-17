@@ -172,10 +172,10 @@ export function EbitdaBridgePanel({ companyId }: EbitdaBridgePanelProps) {
       const res = await fetch(`/api/companies/${companyId}/ebitda-bridge`, {
         method: 'POST',
       })
-      if (!res.ok) {
-        throw new Error('Failed to generate analysis')
-      }
       const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to generate analysis')
+      }
       setAnalysis(data.analysis)
       setAiExpanded(true)
     } catch (err) {

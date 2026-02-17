@@ -252,13 +252,18 @@ export async function GET(
     }
 
     // Try to calculate from P&L and Balance Sheet
-    // Find prior year period
+    // Find prior period: the most recent ANNUAL period ending before this period starts.
+    // Using startDate (not fiscalYear - 1) correctly handles T12 periods whose
+    // fiscalYear may differ from the calendar year their data covers.
+    // e.g. T12 Feb 2025-Jan 2026 (fiscalYear 2026) needs FY 2024's BS (Dec 31, 2024),
+    //      not FY 2025's BS (Dec 31, 2025) which would only give 1 month of BS delta.
     const priorPeriod = await prisma.financialPeriod.findFirst({
       where: {
         companyId,
         periodType: PeriodType.ANNUAL,
-        fiscalYear: currentPeriod.fiscalYear - 1,
+        endDate: { lt: currentPeriod.startDate },
       },
+      orderBy: { endDate: 'desc' },
       include: {
         balanceSheet: true,
       }
@@ -279,7 +284,7 @@ export async function GET(
           currentPL: !currentPeriod.incomeStatement,
           currentBS: !currentPeriod.balanceSheet,
           priorBS: !priorPeriod?.balanceSheet,
-          priorYear: currentPeriod.fiscalYear - 1,
+          priorPeriodLabel: priorPeriod?.label || `Period ending before ${currentPeriod.startDate.toISOString().slice(0, 10)}`,
         }
       })
     }
