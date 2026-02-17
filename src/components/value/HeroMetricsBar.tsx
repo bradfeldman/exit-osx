@@ -5,6 +5,7 @@ import { motion } from '@/lib/motion'
 import { useCountUpCurrency, useCountUpScore } from '@/hooks/useCountUp'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
+import { ValuationDisclaimer, ValuationInfoTip } from '@/components/ui/ValuationDisclaimer'
 
 const emptySubscribe = () => () => {}
 function useIsClient() {
@@ -143,7 +144,7 @@ export function HeroMetricsBar({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.05 }}
       >
-        <p className="text-xs sm:text-sm font-medium text-muted-foreground">Current Value</p>
+        <p className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center">Current Value<ValuationInfoTip /></p>
         {hasDcfRange ? (
           /* Range display when both EBITDA-multiple and DCF are available */
           <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1 truncate">
@@ -198,6 +199,7 @@ export function HeroMetricsBar({
           {delta.text}
         </motion.p>
       </motion.div>
+      <ValuationDisclaimer className="mt-3 text-center" />
     </div>
   )
 }

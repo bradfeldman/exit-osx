@@ -3,6 +3,7 @@
 import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils/currency'
+import { ValuationDisclaimer } from '@/components/ui/ValuationDisclaimer'
 
 interface IndustryPreviewStepProps {
   companyName: string
@@ -81,6 +82,14 @@ export function IndustryPreviewStep({
             />
           </motion.div>
         </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7 }}
+        >
+          <ValuationDisclaimer className="text-center mb-6" />
+        </motion.div>
 
         {/* Context box - Matching prototype with amber left border */}
         <motion.div

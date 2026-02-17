@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
 import { BRI_CATEGORY_LABELS } from '@/lib/constants/bri-categories'
 import { formatCurrency } from '@/lib/utils/currency'
+import { ValuationDisclaimer } from '@/components/ui/ValuationDisclaimer'
 
 interface RiskResultsStepProps {
   companyName: string
@@ -148,6 +149,15 @@ export function RiskResultsStep({
             <span>{formatCurrency(riskResults.currentValue)}</span>
             <span>{formatCurrency(riskResults.potentialValue)}</span>
           </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: showContent ? 1 : 0 }}
+          transition={{ delay: 0.7 }}
+          className="mb-6"
+        >
+          <ValuationDisclaimer className="text-center" />
         </motion.div>
 
         {/* Risk Breakdown - Matching prototype */}

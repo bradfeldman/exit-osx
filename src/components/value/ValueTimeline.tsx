@@ -241,6 +241,9 @@ export function ValueTimeline({ valueTrend, annotations }: ValueTimelineProps) {
           </div>
         )}
       </div>
+      <p className="text-[11px] text-muted-foreground/60 mt-3">
+        Values shown are enterprise value estimates. Not a formal appraisal.
+      </p>
     </div>
   )
 }

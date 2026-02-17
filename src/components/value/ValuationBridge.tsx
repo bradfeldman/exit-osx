@@ -136,6 +136,9 @@ export function ValuationBridge({
           Improving the top category could recover up to {formatCurrency(sorted[0]?.dollarImpact ?? 0)} in value.
         </p>
       )}
+      <p className="text-[11px] text-muted-foreground/60 mt-2">
+        Dollar impacts are estimates based on industry multiples and buyer readiness factors. Not a formal appraisal.
+      </p>
     </div>
   )
 }
