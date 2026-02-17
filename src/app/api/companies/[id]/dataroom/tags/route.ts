@@ -1,6 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { prisma } from '@/lib/prisma'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const createTagSchema = z.object({
+  name: z.string().min(1).max(50).transform(v => v.trim()),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Must be hex color').default('#6B7280'),
+})
+
+const updateDocumentTagSchema = z.object({
+  documentId: z.string().cuid(),
+  tagId: z.string().cuid(),
+  action: z.enum(['add', 'remove']),
+})
 
 /**
  * GET /api/companies/[id]/dataroom/tags
@@ -52,19 +65,16 @@ export async function POST(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
-    const { name, color = '#6B7280' } = body
-
-    if (!name || name.trim().length === 0) {
-      return NextResponse.json({ error: 'Tag name is required' }, { status: 400 })
-    }
+    const validation = await validateRequestBody(request, createTagSchema)
+    if (!validation.success) return validation.error
+    const { name, color } = validation.data
 
     // Check for duplicate (companyId + name is unique)
     const existing = await prisma.dataRoomTag.findUnique({
       where: {
         companyId_name: {
           companyId,
-          name: name.trim(),
+          name,
         },
       },
     })
@@ -76,7 +86,7 @@ export async function POST(
     const tag = await prisma.dataRoomTag.create({
       data: {
         companyId,
-        name: name.trim(),
+        name,
         color,
       },
     })
@@ -101,12 +111,9 @@ export async function PUT(
   if (isAuthError(result)) return result.error
 
   try {
-    const body = await request.json()
-    const { documentId, tagId, action } = body // action: 'add' | 'remove'
-
-    if (!documentId || !tagId || !action) {
-      return NextResponse.json({ error: 'Document ID, tag ID, and action are required' }, { status: 400 })
-    }
+    const validation = await validateRequestBody(request, updateDocumentTagSchema)
+    if (!validation.success) return validation.error
+    const { documentId, tagId, action } = validation.data
 
     // Verify document belongs to company
     const document = await prisma.dataRoomDocument.findUnique({
@@ -131,12 +138,10 @@ export async function PUT(
         create: { documentId, tagId },
         update: {},
       })
-    } else if (action === 'remove') {
+    } else {
       await prisma.dataRoomDocumentTag.deleteMany({
         where: { documentId, tagId },
       })
-    } else {
-      return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
 
     // Return updated document tags

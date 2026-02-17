@@ -2,6 +2,14 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { PeriodType, Quarter } from '@prisma/client'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const updatePeriodSchema = z.object({
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional(),
+  label: z.string().max(100).optional().nullable(),
+})
 
 export async function GET(
   request: Request,
@@ -144,8 +152,9 @@ export async function PUT(
   }
 
   try {
-    const body = await request.json()
-    const { startDate, endDate, label } = body
+    const validation = await validateRequestBody(request, updatePeriodSchema)
+    if (!validation.success) return validation.error
+    const { startDate, endDate, label } = validation.data
 
     // Verify user has access
     const company = await prisma.company.findUnique({

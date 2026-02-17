@@ -2,6 +2,20 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { processCheckInSignals } from '@/lib/weekly-check-in/process-signals'
+import { z } from 'zod'
+import { validateRequestBody } from '@/lib/security/validation'
+
+const checkInResponseSchema = z.object({
+  checkInId: z.string().cuid(),
+  taskStatus: z.enum(['on_track', 'behind', 'blocked', 'ahead']).optional().nullable(),
+  teamChanges: z.boolean().optional().nullable(),
+  teamChangesNote: z.string().max(5000).optional().nullable(),
+  customerChanges: z.boolean().optional().nullable(),
+  customerChangesNote: z.string().max(5000).optional().nullable(),
+  confidenceRating: z.number().int().min(1).max(10).optional().nullable(),
+  additionalNotes: z.string().max(10000).optional().nullable(),
+  skipped: z.boolean().optional(),
+})
 
 export async function POST(
   request: Request,
@@ -11,7 +25,8 @@ export async function POST(
   const result = await checkPermission('COMPANY_VIEW', companyId)
   if (isAuthError(result)) return result.error
 
-  const body = await request.json()
+  const validation = await validateRequestBody(request, checkInResponseSchema)
+  if (!validation.success) return validation.error
   const {
     checkInId,
     taskStatus,
@@ -22,11 +37,7 @@ export async function POST(
     confidenceRating,
     additionalNotes,
     skipped,
-  } = body
-
-  if (!checkInId) {
-    return NextResponse.json({ error: 'checkInId is required' }, { status: 400 })
-  }
+  } = validation.data
 
   // Verify check-in belongs to this company and isn't already completed
   const checkIn = await prisma.weeklyCheckIn.findFirst({
