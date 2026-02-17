@@ -114,7 +114,7 @@ export function IndustryPreviewStep({
         >
           <Button
             variant="ghost"
-            onClick={() => onBack ? onBack() : window.history.back()}
+            onClick={() => onBack?.()}
           >
             Back
           </Button>

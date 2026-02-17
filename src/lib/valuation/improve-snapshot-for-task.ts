@@ -8,6 +8,7 @@
 import { prisma } from '@/lib/prisma'
 import { BriCategory } from '@prisma/client'
 import { ALPHA, calculateValuation } from './calculate-valuation'
+import { DEFAULT_CATEGORY_WEIGHTS } from './bri-scoring'
 
 // BRI category field mapping
 const BRI_CATEGORY_FIELDS: Record<string, string> = {
@@ -17,16 +18,6 @@ const BRI_CATEGORY_FIELDS: Record<string, string> = {
   MARKET: 'briMarket',
   LEGAL_TAX: 'briLegalTax',
   PERSONAL: 'briPersonal',
-}
-
-// Default category weights for BRI calculation
-const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
-  FINANCIAL: 0.25,
-  TRANSFERABILITY: 0.20,
-  OPERATIONAL: 0.20,
-  MARKET: 0.15,
-  LEGAL_TAX: 0.10,
-  PERSONAL: 0.10,
 }
 
 interface TaskForImprovement {
