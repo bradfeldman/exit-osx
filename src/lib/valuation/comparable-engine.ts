@@ -437,8 +437,9 @@ function normalizePositiveNumber(value: unknown): number | null {
  * Returns null if invalid. Clamps to [min, max].
  *
  * AI sometimes returns percentages (e.g., 22 instead of 0.22).
- * We detect this by checking if the absolute value > a threshold
- * and auto-correct by dividing by 100.
+ * Only auto-corrects when the value is outside the valid range AND
+ * dividing by 100 would bring it into range. This avoids destroying
+ * legitimate high values (e.g., 1.5 = 150% growth).
  */
 function normalizeDecimalRate(
   value: unknown,
@@ -450,13 +451,12 @@ function normalizeDecimalRate(
 
   let normalized = value
 
-  // Auto-detect percentage format: if |value| > 1 and max <= 5,
-  // it's likely a percentage that needs conversion
-  // Exception: growth rates can legitimately be > 1 (100%+), so we only
-  // auto-convert if the value looks obviously wrong (e.g., 22 for 22%)
-  if (Math.abs(normalized) > 1 && Math.abs(normalized) <= 100) {
-    // Likely a percentage, convert to decimal
-    normalized = normalized / 100
+  // Only auto-correct if value is outside valid range and looks like a percentage
+  if ((normalized > max || normalized < min) && Math.abs(normalized) <= 100) {
+    const asDecimal = normalized / 100
+    if (asDecimal >= min && asDecimal <= max) {
+      normalized = asDecimal
+    }
   }
 
   return Math.max(min, Math.min(max, normalized))
