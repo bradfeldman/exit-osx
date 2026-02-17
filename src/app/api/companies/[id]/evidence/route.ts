@@ -161,7 +161,11 @@ export async function GET(
       const matchedIds = new Set(expectedDocs.map(ed => ed.id))
       const customDocs = catDocs.filter(d => !d.expectedDocumentId || !matchedIds.has(d.expectedDocumentId))
       const customSlots = customDocs.map((doc, i) => {
-        const freshnessState = computeFreshnessState(doc.createdAt, doc.nextUpdateDue, 'AS_NEEDED')
+        const hasFile = !!doc.filePath
+        const freshnessState = hasFile
+          ? computeFreshnessState(doc.createdAt, doc.nextUpdateDue, 'AS_NEEDED')
+          : 'current' as FreshnessState
+
         return {
           expectedDocId: `custom-${doc.id}`,
           slotName: doc.documentName,
@@ -169,8 +173,9 @@ export async function GET(
           buyerExplanation: '',
           sortOrder: 100 + i,
           refreshCadence: 'AS_NEEDED' as RefreshCadence,
-          isFilled: true,
-          document: {
+          isFilled: hasFile,
+          placeholderDocumentId: !hasFile ? doc.id : null,
+          document: hasFile ? {
             id: doc.id,
             fileName: doc.fileName ?? doc.documentName,
             fileSize: doc.fileSize,
@@ -183,7 +188,7 @@ export async function GET(
             nextUpdateDue: doc.nextUpdateDue?.toISOString() ?? null,
             version: doc.version,
             hasPreviousVersions: (doc.version ?? 1) > 1,
-          },
+          } : null,
           pendingRequest: null,
           linkedActionItem: null,
         }

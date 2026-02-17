@@ -20,6 +20,7 @@ interface DocumentSlot {
   sortOrder: number
   refreshCadence: RefreshCadence
   isFilled: boolean
+  placeholderDocumentId?: string | null
   document: {
     id: string
     fileName: string

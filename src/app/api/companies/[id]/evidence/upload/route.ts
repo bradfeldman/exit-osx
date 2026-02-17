@@ -35,6 +35,7 @@ export async function POST(
     const documentName = formData.get('documentName') as string | null
     const evidenceCategory = formData.get('evidenceCategory') as EvidenceCategory | null
     const expectedDocumentId = formData.get('expectedDocumentId') as string | null
+    const documentId = formData.get('documentId') as string | null
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
@@ -43,12 +44,10 @@ export async function POST(
       return NextResponse.json({ error: 'Document name and evidence category are required' }, { status: 400 })
     }
 
-    // Validate evidenceCategory is a known value before looking up the mapping
     if (!(evidenceCategory in EVIDENCE_TO_DATAROOM_CATEGORY)) {
       return NextResponse.json({ error: `Invalid evidence category: ${evidenceCategory}` }, { status: 400 })
     }
 
-    // Validate file (50MB limit)
     if (file.size > 50 * 1024 * 1024) {
       return NextResponse.json({ error: 'File too large. Maximum size is 50MB.' }, { status: 400 })
     }
@@ -56,30 +55,6 @@ export async function POST(
     const fileValidation = await validateUploadedFile(file)
     if (!fileValidation.valid) {
       return NextResponse.json({ error: fileValidation.error }, { status: 400 })
-    }
-
-    // Find or create the data room
-    let dataRoom = await prisma.dataRoom.findUnique({ where: { companyId } })
-    if (!dataRoom) {
-      dataRoom = await prisma.dataRoom.create({
-        data: { companyId, name: 'Data Room' },
-      })
-    }
-
-    // Find or create a folder for the evidence category
-    const drCategory = EVIDENCE_TO_DATAROOM_CATEGORY[evidenceCategory]
-    let folder = await prisma.dataRoomFolder.findFirst({
-      where: { dataRoomId: dataRoom.id, category: drCategory },
-    })
-    if (!folder) {
-      folder = await prisma.dataRoomFolder.create({
-        data: {
-          dataRoomId: dataRoom.id,
-          name: documentName,
-          category: drCategory,
-          sortOrder: 0,
-        },
-      })
     }
 
     // Auto-rename: standardized naming convention for evidence documents
@@ -103,7 +78,48 @@ export async function POST(
       return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 })
     }
 
-    // Create the document record
+    // If documentId is provided, update existing placeholder record with the file
+    if (documentId) {
+      const existing = await prisma.dataRoomDocument.findUnique({ where: { id: documentId } })
+      if (existing && existing.companyId === companyId) {
+        const updated = await prisma.dataRoomDocument.update({
+          where: { id: documentId },
+          data: {
+            filePath: uploadData.path,
+            fileName: displayFileName,
+            fileSize: file.size,
+            mimeType: file.type,
+            lastUpdatedAt: new Date(),
+            status: 'CURRENT',
+          },
+        })
+        return NextResponse.json({ document: updated }, { status: 200 })
+      }
+    }
+
+    // Find or create the data room
+    let dataRoom = await prisma.dataRoom.findUnique({ where: { companyId } })
+    if (!dataRoom) {
+      dataRoom = await prisma.dataRoom.create({
+        data: { companyId, name: 'Data Room' },
+      })
+    }
+
+    const drCategory = EVIDENCE_TO_DATAROOM_CATEGORY[evidenceCategory]
+    let folder = await prisma.dataRoomFolder.findFirst({
+      where: { dataRoomId: dataRoom.id, category: drCategory },
+    })
+    if (!folder) {
+      folder = await prisma.dataRoomFolder.create({
+        data: {
+          dataRoomId: dataRoom.id,
+          name: documentName,
+          category: drCategory,
+          sortOrder: 0,
+        },
+      })
+    }
+
     const document = await prisma.dataRoomDocument.create({
       data: {
         companyId,

@@ -23,6 +23,7 @@ interface DocumentSlot {
   sortOrder: number
   refreshCadence: string
   isFilled: boolean
+  placeholderDocumentId?: string | null
   document: {
     id: string
     fileName: string
@@ -53,12 +54,14 @@ const IMPORTANCE_LABELS: Record<string, string> = {
   required: 'REQUIRED',
   expected: 'EXPECTED',
   helpful: 'HELPFUL',
+  custom: 'ADDED',
 }
 
 const IMPORTANCE_STYLES: Record<string, string> = {
   required: 'text-rose-600',
   expected: 'text-amber-600',
   helpful: 'text-sky-600',
+  custom: 'text-violet-600',
 }
 
 const FRESHNESS_STYLES: Record<string, { bg: string; text: string; border: string }> = {
@@ -108,12 +111,9 @@ function formatDate(dateString: string): string {
 
 function getFileIcon(mimeType: string | null) {
   if (!mimeType) return File
-
   if (mimeType.includes('pdf') || mimeType.includes('word') || mimeType.includes('document')) {
     return FileText
   }
-
-  // Default fallback
   return File
 }
 
@@ -129,7 +129,6 @@ export function DocumentSlotCard({
   const [isDragOver, setIsDragOver] = useState(false)
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle')
   const [uploadError, setUploadError] = useState('')
-  const [isHovered, setIsHovered] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
@@ -152,6 +151,11 @@ export function DocumentSlotCard({
       formData.append('evidenceCategory', categoryId)
       formData.append('expectedDocumentId', slot.expectedDocId)
 
+      // If this is a placeholder custom doc, send documentId to update it
+      if (slot.placeholderDocumentId) {
+        formData.append('documentId', slot.placeholderDocumentId)
+      }
+
       const response = await fetch(`/api/companies/${selectedCompanyId}/evidence/upload`, {
         method: 'POST',
         body: formData,
@@ -171,7 +175,7 @@ export function DocumentSlotCard({
       setUploadStatus('error')
       setUploadError(error instanceof Error ? error.message : 'Upload failed')
     }
-  }, [selectedCompanyId, slot.slotName, categoryId, slot.expectedDocId, onUploadSuccess])
+  }, [selectedCompanyId, slot.slotName, categoryId, slot.expectedDocId, slot.placeholderDocumentId, onUploadSuccess])
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -222,12 +226,16 @@ export function DocumentSlotCard({
 
   const handleDeleteConfirm = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!selectedCompanyId || !slot.document) return
+    if (!selectedCompanyId) return
+
+    // For filled docs, delete the document; for placeholders, delete the placeholder
+    const docId = slot.document?.id || slot.placeholderDocumentId
+    if (!docId) return
 
     setIsDeleting(true)
     try {
       const response = await fetch(
-        `/api/companies/${selectedCompanyId}/evidence/documents/${slot.document.id}`,
+        `/api/companies/${selectedCompanyId}/evidence/documents/${docId}`,
         { method: 'DELETE' }
       )
       if (!response.ok) throw new Error('Failed to delete')
@@ -236,7 +244,7 @@ export function DocumentSlotCard({
       setIsDeleting(false)
       setShowDeleteConfirm(false)
     }
-  }, [selectedCompanyId, slot.document, onUploadSuccess])
+  }, [selectedCompanyId, slot.document, slot.placeholderDocumentId, onUploadSuccess])
 
   const handleDeleteCancel = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
@@ -267,7 +275,7 @@ export function DocumentSlotCard({
     )
   }
 
-  // FILLED STATE
+  // FILLED STATE (has a file uploaded)
   if (slot.isFilled && slot.document) {
     const doc = slot.document
     const FileIcon = getFileIcon(doc.mimeType)
@@ -277,12 +285,9 @@ export function DocumentSlotCard({
     return (
       <div
         className={cn(
-          'rounded-xl border border-border/50 bg-card p-4 transition-shadow cursor-pointer border-l-[3px]',
+          'rounded-xl border border-border/50 bg-card p-4 cursor-pointer border-l-[3px] hover:shadow-sm transition-shadow',
           borderColor,
-          isHovered && 'shadow-sm',
         )}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         onClick={handleViewClick}
       >
         {/* Header with icon and slot name */}
@@ -293,6 +298,9 @@ export function DocumentSlotCard({
               {slot.slotName}
             </div>
           </div>
+          {slot.importance === 'custom' && (
+            <span className="text-xs font-semibold text-violet-600 shrink-0">ADDED</span>
+          )}
         </div>
 
         {/* File name */}
@@ -305,13 +313,13 @@ export function DocumentSlotCard({
           <span>{formatDate(doc.uploadedAt)}</span>
           {doc.fileSize && (
             <>
-              <span>·</span>
+              <span>&middot;</span>
               <span>{formatFileSize(doc.fileSize)}</span>
             </>
           )}
           {doc.version > 1 && (
             <>
-              <span>·</span>
+              <span>&middot;</span>
               <span>v{doc.version}</span>
             </>
           )}
@@ -319,7 +327,6 @@ export function DocumentSlotCard({
 
         {/* Badges row */}
         <div className="flex items-center gap-2 mb-3 flex-wrap">
-          {/* Freshness pill */}
           <span
             className={cn(
               'inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border',
@@ -334,7 +341,6 @@ export function DocumentSlotCard({
             )}
           </span>
 
-          {/* Source badge */}
           {doc.source === 'task' && (
             <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border bg-blue-50 text-blue-700 border-blue-200">
               From Action
@@ -342,17 +348,11 @@ export function DocumentSlotCard({
           )}
         </div>
 
-        {/* Actions */}
-        <div
-          className={cn(
-            'flex items-center gap-3 transition-opacity',
-            'md:opacity-0 md:group-hover:opacity-100',
-            isHovered && 'opacity-100',
-          )}
-        >
+        {/* Actions — always visible */}
+        <div className="flex items-center gap-3">
           {showDeleteConfirm ? (
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Remove?</span>
+              <span className="text-xs text-muted-foreground">Remove this document?</span>
               <button
                 type="button"
                 onClick={handleDeleteConfirm}
@@ -390,7 +390,7 @@ export function DocumentSlotCard({
               <button
                 type="button"
                 onClick={handleDeleteClick}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-rose-600 hover:underline"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-rose-600 hover:underline ml-auto"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 Remove
@@ -409,7 +409,97 @@ export function DocumentSlotCard({
     )
   }
 
-  // EMPTY STATE
+  // PLACEHOLDER STATE (custom doc added but no file yet)
+  if (slot.importance === 'custom' && slot.placeholderDocumentId) {
+    return (
+      <div
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={cn(
+          'rounded-xl border-2 border-dashed p-4 transition-all',
+          isDragOver
+            ? 'border-[var(--burnt-orange)] border-solid bg-primary/5'
+            : 'border-violet-300/60 bg-violet-50/30',
+        )}
+      >
+        <div className="flex justify-center mb-3">
+          <CloudUpload
+            className={cn(
+              'w-6 h-6 transition-colors',
+              isDragOver ? 'text-[var(--burnt-orange)]' : 'text-violet-400/50',
+            )}
+          />
+        </div>
+
+        <div className="text-sm font-semibold text-foreground text-center mb-2">
+          {slot.slotName}
+        </div>
+
+        <div className="flex justify-center mb-3">
+          <span className="text-xs font-semibold text-violet-600">ADDED</span>
+        </div>
+
+        {uploadError && (
+          <p className="text-xs text-destructive text-center mb-3">{uploadError}</p>
+        )}
+
+        <div className="flex justify-center gap-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            onChange={handleFileInputChange}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--burnt-orange)] hover:underline"
+          >
+            <Upload className="w-3.5 h-3.5" />
+            Upload
+          </button>
+          {showDeleteConfirm ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Remove?</span>
+              <button
+                type="button"
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+                className="text-sm font-medium text-rose-600 hover:underline disabled:opacity-50"
+              >
+                {isDeleting ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Yes'}
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteCancel}
+                className="text-sm font-medium text-muted-foreground hover:underline"
+              >
+                No
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleDeleteClick}
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-rose-600 hover:underline"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Remove
+            </button>
+          )}
+        </div>
+
+        {isDragOver && (
+          <p className="text-sm text-[var(--burnt-orange)] font-medium text-center mt-2">
+            Drop file to upload
+          </p>
+        )}
+      </div>
+    )
+  }
+
+  // EMPTY STATE (expected document, no upload yet)
   return (
     <div
       onDragOver={handleDragOver}
@@ -422,7 +512,6 @@ export function DocumentSlotCard({
           : 'border-border/40 bg-muted/10',
       )}
     >
-      {/* Upload icon */}
       <div className="flex justify-center mb-3">
         <CloudUpload
           className={cn(
@@ -432,20 +521,17 @@ export function DocumentSlotCard({
         />
       </div>
 
-      {/* Slot name */}
       <div className="text-sm font-semibold text-foreground text-center mb-2">
         {slot.slotName}
       </div>
 
-      {/* Importance badge */}
       <div className="flex justify-center mb-3">
         <span className={cn('text-xs font-semibold', IMPORTANCE_STYLES[slot.importance])}>
           {IMPORTANCE_LABELS[slot.importance] || slot.importance.toUpperCase()}
         </span>
       </div>
 
-      {/* Buyer explanation (if enabled) */}
-      {showBuyerExplanation && (
+      {showBuyerExplanation && slot.buyerExplanation && (
         <div className="mb-3 pl-3 border-l-2 border-border/30">
           <p className="text-xs text-muted-foreground italic leading-relaxed">
             &ldquo;{slot.buyerExplanation}&rdquo;
@@ -453,12 +539,10 @@ export function DocumentSlotCard({
         </div>
       )}
 
-      {/* Error message */}
       {uploadError && (
         <p className="text-xs text-destructive text-center mb-3">{uploadError}</p>
       )}
 
-      {/* Upload button */}
       <div className="flex justify-center">
         <input
           ref={fileInputRef}
@@ -476,7 +560,6 @@ export function DocumentSlotCard({
         </button>
       </div>
 
-      {/* Drag overlay message */}
       {isDragOver && (
         <p className="text-sm text-[var(--burnt-orange)] font-medium text-center mt-2">
           Drop file to upload

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { CategorySectionHeader } from './CategorySectionHeader'
 import { DocumentSlotCard } from './DocumentSlotCard'
-import { EvidenceUploadDialog } from './EvidenceUploadDialog'
+import { AddDocumentDialog } from './AddDocumentDialog'
 
 interface DocumentSlot {
   expectedDocId: string
@@ -14,6 +14,7 @@ interface DocumentSlot {
   sortOrder: number
   refreshCadence: string
   isFilled: boolean
+  placeholderDocumentId?: string | null
   document: {
     id: string
     fileName: string
@@ -53,7 +54,7 @@ export function DocumentShelf({
   onUploadSuccess,
   onViewDocument,
 }: DocumentShelfProps) {
-  const [showUploadDialog, setShowUploadDialog] = useState(false)
+  const [showAddDialog, setShowAddDialog] = useState(false)
 
   const sortedSlots = [...category.documentSlots].sort(
     (a, b) => a.sortOrder - b.sortOrder
@@ -86,22 +87,22 @@ export function DocumentShelf({
       {/* Add custom document */}
       <button
         type="button"
-        onClick={() => setShowUploadDialog(true)}
+        onClick={() => setShowAddDialog(true)}
         className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors mx-auto"
       >
         <Plus className="w-3.5 h-3.5" />
         Add a document to {category.label}
       </button>
 
-      {showUploadDialog && (
-        <EvidenceUploadDialog
-          documentName={`${category.label} Document`}
+      {showAddDialog && (
+        <AddDocumentDialog
           evidenceCategory={category.id}
+          categoryLabel={category.label}
           onSuccess={() => {
-            setShowUploadDialog(false)
+            setShowAddDialog(false)
             onUploadSuccess?.()
           }}
-          onClose={() => setShowUploadDialog(false)}
+          onClose={() => setShowAddDialog(false)}
         />
       )}
     </div>
