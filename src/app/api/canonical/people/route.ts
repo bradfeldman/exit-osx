@@ -130,12 +130,19 @@ const canonicalPersonCreateSchema = z.object({
   firstName: shortText.min(1),
   lastName: shortText.min(1),
   email: emailSchema.optional().nullable(),
-  phone: z.string().max(50).optional().nullable(),
+  phone: z.string().max(50).optional().nullable(), // Legacy
+  phoneWork: z.string().max(50).optional().nullable(),
+  phoneCell: z.string().max(50).optional().nullable(),
   linkedInUrl: z.string().max(2000).optional().nullable(),
   currentTitle: shortText.optional().nullable(),
   currentCompanyId: z.string().min(1).optional().nullable(),
   currentCompanyName: shortText.optional().nullable(),
   skipDuplicateCheck: z.boolean().optional(),
+  addressLine1: z.string().max(200).optional().nullable(),
+  addressLine2: z.string().max(200).optional().nullable(),
+  city: z.string().max(100).optional().nullable(),
+  state: z.string().max(50).optional().nullable(),
+  zip: z.string().max(20).optional().nullable(),
 })
 
 /**
@@ -155,11 +162,18 @@ export async function POST(request: NextRequest) {
       lastName,
       email,
       phone,
+      phoneWork,
+      phoneCell,
       linkedInUrl,
       currentTitle,
       currentCompanyId,
       currentCompanyName,
       skipDuplicateCheck,
+      addressLine1,
+      addressLine2,
+      city,
+      state,
+      zip,
     } = validation.data
 
     const normalizedName = normalizePersonName(firstName, lastName)
@@ -217,16 +231,23 @@ export async function POST(request: NextRequest) {
     }
 
     // Create person
+    const resolvedPhoneWork = phoneWork?.trim() || phone?.trim() || null
     const person = await prisma.canonicalPerson.create({
       data: {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         normalizedName,
         email: email?.toLowerCase().trim() || null,
-        phone: phone?.trim() || null,
+        phoneWork: resolvedPhoneWork,
+        phoneCell: phoneCell?.trim() || null,
         linkedInUrl: linkedInUrl?.trim() || null,
         currentTitle: currentTitle?.trim() || null,
         currentCompanyId: resolvedCompanyId || null,
+        addressLine1: addressLine1?.trim() || null,
+        addressLine2: addressLine2?.trim() || null,
+        city: city?.trim() || null,
+        state: state?.trim() || null,
+        zip: zip?.trim() || null,
         dataQuality: 'PROVISIONAL',
       },
       include: {

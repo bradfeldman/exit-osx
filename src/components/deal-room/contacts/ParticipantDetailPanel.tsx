@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Mail, Phone, Linkedin, ExternalLink, Pencil, Check } from 'lucide-react'
+import { X, Mail, Phone, Linkedin, ExternalLink, Pencil, Check, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -35,10 +35,16 @@ export function ParticipantDetailPanel({
     firstName: participant.canonicalPerson.firstName,
     lastName: participant.canonicalPerson.lastName,
     email: participant.canonicalPerson.email ?? '',
-    phone: participant.canonicalPerson.phone ?? '',
+    phoneWork: participant.canonicalPerson.phoneWork ?? participant.canonicalPerson.phone ?? '',
+    phoneCell: participant.canonicalPerson.phoneCell ?? '',
     currentTitle: participant.canonicalPerson.currentTitle ?? '',
     companyName: participant.canonicalPerson.currentCompany?.name ?? '',
     linkedInUrl: participant.canonicalPerson.linkedInUrl ?? '',
+    addressLine1: participant.canonicalPerson.addressLine1 ?? '',
+    addressLine2: participant.canonicalPerson.addressLine2 ?? '',
+    city: participant.canonicalPerson.city ?? '',
+    state: participant.canonicalPerson.state ?? '',
+    zip: participant.canonicalPerson.zip ?? '',
   })
   const { updateParticipant, removeParticipant } = useDealParticipants(dealId)
 
@@ -123,10 +129,16 @@ export function ParticipantDetailPanel({
           firstName: editFields.firstName.trim(),
           lastName: editFields.lastName.trim(),
           email: editFields.email.trim() || null,
-          phone: editFields.phone.trim() || null,
+          phoneWork: editFields.phoneWork.trim() || null,
+          phoneCell: editFields.phoneCell.trim() || null,
           currentTitle: editFields.currentTitle.trim() || null,
           companyName: editFields.companyName.trim() || null,
           linkedInUrl: editFields.linkedInUrl.trim() || null,
+          addressLine1: editFields.addressLine1.trim() || null,
+          addressLine2: editFields.addressLine2.trim() || null,
+          city: editFields.city.trim() || null,
+          state: editFields.state.trim() || null,
+          zip: editFields.zip.trim() || null,
         }),
       })
       if (!res.ok) {
@@ -213,10 +225,16 @@ export function ParticipantDetailPanel({
                         firstName: canonicalPerson.firstName,
                         lastName: canonicalPerson.lastName,
                         email: canonicalPerson.email ?? '',
-                        phone: canonicalPerson.phone ?? '',
+                        phoneWork: canonicalPerson.phoneWork ?? canonicalPerson.phone ?? '',
+                        phoneCell: canonicalPerson.phoneCell ?? '',
                         currentTitle: canonicalPerson.currentTitle ?? '',
                         companyName: canonicalPerson.currentCompany?.name ?? '',
                         linkedInUrl: canonicalPerson.linkedInUrl ?? '',
+                        addressLine1: canonicalPerson.addressLine1 ?? '',
+                        addressLine2: canonicalPerson.addressLine2 ?? '',
+                        city: canonicalPerson.city ?? '',
+                        state: canonicalPerson.state ?? '',
+                        zip: canonicalPerson.zip ?? '',
                       })
                     }}
                     className="text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -283,14 +301,74 @@ export function ParticipantDetailPanel({
                     type="email"
                   />
                 </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">Work Phone</label>
+                    <Input
+                      value={editFields.phoneWork}
+                      onChange={e => setEditFields(f => ({ ...f, phoneWork: e.target.value }))}
+                      placeholder="(555) 123-4567"
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">Cell Phone</label>
+                    <Input
+                      value={editFields.phoneCell}
+                      onChange={e => setEditFields(f => ({ ...f, phoneCell: e.target.value }))}
+                      placeholder="(555) 987-6543"
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                </div>
                 <div>
-                  <label className="text-[10px] text-muted-foreground">Phone</label>
+                  <label className="text-[10px] text-muted-foreground">Address</label>
                   <Input
-                    value={editFields.phone}
-                    onChange={e => setEditFields(f => ({ ...f, phone: e.target.value }))}
-                    placeholder="555-123-4567"
+                    value={editFields.addressLine1}
+                    onChange={e => setEditFields(f => ({ ...f, addressLine1: e.target.value }))}
+                    placeholder="123 Main Street"
                     className="h-8 text-sm"
                   />
+                </div>
+                {(editFields.addressLine2 || editFields.addressLine1) && (
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">Address Line 2</label>
+                    <Input
+                      value={editFields.addressLine2}
+                      onChange={e => setEditFields(f => ({ ...f, addressLine2: e.target.value }))}
+                      placeholder="Suite 100"
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                )}
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">City</label>
+                    <Input
+                      value={editFields.city}
+                      onChange={e => setEditFields(f => ({ ...f, city: e.target.value }))}
+                      placeholder="City"
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">State</label>
+                    <Input
+                      value={editFields.state}
+                      onChange={e => setEditFields(f => ({ ...f, state: e.target.value }))}
+                      placeholder="CA"
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">ZIP</label>
+                    <Input
+                      value={editFields.zip}
+                      onChange={e => setEditFields(f => ({ ...f, zip: e.target.value }))}
+                      placeholder="90210"
+                      className="h-8 text-sm"
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="text-[10px] text-muted-foreground">LinkedIn URL</label>
@@ -330,13 +408,40 @@ export function ParticipantDetailPanel({
                     </a>
                   </div>
                 )}
-                {canonicalPerson.phone && (
+                {(canonicalPerson.phoneWork || canonicalPerson.phone) && (
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground flex items-center gap-1">
                       <Phone className="h-3.5 w-3.5" />
-                      Phone
+                      Work
                     </span>
-                    <span className="text-xs">{canonicalPerson.phone}</span>
+                    <span className="text-xs">{canonicalPerson.phoneWork || canonicalPerson.phone}</span>
+                  </div>
+                )}
+                {canonicalPerson.phoneCell && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <Phone className="h-3.5 w-3.5" />
+                      Cell
+                    </span>
+                    <span className="text-xs">{canonicalPerson.phoneCell}</span>
+                  </div>
+                )}
+                {canonicalPerson.addressLine1 && (
+                  <div className="flex justify-between items-start">
+                    <span className="text-muted-foreground flex items-center gap-1 mt-0.5">
+                      <MapPin className="h-3.5 w-3.5" />
+                      Address
+                    </span>
+                    <div className="text-xs text-right">
+                      <div>{canonicalPerson.addressLine1}</div>
+                      {canonicalPerson.addressLine2 && <div>{canonicalPerson.addressLine2}</div>}
+                      {(canonicalPerson.city || canonicalPerson.state || canonicalPerson.zip) && (
+                        <div>
+                          {[canonicalPerson.city, canonicalPerson.state].filter(Boolean).join(', ')}
+                          {canonicalPerson.zip && ` ${canonicalPerson.zip}`}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
                 {canonicalPerson.linkedInUrl && (
@@ -355,7 +460,7 @@ export function ParticipantDetailPanel({
                     </a>
                   </div>
                 )}
-                {!canonicalPerson.currentTitle && !canonicalPerson.email && !canonicalPerson.phone && !canonicalPerson.linkedInUrl && !canonicalPerson.currentCompany && (
+                {!canonicalPerson.currentTitle && !canonicalPerson.email && !canonicalPerson.phoneWork && !canonicalPerson.phone && !canonicalPerson.phoneCell && !canonicalPerson.linkedInUrl && !canonicalPerson.currentCompany && (
                   <p className="text-xs text-muted-foreground italic">
                     No contact info yet.{' '}
                     <button onClick={() => setIsEditing(true)} className="text-primary hover:underline">

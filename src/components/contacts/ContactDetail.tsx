@@ -43,9 +43,16 @@ interface DealContactDetail {
     lastName: string
     email: string | null
     phone: string | null
+    phoneWork: string | null
+    phoneCell: string | null
     linkedInUrl: string | null
     currentTitle: string | null
     dataQuality: DataQuality
+    addressLine1: string | null
+    addressLine2: string | null
+    city: string | null
+    state: string | null
+    zip: string | null
     currentCompany?: {
       id: string
       name: string
@@ -254,13 +261,24 @@ export function ContactDetail({
                   {person.email}
                 </a>
               )}
-              {person.phone && (
+              {(person.phoneWork || person.phone) && (
                 <a
-                  href={`tel:${person.phone}`}
+                  href={`tel:${person.phoneWork || person.phone}`}
                   className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
                 >
                   <Phone className="h-4 w-4" />
-                  {person.phone}
+                  {person.phoneWork || person.phone}
+                  <span className="text-xs text-muted-foreground/60">work</span>
+                </a>
+              )}
+              {person.phoneCell && (
+                <a
+                  href={`tel:${person.phoneCell}`}
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  <Phone className="h-4 w-4" />
+                  {person.phoneCell}
+                  <span className="text-xs text-muted-foreground/60">cell</span>
                 </a>
               )}
               {person.linkedInUrl && (

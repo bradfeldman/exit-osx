@@ -117,12 +117,19 @@ const canonicalPersonUpdateSchema = z.object({
   firstName: shortText.optional(),
   lastName: shortText.optional(),
   email: emailSchema.optional().nullable(),
-  phone: z.string().max(50).optional().nullable(),
+  phone: z.string().max(50).optional().nullable(), // Legacy
+  phoneWork: z.string().max(50).optional().nullable(),
+  phoneCell: z.string().max(50).optional().nullable(),
   linkedInUrl: z.string().max(2000).optional().nullable(),
   currentTitle: shortText.optional().nullable(),
   currentCompanyId: z.string().min(1).optional().nullable(),
   companyName: shortText.optional().nullable(),
   dataQuality: z.enum(['PROVISIONAL', 'SUGGESTED', 'VERIFIED', 'ENRICHED']).optional(),
+  addressLine1: z.string().max(200).optional().nullable(),
+  addressLine2: z.string().max(200).optional().nullable(),
+  city: z.string().max(100).optional().nullable(),
+  state: z.string().max(50).optional().nullable(),
+  zip: z.string().max(20).optional().nullable(),
 })
 
 /**
@@ -163,11 +170,18 @@ export async function PUT(
       lastName,
       email,
       phone,
+      phoneWork,
+      phoneCell,
       linkedInUrl,
       currentTitle,
       currentCompanyId,
       companyName,
       dataQuality,
+      addressLine1,
+      addressLine2,
+      city,
+      state,
+      zip,
     } = validation.data
 
     // If email is being changed, check uniqueness
@@ -196,8 +210,15 @@ export async function PUT(
     }
 
     if (email !== undefined) updateData.email = email?.toLowerCase().trim() || null
-    if (phone !== undefined) updateData.phone = phone?.trim() || null
+    if (phone !== undefined) updateData.phoneWork = phone?.trim() || null // Legacy: phone maps to phoneWork
+    if (phoneWork !== undefined) updateData.phoneWork = phoneWork?.trim() || null
+    if (phoneCell !== undefined) updateData.phoneCell = phoneCell?.trim() || null
     if (linkedInUrl !== undefined) updateData.linkedInUrl = linkedInUrl?.trim() || null
+    if (addressLine1 !== undefined) updateData.addressLine1 = addressLine1?.trim() || null
+    if (addressLine2 !== undefined) updateData.addressLine2 = addressLine2?.trim() || null
+    if (city !== undefined) updateData.city = city?.trim() || null
+    if (state !== undefined) updateData.state = state?.trim() || null
+    if (zip !== undefined) updateData.zip = zip?.trim() || null
     if (currentTitle !== undefined) updateData.currentTitle = currentTitle?.trim() || null
     if (currentCompanyId !== undefined) {
       updateData.currentCompanyId = currentCompanyId || null

@@ -159,11 +159,13 @@ export function ContactsView({ dealId, companyId: _companyId }: ContactsViewProp
         if (companyRes.ok) {
           const companyData = await companyRes.json()
           currentCompanyId = companyData.company.id
-        } else if (companyRes.status === 409) {
+        } else {
+          // Handle 409 (duplicate) and 400 (domain conflict)
           try {
-            const dupData = await companyRes.json()
-            const topMatch = dupData.matchResult?.matchedEntity
-            if (topMatch?.id) currentCompanyId = topMatch.id
+            const errData = await companyRes.json()
+            currentCompanyId =
+              errData.matchResult?.matchedEntity?.id ||
+              errData.existingDomains?.[0]?.companyId
           } catch { /* ignore */ }
         }
       }
@@ -176,10 +178,16 @@ export function ContactsView({ dealId, companyId: _companyId }: ContactsViewProp
           firstName: person.firstName,
           lastName: person.lastName,
           email: person.email || undefined,
-          phone: person.phone || undefined,
+          phoneWork: person.phoneWork || person.phone || undefined,
+          phoneCell: person.phoneCell || undefined,
           currentTitle: person.title || undefined,
           linkedInUrl: person.linkedInUrl || undefined,
           currentCompanyId,
+          addressLine1: person.addressLine1 || undefined,
+          addressLine2: person.addressLine2 || undefined,
+          city: person.city || undefined,
+          state: person.state || undefined,
+          zip: person.zip || undefined,
         }),
       })
 
@@ -194,6 +202,14 @@ export function ContactsView({ dealId, companyId: _companyId }: ContactsViewProp
         const existingId = data?.existingPerson?.id || data?.matchResult?.matchedEntity?.id
         if (existingId) {
           canonicalPersonId = existingId
+          // Update existing person's company if we have one and they don't
+          if (currentCompanyId) {
+            await fetch(`/api/canonical/people/${existingId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ currentCompanyId }),
+            }).catch(() => {})
+          }
         } else {
           const details = data?.details?.map((d: { field: string; message: string }) => d.message).join(', ')
           throw new Error(details || data?.error || data?.message || 'Failed to create contact')
@@ -434,7 +450,7 @@ export function ContactsView({ dealId, companyId: _companyId }: ContactsViewProp
                 <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden md:table-cell">Title</th>
                 <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</th>
                 <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden lg:table-cell">Description</th>
-                <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden lg:table-cell">Phone</th>
+                <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden lg:table-cell">Phones</th>
                 <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden md:table-cell">Email</th>
               </tr>
             </thead>
@@ -489,9 +505,15 @@ export function ContactsView({ dealId, companyId: _companyId }: ContactsViewProp
                       </span>
                     </td>
                     <td className="px-3 py-2.5 hidden lg:table-cell">
-                      <span className="text-xs text-muted-foreground">
-                        {p.canonicalPerson.phone ?? '-'}
-                      </span>
+                      <div className="text-xs text-muted-foreground space-y-0.5">
+                        {(p.canonicalPerson.phoneWork || p.canonicalPerson.phone) && (
+                          <div>{p.canonicalPerson.phoneWork || p.canonicalPerson.phone}</div>
+                        )}
+                        {p.canonicalPerson.phoneCell && (
+                          <div className="text-muted-foreground/70">{p.canonicalPerson.phoneCell}</div>
+                        )}
+                        {!p.canonicalPerson.phoneWork && !p.canonicalPerson.phone && !p.canonicalPerson.phoneCell && '-'}
+                      </div>
                     </td>
                     <td className="px-3 py-2.5 hidden md:table-cell">
                       {p.canonicalPerson.email ? (

@@ -308,8 +308,15 @@ export interface DealParticipantData {
     lastName: string
     email: string | null
     phone: string | null
+    phoneWork: string | null
+    phoneCell: string | null
     currentTitle: string | null
     linkedInUrl: string | null
+    addressLine1: string | null
+    addressLine2: string | null
+    city: string | null
+    state: string | null
+    zip: string | null
     currentCompany?: { id: string; name: string } | null
   }
   dealBuyer?: {

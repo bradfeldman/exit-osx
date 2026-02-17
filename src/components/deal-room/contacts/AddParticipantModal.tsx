@@ -214,9 +214,15 @@ export function AddParticipantModal({
               firstName: parsed.people[0].firstName,
               lastName: parsed.people[0].lastName,
               email: parsed.people[0].email,
-              phone: parsed.people[0].phone,
+              phoneWork: parsed.people[0].phoneWork || parsed.people[0].phone,
+              phoneCell: parsed.people[0].phoneCell,
               currentTitle: parsed.people[0].title,
               linkedInUrl: parsed.people[0].linkedInUrl,
+              addressLine1: parsed.people[0].addressLine1,
+              addressLine2: parsed.people[0].addressLine2,
+              city: parsed.people[0].city,
+              state: parsed.people[0].state,
+              zip: parsed.people[0].zip,
             }
           : {
               firstName: firstName.trim(),
@@ -241,12 +247,13 @@ export function AddParticipantModal({
           if (companyRes.ok) {
             const companyData = await companyRes.json()
             currentCompanyId = companyData.company.id
-          } else if (companyRes.status === 409) {
-            // Duplicate detected — use the matched company
+          } else {
+            // Handle 409 (duplicate) and 400 (domain conflict)
             try {
-              const dupData = await companyRes.json()
-              const topMatch = dupData.matchResult?.matchedEntity
-              if (topMatch?.id) currentCompanyId = topMatch.id
+              const errData = await companyRes.json()
+              currentCompanyId =
+                errData.matchResult?.matchedEntity?.id ||
+                errData.existingDomains?.[0]?.companyId
             } catch { /* ignore parse errors */ }
           }
         }
@@ -266,6 +273,14 @@ export function AddParticipantModal({
           const existingId = data?.existingPerson?.id || data?.matchResult?.matchedEntity?.id
           if (existingId) {
             canonicalPersonId = existingId
+            // Update existing person's company if we have one and they don't
+            if (currentCompanyId) {
+              await fetch(`/api/canonical/people/${existingId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ currentCompanyId }),
+              }).catch(() => {})
+            }
           } else {
             throw new Error(data?.error || data?.message || 'Failed to create contact')
           }
