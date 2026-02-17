@@ -221,7 +221,7 @@ export function ValueHome() {
       </div>
       <EmailVerificationBanner emailVerified={data.emailVerified ?? true} />
       <SinceLastVisitBanner events={data.sinceLastVisit ?? []} lastVisitAt={data.lastVisitAt ?? null} />
-      <AnimatedStagger className="space-y-8" staggerDelay={0.15}>
+      <AnimatedStagger className="space-y-4 sm:space-y-8" staggerDelay={0.15}>
         {/* Check-In: show only ONE at a time — Weekly takes priority over Quick Check */}
         {hasFullAssessment && (
           <AnimatedItem>
@@ -294,9 +294,9 @@ export function ValueHome() {
           />
         </AnimatedItem>
 
-        {/* What-If Scenarios (only after full 6-category baseline assessment) */}
+        {/* What-If Scenarios — hidden on mobile (complex interactive tool) */}
         <AnimatedItem>
-          <div id="what-if-scenarios" />
+          <div id="what-if-scenarios" className="hidden sm:block">
           <WhatIfScenarios
             coreFactors={data.coreFactors}
             adjustedEbitda={data.tier2?.adjustedEbitda ?? 0}
@@ -311,6 +311,7 @@ export function ValueHome() {
             companyId={selectedCompanyId ?? undefined}
             onCoreFactorSaved={fetchData}
           />
+          </div>
         </AnimatedItem>
 
         {/* Next Move Card */}
