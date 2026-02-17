@@ -51,6 +51,8 @@ interface DashboardData {
     isEstimated: boolean
     useDCFValue?: boolean
     hasCustomMultiples?: boolean
+    multipleSource?: string | null
+    multipleAsOf?: string | null
   } | null
   tier2: {
     adjustedEbitda: number
@@ -264,6 +266,8 @@ export function ValueHome() {
               adjustedEbitda={data.tier2?.adjustedEbitda}
               isEbitdaFromFinancials={data.tier2?.isEbitdaFromFinancials}
               ebitdaSource={data.tier2?.ebitdaSource}
+              multipleSource={tier1?.multipleSource}
+              multipleAsOf={tier1?.multipleAsOf}
             />
           </AnimatedItem>
         </div>

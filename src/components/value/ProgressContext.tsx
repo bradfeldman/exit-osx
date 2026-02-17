@@ -2,6 +2,7 @@
 
 import { TrendingUp, AlertTriangle, Target } from 'lucide-react'
 import { useCountUpCurrency } from '@/hooks/useCountUp'
+import { formatCurrency } from '@/lib/utils/currency'
 
 interface ProgressContextProps {
   valueRecoveredLifetime: number
@@ -11,13 +12,6 @@ interface ProgressContextProps {
   valueAtRiskThisMonth: number
   valueGap: number
   valueGapDelta: number | null
-}
-
-function formatCompact(value: number): string {
-  const abs = Math.abs(value)
-  if (abs >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
-  if (abs >= 1_000) return `$${(value / 1_000).toFixed(0)}K`
-  return `$${value.toFixed(0)}`
 }
 
 export function ProgressContext({
@@ -33,7 +27,7 @@ export function ProgressContext({
   const { value: gapDisplay } = useCountUpCurrency(valueGap)
 
   const monthlyRecoveredText = valueRecoveredThisMonth > 0
-    ? `+${formatCompact(valueRecoveredThisMonth)}/mo`
+    ? `+${formatCurrency(valueRecoveredThisMonth)}/mo`
     : 'No change this month'
 
   const signalText = openSignalCount === 1
@@ -41,7 +35,7 @@ export function ProgressContext({
     : `${openSignalCount} open signals`
 
   const gapDeltaText = valueGapDelta !== null && valueGapDelta !== 0
-    ? `${valueGapDelta < 0 ? '\u2193' : '\u2191'}${formatCompact(Math.abs(valueGapDelta))}/mo`
+    ? `${valueGapDelta < 0 ? '\u2193' : '\u2191'}${formatCurrency(Math.abs(valueGapDelta))}/mo`
     : 'No change'
 
   return (

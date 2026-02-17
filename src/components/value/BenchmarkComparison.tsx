@@ -17,6 +17,8 @@ interface BenchmarkComparisonProps {
   adjustedEbitda?: number
   isEbitdaFromFinancials?: boolean
   ebitdaSource?: string
+  multipleSource?: string | null
+  multipleAsOf?: string | null
 }
 
 export function BenchmarkComparison({
@@ -30,6 +32,8 @@ export function BenchmarkComparison({
   adjustedEbitda,
   isEbitdaFromFinancials = false,
   ebitdaSource,
+  multipleSource,
+  multipleAsOf,
 }: BenchmarkComparisonProps) {
   const { percentile, quartile, message } = useMemo(() => {
     const range = industryMultipleHigh - industryMultipleLow
@@ -145,6 +149,14 @@ export function BenchmarkComparison({
             {isEbitdaFromFinancials
               ? `Based on ${ebitdaSource === 'trailing12' ? 'Trailing 12-Month' : 'most recent year'} EBITDA of ${formatCurrency(adjustedEbitda)}`
               : `Est. EBITDA of ${formatCurrency(adjustedEbitda)} based on industry assumptions`}
+          </p>
+        )}
+
+        {/* Data currency */}
+        {multipleSource && (
+          <p className="text-[10px] text-muted-foreground/60 pt-1">
+            Multiples: {multipleSource}
+            {multipleAsOf && ` (${new Date(multipleAsOf).getFullYear()})`}
           </p>
         )}
       </CardContent>

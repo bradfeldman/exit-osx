@@ -12,6 +12,7 @@ interface IndustryPreviewStepProps {
   potentialGap: number
   onContinue: () => void
   onBack?: () => void
+  multipleSource?: string | null
 }
 
 export function IndustryPreviewStep({
@@ -20,6 +21,7 @@ export function IndustryPreviewStep({
   valuationHigh,
   onContinue,
   onBack,
+  multipleSource,
 }: IndustryPreviewStepProps) {
   return (
     <div className="max-w-xl mx-auto">
@@ -104,6 +106,18 @@ export function IndustryPreviewStep({
         >
           Let&apos;s find out where you fall in that range.
         </motion.p>
+
+        {/* Data source */}
+        {multipleSource && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.3 }}
+            className="text-center text-[10px] text-muted-foreground/60 mb-4"
+          >
+            Source: {multipleSource}
+          </motion.p>
+        )}
 
         {/* Navigation - Matching prototype */}
         <motion.div

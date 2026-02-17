@@ -18,8 +18,8 @@ export interface IndustryMultipleData {
   source: string
 }
 
-const effectiveDate = new Date('2024-01-01')
-const source = 'SMB M&A Market Data 2024'
+const effectiveDate = new Date('2025-01-01')
+const source = 'DealStats / GF Data / Pepperdine PCM 2025'
 
 export const industryMultiples: IndustryMultipleData[] = [
   // ============================================

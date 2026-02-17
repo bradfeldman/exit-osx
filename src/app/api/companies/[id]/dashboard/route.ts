@@ -822,6 +822,8 @@ export async function GET(
             isEstimated: false,
             useDCFValue: useDCF,
             hasCustomMultiples: hasMultipleOverride,
+            multipleSource: industryMultiple?.source ?? null,
+            multipleAsOf: industryMultiple?.effectiveDate?.toISOString() ?? null,
           }
         } else {
           // No snapshot - estimate values based on industry multiples (or overrides)
@@ -862,6 +864,8 @@ export async function GET(
             isEstimated: !dcfEnterpriseValue,
             useDCFValue: useDCF,
             hasCustomMultiples: hasMultipleOverride,
+            multipleSource: industryMultiple?.source ?? null,
+            multipleAsOf: industryMultiple?.effectiveDate?.toISOString() ?? null,
           }
         }
       })(),

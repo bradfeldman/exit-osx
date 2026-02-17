@@ -117,6 +117,7 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
     adjustedEbitda: number
     multipleLow: number
     multipleHigh: number
+    multipleSource?: string | null
   } | null>(() => {
     if (typeof window === 'undefined') return null
     const stored = sessionStorage.getItem('onboarding_previewData')
@@ -245,6 +246,7 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
               adjustedEbitda: valuationData.adjustedEbitda,
               multipleLow: valuationData.multipleLow,
               multipleHigh: valuationData.multipleHigh,
+              multipleSource: valuationData.multipleSource,
             })
           }
         } catch (err) {
@@ -357,6 +359,7 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
             adjustedEbitda: valuationData.adjustedEbitda,
             multipleLow: valuationData.multipleLow,
             multipleHigh: valuationData.multipleHigh,
+            multipleSource: valuationData.multipleSource,
           }
           setIndustryPreviewData(previewData)
         } else {
@@ -677,6 +680,7 @@ export function OnboardingFlow({ userName }: OnboardingFlowProps) {
             potentialGap={industryPreviewData.potentialGap}
             onContinue={() => goToStep(4)}
             onBack={() => goToStep(2)}
+            multipleSource={industryPreviewData.multipleSource}
           />
         ) : (
           <div className="flex items-center justify-center py-20">

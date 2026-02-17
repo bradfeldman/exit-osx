@@ -125,6 +125,8 @@ export async function GET(
       multipleHigh,
       industryName,
       hasIndustryMultiple: !!industryMultiple,
+      multipleSource: industryMultiple?.source ?? null,
+      multipleAsOf: industryMultiple?.effectiveDate?.toISOString() ?? null,
     })
   } catch (error) {
     console.error('Error calculating initial valuation:', error instanceof Error ? error.message : String(error))
