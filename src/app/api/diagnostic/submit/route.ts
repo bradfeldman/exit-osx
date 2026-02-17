@@ -9,7 +9,7 @@ import { validateRequestBody } from '@/lib/security/validation'
 import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 
 const schema = z.object({
-  companyId: z.string().uuid(),
+  companyId: z.string().min(1).max(128),
   subcategory: z.string().max(200),
   responses: z.array(z.object({
     questionId: z.string().max(100),

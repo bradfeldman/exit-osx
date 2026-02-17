@@ -62,7 +62,7 @@ export async function GET(request: Request) {
 }
 
 const postSchema = z.object({
-  companyId: z.string().uuid(),
+  companyId: z.string().min(1).max(30),
   assessmentType: z.enum(['INITIAL', 'QUARTERLY_CHECK_IN', 'AD_HOC']).default('INITIAL'),
 })
 

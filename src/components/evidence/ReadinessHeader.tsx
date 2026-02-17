@@ -165,7 +165,11 @@ export function ReadinessHeader({
         <div className="flex-shrink-0 flex flex-col items-start lg:items-end gap-3 text-right">
           {/* Staleness summary */}
           <div className="flex items-center gap-2">
-            {staleCount === 0 ? (
+            {staleCount === 0 && documentsUploaded === 0 ? (
+              <span className="text-sm font-medium text-muted-foreground">
+                No documents uploaded yet
+              </span>
+            ) : staleCount === 0 ? (
               <>
                 <CheckCircle className="w-4 h-4 text-emerald-600" />
                 <span className="text-sm font-medium text-emerald-600">

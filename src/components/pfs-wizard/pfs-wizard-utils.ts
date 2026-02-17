@@ -228,8 +228,8 @@ export function calculateWizardTotals(data: PFSWizardData, businessInfo: Busines
   const totalAssets = totalPersonalAssets + businessValue
   const netWorth = totalAssets - totalLiabilities
 
-  const businessConcentration = totalAssets > 0
-    ? (businessValue / totalAssets) * 100
+  const businessConcentration = netWorth > 0
+    ? (businessValue / netWorth) * 100
     : 0
 
   // After-tax preview: 25% estimated tax haircut for MVP

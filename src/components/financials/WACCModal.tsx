@@ -340,7 +340,7 @@ export function WACCModal({ open, onClose, companyId, onSaved }: WACCModalProps)
             {/* Growth Assumptions */}
             <div>
               <h4 className="font-medium text-gray-900 mb-3">FCF Growth Assumptions</h4>
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                 {['year1', 'year2', 'year3', 'year4', 'year5'].map((year, idx) => (
                   <div key={year}>
                     <Label htmlFor={year} className="text-xs">Year {idx + 1} (%)</Label>

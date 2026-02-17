@@ -13,8 +13,11 @@ import { DataRoomAccessLevel, DataRoomStage } from '@prisma/client'
 // Common Validation Schemas
 // =============================================================================
 
-/** UUID v4 format validation */
-export const uuidSchema = z.string().uuid('Invalid ID format')
+/** Entity ID validation — accepts both UUID and CUID formats (all Prisma models use cuid()) */
+export const uuidSchema = z.string().min(1, 'Invalid ID format').max(128, 'Invalid ID format')
+
+/** CUID format validation (for Prisma cuid() IDs) */
+export const cuidSchema = z.string().min(1, 'Invalid ID format').max(30, 'Invalid ID format')
 
 /** SEC-102: Bounded JSON metadata schema for Prisma Json? fields (replaces z.any()) */
 const jsonPrimitive = z.union([z.string().max(5000), z.number().finite(), z.boolean(), z.null()])
@@ -407,7 +410,7 @@ export const companyUpdateSchema = z.object({
 
 // SEC-061: Typed JSON schemas for Prisma Json? fields (replaces z.any())
 const financialAccountItem = z.object({
-  name: z.string().max(200),
+  name: z.string().max(200).optional(),
   type: z.string().max(100).optional(),
   value: z.preprocess(
     (val) => { const n = Number(val); return Number.isFinite(n) ? n : 0 },

@@ -29,11 +29,16 @@ export function AgeStep({ data, onUpdate, onNext }: PFSWizardStepProps) {
           inputMode="numeric"
           value={data.currentAge !== null ? String(data.currentAge) : ''}
           onChange={(e) => {
-            const v = e.target.value.replace(/[^0-9]/g, '')
+            const v = e.target.value.replace(/[^0-9]/g, '').slice(0, 3)
             if (!v) { onUpdate({ currentAge: null }); return }
-            onUpdate({ currentAge: Math.min(100, Math.max(18, parseInt(v))) })
+            onUpdate({ currentAge: parseInt(v) })
           }}
-          placeholder="e.g. 52"
+          onBlur={() => {
+            if (data.currentAge !== null) {
+              onUpdate({ currentAge: Math.min(100, Math.max(18, data.currentAge)) })
+            }
+          }}
+          placeholder="55"
           className="w-24 h-11 text-lg font-semibold"
         />
         {data.currentAge !== null && (data.currentAge < 18 || data.currentAge > 100) && (

@@ -10,10 +10,10 @@ interface OtherAssetsStepProps extends PFSWizardStepProps {
 }
 
 const FIELDS = [
-  { key: 'cashAndSavings' as const, label: 'Cash & Savings', placeholder: 'e.g. 50,000' },
-  { key: 'investmentAccounts' as const, label: 'Investment Accounts', placeholder: 'e.g. 200,000' },
-  { key: 'vehicles' as const, label: 'Vehicles', placeholder: 'e.g. 35,000' },
-  { key: 'otherAssets' as const, label: 'Other Assets', placeholder: 'e.g. 10,000' },
+  { key: 'cashAndSavings' as const, label: 'Cash & Savings', placeholder: '50,000' },
+  { key: 'investmentAccounts' as const, label: 'Investment Accounts', placeholder: '200,000' },
+  { key: 'vehicles' as const, label: 'Vehicles', placeholder: '35,000' },
+  { key: 'otherAssets' as const, label: 'Other Assets', placeholder: '10,000' },
 ]
 
 export function OtherAssetsStep({ data, onUpdate, onNext, onBack, onSkip }: OtherAssetsStepProps) {

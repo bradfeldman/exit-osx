@@ -21,13 +21,13 @@ const DEFAULT_CATEGORY_WEIGHTS: Record<string, number> = {
 }
 
 const subcategoryTaskGenSchema = z.object({
-  companyId: z.string().uuid(),
+  companyId: z.string().min(1).max(128),
   subcategory: z.enum(['SCALABILITY', 'TECHNOLOGY', 'VENDOR', 'RETENTION']),
   valueAtStake: z.coerce.number().finite().optional(),
 })
 
 const onboardingTaskGenSchema = z.object({
-  companyId: z.string().uuid(),
+  companyId: z.string().min(1).max(128),
   riskResults: z.object({
     briScore: z.coerce.number().finite().min(0).max(100),
     categoryScores: z.record(z.string(), z.coerce.number().finite()),

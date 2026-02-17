@@ -7,7 +7,7 @@ import { checkPermission, isAuthError } from '@/lib/auth/check-permission'
 import { resolveUserPermissions } from '@/lib/auth/check-granular-permission'
 import { GRANULAR_PERMISSIONS } from '@/lib/auth/permissions'
 import { z } from 'zod'
-import { validateRequestBody, uuidSchema } from '@/lib/security/validation'
+import { validateRequestBody, cuidSchema } from '@/lib/security/validation'
 
 interface RouteParams {
   params: Promise<{
@@ -83,7 +83,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 }
 
 const patchSchema = z.object({
-  roleTemplateId: uuidSchema.nullable().optional(),
+  roleTemplateId: cuidSchema.nullable().optional(),
   isExternalAdvisor: z.boolean().optional(),
   customPermissions: z.array(z.object({
     permission: z.string().max(100),

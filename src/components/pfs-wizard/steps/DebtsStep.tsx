@@ -147,7 +147,7 @@ export function DebtsStep({ data, onUpdate, onNext, onBack, onSkip }: DebtsStepP
                       inputMode="numeric"
                       value={formatInputValue(debt.amount)}
                       onChange={(e) => updateDebt(debt.id, 'amount', parseInputValue(e.target.value))}
-                      placeholder="e.g. 25,000"
+                      placeholder="25,000"
                       className="pl-7 h-10"
                     />
                   </div>

@@ -7,7 +7,7 @@ import { z } from 'zod'
 import { validateRequestBody } from '@/lib/security/validation'
 
 const schema = z.object({
-  companyId: z.string().uuid(),
+  companyId: z.string().min(1).max(128),
   businessDescription: z.string().max(5000).optional().nullable(),
   riskResults: z.object({
     briScore: z.coerce.number().finite().min(0).max(100),

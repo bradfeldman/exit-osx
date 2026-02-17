@@ -53,6 +53,10 @@ export function HeroMetricsBar({
   const isClient = useIsClient()
 
   const getDeltaDisplay = () => {
+    // When BRI is near-perfect (>=95), the remaining gap is structural (market/multiple-based)
+    if (briScore != null && briScore >= 95 && valueGap > 0) {
+      return { text: 'Readiness maximized — remaining gap is market-based', className: 'text-emerald-600' }
+    }
     if (valueGapDelta === null) {
       return { text: 'As of today', className: 'text-muted-foreground' }
     }
@@ -111,16 +115,16 @@ export function HeroMetricsBar({
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
       {/* BRI Score */}
       <motion.div
-        className="min-w-0 bg-card border border-border rounded-xl p-6"
+        className="min-w-0 bg-card border border-border rounded-xl p-4 sm:p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <p className="text-sm font-medium text-muted-foreground">Buyer Readiness Index</p>
-        <p className={`text-3xl font-bold mt-1 truncate ${getBriColor()}`}>
+        <p className="text-xs sm:text-sm font-medium text-muted-foreground">Buyer Readiness Index</p>
+        <p className={`text-2xl sm:text-3xl font-bold mt-1 truncate ${getBriColor()}`}>
           {briPercent != null
             ? isClient ? animatedBri : `${briPercent}`
             : '\u2014'}
@@ -134,15 +138,15 @@ export function HeroMetricsBar({
 
       {/* Current Value */}
       <motion.div
-        className="min-w-0 bg-card border border-border rounded-xl p-6"
+        className="min-w-0 bg-card border border-border rounded-xl p-4 sm:p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.05 }}
       >
-        <p className="text-sm font-medium text-muted-foreground">Current Value</p>
+        <p className="text-xs sm:text-sm font-medium text-muted-foreground">Current Value</p>
         {hasDcfRange ? (
           /* Range display when both EBITDA-multiple and DCF are available */
-          <p className="text-3xl font-bold text-foreground mt-1 truncate">
+          <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1 truncate">
             {isClient ? (
               <><AnimatedCurrency value={rangeLow} delay={200} />{' \u2013 '}<AnimatedCurrency value={rangeHigh} delay={200} /></>
             ) : (
@@ -151,7 +155,7 @@ export function HeroMetricsBar({
           </p>
         ) : (
           /* Single blended value when only one methodology */
-          <p className="text-3xl font-bold text-foreground mt-1 truncate">
+          <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1 truncate">
             {isClient ? <AnimatedCurrency value={blendedCurrentValue} delay={200} /> : formatCurrency(blendedCurrentValue)}
           </p>
         )}
@@ -162,13 +166,13 @@ export function HeroMetricsBar({
 
       {/* Potential Value */}
       <motion.div
-        className="min-w-0 bg-card border border-border rounded-xl p-6"
+        className="min-w-0 bg-card border border-border rounded-xl p-4 sm:p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
       >
-        <p className="text-sm font-medium text-muted-foreground">Target Value</p>
-        <p className="text-3xl font-bold text-foreground mt-1 truncate">
+        <p className="text-xs sm:text-sm font-medium text-muted-foreground">Target Value</p>
+        <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1 truncate">
           {isClient ? <AnimatedCurrency value={potentialValue} delay={300} /> : formatCurrency(potentialValue)}
         </p>
         <p className="text-xs text-muted-foreground mt-2">If all gaps closed</p>
@@ -176,17 +180,17 @@ export function HeroMetricsBar({
 
       {/* Value Gap + Delta */}
       <motion.div
-        className="min-w-0 bg-card border border-border rounded-xl p-6"
+        className="min-w-0 bg-card border border-border rounded-xl p-4 sm:p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.15 }}
       >
-        <p className="text-sm font-medium text-muted-foreground">Value Gap</p>
-        <p className="text-3xl font-bold text-primary mt-1 truncate">
+        <p className="text-xs sm:text-sm font-medium text-muted-foreground">Value Gap</p>
+        <p className="text-2xl sm:text-3xl font-bold text-primary mt-1 truncate">
           {isClient ? <AnimatedCurrency value={valueGap} delay={400} /> : formatCurrency(valueGap)}
         </p>
         <motion.p
-          className={`text-sm font-medium mt-1 ${delta.className}`}
+          className={`text-xs sm:text-sm font-medium mt-1 ${delta.className}`}
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.4, duration: 0.4 }}

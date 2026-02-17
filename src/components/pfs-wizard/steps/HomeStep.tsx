@@ -74,7 +74,7 @@ export function HomeStep({ data, onUpdate, onNext, onBack, onSkip }: HomeStepPro
                   inputMode="numeric"
                   value={formatInputValue(data.homeValue)}
                   onChange={(e) => onUpdate({ homeValue: parseInputValue(e.target.value) })}
-                  placeholder="e.g. 500,000"
+                  placeholder="500,000"
                   className="pl-7 h-11"
                   autoFocus
                 />
@@ -93,7 +93,7 @@ export function HomeStep({ data, onUpdate, onNext, onBack, onSkip }: HomeStepPro
                   inputMode="numeric"
                   value={formatInputValue(data.mortgageBalance)}
                   onChange={(e) => onUpdate({ mortgageBalance: parseInputValue(e.target.value) })}
-                  placeholder="e.g. 300,000"
+                  placeholder="300,000"
                   className="pl-7 h-11"
                 />
               </div>
@@ -156,7 +156,7 @@ export function HomeStep({ data, onUpdate, onNext, onBack, onSkip }: HomeStepPro
                         inputMode="numeric"
                         value={formatInputValue(data.otherRealEstateValue)}
                         onChange={(e) => onUpdate({ otherRealEstateValue: parseInputValue(e.target.value) })}
-                        placeholder="e.g. 250,000"
+                        placeholder="250,000"
                         className="pl-7 h-11"
                       />
                     </div>
@@ -173,7 +173,7 @@ export function HomeStep({ data, onUpdate, onNext, onBack, onSkip }: HomeStepPro
                         inputMode="numeric"
                         value={formatInputValue(data.otherRealEstateDebt)}
                         onChange={(e) => onUpdate({ otherRealEstateDebt: parseInputValue(e.target.value) })}
-                        placeholder="e.g. 150,000"
+                        placeholder="150,000"
                         className="pl-7 h-11"
                       />
                     </div>

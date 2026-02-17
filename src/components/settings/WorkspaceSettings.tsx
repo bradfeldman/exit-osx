@@ -434,7 +434,7 @@ export function WorkspaceSettings() {
           email: inviteEmail,
           role: inviteRole,
           functionalCategories: categories,
-          roleTemplateId: template?.id,
+          roleTemplateId: template?.id ?? null,
           customPermissions: customPermsArray,
           isExternalAdvisor: isExternal,
         }),
@@ -624,7 +624,7 @@ export function WorkspaceSettings() {
               <DialogTrigger asChild>
                 <Button>Invite Member</Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
                     {inviteUrl ? 'Invite Sent!' : 'Invite Team Member'}
@@ -736,7 +736,7 @@ export function WorkspaceSettings() {
                     {/* Page Permissions */}
                     <div className="space-y-3">
                       <Label>Permissions</Label>
-                      <div className="border rounded-lg divide-y max-h-[300px] overflow-y-auto">
+                      <div className="border rounded-lg divide-y max-h-[200px] sm:max-h-[300px] overflow-y-auto">
                         {PAGE_PERMISSIONS.map((page) => {
                           const currentLevel = invitePagePermissions[page.key] || 'hide'
                           return (
@@ -1178,7 +1178,7 @@ function MemberPermissionsEditor({
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            roleTemplateId: template?.id,
+            roleTemplateId: template?.id ?? null,
             customPermissions: customPermsArray,
           }),
         }

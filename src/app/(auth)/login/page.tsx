@@ -338,19 +338,17 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
           )}
 
           <form onSubmit={handleLogin} className="space-y-6">
-            {/* Error message container with fixed min-height to prevent layout shift */}
-            <div className="min-h-[4rem]">
-              {(error || getLockoutMessage()) && (
-                <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg space-y-1">
-                  <p>{getLockoutMessage() || error}</p>
-                  {attemptsRemaining !== null && attemptsRemaining > 0 && (
-                    <p className="text-xs text-red-500">
-                      {attemptsRemaining} attempt{attemptsRemaining > 1 ? 's' : ''} remaining before account lockout
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
+            {/* Error message container */}
+            {(error || getLockoutMessage()) && (
+              <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg space-y-1">
+                <p>{getLockoutMessage() || error}</p>
+                {attemptsRemaining !== null && attemptsRemaining > 0 && (
+                  <p className="text-xs text-red-500">
+                    {attemptsRemaining} attempt{attemptsRemaining > 1 ? 's' : ''} remaining before account lockout
+                  </p>
+                )}
+              </div>
+            )}
 
             {!requiresTwoFactor ? (
               <>

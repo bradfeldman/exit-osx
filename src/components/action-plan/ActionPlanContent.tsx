@@ -141,13 +141,13 @@ export function ActionPlanContent({ userName: _userName }: ActionPlanContentProp
   const hasTasks = currentWeek?.tasks && currentWeek.tasks.length > 0
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground font-display">
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground font-display">
           Operations Improvement Plan
         </h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           Weekly tasks to strengthen your business and increase its value.
         </p>
       </div>
@@ -184,16 +184,16 @@ export function ActionPlanContent({ userName: _userName }: ActionPlanContentProp
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
-          <div className="bg-card border border-border rounded-xl p-6">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Target className="w-6 h-6 text-primary" />
+          <div className="bg-card border border-border rounded-xl p-4 sm:p-6">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Target className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               </div>
               <div className="flex-1">
-                <h2 className="text-lg font-semibold text-foreground mb-2">
+                <h2 className="text-base sm:text-lg font-semibold text-foreground mb-2">
                   Start Your Diagnosis
                 </h2>
-                <p className="text-muted-foreground mb-4">
+                <p className="text-sm sm:text-base text-muted-foreground mb-4">
                   Answer a few questions about your operations to get personalized improvement tasks.
                 </p>
 
@@ -205,7 +205,7 @@ export function ActionPlanContent({ userName: _userName }: ActionPlanContentProp
                         key={sub.id}
                         onClick={() => handleStartDiagnostic(sub.id)}
                         disabled={isDone}
-                        className={`text-left p-4 rounded-lg border transition-all ${
+                        className={`text-left p-3 sm:p-4 rounded-lg border transition-all ${
                           isDone
                             ? 'border-border bg-muted/30 cursor-not-allowed'
                             : 'border-border hover:border-primary/50 bg-background hover:bg-primary/5'

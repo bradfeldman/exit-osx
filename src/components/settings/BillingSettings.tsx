@@ -89,7 +89,8 @@ export function BillingSettings() {
         }
       } else {
         const error = await response.json()
-        const errorMessage = error.error || 'Failed to start checkout. Please try again.'
+        const errorMessage = error.detail || error.error || 'Failed to start checkout. Please try again.'
+        console.error('Checkout error:', error)
 
         analytics.track('plan_upgrade_failed', {
           currentPlan: previousPlan,

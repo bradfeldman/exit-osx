@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { CORE_FACTOR_SCORES } from '@/lib/valuation/calculate-valuation'
 import { ChevronRight } from 'lucide-react'
 
@@ -172,10 +173,14 @@ export function CoreScoreCard({ coreFactors }: CoreScoreCardProps) {
           <span>
             {limitingCount} factor{limitingCount > 1 ? 's' : ''} limiting your multiple.
           </span>
-          <a href="#what-if-scenarios" className="inline-flex items-center gap-0.5 text-primary hover:underline font-medium">
+          <a href="#what-if-scenarios" className="hidden sm:inline-flex items-center gap-0.5 text-primary hover:underline font-medium">
             Model improvements
             <ChevronRight className="w-3 h-3" />
           </a>
+          <Link href="/dashboard/diagnosis" className="sm:hidden inline-flex items-center gap-0.5 text-primary hover:underline font-medium">
+            Improve your score
+            <ChevronRight className="w-3 h-3" />
+          </Link>
         </div>
       )}
     </div>

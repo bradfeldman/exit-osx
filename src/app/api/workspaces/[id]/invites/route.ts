@@ -5,7 +5,7 @@ import { WorkspaceRole, FunctionalCategory } from '@prisma/client'
 import { GRANULAR_PERMISSIONS } from '@/lib/auth/permissions'
 import { Resend } from 'resend'
 import { z } from 'zod'
-import { emailSchema, uuidSchema } from '@/lib/security/validation'
+import { emailSchema, cuidSchema } from '@/lib/security/validation'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
@@ -74,7 +74,7 @@ const postSchema = z.object({
   email: emailSchema,
   role: z.nativeEnum(WorkspaceRole).default('MEMBER'),
   functionalCategories: z.array(z.nativeEnum(FunctionalCategory)).max(50).default([]),
-  roleTemplateId: uuidSchema.optional().nullable(),
+  roleTemplateId: cuidSchema.optional().nullable(),
   customPermissions: z.array(z.object({
     permission: z.string().max(100),
     granted: z.boolean(),

@@ -86,9 +86,18 @@ export function EmailVerificationBanner({ emailVerified }: EmailVerificationBann
                 </ul>
 
                 {sent ? (
-                  <p className="text-xs font-medium text-green-700 dark:text-green-400">
-                    Verification email sent! Check your inbox.
-                  </p>
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-medium text-green-700 dark:text-green-400">
+                      Verification email sent! Check your inbox.
+                    </p>
+                    <button
+                      onClick={() => { setSent(false); handleResend() }}
+                      disabled={sending}
+                      className="text-xs text-amber-600 dark:text-amber-400 hover:underline disabled:opacity-50"
+                    >
+                      {sending ? 'Sending...' : 'Didn\u2019t receive it? Resend'}
+                    </button>
+                  </div>
                 ) : (
                   <button
                     onClick={handleResend}

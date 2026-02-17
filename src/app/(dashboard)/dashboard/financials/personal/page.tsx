@@ -784,7 +784,7 @@ export default function PersonalFinancialStatementPage() {
                     setCurrentAge(Math.min(125, Math.max(0, currentAge)))
                   }
                 }}
-                placeholder="e.g. 52"
+                placeholder="52"
                 className="h-9 w-24"
                 disabled={!canEditPersonal}
               />
@@ -808,7 +808,7 @@ export default function PersonalFinancialStatementPage() {
                     setRetirementAge(Math.min(125, Math.max(0, retirementAge)))
                   }
                 }}
-                placeholder="e.g. 65"
+                placeholder="65"
                 className="h-9 w-24"
                 disabled={!canEditPersonal}
               />

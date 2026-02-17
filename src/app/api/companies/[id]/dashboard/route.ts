@@ -791,6 +791,21 @@ export async function GET(
           // Market premium: positive when blended value exceeds industry max
           const marketPremium = dcfEnterpriseValue ? Math.max(0, currentValue - industryBasedPotential) : 0
 
+          // PROD-062: Sync latest snapshot so ValuationTicker (/api/progression) stays in sync.
+          // Snapshots can go stale when EBITDA changes (financials uploaded, adjustments, etc.)
+          // but no new snapshot is created. Fire-and-forget to avoid blocking the response.
+          const storedValue = Number(latestSnapshot.currentValue)
+          if (Math.abs(storedValue - currentValue) > 1) {
+            prisma.valuationSnapshot.update({
+              where: { id: latestSnapshot.id },
+              data: {
+                currentValue,
+                valueGap,
+                adjustedEbitda,
+              },
+            }).catch(err => console.error('[Dashboard] Failed to sync snapshot:', err))
+          }
+
           return {
             currentValue,
             potentialValue,

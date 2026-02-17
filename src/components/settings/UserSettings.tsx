@@ -37,7 +37,9 @@ export function UserSettings() {
           console.error('Failed to fetch user profile:', error)
         }
 
-        const displayName = dbName || authUser.user_metadata?.name || null
+        // Default to email prefix (text before @) if no name set
+        const emailPrefix = authUser.email ? authUser.email.split('@')[0] : null
+        const displayName = dbName || authUser.user_metadata?.name || emailPrefix || null
         setUser({
           email: authUser.email || '',
           name: displayName,

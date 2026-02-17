@@ -80,7 +80,7 @@ export function CategorySectionHeader({
     : 'stroke-[#B87333]'
 
   return (
-    <div className="flex items-center gap-4 py-4">
+    <div className="flex items-center gap-3 sm:gap-4 py-4">
       {/* Category Icon */}
       <div className="flex-shrink-0">
         <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
@@ -88,9 +88,12 @@ export function CategorySectionHeader({
         </div>
       </div>
 
-      {/* Category Name */}
-      <div className="flex-1">
-        <h3 className="text-lg font-semibold text-foreground">{label}</h3>
+      {/* Category Name + Document Count (stacked on mobile) */}
+      <div className="flex-1 min-w-0">
+        <h3 className="text-base sm:text-lg font-semibold text-foreground truncate">{label}</h3>
+        <p className="text-xs text-muted-foreground sm:hidden">
+          {documentsUploaded}/{documentsExpected} docs
+        </p>
       </div>
 
       {/* Mini Progress Ring */}
@@ -124,8 +127,8 @@ export function CategorySectionHeader({
         </div>
       </div>
 
-      {/* Document Count */}
-      <div className="flex-shrink-0">
+      {/* Document Count (desktop only) */}
+      <div className="flex-shrink-0 hidden sm:block">
         <p className="text-sm text-muted-foreground">
           {documentsUploaded} of {documentsExpected} uploaded
         </p>
@@ -135,7 +138,7 @@ export function CategorySectionHeader({
       <div className="flex-shrink-0">
         <span
           className={cn(
-            'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+            'inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium',
             BUYER_IMPACT_STYLES[buyerImpact]
           )}
         >

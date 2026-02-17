@@ -137,7 +137,7 @@ export function RetirementStep({ data, onUpdate, onNext, onBack, onSkip }: Retir
                         type="text"
                         value={account.name}
                         onChange={(e) => updateAccount(account.id, 'name', e.target.value)}
-                        placeholder="e.g. Roth IRA, 401(k), SEP IRA"
+                        placeholder="Roth IRA, 401(k), SEP IRA"
                         className="h-10 flex-1"
                         autoFocus={index === data.retirementAccounts.length - 1}
                       />
@@ -158,7 +158,7 @@ export function RetirementStep({ data, onUpdate, onNext, onBack, onSkip }: Retir
                         inputMode="numeric"
                         value={formatInputValue(account.value)}
                         onChange={(e) => updateAccount(account.id, 'value', parseInputValue(e.target.value))}
-                        placeholder="e.g. 150,000"
+                        placeholder="150,000"
                         className="pl-7 h-10"
                       />
                     </div>

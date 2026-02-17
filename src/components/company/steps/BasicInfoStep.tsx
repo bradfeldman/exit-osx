@@ -67,7 +67,7 @@ export function BasicInfoStep({ formData, updateFormData, businessDescription, o
     setIndustryMatchResult(null)
 
     try {
-      const response = await fetch('/api/industries/match', {
+      const response = await fetch('/api/industries/classify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ description: businessDescription.trim() }),
@@ -79,23 +79,23 @@ export function BasicInfoStep({ formData, updateFormData, businessDescription, o
       }
 
       const data = await response.json()
-      const match = data.match
+      const primary = data.primaryIndustry
 
       // Track industry search usage
       analytics.track('industry_search', {
         searchQuery: businessDescription.trim().substring(0, 100), // Truncate for privacy
         resultsCount: 1,
-        resultClicked: match.subSectorLabel,
+        resultClicked: primary.name,
       })
 
       // Store the recommendation (don't auto-apply)
       setIndustryMatchResult({
-        icbIndustry: match.icbIndustry,
-        icbSuperSector: match.icbSuperSector,
-        icbSector: match.icbSector,
-        icbSubSector: match.icbSubSector,
-        subSectorLabel: match.subSectorLabel,
-        reasoning: match.reasoning,
+        icbIndustry: primary.icbIndustry,
+        icbSuperSector: primary.icbSuperSector,
+        icbSector: primary.icbSector,
+        icbSubSector: primary.icbSubSector,
+        subSectorLabel: primary.name,
+        reasoning: data.explanation,
         source: data.source,
       })
     } catch (err) {

@@ -18,7 +18,7 @@ import { z } from 'zod'
 import { validateRequestBody } from '@/lib/security/validation'
 
 const postSchema = z.object({
-  companyId: z.string().uuid(),
+  companyId: z.string().min(1).max(128),
   questionCount: z.coerce.number().int().min(8).max(15).default(10),
   focusCategory: z.enum(['FINANCIAL', 'TRANSFERABILITY', 'OPERATIONAL', 'MARKET', 'LEGAL_TAX', 'PERSONAL']).optional().nullable(),
   title: z.string().max(500).optional().nullable(),
