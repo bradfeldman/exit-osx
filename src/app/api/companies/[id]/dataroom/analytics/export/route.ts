@@ -128,12 +128,13 @@ export async function GET(
 
     // Convert to CSV
     const escapeCSV = (value: string | null | undefined): string => {
-      if (value === null || value === undefined) return ''
-      const stringValue = String(value)
-      if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
-        return `"${stringValue.replace(/"/g, '""')}"`
+      if (value === null || value === undefined) return '""'
+      let stringValue = String(value)
+      // Prevent CSV formula injection: prefix formula-triggering characters
+      if (/^[=+\-@\t\r]/.test(stringValue)) {
+        stringValue = "'" + stringValue
       }
-      return stringValue
+      return `"${stringValue.replace(/"/g, '""')}"`
     }
 
     const csvContent = [

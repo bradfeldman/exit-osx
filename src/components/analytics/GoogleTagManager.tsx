@@ -30,7 +30,7 @@ export function GoogleTagManagerHead({ gtmId, nonce }: GoogleTagManagerProps) {
     setDefaultConsent()
   }, [])
 
-  if (!gtmId) return null
+  if (!gtmId || !/^GTM-[A-Z0-9]{1,10}$/.test(gtmId)) return null
 
   return (
     <>
@@ -93,7 +93,7 @@ export function GoogleTagManagerHead({ gtmId, nonce }: GoogleTagManagerProps) {
  */
 export function GoogleTagManagerBody({ gtmId }: GoogleTagManagerProps) {
   const pathname = usePathname()
-  if (!gtmId || GTM_EXCLUDED_PATHS.includes(pathname)) return null
+  if (!gtmId || !/^GTM-[A-Z0-9]{1,10}$/.test(gtmId) || GTM_EXCLUDED_PATHS.includes(pathname)) return null
 
   return (
     <noscript>
@@ -126,7 +126,7 @@ interface GoogleAnalyticsProps {
 }
 
 export function GoogleAnalytics({ measurementId }: GoogleAnalyticsProps) {
-  if (!measurementId) return null
+  if (!measurementId || !/^G-[A-Z0-9]{1,15}$/.test(measurementId)) return null
 
   return (
     <>

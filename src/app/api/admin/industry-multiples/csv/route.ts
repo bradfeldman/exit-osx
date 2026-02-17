@@ -39,6 +39,16 @@ export async function GET() {
     // Build CSV content
     const rows = [CSV_HEADERS.join(',')]
 
+    // Escape CSV field: always double-quote, prevent formula injection
+    const escapeCSV = (value: string | null | undefined): string => {
+      if (value === null || value === undefined) return '""'
+      let stringValue = String(value)
+      if (/^[=+\-@\t\r]/.test(stringValue)) {
+        stringValue = "'" + stringValue
+      }
+      return `"${stringValue.replace(/"/g, '""')}"`
+    }
+
     for (const m of multiples) {
       const row = [
         m.icbIndustry,
@@ -52,7 +62,7 @@ export async function GET() {
         m.effectiveDate.toISOString().split('T')[0],
         m.source || '',
       ]
-      rows.push(row.join(','))
+      rows.push(row.map(escapeCSV).join(','))
     }
 
     const csvContent = rows.join('\n')
