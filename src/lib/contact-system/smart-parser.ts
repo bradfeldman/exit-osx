@@ -30,10 +30,17 @@ export interface ParsedPerson {
   lastName: string
   fullName: string
   email?: string
-  phone?: string
+  phone?: string // Legacy — kept for backward compat
+  phoneWork?: string
+  phoneCell?: string
   title?: string
   company?: string
   linkedInUrl?: string
+  addressLine1?: string
+  addressLine2?: string
+  city?: string
+  state?: string
+  zip?: string
   confidence: number
 }
 
@@ -277,11 +284,50 @@ export function parseInput(raw: string): ParsedInput {
   let foundTitle: string | null = null
   let foundCompany: string | null = null
 
+  // Address detection
+  const foundAddress: {
+    addressLine1?: string
+    addressLine2?: string
+    city?: string
+    state?: string
+    zip?: string
+  } = {}
+
+  // US state abbreviations for address parsing
+  const US_STATES = /\b(AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY|DC)\b/
+  // City, State ZIP pattern
+  const CITY_STATE_ZIP = /^(.+?),?\s+(AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY|DC)\s+(\d{5}(?:-\d{4})?)$/i
+  // Street address pattern (starts with number)
+  const STREET_ADDRESS = /^\d+\s+[\w\s.]+(?:Street|St|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Road|Rd|Lane|Ln|Way|Court|Ct|Place|Pl|Circle|Cir|Terrace|Ter|Trail|Trl|Parkway|Pkwy|Highway|Hwy)\.?\s*,?/i
+  // Suite/Apt pattern
+  const SUITE_APT = /^(?:Suite|Ste|Apt|Unit|#|Floor|Fl)\s*\.?\s*\S+/i
+
   for (const line of lines) {
     // Skip lines that are just email/phone/url
     if (PATTERNS.email.test(line) && line.match(PATTERNS.email)?.[0] === line) continue
     if (PATTERNS.phone.test(line) && line.replace(/\D/g, '').length === line.replace(/\s/g, '').length) continue
     if (PATTERNS.url.test(line) && line.match(PATTERNS.url)?.[0] === line) continue
+
+    // Check for city/state/zip pattern
+    const cityStateZipMatch = line.match(CITY_STATE_ZIP)
+    if (cityStateZipMatch) {
+      foundAddress.city = cityStateZipMatch[1].replace(/,\s*$/, '').trim()
+      foundAddress.state = cityStateZipMatch[2].toUpperCase()
+      foundAddress.zip = cityStateZipMatch[3]
+      continue
+    }
+
+    // Check for street address
+    if (STREET_ADDRESS.test(line) && !foundAddress.addressLine1) {
+      foundAddress.addressLine1 = line.replace(/,\s*$/, '').trim()
+      continue
+    }
+
+    // Check for suite/apt (only if we already have a street address)
+    if (SUITE_APT.test(line) && foundAddress.addressLine1 && !foundAddress.addressLine2) {
+      foundAddress.addressLine2 = line.trim()
+      continue
+    }
 
     // Check for title
     const titleMatch = line.match(PATTERNS.title)
@@ -320,15 +366,26 @@ export function parseInput(raw: string): ParsedInput {
       }
     }
 
+    // Assign phones: first = work, second = cell
+    const phoneWork = result.phones[0] || undefined
+    const phoneCell = result.phones.length > 1 ? result.phones[1] : undefined
+
     const person: ParsedPerson = {
       firstName: derivedFirstName,
       lastName: derivedLastName,
       fullName: foundName || `${derivedFirstName} ${derivedLastName}`.trim(),
       email: result.emails[0],
-      phone: result.phones[0],
+      phone: phoneWork, // Legacy compat
+      phoneWork,
+      phoneCell,
       title: foundTitle || undefined,
       company: foundCompany || undefined,
       linkedInUrl: result.linkedInUrls.find(u => /\/in\//.test(u)),
+      addressLine1: foundAddress.addressLine1,
+      addressLine2: foundAddress.addressLine2,
+      city: foundAddress.city,
+      state: foundAddress.state,
+      zip: foundAddress.zip,
       confidence: calculatePersonConfidence({
         hasName: !!foundName,
         hasEmail: result.emails.length > 0,
@@ -461,6 +518,7 @@ export function parseLinkedInUrl(url: string): {
 export function parseVCard(vcard: string): ParsedPerson | null {
   const lines = vcard.split(/\r?\n/)
   const data: Record<string, string> = {}
+  const phones: string[] = []
 
   for (const line of lines) {
     const [key, ...valueParts] = line.split(':')
@@ -468,20 +526,35 @@ export function parseVCard(vcard: string): ParsedPerson | null {
 
     if (key.startsWith('FN')) {
       data.fullName = value
-    } else if (key.startsWith('N')) {
+    } else if (key.startsWith('N') && !key.startsWith('NOTE')) {
       const [lastName, firstName] = value.split(';')
       data.firstName = firstName
       data.lastName = lastName
     } else if (key.startsWith('EMAIL')) {
       data.email = value
     } else if (key.startsWith('TEL')) {
-      data.phone = value
+      phones.push(value)
+      // Try to assign based on type hints in the key
+      const keyLower = key.toLowerCase()
+      if (keyLower.includes('work') && !data.phoneWork) {
+        data.phoneWork = value
+      } else if ((keyLower.includes('cell') || keyLower.includes('mobile')) && !data.phoneCell) {
+        data.phoneCell = value
+      }
     } else if (key.startsWith('TITLE')) {
       data.title = value
     } else if (key.startsWith('ORG')) {
       data.company = value
     } else if (key.startsWith('URL') && value.includes('linkedin')) {
       data.linkedIn = value
+    } else if (key.startsWith('ADR')) {
+      // vCard ADR format: PO Box;Extended;Street;City;State;ZIP;Country
+      const parts = value.split(';')
+      if (parts[2]) data.addressLine1 = parts[2].trim()
+      if (parts[1]) data.addressLine2 = parts[1].trim()
+      if (parts[3]) data.city = parts[3].trim()
+      if (parts[4]) data.state = parts[4].trim()
+      if (parts[5]) data.zip = parts[5].trim()
     }
   }
 
@@ -493,15 +566,26 @@ export function parseVCard(vcard: string): ParsedPerson | null {
     ? { firstName: data.firstName, lastName: data.lastName || '' }
     : parseFullName(data.fullName || '')
 
+  // Assign phones: use typed assignments first, then fall back to order
+  const phoneWork = data.phoneWork || phones[0] || undefined
+  const phoneCell = data.phoneCell || (phones.length > 1 ? phones[1] : undefined)
+
   return {
     firstName,
     lastName,
     fullName: data.fullName || `${firstName} ${lastName}`.trim(),
     email: data.email,
-    phone: data.phone,
+    phone: phoneWork, // Legacy compat
+    phoneWork,
+    phoneCell,
     title: data.title,
     company: data.company,
     linkedInUrl: data.linkedIn,
+    addressLine1: data.addressLine1 || undefined,
+    addressLine2: data.addressLine2 || undefined,
+    city: data.city || undefined,
+    state: data.state || undefined,
+    zip: data.zip || undefined,
     confidence: 0.9 // vCards are structured, high confidence
   }
 }

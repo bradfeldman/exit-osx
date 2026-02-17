@@ -11,6 +11,7 @@ import {
   CheckCircle,
   Eye,
   RefreshCw,
+  Trash2,
 } from 'lucide-react'
 import { useCompany } from '@/contexts/CompanyContext'
 
@@ -129,6 +130,8 @@ export function DocumentSlotCard({
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle')
   const [uploadError, setUploadError] = useState('')
   const [isHovered, setIsHovered] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const uploadFile = useCallback(async (file: File) => {
     if (!selectedCompanyId) return
@@ -210,6 +213,34 @@ export function DocumentSlotCard({
   const handleReplaceClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     fileInputRef.current?.click()
+  }, [])
+
+  const handleDeleteClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    setShowDeleteConfirm(true)
+  }, [])
+
+  const handleDeleteConfirm = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!selectedCompanyId || !slot.document) return
+
+    setIsDeleting(true)
+    try {
+      const response = await fetch(
+        `/api/companies/${selectedCompanyId}/evidence/documents/${slot.document.id}`,
+        { method: 'DELETE' }
+      )
+      if (!response.ok) throw new Error('Failed to delete')
+      onUploadSuccess?.()
+    } catch {
+      setIsDeleting(false)
+      setShowDeleteConfirm(false)
+    }
+  }, [selectedCompanyId, slot.document, onUploadSuccess])
+
+  const handleDeleteCancel = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    setShowDeleteConfirm(false)
   }, [])
 
   // UPLOADING STATE
@@ -311,7 +342,7 @@ export function DocumentSlotCard({
           )}
         </div>
 
-        {/* Actions (desktop: hover only, mobile: always visible) */}
+        {/* Actions */}
         <div
           className={cn(
             'flex items-center gap-3 transition-opacity',
@@ -319,22 +350,53 @@ export function DocumentSlotCard({
             isHovered && 'opacity-100',
           )}
         >
-          <button
-            type="button"
-            onClick={handleViewClick}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--burnt-orange)] hover:underline"
-          >
-            <Eye className="w-3.5 h-3.5" />
-            View
-          </button>
-          <button
-            type="button"
-            onClick={handleReplaceClick}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--burnt-orange)] hover:underline"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Replace
-          </button>
+          {showDeleteConfirm ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Remove?</span>
+              <button
+                type="button"
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+                className="inline-flex items-center gap-1 text-sm font-medium text-rose-600 hover:underline disabled:opacity-50"
+              >
+                {isDeleting ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Yes'}
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteCancel}
+                className="text-sm font-medium text-muted-foreground hover:underline"
+              >
+                No
+              </button>
+            </div>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={handleViewClick}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--burnt-orange)] hover:underline"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                View
+              </button>
+              <button
+                type="button"
+                onClick={handleReplaceClick}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--burnt-orange)] hover:underline"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Replace
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteClick}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-rose-600 hover:underline"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Remove
+              </button>
+            </>
+          )}
         </div>
 
         <input

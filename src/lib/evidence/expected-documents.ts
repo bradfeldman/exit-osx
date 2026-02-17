@@ -13,15 +13,33 @@ export interface ExpectedDocument {
 }
 
 export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
-  // Financial (8 documents, weight 0.30)
+  // Financial (12 documents, weight 0.30)
   {
-    id: 'fin-annual-statements',
-    name: 'Annual Financial Statements (3 years)',
+    id: 'fin-annual-statements-2025',
+    name: '2025 Financial Statements',
     category: 'financial',
-    buyerExplanation: 'Buyers need 3 years of audited or reviewed financials to assess trend lines, margins, and revenue quality. This is the first document requested in every deal.',
+    buyerExplanation: 'The most recent fiscal year financials are the foundation of every buyer\'s valuation model. Audited or reviewed statements are strongly preferred.',
     importance: 'required',
     sortOrder: 1,
-    refreshCadence: 'ANNUALLY',
+    refreshCadence: 'ONE_TIME',
+  },
+  {
+    id: 'fin-annual-statements-2024',
+    name: '2024 Financial Statements',
+    category: 'financial',
+    buyerExplanation: 'Two years of historical financials let buyers assess year-over-year trends in revenue, margins, and operating costs.',
+    importance: 'required',
+    sortOrder: 2,
+    refreshCadence: 'ONE_TIME',
+  },
+  {
+    id: 'fin-annual-statements-2023',
+    name: '2023 Financial Statements',
+    category: 'financial',
+    buyerExplanation: 'Three years of financials is the standard for acquisitions. It shows trend lines and helps buyers distinguish one-time events from recurring patterns.',
+    importance: 'required',
+    sortOrder: 3,
+    refreshCadence: 'ONE_TIME',
   },
   {
     id: 'fin-monthly-pl',
@@ -29,7 +47,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     category: 'financial',
     buyerExplanation: 'Monthly granularity reveals seasonality, one-time events, and run-rate accuracy. Buyers use this to validate annual numbers and project forward.',
     importance: 'required',
-    sortOrder: 2,
+    sortOrder: 4,
     refreshCadence: 'MONTHLY',
   },
   {
@@ -38,17 +56,35 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     category: 'financial',
     buyerExplanation: 'Working capital, debt levels, and asset composition directly affect purchase price structure and cash-at-close calculations.',
     importance: 'required',
-    sortOrder: 3,
+    sortOrder: 5,
     refreshCadence: 'QUARTERLY',
   },
   {
-    id: 'fin-tax-returns',
-    name: 'Tax Returns (3 years)',
+    id: 'fin-tax-returns-2025',
+    name: '2025 Tax Return',
     category: 'financial',
-    buyerExplanation: 'Required in 100% of acquisitions. Buyers cross-reference tax returns against financials. Discrepancies raise red flags that delay or kill deals.',
+    buyerExplanation: 'The most recent tax return is cross-referenced against financials. Discrepancies raise red flags that delay or kill deals.',
     importance: 'required',
-    sortOrder: 4,
-    refreshCadence: 'ANNUALLY',
+    sortOrder: 6,
+    refreshCadence: 'ONE_TIME',
+  },
+  {
+    id: 'fin-tax-returns-2024',
+    name: '2024 Tax Return',
+    category: 'financial',
+    buyerExplanation: 'Buyers cross-reference two years of returns against financials to verify consistency and identify adjustments.',
+    importance: 'required',
+    sortOrder: 7,
+    refreshCadence: 'ONE_TIME',
+  },
+  {
+    id: 'fin-tax-returns-2023',
+    name: '2023 Tax Return',
+    category: 'financial',
+    buyerExplanation: 'Three years of tax returns is standard in 100% of acquisitions. Missing returns are a deal-breaker for serious buyers.',
+    importance: 'required',
+    sortOrder: 8,
+    refreshCadence: 'ONE_TIME',
   },
   {
     id: 'fin-budget-projections',
@@ -56,7 +92,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     category: 'financial',
     buyerExplanation: 'Projections show management credibility. Realistic, assumption-backed projections strengthen valuation. Aggressive projections without support damage credibility.',
     importance: 'expected',
-    sortOrder: 5,
+    sortOrder: 9,
     refreshCadence: 'QUARTERLY',
   },
   {
@@ -65,7 +101,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     category: 'financial',
     buyerExplanation: 'AR aging reveals collection efficiency and revenue quality. High concentrations in 60-90+ days signal cash flow risk to buyers.',
     importance: 'expected',
-    sortOrder: 6,
+    sortOrder: 10,
     refreshCadence: 'MONTHLY',
   },
   {
@@ -74,7 +110,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     category: 'financial',
     buyerExplanation: 'Every acquisition involves assumption or payoff of debt. Buyers need a complete picture of all obligations to calculate true enterprise value.',
     importance: 'expected',
-    sortOrder: 7,
+    sortOrder: 11,
     refreshCadence: 'QUARTERLY',
   },
   {
@@ -83,7 +119,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     category: 'financial',
     buyerExplanation: 'Revenue concentration analysis helps buyers assess customer dependency risk. Top 10 customers with percentages is standard.',
     importance: 'helpful',
-    sortOrder: 8,
+    sortOrder: 12,
     refreshCadence: 'QUARTERLY',
   },
 

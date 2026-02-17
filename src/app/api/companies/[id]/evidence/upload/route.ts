@@ -83,14 +83,16 @@ export async function POST(
     }
 
     // Auto-rename: standardized naming convention for evidence documents
-    // Format: {Category}_{DocumentName}_{YYYY-MM-DD}.{ext}
+    // Format: {Category}_{Document-Name}_{YYYYMMDD}.{ext}
     const supabase = await createClient()
     const safeFileName = fileValidation.sanitizedName || file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
     const fileExt = safeFileName.split('.').pop()
-    const safeName = documentName.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')
+    const safeName = documentName.replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
     const categoryPrefix = evidenceCategory.charAt(0).toUpperCase() + evidenceCategory.slice(1)
-    const dateStr = new Date().toISOString().slice(0, 10)
-    const storagePath = `${companyId}/evidence/${categoryPrefix}_${safeName}_${dateStr}.${fileExt}`
+    const now = new Date()
+    const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`
+    const displayFileName = `${categoryPrefix}_${safeName}_${dateStr}.${fileExt}`
+    const storagePath = `${companyId}/evidence/${displayFileName}`
 
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('data-room')
@@ -112,7 +114,7 @@ export async function POST(
         expectedDocumentId,
         evidenceSource: 'direct',
         filePath: uploadData.path,
-        fileName: file.name,
+        fileName: displayFileName,
         fileSize: file.size,
         mimeType: file.type,
         uploadedByUserId: result.auth.user.id,
