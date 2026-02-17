@@ -65,6 +65,9 @@ export const briQuestions: Question[] = [
     ],
   },
   {
+    // RISK OWNER: Primary qualitative measure of customer concentration.
+    // Quantitative measure lives in multiple-adjustments.ts (concentration discount).
+    // See issue 3.9 — risk overlap is capped to prevent double-counting.
     briCategory: 'FINANCIAL',
     questionText: 'How diversified is your customer base?',
     helpText: 'Customer concentration is a key risk factor. If your largest customer represents significant revenue, that creates dependency risk.',
@@ -106,6 +109,9 @@ export const briQuestions: Question[] = [
 
   // ==========================================
   // TRANSFERABILITY (20% weight)
+  // RISK OWNER: Primary measure of owner dependency / transferability.
+  // Core Score also captures ownerInvolvement at 0.5x weight (down-weighted
+  // per issue 3.9 to prevent double-counting with these 4 questions).
   // ==========================================
   {
     briCategory: 'TRANSFERABILITY',
@@ -147,6 +153,9 @@ export const briQuestions: Question[] = [
     ],
   },
   {
+    // NOTE: This measures owner-dependent relationships (transferability risk),
+    // NOT customer concentration (FINANCIAL Q3). A company can have 100 customers
+    // (low concentration) but all tied to the owner (high relationship risk).
     briCategory: 'TRANSFERABILITY',
     questionText: 'Are customer relationships dependent on you personally?',
     helpText: 'If customers buy because of their relationship with you, they may leave when you do.',

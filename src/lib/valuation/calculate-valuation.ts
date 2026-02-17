@@ -62,6 +62,22 @@ export interface CoreFactors {
 }
 
 /**
+ * Core factor weights for the weighted average.
+ * ownerInvolvement is down-weighted to 0.5 because the BRI TRANSFERABILITY
+ * assessment captures owner dependency with much more granularity (4 questions,
+ * 47 max impact points). Without down-weighting, owner dependency would be
+ * double-counted: once here in Core Score (positioning within range) and again
+ * in BRI Score (discount from range). See issue 3.9.
+ */
+const CORE_FACTOR_WEIGHTS = {
+  revenueModel: 1.0,
+  grossMarginProxy: 1.0,
+  laborIntensity: 1.0,
+  assetIntensity: 1.0,
+  ownerInvolvement: 0.5,
+} as const
+
+/**
  * Calculate Core Score from business quality factors.
  * Returns a value between 0 and 1.
  * Core Score positions the company within its industry multiple range.
@@ -69,15 +85,16 @@ export interface CoreFactors {
 export function calculateCoreScore(factors: CoreFactors | null): number {
   if (!factors) return 0.5 // Default if no factors provided
 
-  const scores = [
-    CORE_FACTOR_SCORES.revenueModel[factors.revenueModel] ?? 0.5,
-    CORE_FACTOR_SCORES.grossMarginProxy[factors.grossMarginProxy] ?? 0.5,
-    CORE_FACTOR_SCORES.laborIntensity[factors.laborIntensity] ?? 0.5,
-    CORE_FACTOR_SCORES.assetIntensity[factors.assetIntensity] ?? 0.5,
-    CORE_FACTOR_SCORES.ownerInvolvement[factors.ownerInvolvement] ?? 0.5,
+  const entries: [number, number][] = [
+    [CORE_FACTOR_SCORES.revenueModel[factors.revenueModel] ?? 0.5, CORE_FACTOR_WEIGHTS.revenueModel],
+    [CORE_FACTOR_SCORES.grossMarginProxy[factors.grossMarginProxy] ?? 0.5, CORE_FACTOR_WEIGHTS.grossMarginProxy],
+    [CORE_FACTOR_SCORES.laborIntensity[factors.laborIntensity] ?? 0.5, CORE_FACTOR_WEIGHTS.laborIntensity],
+    [CORE_FACTOR_SCORES.assetIntensity[factors.assetIntensity] ?? 0.5, CORE_FACTOR_WEIGHTS.assetIntensity],
+    [CORE_FACTOR_SCORES.ownerInvolvement[factors.ownerInvolvement] ?? 0.5, CORE_FACTOR_WEIGHTS.ownerInvolvement],
   ]
 
-  return scores.reduce((a, b) => a + b, 0) / scores.length
+  const totalWeight = entries.reduce((sum, [, w]) => sum + w, 0)
+  return entries.reduce((sum, [score, w]) => sum + score * w, 0) / totalWeight
 }
 
 export interface ValuationInputs {

@@ -170,6 +170,10 @@ const MARGIN_TIERS = [
  * High customer concentration is one of the most significant risk factors
  * in SMB M&A. Buyers fear losing a key customer post-acquisition.
  *
+ * OWNERSHIP: This is the quantitative measure of concentration risk (actual %).
+ * The BRI FINANCIAL Q3 captures the same risk qualitatively via assessment.
+ * Combined risk is capped by the risk overlap offset (see adjustMultiples).
+ *
  * Thresholds based on M&A practice:
  * - Top customer > 30% of revenue: significant risk
  * - Top 3 customers > 60% of revenue: concentrated
@@ -185,6 +189,11 @@ const CONCENTRATION_THRESHOLDS = {
  * Owner dependency discount based on BRI Transferability score.
  * Low transferability means the business is heavily dependent on the owner,
  * which is a significant discount factor for buyers.
+ *
+ * OWNERSHIP: This uses the BRI TRANSFERABILITY score directly. The canonical
+ * valuation also captures owner dependency via Core Score (ownerInvolvement,
+ * down-weighted to 0.5x per issue 3.9) and BRI TRANSFERABILITY category.
+ * Combined risk is capped by the risk overlap offset (see adjustMultiples).
  *
  * The BRI Transferability score (0-1) directly measures this:
  * - 0.0 = Owner is critical to operations (maximum discount)
@@ -247,6 +256,24 @@ export function adjustMultiples(profile: AdjustmentProfile): AdjustmentResult {
   // --- 6. Recurring Revenue Premium ---
   const recurringAdjustment = calculateRecurringRevenueAdjustment(profile)
   if (recurringAdjustment) adjustments.push(recurringAdjustment)
+
+  // --- 7. Risk Overlap Cap (3.9) ---
+  // Customer concentration and owner dependency are correlated risks (e.g.,
+  // owner-dependent customer relationships). When both fire, the combined
+  // discount can reach -45%, double-penalizing overlapping risk. Cap the
+  // combined risk category at -30% by adding an offset adjustment.
+  const riskAdjustments = adjustments.filter((a) => a.category === 'risk' && a.enabled)
+  const totalRisk = riskAdjustments.reduce((sum, a) => sum + a.impact, 0)
+  if (riskAdjustments.length > 1 && totalRisk < -0.30) {
+    adjustments.push({
+      factor: 'risk_overlap_offset',
+      name: 'Risk Overlap Offset',
+      impact: -0.30 - totalRisk, // positive value to bring total back to -30%
+      explanation: `Multiple correlated risk factors (concentration, owner dependency) overlap. Combined risk capped at 30% discount to prevent double-counting.`,
+      enabled: true,
+      category: 'risk',
+    })
+  }
 
   // Calculate totals
   const totalAdjustment = adjustments
