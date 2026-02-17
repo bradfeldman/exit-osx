@@ -9,6 +9,7 @@ import { RelatedTasksBlock } from './RelatedTasksBlock'
 import { TaskDetailsCollapsible } from './TaskDetailsCollapsible'
 import { TaskStatusActions } from './TaskStatusActions'
 import { TaskNotes } from './TaskNotes'
+import { AutomationBanner } from './AutomationBanner'
 import { formatCurrency } from '@/lib/utils/currency'
 
 function formatDate(dateStr: string): string {
@@ -19,6 +20,14 @@ interface SubStep {
   id: string
   title: string
   completed: boolean
+  subTaskType?: string
+  responseText?: string | null
+  responseJson?: unknown
+  linkedDocId?: string | null
+  integrationKey?: string | null
+  placeholder?: string | null
+  acceptedTypes?: string | null
+  questionOptions?: unknown
 }
 
 interface ActiveTask {
@@ -85,6 +94,8 @@ interface ActiveTask {
 interface ActiveTaskCardProps {
   task: ActiveTask
   onSubStepToggle: (taskId: string, stepId: string, completed: boolean) => void
+  onSubStepUpdate?: (taskId: string, stepId: string, data: { responseText?: string; responseJson?: unknown; completed?: boolean }) => void
+  onSubStepUpload?: (taskId: string, stepId: string, file: File) => Promise<void>
   onComplete: () => void
   onStart?: () => void
   onBlock: (taskId: string, reason: string) => void
@@ -94,7 +105,7 @@ interface ActiveTaskCardProps {
   disabled?: boolean
 }
 
-export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onStart, onBlock, onDefer, onRefresh, onFocusTask, disabled = false }: ActiveTaskCardProps) {
+export function ActiveTaskCard({ task, onSubStepToggle, onSubStepUpdate, onSubStepUpload, onComplete, onStart, onBlock, onDefer, onRefresh, onFocusTask, disabled = false }: ActiveTaskCardProps) {
   const metaParts: string[] = []
   metaParts.push(`~${formatCurrency(task.normalizedValue)} impact`)
   if (task.estimatedMinutes) {
@@ -156,6 +167,12 @@ export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onStart, onB
       {/* Company context (personalized financials + benchmarks) */}
       <CompanyContextBlock companyContext={task.companyContext} taskId={task.id} financialDrift={task.financialDrift} />
 
+      {/* QuickBooks automation banner for financial upload tasks */}
+      <AutomationBanner
+        briCategory={task.briCategory}
+        hasFileUploadSubTasks={task.subSteps.some(s => s.subTaskType === 'FILE_UPLOAD')}
+      />
+
       {/* Related tasks in same category */}
       {task.relatedTasks && task.relatedTasks.length > 0 && (
         <RelatedTasksBlock
@@ -176,6 +193,8 @@ export function ActiveTaskCard({ task, onSubStepToggle, onComplete, onStart, onB
         steps={task.subSteps}
         progress={task.subStepProgress}
         onToggle={(stepId, completed) => onSubStepToggle(task.id, stepId, completed)}
+        onUpdate={onSubStepUpdate ? (stepId, data) => onSubStepUpdate(task.id, stepId, data) : undefined}
+        onUpload={onSubStepUpload ? (stepId, file) => onSubStepUpload(task.id, stepId, file) : undefined}
       />
 
       {/* Status actions */}

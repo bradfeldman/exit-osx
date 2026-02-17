@@ -554,15 +554,23 @@ model TaskInvite {
 }
 
 model TaskSubStep {
-  id          String    @id @default(cuid())
-  taskId      String    @map("task_id")
-  title       String
-  order       Int       @default(0)
-  completed   Boolean   @default(false)
-  completedAt DateTime? @map("completed_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  id              String      @id @default(cuid())
+  taskId          String      @map("task_id")
+  title           String
+  order           Int         @default(0)
+  completed       Boolean     @default(false)
+  completedAt     DateTime?   @map("completed_at")
+  subTaskType     SubTaskType @default(CHECKBOX) @map("sub_task_type")
+  responseText    String?     @map("response_text") @db.Text
+  responseJson    Json?       @map("response_json")
+  linkedDocId     String?     @map("linked_doc_id")
+  integrationKey  String?     @map("integration_key")
+  placeholder     String?
+  acceptedTypes   String?     @map("accepted_types")
+  questionOptions Json?       @map("question_options")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  task            Task        @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   @@index([taskId, order])
   @@map("task_sub_steps")
@@ -1831,6 +1839,14 @@ enum IssueTier {
   OPTIMIZATION
 }
 
+enum SubTaskType {
+  CHECKBOX
+  FILE_UPLOAD
+  TEXT_INPUT
+  QUESTION_ANSWER
+  CONNECTION
+}
+
 enum TaskSourceType {
   ONBOARDING_PRELIMINARY
   ASSESSMENT
@@ -2312,8 +2328,17 @@ model CanonicalPerson {
   // Contact info
   email         String? @unique
   emailVerified Boolean @default(false) @map("email_verified")
-  phone         String?
+  phone         String? // Legacy — use phoneWork/phoneCell instead
+  phoneWork     String? @map("phone_work")
+  phoneCell     String? @map("phone_cell")
   linkedInUrl   String? @map("linkedin_url")
+
+  // Address
+  addressLine1  String? @map("address_line1")
+  addressLine2  String? @map("address_line2")
+  city          String? @map("city")
+  state         String? @map("state")
+  zip           String? @map("zip")
 
   // Current position (denormalized for quick access)
   currentTitle     String? @map("current_title")

@@ -87,7 +87,7 @@ export async function GET(
           },
         },
         subSteps: {
-          select: { id: true, title: true, completed: true, completedAt: true, order: true },
+          select: { id: true, title: true, completed: true, completedAt: true, order: true, subTaskType: true, responseText: true, responseJson: true, linkedDocId: true, integrationKey: true, placeholder: true, acceptedTypes: true, questionOptions: true },
           orderBy: { order: 'asc' },
         },
       },
@@ -114,6 +114,9 @@ const patchTaskSchema = z.object({
   completionNotes: z.string().max(5000).optional().nullable(),
   subStepId: z.string().uuid().optional(),
   subStepCompleted: z.boolean().optional(),
+  subStepResponseText: z.string().max(10000).optional().nullable(),
+  subStepResponseJson: z.unknown().optional().nullable(),
+  subStepLinkedDocId: z.string().optional().nullable(),
 })
 
 export async function PATCH(
@@ -125,7 +128,7 @@ export async function PATCH(
   try {
     const validation = await validateRequestBody(request, patchTaskSchema)
     if (!validation.success) return validation.error
-    const { status, deferredUntil, deferralReason, blockedReason, dueDate, primaryAssigneeId, assigneeIds, completionNotes, subStepId, subStepCompleted } = validation.data
+    const { status, deferredUntil, deferralReason, blockedReason, dueDate, primaryAssigneeId, assigneeIds, completionNotes, subStepId, subStepCompleted, subStepResponseText, subStepResponseJson, subStepLinkedDocId } = validation.data
 
     // Fetch task to get companyId for permission check
     const existingTask = await prisma.task.findUnique({
@@ -192,15 +195,28 @@ export async function PATCH(
       }
     }
 
-    // Handle sub-step toggle (new approach using TaskSubStep model)
-    if (subStepId !== undefined && subStepCompleted !== undefined) {
-      await prisma.taskSubStep.update({
-        where: { id: subStepId },
-        data: {
-          completed: subStepCompleted,
-          completedAt: subStepCompleted ? new Date() : null,
-        },
-      })
+    // Handle sub-step update (toggle, text response, file link, Q&A)
+    if (subStepId !== undefined) {
+      const subStepUpdate: Record<string, unknown> = {}
+      if (subStepCompleted !== undefined) {
+        subStepUpdate.completed = subStepCompleted
+        subStepUpdate.completedAt = subStepCompleted ? new Date() : null
+      }
+      if (subStepResponseText !== undefined) {
+        subStepUpdate.responseText = subStepResponseText
+      }
+      if (subStepResponseJson !== undefined) {
+        subStepUpdate.responseJson = subStepResponseJson
+      }
+      if (subStepLinkedDocId !== undefined) {
+        subStepUpdate.linkedDocId = subStepLinkedDocId
+      }
+      if (Object.keys(subStepUpdate).length > 0) {
+        await prisma.taskSubStep.update({
+          where: { id: subStepId },
+          data: subStepUpdate,
+        })
+      }
     }
 
     // Update completion notes even without status change
@@ -319,7 +335,7 @@ export async function PATCH(
           },
         },
         subSteps: {
-          select: { id: true, title: true, completed: true, completedAt: true, order: true },
+          select: { id: true, title: true, completed: true, completedAt: true, order: true, subTaskType: true, responseText: true, responseJson: true, linkedDocId: true, integrationKey: true, placeholder: true, acceptedTypes: true, questionOptions: true },
           orderBy: { order: 'asc' },
         },
       },

@@ -11,13 +11,33 @@ function formatHoursToMinutes(hours: number | null): number | null {
   return hours * 60
 }
 
+interface FormattedSubStep {
+  id: string
+  title: string
+  completed: boolean
+  subTaskType: string
+  responseText: string | null
+  responseJson: unknown
+  linkedDocId: string | null
+  integrationKey: string | null
+  placeholder: string | null
+  acceptedTypes: string | null
+  questionOptions: unknown
+}
+
 function formatSubSteps(
-  subSteps: Array<{ id: string; title: string; completed: boolean; order: number }>
-): { id: string; title: string; completed: boolean }[] {
-  // Return sub-steps sorted by order
+  subSteps: Array<{
+    id: string; title: string; completed: boolean; order: number
+    subTaskType: string; responseText: string | null; responseJson: unknown
+    linkedDocId: string | null; integrationKey: string | null
+    placeholder: string | null; acceptedTypes: string | null; questionOptions: unknown
+  }>
+): FormattedSubStep[] {
   return subSteps
     .sort((a, b) => a.order - b.order)
-    .map(({ id, title, completed }) => ({ id, title, completed }))
+    .map(({ id, title, completed, subTaskType, responseText, responseJson, linkedDocId, integrationKey, placeholder, acceptedTypes, questionOptions }) => ({
+      id, title, completed, subTaskType, responseText, responseJson, linkedDocId, integrationKey, placeholder, acceptedTypes, questionOptions,
+    }))
 }
 
 function extractCompanyContext(richDescription: unknown): CompanyContextData | null {
@@ -99,7 +119,7 @@ export async function GET(
           orderBy: { createdAt: 'desc' },
         },
         subSteps: {
-          select: { id: true, title: true, completed: true, order: true },
+          select: { id: true, title: true, completed: true, order: true, subTaskType: true, responseText: true, responseJson: true, linkedDocId: true, integrationKey: true, placeholder: true, acceptedTypes: true, questionOptions: true },
           orderBy: { order: 'asc' },
         },
       },

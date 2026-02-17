@@ -48,7 +48,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.67,
     tasks: [
       {
-        title: 'Implement revenue forecasting system',
+        title: 'Upload 12-month revenue forecast',
         description: 'Create a rolling 12-month revenue forecast with variance tracking to demonstrate predictability to buyers.',
         actionType: 'TYPE_I_EVIDENCE',
         effortLevel: 'MODERATE',
@@ -106,7 +106,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.67,
     tasks: [
       {
-        title: 'Implement 13-week cash flow forecast',
+        title: 'Upload 13-week cash flow forecast',
         description: 'Create a rolling 13-week cash flow forecast with weekly updates to demonstrate cash predictability to buyers.',
         actionType: 'TYPE_I_EVIDENCE',
         effortLevel: 'LOW',
@@ -146,7 +146,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.75,
     tasks: [
       {
-        title: 'Analyze and document cash flow patterns',
+        title: 'Upload documented cash flow analysis',
         description: 'Create a month-by-month analysis of operating cash flow for the past 24-36 months, identifying periods of negative cash flow and their root causes.',
         actionType: 'TYPE_I_EVIDENCE',
         effortLevel: 'LOW',
@@ -157,7 +157,7 @@ export const taskTemplates: TaskTemplate[] = [
         upgradeToScore: 0.25,
       },
       {
-        title: 'Implement cash flow improvement plan',
+        title: 'Complete cash flow improvement plan and upload evidence',
         description: 'Address root causes of negative cash flow periods through improved collections, adjusted payment terms, or seasonal planning.',
         actionType: 'TYPE_III_OPERATIONAL',
         effortLevel: 'MODERATE',
@@ -197,7 +197,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.67,
     tasks: [
       {
-        title: 'Develop customer acquisition strategy',
+        title: 'Draft and upload customer acquisition strategy',
         description: 'Create a plan to acquire new customers and reduce dependency on top accounts.',
         actionType: 'TYPE_V_RISK_REDUCTION',
         effortLevel: 'MODERATE',
@@ -208,7 +208,7 @@ export const taskTemplates: TaskTemplate[] = [
         upgradeToScore: 0.33,
       },
       {
-        title: 'Document customer concentration risk mitigation',
+        title: 'Upload customer concentration risk mitigation plan',
         description: 'Create a risk assessment and mitigation plan for customer concentration to present to buyers.',
         richDescription: SAMPLE_CUSTOMER_CONCENTRATION_DESCRIPTION,
         actionType: 'TYPE_II_DOCUMENTATION',
@@ -227,7 +227,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.67,
     tasks: [
       {
-        title: 'Implement monthly close process',
+        title: 'Complete monthly close process setup',
         description: 'Establish a formal monthly financial close with reconciliation and review procedures.',
         actionType: 'TYPE_IV_INSTITUTIONALIZE',
         effortLevel: 'MODERATE',
@@ -238,7 +238,7 @@ export const taskTemplates: TaskTemplate[] = [
         upgradeToScore: 0.33,
       },
       {
-        title: 'Engage CPA for financial review',
+        title: 'Upload CPA-reviewed financial statements',
         description: 'Hire a CPA firm to review or audit your financials for the past 2-3 years.',
         actionType: 'TYPE_I_EVIDENCE',
         effortLevel: 'MODERATE',
@@ -256,7 +256,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.67,
     tasks: [
       {
-        title: 'Conduct pricing analysis',
+        title: 'Complete pricing analysis and upload findings',
         description: 'Review pricing across all products/services and identify opportunities to increase margins.',
         actionType: 'TYPE_III_OPERATIONAL',
         effortLevel: 'MODERATE',
@@ -289,7 +289,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.67,
     tasks: [
       {
-        title: 'Document your daily responsibilities',
+        title: 'Upload documentation of your daily responsibilities',
         description: 'Create a detailed list of all tasks you perform and identify which can be delegated.',
         actionType: 'TYPE_II_DOCUMENTATION',
         effortLevel: 'LOW',
@@ -329,7 +329,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.67,
     tasks: [
       {
-        title: 'Define organizational structure',
+        title: 'Upload organizational chart and structure',
         description: 'Create a clear org chart with defined roles, responsibilities, and reporting lines.',
         actionType: 'TYPE_II_DOCUMENTATION',
         effortLevel: 'LOW',
@@ -351,7 +351,7 @@ export const taskTemplates: TaskTemplate[] = [
         upgradeToScore: 0.67,
       },
       {
-        title: 'Implement management incentive plan',
+        title: 'Draft and upload management incentive plan',
         description: 'Create retention bonuses or equity incentives for key management to stay through transition.',
         actionType: 'TYPE_VI_ALIGNMENT',
         effortLevel: 'MODERATE',
@@ -369,7 +369,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.67,
     tasks: [
       {
-        title: 'Create SOP documentation project',
+        title: 'Draft and upload standard operating procedures',
         description: 'Identify top 10 critical processes and document step-by-step procedures for each.',
         actionType: 'TYPE_II_DOCUMENTATION',
         effortLevel: 'MODERATE',
@@ -380,7 +380,7 @@ export const taskTemplates: TaskTemplate[] = [
         upgradeToScore: 0.33,
       },
       {
-        title: 'Implement knowledge management system',
+        title: 'Complete knowledge management system setup',
         description: 'Set up a wiki or documentation platform to centralize institutional knowledge.',
         actionType: 'TYPE_IV_INSTITUTIONALIZE',
         effortLevel: 'MODERATE',
@@ -409,7 +409,7 @@ export const taskTemplates: TaskTemplate[] = [
         upgradeToScore: 0.33,
       },
       {
-        title: 'Implement CRM system',
+        title: 'Connect CRM system and upload contact migration report',
         description: 'Deploy a CRM to capture customer history, preferences, and relationship details.',
         actionType: 'TYPE_IV_INSTITUTIONALIZE',
         effortLevel: 'MODERATE',
@@ -442,7 +442,7 @@ export const taskTemplates: TaskTemplate[] = [
         upgradeToScore: 0.33,
       },
       {
-        title: 'Create scalability roadmap',
+        title: 'Draft and upload scalability roadmap',
         description: 'Document what infrastructure, technology, and people investments are needed to 2x revenue.',
         actionType: 'TYPE_II_DOCUMENTATION',
         effortLevel: 'LOW',
@@ -460,7 +460,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.67,
     tasks: [
       {
-        title: 'Conduct technology audit',
+        title: 'Complete technology audit and upload report',
         description: 'Review all systems and identify technical debt, security issues, and upgrade needs.',
         actionType: 'TYPE_I_EVIDENCE',
         effortLevel: 'MODERATE',
@@ -471,7 +471,7 @@ export const taskTemplates: TaskTemplate[] = [
         upgradeToScore: 0.33,
       },
       {
-        title: 'Create technology modernization plan',
+        title: 'Draft and upload technology modernization plan',
         description: 'Develop a prioritized roadmap for updating critical systems and infrastructure.',
         actionType: 'TYPE_II_DOCUMENTATION',
         effortLevel: 'MODERATE',
@@ -489,7 +489,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.67,
     tasks: [
       {
-        title: 'Conduct employee satisfaction survey',
+        title: 'Complete employee satisfaction survey and upload results',
         description: 'Survey employees to understand engagement levels and identify improvement areas.',
         actionType: 'TYPE_I_EVIDENCE',
         effortLevel: 'LOW',
@@ -500,7 +500,7 @@ export const taskTemplates: TaskTemplate[] = [
         upgradeToScore: 0.33,
       },
       {
-        title: 'Implement retention program',
+        title: 'Draft and upload employee retention program',
         description: 'Create competitive compensation, benefits, and growth opportunities to reduce turnover.',
         actionType: 'TYPE_IV_INSTITUTIONALIZE',
         effortLevel: 'HIGH',
@@ -518,7 +518,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.67,
     tasks: [
       {
-        title: 'Formalize vendor agreements',
+        title: 'Upload formalized vendor agreements',
         description: 'Convert informal vendor relationships to formal contracts with clear terms.',
         actionType: 'TYPE_II_DOCUMENTATION',
         effortLevel: 'MODERATE',
@@ -529,7 +529,7 @@ export const taskTemplates: TaskTemplate[] = [
         upgradeToScore: 0.33,
       },
       {
-        title: 'Create vendor backup plan',
+        title: 'Draft and upload vendor backup plan',
         description: 'Identify alternative suppliers for critical vendors to reduce dependency risk.',
         actionType: 'TYPE_V_RISK_REDUCTION',
         effortLevel: 'LOW',
@@ -551,7 +551,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.67,
     tasks: [
       {
-        title: 'Document market opportunity',
+        title: 'Upload market opportunity analysis',
         description: 'Create a market analysis showing TAM, SAM, and SOM with growth projections.',
         actionType: 'TYPE_I_EVIDENCE',
         effortLevel: 'MODERATE',
@@ -580,7 +580,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.67,
     tasks: [
       {
-        title: 'Create competitive analysis',
+        title: 'Upload competitive analysis report',
         description: 'Document key competitors, your differentiation, and competitive advantages.',
         actionType: 'TYPE_I_EVIDENCE',
         effortLevel: 'MODERATE',
@@ -609,7 +609,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.67,
     tasks: [
       {
-        title: 'Conduct IP audit',
+        title: 'Complete IP audit and upload inventory',
         description: 'Inventory all intellectual property including trade secrets, trademarks, and patents.',
         actionType: 'TYPE_I_EVIDENCE',
         effortLevel: 'MODERATE',
@@ -642,7 +642,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.67,
     tasks: [
       {
-        title: 'Review and clean up corporate structure',
+        title: 'Upload clean corporate structure documentation',
         description: 'Work with attorney to simplify entity structure and resolve ownership issues.',
         actionType: 'TYPE_V_RISK_REDUCTION',
         effortLevel: 'MODERATE',
@@ -653,7 +653,7 @@ export const taskTemplates: TaskTemplate[] = [
         upgradeToScore: 0.33,
       },
       {
-        title: 'Organize corporate documents',
+        title: 'Upload organized corporate documents',
         description: 'Create a data room with all corporate records, filings, and governing documents.',
         actionType: 'TYPE_II_DOCUMENTATION',
         effortLevel: 'MODERATE',
@@ -671,7 +671,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.67,
     tasks: [
       {
-        title: 'Audit contracts and agreements',
+        title: 'Complete contract audit and upload summary',
         description: 'Review all contracts for expiration dates, assignability, and change of control provisions.',
         actionType: 'TYPE_I_EVIDENCE',
         effortLevel: 'MODERATE',
@@ -700,7 +700,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.67,
     tasks: [
       {
-        title: 'Resolve pending legal matters',
+        title: 'Complete resolution of pending legal matters',
         description: 'Work with counsel to settle or resolve any outstanding disputes or litigation.',
         actionType: 'TYPE_V_RISK_REDUCTION',
         effortLevel: 'HIGH',
@@ -711,7 +711,7 @@ export const taskTemplates: TaskTemplate[] = [
         upgradeToScore: 0.33,
       },
       {
-        title: 'Document litigation history',
+        title: 'Upload litigation history summary',
         description: 'Prepare a summary of all past litigation with outcomes for due diligence.',
         actionType: 'TYPE_II_DOCUMENTATION',
         effortLevel: 'LOW',
@@ -744,7 +744,7 @@ export const taskTemplates: TaskTemplate[] = [
         upgradeToScore: 0.33,
       },
       {
-        title: 'Create personal financial plan',
+        title: 'Complete personal financial plan',
         description: 'Work with advisor to understand your post-exit financial needs and deal requirements.',
         actionType: 'TYPE_VII_READINESS',
         effortLevel: 'MODERATE',
@@ -791,7 +791,7 @@ export const taskTemplates: TaskTemplate[] = [
     scoreThreshold: 0.67,
     tasks: [
       {
-        title: 'Develop key employee communication plan',
+        title: 'Draft and upload key employee communication plan',
         description: 'Create a timeline and script for when and how to inform key employees of sale plans.',
         actionType: 'TYPE_VI_ALIGNMENT',
         effortLevel: 'LOW',
@@ -802,7 +802,7 @@ export const taskTemplates: TaskTemplate[] = [
         upgradeToScore: 0.33,
       },
       {
-        title: 'Create employee retention agreements',
+        title: 'Draft and upload employee retention agreements',
         description: 'Develop stay bonuses or retention packages for critical employees.',
         actionType: 'TYPE_VI_ALIGNMENT',
         effortLevel: 'MODERATE',

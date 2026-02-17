@@ -17,60 +17,71 @@ type NumberLike = string | number | { toString(): string }
 // Issue tier types matching the Prisma enum
 type IssueTier = 'CRITICAL' | 'SIGNIFICANT' | 'OPTIMIZATION'
 
+type SubTaskType = 'CHECKBOX' | 'FILE_UPLOAD' | 'TEXT_INPUT' | 'QUESTION_ANSWER' | 'CONNECTION'
+
+interface TypedSubStep {
+  title: string
+  subTaskType: SubTaskType
+  acceptedTypes?: string
+  placeholder?: string
+  questionOptions?: unknown
+  integrationKey?: string
+}
+
 /**
  * Default atomic sub-steps by action type.
- * Every task gets actionable sub-steps: upload, write, connect, or validate.
+ * Every task gets provable sub-steps: upload, write, answer, connect, or validate.
  */
-const DEFAULT_SUBSTEPS_BY_ACTION: Record<string, string[]> = {
+const DEFAULT_SUBSTEPS_BY_ACTION: Record<string, TypedSubStep[]> = {
   TYPE_I_EVIDENCE: [
-    'Gather the required source documents',
-    'Upload documents to Evidence page',
-    'Verify uploaded documents are current and complete',
+    { title: 'Upload the required source documents', subTaskType: 'FILE_UPLOAD', acceptedTypes: '.pdf,.xlsx,.csv,.doc,.docx' },
+    { title: 'Confirm uploaded documents are current and complete', subTaskType: 'CHECKBOX' },
   ],
   TYPE_II_DOCUMENTATION: [
-    'Draft the required document or policy',
-    'Review with relevant stakeholders',
-    'Upload final version to Evidence page',
+    { title: 'Draft the required document or policy', subTaskType: 'TEXT_INPUT', placeholder: 'Describe the document you created or key points covered...' },
+    { title: 'Upload final version', subTaskType: 'FILE_UPLOAD', acceptedTypes: '.pdf,.doc,.docx' },
   ],
   TYPE_III_OPERATIONAL: [
-    'Identify the specific operational gap',
-    'Implement the operational change',
-    'Document the new process or procedure',
-    'Validate the change is working as expected',
+    { title: 'Describe the specific operational gap', subTaskType: 'TEXT_INPUT', placeholder: 'What is the gap and how will you address it?' },
+    { title: 'Implement the operational change', subTaskType: 'CHECKBOX' },
+    { title: 'Upload documentation of the new process', subTaskType: 'FILE_UPLOAD', acceptedTypes: '.pdf,.doc,.docx,.png,.jpg' },
   ],
   TYPE_IV_INSTITUTIONALIZE: [
-    'Document current owner-dependent process',
-    'Assign and train a delegate or team member',
-    'Validate the process runs without owner involvement',
+    { title: 'Document current owner-dependent process', subTaskType: 'TEXT_INPUT', placeholder: 'Describe the process that currently depends on you...' },
+    { title: 'Assign and train a delegate or team member', subTaskType: 'CHECKBOX' },
+    { title: 'Confirm the process runs without owner involvement', subTaskType: 'CHECKBOX' },
   ],
   TYPE_V_RISK_REDUCTION: [
-    'Identify and quantify the specific risk',
-    'Implement the mitigation strategy',
-    'Document the risk reduction for buyer diligence',
+    { title: 'Describe the specific risk and its magnitude', subTaskType: 'TEXT_INPUT', placeholder: 'What is the risk and how significant is it?' },
+    { title: 'Implement the mitigation strategy', subTaskType: 'CHECKBOX' },
+    { title: 'Upload evidence of risk reduction', subTaskType: 'FILE_UPLOAD', acceptedTypes: '.pdf,.doc,.docx,.xlsx' },
   ],
   TYPE_VI_ALIGNMENT: [
-    'Review current state against buyer expectations',
-    'Make the required alignment changes',
-    'Upload supporting evidence or documentation',
+    { title: 'Answer: How does current state compare to buyer expectations?', subTaskType: 'QUESTION_ANSWER', questionOptions: ['Well aligned', 'Partially aligned', 'Significant gap', 'Not sure'] },
+    { title: 'Complete the required alignment changes', subTaskType: 'CHECKBOX' },
+    { title: 'Upload supporting evidence', subTaskType: 'FILE_UPLOAD', acceptedTypes: '.pdf,.doc,.docx,.xlsx,.png,.jpg' },
   ],
   TYPE_VII_READINESS: [
-    'Assess current readiness state',
-    'Complete the readiness preparation steps',
-    'Validate readiness with a review or checklist',
+    { title: 'Answer: What is your current readiness state?', subTaskType: 'QUESTION_ANSWER', questionOptions: ['Ready', 'Almost ready', 'Needs work', 'Not started'] },
+    { title: 'Complete the readiness preparation steps', subTaskType: 'CHECKBOX' },
+    { title: 'Upload completed readiness checklist or review', subTaskType: 'FILE_UPLOAD', acceptedTypes: '.pdf,.doc,.docx,.xlsx' },
   ],
   TYPE_VIII_SIGNALING: [
-    'Identify the key signal to communicate',
-    'Prepare the supporting materials',
-    'Upload evidence that demonstrates the signal',
+    { title: 'Describe the key signal to communicate', subTaskType: 'TEXT_INPUT', placeholder: 'What message should this evidence convey to buyers?' },
+    { title: 'Upload evidence that demonstrates the signal', subTaskType: 'FILE_UPLOAD', acceptedTypes: '.pdf,.doc,.docx,.png,.jpg' },
   ],
 }
 
 /**
  * Helper function to create TaskSubStep records from richDescription.subTasks
- * Falls back to action-type-based atomic sub-steps when no rich description exists
+ * Falls back to action-type-based typed sub-steps when no rich description exists
  */
 async function createSubStepsForTask(taskId: string, richDescription: unknown, actionType?: string) {
-  let subStepsToCreate: Array<{ taskId: string; title: string; order: number }> = []
+  let subStepsToCreate: Array<{
+    taskId: string; title: string; order: number
+    subTaskType?: SubTaskType; acceptedTypes?: string; placeholder?: string
+    questionOptions?: unknown; integrationKey?: string
+  }> = []
 
   if (hasRichDescription(richDescription)) {
     const rd = richDescription as RichTaskDescription
@@ -84,11 +95,20 @@ async function createSubStepsForTask(taskId: string, richDescription: unknown, a
     }
   }
 
-  // Fallback: generate default atomic sub-steps from action type
+  // Fallback: generate default typed sub-steps from action type
   if (subStepsToCreate.length === 0 && actionType) {
     const defaults = DEFAULT_SUBSTEPS_BY_ACTION[actionType]
     if (defaults) {
-      subStepsToCreate = defaults.map((title, i) => ({ taskId, title, order: i }))
+      subStepsToCreate = defaults.map((step, i) => ({
+        taskId,
+        title: step.title,
+        order: i,
+        subTaskType: step.subTaskType,
+        acceptedTypes: step.acceptedTypes,
+        placeholder: step.placeholder,
+        questionOptions: step.questionOptions,
+        integrationKey: step.integrationKey,
+      }))
     }
   }
 

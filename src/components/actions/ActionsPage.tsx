@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
-import { HeroSummaryBar } from './HeroSummaryBar'
+import { MonthHeader } from './MonthHeader'
 import { ActiveTaskCard } from './ActiveTaskCard'
 import { UpNextQueue } from './UpNextQueue'
 import { CompletedThisMonth } from './CompletedThisMonth'
@@ -26,6 +26,14 @@ interface SubStep {
   id: string
   title: string
   completed: boolean
+  subTaskType?: string
+  responseText?: string | null
+  responseJson?: unknown
+  linkedDocId?: string | null
+  integrationKey?: string | null
+  placeholder?: string | null
+  acceptedTypes?: string | null
+  questionOptions?: unknown
 }
 
 interface DriftItem {
@@ -255,15 +263,15 @@ export function ActionsPage() {
     }
   }, [allTasksCompleted, selectedCompanyId])
 
+  // Handler: toggle checkbox sub-step
   const handleSubStepToggle = async (taskId: string, stepId: string, completed: boolean) => {
     if (!data) return
 
     // Optimistic update
     setData(prev => {
       if (!prev) return prev
-      return {
-        ...prev,
-        activeTasks: prev.activeTasks.map(task => {
+      const updateSteps = (tasks: ActiveTask[]) =>
+        tasks.map(task => {
           if (task.id !== taskId) return task
           const newSubSteps = task.subSteps.map(s =>
             s.id === stepId ? { ...s, completed } : s
@@ -274,11 +282,10 @@ export function ActionsPage() {
             subSteps: newSubSteps,
             subStepProgress: { completed: completedCount, total: newSubSteps.length },
           }
-        }),
-      }
+        })
+      return { ...prev, activeTasks: updateSteps(prev.activeTasks), upNext: updateSteps(prev.upNext as ActiveTask[]) as UpNextTask[] }
     })
 
-    // Persist to server
     try {
       await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
@@ -286,9 +293,96 @@ export function ActionsPage() {
         body: JSON.stringify({ subStepId: stepId, subStepCompleted: completed }),
       })
     } catch {
-      // Revert on error
       fetchData()
     }
+  }
+
+  // Handler: update typed sub-step (text, Q&A)
+  const handleSubStepUpdate = async (taskId: string, stepId: string, updateData: { responseText?: string; responseJson?: unknown; completed?: boolean }) => {
+    if (!data) return
+
+    // Optimistic update
+    setData(prev => {
+      if (!prev) return prev
+      const updateSteps = (tasks: ActiveTask[]) =>
+        tasks.map(task => {
+          if (task.id !== taskId) return task
+          const newSubSteps = task.subSteps.map(s =>
+            s.id === stepId ? { ...s, ...updateData } : s
+          )
+          const completedCount = newSubSteps.filter(s => s.completed).length
+          return {
+            ...task,
+            subSteps: newSubSteps,
+            subStepProgress: { completed: completedCount, total: newSubSteps.length },
+          }
+        })
+      return { ...prev, activeTasks: updateSteps(prev.activeTasks), upNext: updateSteps(prev.upNext as ActiveTask[]) as UpNextTask[] }
+    })
+
+    try {
+      await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subStepId: stepId,
+          subStepCompleted: updateData.completed,
+          subStepResponseText: updateData.responseText,
+          subStepResponseJson: updateData.responseJson,
+        }),
+      })
+    } catch {
+      fetchData()
+    }
+  }
+
+  // Handler: file upload for sub-step
+  const handleSubStepUpload = async (taskId: string, stepId: string, file: File) => {
+    // 1. Get signed upload URL from our API
+    const initResponse = await fetch(`/api/tasks/${taskId}/substeps/${stepId}/upload`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fileName: file.name,
+        mimeType: file.type,
+        fileSize: file.size,
+      }),
+    })
+
+    if (!initResponse.ok) throw new Error('Failed to create upload')
+    const { uploadUrl, token } = await initResponse.json()
+
+    // 2. Upload file to Supabase storage
+    const uploadResponse = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': file.type,
+        'x-upsert': 'true',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: file,
+    })
+
+    if (!uploadResponse.ok) throw new Error('Upload failed')
+
+    // 3. Optimistic update - mark sub-step complete
+    setData(prev => {
+      if (!prev) return prev
+      const updateSteps = (tasks: ActiveTask[]) =>
+        tasks.map(task => {
+          if (task.id !== taskId) return task
+          const newSubSteps = task.subSteps.map(s =>
+            s.id === stepId ? { ...s, completed: true } : s
+          )
+          const completedCount = newSubSteps.filter(s => s.completed).length
+          return {
+            ...task,
+            subSteps: newSubSteps,
+            subStepProgress: { completed: completedCount, total: newSubSteps.length },
+          }
+        })
+      return { ...prev, activeTasks: updateSteps(prev.activeTasks), upNext: updateSteps(prev.upNext as ActiveTask[]) as UpNextTask[] }
+    })
   }
 
   const handleStartTask = async (taskId: string) => {
@@ -474,12 +568,14 @@ export function ActionsPage() {
         )}
 
         <AnimatedItem>
-          <HeroSummaryBar
+          <MonthHeader
             totalTasks={data.summary.totalTasks}
             activeTasks={data.summary.activeTasks}
             deferredTasks={data.summary.deferredTasks}
             completedThisMonth={data.summary.completedThisMonth}
             valueRecoveredThisMonth={data.summary.valueRecoveredThisMonth}
+            isFreeUser={isFreeUser}
+            freeTaskLimit={FREE_TASK_LIMIT}
           />
         </AnimatedItem>
 
@@ -498,6 +594,8 @@ export function ActionsPage() {
               <ActiveTaskCard
                 task={focusedTask}
                 onSubStepToggle={handleSubStepToggle}
+                onSubStepUpdate={handleSubStepUpdate}
+                onSubStepUpload={handleSubStepUpload}
                 onComplete={() => handleCompleteTask(focusedTask)}
                 onStart={isFocusedPending ? () => handleStartTask(focusedTask.id) : undefined}
                 onBlock={handleBlockTask}
@@ -525,6 +623,9 @@ export function ActionsPage() {
                   taskValue,
                   currentPlan: planTier,
                 })
+              }}
+              onUpgrade={() => {
+                setUpgradeModalOpen(true)
               }}
             />
           </AnimatedItem>
