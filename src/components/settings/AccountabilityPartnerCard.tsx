@@ -131,7 +131,7 @@ export function AccountabilityPartnerCard() {
                   size="sm"
                   onClick={handleRemove}
                   disabled={removing}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
@@ -169,8 +169,8 @@ export function AccountabilityPartnerCard() {
           <div
             className={`mt-3 p-2 rounded text-xs ${
               message.type === 'success'
-                ? 'bg-green-50 text-green-700'
-                : 'bg-red-50 text-red-700'
+                ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
+                : 'bg-destructive/10 text-destructive'
             }`}
           >
             {message.text}

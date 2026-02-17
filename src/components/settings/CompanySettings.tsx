@@ -261,7 +261,7 @@ export function CompanySettings() {
       <div className="space-y-6 max-w-2xl">
         <Card>
           <CardContent className="pt-6">
-            <p className="text-center text-gray-500">
+            <p className="text-center text-muted-foreground">
               No company selected. Please select a company from the sidebar.
             </p>
             <div className="flex justify-center mt-4">
@@ -334,10 +334,10 @@ export function CompanySettings() {
                   setBusinessDescription('')
                   setIndustryMatchResult(null)
                 }}
-                className="p-1.5 hover:bg-red-100 rounded-full transition-colors group"
+                className="p-1.5 hover:bg-destructive/10 rounded-full transition-colors group"
                 title="Remove selection"
               >
-                <svg className="w-4 h-4 text-muted-foreground group-hover:text-red-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <svg className="w-4 h-4 text-muted-foreground group-hover:text-destructive" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -385,7 +385,7 @@ export function CompanySettings() {
               </AnimatePresence>
 
               {industryMatchError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm text-destructive">
                   {industryMatchError}
                 </div>
               )}
@@ -422,7 +422,7 @@ export function CompanySettings() {
                         type="button"
                         onClick={handleAcceptRecommendation}
                         size="sm"
-                        className="bg-[#B87333] hover:bg-[#9A5F2A]"
+                        className="bg-primary hover:bg-primary/90"
                       >
                         Accept
                       </Button>
@@ -456,8 +456,8 @@ export function CompanySettings() {
         <div
           className={`p-3 rounded-md text-sm ${
             message.type === 'success'
-              ? 'bg-green-50 text-green-700 border border-green-200'
-              : 'bg-red-50 text-red-700 border border-red-200'
+              ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
+              : 'bg-destructive/10 text-destructive border border-destructive/20'
           }`}
         >
           {message.text}
@@ -474,18 +474,18 @@ export function CompanySettings() {
       </div>
 
       {/* Danger Zone */}
-      <Card className="border-red-200 bg-red-50/30">
+      <Card className="border-destructive/20 bg-destructive/5">
         <CardHeader>
-          <CardTitle className="text-red-700">Danger Zone</CardTitle>
-          <CardDescription className="text-red-600">
+          <CardTitle className="text-destructive">Danger Zone</CardTitle>
+          <CardDescription className="text-destructive/80">
             Irreversible and destructive actions
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="rounded-md border border-red-200 bg-white p-4 space-y-4">
+          <div className="rounded-md border border-destructive/20 bg-card p-4 space-y-4">
             <div>
-              <h3 className="font-medium text-gray-900">Delete this company</h3>
-              <p className="text-sm text-gray-600 mt-1">
+              <h3 className="font-medium text-foreground">Delete this company</h3>
+              <p className="text-sm text-muted-foreground mt-1">
                 Once deleted, your company data will be retained for 30 days before permanent deletion.
                 During this period, you may contact support to restore your data.
               </p>
@@ -493,7 +493,7 @@ export function CompanySettings() {
 
             <div className="space-y-3">
               <div className="space-y-2">
-                <Label htmlFor="delete-reason" className="text-gray-700">
+                <Label htmlFor="delete-reason" className="text-foreground">
                   Reason for deletion (optional)
                 </Label>
                 <Input
@@ -501,20 +501,20 @@ export function CompanySettings() {
                   value={deleteReason}
                   onChange={(e) => setDeleteReason(e.target.value)}
                   placeholder="Help us understand why you're leaving..."
-                  className="bg-white"
+                  className="bg-card"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="delete-confirmation" className="text-gray-700">
-                  To confirm, type <span className="font-semibold text-red-700">{company?.name}</span> below
+                <Label htmlFor="delete-confirmation" className="text-foreground">
+                  To confirm, type <span className="font-semibold text-destructive">{company?.name}</span> below
                 </Label>
                 <Input
                   id="delete-confirmation"
                   value={deleteConfirmation}
                   onChange={(e) => setDeleteConfirmation(e.target.value)}
                   placeholder="Enter company name to confirm"
-                  className="bg-white"
+                  className="bg-card"
                 />
               </div>
 

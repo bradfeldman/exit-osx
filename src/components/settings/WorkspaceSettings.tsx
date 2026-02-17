@@ -760,10 +760,10 @@ export function WorkspaceSettings() {
                                         'p-2 rounded transition-colors',
                                         isSelected
                                           ? level === 'edit'
-                                            ? 'bg-green-100 text-green-700'
+                                            ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
                                             : level === 'view'
-                                              ? 'bg-blue-100 text-blue-700'
-                                              : 'bg-red-100 text-red-700'
+                                              ? 'bg-blue-500/15 text-blue-700 dark:text-blue-400'
+                                              : 'bg-destructive/15 text-destructive'
                                           : 'hover:bg-muted text-muted-foreground'
                                       )}
                                       title={permissionLevelLabels[level]}

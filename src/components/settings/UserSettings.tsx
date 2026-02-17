@@ -108,8 +108,8 @@ export function UserSettings() {
               size="lg"
             />
             <div>
-              <p className="text-sm font-medium text-gray-900">{user?.name || 'No name set'}</p>
-              <p className="text-sm text-gray-500">{user?.email}</p>
+              <p className="text-sm font-medium text-foreground">{user?.name || 'No name set'}</p>
+              <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
           </div>
 
@@ -129,9 +129,9 @@ export function UserSettings() {
               id="email"
               value={user?.email || ''}
               disabled
-              className="bg-gray-50"
+              className="bg-muted"
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Email cannot be changed
             </p>
           </div>
@@ -140,8 +140,8 @@ export function UserSettings() {
             <div
               className={`p-3 rounded-md text-sm ${
                 message.type === 'success'
-                  ? 'bg-green-50 text-green-700 border border-green-200'
-                  : 'bg-red-50 text-red-700 border border-red-200'
+                  ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
+                  : 'bg-destructive/10 text-destructive border border-destructive/20'
               }`}
             >
               {message.text}
@@ -156,7 +156,7 @@ export function UserSettings() {
 
       {/* Security Settings */}
       <div className="pt-6 border-t">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Security</h2>
+        <h2 className="text-xl font-semibold text-foreground mb-4">Security</h2>
         <div className="space-y-6">
           <TwoFactorSettings />
 

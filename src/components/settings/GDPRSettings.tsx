@@ -276,18 +276,18 @@ export function GDPRSettings() {
 
           {exportRequests.length > 0 && (
             <div className="mt-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Recent Exports</h4>
+              <h4 className="text-sm font-medium text-foreground mb-2">Recent Exports</h4>
               <div className="space-y-2">
                 {exportRequests.map((exp) => (
                   <div
                     key={exp.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg text-sm"
+                    className="flex items-center justify-between p-3 bg-muted rounded-lg text-sm"
                   >
                     <div>
                       <span className="font-medium">
                         {formatDate(exp.requestedAt)}
                       </span>
-                      <span className="text-gray-500 ml-2">
+                      <span className="text-muted-foreground ml-2">
                         ({exp.status})
                         {exp.fileSize && ` - ${formatFileSize(exp.fileSize)}`}
                       </span>
@@ -309,18 +309,18 @@ export function GDPRSettings() {
       </Card>
 
       {/* Account Deletion — Danger Zone (BF-027) */}
-      <Card className="border-red-200 bg-red-50/30">
+      <Card className="border-destructive/20 bg-destructive/5">
         <CardHeader>
-          <CardTitle className="text-red-700">Danger Zone</CardTitle>
-          <CardDescription className="text-red-600">
+          <CardTitle className="text-destructive">Danger Zone</CardTitle>
+          <CardDescription className="text-destructive/80">
             Irreversible and destructive actions
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border border-red-200 bg-white p-4 space-y-4">
+          <div className="rounded-md border border-destructive/20 bg-card p-4 space-y-4">
             <div>
-              <h3 className="font-medium text-gray-900">Delete your account</h3>
-              <p className="text-sm text-gray-600 mt-1">
+              <h3 className="font-medium text-foreground">Delete your account</h3>
+              <p className="text-sm text-muted-foreground mt-1">
                 Permanently delete your entire account, including your company, all team members, financial data, assessments, and uploaded documents. You will have a 30-day grace period to cancel.
               </p>
             </div>
@@ -362,9 +362,9 @@ export function GDPRSettings() {
               </div>
             ) : showDeleteConfirm ? (
               <div className="space-y-4">
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <h4 className="font-medium text-red-800">Are you sure?</h4>
-                  <p className="text-sm text-red-700 mt-1">
+                <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                  <h4 className="font-medium text-destructive">Are you sure?</h4>
+                  <p className="text-sm text-destructive/80 mt-1">
                     This will permanently delete your account, company, all team members, financial data, assessments, tasks, evidence documents, and deal room. This action cannot be undone.
                   </p>
                 </div>
@@ -403,8 +403,8 @@ export function GDPRSettings() {
         <div
           className={`p-3 rounded-md text-sm ${
             message.type === 'success'
-              ? 'bg-green-50 text-green-700 border border-green-200'
-              : 'bg-red-50 text-red-700 border border-red-200'
+              ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
+              : 'bg-destructive/10 text-destructive border border-destructive/20'
           }`}
           role="alert"
         >
