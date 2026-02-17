@@ -418,7 +418,7 @@ export function CategoryAssessmentFlow({
             )}
 
             {/* Options */}
-            <div className="space-y-2 mb-4">
+            <div className="space-y-2 mb-4" role="radiogroup" aria-label={currentQuestion.questionText}>
               {[...currentQuestion.options]
                 .sort((a, b) => a.displayOrder - b.displayOrder)
                 .map((option) => {
@@ -428,6 +428,8 @@ export function CategoryAssessmentFlow({
                   return (
                     <motion.button
                       key={option.id}
+                      role="radio"
+                      aria-checked={isSelected}
                       onClick={() => !saving && handleAnswer(option.id)}
                       disabled={saving}
                       className={cn(
