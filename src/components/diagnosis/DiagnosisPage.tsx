@@ -161,6 +161,24 @@ export function DiagnosisPage() {
     fetchCadence()
   }, [fetchData, fetchCadence])
 
+  // Refs for each category card to enable scroll-into-view
+  const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({})
+
+  // Callback to expand a specific category and scroll it into view
+  const handleExpandCategory = useCallback((category: string) => {
+    setExpandedCategory(category)
+    // Scroll the category card into view after a brief delay for expansion animation
+    setTimeout(() => {
+      categoryRefs.current[category]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
+  }, [])
+
+  // Callback for when an inline assessment completes - refetch all data
+  const handleAssessmentComplete = useCallback(() => {
+    setExpandedCategory(null)
+    fetchData()
+  }, [fetchData])
+
   // Auto-expand category from URL query param (e.g., /dashboard/diagnosis?expand=FINANCIAL)
   useEffect(() => {
     if (!hasInitializedExpand && data && !isLoading) {
@@ -169,12 +187,12 @@ export function DiagnosisPage() {
         // Validate it's a real category
         const validCategory = data.categories.find(c => c.category === expandParam)
         if (validCategory) {
-          setExpandedCategory(expandParam)
+          handleExpandCategory(expandParam)
         }
       }
       setHasInitializedExpand(true)
     }
-  }, [searchParams, data, isLoading, hasInitializedExpand])
+  }, [searchParams, data, isLoading, hasInitializedExpand, handleExpandCategory])
 
   // Auto-trigger sharpen from ?sharpen=true query param (e.g., from Actions page)
   useEffect(() => {
@@ -185,17 +203,6 @@ export function DiagnosisPage() {
       router.replace('/dashboard/diagnosis', { scroll: false })
     }
   }, [searchParams, isLoading, router])
-
-  // Callback for when an inline assessment completes - refetch all data
-  const handleAssessmentComplete = useCallback(() => {
-    setExpandedCategory(null)
-    fetchData()
-  }, [fetchData])
-
-  // Callback to expand a specific category (used by risk driver "Review & Update" buttons)
-  const handleExpandCategory = useCallback((category: string) => {
-    setExpandedCategory(category)
-  }, [])
 
   // Show "Re-Assess" banner when all questions are answered and no unanswered AI questions exist
   const allQuestionsAnswered = useMemo(() => {
@@ -238,9 +245,7 @@ export function DiagnosisPage() {
             lastAssessmentDate={data.lastAssessmentDate}
             companyId={selectedCompanyId}
             isFreeUser={isFreeUser}
-            onExpandCategory={(categoryId) => {
-              setExpandedCategory(categoryId)
-            }}
+            onExpandCategory={handleExpandCategory}
             onUpgrade={() => setUpgradeModalOpen(true)}
             onReassessComplete={() => {
               setSharpenActive(false)
@@ -261,30 +266,31 @@ export function DiagnosisPage() {
               const isLockedForFree = allFreeDone && !freeCats.includes(cat.category)
 
               return (
-                <CategoryPanel
-                  key={cat.category}
-                  category={cat.category}
-                  label={cat.label}
-                  score={cat.score}
-                  dollarImpact={cat.dollarImpact}
-                  isAssessed={cat.isAssessed}
-                  confidence={cat.confidence}
-                  isLowestConfidence={cat.isLowestConfidence}
-                  assessmentId={data.assessmentId}
-                  companyId={selectedCompanyId}
-                  onAssessmentComplete={handleAssessmentComplete}
-                  isExpanded={expandedCategory === cat.category}
-                  onExpand={() => {
-                    if (isLockedForFree) {
-                      setUpgradeModalOpen(true)
-                    } else {
-                      setExpandedCategory(cat.category)
-                    }
-                  }}
-                  onCollapse={() => setExpandedCategory(null)}
-                  nextPromptDate={cadenceNextDates[cat.category] ?? null}
-                  financialContext={cat.financialContext}
-                />
+                <div key={cat.category} ref={el => { categoryRefs.current[cat.category] = el }}>
+                  <CategoryPanel
+                    category={cat.category}
+                    label={cat.label}
+                    score={cat.score}
+                    dollarImpact={cat.dollarImpact}
+                    isAssessed={cat.isAssessed}
+                    confidence={cat.confidence}
+                    isLowestConfidence={cat.isLowestConfidence}
+                    assessmentId={data.assessmentId}
+                    companyId={selectedCompanyId}
+                    onAssessmentComplete={handleAssessmentComplete}
+                    isExpanded={expandedCategory === cat.category}
+                    onExpand={() => {
+                      if (isLockedForFree) {
+                        setUpgradeModalOpen(true)
+                      } else {
+                        handleExpandCategory(cat.category)
+                      }
+                    }}
+                    onCollapse={() => setExpandedCategory(null)}
+                    nextPromptDate={cadenceNextDates[cat.category] ?? null}
+                    financialContext={cat.financialContext}
+                  />
+                </div>
               )
             })}
           </div>

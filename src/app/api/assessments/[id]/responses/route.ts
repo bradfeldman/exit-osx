@@ -2,11 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { validateRequestBody } from '@/lib/security/validation'
+import { validateRequestBody, cuidSchema } from '@/lib/security/validation'
 
 const schema = z.object({
-  questionId: z.string().uuid(),
-  selectedOptionId: z.string().uuid().optional().nullable(),
+  questionId: cuidSchema,
+  selectedOptionId: cuidSchema.optional().nullable(),
   confidenceLevel: z.enum(['CONFIDENT', 'SOMEWHAT_CONFIDENT', 'UNCERTAIN', 'NOT_APPLICABLE']).default('CONFIDENT'),
   notes: z.string().max(5000).optional().nullable(),
 })
