@@ -71,12 +71,12 @@ export async function GET(
       const ebitdaMultipleLow = Number(industryMultiple.ebitdaMultipleLow)
       const ebitdaMultipleHigh = Number(industryMultiple.ebitdaMultipleHigh)
 
-      // Use stored EBITDA margin ranges if available, otherwise use estimateEbitdaFromRevenue
+      // Use stored EBITDA margin ranges if available (stored as decimals: 0.15 = 15%)
       const marginLow = industryMultiple.ebitdaMarginLow
-        ? Number(industryMultiple.ebitdaMarginLow) / 100
+        ? Number(industryMultiple.ebitdaMarginLow)
         : null
       const marginHigh = industryMultiple.ebitdaMarginHigh
-        ? Number(industryMultiple.ebitdaMarginHigh) / 100
+        ? Number(industryMultiple.ebitdaMarginHigh)
         : null
 
       if (marginLow !== null && marginHigh !== null) {

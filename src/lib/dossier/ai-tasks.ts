@@ -107,7 +107,7 @@ function buildTaskUserPrompt(
   // Include industry benchmarks if available
   if (enrichedFinancials?.benchmarks) {
     const b = enrichedFinancials.benchmarks
-    parts.push(`Industry EBITDA Margin Range: ${b.ebitdaMarginLow}-${b.ebitdaMarginHigh}%`)
+    parts.push(`Industry EBITDA Margin Range: ${(b.ebitdaMarginLow * 100).toFixed(1)}-${(b.ebitdaMarginHigh * 100).toFixed(1)}%`)
     parts.push(`Industry EBITDA Multiple Range: ${b.ebitdaMultipleLow}x-${b.ebitdaMultipleHigh}x`)
     parts.push(`Industry Revenue Multiple Range: ${b.revenueMultipleLow}x-${b.revenueMultipleHigh}x`)
   }

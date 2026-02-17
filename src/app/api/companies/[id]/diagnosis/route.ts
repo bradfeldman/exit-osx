@@ -264,7 +264,7 @@ export async function GET(
             source: personalizationCtx.financials.source,
           } : null,
           benchmark: personalizationCtx.benchmarks ? {
-            range: `${personalizationCtx.benchmarks.ebitdaMarginLow}–${personalizationCtx.benchmarks.ebitdaMarginHigh}%`,
+            range: `${personalizationCtx.benchmarks.ebitdaMarginLow.toFixed(1)}–${personalizationCtx.benchmarks.ebitdaMarginHigh.toFixed(1)}%`,
             source: `${personalizationCtx.company.subSector} sector data`,
           } : null,
           dollarContext: catDollarImpact && catDollarImpact > 0 ? `Closing this gap could recover ~${formatCurrency(catDollarImpact)}` : null,

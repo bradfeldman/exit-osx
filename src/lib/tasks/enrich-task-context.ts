@@ -93,7 +93,7 @@ function buildEnrichmentPrompt(
 
   if (ctx.benchmarks) {
     parts.push(`\nINDUSTRY BENCHMARKS (${ctx.benchmarks.matchLevel} match):`)
-    parts.push(`  EBITDA Margin Range: ${ctx.benchmarks.ebitdaMarginLow}%-${ctx.benchmarks.ebitdaMarginHigh}%`)
+    parts.push(`  EBITDA Margin Range: ${ctx.benchmarks.ebitdaMarginLow.toFixed(1)}%-${ctx.benchmarks.ebitdaMarginHigh.toFixed(1)}%`)
     parts.push(`  EBITDA Multiple Range: ${ctx.benchmarks.ebitdaMultipleLow}x-${ctx.benchmarks.ebitdaMultipleHigh}x`)
     parts.push(`  Revenue Multiple Range: ${ctx.benchmarks.revenueMultipleLow}x-${ctx.benchmarks.revenueMultipleHigh}x`)
   }
@@ -182,7 +182,7 @@ function generateRuleBasedContext(
         source: 'From your assessment data',
       },
       industryBenchmark: ctx.benchmarks ? {
-        range: `${ctx.benchmarks.ebitdaMarginLow}-${ctx.benchmarks.ebitdaMarginHigh}% EBITDA margin typical`,
+        range: `${ctx.benchmarks.ebitdaMarginLow.toFixed(1)}-${ctx.benchmarks.ebitdaMarginHigh.toFixed(1)}% EBITDA margin typical`,
         source: `${ctx.company.subSector} sector data`,
       } : null,
       financialImpact: null,

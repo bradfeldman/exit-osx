@@ -122,8 +122,8 @@ export async function gatherTaskPersonalizationContext(
   let benchmarkData: PersonalizationContext['benchmarks'] = null
   if (benchmarks && !benchmarks.isDefault) {
     benchmarkData = {
-      ebitdaMarginLow: benchmarks.ebitdaMarginLow ?? 0,
-      ebitdaMarginHigh: benchmarks.ebitdaMarginHigh ?? 0,
+      ebitdaMarginLow: (benchmarks.ebitdaMarginLow ?? 0) * 100, // Convert decimal to percentage to match ebitdaMarginPct convention
+      ebitdaMarginHigh: (benchmarks.ebitdaMarginHigh ?? 0) * 100,
       ebitdaMultipleLow: benchmarks.ebitdaMultipleLow,
       ebitdaMultipleHigh: benchmarks.ebitdaMultipleHigh,
       revenueMultipleLow: benchmarks.revenueMultipleLow,

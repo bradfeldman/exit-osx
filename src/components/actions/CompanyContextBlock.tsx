@@ -79,7 +79,7 @@ function HighTierBlock({ context, financialDrift }: { context: CompanyContextDat
               (() => {
                 const snap = context.benchmarkSnapshot!
                 const currentRange = context.industryBenchmark!.range
-                const prevRange = `${snap.ebitdaMarginLow}-${snap.ebitdaMarginHigh}%`
+                const prevRange = `${snap.ebitdaMarginLow.toFixed(1)}-${snap.ebitdaMarginHigh.toFixed(1)}%`
                 if (prevRange === currentRange) return null
                 return (
                   <p className="text-xs text-muted-foreground mt-0.5">
