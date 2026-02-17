@@ -40,6 +40,7 @@ function TextNumericInput({
 
   useEffect(() => {
     if (!focused) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setText(value === null ? '' : (value * multiplier).toFixed(decimals))
     }
   }, [value, focused, multiplier, decimals])

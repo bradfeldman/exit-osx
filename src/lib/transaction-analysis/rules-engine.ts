@@ -460,7 +460,7 @@ export async function runRulesEngine(
   }
 
   // Build prior-year category totals if dates provided
-  let priorCategories = new Map<string, number>()
+  const priorCategories = new Map<string, number>()
   if (priorYearStart && priorYearEnd) {
     const priorTransactions = await prisma.qBTransaction.findMany({
       where: {
