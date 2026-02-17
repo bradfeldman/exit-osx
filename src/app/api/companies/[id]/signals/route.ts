@@ -116,7 +116,7 @@ const createSignalSchema = z.object({
   description: z.string().max(5000).optional(),
   category: z.enum(['FINANCIAL', 'TRANSFERABILITY', 'OPERATIONAL', 'MARKET', 'LEGAL_TAX', 'PERSONAL']).optional(),
   estimatedValueImpact: z.coerce.number().finite().optional(),
-  metadata: z.any().optional(),
+  metadata: z.record(z.string().max(100), z.union([z.string().max(5000), z.number().finite(), z.boolean(), z.null()])).optional(),
 })
 
 export async function POST(

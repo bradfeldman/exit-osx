@@ -26,7 +26,7 @@ const logActivitySchema = z.object({
   ]),
   documentId: z.string().uuid().optional().nullable(),
   folderId: z.string().uuid().optional().nullable(),
-  metadata: z.any().optional().nullable(),
+  metadata: z.record(z.string().max(100), z.union([z.string().max(5000), z.number().finite(), z.boolean(), z.null()])).optional().nullable(),
 })
 
 // POST - Log a data room activity
@@ -101,7 +101,7 @@ export async function POST(
         action,
         documentId: documentId || null,
         folderId: folderId || null,
-        metadata: metadata || null,
+        metadata: metadata ?? undefined,
         ipAddress: request.headers.get('x-forwarded-for') || null,
         userAgent: request.headers.get('user-agent') || null,
       }

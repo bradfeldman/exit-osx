@@ -16,6 +16,10 @@ import { DataRoomAccessLevel, DataRoomStage } from '@prisma/client'
 /** UUID v4 format validation */
 export const uuidSchema = z.string().uuid('Invalid ID format')
 
+/** SEC-102: Bounded JSON metadata schema for Prisma Json? fields (replaces z.any()) */
+const jsonPrimitive = z.union([z.string().max(5000), z.number().finite(), z.boolean(), z.null()])
+export const jsonMetadataSchema = z.record(z.string().max(100), jsonPrimitive).optional()
+
 /** Email validation with normalization */
 export const emailSchema = z.string().email('Invalid email').transform(val => val.toLowerCase().trim())
 
@@ -415,7 +419,16 @@ const financialAccountItem = z.object({
   ).optional(),
   institution: z.string().max(200).optional(),
   notes: z.string().max(1000).optional(),
-}).passthrough() // SEC-080: Allow extra fields from wizard (id, category, description, amount)
+  // SEC-080: Extra fields from wizard (previously used .passthrough())
+  id: z.string().max(100).optional(),
+  category: z.string().max(200).optional(),
+  description: z.string().max(1000).optional(),
+  amount: z.preprocess(
+    (val) => { const n = Number(val); return Number.isFinite(n) ? n : 0 },
+    z.number().finite()
+  ).optional(),
+  taxTreatment: z.string().max(100).optional(),
+})
 
 const financialJsonArray = z.array(financialAccountItem).max(100).optional().nullable()
 

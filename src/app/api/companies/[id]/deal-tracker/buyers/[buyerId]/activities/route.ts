@@ -7,7 +7,7 @@ import { validateRequestBody } from '@/lib/security/validation'
 
 const postSchema = z.object({
   description: z.string().min(1).max(5000),
-  metadata: z.any().optional(),
+  metadata: z.record(z.string().max(100), z.union([z.string().max(5000), z.number().finite(), z.boolean(), z.null()])).optional(),
 })
 
 /**

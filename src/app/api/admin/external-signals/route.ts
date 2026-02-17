@@ -26,7 +26,7 @@ const externalSignalPayloadSchema = z.object({
   description: longText.optional().nullable(),
   severity: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional().nullable(),
   estimatedValueImpact: z.coerce.number().finite().optional().nullable(),
-  rawData: z.record(z.string(), z.any()).optional().nullable(),
+  rawData: z.record(z.string().max(100), z.union([z.string().max(5000), z.number().finite(), z.boolean(), z.null()])).optional().nullable(),
 })
 
 const externalSignalBatchSchema = z.union([

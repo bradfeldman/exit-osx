@@ -15,7 +15,7 @@ const postSchema = z.object({
   ] as const satisfies readonly ActivityType[]),
   subject: z.string().min(1).max(500),
   description: z.string().max(5000).optional(),
-  metadata: z.any().optional(),
+  metadata: z.record(z.string().max(100), z.union([z.string().max(5000), z.number().finite(), z.boolean(), z.null()])).optional(),
 })
 
 /**

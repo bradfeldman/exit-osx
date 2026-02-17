@@ -77,7 +77,7 @@ export async function GET(
 const updateDataRoomSchema = z.object({
   name: z.string().max(500).optional(),
   stage: z.enum(['PREPARATION', 'TEASER', 'POST_NDA', 'DUE_DILIGENCE', 'CLOSED']).optional(),
-  settings: z.any().optional(),
+  settings: z.record(z.string().max(100), z.union([z.string().max(1000), z.number().finite(), z.boolean(), z.null()])).optional(),
 })
 
 /**

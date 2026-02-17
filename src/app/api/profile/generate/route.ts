@@ -12,7 +12,16 @@ const schema = z.object({
   industry: z.string().max(500).optional().nullable(),
   revenueRange: z.string().max(200).optional().nullable(),
   answers: z.record(z.string(), z.string().max(5000)),
-  questions: z.array(z.any()).max(50),
+  questions: z.array(z.object({
+    id: z.string().max(100),
+    question: z.string().max(2000),
+    options: z.array(z.object({
+      id: z.string().max(100),
+      text: z.string().max(1000),
+    })).max(20),
+    allowsOther: z.boolean(),
+    mapsToProfileField: z.string().max(200),
+  })).max(50),
 })
 
 export async function POST(request: Request) {
