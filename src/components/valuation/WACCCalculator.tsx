@@ -3,7 +3,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Slider } from '@/components/ui/slider'
 import { calculateCostOfEquity, formatPercent } from '@/lib/valuation/dcf-calculator'
 
 export interface WACCInputs {
@@ -24,13 +23,13 @@ interface WACCCalculatorProps {
 }
 
 const INPUT_RANGES = {
-  riskFreeRate: { min: 0.030, max: 0.060, step: 0.001, default: 0.041 },
-  marketRiskPremium: { min: 0.04, max: 0.07, step: 0.001, default: 0.050 },
-  beta: { min: 0.5, max: 2.0, step: 0.01, default: 1.0 },
-  sizeRiskPremium: { min: 0.010, max: 0.080, step: 0.001, default: 0.04 },
-  companySpecificRisk: { min: 0, max: 0.120, step: 0.001, default: 0.05 },
-  costOfDebt: { min: 0.05, max: 0.15, step: 0.001, default: 0.10 },
-  taxRate: { min: 0.15, max: 0.40, step: 0.01, default: 0.25 },
+  riskFreeRate: { min: 0, max: 0.999, step: 0.001, default: 0.041 },
+  marketRiskPremium: { min: 0, max: 0.999, step: 0.001, default: 0.050 },
+  beta: { min: 0, max: 99.9, step: 0.01, default: 1.0 },
+  sizeRiskPremium: { min: 0, max: 0.999, step: 0.001, default: 0.04 },
+  companySpecificRisk: { min: 0, max: 0.999, step: 0.001, default: 0.05 },
+  costOfDebt: { min: 0, max: 0.999, step: 0.001, default: 0.10 },
+  taxRate: { min: 0, max: 0.999, step: 0.01, default: 0.25 },
 }
 
 export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTier }: WACCCalculatorProps) {
@@ -41,14 +40,6 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
     inputs.sizeRiskPremium,
     inputs.companySpecificRisk
   )
-
-  const handleSliderChange = (key: keyof WACCInputs, value: number) => {
-    if (key === 'costOfDebt' || key === 'taxRate') {
-      onInputChange(key, value)
-    } else {
-      onInputChange(key, value)
-    }
-  }
 
   const handleInputChange = (key: keyof WACCInputs, value: string) => {
     const numValue = parseFloat(value) / 100
@@ -61,7 +52,7 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
     }
   }
 
-  const renderSliderInput = (
+  const renderInput = (
     key: keyof WACCInputs,
     label: string,
     isPercent: boolean = true,
@@ -80,6 +71,8 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
             <Input
               id={key}
               type="number"
+              min={0}
+              max={99.9}
               step={isBeta ? 0.01 : 0.1}
               value={isBeta ? (value as number).toFixed(2) : ((value as number) * 100).toFixed(1)}
               onChange={(e) => handleInputChange(key, e.target.value)}
@@ -87,17 +80,6 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
             />
             {isPercent && !isBeta && <span className="text-xs text-gray-500">%</span>}
           </div>
-        </div>
-        <Slider
-          value={value as number}
-          onValueChange={(v) => handleSliderChange(key, v)}
-          min={range.min}
-          max={range.max}
-          step={range.step}
-        />
-        <div className="flex justify-between text-xs text-gray-400">
-          <span>{isBeta ? range.min.toFixed(1) : formatPercent(range.min, 1)}</span>
-          <span>{isBeta ? range.max.toFixed(1) : formatPercent(range.max, 1)}</span>
         </div>
       </div>
     )
@@ -120,11 +102,11 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
             )}
           </div>
           <div className="space-y-4">
-            {renderSliderInput('riskFreeRate', 'Risk-Free Rate')}
-            {renderSliderInput('marketRiskPremium', 'Equity Risk Premium')}
-            {renderSliderInput('beta', 'Beta', true, true)}
-            {renderSliderInput('sizeRiskPremium', 'Size Risk Premium')}
-            {renderSliderInput('companySpecificRisk', 'Company-Specific Risk')}
+            {renderInput('riskFreeRate', 'Risk-Free Rate')}
+            {renderInput('marketRiskPremium', 'Equity Risk Premium')}
+            {renderInput('beta', 'Beta', true, true)}
+            {renderInput('sizeRiskPremium', 'Size Risk Premium')}
+            {renderInput('companySpecificRisk', 'Company-Specific Risk')}
           </div>
 
           {/* Cost of Equity Formula Display */}
@@ -161,6 +143,8 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
                   <Input
                     id="costOfDebt"
                     type="number"
+                    min={0}
+                    max={99.9}
                     step={0.1}
                     placeholder="Auto"
                     value={
@@ -177,15 +161,6 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
                   <span className="text-xs text-gray-500">%</span>
                 </div>
               </div>
-              {inputs.costOfDebt !== null && (
-                <Slider
-                  value={inputs.costOfDebt}
-                  onValueChange={(v) => onInputChange('costOfDebt', v)}
-                  min={INPUT_RANGES.costOfDebt.min}
-                  max={INPUT_RANGES.costOfDebt.max}
-                  step={INPUT_RANGES.costOfDebt.step}
-                />
-              )}
             </div>
 
             <div className="space-y-2">
@@ -197,7 +172,9 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
                   <Input
                     id="taxRate"
                     type="number"
-                    step={1}
+                    min={0}
+                    max={99.9}
+                    step={0.1}
                     placeholder="25%"
                     value={inputs.taxRate !== null ? (inputs.taxRate * 100).toFixed(0) : ''}
                     onChange={(e) =>
@@ -211,15 +188,6 @@ export function WACCCalculator({ inputs, onInputChange, calculatedWACC, ebitdaTi
                   <span className="text-xs text-gray-500">%</span>
                 </div>
               </div>
-              {inputs.taxRate !== null && (
-                <Slider
-                  value={inputs.taxRate}
-                  onValueChange={(v) => onInputChange('taxRate', v)}
-                  min={INPUT_RANGES.taxRate.min}
-                  max={INPUT_RANGES.taxRate.max}
-                  step={INPUT_RANGES.taxRate.step}
-                />
-              )}
             </div>
           </div>
         </div>

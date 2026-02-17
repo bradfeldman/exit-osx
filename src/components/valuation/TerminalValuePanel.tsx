@@ -3,7 +3,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Slider } from '@/components/ui/slider'
 
 interface TerminalValuePanelProps {
   terminalMethod: 'gordon' | 'exit_multiple'
@@ -71,6 +70,8 @@ export function TerminalValuePanel({
                   <Input
                     id="perpetualGrowth"
                     type="number"
+                    min={0}
+                    max={99.9}
                     step={0.1}
                     value={(perpetualGrowthRate * 100).toFixed(1)}
                     onChange={(e) => onPerpetualGrowthChange(parseFloat(e.target.value) / 100 || 0)}
@@ -78,18 +79,6 @@ export function TerminalValuePanel({
                   />
                   <span className="text-xs text-gray-500">%</span>
                 </div>
-              </div>
-              <Slider
-                value={perpetualGrowthRate}
-                onValueChange={onPerpetualGrowthChange}
-                min={0.01}
-                max={0.04}
-                step={0.001}
-              />
-              <div className="flex justify-between text-xs text-gray-400">
-                <span>1.0%</span>
-                <span className="text-gray-600">Typical: 2-3%</span>
-                <span>4.0%</span>
               </div>
             </div>
 
@@ -115,6 +104,8 @@ export function TerminalValuePanel({
                   <Input
                     id="exitMultiple"
                     type="number"
+                    min={0}
+                    max={99.9}
                     step={0.1}
                     value={exitMultiple?.toFixed(1) || ''}
                     onChange={(e) =>
@@ -125,25 +116,6 @@ export function TerminalValuePanel({
                   <span className="text-xs text-gray-500">x</span>
                 </div>
               </div>
-              {exitMultiple !== null && (
-                <>
-                  <Slider
-                    value={exitMultiple}
-                    onValueChange={onExitMultipleChange}
-                    min={2}
-                    max={15}
-                    step={0.1}
-                  />
-                  <div className="flex justify-between text-xs text-gray-400">
-                    <span>2.0x</span>
-                    <span className="text-gray-600">
-                      Industry: {industryMultipleLow.toFixed(1)}x - {industryMultipleHigh.toFixed(1)}
-                      x
-                    </span>
-                    <span>15.0x</span>
-                  </div>
-                </>
-              )}
             </div>
 
             <div className="p-3 bg-amber-50 rounded-lg">

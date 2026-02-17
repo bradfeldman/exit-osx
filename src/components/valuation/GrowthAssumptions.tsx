@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Slider } from '@/components/ui/slider'
 import { formatPercent, formatCurrency } from '@/lib/valuation/dcf-calculator'
 import {
   AreaChart,
@@ -122,6 +121,8 @@ export function GrowthAssumptions({
                   <Input
                     id={year}
                     type="number"
+                    min={0}
+                    max={99.9}
                     step={0.1}
                     value={((growthRates[year] || 0) * 100).toFixed(1)}
                     onChange={(e) => onGrowthRateChange(year, parseFloat(e.target.value) / 100 || 0)}
@@ -133,25 +134,6 @@ export function GrowthAssumptions({
             ))}
           </div>
 
-          {/* Individual Sliders */}
-          <div className="space-y-3 pt-2">
-            {YEARS.map((year, index) => (
-              <div key={`slider-${year}`} className="flex items-center gap-3">
-                <span className="text-xs text-gray-500 w-12">Y{index + 1}</span>
-                <Slider
-                  value={growthRates[year] || 0}
-                  onValueChange={(v) => onGrowthRateChange(year, v)}
-                  min={-0.1}
-                  max={0.2}
-                  step={0.005}
-                  className="flex-1"
-                />
-                <span className="text-xs text-gray-600 w-12 text-right">
-                  {formatPercent(growthRates[year] || 0, 1)}
-                </span>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* FCF Projection Chart */}
