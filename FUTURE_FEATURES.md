@@ -177,6 +177,13 @@ Items from product review prior to beta launch, organized by area.
 - Add a "Reset to best available data" button
 - **Priority**: Medium
 
+### BF-030: Integrate Pepperdine PCM Required Rates of Return for WACC
+- Use Table 1 from the Pepperdine Private Capital Markets Report (required rates of return by capital type and company size)
+- Map user's EBITDA to the correct size band, assume typical capital structure, blend senior debt rate (Rd) and equity required return (Re) into WACC
+- More defensible for SMB valuations than CAPM build-up from public market proxies
+- Pepperdine data is already referenced in industry multiple sources — this extends it to discount rates
+- **Priority**: Medium
+
 ---
 
 ## PERSONAL FINANCIAL STATEMENT

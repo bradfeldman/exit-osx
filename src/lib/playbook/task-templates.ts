@@ -250,6 +250,25 @@ export const taskTemplates: TaskTemplate[] = [
       },
     ],
   },
+  // TAX PLANNING: After-tax proceeds estimate (fires after financial records are in order)
+  {
+    questionPattern: 'financial records',
+    briCategory: 'FINANCIAL',
+    scoreThreshold: 1.0,
+    tasks: [
+      {
+        title: 'Estimate after-tax proceeds from sale',
+        description: 'Enterprise value is not what you take home. Work with your CPA to estimate net proceeds after: federal and state capital gains taxes, Net Investment Income Tax (3.8%), transaction costs (typically 5-8% for advisory fees, legal, and accounting), outstanding debt payoff, and working capital adjustments. For a $5M enterprise value, net proceeds often range from $3.0M-$3.8M depending on entity type and state. Knowing this number early prevents life decisions based on inflated expectations.',
+        actionType: 'TYPE_VII_READINESS',
+        effortLevel: 'LOW',
+        complexity: 'MODERATE',
+        estimatedHours: 4,
+        impactMultiplier: 0.5,
+        upgradeFromScore: 0.67,
+        upgradeToScore: 1.00,
+      },
+    ],
+  },
   {
     questionPattern: 'gross profit margin',
     briCategory: 'FINANCIAL',
@@ -665,6 +684,36 @@ export const taskTemplates: TaskTemplate[] = [
       },
     ],
   },
+  // TAX PLANNING: QSBS verification fires early (highest dollar-per-hour task a C-corp founder can do)
+  {
+    questionPattern: 'corporate structure',
+    briCategory: 'LEGAL_TAX',
+    scoreThreshold: 1.0,
+    tasks: [
+      {
+        title: 'Verify QSBS eligibility with tax advisor',
+        description: 'If your company is a C-corporation, Section 1202 Qualified Small Business Stock (QSBS) can exclude up to $10M (or 10x basis) in capital gains from federal tax. Eligibility depends on entity type, holding period (5+ years), active business requirements, and aggregate gross assets at issuance. Schedule a meeting with a tax advisor who specializes in QSBS to confirm eligibility and document the basis for exclusion before any transaction.',
+        actionType: 'TYPE_VII_READINESS',
+        effortLevel: 'LOW',
+        complexity: 'MODERATE',
+        estimatedHours: 4,
+        impactMultiplier: 0.9,
+        upgradeFromScore: 0.00,
+        upgradeToScore: 0.33,
+      },
+      {
+        title: 'Evaluate entity structure for tax-optimal exit',
+        description: 'Work with a tax advisor to evaluate whether your current entity structure (C-corp, S-corp, LLC, partnership) is optimized for the type of exit you expect. Key considerations include asset sale vs. stock sale implications, state tax exposure, installment sale eligibility, and whether restructuring before a transaction could reduce the total tax burden. This analysis typically saves $380K-$840K on a $5M exit.',
+        actionType: 'TYPE_V_RISK_REDUCTION',
+        effortLevel: 'LOW',
+        complexity: 'COMPLEX',
+        estimatedHours: 6,
+        impactMultiplier: 0.7,
+        upgradeFromScore: 0.67,
+        upgradeToScore: 1.00,
+      },
+    ],
+  },
   {
     questionPattern: 'contracts.*licenses.*permits',
     briCategory: 'LEGAL_TAX',
@@ -756,6 +805,36 @@ export const taskTemplates: TaskTemplate[] = [
       },
     ],
   },
+  // TAX PLANNING: Advisory team + pre-exit gifting (fires after timeline basics are set)
+  {
+    questionPattern: 'exit timeline',
+    briCategory: 'PERSONAL',
+    scoreThreshold: 1.0,
+    tasks: [
+      {
+        title: 'Assemble professional advisory team',
+        description: 'Before entering a transaction, you need a coordinated team: a transaction-experienced CPA, an M&A attorney, a wealth advisor, and optionally a business broker or investment banker. Each plays a distinct role — the CPA handles tax structuring, the attorney handles deal terms and reps/warranties, the wealth advisor ensures proceeds support your post-exit life, and the broker manages the process and buyer outreach. Misalignment between advisors is one of the most common (and expensive) mistakes sellers make.',
+        actionType: 'TYPE_VII_READINESS',
+        effortLevel: 'LOW',
+        complexity: 'MODERATE',
+        estimatedHours: 6,
+        impactMultiplier: 0.5,
+        upgradeFromScore: 0.00,
+        upgradeToScore: 0.33,
+      },
+      {
+        title: 'Evaluate pre-exit gifting strategies',
+        description: 'If you plan to transfer wealth to family members, gifting shares of the business before a sale — when the appraised value is lower — can save $400K-$800K in estate and gift taxes on a $5M exit. Strategies include annual exclusion gifts, Grantor Retained Annuity Trusts (GRATs), and Intentionally Defective Grantor Trusts (IDGTs). This must be done well before a transaction (ideally 2-3 years) to withstand IRS scrutiny. Discuss timing and structure with your estate planning attorney and CPA.',
+        actionType: 'TYPE_IX_OPTIONS',
+        effortLevel: 'MODERATE',
+        complexity: 'STRATEGIC',
+        estimatedHours: 10,
+        impactMultiplier: 0.7,
+        upgradeFromScore: 0.67,
+        upgradeToScore: 1.00,
+      },
+    ],
+  },
   {
     questionPattern: 'personal and business assets',
     briCategory: 'PERSONAL',
@@ -782,6 +861,25 @@ export const taskTemplates: TaskTemplate[] = [
         impactMultiplier: 0.5,
         upgradeFromScore: 0.33,
         upgradeToScore: 0.67,
+      },
+    ],
+  },
+  // TAX PLANNING: Estate plan (fires after personal/business assets are separated)
+  {
+    questionPattern: 'personal and business assets',
+    briCategory: 'PERSONAL',
+    scoreThreshold: 1.0,
+    tasks: [
+      {
+        title: 'Review or create estate plan before exit',
+        description: 'A business sale is a liquidity event that fundamentally changes your estate. If you don\'t have an estate plan, the proceeds will be distributed according to state intestacy laws — which may not reflect your wishes. If you do have one, it likely needs updating to account for the post-exit asset structure. Key elements: updated will, powers of attorney, healthcare directives, trust structure for proceeds, and beneficiary designations on all accounts. An estate planning attorney can typically complete this in 2-3 sessions.',
+        actionType: 'TYPE_VII_READINESS',
+        effortLevel: 'MODERATE',
+        complexity: 'COMPLEX',
+        estimatedHours: 12,
+        impactMultiplier: 0.6,
+        upgradeFromScore: 0.67,
+        upgradeToScore: 1.00,
       },
     ],
   },
