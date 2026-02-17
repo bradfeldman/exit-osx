@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { formatCurrency } from '@/lib/utils/currency'
 
 interface RiskDriverRowProps {
@@ -60,12 +61,17 @@ export function RiskDriverRow({
   // Special CTA for Financial Opacity
   const isFinancialOpacity = name === 'Financial Opacity'
 
+  const isCompleted = linkedTaskStatus === 'COMPLETED'
+
   return (
-    <div className="py-4">
+    <div className={cn('py-4', isCompleted && 'bg-emerald-50/30')}>
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-3">
-          <span className="text-lg font-bold text-muted-foreground/50 w-6 shrink-0">
-            {rank}
+          <span className={cn(
+            'text-lg font-bold w-6 shrink-0 relative',
+            isCompleted ? 'text-emerald-500' : 'text-muted-foreground/50'
+          )}>
+            {isCompleted ? '\u2713' : rank}
           </span>
           <div>
             <p className="text-base font-semibold text-foreground">{name}</p>
@@ -103,14 +109,18 @@ export function RiskDriverRow({
                   </Button>
                 </>
               ) : hasLinkedTask ? (
-                <Button size="sm" onClick={handleTaskCta}>
-                  {linkedTaskStatus === 'COMPLETED'
-                    ? '✓ Task Complete'
-                    : linkedTaskStatus === 'IN_PROGRESS'
+                isCompleted ? (
+                  <Button size="sm" variant="ghost" disabled className="text-emerald-600 opacity-100">
+                    Resolved
+                  </Button>
+                ) : (
+                  <Button size="sm" onClick={handleTaskCta}>
+                    {linkedTaskStatus === 'IN_PROGRESS'
                       ? `Continue: ${linkedTaskTitle?.slice(0, 30) ?? 'Task'}`
-                      : `Start: ${linkedTaskTitle?.slice(0, 30) ?? 'Fix this'} →`
-                  }
-                </Button>
+                      : `Start: ${linkedTaskTitle?.slice(0, 30) ?? 'Fix this'} \u2192`
+                    }
+                  </Button>
+                )
               ) : (
                 <Button size="sm" variant="outline" onClick={() => {
                   if (onExpandCategory) {
@@ -128,7 +138,10 @@ export function RiskDriverRow({
           </div>
         </div>
 
-        <span className="text-base font-bold text-destructive whitespace-nowrap ml-4">
+        <span className={cn(
+          'text-base font-bold whitespace-nowrap ml-4',
+          isCompleted ? 'text-muted-foreground/40 line-through' : 'text-destructive'
+        )}>
           -{formatCurrency(dollarImpact)}
         </span>
       </div>

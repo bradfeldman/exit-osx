@@ -237,9 +237,11 @@ export function DiagnosisPage() {
             allQuestionsAnswered={allQuestionsAnswered}
             lastAssessmentDate={data.lastAssessmentDate}
             companyId={selectedCompanyId}
+            isFreeUser={isFreeUser}
             onExpandCategory={(categoryId) => {
               setExpandedCategory(categoryId)
             }}
+            onUpgrade={() => setUpgradeModalOpen(true)}
             onReassessComplete={() => {
               setSharpenActive(false)
               fetchData()

@@ -10,23 +10,27 @@ import {
   Clock,
   Target,
   BarChart3,
+  Lock,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import {
   BRI_CATEGORY_ORDER,
   BRI_CATEGORY_LABELS,
-  type BRICategory,
 } from '@/lib/constants/bri-categories'
 
 type BannerState =
   | 'BASELINE_NEEDED'
+  | 'PARTIAL_FREE'
+  | 'FREE_COMPLETE_UPGRADE'
   | 'PARTIAL_PAID'
   | 'COOLDOWN'
   | 'REASSESS_AVAILABLE'
   | 'GENERATING'
   | 'SUCCESS'
   | 'ERROR'
+
+const FREE_CATEGORIES = ['FINANCIAL', 'OPERATIONAL']
 
 interface DiagnosisActionBannerProps {
   assessedCategoryCount: number
@@ -35,7 +39,9 @@ interface DiagnosisActionBannerProps {
   allQuestionsAnswered: boolean
   lastAssessmentDate: string | null
   companyId: string | null
+  isFreeUser?: boolean
   onExpandCategory: (category: string) => void
+  onUpgrade?: () => void
   onReassessComplete: () => void
   autoGenerate?: boolean
 }
@@ -67,7 +73,9 @@ export function DiagnosisActionBanner({
   allQuestionsAnswered,
   lastAssessmentDate,
   companyId,
+  isFreeUser = false,
   onExpandCategory,
+  onUpgrade,
   onReassessComplete,
   autoGenerate = false,
 }: DiagnosisActionBannerProps) {
@@ -82,6 +90,13 @@ export function DiagnosisActionBanner({
     [lastAssessmentDate]
   )
 
+  // For free users, check if both free categories are done
+  const freeAssessedCount = useMemo(
+    () => FREE_CATEGORIES.filter(c => assessedCategories.includes(c)).length,
+    [assessedCategories]
+  )
+  const allFreeDone = freeAssessedCount === FREE_CATEGORIES.length
+
   // Determine which logical state we're in
   const bannerState: BannerState = useMemo(() => {
     if (generationState === 'generating') return 'GENERATING'
@@ -89,10 +104,17 @@ export function DiagnosisActionBanner({
     if (generationState === 'error') return 'ERROR'
 
     if (assessedCategoryCount === 0) return 'BASELINE_NEEDED'
+
+    // Free user paths
+    if (isFreeUser) {
+      if (!allFreeDone) return 'PARTIAL_FREE'
+      return 'FREE_COMPLETE_UPGRADE'
+    }
+
     if (!hasFullAssessment) return 'PARTIAL_PAID'
     if (daysRemaining > 0) return 'COOLDOWN'
     return 'REASSESS_AVAILABLE'
-  }, [assessedCategoryCount, hasFullAssessment, daysRemaining, generationState])
+  }, [assessedCategoryCount, hasFullAssessment, daysRemaining, generationState, isFreeUser, allFreeDone])
 
   const nextCategory = useMemo(
     () => getNextUnassessedCategory(assessedCategories),
@@ -229,6 +251,100 @@ export function DiagnosisActionBanner({
             className="shrink-0 gap-1"
           >
             Start with Financial Health
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  // --- PARTIAL_FREE: Free user, 1 of 2 free categories done ---
+  if (bannerState === 'PARTIAL_FREE') {
+    const nextFree = FREE_CATEGORIES.find(c => !assessedCategories.includes(c))
+    const nextFreeLabel = nextFree ? BRI_CATEGORY_LABELS[nextFree as keyof typeof BRI_CATEGORY_LABELS] : null
+    return (
+      <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="h-9 w-9 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+              <BarChart3 className="h-4 w-4 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-blue-800">
+                {freeAssessedCount} of 2 free categories assessed
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Complete your second free category to see your initial risk profile and action items.
+              </p>
+              <div className="flex gap-1.5 mt-2.5">
+                {FREE_CATEGORIES.map((cat) => {
+                  const isAssessed = assessedCategories.includes(cat)
+                  return (
+                    <div
+                      key={cat}
+                      className={cn(
+                        'h-1.5 flex-1 rounded-full transition-colors',
+                        isAssessed ? 'bg-blue-500' : 'bg-blue-200/60'
+                      )}
+                      title={BRI_CATEGORY_LABELS[cat as keyof typeof BRI_CATEGORY_LABELS]}
+                    />
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+          {nextFree && nextFreeLabel && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onExpandCategory(nextFree)}
+              className="shrink-0 gap-1 border-blue-300 text-blue-700 hover:bg-blue-50"
+            >
+              Continue: {nextFreeLabel}
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // --- FREE_COMPLETE_UPGRADE: Free user, both free categories done ---
+  if (bannerState === 'FREE_COMPLETE_UPGRADE') {
+    const lockedCategories = BRI_CATEGORY_ORDER.filter(c => !FREE_CATEGORIES.includes(c))
+    return (
+      <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-orange-50/60 to-amber-50/40 p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+              <Lock className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">
+                Unlock Your Full Diagnosis
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                You&apos;ve assessed your free categories. Upgrade to diagnose all 6 areas and get a personalized action plan.
+              </p>
+              <div className="flex flex-wrap gap-1.5 mt-2.5">
+                {lockedCategories.map((cat) => (
+                  <span
+                    key={cat}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground bg-muted/50 rounded-full px-2.5 py-0.5"
+                  >
+                    <Lock className="h-3 w-3" />
+                    {BRI_CATEGORY_LABELS[cat as keyof typeof BRI_CATEGORY_LABELS]}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => onUpgrade?.()}
+            className="shrink-0 gap-1"
+          >
+            Upgrade
             <ChevronRight className="h-3.5 w-3.5" />
           </Button>
         </div>
