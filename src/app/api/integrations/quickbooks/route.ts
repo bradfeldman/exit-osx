@@ -10,7 +10,7 @@ import {
 import { createSignedOAuthState } from '@/lib/security/oauth-state'
 import { decryptToken, isEncrypted } from '@/lib/security/token-encryption'
 import { z } from 'zod'
-import { validateRequestBody, uuidSchema } from '@/lib/security/validation'
+import { validateRequestBody } from '@/lib/security/validation'
 
 // Sync can make 12+ API calls to QuickBooks — needs extended timeout
 export const maxDuration = 60
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
 
 const postSchema = z.object({
   action: z.enum(['connect', 'sync', 'cancel-sync']),
-  companyId: uuidSchema,
+  companyId: z.string().cuid('Invalid company ID format'),
 })
 
 // POST - Start QuickBooks OAuth flow or trigger sync

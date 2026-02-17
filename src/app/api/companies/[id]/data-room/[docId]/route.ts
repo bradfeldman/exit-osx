@@ -74,6 +74,7 @@ const patchDocumentSchema = z.object({
   mimeType: z.string().max(200).optional(),
   notes: z.string().max(5000).optional(),
   isFileUpload: z.boolean().optional(),
+  dataRoomStage: z.enum(['TEASER', 'POST_NDA', 'OFFER_RECEIVED', 'DUE_DILIGENCE']).nullable().optional(),
 })
 
 // PATCH - Update document metadata or upload file
@@ -125,6 +126,7 @@ export async function PATCH(
       mimeType,
       notes,
       isFileUpload,
+      dataRoomStage,
     } = validation.data
 
     const updateData: Record<string, unknown> = {}
@@ -132,6 +134,7 @@ export async function PATCH(
     if (documentName !== undefined) updateData.documentName = documentName
     if (description !== undefined) updateData.description = description
     if (notes !== undefined) updateData.notes = notes
+    if (dataRoomStage !== undefined) updateData.dataRoomStage = dataRoomStage
 
     // Handle update frequency change
     if (updateFrequency !== undefined) {

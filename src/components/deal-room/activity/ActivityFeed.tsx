@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { ActivityItem } from './ActivityItem'
 import { Button } from '@/components/ui/button'
+import { Search } from 'lucide-react'
 
 interface Activity {
   id: string
@@ -56,6 +57,7 @@ export function ActivityFeed({ companyId }: ActivityFeedProps) {
   const [hasMore, setHasMore] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [typeFilter, setTypeFilter] = useState('all')
+  const [companyFilter, setCompanyFilter] = useState('')
 
   const fetchActivities = useCallback(async (loadMore = false) => {
     if (!companyId) return
@@ -87,43 +89,82 @@ export function ActivityFeed({ companyId }: ActivityFeedProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId, typeFilter])
 
-  const grouped = groupByDate(activities)
+  // Unique buyer names for autocomplete hints
+  const uniqueBuyerNames = useMemo(() => {
+    const names = new Set<string>()
+    for (const a of activities) {
+      if (a.buyerName) names.add(a.buyerName)
+    }
+    return Array.from(names).sort()
+  }, [activities])
+
+  // Client-side company name filter
+  const filteredActivities = useMemo(() => {
+    if (!companyFilter.trim()) return activities
+    const q = companyFilter.toLowerCase()
+    return activities.filter(a =>
+      a.buyerName?.toLowerCase().includes(q) ||
+      a.contactName?.toLowerCase().includes(q) ||
+      a.description.toLowerCase().includes(q)
+    )
+  }, [activities, companyFilter])
+
+  const grouped = groupByDate(filteredActivities)
 
   const filterTypes = [
     { id: 'all', label: 'All' },
     { id: 'stage_change', label: 'Stage Changes' },
-    { id: 'document_view', label: 'Documents' },
-    { id: 'meeting', label: 'Meetings' },
-    { id: 'offer', label: 'Offers' },
   ]
 
   return (
     <div className="space-y-6">
       {/* Header + Filters */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase shrink-0">
           ACTIVITY
         </h2>
-        <div className="flex items-center gap-1">
-          {filterTypes.map(ft => (
-            <button
-              key={ft.id}
-              onClick={() => setTypeFilter(ft.id)}
-              className={`text-xs px-2 py-1 rounded-full transition-colors ${
-                typeFilter === ft.id
-                  ? 'bg-muted text-foreground font-medium'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {ft.label}
-            </button>
-          ))}
+
+        <div className="flex items-center gap-2 flex-1 justify-end">
+          {/* Company name filter */}
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <input
+              type="text"
+              value={companyFilter}
+              onChange={e => setCompanyFilter(e.target.value)}
+              placeholder="Filter by company..."
+              list="buyer-names"
+              className="text-xs bg-transparent border border-border/50 rounded-md pl-7 pr-2 py-1.5 w-48 focus:outline-none focus:ring-1 focus:ring-[var(--burnt-orange)] placeholder:text-muted-foreground/50"
+            />
+            <datalist id="buyer-names">
+              {uniqueBuyerNames.map(name => (
+                <option key={name} value={name} />
+              ))}
+            </datalist>
+          </div>
+
+          {/* Type filters */}
+          <div className="flex items-center gap-1">
+            {filterTypes.map(ft => (
+              <button
+                key={ft.id}
+                onClick={() => setTypeFilter(ft.id)}
+                className={`text-xs px-2 py-1 rounded-full transition-colors ${
+                  typeFilter === ft.id
+                    ? 'bg-muted text-foreground font-medium'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {ft.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Activity Groups */}
       {/* Empty state with value explanation (BF-012) */}
-      {activities.length === 0 && !isLoading && (
+      {filteredActivities.length === 0 && !isLoading && (
         <div className="text-center py-10 space-y-4">
           <div className="w-12 h-12 mx-auto rounded-full bg-muted flex items-center justify-center">
             <svg className="w-6 h-6 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -131,25 +172,31 @@ export function ActivityFeed({ companyId }: ActivityFeedProps) {
             </svg>
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-foreground">Your deal activity will appear here</h3>
+            <h3 className="text-sm font-semibold text-foreground">
+              {companyFilter ? 'No matching activities' : 'Your deal activity will appear here'}
+            </h3>
             <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
-              Once you share documents with prospective buyers, you&apos;ll see exactly who is viewing what and when &mdash; giving you real-time insight into buyer interest levels.
+              {companyFilter
+                ? 'Try a different company name or clear the filter.'
+                : 'Once you share documents with prospective buyers, you\u2019ll see exactly who is viewing what and when \u2014 giving you real-time insight into buyer interest levels.'}
             </p>
           </div>
-          <div className="grid grid-cols-3 gap-3 max-w-md mx-auto pt-2">
-            <div className="text-center">
-              <p className="text-xs font-medium text-foreground">Document Views</p>
-              <p className="text-xs text-muted-foreground">Track what buyers read</p>
+          {!companyFilter && (
+            <div className="grid grid-cols-3 gap-3 max-w-md mx-auto pt-2">
+              <div className="text-center">
+                <p className="text-xs font-medium text-foreground">Document Views</p>
+                <p className="text-xs text-muted-foreground">Track what buyers read</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs font-medium text-foreground">Stage Changes</p>
+                <p className="text-xs text-muted-foreground">See deal momentum</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs font-medium text-foreground">Engagement Signals</p>
+                <p className="text-xs text-muted-foreground">Gauge buyer interest</p>
+              </div>
             </div>
-            <div className="text-center">
-              <p className="text-xs font-medium text-foreground">Stage Changes</p>
-              <p className="text-xs text-muted-foreground">See deal momentum</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs font-medium text-foreground">Engagement Signals</p>
-              <p className="text-xs text-muted-foreground">Gauge buyer interest</p>
-            </div>
-          </div>
+          )}
         </div>
       )}
 

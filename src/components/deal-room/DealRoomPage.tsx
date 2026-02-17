@@ -162,7 +162,22 @@ export function DealRoomPage() {
     setSelectedBuyerId(buyerId)
   }
 
-  const handleStageChange = async (buyerId: string, newVisualStage: string) => {
+  const handleBuyerFieldUpdate = (buyerId: string, fields: Partial<PipelineBuyer>) => {
+    setLocalPipeline(prev => {
+      if (!prev) return prev
+      return {
+        ...prev,
+        stages: prev.stages.map(stage => ({
+          ...stage,
+          buyers: stage.buyers.map(b =>
+            b.id === buyerId ? { ...b, ...fields } : b
+          ),
+        })),
+      }
+    })
+  }
+
+  const handleStageChange = async (buyerId: string, newVisualStage: string, overrideApproval?: boolean) => {
     if (!selectedCompanyId || !localPipeline) return
 
     // Find buyer and current stage
@@ -210,7 +225,10 @@ export function DealRoomPage() {
         {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ stage: newVisualStage }),
+          body: JSON.stringify({
+            stage: newVisualStage,
+            ...(overrideApproval ? { overrideApproval: true } : {}),
+          }),
         }
       )
       if (!res.ok) throw new Error('Failed to update stage')
@@ -290,6 +308,7 @@ export function DealRoomPage() {
           companyId={selectedCompanyId}
           onClose={() => setSelectedBuyerId(null)}
           onStageChange={fetchData}
+          onBuyerFieldUpdate={handleBuyerFieldUpdate}
         />
       )}
     </div>

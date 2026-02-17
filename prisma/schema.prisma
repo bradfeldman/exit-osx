@@ -699,6 +699,7 @@ model DataRoomDocument {
   evidenceCategory  String?                   @map("evidence_category")
   expectedDocumentId String?                  @map("expected_document_id")
   evidenceSource    String?                   @map("evidence_source")
+  dataRoomStage     DataRoomStage?            @map("data_room_stage")
   tags              DataRoomDocumentTag[]
   versions          DataRoomDocumentVersion[]
   views             DataRoomDocumentView[]
@@ -1931,6 +1932,7 @@ enum DataRoomStage {
   PREPARATION
   TEASER
   POST_NDA
+  OFFER_RECEIVED
   DUE_DILIGENCE
   CLOSED
 }

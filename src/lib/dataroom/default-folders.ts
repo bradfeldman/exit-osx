@@ -224,6 +224,11 @@ export const STAGE_INFO: Record<DataRoomStage, { label: string; description: str
     description: 'Management presentation level',
     color: 'yellow',
   },
+  OFFER_RECEIVED: {
+    label: 'Offer Received',
+    description: 'IOI/LOI stage access',
+    color: 'amber',
+  },
   DUE_DILIGENCE: {
     label: 'Due Diligence',
     description: 'Full DD access',

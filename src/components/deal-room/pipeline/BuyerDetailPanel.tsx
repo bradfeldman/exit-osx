@@ -23,6 +23,7 @@ const APPROVAL_OPTIONS = [
 ]
 
 const BUYER_TYPE_OPTIONS = [
+  { value: '', label: '' },
   { value: 'STRATEGIC', label: 'Strategic' },
   { value: 'FINANCIAL', label: 'Financial' },
   { value: 'INDIVIDUAL', label: 'Individual' },
@@ -32,6 +33,7 @@ const BUYER_TYPE_OPTIONS = [
 ]
 
 const QUALITY_OPTIONS = [
+  { value: '', label: '' },
   { value: 1, label: '1 - Excellent' },
   { value: 2, label: '2 - Good' },
   { value: 3, label: '3 - Average' },
@@ -56,16 +58,17 @@ interface BuyerDetailPanelProps {
   companyId: string | null
   onClose: () => void
   onStageChange: () => void
+  onBuyerFieldUpdate: (buyerId: string, fields: Partial<PipelineBuyer>) => void
 }
 
-export function BuyerDetailPanel({ buyer, companyId, onClose, onStageChange }: BuyerDetailPanelProps) {
+export function BuyerDetailPanel({ buyer, companyId, onClose, onStageChange, onBuyerFieldUpdate }: BuyerDetailPanelProps) {
   const [showStageSelect, setShowStageSelect] = useState(false)
   const [isChangingStage, setIsChangingStage] = useState(false)
   const [isArchiving, setIsArchiving] = useState(false)
 
   // Editable fields (local state)
   const [approvalStatus, setApprovalStatus] = useState(buyer.approvalStatus)
-  const [buyerType, setBuyerType] = useState(buyer.buyerType)
+  const [buyerType, setBuyerType] = useState(buyer.buyerType || '')
   const [qualityScore, setQualityScore] = useState<number | ''>(buyer.qualityScore ?? '')
   const [notes, setNotes] = useState(buyer.internalNotes ?? '')
 
@@ -87,8 +90,10 @@ export function BuyerDetailPanel({ buyer, companyId, onClose, onStageChange }: B
         }
       )
       if (!res.ok) throw new Error('Failed to update')
+      return true
     } catch {
       toast.error('Failed to save changes')
+      return false
     }
   }, [companyId, buyer.id])
 
@@ -103,26 +108,43 @@ export function BuyerDetailPanel({ buyer, companyId, onClose, onStageChange }: B
       .finally(() => setIsLoadingParticipants(false))
   }, [companyId, buyer.id])
 
-  const handleApprovalChange = (value: string) => {
+  const handleApprovalChange = async (value: string) => {
     setApprovalStatus(value as PipelineBuyer['approvalStatus'])
-    patchBuyer({ approvalStatus: value })
+    const ok = await patchBuyer({ approvalStatus: value })
+    if (ok) {
+      onBuyerFieldUpdate(buyer.id, { approvalStatus: value as PipelineBuyer['approvalStatus'] })
+    }
   }
 
-  const handleBuyerTypeChange = (value: string) => {
+  const handleBuyerTypeChange = async (value: string) => {
     setBuyerType(value)
-    patchBuyer({ buyerType: value })
+    if (value === '') return // blank = no-op
+    const ok = await patchBuyer({ buyerType: value })
+    if (ok) {
+      onBuyerFieldUpdate(buyer.id, { buyerType: value })
+    }
   }
 
-  const handleQualityChange = (value: string) => {
+  const handleQualityChange = async (value: string) => {
+    if (value === '') {
+      setQualityScore('')
+      return
+    }
     const num = parseInt(value)
     if (isNaN(num)) return
     setQualityScore(num)
-    patchBuyer({ qualityScore: num })
+    const ok = await patchBuyer({ qualityScore: num })
+    if (ok) {
+      onBuyerFieldUpdate(buyer.id, { qualityScore: num })
+    }
   }
 
-  const handleNotesBlur = () => {
+  const handleNotesBlur = async () => {
     if (notes !== (buyer.internalNotes ?? '')) {
-      patchBuyer({ internalNotes: notes })
+      const ok = await patchBuyer({ internalNotes: notes })
+      if (ok) {
+        onBuyerFieldUpdate(buyer.id, { internalNotes: notes })
+      }
     }
   }
 
@@ -224,9 +246,8 @@ export function BuyerDetailPanel({ buyer, companyId, onClose, onStageChange }: B
                   onChange={e => handleQualityChange(e.target.value)}
                   className="text-sm bg-transparent border border-border/50 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[var(--burnt-orange)]"
                 >
-                  <option value="">Not rated</option>
                   {QUALITY_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option key={String(opt.value)} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
               </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { PipelineColumn } from './PipelineColumn'
 import { ExitedBuyersSection } from './ExitedBuyersSection'
 import { AddBuyerForm } from './AddBuyerForm'
@@ -40,6 +40,12 @@ interface Offer {
   notes: string | null
 }
 
+interface PendingDrop {
+  buyerId: string
+  buyerName: string
+  targetVisualStage: string
+}
+
 interface PipelineViewProps {
   pipeline: {
     totalBuyers: number
@@ -52,7 +58,7 @@ interface PipelineViewProps {
   offers: Offer[]
   companyId?: string | null
   onBuyerClick: (buyerId: string) => void
-  onStageChange: (buyerId: string, newVisualStage: string) => Promise<void>
+  onStageChange: (buyerId: string, newVisualStage: string, overrideApproval?: boolean) => Promise<void>
   onRefresh?: () => void
   onAddBuyer: (data: {
     companyName: string
@@ -77,6 +83,7 @@ export function PipelineView({
   const [draggedBuyerId, setDraggedBuyerId] = useState<string | null>(null)
   const [stagePickerOpen, setStagePickerOpen] = useState(false)
   const [selectedBuyerForMove, setSelectedBuyerForMove] = useState<PipelineBuyer | null>(null)
+  const [pendingDrop, setPendingDrop] = useState<PendingDrop | null>(null)
 
   const ndaCount = pipeline.stages
     .filter(s => ['under_nda', 'offer_received', 'diligence', 'closed'].includes(s.visualStage))
@@ -90,14 +97,38 @@ export function PipelineView({
     setDraggedBuyerId(null)
   }
 
+  const findBuyerAndStage = useCallback((buyerId: string) => {
+    for (const stage of pipeline.stages) {
+      const buyer = stage.buyers.find(b => b.id === buyerId)
+      if (buyer) return { buyer, visualStage: stage.visualStage }
+    }
+    return null
+  }, [pipeline.stages])
+
   const handleDrop = async (buyerId: string, targetVisualStage: string) => {
-    // Find current stage of dragged buyer
-    const currentStage = pipeline.stages.find(s =>
-      s.buyers.some(b => b.id === buyerId)
-    )
+    const found = findBuyerAndStage(buyerId)
+    if (!found) { handleDragEnd(); return }
+
+    const { buyer, visualStage: sourceStage } = found
 
     // Don't update if dropped on same stage
-    if (currentStage?.visualStage === targetVisualStage) {
+    if (sourceStage === targetVisualStage) {
+      handleDragEnd()
+      return
+    }
+
+    // Check if moving from Prospect to a later stage with unapproved status
+    const isFromProspect = sourceStage === 'identified'
+    const isMovingForward = targetVisualStage !== 'identified'
+    const isUnapproved = ['PENDING', 'HOLD', 'DENIED'].includes(buyer.approvalStatus)
+
+    if (isFromProspect && isMovingForward && isUnapproved) {
+      // Show confirmation dialog
+      setPendingDrop({
+        buyerId,
+        buyerName: buyer.companyName,
+        targetVisualStage,
+      })
       handleDragEnd()
       return
     }
@@ -108,6 +139,17 @@ export function PipelineView({
       console.error('Failed to update stage:', error)
     } finally {
       handleDragEnd()
+    }
+  }
+
+  const handleConfirmUnapprovedMove = async () => {
+    if (!pendingDrop) return
+    try {
+      await onStageChange(pendingDrop.buyerId, pendingDrop.targetVisualStage, true)
+    } catch (error) {
+      console.error('Failed to update stage:', error)
+    } finally {
+      setPendingDrop(null)
     }
   }
 
@@ -195,6 +237,38 @@ export function PipelineView({
           currentStage={getVisualStage(selectedBuyerForMove.currentStage as DealStage) as string}
           onStageSelect={handleStageSelect}
         />
+      )}
+
+      {/* Unapproved Move Confirmation Dialog */}
+      {pendingDrop && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/30 z-50"
+            onClick={() => setPendingDrop(null)}
+          />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-card border border-border rounded-xl shadow-xl p-6 max-w-sm w-full">
+            <h3 className="text-sm font-semibold text-foreground mb-2">
+              Move unapproved prospect?
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              <span className="font-medium text-foreground">{pendingDrop.buyerName}</span> is not currently approved. Are you sure you want to advance this prospect?
+            </p>
+            <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={() => setPendingDrop(null)}
+                className="text-sm px-3 py-1.5 rounded-md border border-border hover:bg-muted transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmUnapprovedMove}
+                className="text-sm px-3 py-1.5 rounded-md bg-[var(--burnt-orange)] text-white hover:opacity-90 transition-opacity"
+              >
+                Yes, move anyway
+              </button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   )

@@ -17,6 +17,7 @@ const patchSchema = z.object({
   approvalStatus: z.enum(['PENDING', 'APPROVED', 'HOLD', 'DENIED']).optional(),
   qualityScore: z.number().int().min(1).max(5).optional(),
   buyerType: z.enum(['STRATEGIC', 'FINANCIAL', 'INDIVIDUAL', 'MANAGEMENT', 'ESOP', 'OTHER']).optional(),
+  overrideApproval: z.boolean().optional(),
 })
 
 export async function PATCH(
@@ -32,7 +33,7 @@ export async function PATCH(
 
     const validation = await validateRequestBody(request, patchSchema)
     if (!validation.success) return validation.error
-    const { stage, action, internalNotes, approvalStatus, qualityScore, buyerType } = validation.data
+    const { stage, action, internalNotes, approvalStatus, qualityScore, buyerType, overrideApproval } = validation.data
 
     // Handle field updates (internalNotes, approvalStatus, qualityScore, buyerType)
     if (internalNotes !== undefined || approvalStatus !== undefined || qualityScore !== undefined || buyerType !== undefined) {
@@ -186,6 +187,19 @@ export async function PATCH(
         performedByUserId: auth.user.id,
       },
     })
+
+    // Log override if buyer was moved despite not being approved
+    if (overrideApproval) {
+      await prisma.dealActivity2.create({
+        data: {
+          dealId: buyer.dealId,
+          dealBuyerId: buyerId,
+          activityType: 'STAGE_CHANGED',
+          subject: `Moved to ${stage.replace(/_/g, ' ')} despite approval status: ${buyer.approvalStatus}`,
+          performedByUserId: auth.user.id,
+        },
+      })
+    }
 
     return NextResponse.json({ success: true, stage: backendStage })
   } catch (error) {
