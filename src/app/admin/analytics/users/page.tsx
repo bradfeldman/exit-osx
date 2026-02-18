@@ -1,67 +1,70 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { prisma } from '@/lib/prisma'
 import { AnalyticsUserTable } from '@/components/admin/analytics/AnalyticsUserTable'
+import { computeEngagementStatus } from '@/lib/analytics/engagement-status'
 
 export default async function AnalyticsUsersPage() {
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      createdAt: true,
-      updatedAt: true,
-      userType: true,
-      exposureState: true,
-      emailVerified: true,
-      workspaces: {
-        select: {
-          workspace: {
-            select: {
-              planTier: true,
-              trialEndsAt: true,
+  let users
+  let total
+
+  try {
+    users = await prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        createdAt: true,
+        updatedAt: true,
+        userType: true,
+        exposureState: true,
+        emailVerified: true,
+        workspaces: {
+          select: {
+            workspace: {
+              select: {
+                planTier: true,
+                trialEndsAt: true,
+              },
             },
           },
+          take: 1,
         },
-        take: 1,
-      },
-      _count: {
-        select: {
-          productEvents: true,
-          sessions: true,
+        _count: {
+          select: {
+            productEvents: true,
+            sessions: true,
+          },
+        },
+        productEvents: {
+          select: {
+            createdAt: true,
+            deviceType: true,
+            browser: true,
+            os: true,
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+        sessions: {
+          select: { createdAt: true },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
         },
       },
-      productEvents: {
-        select: {
-          createdAt: true,
-          deviceType: true,
-          browser: true,
-          os: true,
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 1,
-      },
-      sessions: {
-        select: { createdAt: true },
-        orderBy: { createdAt: 'desc' },
-        take: 1,
-      },
-    },
-    orderBy: { updatedAt: 'desc' },
-    take: 50,
-  })
+      orderBy: { updatedAt: 'desc' },
+      take: 50,
+    })
 
-  const total = await prisma.user.count()
-  const now = new Date()
+    total = await prisma.user.count()
+  } catch (error) {
+    console.error('[Analytics Users] Query failed:', error instanceof Error ? error.message : String(error))
+    throw error
+  }
 
   const serializedUsers = users.map((u) => {
     const lastEvent = u.productEvents[0]
     const lastSession = u.sessions[0]
     const lastActiveAt = lastEvent?.createdAt || lastSession?.createdAt || u.updatedAt
-
-    const daysSinceActive = (now.getTime() - new Date(lastActiveAt).getTime()) / (1000 * 60 * 60 * 24)
-    let engagementStatus: 'active' | 'stalled' | 'dormant' = 'active'
-    if (daysSinceActive > 14) engagementStatus = 'dormant'
-    else if (daysSinceActive > 3) engagementStatus = 'stalled'
 
     return {
       id: u.id,
@@ -79,7 +82,7 @@ export default async function AnalyticsUsersPage() {
       lastDevice: lastEvent?.deviceType || null,
       lastBrowser: lastEvent?.browser || null,
       lastOs: lastEvent?.os || null,
-      engagementStatus,
+      engagementStatus: computeEngagementStatus(lastActiveAt),
     }
   })
 

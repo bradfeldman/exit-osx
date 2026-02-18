@@ -102,12 +102,14 @@ export function AnalyticsUserTable({ initialUsers, initialPagination }: Analytic
 
   const handleSearch = () => fetchUsers(1)
   const handleStatusChange = (value: string) => {
-    setStatusFilter(value)
-    fetchUsers(1, search, value)
+    const v = value === 'all' ? '' : value
+    setStatusFilter(v)
+    fetchUsers(1, search, v)
   }
   const handleSortChange = (value: string) => {
-    setSortBy(value)
-    fetchUsers(1, search, statusFilter, value)
+    const v = value === 'newest' ? 'created' : value
+    setSortBy(v)
+    fetchUsers(1, search, statusFilter, v)
   }
 
   return (
@@ -131,7 +133,7 @@ export function AnalyticsUserTable({ initialUsers, initialPagination }: Analytic
             <SelectValue placeholder="All statuses" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All statuses</SelectItem>
+            <SelectItem value="all">All statuses</SelectItem>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="stalled">Stalled</SelectItem>
             <SelectItem value="dormant">Dormant</SelectItem>
@@ -143,7 +145,7 @@ export function AnalyticsUserTable({ initialUsers, initialPagination }: Analytic
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="lastActive">Last Active</SelectItem>
-            <SelectItem value="created">Newest</SelectItem>
+            <SelectItem value="newest">Newest</SelectItem>
           </SelectContent>
         </Select>
         <span className="ml-auto text-sm text-muted-foreground">

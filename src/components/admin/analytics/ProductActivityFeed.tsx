@@ -164,13 +164,13 @@ export function ProductActivityFeed({ initialEvents, initialPagination }: Produc
               <Label>Category</Label>
               <Select
                 value={filters.eventCategory}
-                onValueChange={(value) => setFilters({ ...filters, eventCategory: value })}
+                onValueChange={(value) => setFilters({ ...filters, eventCategory: value === 'all' ? '' : value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All categories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All categories</SelectItem>
+                  <SelectItem value="all">All categories</SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                   ))}
