@@ -12,6 +12,8 @@ import {
 } from '@/lib/security'
 import { SESSION_COOKIE_NAME, SESSION_COOKIE_MAX_AGE } from '@/lib/security/constants'
 import { serverAnalytics } from '@/lib/analytics/server'
+import { trackProductEvent } from '@/lib/analytics/track-product-event'
+import { prisma } from '@/lib/prisma'
 
 interface LoginResult {
   success: boolean
@@ -185,6 +187,21 @@ export async function secureLogin(
       userId: '', // Will be populated after user sync
       email,
       method: 'email',
+    }).catch(() => {})
+
+    // Track user_login product event (non-blocking)
+    prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+      select: { id: true },
+    }).then((dbUser) => {
+      if (dbUser) {
+        trackProductEvent({
+          userId: dbUser.id,
+          eventName: 'user_login',
+          eventCategory: 'auth',
+          metadata: { method: 'email' },
+        })
+      }
     }).catch(() => {})
 
     return { success: true }

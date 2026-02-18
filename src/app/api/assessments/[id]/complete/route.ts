@@ -8,6 +8,7 @@ import { getIndustryMultiples, estimateEbitdaFromRevenue } from '@/lib/valuation
 import { getMarketSalary } from '@/lib/valuation/recalculate-snapshot'
 import { triggerDossierUpdate } from '@/lib/dossier/build-dossier'
 import { clearOnboardingAlert } from '@/lib/alerts'
+import { trackProductEvent } from '@/lib/analytics/track-product-event'
 import {
   ALPHA,
   calculateCoreScore,
@@ -307,6 +308,15 @@ export async function POST(
 
     // Clear onboarding assessment notification (non-blocking)
     clearOnboardingAlert(dbUserId, 'ONBOARDING_ASSESSMENT').catch(() => {})
+
+    // Track assessment_completed product event
+    trackProductEvent({
+      userId: dbUserId,
+      eventName: 'assessment_completed',
+      eventCategory: 'assessment',
+      metadata: { assessmentId, companyId: assessment.companyId, briScore: Math.round(briScore * 100) },
+      page: '/dashboard/diagnosis',
+    })
 
     return NextResponse.json({
       assessment: completedAssessment,

@@ -11,6 +11,7 @@ import { Pencil, Loader2, CheckCircle, Link2, AlertCircle, X, TrendingUp } from 
 import { Card, CardContent } from '@/components/ui/card'
 import { fetchWithRetry } from '@/lib/fetch-with-retry'
 import { analytics } from '@/lib/analytics'
+import { TrackPageView } from '@/components/tracking/TrackPageView'
 
 interface FinancialPeriod {
   id: string
@@ -681,12 +682,15 @@ function FinancialsContent() {
 // Page component with Suspense
 export default function FinancialsPage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    }>
-      <FinancialsContent />
-    </Suspense>
+    <>
+      <TrackPageView page="/dashboard/financials" />
+      <Suspense fallback={
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      }>
+        <FinancialsContent />
+      </Suspense>
+    </>
   )
 }

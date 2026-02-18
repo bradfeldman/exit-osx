@@ -11,6 +11,7 @@ import { createLedgerEntryForTaskCompletion } from '@/lib/value-ledger/create-en
 import { createSignalWithLedgerEntry } from '@/lib/signals/create-signal'
 import { getDefaultConfidenceForChannel, applyConfidenceWeight } from '@/lib/signals/confidence-scoring'
 import { triggerDossierUpdate } from '@/lib/dossier/build-dossier'
+import { trackProductEvent } from '@/lib/analytics/track-product-event'
 import type { BriCategory } from '@prisma/client'
 import type { TaskGeneratedData } from '@/lib/signals/types'
 import { z } from 'zod'
@@ -122,6 +123,15 @@ export async function POST(
       }
 
       return updatedTask
+    })
+
+    // Track task_completed product event
+    trackProductEvent({
+      userId: result.auth.user.id,
+      eventName: 'task_completed',
+      eventCategory: 'task',
+      metadata: { taskId: id, companyId: existingTask.companyId, taskTitle: task.title },
+      page: '/dashboard/actions',
     })
 
     // =========================================================================

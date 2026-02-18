@@ -24,6 +24,8 @@ import {
   FlaskConical,
   MonitorCheck,
   Server,
+  BarChart3,
+  Radio,
 } from 'lucide-react'
 
 interface NavItem {
@@ -40,6 +42,14 @@ interface NavSection {
 }
 
 const navSections: NavSection[] = [
+  {
+    label: 'Analytics',
+    icon: BarChart3,
+    items: [
+      { label: 'Live Activity', href: '/admin/analytics/activity', icon: Radio },
+      { label: 'Users', href: '/admin/analytics/users', icon: Users },
+    ],
+  },
   {
     label: 'Customer Service',
     icon: Headset,
@@ -97,6 +107,7 @@ const navSections: NavSection[] = [
 export function AdminNav() {
   const pathname = usePathname()
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    'Analytics': true,
     'Customer Service': true,
     'Variable Management': true,
     'User Management': true,

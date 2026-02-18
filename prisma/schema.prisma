@@ -75,6 +75,7 @@ model User {
   companyMembers           CompanyMember[]
   companyMemberAssignments CompanyMember[]            @relation("CompanyMemberAssigner")
   personalFinancials       PersonalFinancials?
+  productEvents            ProductEvent[]
 
   @@map("users")
 }
@@ -3493,4 +3494,26 @@ model TransactionFlag {
   @@index([companyId, status])
   @@index([companyId, flagType])
   @@map("transaction_flags")
+}
+
+model ProductEvent {
+  id            String   @id @default(cuid())
+  userId        String   @map("user_id")
+  eventName     String   @map("event_name")
+  eventCategory String   @map("event_category")
+  metadata      Json?
+  page          String?
+  deviceType    String?  @map("device_type")
+  browser       String?
+  os            String?
+  ipAddress     String?  @map("ip_address")
+  sessionId     String?  @map("session_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([eventName])
+  @@index([eventCategory])
+  @@index([createdAt])
+  @@map("product_events")
 }
