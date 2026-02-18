@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -114,15 +115,17 @@ export function AnalyticsUserDetail({
   browserBreakdown,
   companyState,
 }: AnalyticsUserDetailProps) {
-  // Calculate engagement status
-  const lastEventDate = recentEvents[0]?.createdAt
-  const daysSinceActive = lastEventDate
-    ? (Date.now() - new Date(lastEventDate).getTime()) / (1000 * 60 * 60 * 24)
-    : 999
+  // Calculate engagement status (memoized to avoid impure Date.now() during render)
+  const engagementStatus = useMemo(() => {
+    const lastEventDate = recentEvents[0]?.createdAt
+    const daysSinceActive = lastEventDate
+      ? (Date.now() - new Date(lastEventDate).getTime()) / (1000 * 60 * 60 * 24)
+      : 999
 
-  let engagementStatus: 'active' | 'stalled' | 'dormant' = 'active'
-  if (daysSinceActive > 14) engagementStatus = 'dormant'
-  else if (daysSinceActive > 3) engagementStatus = 'stalled'
+    if (daysSinceActive > 14) return 'dormant' as const
+    if (daysSinceActive > 3) return 'stalled' as const
+    return 'active' as const
+  }, [recentEvents])
 
   const statusColors: Record<string, string> = {
     active: 'bg-green-100 text-green-800',
