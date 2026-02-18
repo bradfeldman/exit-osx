@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { AnalyticsUserDetail } from '@/components/admin/analytics/AnalyticsUserDetail'
+import { computeEngagementStatus } from '@/lib/analytics/engagement-status'
 
 export default async function AnalyticsUserDetailPage({
   params,
@@ -114,13 +115,7 @@ export default async function AnalyticsUserDetailPage({
     }
   }
 
-  // Compute engagement status on the server (avoids impure Date.now() in client render)
-  const lastEventDate = recentEvents[0]?.createdAt
-  const daysSinceActive = lastEventDate
-    ? (Date.now() - lastEventDate.getTime()) / (1000 * 60 * 60 * 24)
-    : 999
-  const engagementStatus: 'active' | 'stalled' | 'dormant' =
-    daysSinceActive > 14 ? 'dormant' : daysSinceActive > 3 ? 'stalled' : 'active'
+  const engagementStatus = computeEngagementStatus(recentEvents[0]?.createdAt ?? null)
 
   return (
     <AnalyticsUserDetail
