@@ -32,7 +32,6 @@ export interface AssessmentResults {
 
 interface ResultsRevealProps {
   results: AssessmentResults
-  email: string
   basics: BusinessBasicsData
   profile: BusinessProfileData
   scan: BuyerScanData
@@ -75,7 +74,8 @@ function getCategoryBarWidth(score: number): number {
   return score * 100
 }
 
-export function ResultsReveal({ results, email, basics, profile, scan }: ResultsRevealProps) {
+export function ResultsReveal({ results, basics, profile, scan }: ResultsRevealProps) {
+  const [email, setEmail] = useState('')
   const router = useRouter()
   const [phase, setPhase] = useState(0) // 0=BRI, 1=categories, 2=valuation, 3=tasks, 4=CTA
   const [isSaving, setIsSaving] = useState(false)
@@ -326,7 +326,15 @@ export function ResultsReveal({ results, email, basics, profile, scan }: Results
               <div className="space-y-3 max-w-sm mx-auto">
                 <div>
                   <Label htmlFor="save-email" className="text-xs text-muted-foreground">Email</Label>
-                  <Input id="save-email" value={email} disabled className="h-10 bg-muted" />
+                  <Input
+                    id="save-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    className="h-10"
+                    autoComplete="email"
+                  />
                 </div>
                 <div>
                   <Label htmlFor="save-password">Set a Password</Label>

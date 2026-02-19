@@ -1,11 +1,24 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { ArrowLeft, ArrowRight, Edit2, Loader2 } from 'lucide-react'
+import { Loader2, ArrowRight } from 'lucide-react'
 import type { BusinessBasicsData } from './BusinessBasicsStep'
 import type { BusinessProfileData } from './BusinessProfileStep'
 import type { BuyerScanData } from './BuyerScanStep'
 import type { AssessStep } from './AssessmentFlow'
+
+// ---------------------------------------------------------------------------
+// Label Maps
+// ---------------------------------------------------------------------------
+
+const REVENUE_BAND_LABELS: Record<string, string> = {
+  UNDER_1M: 'Under $1M',
+  '1M_3M': '$1M – $3M',
+  '3M_5M': '$3M – $5M',
+  '5M_10M': '$5M – $10M',
+  '10M_25M': '$10M – $25M',
+  '25M_50M': '$25M – $50M',
+  '50M_PLUS': '$50M+',
+}
 
 const PROFILE_FIELD_NAMES: Record<string, string> = {
   revenueModel: 'Revenue Model',
@@ -21,6 +34,7 @@ const PROFILE_LABELS: Record<string, Record<string, string>> = {
     TRANSACTIONAL: 'Transactional',
     RECURRING_CONTRACTS: 'Recurring contracts',
     SUBSCRIPTION_SAAS: 'Subscription / SaaS',
+    HYBRID: 'Mix of both',
   },
   laborIntensity: {
     VERY_HIGH: 'More than most',
@@ -48,6 +62,39 @@ const PROFILE_LABELS: Record<string, Record<string, string>> = {
   },
 }
 
+const SCAN_QUESTIONS_SHORT: Record<string, string> = {
+  'financial-1': 'Third-party financials',
+  'financial-2': 'Customer concentration',
+  'transferability-1': 'Business without you',
+  'transferability-2': 'Successor readiness',
+  'operational-1': 'Written documentation',
+  'legal-1': 'Signed contracts',
+  'market-1': 'Recurring revenue',
+  'personal-1': 'Exit commitment',
+}
+
+const ANSWER_COLORS: Record<string, { bg: string; text: string }> = {
+  yes: { bg: 'var(--green-light)', text: 'var(--green)' },
+  mostly: { bg: 'var(--accent-light)', text: 'var(--primary)' },
+  not_yet: { bg: 'var(--orange-light)', text: 'var(--orange)' },
+  no: { bg: 'var(--red-light)', text: 'var(--red)' },
+  true: { bg: 'var(--green-light)', text: 'var(--green)' },
+  false: { bg: 'var(--red-light)', text: 'var(--red)' },
+}
+
+const ANSWER_LABELS: Record<string, string> = {
+  yes: 'Yes',
+  mostly: 'Mostly',
+  not_yet: 'Not yet',
+  no: 'No',
+  true: 'Yes',
+  false: 'No',
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
 interface ReviewStepProps {
   basics: BusinessBasicsData
   profile: BusinessProfileData
@@ -58,127 +105,178 @@ interface ReviewStepProps {
   onBack: () => void
 }
 
-export function ReviewStep({ basics, profile, scan, onConfirm, onEdit, isCalculating, onBack }: ReviewStepProps) {
-  const risksFound = scan.riskCount
-  const answeredYes = Object.values(scan.answers).filter(v => v === true).length
-
+export function ReviewStep({ basics, profile, scan, onConfirm, onEdit, isCalculating }: ReviewStepProps) {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      {/* Eyebrow */}
+      <div
+        className="text-[11px] font-semibold uppercase tracking-[0.8px]"
+        style={{ color: 'var(--primary)' }}
+      >
+        Step 4 of 5
+      </div>
+
+      {/* Headline */}
       <div>
-        <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
+        <h2
+          className="text-[28px] font-bold"
+          style={{ color: 'var(--text-primary)', letterSpacing: '-0.5px' }}
+        >
           Everything look right?
         </h2>
-        <p className="text-muted-foreground mt-2">
-          Review your answers before we calculate your results.
+        <p
+          className="mt-1 text-[15px]"
+          style={{ color: 'var(--text-secondary)' }}
+        >
+          Tap any answer to change it. Your results depend on accuracy.
         </p>
       </div>
 
-      {/* Business Basics */}
-      <div className="bg-card rounded-xl border border-border p-5">
+      {/* Section 1: Your Business */}
+      <div
+        className="rounded-2xl p-5"
+        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+      >
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-foreground">Business Basics</h3>
+          <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+            Your Business
+          </h3>
           <button
             type="button"
             onClick={() => onEdit('basics')}
-            className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+            className="text-sm font-medium"
+            style={{ color: 'var(--primary)' }}
           >
-            <Edit2 className="w-3.5 h-3.5" />
-            Edit
+            Change
           </button>
         </div>
-        <dl className="space-y-2 text-sm">
+        <dl className="space-y-2.5 text-sm">
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">Email</dt>
-            <dd className="font-medium text-foreground">{basics.email}</dd>
+            <dt style={{ color: 'var(--text-secondary)' }}>Business name</dt>
+            <dd className="font-medium" style={{ color: 'var(--text-primary)' }}>{basics.companyName}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">Company</dt>
-            <dd className="font-medium text-foreground">{basics.companyName}</dd>
-          </div>
-          <div className="flex justify-between">
-            <dt className="text-muted-foreground">Revenue</dt>
-            <dd className="font-medium text-foreground">${basics.annualRevenue.toLocaleString()}</dd>
+            <dt style={{ color: 'var(--text-secondary)' }}>Revenue</dt>
+            <dd className="font-medium" style={{ color: 'var(--text-primary)' }}>
+              {REVENUE_BAND_LABELS[basics.revenueBand] || basics.revenueBand}
+            </dd>
           </div>
           <div>
-            <dt className="text-muted-foreground mb-1">Description</dt>
-            <dd className="text-foreground text-xs leading-relaxed">{basics.businessDescription}</dd>
+            <dt className="mb-1" style={{ color: 'var(--text-secondary)' }}>Description</dt>
+            <dd className="text-xs leading-relaxed" style={{ color: 'var(--text-primary)' }}>
+              {basics.businessDescription}
+            </dd>
           </div>
         </dl>
       </div>
 
-      {/* Business Profile */}
-      <div className="bg-card rounded-xl border border-border p-5">
+      {/* Section 2: Business Profile */}
+      <div
+        className="rounded-2xl p-5"
+        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+      >
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-foreground">Business Profile</h3>
+          <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+            Business Profile
+          </h3>
           <button
             type="button"
             onClick={() => onEdit('profile')}
-            className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+            className="text-sm font-medium"
+            style={{ color: 'var(--primary)' }}
           >
-            <Edit2 className="w-3.5 h-3.5" />
-            Edit
+            Change
           </button>
         </div>
-        <dl className="space-y-2 text-sm">
+        <dl className="space-y-2.5 text-sm">
           {Object.entries(profile).map(([key, value]) => (
             <div key={key} className="flex justify-between">
-              <dt className="text-muted-foreground">{PROFILE_FIELD_NAMES[key] || key}</dt>
-              <dd className="font-medium text-foreground">{PROFILE_LABELS[key]?.[value] || value}</dd>
+              <dt style={{ color: 'var(--text-secondary)' }}>{PROFILE_FIELD_NAMES[key] || key}</dt>
+              <dd className="font-medium" style={{ color: 'var(--text-primary)' }}>
+                {PROFILE_LABELS[key]?.[value] || value}
+              </dd>
             </div>
           ))}
         </dl>
       </div>
 
-      {/* Buyer Scan Summary */}
-      <div className="bg-card rounded-xl border border-border p-5">
+      {/* Section 3: Buyer Confidence Answers */}
+      <div
+        className="rounded-2xl p-5"
+        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+      >
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-foreground">Buyer Confidence Scan</h3>
+          <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+            Buyer Confidence Answers
+          </h3>
           <button
             type="button"
             onClick={() => onEdit('scan')}
-            className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+            className="text-sm font-medium"
+            style={{ color: 'var(--primary)' }}
           >
-            <Edit2 className="w-3.5 h-3.5" />
-            Edit
+            Change
           </button>
         </div>
-        <div className="flex gap-6 text-sm">
-          <div>
-            <span className="text-muted-foreground">Yes answers: </span>
-            <span className="font-medium text-foreground">{answeredYes} of 8</span>
-          </div>
-          <div>
-            <span className="text-muted-foreground">Risks found: </span>
-            <span className="font-medium text-foreground">{risksFound}</span>
-          </div>
+        <div className="space-y-2">
+          {Object.entries(scan.answers).map(([id, answer]) => {
+            const answerStr = String(answer)
+            const colors = ANSWER_COLORS[answerStr] || ANSWER_COLORS['no']
+            const label = ANSWER_LABELS[answerStr] || answerStr
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => onEdit('scan')}
+                className="w-full flex items-center justify-between py-2 px-1 rounded-lg text-sm transition-colors hover:bg-black/[0.02]"
+              >
+                <span style={{ color: 'var(--text-primary)' }}>
+                  {SCAN_QUESTIONS_SHORT[id] || id}
+                </span>
+                <span
+                  className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                  style={{ background: colors.bg, color: colors.text }}
+                >
+                  {label}
+                </span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex gap-3">
-        <Button variant="ghost" size="lg" onClick={onBack} disabled={isCalculating}>
-          <ArrowLeft className="mr-2 w-4 h-4" />
-          Back
-        </Button>
-        <Button
-          size="lg"
-          className="flex-1 h-12 text-base font-medium"
-          onClick={onConfirm}
-          disabled={isCalculating}
-        >
-          {isCalculating ? (
-            <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Calculating...
-            </>
-          ) : (
-            <>
-              Calculate My Results
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </>
-          )}
-        </Button>
-      </div>
+      {/* Bottom text */}
+      <p
+        className="text-center text-sm"
+        style={{ color: 'var(--text-secondary)' }}
+      >
+        All good? Let&apos;s see what your business is worth.
+      </p>
+
+      {/* See My Results button */}
+      <button
+        type="button"
+        onClick={onConfirm}
+        disabled={isCalculating}
+        className="w-full h-12 rounded-lg text-base font-medium transition-all flex items-center justify-center gap-2"
+        style={{
+          background: 'var(--primary)',
+          color: 'var(--primary-foreground)',
+          opacity: isCalculating ? 0.7 : 1,
+        }}
+      >
+        {isCalculating ? (
+          <>
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Calculating...
+          </>
+        ) : (
+          <>
+            See My Results
+            <ArrowRight className="w-5 h-5" />
+          </>
+        )}
+      </button>
     </div>
   )
 }
