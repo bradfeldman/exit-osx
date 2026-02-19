@@ -522,20 +522,19 @@ export const assessSaveSchema = z.object({
   email: emailSchema,
   password: z.string().min(8, 'Password must be at least 8 characters').max(128),
   basics: z.object({
-    email: emailSchema,
     companyName: z.string().min(1).max(200),
     businessDescription: z.string().min(1).max(5000),
-    annualRevenue: financialAmount.refine(v => v > 0, 'Revenue must be positive'),
+    revenueBand: z.enum(['UNDER_1M', '1M_3M', '3M_5M', '5M_10M', '10M_25M', '25M_50M', '50M_PLUS']),
   }),
   profile: z.object({
-    revenueModel: z.enum(['PROJECT_BASED', 'TRANSACTIONAL', 'RECURRING_CONTRACTS', 'SUBSCRIPTION_SAAS']),
+    revenueModel: z.enum(['PROJECT_BASED', 'TRANSACTIONAL', 'RECURRING_CONTRACTS', 'SUBSCRIPTION_SAAS', 'HYBRID']),
     laborIntensity: z.enum(['LOW', 'MODERATE', 'HIGH', 'VERY_HIGH']),
     assetIntensity: z.enum(['ASSET_LIGHT', 'MODERATE', 'ASSET_HEAVY']),
     ownerInvolvement: z.enum(['MINIMAL', 'LOW', 'MODERATE', 'HIGH', 'CRITICAL']),
     grossMarginProxy: z.enum(['LOW', 'MODERATE', 'GOOD', 'EXCELLENT']),
   }),
   scan: z.object({
-    answers: z.record(z.string(), z.boolean()),
+    answers: z.record(z.string(), z.union([z.boolean(), z.enum(['yes', 'mostly', 'not_yet', 'no'])])),
     riskCount: z.coerce.number().int().min(0).max(50),
     briScore: z.coerce.number().finite().min(0).max(100),
   }),

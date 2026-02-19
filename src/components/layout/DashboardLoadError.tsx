@@ -27,10 +27,10 @@ export function DashboardLoadError() {
         <div className="flex justify-center mb-2">
           <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
             {/* Stars */}
-            <circle cx="15" cy="25" r="2" fill="#B87333" opacity="0.6">
+            <circle cx="15" cy="25" r="2" fill="#0071E3" opacity="0.6">
               <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
             </circle>
-            <circle cx="105" cy="35" r="1.5" fill="#B87333" opacity="0.4">
+            <circle cx="105" cy="35" r="1.5" fill="#0071E3" opacity="0.4">
               <animate attributeName="opacity" values="0.4;0.9;0.4" dur="2.5s" repeatCount="indefinite" />
             </circle>
             <circle cx="25" cy="85" r="1" fill="white" opacity="0.3">
@@ -46,17 +46,17 @@ export function DashboardLoadError() {
             {/* Rocket body */}
             <g transform="translate(60, 60) rotate(-45) translate(-12, -24)">
               {/* Nose cone */}
-              <path d="M12 0 C12 0 4 12 4 20 L20 20 C20 12 12 0 12 0Z" fill="#B87333" />
+              <path d="M12 0 C12 0 4 12 4 20 L20 20 C20 12 12 0 12 0Z" fill="#0071E3" />
               {/* Body */}
               <rect x="4" y="20" width="16" height="24" rx="2" fill="white" opacity="0.9" />
               {/* Window */}
-              <circle cx="12" cy="30" r="4" fill="#1e293b" stroke="#B87333" strokeWidth="1.5" />
-              <circle cx="12" cy="30" r="2" fill="#B87333" opacity="0.3" />
+              <circle cx="12" cy="30" r="4" fill="#1e293b" stroke="#0071E3" strokeWidth="1.5" />
+              <circle cx="12" cy="30" r="2" fill="#0071E3" opacity="0.3" />
               {/* Fins */}
-              <path d="M4 38 L-2 48 L4 44Z" fill="#B87333" opacity="0.8" />
-              <path d="M20 38 L26 48 L20 44Z" fill="#B87333" opacity="0.8" />
+              <path d="M4 38 L-2 48 L4 44Z" fill="#0071E3" opacity="0.8" />
+              <path d="M20 38 L26 48 L20 44Z" fill="#0071E3" opacity="0.8" />
               {/* Exhaust */}
-              <path d="M6 44 L12 56 L18 44Z" fill="#B87333" opacity="0.5">
+              <path d="M6 44 L12 56 L18 44Z" fill="#0071E3" opacity="0.5">
                 <animate attributeName="opacity" values="0.3;0.6;0.3" dur="0.5s" repeatCount="indefinite" />
               </path>
               <path d="M8 44 L12 52 L16 44Z" fill="#fbbf24" opacity="0.6">

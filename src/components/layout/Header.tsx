@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useCompany } from '@/contexts/CompanyContext'
@@ -41,16 +40,12 @@ export function Header({ user }: HeaderProps) {
     <header className="sticky top-0 z-40 flex h-14 sm:h-16 shrink-0 items-center gap-x-3 border-b border-border bg-card/95 backdrop-blur-md px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
       {/* Mobile logo */}
       <div className="lg:hidden flex items-center gap-2 min-w-0">
-        <Image
-          src="/logo.webp"
-          alt="Exit OSx"
-          width={28}
-          height={28}
-          className="h-7 w-7 shrink-0"
-        />
-        {/* Show company name on mobile instead of app name */}
+        <svg viewBox="0 0 32 32" className="h-7 w-7 shrink-0" fill="none" aria-label="Exit OS">
+          <rect width="32" height="32" rx="8" fill="var(--primary)" />
+          <path d="M8 16L14 22L24 10" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
         <span className="text-base font-semibold text-foreground truncate">
-          {selectedCompany?.name || 'Exit OSx'}
+          {selectedCompany?.name || 'Exit OS'}
         </span>
       </div>
 

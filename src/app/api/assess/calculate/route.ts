@@ -27,7 +27,7 @@ const schema = z.object({
   buyerScan: z.object({
     briScore: z.coerce.number().finite().min(0).max(100),
     riskCount: z.coerce.number().int().min(0).max(100),
-    answers: z.record(z.string(), z.boolean()),
+    answers: z.record(z.string(), z.union([z.boolean(), z.enum(['yes', 'mostly', 'not_yet', 'no'])])),
   }),
   classification: z.object({
     primaryIndustry: z.object({
@@ -152,23 +152,34 @@ const SCAN_QUESTIONS = [
   { id: 'personal-1', category: 'PERSONAL', riskOnNo: true },
 ]
 
-function buildCategoryBreakdown(answers: Record<string, boolean>): Record<string, number> {
-  const catScores: Record<string, { good: number; total: number }> = {}
+// Convert any answer to a 0-1 score, handling both legacy boolean and 4-option values
+function answerToScore(answer: boolean | string, inverted: boolean): number {
+  // Legacy boolean support
+  if (typeof answer === 'boolean') {
+    const base = answer ? 1.0 : 0.0
+    return inverted ? 1.0 - base : base
+  }
+  // 4-option scale
+  const scores: Record<string, number> = { yes: 1.0, mostly: 0.7, not_yet: 0.3, no: 0.0 }
+  const base = scores[answer] ?? 0.0
+  return inverted ? 1.0 - base : base
+}
+
+function buildCategoryBreakdown(answers: Record<string, boolean | string>): Record<string, number> {
+  const catScores: Record<string, { score: number; total: number }> = {}
 
   for (const q of SCAN_QUESTIONS) {
     const answer = answers[q.id]
     if (answer === undefined) continue
 
-    if (!catScores[q.category]) catScores[q.category] = { good: 0, total: 0 }
+    if (!catScores[q.category]) catScores[q.category] = { score: 0, total: 0 }
     catScores[q.category].total++
-
-    const isRisk = q.riskOnNo ? answer !== true : answer === true
-    if (!isRisk) catScores[q.category].good++
+    catScores[q.category].score += answerToScore(answer, !q.riskOnNo)
   }
 
   const result: Record<string, number> = {}
   for (const [cat, scores] of Object.entries(catScores)) {
-    result[cat] = scores.total > 0 ? scores.good / scores.total : 0.5
+    result[cat] = scores.total > 0 ? scores.score / scores.total : 0.5
   }
   return result
 }
@@ -196,15 +207,17 @@ const CATEGORY_IMPACT_WEIGHTS: Record<string, number> = {
 }
 
 function generateTopTasks(
-  answers: Record<string, boolean>,
+  answers: Record<string, boolean | string>,
   valueGap: number
 ): Array<{ title: string; category: string; estimatedImpact: number }> {
   const risks: Array<{ id: string; title: string; category: string; weight: number }> = []
 
   for (const q of SCAN_QUESTIONS) {
     const answer = answers[q.id]
-    const isRisk = q.riskOnNo ? answer !== true : answer === true
-    if (isRisk && TASK_SUGGESTIONS[q.id]) {
+    if (answer === undefined) continue
+    // A "risk" is anything scoring below 0.7 (i.e., not_yet, no, or boolean false)
+    const score = answerToScore(answer, !q.riskOnNo)
+    if (score < 0.7 && TASK_SUGGESTIONS[q.id]) {
       risks.push({
         id: q.id,
         ...TASK_SUGGESTIONS[q.id],

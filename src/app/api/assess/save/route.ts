@@ -48,6 +48,13 @@ export async function POST(request: Request) {
   const { email, password, basics, profile, results } = body
   const normalizedEmail = email
 
+  // Convert revenue band to dollar midpoint for valuation calculations
+  const BAND_MIDPOINTS: Record<string, number> = {
+    UNDER_1M: 500_000, '1M_3M': 2_000_000, '3M_5M': 4_000_000,
+    '5M_10M': 7_500_000, '10M_25M': 17_500_000, '25M_50M': 37_500_000, '50M_PLUS': 75_000_000,
+  }
+  const annualRevenue = BAND_MIDPOINTS[basics.revenueBand] || 2_000_000
+
   try {
     const adminClient = createServiceClient()
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.exitosx.com'
@@ -124,7 +131,7 @@ export async function POST(request: Request) {
     // Classify the business server-side (don't rely on client classification)
     let classification: Awaited<ReturnType<typeof classifyBusiness>> | null = null
     try {
-      classification = await classifyBusiness(basics.businessDescription, undefined, basics.annualRevenue)
+      classification = await classifyBusiness(basics.businessDescription, undefined, annualRevenue)
     } catch (err) {
       console.warn('[assess/save] Classification failed, using defaults:', err instanceof Error ? err.message : String(err))
     }
@@ -141,13 +148,13 @@ export async function POST(request: Request) {
     // Recalculate valuation inputs server-side (don't trust client values for storage)
     const coreScore = calculateCoreScore(profile as CoreFactors)
     const multiples = await getOrResearchMultiples(icbSubSector, gicsSubIndustry ?? undefined)
-    const estimatedEbitda = estimateEbitdaFromRevenue(basics.annualRevenue, multiples)
+    const estimatedEbitda = estimateEbitdaFromRevenue(annualRevenue, multiples)
     const briScore = Math.max(0, Math.min(100, body.scan.briScore)) / 100
     const discountFraction = Math.pow(1 - briScore, ALPHA)
 
     // V2: Bidirectional owner comp (assess flow has ownerComp=0, so adjustment = 0 - marketSalary)
     // For the public /assess flow, we don't have owner compensation data, so we skip the adjustment
-    const revenueSizeCategory = getRevenueSizeCategory(basics.annualRevenue)
+    const revenueSizeCategory = getRevenueSizeCategory(annualRevenue)
     const adjustedEbitda = estimatedEbitda // No owner comp adjustment in public assess flow
 
     // V2: Get category scores normalized to 0-1
@@ -161,7 +168,7 @@ export async function POST(request: Request) {
     const transferabilityScore = getCategoryScoreNormalized('TRANSFERABILITY')
 
     const adjustmentProfile = buildAdjustmentProfile({
-      annualRevenue: basics.annualRevenue,
+      annualRevenue: annualRevenue,
       annualEbitda: 0, // Not provided in assess flow
       coreFactors: {
         revenueSizeCategory,
@@ -249,7 +256,7 @@ export async function POST(request: Request) {
         data: {
           workspaceId: workspace.id,
           name: basics.companyName,
-          annualRevenue: basics.annualRevenue,
+          annualRevenue: annualRevenue,
           annualEbitda: 0,
           ownerCompensation: 0,
           businessDescription: basics.businessDescription,
@@ -373,7 +380,7 @@ export async function POST(request: Request) {
     })
 
     // High-value prospect alert to Brad (revenue >$3M or value gap >$1M)
-    const isHighValue = basics.annualRevenue >= 3_000_000 || results.valueGap >= 1_000_000
+    const isHighValue = annualRevenue >= 3_000_000 || results.valueGap >= 1_000_000
     if (isHighValue) {
       const CATEGORY_LABELS: Record<string, string> = {
         FINANCIAL: 'Financial',
@@ -392,7 +399,7 @@ export async function POST(request: Request) {
       sendProspectAlert({
         email: normalizedEmail,
         companyName: basics.companyName,
-        annualRevenue: basics.annualRevenue,
+        annualRevenue: annualRevenue,
         briScore: results.briScore,
         valueGap: results.valueGap,
         topRiskCategory: topRiskLabel,

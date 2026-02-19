@@ -36,6 +36,24 @@ const STEP_PROGRESS: Record<AssessStep, number> = {
 }
 
 // ---------------------------------------------------------------------------
+// Revenue Band → Dollar Midpoint
+// ---------------------------------------------------------------------------
+
+const REVENUE_BAND_MIDPOINTS: Record<string, number> = {
+  UNDER_1M: 500_000,
+  '1M_3M': 2_000_000,
+  '3M_5M': 4_000_000,
+  '5M_10M': 7_500_000,
+  '10M_25M': 17_500_000,
+  '25M_50M': 37_500_000,
+  '50M_PLUS': 75_000_000,
+}
+
+function bandToRevenue(band: string): number {
+  return REVENUE_BAND_MIDPOINTS[band] || 2_000_000
+}
+
+// ---------------------------------------------------------------------------
 // Session Storage
 // ---------------------------------------------------------------------------
 
@@ -258,7 +276,7 @@ export function AssessmentFlow({ initialStep }: AssessmentFlowProps) {
       fetch('/api/assess/classify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description: data.businessDescription, annualRevenue: data.revenueBand }),
+        body: JSON.stringify({ description: data.businessDescription, annualRevenue: bandToRevenue(data.revenueBand) }),
       })
         .then(res => res.ok ? res.json() : null)
         .then(result => { if (result) setClassification(result) })
@@ -299,7 +317,7 @@ export function AssessmentFlow({ initialStep }: AssessmentFlowProps) {
         const classifyRes = await fetch('/api/assess/classify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ description: basics.businessDescription, annualRevenue: basics.revenueBand }),
+          body: JSON.stringify({ description: basics.businessDescription, annualRevenue: bandToRevenue(basics.revenueBand) }),
         })
         if (classifyRes.ok) {
           classificationData = await classifyRes.json()
@@ -325,7 +343,7 @@ export function AssessmentFlow({ initialStep }: AssessmentFlowProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          annualRevenue: basics.revenueBand,
+          annualRevenue: bandToRevenue(basics.revenueBand),
           coreFactors: profile,
           buyerScan: scan,
           classification: classificationData,
