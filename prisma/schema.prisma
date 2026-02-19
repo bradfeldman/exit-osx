@@ -235,6 +235,7 @@ model Company {
   taskRefinementEvents     TaskRefinementEvent[]
   qbTransactions           QBTransaction[]
   transactionFlags         TransactionFlag[]
+  companyPlaybooks         CompanyPlaybook[]
 
   @@map("companies")
 }
@@ -1853,6 +1854,21 @@ enum DifficultyLevel {
   MEDIUM
   HIGH
   VERY_HIGH
+}
+
+enum PlaybookCategory {
+  PERSONAL
+  FINANCIAL
+  OPERATIONAL
+  LEGAL
+  MARKET_GROWTH
+  DEAL_PREP
+}
+
+enum PlaybookStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
 }
 
 enum TaskStatus {
@@ -3546,4 +3562,57 @@ model ProductEvent {
   @@index([eventCategory])
   @@index([createdAt])
   @@map("product_events")
+}
+
+// =============================================================================
+// Playbook Recommendation Engine
+// =============================================================================
+
+model Playbook {
+  id               String             @id @default(cuid())
+  slug             String             @unique
+  title            String
+  category         PlaybookCategory
+  difficulty       DifficultyLevel
+  durationLow      Int                @map("duration_low") // months
+  durationHigh     Int                @map("duration_high") // months
+  description      String
+  displayOrder     Int                @map("display_order")
+  isActive         Boolean            @default(true) @map("is_active")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+  phases           PlaybookPhase[]
+  companyPlaybooks CompanyPlaybook[]
+
+  @@map("playbooks")
+}
+
+model PlaybookPhase {
+  id          String   @id @default(cuid())
+  playbookId  String   @map("playbook_id")
+  title       String
+  description String
+  order       Int
+  createdAt   DateTime @default(now()) @map("created_at")
+  playbook    Playbook @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+
+  @@index([playbookId])
+  @@map("playbook_phases")
+}
+
+model CompanyPlaybook {
+  id          String         @id @default(cuid())
+  companyId   String         @map("company_id")
+  playbookId  String         @map("playbook_id")
+  status      PlaybookStatus @default(NOT_STARTED)
+  startedAt   DateTime?      @map("started_at")
+  completedAt DateTime?      @map("completed_at")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  company     Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  playbook    Playbook       @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, playbookId])
+  @@index([companyId])
+  @@map("company_playbooks")
 }
