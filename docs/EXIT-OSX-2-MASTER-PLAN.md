@@ -925,4 +925,66 @@ The app shell redesign (B workstream) and playbook reskin (C2) are NOT on the cr
 
 ---
 
+## ADDENDUM 1: Playbook-Sourced Tasks Architecture (Feb 19, 2026)
+
+**Decision:** Tasks and Playbooks have a parent-child relationship, NOT peer relationship.
+
+### The Problem
+Having "Actions" and "Playbooks" as separate sidebar items created confusion. Users couldn't tell whether to do the task OR the playbook when both addressed the same issue.
+
+### The Fix
+- **Playbooks are the canonical source.** Tasks are extracted FROM playbooks as individually trackable action items.
+- **Action Center is the single daily work surface.** Users go to Actions to see what to work on.
+- **"Need more context? Open full program"** link at bottom of task card launches Focus Mode for the parent playbook (progressive disclosure).
+- **Bidirectional sync:** task completion marks playbook section done, and vice versa.
+- **"Playbooks" removed from core sidebar nav.** Core 5 modes: Value, Diagnosis, Actions, Evidence, Deal Room. Playbooks accessible as "Programs" in secondary nav + contextual surfacing + task links.
+- **Focus Mode stays** for deep-work playbook experience.
+
+### Impact on Workstream C
+- C3 (Playbook Hub + Library) becomes "Programs" page in secondary sidebar section, not a core nav item
+- C4 (Contextual Surfacing) gains importance — primary playbook discovery is through task cards and contextual recommendations
+- New ticket needed: task-to-playbook extraction map (audit 44 playbooks, map sections to task types)
+- New ticket needed: bidirectional completion sync (task ↔ playbook section)
+
+### Impact on Workstream B
+- B3c (Actions Mode) must implement the "Open full program" progressive disclosure link on task detail cards
+- Sidebar nav update: remove "Playbooks" from core nav, add "Programs" to secondary section
+
+---
+
+## ADDENDUM 2: Pricing Strategy (Feb 19, 2026)
+
+**Full spec:** `docs/PRICING-STRATEGY-V2.md` in the Exit OSx repo.
+
+### Three Tiers
+
+| | Foundation (Free) | Growth ($99/mo annual) | Deal Room ($208/mo annual) |
+|---|---|---|---|
+| **Tagline** | Know where you stand | Fix what matters | Run the deal |
+| **Target** | Curious, 2-5yr out | Active prep, 1-3yr out | In-deal, 0-12mo out |
+| **Assessment** | Quick Scan (8 questions) | + Deep Dive (23) + AI Questions (30) | Everything in Growth |
+| **Valuation** | Instant + range (snapshot) | + EBITDA, DCF candidates, history, scenarios, comparables | + Full DCF |
+| **Tasks** | 3 free action items | Unlimited | Unlimited |
+| **Playbooks** | 3 free (PB-01, PB-09, PB-39) | All 44 | All 44 |
+| **Diagnosis** | BRI score + 2 open categories | Full 6-category + AI Diagnosis + Signals | Everything in Growth |
+| **Financial Tools** | None | All (upload, QBO/Xero, projections, tax, retirement, PFS) | Everything in Growth |
+| **Deal Room** | None | None | Full suite (pipeline, VDR, DD tracker, LOI, closing) |
+| **AI** | 1 Coach interaction | Unlimited Coach + Diagnosis + Adaptive Qs | Everything in Growth |
+| **Evidence** | Limited (free-task docs only) | Full upload + scorecard | Everything in Growth |
+| **Reports** | 1-page teaser PDF | Full reports (readiness, valuation, progress) | + Report Builder (branded) |
+| **Team** | Share Summary PDF (no seats) | 2 advisor seats | Unlimited seats |
+
+### Key Conversion Moments
+1. **After 3rd free action completed** — inline gate: "You've recovered ~$18K. 9 more items could recover ~$67K."
+2. **Value Gap decomposition tapped** — blurred cards showing addressable/structural/aspirational
+3. **Evidence score hits 70%** — "You've unlocked Deal Room eligibility"
+
+### Impact on Workstream D
+- D1 (Freemium Gating) now implements three-tier model with specific limits
+- New files: `src/lib/access/task-gating.ts`, `src/lib/access/program-gating.ts`
+- Rename `EXIT_READY` to `DEAL_ROOM` in Prisma schema PlanTier enum
+- 14 new analytics events for pricing/paywall tracking
+
+---
+
 *End of master execution plan.*
