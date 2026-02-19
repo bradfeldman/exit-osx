@@ -1,15 +1,25 @@
-// Canonical Valuation Calculation
+// V2 Canonical Valuation Calculation
 // This is the SINGLE SOURCE OF TRUTH for valuation calculations.
 // All other code should import and use these functions.
+//
+// V2 Formula:
+//   1. Adjusted EBITDA (bidirectional owner comp)
+//   2. Industry median multiple = (low + high) / 2
+//   3. Quality-adjusted multiple = median × adjustmentMultiplier (from BQS)
+//   4. Discrete risk discounts applied multiplicatively
+//   5. Risk-adjusted multiple = quality-adjusted × riskMultiplier
+//   6. Enterprise value range: evMid ± spreadFactor
+//   7. Cross-check with DCF (flag divergence >25%)
+//   8. Value gap decomposed: addressable + structural + aspirational
+
+import type { AdjustmentResult } from './multiple-adjustments'
+import type { RiskDiscount } from './risk-discounts'
+
+// ─── V1 EXPORTS (kept for backwards compatibility during migration) ───
 
 /**
- * Alpha constant for non-linear BRI discount calculation.
- * Higher alpha = more aggressive discount for low BRI scores.
- * 1.4 provides a reasonable curve where:
- * - BRI 90% → ~4% discount
- * - BRI 70% → ~19% discount
- * - BRI 50% → ~35% discount
- * - BRI 30% → ~52% discount
+ * @deprecated V1 constant — no longer used in V2 formula.
+ * Kept for migration compatibility with existing code that imports it.
  */
 export const ALPHA = 1.4
 
@@ -18,7 +28,6 @@ export const ALPHA = 1.4
  * Used to convert categorical business attributes to 0-1 scores.
  * NOTE: revenueSizeCategory is intentionally EXCLUDED because
  * revenue already affects valuation through the EBITDA × multiple calculation.
- * Including it here would double-count revenue impact.
  */
 export const CORE_FACTOR_SCORES: Record<string, Record<string, number>> = {
   revenueModel: {
@@ -61,14 +70,6 @@ export interface CoreFactors {
   ownerInvolvement: string
 }
 
-/**
- * Core factor weights for the weighted average.
- * ownerInvolvement is down-weighted to 0.5 because the BRI TRANSFERABILITY
- * assessment captures owner dependency with much more granularity (4 questions,
- * 47 max impact points). Without down-weighting, owner dependency would be
- * double-counted: once here in Core Score (positioning within range) and again
- * in BRI Score (discount from range). See issue 3.9.
- */
 const CORE_FACTOR_WEIGHTS = {
   revenueModel: 1.0,
   grossMarginProxy: 1.0,
@@ -80,10 +81,10 @@ const CORE_FACTOR_WEIGHTS = {
 /**
  * Calculate Core Score from business quality factors.
  * Returns a value between 0 and 1.
- * Core Score positions the company within its industry multiple range.
+ * In V2, this is used as an input to the adjustment profile, not directly in the formula.
  */
 export function calculateCoreScore(factors: CoreFactors | null): number {
-  if (!factors) return 0.5 // Default if no factors provided
+  if (!factors) return 0.5
 
   const entries: [number, number][] = [
     [CORE_FACTOR_SCORES.revenueModel[factors.revenueModel] ?? 0.5, CORE_FACTOR_WEIGHTS.revenueModel],
@@ -97,12 +98,114 @@ export function calculateCoreScore(factors: CoreFactors | null): number {
   return entries.reduce((sum, [score, w]) => sum + score * w, 0) / totalWeight
 }
 
+// ─── V2 TYPES ─────────────────────────────────────────────────────────
+
+export interface ValuationV2Inputs {
+  adjustedEbitda: number
+  industryMultipleLow: number
+  industryMultipleHigh: number
+  /** From multiple-adjustments engine */
+  qualityAdjustments: AdjustmentResult
+  /** From risk-discounts engine */
+  riskDiscounts: RiskDiscount[]
+  /** Product of (1 - discount_i) from risk-discounts engine */
+  riskMultiplier: number
+  /** Spread factor for range width (default 0.15) */
+  spreadFactor?: number
+}
+
+export interface ValuationV2Result {
+  /** Industry median multiple = (low + high) / 2 */
+  industryMedianMultiple: number
+  /** Median × adjustmentMultiplier */
+  qualityAdjustedMultiple: number
+  /** Quality-adjusted × riskMultiplier */
+  riskAdjustedMultiple: number
+  /** adjustedEbitda × riskAdjustedMultiple × (1 - spreadFactor) */
+  evLow: number
+  /** adjustedEbitda × riskAdjustedMultiple */
+  evMid: number
+  /** adjustedEbitda × riskAdjustedMultiple × (1 + spreadFactor) */
+  evHigh: number
+  /** The spread factor used */
+  spreadFactor: number
+  /** Total quality adjustment from multiple-adjustments */
+  totalQualityAdjustment: number
+}
+
+/**
+ * V2 Canonical Valuation Formula.
+ *
+ * Steps:
+ *   1. industryMedian = (low + high) / 2
+ *   2. qualityAdjustedMultiple = industryMedian × adjustmentMultiplier
+ *   3. riskAdjustedMultiple = qualityAdjustedMultiple × riskMultiplier
+ *   4. evMid = adjustedEbitda × riskAdjustedMultiple
+ *   5. evLow = evMid × (1 - spreadFactor)
+ *   6. evHigh = evMid × (1 + spreadFactor)
+ */
+export function calculateValuationV2(inputs: ValuationV2Inputs): ValuationV2Result {
+  const {
+    adjustedEbitda,
+    industryMultipleLow,
+    industryMultipleHigh,
+    qualityAdjustments,
+    riskMultiplier,
+    spreadFactor: inputSpreadFactor,
+  } = inputs
+
+  const spreadFactor = inputSpreadFactor ?? 0.15
+
+  // Step 1: Industry median
+  const industryMedianMultiple = (industryMultipleLow + industryMultipleHigh) / 2
+
+  // Step 2: Quality adjustments (from multiple-adjustments engine)
+  const qualityAdjustedMultiple = industryMedianMultiple * qualityAdjustments.adjustmentMultiplier
+
+  // Step 3: Risk discounts (multiplicative)
+  const riskAdjustedMultiple = qualityAdjustedMultiple * riskMultiplier
+
+  // Guard: negative or zero EBITDA
+  if (adjustedEbitda <= 0) {
+    return {
+      industryMedianMultiple,
+      qualityAdjustedMultiple,
+      riskAdjustedMultiple,
+      evLow: 0,
+      evMid: 0,
+      evHigh: 0,
+      spreadFactor,
+      totalQualityAdjustment: qualityAdjustments.totalAdjustment,
+    }
+  }
+
+  // Step 4-6: Enterprise value range
+  const evMid = adjustedEbitda * riskAdjustedMultiple
+  const evLow = evMid * (1 - spreadFactor)
+  const evHigh = evMid * (1 + spreadFactor)
+
+  return {
+    industryMedianMultiple,
+    qualityAdjustedMultiple,
+    riskAdjustedMultiple,
+    evLow,
+    evMid,
+    evHigh,
+    spreadFactor,
+    totalQualityAdjustment: qualityAdjustments.totalAdjustment,
+  }
+}
+
+// ─── V1 COMPATIBILITY ─────────────────────────────────────────────────
+// These types and functions are kept so existing callers (onboarding, dashboard)
+// continue to work during the Phase 3 migration.
+
 export interface ValuationInputs {
   adjustedEbitda: number
   industryMultipleLow: number
   industryMultipleHigh: number
-  coreScore: number // 0-1 scale
-  briScore: number // 0-1 scale (NOT 0-100)
+  coreScore: number
+  briScore: number
 }
 
 export interface ValuationResult {
@@ -115,27 +218,8 @@ export interface ValuationResult {
 }
 
 /**
- * Calculate valuation using the canonical non-linear formula.
- *
- * The formula:
- * 1. baseMultiple = industryMultipleLow + coreScore × (industryMultipleHigh - industryMultipleLow)
- *    - Core Score positions the company within its industry range
- *    - Score of 1.0 = top of range, Score of 0.0 = bottom of range
- *
- * 2. discountFraction = (1 - briScore)^ALPHA
- *    - Non-linear discount based on buyer readiness
- *    - ALPHA=1.4 provides accelerating discount for lower scores
- *
- * 3. finalMultiple = industryMultipleLow + (baseMultiple - industryMultipleLow) × (1 - discountFraction)
- *    - Floor guarantee: never goes below industry low multiple
- *    - High BRI = minimal discount, Low BRI = significant discount
- *
- * 4. currentValue = adjustedEbitda × finalMultiple
- * 5. potentialValue = adjustedEbitda × industryMultipleHigh (industry ceiling)
- * 6. valueGap = potentialValue - currentValue
- *
- * @param inputs - The valuation calculation inputs
- * @returns Calculated valuation values
+ * V1 valuation formula — kept for backwards compatibility.
+ * During Phase 3, callers will be migrated to calculateValuationV2.
  */
 export function calculateValuation(inputs: ValuationInputs): ValuationResult {
   const {
@@ -146,7 +230,6 @@ export function calculateValuation(inputs: ValuationInputs): ValuationResult {
     briScore,
   } = inputs
 
-  // Guard: negative or zero EBITDA cannot produce meaningful valuations
   if (adjustedEbitda <= 0) {
     const baseMultiple = industryMultipleLow + coreScore * (industryMultipleHigh - industryMultipleLow)
     return {
@@ -159,18 +242,10 @@ export function calculateValuation(inputs: ValuationInputs): ValuationResult {
     }
   }
 
-  // Step 1: Core Score positions within industry range
   const baseMultiple = industryMultipleLow + coreScore * (industryMultipleHigh - industryMultipleLow)
-
-  // Step 2: Non-linear discount based on BRI
   const discountFraction = Math.pow(1 - briScore, ALPHA)
-
-  // Step 3: Final multiple with floor guarantee
   const finalMultiple = industryMultipleLow + (baseMultiple - industryMultipleLow) * (1 - discountFraction)
-
-  // Step 4-6: Calculate values
   const currentValue = adjustedEbitda * finalMultiple
-  // Potential value = industry max multiple × EBITDA (best-case for your industry)
   const potentialValue = adjustedEbitda * industryMultipleHigh
   const valueGap = potentialValue - currentValue
 
@@ -185,15 +260,14 @@ export function calculateValuation(inputs: ValuationInputs): ValuationResult {
 }
 
 /**
- * Convenience function for onboarding where BRI is provided as 0-100 scale.
- * Converts to 0-1 scale before calculating.
+ * V1 convenience function — kept for backwards compatibility.
  */
 export function calculateValuationFromPercentages(inputs: {
   adjustedEbitda: number
   industryMultipleLow: number
   industryMultipleHigh: number
-  coreScore: number // 0-1 scale
-  briScorePercent: number // 0-100 scale
+  coreScore: number
+  briScorePercent: number
 }): ValuationResult {
   return calculateValuation({
     ...inputs,

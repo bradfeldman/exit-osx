@@ -63,6 +63,29 @@ export async function GET(
         currentValue: Number(snapshot.currentValue),
         potentialValue: Number(snapshot.potentialValue),
         valueGap: Number(snapshot.valueGap),
+        // V2 scores
+        businessQualityScore: snapshot.businessQualityScore != null ? Number(snapshot.businessQualityScore) : null,
+        dealReadinessScore: snapshot.dealReadinessScore != null ? Number(snapshot.dealReadinessScore) : null,
+        riskSeverityScore: snapshot.riskSeverityScore != null ? Number(snapshot.riskSeverityScore) : null,
+        // V2 multiples
+        industryMedianMultiple: snapshot.industryMedianMultiple != null ? Number(snapshot.industryMedianMultiple) : null,
+        qualityAdjustedMultiple: snapshot.qualityAdjustedMultiple != null ? Number(snapshot.qualityAdjustedMultiple) : null,
+        riskAdjustedMultiple: snapshot.riskAdjustedMultiple != null ? Number(snapshot.riskAdjustedMultiple) : null,
+        // V2 EV range
+        evLow: snapshot.evLow != null ? Number(snapshot.evLow) : null,
+        evMid: snapshot.evMid != null ? Number(snapshot.evMid) : null,
+        evHigh: snapshot.evHigh != null ? Number(snapshot.evHigh) : null,
+        spreadFactor: snapshot.spreadFactor != null ? Number(snapshot.spreadFactor) : null,
+        // V2 risk details
+        dlomRate: snapshot.dlomRate != null ? Number(snapshot.dlomRate) : null,
+        dlomAmount: snapshot.dlomAmount != null ? Number(snapshot.dlomAmount) : null,
+        riskDiscounts: snapshot.riskDiscounts ?? null,
+        qualityAdjustments: snapshot.qualityAdjustments ?? null,
+        totalQualityAdjustment: snapshot.totalQualityAdjustment != null ? Number(snapshot.totalQualityAdjustment) : null,
+        // V2 gap decomposition
+        addressableGap: snapshot.addressableGap != null ? Number(snapshot.addressableGap) : null,
+        structuralGap: snapshot.structuralGap != null ? Number(snapshot.structuralGap) : null,
+        aspirationalGap: snapshot.aspirationalGap != null ? Number(snapshot.aspirationalGap) : null,
       },
     })
   } catch (error) {

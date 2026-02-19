@@ -52,19 +52,26 @@ export function ValuationBridge({
   onCategoryClick,
   onAssessmentStart,
 }: ValuationBridgeProps) {
-  // Sort: biggest dollar impact first (most opportunity)
-  const sorted = [...bridgeCategories].sort((a, b) => b.dollarImpact - a.dollarImpact)
+  // Separate actionable from non-actionable categories
+  const actionable = bridgeCategories.filter(c => c.category !== 'STRUCTURAL' && c.category !== 'ASPIRATIONAL' && c.category !== 'CORE_STRUCTURE')
+  const nonActionable = bridgeCategories.filter(c => c.category === 'STRUCTURAL' || c.category === 'ASPIRATIONAL' || c.category === 'CORE_STRUCTURE')
+
+  // Sort: biggest dollar impact first within each group
+  const sorted = [...actionable.sort((a, b) => b.dollarImpact - a.dollarImpact), ...nonActionable.sort((a, b) => b.dollarImpact - a.dollarImpact)]
+  const addressableGap = actionable.reduce((sum, c) => sum + c.dollarImpact, 0)
   const totalGap = sorted.reduce((sum, c) => sum + c.dollarImpact, 0)
-  const needsWorkCount = sorted.filter(c => getHealthLevel(c.score) === 'needs-work').length
+  const needsWorkCount = actionable.filter(c => getHealthLevel(c.score) === 'needs-work').length
 
   return (
     <div>
       <div className="mb-4">
         <h2 className="text-lg font-semibold text-foreground">Where to Improve</h2>
         <p className="text-sm text-muted-foreground mt-0.5">
-          {totalGap > 0
-            ? <>These categories account for <strong className="font-semibold text-foreground">{formatCurrency(totalGap)}</strong> in recoverable value. Tap any area to dig deeper.</>
-            : 'How each part of your business contributes to your overall readiness.'}
+          {addressableGap > 0
+            ? <>You can recover up to <strong className="font-semibold text-foreground">{formatCurrency(addressableGap)}</strong> by addressing these areas. Tap any to dig deeper.</>
+            : totalGap > 0
+              ? 'Your value gap breakdown by category.'
+              : 'How each part of your business contributes to your overall readiness.'}
         </p>
       </div>
 
@@ -84,13 +91,13 @@ export function ValuationBridge({
             {sorted.map(cat => {
               const health = getHealthLevel(cat.score)
               const config = HEALTH_CONFIG[health]
-              const isCoreStructure = cat.category === 'CORE_STRUCTURE'
+              const isNonActionable = cat.category === 'CORE_STRUCTURE' || cat.category === 'STRUCTURAL' || cat.category === 'ASPIRATIONAL'
 
               return (
                 <button
                   key={cat.category}
-                  className="w-full text-left px-5 py-4 hover:bg-muted/60 active:bg-muted/80 transition-all duration-150 cursor-pointer group flex items-start gap-4"
-                  onClick={() => onCategoryClick?.(cat.category)}
+                  className={`w-full text-left px-5 py-4 transition-all duration-150 flex items-start gap-4 ${isNonActionable ? 'opacity-75' : 'hover:bg-muted/60 active:bg-muted/80 cursor-pointer group'}`}
+                  onClick={() => !isNonActionable && onCategoryClick?.(cat.category)}
                 >
                   {/* Health dot */}
                   <div className={`w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0 ${config.dotClass}`} />
@@ -105,9 +112,7 @@ export function ValuationBridge({
                     </div>
                     {cat.buyerExplanation && (
                       <p className="text-xs text-muted-foreground mt-1 leading-relaxed pr-6">
-                        {isCoreStructure
-                          ? 'How your revenue model, margins, and owner involvement affect your starting valuation.'
-                          : cat.buyerExplanation}
+                        {cat.buyerExplanation}
                       </p>
                     )}
                   </div>

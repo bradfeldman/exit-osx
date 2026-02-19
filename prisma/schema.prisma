@@ -174,6 +174,8 @@ model Company {
   annualEbitda             Decimal                      @map("annual_ebitda") @db.Decimal(15, 2)
   ownerCompensation        Decimal                      @default(0) @map("owner_compensation") @db.Decimal(15, 2)
   briWeights               Json?                        @map("bri_weights")
+  dealReadinessScore       Decimal?                     @map("deal_readiness_score") @db.Decimal(5, 4)
+  dealReadinessUpdatedAt   DateTime?                    @map("deal_readiness_updated_at")
   createdAt                DateTime                     @default(now()) @map("created_at")
   updatedAt                DateTime                     @updatedAt @map("updated_at")
   deletedAt                DateTime?                    @map("deleted_at")
@@ -408,6 +410,7 @@ model ValuationSnapshot {
   adjustedEbitda       Decimal  @map("adjusted_ebitda") @db.Decimal(15, 2)
   industryMultipleLow  Decimal  @map("industry_multiple_low") @db.Decimal(6, 2)
   industryMultipleHigh Decimal  @map("industry_multiple_high") @db.Decimal(6, 2)
+  // V1 fields (kept for migration compatibility, will be removed in Phase 4)
   coreScore            Decimal  @map("core_score") @db.Decimal(5, 4)
   briScore             Decimal  @map("bri_score") @db.Decimal(5, 4)
   briFinancial         Decimal  @map("bri_financial") @db.Decimal(5, 4)
@@ -424,6 +427,25 @@ model ValuationSnapshot {
   valueGap             Decimal  @map("value_gap") @db.Decimal(15, 2)
   alphaConstant        Decimal  @default(1.40) @map("alpha_constant") @db.Decimal(6, 2)
   snapshotReason       String?  @map("snapshot_reason")
+  // V2 Valuation Engine fields
+  businessQualityScore    Decimal?  @map("business_quality_score") @db.Decimal(5, 4)
+  dealReadinessScore      Decimal?  @map("deal_readiness_score") @db.Decimal(5, 4)
+  riskSeverityScore       Decimal?  @map("risk_severity_score") @db.Decimal(5, 4)
+  industryMedianMultiple  Decimal?  @map("industry_median_multiple") @db.Decimal(6, 2)
+  qualityAdjustedMultiple Decimal?  @map("quality_adjusted_multiple") @db.Decimal(6, 2)
+  riskAdjustedMultiple    Decimal?  @map("risk_adjusted_multiple") @db.Decimal(6, 2)
+  evLow                   Decimal?  @map("ev_low") @db.Decimal(15, 2)
+  evMid                   Decimal?  @map("ev_mid") @db.Decimal(15, 2)
+  evHigh                  Decimal?  @map("ev_high") @db.Decimal(15, 2)
+  spreadFactor            Decimal?  @map("spread_factor") @db.Decimal(5, 4)
+  dlomRate                Decimal?  @map("dlom_rate") @db.Decimal(5, 4)
+  dlomAmount              Decimal?  @map("dlom_amount") @db.Decimal(15, 2)
+  riskDiscounts           Json?     @map("risk_discounts") // [{name, rate, explanation}]
+  qualityAdjustments      Json?     @map("quality_adjustments") // [{factor, impact, explanation}]
+  totalQualityAdjustment  Decimal?  @map("total_quality_adjustment") @db.Decimal(5, 4)
+  addressableGap          Decimal?  @map("addressable_gap") @db.Decimal(15, 2)
+  structuralGap           Decimal?  @map("structural_gap") @db.Decimal(15, 2)
+  aspirationalGap         Decimal?  @map("aspirational_gap") @db.Decimal(15, 2)
   // Auto-DCF fields (nullable — only populated when cash flow data is available)
   dcfEnterpriseValue     Decimal?  @map("dcf_enterprise_value") @db.Decimal(15, 2)
   dcfEquityValue         Decimal?  @map("dcf_equity_value") @db.Decimal(15, 2)
@@ -504,6 +526,9 @@ model Task {
   buyerConsequence     String?            @map("buyer_consequence")
   taskProgress         Json?              @map("task_progress")
   completedValue       Decimal?           @map("completed_value") @db.Decimal(15, 2)
+  completedValueLow    Decimal?           @map("completed_value_low") @db.Decimal(15, 2)
+  completedValueHigh   Decimal?           @map("completed_value_high") @db.Decimal(15, 2)
+  taskNature           TaskNature         @default(EVIDENCE) @map("task_nature")
   startedAt            DateTime?          @map("started_at")
   assigneeRole         String?            @map("assignee_role")
   sourceType           TaskSourceType     @default(ASSESSMENT) @map("source_type")
@@ -1779,6 +1804,11 @@ enum BriCategory {
   MARKET
   LEGAL_TAX
   PERSONAL
+}
+
+enum TaskNature {
+  EVIDENCE
+  IMPROVEMENT
 }
 
 enum ActionItemType {

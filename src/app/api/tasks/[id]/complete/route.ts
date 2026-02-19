@@ -39,7 +39,7 @@ export async function POST(
     if (!validation.success) return validation.error
     const { completionNotes, evidenceDocumentIds } = validation.data
 
-    // Fetch task
+    // Fetch task (include taskNature for V2 branching)
     const existingTask = await prisma.task.findUnique({
       where: { id },
       include: {
@@ -141,13 +141,14 @@ export async function POST(
     // via manual recalculation. Each failure is logged with context.
     // =========================================================================
 
-    // Handle BRI update based on task type
+    // V2: Branch on taskNature for snapshot handling
+    const taskNature = existingTask.taskNature // 'EVIDENCE' or 'IMPROVEMENT'
     let briImpact: { previousScore: number; newScore: number; categoryChanged: string } | null = null
     let preSnapshot: { briScore: unknown; currentValue: unknown } | null = null
     let postSnapshot: { briScore: unknown; currentValue: unknown } | null = null
 
-    if (existingTask.linkedQuestionId) {
-      // Assessment-linked task - snapshot recalculation
+    if (existingTask.linkedQuestionId && taskNature === 'IMPROVEMENT') {
+      // IMPROVEMENT task with assessment link — full snapshot recalculation
       preSnapshot = await prisma.valuationSnapshot.findFirst({
         where: { companyId: existingTask.companyId },
         orderBy: { createdAt: 'desc' },
@@ -184,7 +185,7 @@ export async function POST(
         console.error(`[TaskComplete] Failed to generate next-level tasks for question ${existingTask.linkedQuestionId}:`, err instanceof Error ? err.message : String(err))
       }
     } else {
-      // Onboarding task
+      // EVIDENCE task (assessment-linked or onboarding) — DRS only, no EV change
       preSnapshot = await prisma.valuationSnapshot.findFirst({
         where: { companyId: existingTask.companyId },
         orderBy: { createdAt: 'desc' },
@@ -197,10 +198,11 @@ export async function POST(
         briCategory: existingTask.briCategory,
         rawImpact: existingTask.rawImpact,
         title: existingTask.title,
+        taskNature: taskNature as 'EVIDENCE' | 'IMPROVEMENT',
       })
 
       if (!improveResult.success) {
-        console.error(`[TaskComplete] Onboarding snapshot improvement failed for company ${existingTask.companyId}: ${improveResult.error}. Task ${id} is COMPLETED but snapshot may be stale.`)
+        console.error(`[TaskComplete] Snapshot improvement failed for company ${existingTask.companyId}: ${improveResult.error}. Task ${id} is COMPLETED but snapshot may be stale.`)
       }
 
       postSnapshot = await prisma.valuationSnapshot.findFirst({
@@ -214,6 +216,15 @@ export async function POST(
           previousScore: Number(preSnapshot.briScore),
           newScore: Number(postSnapshot.briScore),
           categoryChanged: existingTask.briCategory,
+        }
+      }
+
+      // Generate next-level tasks for assessment-linked evidence tasks too
+      if (existingTask.linkedQuestionId) {
+        try {
+          await generateNextLevelTasks(existingTask.companyId, existingTask.linkedQuestionId)
+        } catch (err) {
+          console.error(`[TaskComplete] Failed to generate next-level tasks for question ${existingTask.linkedQuestionId}:`, err instanceof Error ? err.message : String(err))
         }
       }
     }

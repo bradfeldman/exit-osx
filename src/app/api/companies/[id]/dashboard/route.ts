@@ -564,45 +564,6 @@ export async function GET(
     const bridgeCategories = (() => {
       if (!latestSnapshot) return []
 
-      // Use override multiples if set, otherwise use snapshot's original industry multiples
-      const effectiveMultipleLow = hasMultipleOverride
-        ? multipleLow
-        : Number(latestSnapshot.industryMultipleLow)
-      const effectiveMultipleHigh = hasMultipleOverride
-        ? multipleHigh
-        : Number(latestSnapshot.industryMultipleHigh)
-
-      const snapshotCoreScore = Number(latestSnapshot.coreScore)
-      const snapshotBriScore = Number(latestSnapshot.briScore)
-
-      // Recalculate consistently with tier1
-      const recalculated = calculateValuation({
-        adjustedEbitda,
-        industryMultipleLow: effectiveMultipleLow,
-        industryMultipleHigh: effectiveMultipleHigh,
-        coreScore: snapshotCoreScore,
-        briScore: snapshotBriScore,
-      })
-
-      // Bridge uses blended value (midpoint) when DCF is available
-      const multipleBasedForBridge = recalculated.currentValue
-      const currentValueForBridge = dcfEnterpriseValue
-        ? (multipleBasedForBridge + dcfEnterpriseValue) / 2
-        : multipleBasedForBridge
-      const industryBasedPotential = adjustedEbitda * effectiveMultipleHigh
-      const potentialValueForBridge = industryBasedPotential
-      const totalValueGap = Math.max(0, potentialValueForBridge - currentValueForBridge)
-
-      if (totalValueGap <= 0) return []
-
-      // BRI gap: the portion closeable by improving BRI scores
-      // This is EBITDA × (baseMultiple - finalMultiple)
-      const briGap = Math.max(0, recalculated.potentialValue - recalculated.currentValue)
-
-      // Core gap: the portion only improvable by changing business structure
-      // This is the difference between the total gap (vs industry max) and the BRI gap
-      const coreGap = Math.max(0, totalValueGap - briGap)
-
       const CATEGORY_LABELS: Record<string, string> = {
         FINANCIAL: 'Financial Health',
         TRANSFERABILITY: 'Transferability',
@@ -610,6 +571,11 @@ export async function GET(
         MARKET: 'Market Position',
         LEGAL_TAX: 'Legal & Tax',
       }
+
+      // V2: Use pre-computed gap decomposition from snapshot
+      const v2AddressableGap = latestSnapshot.addressableGap != null ? Number(latestSnapshot.addressableGap) : null
+      const v2StructuralGap = latestSnapshot.structuralGap != null ? Number(latestSnapshot.structuralGap) : null
+      const v2AspirationalGap = latestSnapshot.aspirationalGap != null ? Number(latestSnapshot.aspirationalGap) : null
 
       const categoryInputs = [
         { category: 'FINANCIAL', score: Number(latestSnapshot.briFinancial), weight: BRI_WEIGHTS['FINANCIAL'] || 0 },
@@ -619,7 +585,77 @@ export async function GET(
         { category: 'LEGAL_TAX', score: Number(latestSnapshot.briLegalTax), weight: BRI_WEIGHTS['LEGAL_TAX'] || 0 },
       ]
 
-      // Distribute only the BRI-closeable gap across the 5 categories
+      if (v2AddressableGap != null && v2AddressableGap >= 0) {
+        // V2 path: distribute the addressable gap across BRI categories
+        const gaps = calculateCategoryValueGaps(categoryInputs, v2AddressableGap)
+
+        const result = gaps.map(g => ({
+          category: g.category,
+          label: CATEGORY_LABELS[g.category] || g.category,
+          score: Math.round(g.score * 100),
+          dollarImpact: g.dollarImpact,
+          weight: g.weight,
+          buyerExplanation: BUYER_EXPLANATIONS[g.category] || '',
+        }))
+
+        // Add structural gap bar (DLOM + size — cannot be reduced)
+        if (v2StructuralGap && v2StructuralGap > 0) {
+          result.push({
+            category: 'STRUCTURAL',
+            label: 'Market & Size Factors',
+            score: 0, // Structural gaps don't have a "score"
+            dollarImpact: Math.round(v2StructuralGap),
+            weight: 0,
+            buyerExplanation: 'Discounts for company size and lack of marketability. These are standard for private businesses and reduce with scale.',
+          })
+        }
+
+        // Add aspirational gap bar (quality improvement to industry ceiling)
+        if (v2AspirationalGap && v2AspirationalGap > 0) {
+          result.push({
+            category: 'ASPIRATIONAL',
+            label: 'Growth Potential',
+            score: 0,
+            dollarImpact: Math.round(v2AspirationalGap),
+            weight: 0,
+            buyerExplanation: 'The upside from improving business quality metrics (margins, growth, recurring revenue) toward industry leaders.',
+          })
+        }
+
+        return result
+      }
+
+      // V1 fallback: proportional BRI attribution
+      const snapshotCoreScore = Number(latestSnapshot.coreScore)
+      const snapshotBriScore = Number(latestSnapshot.briScore)
+
+      const effectiveMultipleLow = hasMultipleOverride
+        ? multipleLow
+        : Number(latestSnapshot.industryMultipleLow)
+      const effectiveMultipleHigh = hasMultipleOverride
+        ? multipleHigh
+        : Number(latestSnapshot.industryMultipleHigh)
+
+      const recalculated = calculateValuation({
+        adjustedEbitda,
+        industryMultipleLow: effectiveMultipleLow,
+        industryMultipleHigh: effectiveMultipleHigh,
+        coreScore: snapshotCoreScore,
+        briScore: snapshotBriScore,
+      })
+
+      const multipleBasedForBridge = recalculated.currentValue
+      const currentValueForBridge = dcfEnterpriseValue
+        ? (multipleBasedForBridge + dcfEnterpriseValue) / 2
+        : multipleBasedForBridge
+      const potentialValueForBridge = adjustedEbitda * effectiveMultipleHigh
+      const totalValueGap = Math.max(0, potentialValueForBridge - currentValueForBridge)
+
+      if (totalValueGap <= 0) return []
+
+      const briGap = Math.max(0, recalculated.potentialValue - recalculated.currentValue)
+      const coreGap = Math.max(0, totalValueGap - briGap)
+
       const gaps = calculateCategoryValueGaps(categoryInputs, briGap)
 
       const result = gaps.map(g => ({
@@ -631,7 +667,6 @@ export async function GET(
         buyerExplanation: BUYER_EXPLANATIONS[g.category] || '',
       }))
 
-      // Add the Business Structure bar for the Core Score gap
       if (coreGap > 0) {
         result.push({
           category: 'CORE_STRUCTURE',
@@ -814,6 +849,22 @@ export async function GET(
             }).catch(err => console.error('[Dashboard] Failed to sync snapshot:', err))
           }
 
+          // V2 scores from snapshot (written by recalculate-snapshot.ts)
+          const bqsScore = latestSnapshot.businessQualityScore != null
+            ? Math.round(Number(latestSnapshot.businessQualityScore) * 100)
+            : null
+          const drsScore = latestSnapshot.dealReadinessScore != null
+            ? Math.round(Number(latestSnapshot.dealReadinessScore) * 100)
+            : null
+          const rssScore = latestSnapshot.riskSeverityScore != null
+            ? Math.round(Number(latestSnapshot.riskSeverityScore) * 100)
+            : null
+
+          // V2 EV range from snapshot
+          const evLow = latestSnapshot.evLow != null ? Number(latestSnapshot.evLow) : null
+          const evMid = latestSnapshot.evMid != null ? Number(latestSnapshot.evMid) : null
+          const evHigh = latestSnapshot.evHigh != null ? Number(latestSnapshot.evHigh) : null
+
           return {
             currentValue,
             potentialValue,
@@ -832,6 +883,15 @@ export async function GET(
             hasCustomMultiples: hasMultipleOverride,
             multipleSource: industryMultiple?.source ?? null,
             multipleAsOf: industryMultiple?.effectiveDate?.toISOString() ?? null,
+            // V2 fields
+            bqsScore,
+            drsScore,
+            rssScore,
+            evRange: evLow != null && evHigh != null
+              ? { low: evLow, mid: evMid ?? currentValue, high: evHigh }
+              : null,
+            riskDiscounts: latestSnapshot.riskDiscounts as Array<{ name: string; rate: number; explanation: string }> | null,
+            qualityAdjustments: latestSnapshot.qualityAdjustments as Array<{ factor: string; impact: number; explanation: string }> | null,
           }
         } else {
           // No snapshot - estimate values based on industry multiples (or overrides)
@@ -874,6 +934,13 @@ export async function GET(
             hasCustomMultiples: hasMultipleOverride,
             multipleSource: industryMultiple?.source ?? null,
             multipleAsOf: industryMultiple?.effectiveDate?.toISOString() ?? null,
+            // V2 fields — null when no snapshot
+            bqsScore: null,
+            drsScore: null,
+            rssScore: null,
+            evRange: null,
+            riskDiscounts: null,
+            qualityAdjustments: null,
           }
         }
       })(),

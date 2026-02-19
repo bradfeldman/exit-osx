@@ -117,6 +117,28 @@ async function createSubStepsForTask(taskId: string, richDescription: unknown, a
   }
 }
 
+// V2: TaskNature classification by ActionType
+// EVIDENCE tasks improve DRS only (no EV change)
+// IMPROVEMENT tasks can affect BQS → valuation
+type TaskNature = 'EVIDENCE' | 'IMPROVEMENT'
+
+const ACTION_TYPE_NATURE: Record<string, TaskNature> = {
+  TYPE_I_EVIDENCE: 'EVIDENCE',
+  TYPE_II_DOCUMENTATION: 'EVIDENCE',
+  TYPE_III_OPERATIONAL: 'IMPROVEMENT',
+  TYPE_IV_INSTITUTIONALIZE: 'IMPROVEMENT',
+  TYPE_V_RISK_REDUCTION: 'IMPROVEMENT',
+  TYPE_VI_ALIGNMENT: 'EVIDENCE',
+  TYPE_VII_READINESS: 'EVIDENCE',
+  TYPE_VIII_SIGNALING: 'EVIDENCE',
+  TYPE_IX_OPTIONS: 'EVIDENCE',
+  TYPE_X_DEFER: 'EVIDENCE',
+}
+
+function getTaskNature(actionType: string): TaskNature {
+  return ACTION_TYPE_NATURE[actionType] || 'EVIDENCE'
+}
+
 // Value gap allocation by tier (based on M&A buyer risk analysis)
 const TIER_ALLOCATION: Record<IssueTier, number> = {
   CRITICAL: 0.60,      // Deal killers get 60% of value gap
@@ -372,6 +394,7 @@ export async function generateTasksForCompany(
           impactLevel,
           difficultyLevel,
           priorityRank,
+          taskNature: getTaskNature(task.actionType),
           inActionPlan: false, // Tasks start in queue, not action plan
           ...(defaultAssigneeId && { primaryAssigneeId: defaultAssigneeId }),
           status: 'PENDING',
@@ -581,6 +604,7 @@ export async function generateNextLevelTasks(
             impactLevel,
             difficultyLevel,
             priorityRank,
+            taskNature: getTaskNature(taskDef.actionType),
             inActionPlan: false, // Goes to queue first
             status: 'PENDING',
             ...(defaultAssigneeId && { primaryAssigneeId: defaultAssigneeId }),
@@ -830,6 +854,7 @@ export async function generateTasksFromProjectAssessment(
           impactLevel,
           difficultyLevel,
           priorityRank,
+          taskNature: getTaskNature('TYPE_III_OPERATIONAL'),
           inActionPlan: false, // Goes to queue first
           status: 'PENDING',
           ...(defaultAssigneeId && { primaryAssigneeId: defaultAssigneeId }),

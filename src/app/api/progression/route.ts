@@ -59,6 +59,11 @@ export async function GET(request: NextRequest) {
           currentValue: true,
           dcfEnterpriseValue: true,
           createdAt: true,
+          // V2 fields
+          dealReadinessScore: true,
+          evLow: true,
+          evMid: true,
+          evHigh: true,
         },
       }),
 
@@ -183,6 +188,12 @@ export async function GET(request: NextRequest) {
       ? Number(latestSnapshot.dcfEnterpriseValue)
       : null
 
+    // V2 fields
+    const drsScore = latestSnapshot?.dealReadinessScore ? Number(latestSnapshot.dealReadinessScore) : null
+    const evRange = latestSnapshot?.evLow != null && latestSnapshot?.evHigh != null
+      ? { low: Number(latestSnapshot.evLow), mid: Number(latestSnapshot.evMid), high: Number(latestSnapshot.evHigh) }
+      : null
+
     return NextResponse.json({
       // Milestones
       hasAssessment,
@@ -201,6 +212,9 @@ export async function GET(request: NextRequest) {
       currentValue,
       previousValue,
       dcfEnterpriseValue,
+      // V2 fields
+      drsScore,
+      evRange,
     })
   } catch (error) {
     console.error('Error fetching progression data:', error instanceof Error ? error.message : String(error))

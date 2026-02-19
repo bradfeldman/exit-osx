@@ -54,6 +54,13 @@ interface DashboardData {
     hasCustomMultiples?: boolean
     multipleSource?: string | null
     multipleAsOf?: string | null
+    // V2 fields
+    bqsScore?: number | null
+    drsScore?: number | null
+    rssScore?: number | null
+    evRange?: { low: number; mid: number; high: number } | null
+    riskDiscounts?: Array<{ name: string; rate: number; explanation: string }> | null
+    qualityAdjustments?: Array<{ factor: string; impact: number; explanation: string }> | null
   } | null
   tier2: {
     adjustedEbitda: number
@@ -250,6 +257,8 @@ export function ValueHome() {
             hasAssessment={data.hasAssessment}
             isEbitdaFromFinancials={data.tier2?.isEbitdaFromFinancials ?? false}
             dcfValuation={data.dcfValuation}
+            drsScore={tier1?.drsScore ?? null}
+            evRange={tier1?.evRange ?? null}
           />
         </AnimatedItem>
 

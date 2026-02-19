@@ -222,7 +222,7 @@ describe('Valuation Calculations', () => {
         expect(calculateCoreScore(optimalFactors)).toBe(1.0)
       })
 
-      it('returns approximately 0.216 for worst factors', () => {
+      it('returns approximately 0.24 for worst factors', () => {
         const worstFactors: CoreFactors = {
           revenueModel: 'PROJECT_BASED',
           grossMarginProxy: 'LOW',
@@ -230,8 +230,8 @@ describe('Valuation Calculations', () => {
           assetIntensity: 'ASSET_HEAVY',
           ownerInvolvement: 'CRITICAL',
         }
-        // (0.25 + 0.25 + 0.25 + 0.33 + 0.0) / 5 = 1.08 / 5 = 0.216
-        expect(calculateCoreScore(worstFactors)).toBeCloseTo(0.216, 2)
+        // Weighted: (0.25*1 + 0.25*1 + 0.25*1 + 0.33*1 + 0.0*0.5) / 4.5 = 1.08 / 4.5 = 0.24
+        expect(calculateCoreScore(worstFactors)).toBeCloseTo(0.24, 2)
       })
 
       it('handles unknown factor values by defaulting to 0.5', () => {
@@ -1448,8 +1448,8 @@ describe('Valuation Calculations', () => {
       // Scores must be identical -- revenueSizeCategory is ignored
       expect(scoreWithExtra).toBe(scoreWithoutExtra)
 
-      // Verify expected value: (0.75 + 0.75 + 0.75 + 0.67 + 0.5) / 5 = 0.684
-      expect(scoreWithoutExtra).toBeCloseTo(0.684, 2)
+      // Weighted: (0.75*1 + 0.75*1 + 0.75*1 + 0.67*1 + 0.5*0.5) / 4.5 = 3.17 / 4.5 ≈ 0.704
+      expect(scoreWithoutExtra).toBeCloseTo(0.704, 2)
     })
 
     it('6-factor bug would produce a different (wrong) score', () => {
@@ -1502,7 +1502,8 @@ describe('Valuation Calculations', () => {
             assetIntensity: 'ASSET_LIGHT',
             ownerInvolvement: 'HIGH',
           },
-          expectedRange: [0.7, 0.9],
+          // Weighted: (1.0 + 1.0 + 1.0 + 1.0 + 0.25*0.5) / 4.5 = 4.125/4.5 ≈ 0.917
+          expectedRange: [0.85, 0.95],
         },
         {
           name: 'Professional services',

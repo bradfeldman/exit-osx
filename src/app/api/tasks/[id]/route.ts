@@ -392,6 +392,7 @@ export async function PATCH(
           briCategory: existingTask.briCategory,
           rawImpact: existingTask.rawImpact,
           title: existingTask.title,
+          taskNature: (existingTask.taskNature as 'EVIDENCE' | 'IMPROVEMENT') || 'EVIDENCE',
         })
 
         if (result.success) {

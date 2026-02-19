@@ -1,16 +1,16 @@
-// Value Gap Attribution
-// Single source of truth for distributing the total value gap across BRI categories.
+// Value Gap Attribution V2
+// Distributes value gap into actionable categories.
 //
-// PROD-016: Created to fix category value gap reconciliation.
-// The sum of individual category dollar impacts must exactly equal the total value gap.
+// V2 replaces proportional BRI attribution with a dual-layer approach:
+// 1. Three-component decomposition (addressable / structural / aspirational)
+// 2. BRI category breakdown within addressable gap for task prioritization
 //
-// Approach: Proportional attribution with rounding correction.
-// Each category's share is proportional to its weighted gap:
-//   rawGap_i = (1 - categoryScore_i) * categoryWeight_i
-//   dollarImpact_i = (rawGap_i / totalRawGap) * totalValueGap
-//
-// Rounding correction: After rounding each category to the nearest dollar,
-// any rounding residual is added to the largest category to ensure exact reconciliation.
+// V1 functions kept for backwards compatibility during migration.
+
+import type { RiskDiscount } from './risk-discounts'
+import { isAddressableDiscount } from './risk-discounts'
+
+// ─── V2 Types ────────────────────────────────────────────────────────────────
 
 export interface CategoryGapInput {
   /** Category key (e.g., 'FINANCIAL', 'TRANSFERABILITY') */
@@ -32,27 +32,22 @@ export interface CategoryGapResult {
 }
 
 /**
- * Distribute the total value gap across BRI categories using proportional attribution.
+ * V2: Distribute the ADDRESSABLE portion of the value gap across BRI categories.
  *
- * The formula:
- *   rawGap_i = (1 - score_i) * weight_i
- *   dollarImpact_i = round((rawGap_i / sum(rawGaps)) * totalValueGap)
+ * Unlike V1 which distributed the TOTAL value gap, V2 only distributes
+ * the addressable gap — the portion that can be reduced by completing tasks.
  *
- * After rounding, any residual (totalValueGap - sum(dollarImpacts)) is added to
- * the category with the largest dollar impact to ensure exact reconciliation.
+ * Structural and aspirational gaps are shown separately in the UI.
  *
- * Categories with rawGap = 0 (perfect score) get $0 impact.
- * If totalRawGap = 0 (all categories perfect), all impacts are $0.
- *
- * @param categories - Array of category scores and weights (typically 5, excluding PERSONAL)
- * @param totalValueGap - The total value gap to distribute (from valuation snapshot)
+ * @param categories - Array of category scores and weights
+ * @param addressableGap - The addressable portion of the value gap (from value-gap-v2.ts)
  * @returns Array of CategoryGapResult, sorted by dollarImpact descending
  */
 export function calculateCategoryValueGaps(
   categories: CategoryGapInput[],
-  totalValueGap: number
+  addressableGap: number
 ): CategoryGapResult[] {
-  if (totalValueGap <= 0 || categories.length === 0) {
+  if (addressableGap <= 0 || categories.length === 0) {
     return categories.map(c => ({
       category: c.category,
       score: c.score,
@@ -73,22 +68,20 @@ export function calculateCategoryValueGaps(
   const totalRawGap = withGaps.reduce((sum, c) => sum + c.rawGap, 0)
 
   if (totalRawGap <= 0) {
-    // All categories at perfect score -- no gap to distribute
     return withGaps.map(c => ({ ...c, dollarImpact: 0 }))
   }
 
-  // Step 2: Calculate proportional dollar impacts (rounded)
+  // Step 2: Proportional dollar impacts (rounded)
   const results: CategoryGapResult[] = withGaps.map(c => ({
     ...c,
-    dollarImpact: Math.round((c.rawGap / totalRawGap) * totalValueGap),
+    dollarImpact: Math.round((c.rawGap / totalRawGap) * addressableGap),
   }))
 
-  // Step 3: Rounding correction -- ensure sum equals totalValueGap exactly
+  // Step 3: Rounding correction
   const currentSum = results.reduce((sum, c) => sum + c.dollarImpact, 0)
-  const residual = Math.round(totalValueGap) - currentSum
+  const residual = Math.round(addressableGap) - currentSum
 
   if (residual !== 0) {
-    // Find the category with the largest dollar impact and adjust it
     let maxIdx = 0
     let maxImpact = 0
     for (let i = 0; i < results.length; i++) {
@@ -104,4 +97,38 @@ export function calculateCategoryValueGaps(
   results.sort((a, b) => b.dollarImpact - a.dollarImpact)
 
   return results
+}
+
+/**
+ * V2: Build a full gap attribution summary combining three-component
+ * decomposition with BRI category breakdown.
+ */
+export interface GapAttributionSummary {
+  /** Addressable gap (reducible by task completion) */
+  addressableGap: number
+  /** Structural gap (DLOM, size — cannot be reduced) */
+  structuralGap: number
+  /** Aspirational gap (quality improvement to industry ceiling) */
+  aspirationalGap: number
+  /** Total gap across all components */
+  totalGap: number
+  /** Per-category breakdown within addressable gap */
+  categoryBreakdown: CategoryGapResult[]
+}
+
+export function buildGapAttributionSummary(
+  addressableGap: number,
+  structuralGap: number,
+  aspirationalGap: number,
+  categories: CategoryGapInput[]
+): GapAttributionSummary {
+  const categoryBreakdown = calculateCategoryValueGaps(categories, addressableGap)
+
+  return {
+    addressableGap,
+    structuralGap,
+    aspirationalGap,
+    totalGap: addressableGap + structuralGap + aspirationalGap,
+    categoryBreakdown,
+  }
 }

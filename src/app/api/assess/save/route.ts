@@ -15,10 +15,15 @@ import {
   createRateLimitResponse,
 } from '@/lib/security/rate-limit'
 import { validateRequestBody, assessSaveSchema } from '@/lib/security/validation'
-import { ALPHA, calculateCoreScore, type CoreFactors } from '@/lib/valuation/calculate-valuation'
+import { ALPHA, calculateCoreScore, calculateValuationV2, type CoreFactors } from '@/lib/valuation/calculate-valuation'
 import { estimateEbitdaFromRevenue } from '@/lib/valuation/industry-multiples'
 import { getOrResearchMultiples } from '@/lib/valuation/multiple-freshness'
 import { classifyBusiness } from '@/lib/ai/business-classifier'
+import { getMarketSalary } from '@/lib/valuation/recalculate-snapshot'
+import { calculateBusinessQualityScore, buildAdjustmentProfile } from '@/lib/valuation/business-quality-score'
+import { calculateDealReadinessScore } from '@/lib/valuation/deal-readiness-score'
+import { calculateRiskDiscounts, type RiskDiscountInputs } from '@/lib/valuation/risk-discounts'
+import { calculateValueGapV2 } from '@/lib/valuation/value-gap-v2'
 
 /**
  * POST /api/assess/save
@@ -140,8 +145,80 @@ export async function POST(request: Request) {
     const briScore = Math.max(0, Math.min(100, body.scan.briScore)) / 100
     const discountFraction = Math.pow(1 - briScore, ALPHA)
 
-    // Create database records in a transaction
+    // V2: Bidirectional owner comp (assess flow has ownerComp=0, so adjustment = 0 - marketSalary)
+    // For the public /assess flow, we don't have owner compensation data, so we skip the adjustment
     const revenueSizeCategory = getRevenueSizeCategory(basics.annualRevenue)
+    const adjustedEbitda = estimatedEbitda // No owner comp adjustment in public assess flow
+
+    // V2: Get category scores normalized to 0-1
+    const categoryBreakdown = results.categoryBreakdown ?? {}
+    const getCategoryScoreNormalized = (category: string): number => {
+      const score = categoryBreakdown[category]
+      return score !== undefined ? Math.max(0, Math.min(1, score)) : 0.7
+    }
+
+    // V2: Calculate three scores + valuation
+    const transferabilityScore = getCategoryScoreNormalized('TRANSFERABILITY')
+
+    const adjustmentProfile = buildAdjustmentProfile({
+      annualRevenue: basics.annualRevenue,
+      annualEbitda: 0, // Not provided in assess flow
+      coreFactors: {
+        revenueSizeCategory,
+        revenueModel: profile.revenueModel,
+      },
+      transferabilityScore,
+    })
+
+    const bqsResult = calculateBusinessQualityScore(adjustmentProfile)
+
+    const drsCategoryScores = [
+      { category: 'FINANCIAL', score: getCategoryScoreNormalized('FINANCIAL'), totalPoints: 1, earnedPoints: getCategoryScoreNormalized('FINANCIAL') },
+      { category: 'TRANSFERABILITY', score: transferabilityScore, totalPoints: 1, earnedPoints: transferabilityScore },
+      { category: 'OPERATIONAL', score: getCategoryScoreNormalized('OPERATIONAL'), totalPoints: 1, earnedPoints: getCategoryScoreNormalized('OPERATIONAL') },
+      { category: 'MARKET', score: getCategoryScoreNormalized('MARKET'), totalPoints: 1, earnedPoints: getCategoryScoreNormalized('MARKET') },
+      { category: 'LEGAL_TAX', score: getCategoryScoreNormalized('LEGAL_TAX'), totalPoints: 1, earnedPoints: getCategoryScoreNormalized('LEGAL_TAX') },
+    ]
+    const drsResult = calculateDealReadinessScore(drsCategoryScores)
+
+    const riskInputs: RiskDiscountInputs = {
+      ownerInvolvement: profile.ownerInvolvement ?? null,
+      transferabilityScore,
+      topCustomerConcentration: null,
+      top3CustomerConcentration: null,
+      legalTaxScore: getCategoryScoreNormalized('LEGAL_TAX'),
+      financialScore: getCategoryScoreNormalized('FINANCIAL'),
+      revenueSizeCategory,
+    }
+    const riskResult = calculateRiskDiscounts(riskInputs)
+
+    const v2Valuation = calculateValuationV2({
+      adjustedEbitda,
+      industryMultipleLow: multiples.ebitdaMultipleLow,
+      industryMultipleHigh: multiples.ebitdaMultipleHigh,
+      qualityAdjustments: bqsResult.adjustments,
+      riskDiscounts: riskResult.discounts,
+      riskMultiplier: riskResult.riskMultiplier,
+    })
+
+    const sizeAdj = bqsResult.adjustments.adjustments.find(a => a.factor === 'size_discount')
+    const sizeDiscountRate = sizeAdj?.impact ?? 0
+
+    const gapResult = calculateValueGapV2({
+      adjustedEbitda,
+      industryMedianMultiple: v2Valuation.industryMedianMultiple,
+      industryMultipleHigh: multiples.ebitdaMultipleHigh,
+      qualityAdjustedMultiple: v2Valuation.qualityAdjustedMultiple,
+      riskAdjustedMultiple: v2Valuation.riskAdjustedMultiple,
+      riskDiscounts: riskResult.discounts,
+      sizeDiscountRate,
+    })
+
+    const dlomDiscount = riskResult.discounts.find(d => d.name.includes('DLOM'))
+    const dlomRate = dlomDiscount?.rate ?? 0
+    const dlomAmount = v2Valuation.evMid > 0 ? v2Valuation.evMid * dlomRate / (1 - dlomRate) : 0
+
+    // Create database records in a transaction
 
     const dbResult = await prisma.$transaction(async (tx) => {
       // Create workspace
@@ -206,35 +283,67 @@ export async function POST(request: Request) {
         },
       })
 
-      // Create valuation snapshot
+      // Create valuation snapshot with V1 + V2 dual-write
       await tx.valuationSnapshot.create({
         data: {
           companyId: company.id,
           createdByUserId: user.id,
-          adjustedEbitda: estimatedEbitda,
+          adjustedEbitda,
           industryMultipleLow: multiples.ebitdaMultipleLow,
           industryMultipleHigh: multiples.ebitdaMultipleHigh,
+          // V1 fields (kept for compatibility)
           coreScore,
           briScore,
-          briFinancial: results.categoryBreakdown?.FINANCIAL ?? 0,
-          briTransferability: results.categoryBreakdown?.TRANSFERABILITY ?? 0,
-          briOperational: results.categoryBreakdown?.OPERATIONAL ?? 0,
-          briMarket: results.categoryBreakdown?.MARKET ?? 0,
-          briLegalTax: results.categoryBreakdown?.LEGAL_TAX ?? 0,
-          briPersonal: results.categoryBreakdown?.PERSONAL ?? 0,
+          briFinancial: getCategoryScoreNormalized('FINANCIAL'),
+          briTransferability: getCategoryScoreNormalized('TRANSFERABILITY'),
+          briOperational: getCategoryScoreNormalized('OPERATIONAL'),
+          briMarket: getCategoryScoreNormalized('MARKET'),
+          briLegalTax: getCategoryScoreNormalized('LEGAL_TAX'),
+          briPersonal: getCategoryScoreNormalized('PERSONAL'),
           baseMultiple: results.baseMultiple,
           discountFraction,
           finalMultiple: results.finalMultiple,
-          currentValue: results.currentValue,
+          currentValue: v2Valuation.evMid,
           potentialValue: results.potentialValue,
-          valueGap: results.valueGap,
+          valueGap: Math.round(gapResult.totalGap),
           alphaConstant: ALPHA,
           snapshotReason: 'Public assessment (/assess)',
+          // V2 fields
+          businessQualityScore: bqsResult.score,
+          dealReadinessScore: drsResult.score,
+          riskSeverityScore: riskResult.riskSeverityScore,
+          industryMedianMultiple: v2Valuation.industryMedianMultiple,
+          qualityAdjustedMultiple: v2Valuation.qualityAdjustedMultiple,
+          riskAdjustedMultiple: v2Valuation.riskAdjustedMultiple,
+          evLow: v2Valuation.evLow,
+          evMid: v2Valuation.evMid,
+          evHigh: v2Valuation.evHigh,
+          spreadFactor: v2Valuation.spreadFactor,
+          dlomRate,
+          dlomAmount,
+          riskDiscounts: riskResult.discounts.map(d => ({
+            name: d.name, rate: d.rate, explanation: d.explanation,
+          })),
+          qualityAdjustments: bqsResult.adjustments.adjustments.map(a => ({
+            factor: a.factor, impact: a.impact, explanation: a.explanation,
+          })),
+          totalQualityAdjustment: v2Valuation.totalQualityAdjustment,
+          addressableGap: gapResult.addressableGap,
+          structuralGap: gapResult.structuralGap,
+          aspirationalGap: gapResult.aspirationalGap,
+        },
+      })
+
+      // Update company DRS
+      await tx.company.update({
+        where: { id: company.id },
+        data: {
+          dealReadinessScore: drsResult.score,
+          dealReadinessUpdatedAt: new Date(),
         },
       })
 
       // Generate preliminary tasks based on initial scan results
-      const categoryBreakdown = results.categoryBreakdown ?? {}
       const preliminaryTasks = generatePreliminaryTasks(categoryBreakdown, profile.ownerInvolvement)
       if (preliminaryTasks.length > 0) {
         await Promise.all(preliminaryTasks.map((task, index) =>
@@ -244,6 +353,7 @@ export async function POST(request: Request) {
               title: task.title,
               description: task.description,
               actionType: 'TYPE_I_EVIDENCE',
+              taskNature: 'EVIDENCE',
               briCategory: task.category as import('@prisma/client').BriCategory,
               rawImpact: task.estimatedValue,
               normalizedValue: task.estimatedValue,

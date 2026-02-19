@@ -6,9 +6,14 @@ import {
   ALPHA,
   calculateCoreScore,
   calculateValuation,
+  calculateValuationV2,
   type CoreFactors,
 } from '@/lib/valuation/calculate-valuation'
 import { getMarketSalary } from '@/lib/valuation/recalculate-snapshot'
+import { calculateBusinessQualityScore, buildAdjustmentProfile } from '@/lib/valuation/business-quality-score'
+import { calculateDealReadinessScore } from '@/lib/valuation/deal-readiness-score'
+import { calculateRiskDiscounts, type RiskDiscountInputs } from '@/lib/valuation/risk-discounts'
+import { calculateValueGapV2 } from '@/lib/valuation/value-gap-v2'
 import { z } from 'zod'
 import { validateRequestBody } from '@/lib/security/validation'
 
@@ -97,22 +102,18 @@ export async function POST(
       .filter(a => a.type === 'DEDUCTION')
       .reduce((sum, a) => sum + Number(a.amount), 0)
 
-    // Add owner compensation as an add-back (normalized)
+    // V2: Bidirectional owner comp — underpaid owner REDUCES adjusted EBITDA
     const revenueSizeCategory = company.coreFactors?.revenueSizeCategory ?? null
     const marketSalaryBenchmark = getMarketSalary(revenueSizeCategory)
-    const marketSalary = Math.min(ownerComp, marketSalaryBenchmark)
-    const excessComp = Math.max(0, ownerComp - marketSalary)
+    const ownerCompAdjustment = ownerComp - marketSalaryBenchmark
 
     let adjustedEbitda: number
     if (baseEbitda > 0) {
-      // Actual EBITDA provided - use adjusted calculation
-      adjustedEbitda = baseEbitda + addBacks + excessComp - deductions
+      adjustedEbitda = baseEbitda + addBacks + ownerCompAdjustment - deductions
     } else {
-      // No EBITDA provided - estimate from revenue using industry multiples
       const revenue = Number(company.annualRevenue)
       const estimatedEbitda = estimateEbitdaFromRevenue(revenue, multiples)
-      // Still apply add-backs and owner comp adjustments to estimated base
-      adjustedEbitda = estimatedEbitda + addBacks + excessComp - deductions
+      adjustedEbitda = estimatedEbitda + addBacks + ownerCompAdjustment - deductions
     }
 
     // Calculate Core Score using shared utility (should be 1.0 for onboarding defaults)
@@ -140,7 +141,6 @@ export async function POST(
     // Server-calculated values — these are what get stored
     const currentValue = Math.round(valuation.currentValue)
     const potentialValue = Math.round(valuation.potentialValue)
-    const valueGap = Math.round(valuation.valueGap)
 
     // Convert category scores from 0-100 to 0-1 scale
     const getCategoryScoreNormalized = (category: string): number => {
@@ -148,7 +148,71 @@ export async function POST(
       return score !== undefined ? score / 100 : 0.7 // Default to 70% if not provided
     }
 
-    // Create the snapshot with server-calculated values only
+    // ─── V2 Calculations ──────────────────────────────────────────────
+    const transferabilityScore = getCategoryScoreNormalized('TRANSFERABILITY')
+
+    const adjustmentProfile = buildAdjustmentProfile({
+      annualRevenue: Number(company.annualRevenue),
+      annualEbitda: Number(company.annualEbitda),
+      coreFactors: coreFactors ? {
+        revenueSizeCategory: coreFactors.revenueSizeCategory,
+        revenueModel: coreFactors.revenueModel,
+      } : null,
+      transferabilityScore,
+    })
+
+    const bqsResult = calculateBusinessQualityScore(adjustmentProfile)
+
+    // Build category scores array for DRS
+    const drsCategoryScores = [
+      { category: 'FINANCIAL', score: getCategoryScoreNormalized('FINANCIAL'), totalPoints: 1, earnedPoints: getCategoryScoreNormalized('FINANCIAL') },
+      { category: 'TRANSFERABILITY', score: transferabilityScore, totalPoints: 1, earnedPoints: transferabilityScore },
+      { category: 'OPERATIONAL', score: getCategoryScoreNormalized('OPERATIONAL'), totalPoints: 1, earnedPoints: getCategoryScoreNormalized('OPERATIONAL') },
+      { category: 'MARKET', score: getCategoryScoreNormalized('MARKET'), totalPoints: 1, earnedPoints: getCategoryScoreNormalized('MARKET') },
+      { category: 'LEGAL_TAX', score: getCategoryScoreNormalized('LEGAL_TAX'), totalPoints: 1, earnedPoints: getCategoryScoreNormalized('LEGAL_TAX') },
+    ]
+    const drsResult = calculateDealReadinessScore(drsCategoryScores)
+
+    const riskInputs: RiskDiscountInputs = {
+      ownerInvolvement: coreFactors?.ownerInvolvement ?? null,
+      transferabilityScore,
+      topCustomerConcentration: null,
+      top3CustomerConcentration: null,
+      legalTaxScore: getCategoryScoreNormalized('LEGAL_TAX'),
+      financialScore: getCategoryScoreNormalized('FINANCIAL'),
+      revenueSizeCategory: revenueSizeCategory ?? null,
+    }
+    const riskResult = calculateRiskDiscounts(riskInputs)
+
+    const v2Valuation = calculateValuationV2({
+      adjustedEbitda,
+      industryMultipleLow,
+      industryMultipleHigh,
+      qualityAdjustments: bqsResult.adjustments,
+      riskDiscounts: riskResult.discounts,
+      riskMultiplier: riskResult.riskMultiplier,
+    })
+
+    const sizeAdj = bqsResult.adjustments.adjustments.find(a => a.factor === 'size_discount')
+    const sizeDiscountRate = sizeAdj?.impact ?? 0
+
+    const gapResult = calculateValueGapV2({
+      adjustedEbitda,
+      industryMedianMultiple: v2Valuation.industryMedianMultiple,
+      industryMultipleHigh,
+      qualityAdjustedMultiple: v2Valuation.qualityAdjustedMultiple,
+      riskAdjustedMultiple: v2Valuation.riskAdjustedMultiple,
+      riskDiscounts: riskResult.discounts,
+      sizeDiscountRate,
+    })
+
+    const dlomDiscount = riskResult.discounts.find(d => d.name.includes('DLOM'))
+    const dlomRate = dlomDiscount?.rate ?? 0
+    const dlomAmount = v2Valuation.evMid > 0 ? v2Valuation.evMid * dlomRate / (1 - dlomRate) : 0
+
+    const valueGap = Math.round(gapResult.totalGap)
+
+    // Create the snapshot with both V1 and V2 fields
     const snapshot = await prisma.valuationSnapshot.create({
       data: {
         companyId,
@@ -156,6 +220,7 @@ export async function POST(
         adjustedEbitda,
         industryMultipleLow,
         industryMultipleHigh,
+        // V1 fields
         coreScore,
         briScore: briScoreNormalized,
         briFinancial: getCategoryScoreNormalized('FINANCIAL'),
@@ -167,21 +232,56 @@ export async function POST(
         baseMultiple,
         discountFraction,
         finalMultiple,
-        currentValue,
+        currentValue: v2Valuation.evMid,
         potentialValue,
         valueGap,
         alphaConstant: ALPHA,
         snapshotReason: 'Onboarding quick scan completed',
+        // V2 fields
+        businessQualityScore: bqsResult.score,
+        dealReadinessScore: drsResult.score,
+        riskSeverityScore: riskResult.riskSeverityScore,
+        industryMedianMultiple: v2Valuation.industryMedianMultiple,
+        qualityAdjustedMultiple: v2Valuation.qualityAdjustedMultiple,
+        riskAdjustedMultiple: v2Valuation.riskAdjustedMultiple,
+        evLow: v2Valuation.evLow,
+        evMid: v2Valuation.evMid,
+        evHigh: v2Valuation.evHigh,
+        spreadFactor: v2Valuation.spreadFactor,
+        dlomRate,
+        dlomAmount,
+        riskDiscounts: riskResult.discounts.map(d => ({
+          name: d.name, rate: d.rate, explanation: d.explanation,
+        })),
+        qualityAdjustments: bqsResult.adjustments.adjustments.map(a => ({
+          factor: a.factor, impact: a.impact, explanation: a.explanation,
+        })),
+        totalQualityAdjustment: v2Valuation.totalQualityAdjustment,
+        addressableGap: gapResult.addressableGap,
+        structuralGap: gapResult.structuralGap,
+        aspirationalGap: gapResult.aspirationalGap,
+      },
+    })
+
+    // Update company DRS
+    await prisma.company.update({
+      where: { id: companyId },
+      data: {
+        dealReadinessScore: drsResult.score,
+        dealReadinessUpdatedAt: new Date(),
       },
     })
 
     return NextResponse.json({
       success: true,
       snapshotId: snapshot.id,
-      currentValue,
+      currentValue: Math.round(v2Valuation.evMid),
       potentialValue,
       valueGap,
       briScore,
+      // V2 fields for UI
+      evRange: { low: Math.round(v2Valuation.evLow), mid: Math.round(v2Valuation.evMid), high: Math.round(v2Valuation.evHigh) },
+      drsScore: Math.round(drsResult.score * 100),
     })
   } catch (error) {
     console.error('Error creating onboarding snapshot:', error instanceof Error ? error.message : String(error))

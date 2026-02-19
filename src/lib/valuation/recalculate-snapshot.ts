@@ -1,5 +1,6 @@
-// Snapshot Recalculation Utility
-// Recalculates valuation snapshot for a company using latest data
+// Snapshot Recalculation Utility — V2
+// Recalculates valuation snapshot for a company using latest data.
+// Writes BOTH V1 and V2 fields to the snapshot for gradual migration.
 
 import { prisma } from '@/lib/prisma'
 import { getIndustryMultiples, estimateEbitdaFromRevenue } from './industry-multiples'
@@ -7,6 +8,7 @@ import {
   ALPHA,
   calculateCoreScore,
   calculateValuation,
+  calculateValuationV2,
   type CoreFactors,
 } from './calculate-valuation'
 import { calculateAutoDCF } from './auto-dcf'
@@ -19,9 +21,13 @@ import {
   calculateWeightedBriScore,
   getCategoryScore as getCatScore,
 } from './bri-scoring'
+import { calculateRiskDiscounts, type RiskDiscountInputs } from './risk-discounts'
+import { calculateBusinessQualityScore, buildAdjustmentProfile } from './business-quality-score'
+import { calculateDealReadinessScore } from './deal-readiness-score'
+import { calculateValueGapV2 } from './value-gap-v2'
+import { adjustMultiples } from './multiple-adjustments'
 
 // Market salary benchmarks by revenue size category
-// Based on industry compensation studies for owner/CEO roles
 export const MARKET_SALARY_BY_REVENUE: Record<string, number> = {
   UNDER_500K: 80000,
   FROM_500K_TO_1M: 120000,
@@ -31,75 +37,9 @@ export const MARKET_SALARY_BY_REVENUE: Record<string, number> = {
   OVER_25M: 400000,
 }
 
-/**
- * Get market salary based on company revenue size
- * Falls back to $150K if revenue size category is unknown
- */
 export function getMarketSalary(revenueSizeCategory: string | null | undefined): number {
   if (!revenueSizeCategory) return 150000
   return MARKET_SALARY_BY_REVENUE[revenueSizeCategory] || 150000
-}
-
-// VAL-003 FIX: EBITDA improvement potential by BRI category
-// These represent the typical margin improvement achievable when addressing issues in each category
-const EBITDA_IMPROVEMENT_BY_CATEGORY: Record<string, number> = {
-  FINANCIAL: 0.05,        // 5% - Better pricing, collections, cost control
-  TRANSFERABILITY: 0.02,  // 2% - Reduced key-person risk doesn't directly improve EBITDA
-  OPERATIONAL: 0.08,      // 8% - Process improvements, efficiency gains
-  MARKET: 0.04,           // 4% - Better market position can improve margins
-  LEGAL_TAX: 0.03,        // 3% - Tax optimization, risk reduction
-  PERSONAL: 0.01,         // 1% - Owner readiness has minimal direct EBITDA impact
-}
-
-/**
- * Calculate potential EBITDA improvement based on BRI category gaps
- * Returns the estimated EBITDA multiplier (e.g., 1.15 for 15% improvement potential)
- */
-function calculateEbitdaImprovementMultiplier(
-  categoryScores: Array<{ category: string; score: number }>,
-  categoryWeights: Record<string, number>
-): number {
-  let totalImprovementPotential = 0
-
-  for (const cs of categoryScores) {
-    const gap = 1 - cs.score // How far from perfect score
-    const categoryWeight = categoryWeights[cs.category] || 0
-    const maxImprovement = EBITDA_IMPROVEMENT_BY_CATEGORY[cs.category] || 0
-
-    // Improvement potential is proportional to the gap and weighted by category importance
-    // Normalize by average weight (1/numCategories) so all categories contribute proportionally
-    const avgWeight = 1 / categoryScores.length
-    totalImprovementPotential += gap * maxImprovement * (categoryWeight / avgWeight)
-  }
-
-  // Cap total improvement at 25% to be conservative
-  return 1 + Math.min(totalImprovementPotential, 0.25)
-}
-
-/**
- * Fetch BRI weights for a company
- * Priority: Company-specific > Global custom > Default
- */
-async function getBriWeightsForCompany(companyBriWeights: unknown): Promise<Record<string, number>> {
-  // 1. If company has custom weights, use them
-  if (companyBriWeights && typeof companyBriWeights === 'object') {
-    return companyBriWeights as Record<string, number>
-  }
-
-  // 2. Check for global custom weights
-  try {
-    const setting = await prisma.systemSetting.findUnique({
-      where: { key: 'bri_category_weights' },
-    })
-    if (setting?.value) {
-      return setting.value as Record<string, number>
-    }
-  } catch (error) {
-    console.error('Error fetching global BRI weights:', error)
-  }
-
-  // 3. Fall back to defaults
-  return DEFAULT_CATEGORY_WEIGHTS
 }
 
 export interface RecalculateResult {
@@ -111,9 +51,8 @@ export interface RecalculateResult {
 }
 
 /**
- * Recalculate and create a new snapshot for a company
- * Uses the company's latest completed assessment for BRI scores
- * and latest industry multiples for valuation
+ * Recalculate and create a new snapshot for a company.
+ * Writes both V1 and V2 fields for gradual migration.
  */
 export async function recalculateSnapshotForCompany(
   companyId: string,
@@ -121,7 +60,6 @@ export async function recalculateSnapshotForCompany(
   createdByUserId?: string
 ): Promise<RecalculateResult> {
   try {
-    // Get company with all required data
     const company = await prisma.company.findUnique({
       where: { id: companyId },
       include: {
@@ -131,39 +69,25 @@ export async function recalculateSnapshotForCompany(
     })
 
     if (!company) {
-      return {
-        success: false,
-        error: 'Company not found',
-        companyId,
-        companyName: 'Unknown',
-      }
+      return { success: false, error: 'Company not found', companyId, companyName: 'Unknown' }
     }
 
-    // PROD-013 FIX: Gather the latest response per question across ALL assessments
-    // for this company, not just the single latest assessment. This prevents
-    // re-assessing one category from zeroing out others when multiple assessments exist.
+    // Gather latest responses across ALL assessments (PROD-013 fix)
     const allResponses = await prisma.assessmentResponse.findMany({
-      where: {
-        assessment: { companyId },
-      },
+      where: { assessment: { companyId } },
       include: {
         question: true,
         selectedOption: true,
-        effectiveOption: true, // For Answer Upgrade System
+        effectiveOption: true,
       },
       orderBy: { updatedAt: 'desc' },
     })
 
     if (allResponses.length === 0) {
-      return {
-        success: false,
-        error: 'No assessment responses found',
-        companyId,
-        companyName: company.name,
-      }
+      return { success: false, error: 'No assessment responses found', companyId, companyName: company.name }
     }
 
-    // Convert Prisma responses to ScoringResponse format for the pure scoring functions
+    // Convert to scoring format and calculate BRI scores
     const scoringResponses: ScoringResponse[] = allResponses.map(r => {
       const optionToUse = r.effectiveOption || r.selectedOption
       return {
@@ -176,29 +100,22 @@ export async function recalculateSnapshotForCompany(
       }
     })
 
-    // Deduplicate to latest response per question, then calculate scores
     const dedupedResponses = deduplicateResponses(scoringResponses)
     const categoryScores = calculateCategoryScores(dedupedResponses)
 
-    // Fetch BRI weights (company-specific or global) and calculate weighted BRI score
     const categoryWeights = await getBriWeightsForCompany(company.briWeights)
     const briScore = calculateWeightedBriScore(categoryScores, categoryWeights)
 
-    // Calculate Core Score from company factors using shared utility
+    // Core factors
     const coreFactors = company.coreFactors
     const coreScore = calculateCoreScore(coreFactors as CoreFactors | null)
 
-    // Get latest industry multiples (needed for both EBITDA estimation and valuation)
+    // Industry multiples
     const multiples = await getIndustryMultiples(
-      company.icbSubSector,
-      company.icbSector,
-      company.icbSuperSector,
-      company.icbIndustry
+      company.icbSubSector, company.icbSector, company.icbSuperSector, company.icbIndustry
     )
 
-    // Calculate adjusted EBITDA
-    // If actual EBITDA exists, use it with adjustments
-    // Otherwise, estimate EBITDA from revenue using industry multiples
+    // ─── Adjusted EBITDA (V2: bidirectional owner comp) ────────────────
     const baseEbitda = Number(company.annualEbitda)
     const ownerComp = Number(company.ownerCompensation)
     const addBacks = company.ebitdaAdjustments
@@ -208,28 +125,26 @@ export async function recalculateSnapshotForCompany(
       .filter(a => a.type === 'DEDUCTION')
       .reduce((sum, a) => sum + Number(a.amount), 0)
 
-    // VAL-001 FIX: Use revenue-size-appropriate market salary instead of hardcoded $150K
     const revenueSizeCategory = coreFactors?.revenueSizeCategory
     const marketSalaryBenchmark = getMarketSalary(revenueSizeCategory)
-    const marketSalary = Math.min(ownerComp, marketSalaryBenchmark)
-    const excessComp = Math.max(0, ownerComp - marketSalary)
+
+    // V2: Bidirectional owner comp — underpaid owner REDUCES adjusted EBITDA
+    const ownerCompAdjustment = ownerComp - marketSalaryBenchmark
 
     let adjustedEbitda: number
     if (baseEbitda > 0) {
-      // Actual EBITDA provided - use adjusted calculation
-      adjustedEbitda = baseEbitda + addBacks + excessComp - deductions
+      adjustedEbitda = baseEbitda + addBacks + ownerCompAdjustment - deductions
     } else {
-      // No EBITDA provided - estimate from revenue using industry multiples
       const revenue = Number(company.annualRevenue)
       const estimatedEbitda = estimateEbitdaFromRevenue(revenue, multiples)
-      // Still apply add-backs and owner comp adjustments to estimated base
-      adjustedEbitda = estimatedEbitda + addBacks + excessComp - deductions
+      adjustedEbitda = estimatedEbitda + addBacks + ownerCompAdjustment - deductions
     }
+
     const industryMultipleLow = multiples.ebitdaMultipleLow
     const industryMultipleHigh = multiples.ebitdaMultipleHigh
 
-    // Use shared utility for consistent valuation calculation
-    const valuation = calculateValuation({
+    // ─── V1 Valuation (kept for backwards compat) ──────────────────────
+    const v1Valuation = calculateValuation({
       adjustedEbitda,
       industryMultipleLow,
       industryMultipleHigh,
@@ -237,25 +152,68 @@ export async function recalculateSnapshotForCompany(
       briScore,
     })
 
-    const { baseMultiple, finalMultiple, discountFraction } = valuation
-
-    // VAL-003 FIX: Calculate potential EBITDA improvement from addressing BRI gaps
-    const ebitdaImprovementMultiplier = calculateEbitdaImprovementMultiplier(categoryScores, categoryWeights)
-    const potentialEbitda = adjustedEbitda * ebitdaImprovementMultiplier
-
-    // Calculate valuations
-    // Current value uses current EBITDA with BRI-discounted multiple (from shared utility)
-    const currentValue = valuation.currentValue
-    // Potential value = improved EBITDA × industry max multiple (industry ceiling)
-    // Uses potentialEbitda (accounts for BRI-driven EBITDA improvements) × industryMultipleHigh
-    const potentialValue = potentialEbitda * industryMultipleHigh
-    const valueGap = potentialValue - currentValue
-
-    // Helper to get category score (uses imported utility)
+    // ─── V2: Business Quality Score ────────────────────────────────────
     const getCategoryScore = (cat: string) => getCatScore(categoryScores, cat)
+    const transferabilityScore = getCategoryScore('TRANSFERABILITY')
 
-    // Auto-DCF: calculate DCF valuation from financial data if available
-    // Skip if user has manually configured DCF assumptions
+    const adjustmentProfile = buildAdjustmentProfile({
+      annualRevenue: Number(company.annualRevenue),
+      annualEbitda: Number(company.annualEbitda),
+      coreFactors: coreFactors ? {
+        revenueSizeCategory: coreFactors.revenueSizeCategory,
+        revenueModel: coreFactors.revenueModel,
+      } : null,
+      transferabilityScore,
+    })
+
+    const bqsResult = calculateBusinessQualityScore(adjustmentProfile)
+
+    // ─── V2: Deal Readiness Score ──────────────────────────────────────
+    const drsResult = calculateDealReadinessScore(categoryScores)
+
+    // ─── V2: Risk Discounts ────────────────────────────────────────────
+    const riskInputs: RiskDiscountInputs = {
+      ownerInvolvement: coreFactors?.ownerInvolvement ?? null,
+      transferabilityScore,
+      topCustomerConcentration: null, // TODO: populate from company profile
+      top3CustomerConcentration: null,
+      legalTaxScore: getCategoryScore('LEGAL_TAX'),
+      financialScore: getCategoryScore('FINANCIAL'),
+      revenueSizeCategory: revenueSizeCategory ?? null,
+    }
+    const riskResult = calculateRiskDiscounts(riskInputs)
+
+    // ─── V2: Valuation Formula ─────────────────────────────────────────
+    const v2Valuation = calculateValuationV2({
+      adjustedEbitda,
+      industryMultipleLow,
+      industryMultipleHigh,
+      qualityAdjustments: bqsResult.adjustments,
+      riskDiscounts: riskResult.discounts,
+      riskMultiplier: riskResult.riskMultiplier,
+    })
+
+    // ─── V2: Value Gap Decomposition ───────────────────────────────────
+    // Find size discount from adjustments
+    const sizeAdj = bqsResult.adjustments.adjustments.find(a => a.factor === 'size_discount')
+    const sizeDiscountRate = sizeAdj?.impact ?? 0
+
+    const gapResult = calculateValueGapV2({
+      adjustedEbitda,
+      industryMedianMultiple: v2Valuation.industryMedianMultiple,
+      industryMultipleHigh,
+      qualityAdjustedMultiple: v2Valuation.qualityAdjustedMultiple,
+      riskAdjustedMultiple: v2Valuation.riskAdjustedMultiple,
+      riskDiscounts: riskResult.discounts,
+      sizeDiscountRate,
+    })
+
+    // ─── V2: DLOM details ──────────────────────────────────────────────
+    const dlomDiscount = riskResult.discounts.find(d => d.name.includes('DLOM'))
+    const dlomRate = dlomDiscount?.rate ?? 0
+    const dlomAmount = v2Valuation.evMid > 0 ? v2Valuation.evMid * dlomRate / (1 - dlomRate) : 0
+
+    // ─── Auto-DCF cross-check ──────────────────────────────────────────
     let dcfData: Record<string, unknown> = {}
     try {
       const dcfAssumptions = await prisma.dCFAssumptions.findUnique({
@@ -279,19 +237,21 @@ export async function recalculateSnapshotForCompany(
             dcfCompanySpecificRisk: dcfResult.companySpecificRisk,
             dcfSource: 'auto',
           }
-          console.log(`[AUTO-DCF] Company ${companyId}: EV=${dcfResult.enterpriseValue.toFixed(0)}, WACC=${(dcfResult.wacc * 100).toFixed(1)}%, CSR=${(dcfResult.companySpecificRisk * 100).toFixed(1)}%, baseFCF=${dcfResult.baseFcf.toFixed(0)}`)
-        } else {
-          console.log(`[AUTO-DCF] Company ${companyId}: Skipped — ${dcfResult.reason}`)
+
+          // V2 cross-check: flag >25% divergence
+          if (v2Valuation.evMid > 0 && dcfResult.enterpriseValue > 0) {
+            const divergence = Math.abs(dcfResult.enterpriseValue - v2Valuation.evMid) / v2Valuation.evMid
+            if (divergence > 0.25) {
+              console.log(`[V2-DCF-CHECK] Company ${companyId}: DCF diverges ${(divergence * 100).toFixed(1)}% from multiple-based EV. DCF=${dcfResult.enterpriseValue.toFixed(0)}, EV_mid=${v2Valuation.evMid.toFixed(0)}`)
+            }
+          }
         }
-      } else {
-        console.log(`[AUTO-DCF] Company ${companyId}: Skipped — manually configured`)
       }
     } catch (error) {
       console.error(`[AUTO-DCF] Error for company ${companyId}:`, error)
-      // Non-fatal: snapshot still gets created without DCF fields
     }
 
-    // Create new snapshot
+    // ─── Create snapshot with BOTH V1 and V2 fields ────────────────────
     const snapshot = await prisma.valuationSnapshot.create({
       data: {
         companyId,
@@ -299,6 +259,7 @@ export async function recalculateSnapshotForCompany(
         adjustedEbitda,
         industryMultipleLow,
         industryMultipleHigh,
+        // V1 fields
         coreScore,
         briScore,
         briFinancial: getCategoryScore('FINANCIAL'),
@@ -307,34 +268,64 @@ export async function recalculateSnapshotForCompany(
         briMarket: getCategoryScore('MARKET'),
         briLegalTax: getCategoryScore('LEGAL_TAX'),
         briPersonal: getCategoryScore('PERSONAL'),
-        baseMultiple,
-        discountFraction,
-        finalMultiple,
-        currentValue,
-        potentialValue,
-        valueGap,
+        baseMultiple: v1Valuation.baseMultiple,
+        discountFraction: v1Valuation.discountFraction,
+        finalMultiple: v1Valuation.finalMultiple,
+        currentValue: v2Valuation.evMid, // V2 evMid as currentValue
+        potentialValue: v1Valuation.potentialValue,
+        valueGap: gapResult.totalGap,
         alphaConstant: ALPHA,
         snapshotReason,
+        // V2 fields
+        businessQualityScore: bqsResult.score,
+        dealReadinessScore: drsResult.score,
+        riskSeverityScore: riskResult.riskSeverityScore,
+        industryMedianMultiple: v2Valuation.industryMedianMultiple,
+        qualityAdjustedMultiple: v2Valuation.qualityAdjustedMultiple,
+        riskAdjustedMultiple: v2Valuation.riskAdjustedMultiple,
+        evLow: v2Valuation.evLow,
+        evMid: v2Valuation.evMid,
+        evHigh: v2Valuation.evHigh,
+        spreadFactor: v2Valuation.spreadFactor,
+        dlomRate,
+        dlomAmount,
+        riskDiscounts: riskResult.discounts.map(d => ({
+          name: d.name, rate: d.rate, explanation: d.explanation,
+        })),
+        qualityAdjustments: bqsResult.adjustments.adjustments.map(a => ({
+          factor: a.factor, impact: a.impact, explanation: a.explanation,
+        })),
+        totalQualityAdjustment: v2Valuation.totalQualityAdjustment,
+        addressableGap: gapResult.addressableGap,
+        structuralGap: gapResult.structuralGap,
+        aspirationalGap: gapResult.aspirationalGap,
+        // DCF
         ...dcfData,
       },
     })
 
-    // Renormalize task values against updated value gap
+    // Update DRS on company
+    await prisma.company.update({
+      where: { id: companyId },
+      data: {
+        dealReadinessScore: drsResult.score,
+        dealReadinessUpdatedAt: new Date(),
+      },
+    })
+
+    // Renormalize task values against V2 gap
     try {
-      const renormResult = await renormalizeTaskValues(companyId, Number(valueGap))
+      const renormResult = await renormalizeTaskValues(companyId, gapResult.totalGap)
       if (renormResult.updated > 0) {
-        console.log(`[SNAPSHOT] Renormalized ${renormResult.updated} task values for company ${companyId}`)
+        console.log(`[SNAPSHOT-V2] Renormalized ${renormResult.updated} task values for company ${companyId}`)
       }
     } catch (renormError) {
-      console.error(`[SNAPSHOT] Task renormalization failed (non-fatal):`, renormError)
+      console.error(`[SNAPSHOT-V2] Task renormalization failed (non-fatal):`, renormError)
     }
 
-    return {
-      success: true,
-      snapshotId: snapshot.id,
-      companyId,
-      companyName: company.name,
-    }
+    console.log(`[SNAPSHOT-V2] Company ${companyId}: BQS=${bqsResult.score.toFixed(3)}, DRS=${drsResult.score.toFixed(3)}, RSS=${riskResult.riskSeverityScore.toFixed(3)}, EV_mid=${v2Valuation.evMid.toFixed(0)}, range=[${v2Valuation.evLow.toFixed(0)}, ${v2Valuation.evHigh.toFixed(0)}]`)
+
+    return { success: true, snapshotId: snapshot.id, companyId, companyName: company.name }
   } catch (error) {
     console.error(`Error recalculating snapshot for company ${companyId}:`, error)
     return {
@@ -346,96 +337,60 @@ export async function recalculateSnapshotForCompany(
   }
 }
 
+async function getBriWeightsForCompany(companyBriWeights: unknown): Promise<Record<string, number>> {
+  if (companyBriWeights && typeof companyBriWeights === 'object') {
+    return companyBriWeights as Record<string, number>
+  }
+  try {
+    const setting = await prisma.systemSetting.findUnique({
+      where: { key: 'bri_category_weights' },
+    })
+    if (setting?.value) return setting.value as Record<string, number>
+  } catch (error) {
+    console.error('Error fetching global BRI weights:', error)
+  }
+  return DEFAULT_CATEGORY_WEIGHTS
+}
+
 /**
- * Find all companies that would be affected by an industry multiple update
- * Returns companies matching at any level of the ICB hierarchy
+ * Find all companies affected by an industry multiple update
  */
 export async function findAffectedCompanies(
-  icbSubSector?: string,
-  icbSector?: string,
-  icbSuperSector?: string,
-  icbIndustry?: string
+  icbSubSector?: string, icbSector?: string, icbSuperSector?: string, icbIndustry?: string
 ): Promise<Array<{ id: string; name: string; icbSubSector: string }>> {
-  // Build OR conditions for any matching level
   const orConditions: Array<Record<string, string>> = []
+  if (icbSubSector) orConditions.push({ icbSubSector })
+  if (icbSector) orConditions.push({ icbSector })
+  if (icbSuperSector) orConditions.push({ icbSuperSector })
+  if (icbIndustry) orConditions.push({ icbIndustry })
+  if (orConditions.length === 0) return []
 
-  if (icbSubSector) {
-    orConditions.push({ icbSubSector })
-  }
-  if (icbSector) {
-    orConditions.push({ icbSector })
-  }
-  if (icbSuperSector) {
-    orConditions.push({ icbSuperSector })
-  }
-  if (icbIndustry) {
-    orConditions.push({ icbIndustry })
-  }
-
-  if (orConditions.length === 0) {
-    return []
-  }
-
-  const companies = await prisma.company.findMany({
-    where: {
-      OR: orConditions,
-    },
-    select: {
-      id: true,
-      name: true,
-      icbSubSector: true,
-    },
+  return prisma.company.findMany({
+    where: { OR: orConditions },
+    select: { id: true, name: true, icbSubSector: true },
   })
-
-  return companies
 }
 
 /**
  * Recalculate snapshots for all companies affected by a multiple update
  */
 export async function recalculateSnapshotsForMultipleUpdate(
-  icbSubSector?: string,
-  icbSector?: string,
-  icbSuperSector?: string,
-  icbIndustry?: string,
-  updateType: 'EBITDA' | 'Revenue' | 'Both' = 'Both',
-  createdByUserId?: string
-): Promise<{
-  totalCompanies: number
-  successful: number
-  failed: number
-  results: RecalculateResult[]
-}> {
+  icbSubSector?: string, icbSector?: string, icbSuperSector?: string, icbIndustry?: string,
+  updateType: 'EBITDA' | 'Revenue' | 'Both' = 'Both', createdByUserId?: string
+): Promise<{ totalCompanies: number; successful: number; failed: number; results: RecalculateResult[] }> {
   const snapshotReason = `Industry ${updateType} multiples updated`
-
-  // Find all affected companies
-  const companies = await findAffectedCompanies(
-    icbSubSector,
-    icbSector,
-    icbSuperSector,
-    icbIndustry
-  )
+  const companies = await findAffectedCompanies(icbSubSector, icbSector, icbSuperSector, icbIndustry)
 
   const results: RecalculateResult[] = []
   let successful = 0
   let failed = 0
 
-  // Recalculate snapshot for each company
   for (const company of companies) {
     const result = await recalculateSnapshotForCompany(company.id, snapshotReason, createdByUserId)
     results.push(result)
-
-    if (result.success) {
-      successful++
-    } else {
-      failed++
-    }
+    if (result.success) successful++
+    else failed++
   }
 
-  return {
-    totalCompanies: companies.length,
-    successful,
-    failed,
-    results,
-  }
+  return { totalCompanies: companies.length, successful, failed, results }
 }

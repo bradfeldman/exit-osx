@@ -38,6 +38,9 @@ interface HeroMetricsBarProps {
   hasAssessment?: boolean
   isEbitdaFromFinancials?: boolean
   dcfValuation?: DCFValuation | null
+  // V2 fields
+  drsScore?: number | null
+  evRange?: { low: number; mid: number; high: number } | null
 }
 
 export function HeroMetricsBar({
@@ -50,6 +53,8 @@ export function HeroMetricsBar({
   hasAssessment = false,
   isEbitdaFromFinancials = false,
   dcfValuation: _dcfValuation,
+  drsScore,
+  evRange,
 }: HeroMetricsBarProps) {
   const isClient = useIsClient()
 
@@ -80,32 +85,50 @@ export function HeroMetricsBar({
 
   const delta = getDeltaDisplay()
 
-  const briPercent = briScore != null ? Math.round(briScore) : null
-  const { value: animatedBri } = useCountUpScore(briPercent ?? 0, { delay: 500, duration: 1800 })
+  // V2: Show DRS (Deal Readiness Score) when available, fall back to BRI
+  const readinessScore = drsScore ?? briScore
+  const readinessPercent = readinessScore != null ? Math.round(readinessScore) : null
+  const { value: animatedReadiness } = useCountUpScore(readinessPercent ?? 0, { delay: 500, duration: 1800 })
+  const readinessLabel = drsScore != null ? 'Deal Readiness' : 'Buyer Readiness Index'
 
-  const getBriColor = () => {
-    if (briPercent == null) return 'text-muted-foreground'
-    if (briPercent >= 75) return 'text-emerald-600'
-    if (briPercent >= 50) return 'text-foreground'
+  const getReadinessColor = () => {
+    if (readinessPercent == null) return 'text-muted-foreground'
+    if (readinessPercent >= 75) return 'text-emerald-600'
+    if (readinessPercent >= 50) return 'text-foreground'
     return 'text-amber-600'
   }
 
-  // Compute blended current value: midpoint of EBITDA-multiple value and DCF value (if available)
-  const blendedCurrentValue = _dcfValuation
-    ? Math.round((currentValue + _dcfValuation.enterpriseValue) / 2)
-    : currentValue
+  // V2: Use evRange when available, otherwise fall back to DCF blend / estimate
+  const hasEvRange = evRange != null
+  const hasDcfRange = !hasEvRange && _dcfValuation !== null && _dcfValuation !== undefined
 
-  // When DCF data is available, show a real range between the two methodologies
-  const hasDcfRange = _dcfValuation !== null && _dcfValuation !== undefined
-  const rangeLow = hasDcfRange
-    ? Math.min(currentValue, _dcfValuation.enterpriseValue)
-    : Math.round(blendedCurrentValue * 0.95)
-  const rangeHigh = hasDcfRange
-    ? Math.max(currentValue, _dcfValuation.enterpriseValue)
-    : Math.round(blendedCurrentValue * 1.05)
+  // Compute displayed current value and range
+  let displayCurrentValue: number
+  let rangeLow: number
+  let rangeHigh: number
 
-  // Determine the subtitle note for the Current Value card
+  if (hasEvRange) {
+    // V2 path: use evRange from valuation engine
+    displayCurrentValue = evRange.mid
+    rangeLow = evRange.low
+    rangeHigh = evRange.high
+  } else if (hasDcfRange) {
+    // Legacy DCF blend
+    displayCurrentValue = Math.round((currentValue + _dcfValuation!.enterpriseValue) / 2)
+    rangeLow = Math.min(currentValue, _dcfValuation!.enterpriseValue)
+    rangeHigh = Math.max(currentValue, _dcfValuation!.enterpriseValue)
+  } else {
+    displayCurrentValue = currentValue
+    rangeLow = Math.round(currentValue * 0.95)
+    rangeHigh = Math.round(currentValue * 1.05)
+  }
+
+  const showRange = hasEvRange || hasDcfRange
+
   const getValueSubtitle = () => {
+    if (hasEvRange) {
+      return formatCurrency(rangeLow) + ' \u2013 ' + formatCurrency(rangeHigh)
+    }
     if (hasDcfRange) {
       return 'Based on two valuation methods'
     }
@@ -117,20 +140,20 @@ export function HeroMetricsBar({
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-      {/* BRI Score */}
+      {/* Readiness Score (V2: DRS, fallback: BRI) */}
       <motion.div
         className="min-w-0 bg-card border border-border rounded-xl p-4 sm:p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <p className="text-xs sm:text-sm font-medium text-muted-foreground">Buyer Readiness Index</p>
-        <p className={`text-2xl sm:text-3xl font-bold mt-1 truncate ${getBriColor()}`}>
-          {briPercent != null
-            ? isClient ? animatedBri : `${briPercent}`
+        <p className="text-xs sm:text-sm font-medium text-muted-foreground">{readinessLabel}</p>
+        <p className={`text-2xl sm:text-3xl font-bold mt-1 truncate ${getReadinessColor()}`}>
+          {readinessPercent != null
+            ? isClient ? animatedReadiness : `${readinessPercent}`
             : '\u2014'}
         </p>
-        {briPercent != null ? (
+        {readinessPercent != null ? (
           <p className="text-xs text-muted-foreground mt-2">Score 0 &ndash; 100</p>
         ) : (
           <Badge variant="secondary" className="mt-2">Not assessed</Badge>
@@ -144,9 +167,9 @@ export function HeroMetricsBar({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.05 }}
       >
-        <p className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center">Current Value<ValuationInfoTip /></p>
-        {hasDcfRange ? (
-          /* Range display when both EBITDA-multiple and DCF are available */
+        <p className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center">{hasEvRange ? 'Enterprise Value' : 'Current Value'}<ValuationInfoTip /></p>
+        {showRange ? (
+          /* Range display: V2 evRange or DCF blend */
           <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1 truncate">
             {isClient ? (
               <><AnimatedCurrency value={rangeLow} delay={200} />{' \u2013 '}<AnimatedCurrency value={rangeHigh} delay={200} /></>
@@ -155,9 +178,9 @@ export function HeroMetricsBar({
             )}
           </p>
         ) : (
-          /* Single blended value when only one methodology */
+          /* Single value */
           <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1 truncate">
-            {isClient ? <AnimatedCurrency value={blendedCurrentValue} delay={200} /> : formatCurrency(blendedCurrentValue)}
+            {isClient ? <AnimatedCurrency value={displayCurrentValue} delay={200} /> : formatCurrency(displayCurrentValue)}
           </p>
         )}
         <p className="text-xs text-muted-foreground mt-2">
