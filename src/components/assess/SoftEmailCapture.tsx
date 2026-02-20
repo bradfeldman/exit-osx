@@ -91,12 +91,14 @@ export function SoftEmailCapture({ onEmailCaptured, onSkip, assessmentData }: So
 
       <div className="mt-4 flex flex-col sm:flex-row gap-3">
         <Input
+          id="soft-email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="your@email.com"
           className="h-12 text-[15px] flex-1"
           autoComplete="email"
+          aria-label="Email address"
           onKeyDown={(e) => {
             if (e.key === 'Enter' && isValidEmail) handleSubmit()
           }}
@@ -127,7 +129,7 @@ export function SoftEmailCapture({ onEmailCaptured, onSkip, assessmentData }: So
         </p>
         <button
           onClick={onSkip}
-          className="text-xs text-muted-foreground hover:text-foreground underline transition-colors"
+          className="text-sm text-muted-foreground hover:text-foreground underline transition-colors py-2 px-1 min-h-[44px] flex items-center"
         >
           Skip for now
         </button>

@@ -73,6 +73,10 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
       {/* Drawer — closes via backdrop tap, close button, or touch outside */}
       <div
         ref={drawerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+        onKeyDown={(e) => { if (e.key === 'Escape') onClose() }}
         className="fixed inset-y-0 left-0 z-50 w-72 bg-sidebar lg:hidden overflow-y-auto"
       >
         <div className="flex flex-col h-full px-4 pb-4">
@@ -87,7 +91,8 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
             </div>
             <button
               onClick={onClose}
-              className="rounded-md p-2 text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+              aria-label="Close navigation"
+              className="rounded-md p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />

@@ -51,7 +51,7 @@ export function FocusBar({
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <Link
             href={`/playbook/${playbookId}`}
-            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+            className="shrink-0 w-11 h-11 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
             aria-label="Back to playbook overview"
           >
             <ArrowLeft className="w-4 h-4" style={{ color: 'var(--text-secondary, #6E6E73)' }} />
@@ -101,7 +101,7 @@ export function FocusBar({
 
           <button
             onClick={handleClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+            className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
             aria-label="Close playbook"
           >
             <X className="w-4 h-4" style={{ color: 'var(--text-secondary, #6E6E73)' }} />

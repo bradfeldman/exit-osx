@@ -82,7 +82,13 @@ export function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
       />
 
       {/* Sheet */}
-      <div className="fixed inset-x-0 bottom-0 z-50 bg-card rounded-t-2xl shadow-xl lg:hidden max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom duration-300 pb-[env(safe-area-inset-bottom)]">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="More options"
+        onKeyDown={(e) => { if (e.key === 'Escape') onClose() }}
+        className="fixed inset-x-0 bottom-0 z-50 bg-card rounded-t-2xl shadow-xl lg:hidden max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom duration-300 pb-[env(safe-area-inset-bottom)]"
+      >
         {/* Drag handle */}
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
@@ -93,6 +99,7 @@ export function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
           <h2 className="text-lg font-semibold text-foreground">More</h2>
           <button
             onClick={onClose}
+            aria-label="Close menu"
             className="rounded-full p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors active:scale-95"
           >
             <X className="h-5 w-5" />

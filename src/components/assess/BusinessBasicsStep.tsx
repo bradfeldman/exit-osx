@@ -108,6 +108,8 @@ export function BusinessBasicsStep({ initialData, onComplete }: BusinessBasicsSt
           placeholder="e.g. Reynolds HVAC Services"
           autoComplete="organization"
           autoFocus
+          aria-describedby={submitted && errors.companyName ? 'companyName-error' : undefined}
+          aria-invalid={submitted && !!errors.companyName}
           className="w-full h-12 px-3 text-[15px] rounded-lg outline-none transition-colors"
           style={{
             background: 'var(--surface)',
@@ -118,7 +120,7 @@ export function BusinessBasicsStep({ initialData, onComplete }: BusinessBasicsSt
           onBlur={(e) => { if (!errors.companyName) e.target.style.borderColor = 'var(--border)' }}
         />
         {submitted && errors.companyName && (
-          <p className="text-sm" style={{ color: 'var(--red)' }}>{errors.companyName}</p>
+          <p id="companyName-error" role="alert" className="text-sm" style={{ color: 'var(--red)' }}>{errors.companyName}</p>
         )}
       </div>
 
@@ -143,6 +145,8 @@ export function BusinessBasicsStep({ initialData, onComplete }: BusinessBasicsSt
           }}
           placeholder="e.g. Commercial and residential HVAC installation, maintenance, and repair serving the greater Dallas area"
           rows={3}
+          aria-describedby={submitted && errors.businessDescription ? 'description-error' : undefined}
+          aria-invalid={submitted && !!errors.businessDescription}
           className="w-full px-3 py-2.5 text-[15px] rounded-lg outline-none resize-none transition-colors"
           style={{
             background: 'var(--surface)',
@@ -166,7 +170,7 @@ export function BusinessBasicsStep({ initialData, onComplete }: BusinessBasicsSt
           )}
         </div>
         {submitted && errors.businessDescription && (
-          <p className="text-sm" style={{ color: 'var(--red)' }}>{errors.businessDescription}</p>
+          <p id="description-error" role="alert" className="text-sm" style={{ color: 'var(--red)' }}>{errors.businessDescription}</p>
         )}
       </div>
 
@@ -209,7 +213,7 @@ export function BusinessBasicsStep({ initialData, onComplete }: BusinessBasicsSt
           Used for industry benchmarking. Not shared.
         </p>
         {submitted && errors.revenueBand && (
-          <p className="text-sm" style={{ color: 'var(--red)' }}>{errors.revenueBand}</p>
+          <p id="revenueBand-error" role="alert" className="text-sm" style={{ color: 'var(--red)' }}>{errors.revenueBand}</p>
         )}
       </div>
 

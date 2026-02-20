@@ -151,10 +151,10 @@ export function ResultsReveal({
               <TrendingUp className="w-5 h-5 text-primary" />
               Valuation Estimate
             </h3>
-            <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
               <div>
                 <p className="text-sm text-muted-foreground">Current</p>
-                <p className="text-2xl font-bold text-foreground">
+                <p className="text-xl sm:text-2xl font-bold text-foreground">
                   {formatCurrency(results.currentValue)}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -163,7 +163,7 @@ export function ResultsReveal({
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Potential</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-xl sm:text-2xl font-bold text-green-600">
                   {formatCurrency(results.potentialValue)}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -172,7 +172,7 @@ export function ResultsReveal({
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Gap</p>
-                <p className="text-2xl font-bold text-amber-600">
+                <p className="text-xl sm:text-2xl font-bold text-amber-700">
                   {formatCurrency(results.valueGap)}
                 </p>
                 <p className="text-xs text-muted-foreground">recoverable</p>

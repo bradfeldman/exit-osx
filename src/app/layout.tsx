@@ -11,6 +11,7 @@ import { MotionProvider } from "@/lib/motion";
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
+  display: "optional",
 });
 
 export const metadata: Metadata = {
@@ -54,9 +55,7 @@ export const metadata: Metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1, // Prevents iOS zoom on input focus (all inputs are 16px+ so this is safe)
-  minimumScale: 1, // Prevents zoom out
-  userScalable: false, // Disables pinch-zoom to prevent layout shifts
+  maximumScale: 5, // Allow pinch-zoom for accessibility (WCAG 1.4.4)
   viewportFit: 'cover' as const, // Extends into safe area on notched devices
 };
 

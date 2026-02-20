@@ -24,7 +24,7 @@ const CATEGORY_DOT_COLORS: Record<string, string> = {
 function getScoreColor(score: number): string {
   if (score >= 80) return 'text-emerald-600'
   if (score >= 60) return 'text-primary'
-  if (score >= 40) return 'text-amber-600'
+  if (score >= 40) return 'text-amber-700'
   return 'text-destructive'
 }
 
@@ -219,7 +219,7 @@ export function CategoryPanel({
       </p>
 
       {/* Last updated */}
-      <p className={cn('text-xs mt-1', confidence.isStale ? 'text-amber-600' : 'text-muted-foreground')}>
+      <p className={cn('text-xs mt-1', confidence.isStale ? 'text-amber-700' : 'text-muted-foreground')}>
         {confidence.lastUpdated
           ? `Last updated: ${new Date(confidence.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${confidence.isStale ? ' — may need refresh' : ''}`
           : 'Not yet assessed'}
@@ -236,7 +236,7 @@ export function CategoryPanel({
 
       {/* Lowest confidence highlight — only for assessed categories */}
       {isAssessed && isLowestConfidence && confidence.dots < 4 && (
-        <div className="flex items-center gap-1.5 mt-2 text-xs text-amber-600">
+        <div className="flex items-center gap-1.5 mt-2 text-xs text-amber-700">
           <AlertTriangle className="h-3.5 w-3.5" />
           <span>Lowest confidence — improve this first</span>
         </div>

@@ -169,11 +169,15 @@ export function HeroMetricsBar({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Left Card: Valuation */}
         <motion.div
-          className="bg-card border border-border rounded-2xl p-6 sm:p-7 flex flex-col cursor-pointer hover:shadow-md transition-shadow"
+          role="link"
+          tabIndex={0}
+          aria-label="Estimated Business Value — click to view valuation details"
+          className="bg-card border border-border rounded-2xl p-6 sm:p-7 flex flex-col cursor-pointer hover:shadow-md transition-shadow focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           onClick={() => window.location.href = '/dashboard/valuation'}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.location.href = '/dashboard/valuation' } }}
         >
           <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center">
             Estimated Business Value
@@ -241,11 +245,15 @@ export function HeroMetricsBar({
 
         {/* Right Card: BRI */}
         <motion.div
-          className="bg-card border border-border rounded-2xl p-6 sm:p-7 flex flex-col cursor-pointer hover:shadow-md transition-shadow"
+          role="link"
+          tabIndex={0}
+          aria-label="Business Readiness Index — click to view diagnosis"
+          className="bg-card border border-border rounded-2xl p-6 sm:p-7 flex flex-col cursor-pointer hover:shadow-md transition-shadow focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.05 }}
           onClick={() => window.location.href = '/dashboard/diagnosis'}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.location.href = '/dashboard/diagnosis' } }}
         >
           <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
             Business Readiness Index
