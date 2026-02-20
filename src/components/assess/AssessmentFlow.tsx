@@ -23,6 +23,7 @@ const STEP_NUMBERS: Record<string, AssessStep> = {
   '2': 'profile',
   '3': 'scan',
   '4': 'review',
+  '5': 'results',
 }
 
 // Progress bar percentages per step (from UX spec)
@@ -153,24 +154,53 @@ export function AssessmentFlow({ initialStep }: AssessmentFlowProps) {
     if (initialStep === 'results') {
       if (session && session.step >= 4) {
         // Restore data from session for results page
-        if (session.businessName) {
-          setBasics({
-            companyName: session.businessName,
-            businessDescription: session.description,
-            revenueBand: session.revenueBand || '',
-          })
+        const restoredBasics = session.businessName ? {
+          companyName: session.businessName,
+          businessDescription: session.description,
+          revenueBand: session.revenueBand || '',
+        } : null
+        if (restoredBasics) setBasics(restoredBasics)
+
+        const restoredProfile = Object.keys(session.coreFactors).length > 0
+          ? (session.coreFactors as BusinessProfileData) : null
+        if (restoredProfile) setProfile(restoredProfile)
+
+        const restoredScan = Object.keys(session.buyerScan).length > 0
+          ? { answers: session.buyerScan as BuyerScanData['answers'], riskCount: 0, briScore: 0 } : null
+        if (restoredScan) setScan(restoredScan)
+
+        if (session.icbClassification) setClassification(session.icbClassification)
+
+        if (session.step >= 5 && restoredBasics && restoredProfile && restoredScan) {
+          // Session completed — recalculate results
+          setStep('calculating')
+          ;(async () => {
+            try {
+              const calcRes = await fetch('/api/assess/calculate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  annualRevenue: bandToRevenue(restoredBasics.revenueBand),
+                  coreFactors: restoredProfile,
+                  buyerScan: restoredScan,
+                  classification: session.icbClassification,
+                }),
+              })
+              if (calcRes.ok) {
+                const calcData = await calcRes.json()
+                setResults(calcData)
+                setStep('results')
+              } else {
+                setStep('review')
+              }
+            } catch {
+              setStep('review')
+            }
+          })()
+        } else {
+          // Not yet completed — show review so they can submit
+          setStep('review')
         }
-        if (Object.keys(session.coreFactors).length > 0) {
-          setProfile(session.coreFactors as BusinessProfileData)
-        }
-        if (Object.keys(session.buyerScan).length > 0) {
-          setScan({ answers: session.buyerScan as BuyerScanData['answers'], riskCount: 0, briScore: 0 })
-        }
-        if (session.icbClassification) {
-          setClassification(session.icbClassification)
-        }
-        // Don't auto-calculate — let them see the review first
-        setStep('review')
       } else {
         // No valid session — redirect to start
         router.replace('/assess')
@@ -203,13 +233,18 @@ export function AssessmentFlow({ initialStep }: AssessmentFlowProps) {
 
       // Navigate to requested step or last saved step
       if (targetStep) {
-        setStep(targetStep)
+        // If restoring to results without computed data, show review instead
+        setStep(targetStep === 'results' ? 'review' : targetStep)
       } else {
         const savedStep = Object.entries(STEP_NUMBERS).find(([, v]) => {
           const idx = STEP_ORDER.indexOf(v)
           return idx + 1 === session.step
         })
-        if (savedStep) setStep(savedStep[1] as AssessStep)
+        if (savedStep) {
+          const resolved = savedStep[1] as AssessStep
+          // If restoring to results without computed data, show review instead
+          setStep(resolved === 'results' ? 'review' : resolved)
+        }
       }
     } else if (targetStep && targetStep !== 'basics') {
       // No session but trying to access a later step — redirect to start
@@ -220,9 +255,9 @@ export function AssessmentFlow({ initialStep }: AssessmentFlowProps) {
   // Sync URL with step changes
   useEffect(() => {
     if (!initialized.current) return
-    const stepNum = STEP_ORDER.indexOf(step) + 1
-    if (step === 'results' || step === 'calculating') return
+    if (step === 'calculating') return
 
+    const stepNum = STEP_ORDER.indexOf(step) + 1
     const currentParam = searchParams.get('step')
     const newParam = stepNum > 1 ? String(stepNum) : null
 
@@ -362,7 +397,6 @@ export function AssessmentFlow({ initialStep }: AssessmentFlowProps) {
       saveSession({ step: 5 })
 
       setStep('results')
-      router.replace('/assess/results', { scroll: false })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
       setStep('review')
