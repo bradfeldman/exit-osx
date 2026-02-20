@@ -59,7 +59,7 @@ export function PlaybookDetailPage({ definition }: PlaybookDetailPageProps) {
     : 0
 
   useEffect(() => {
-    setProgress(getStoredProgress(definition.slug))
+    setProgress(getStoredProgress(definition.slug)) // eslint-disable-line react-hooks/set-state-in-effect -- localStorage read on mount
   }, [definition.slug])
 
   const handleStart = () => {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useSyncExternalStore } from 'react'
 import { motion } from '@/lib/motion'
 import { TrendingUp, AlertTriangle, Info } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -66,16 +66,16 @@ const PHASE_TIMINGS = {
 // Reduced motion hook
 // ---------------------------------------------------------------------------
 
+function subscribeReducedMotion(callback: () => void) {
+  const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+  mq.addEventListener('change', callback)
+  return () => mq.removeEventListener('change', callback)
+}
+function getReducedMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
 function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReduced(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setReduced(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
-  return reduced
+  return useSyncExternalStore(subscribeReducedMotion, getReducedMotion, () => false)
 }
 
 // ---------------------------------------------------------------------------
@@ -96,12 +96,12 @@ export function ResultsReveal({
   const reducedMotion = useReducedMotion()
   const gateRef = useRef<HTMLDivElement>(null)
 
-  // Phased reveal
+  // When reduced motion is on, show all phases immediately (derived, no setState needed)
+  const effectivePhase = reducedMotion ? 6 : phase
+
+  // Phased reveal (only runs when animations are enabled)
   useEffect(() => {
-    if (reducedMotion) {
-      setPhase(6)
-      return
-    }
+    if (reducedMotion) return
 
     const timers = [
       setTimeout(() => setPhase(3), PHASE_TIMINGS.VALUATION),
@@ -140,7 +140,7 @@ export function ResultsReveal({
         <ScoreGauge score={results.briScore} industryName={industryName} />
 
         {/* Phase 3: Valuation Range */}
-        {phase >= 3 && (
+        {effectivePhase >= 3 && (
           <motion.div
             initial={reducedMotion ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -211,7 +211,7 @@ export function ResultsReveal({
         )}
 
         {/* Phase 4: Top Risk */}
-        {phase >= 4 && topRiskLabel && topRiskScore !== null && (
+        {effectivePhase >= 4 && topRiskLabel && topRiskScore !== null && (
           <motion.div
             initial={reducedMotion ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -262,7 +262,7 @@ export function ResultsReveal({
         )}
 
         {/* Phase 5: Soft Email Capture */}
-        {phase >= 5 && (
+        {effectivePhase >= 5 && (
           <SoftEmailCapture
             onEmailCaptured={handleEmailCaptured}
             onSkip={handleEmailSkip}
@@ -276,7 +276,7 @@ export function ResultsReveal({
         )}
 
         {/* Phase 6: Account Gate */}
-        {phase >= 6 && (
+        {effectivePhase >= 6 && (
           <div ref={gateRef}>
             <AccountGate
               prefillEmail={capturedEmail}

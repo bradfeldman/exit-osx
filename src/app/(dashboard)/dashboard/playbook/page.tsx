@@ -87,7 +87,7 @@ export default function PlaybookHubPage() {
     for (const pb of allPlaybooks) {
       map.set(pb.slug, getProgress(pb.slug))
     }
-    setProgressMap(map)
+    setProgressMap(map) // eslint-disable-line react-hooks/set-state-in-effect -- localStorage read on mount
   }, [allPlaybooks])
 
   // Fetch recommendations from API

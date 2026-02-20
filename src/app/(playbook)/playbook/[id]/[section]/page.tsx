@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { getPlaybookDefinition } from '@/lib/playbook/playbook-registry'
 import { FocusModeContent } from '@/components/layout/FocusModeContent'
 import { PlaybookUpgradeGate } from '@/components/playbook/PlaybookUpgradeGate'
@@ -222,12 +223,12 @@ export default function FocusModePage() {
             This score has been shared with your Exit OS dashboard.
             Your {celebration.category.toLowerCase().replace('_', ' ')} readiness improved by +{celebration.bonus} points.
           </p>
-          <a
+          <Link
             href="/dashboard/diagnosis"
             className="inline-flex items-center gap-1 text-sm font-medium text-emerald-700 dark:text-emerald-300 hover:underline mt-2"
           >
             View Impact on Dashboard →
-          </a>
+          </Link>
         </div>
       )}
       <iframe

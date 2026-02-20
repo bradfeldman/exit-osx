@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useSyncExternalStore } from 'react'
 import { motion } from '@/lib/motion'
 
 interface ScoreGaugeProps {
@@ -15,30 +15,30 @@ function getScoreTier(score: number): { label: string; color: string; bgColor: s
   return { label: 'Early stage', color: '#EF4444', bgColor: '#FEF2F2' }
 }
 
+function subscribeReducedMotion(callback: () => void) {
+  const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+  mq.addEventListener('change', callback)
+  return () => mq.removeEventListener('change', callback)
+}
+function getReducedMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
 function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReduced(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setReduced(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
-  return reduced
+  return useSyncExternalStore(subscribeReducedMotion, getReducedMotion, () => false)
 }
 
 export function ScoreGauge({ score, industryName }: ScoreGaugeProps) {
-  const [displayScore, setDisplayScore] = useState(0)
+  const [animatedScore, setAnimatedScore] = useState(0)
   const reducedMotion = useReducedMotion()
   const animationRef = useRef<number | null>(null)
   const tier = getScoreTier(score)
 
-  // Animated counter: 0 → score over 1200ms cubic ease-out
+  // When reduced motion is on, use score directly (derived, no setState needed)
+  const displayScore = reducedMotion ? score : animatedScore
+
+  // Animated counter: 0 → score over 1200ms cubic ease-out (only when animations enabled)
   useEffect(() => {
-    if (reducedMotion) {
-      setDisplayScore(score)
-      return
-    }
+    if (reducedMotion) return
 
     const duration = 1200
     const start = performance.now()
@@ -48,7 +48,7 @@ export function ScoreGauge({ score, industryName }: ScoreGaugeProps) {
       const progress = Math.min(elapsed / duration, 1)
       // Cubic ease-out: 1 - (1 - t)^3
       const eased = 1 - Math.pow(1 - progress, 3)
-      setDisplayScore(Math.round(eased * score))
+      setAnimatedScore(Math.round(eased * score))
       if (progress < 1) {
         animationRef.current = requestAnimationFrame(tick)
       }
