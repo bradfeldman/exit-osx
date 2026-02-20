@@ -141,6 +141,7 @@ export function AssessmentFlow({ initialStep }: AssessmentFlowProps) {
   } | null>(null)
   const [returnToReview, setReturnToReview] = useState(false)
   const [scanProgress, setScanProgress] = useState(0) // 0–8 for buyer scan questions
+  const [tokenEmail, setTokenEmail] = useState<string | null>(null) // Set when loading results via email token
   const initialized = useRef(false)
 
   // Restore session on mount
@@ -152,6 +153,45 @@ export function AssessmentFlow({ initialStep }: AssessmentFlowProps) {
 
     // If navigating to /assess/results, try to restore
     if (initialStep === 'results') {
+      // Check for email token first (from drip email "View Full Results" link)
+      const token = searchParams.get('token')
+
+      if (token) {
+        // Token-based access — fetch lead data from API
+        ;(async () => {
+          try {
+            const res = await fetch(`/api/assess/results-token?token=${encodeURIComponent(token)}`)
+            if (!res.ok) throw new Error('Invalid token')
+            const lead = await res.json()
+
+            // Build synthetic data from lead
+            const briScore = lead.briScore ?? 0
+            const currentValue = lead.currentValue ?? 0
+            const potentialValue = lead.potentialValue ?? 0
+
+            setResults({
+              briScore,
+              currentValue,
+              potentialValue,
+              valueGap: Math.max(0, potentialValue - currentValue),
+              baseMultiple: 0,
+              finalMultiple: 0,
+              topTasks: [],
+              categoryBreakdown: lead.topRisk ? { [lead.topRisk]: 0.3 } : {},
+            })
+            setBasics({ companyName: '', businessDescription: '', revenueBand: '' })
+            setProfile(null)
+            setScan(null)
+            setTokenEmail(lead.email)
+            setStep('results')
+          } catch {
+            // Invalid or expired token — redirect to start
+            router.replace('/assess')
+          }
+        })()
+        return
+      }
+
       if (session && session.step >= 4) {
         // Restore data from session for results page
         const restoredBasics = session.businessName ? {
@@ -502,6 +542,7 @@ export function AssessmentFlow({ initialStep }: AssessmentFlowProps) {
                 classificationOverride={classificationOverride}
                 isCalculating={isCalculating}
                 returnToReview={returnToReview}
+                tokenEmail={tokenEmail}
                 onBasicsComplete={handleBasicsComplete}
                 onProfileComplete={handleProfileComplete}
                 onScanComplete={handleScanComplete}
@@ -539,6 +580,7 @@ export function AssessmentFlow({ initialStep }: AssessmentFlowProps) {
                 classificationOverride={classificationOverride}
                 isCalculating={isCalculating}
                 returnToReview={returnToReview}
+                tokenEmail={tokenEmail}
                 onBasicsComplete={handleBasicsComplete}
                 onProfileComplete={handleProfileComplete}
                 onScanComplete={handleScanComplete}
@@ -560,6 +602,7 @@ export function AssessmentFlow({ initialStep }: AssessmentFlowProps) {
               classificationOverride={classificationOverride}
               isCalculating={isCalculating}
               returnToReview={returnToReview}
+              tokenEmail={tokenEmail}
               onBasicsComplete={handleBasicsComplete}
               onProfileComplete={handleProfileComplete}
               onScanComplete={handleScanComplete}
@@ -626,6 +669,7 @@ interface StepContentProps {
   classificationOverride: { icbIndustry: string; icbSuperSector: string; icbSector: string; icbSubSector: string } | null
   isCalculating: boolean
   returnToReview: boolean
+  tokenEmail: string | null
   onBasicsComplete: (data: BusinessBasicsData) => void
   onProfileComplete: (data: BusinessProfileData) => void
   onScanComplete: (data: BuyerScanData) => void
@@ -638,7 +682,7 @@ interface StepContentProps {
 
 function StepContent({
   step, basics, profile, scan, results, classification, classificationOverride,
-  isCalculating, onBasicsComplete, onProfileComplete, onScanComplete,
+  isCalculating, tokenEmail, onBasicsComplete, onProfileComplete, onScanComplete,
   onReviewConfirm, onEditStep, onBack, onClassificationChange, onScanProgress,
 }: StepContentProps) {
   return (
@@ -729,7 +773,7 @@ function StepContent({
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
         >
-          <ResultsReveal results={results} basics={basics} profile={profile!} scan={scan!} industryName={classification?.primaryIndustry?.name} />
+          <ResultsReveal results={results} basics={basics} profile={profile!} scan={scan!} industryName={classification?.primaryIndustry?.name} tokenEmail={tokenEmail} />
         </motion.div>
       )}
     </AnimatePresence>

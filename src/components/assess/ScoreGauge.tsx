@@ -130,7 +130,7 @@ export function ScoreGauge({ score, industryName }: ScoreGaugeProps) {
 
         {/* Score number overlaid on gauge */}
         <div
-          className="absolute inset-0 flex flex-col items-center justify-end"
+          className="absolute inset-0 z-10 flex flex-col items-center justify-end"
           style={{ paddingBottom: 4 }}
         >
           <span

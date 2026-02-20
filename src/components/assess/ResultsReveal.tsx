@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef, useSyncExternalStore } from 'react'
 import { motion } from '@/lib/motion'
-import { TrendingUp, AlertTriangle, Info } from 'lucide-react'
+import Link from 'next/link'
+import { TrendingUp, AlertTriangle, Info, Check } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/currency'
 import { ScoreGauge } from './ScoreGauge'
 import { SoftEmailCapture } from './SoftEmailCapture'
@@ -38,6 +39,7 @@ interface ResultsRevealProps {
   profile: BusinessProfileData
   scan: BuyerScanData
   industryName?: string | null
+  tokenEmail?: string | null
 }
 
 // ---------------------------------------------------------------------------
@@ -88,6 +90,7 @@ export function ResultsReveal({
   profile,
   scan,
   industryName,
+  tokenEmail,
 }: ResultsRevealProps) {
   // Phase state: 2=BRI, 3=valuation, 4=risk, 5=email, 6=gate
   const [phase, setPhase] = useState(2)
@@ -157,18 +160,22 @@ export function ResultsReveal({
                 <p className="text-xl sm:text-2xl font-bold text-foreground">
                   {formatCurrency(results.currentValue)}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  {results.finalMultiple.toFixed(1)}x
-                </p>
+                {results.finalMultiple > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {results.finalMultiple.toFixed(1)}x
+                  </p>
+                )}
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Potential</p>
                 <p className="text-xl sm:text-2xl font-bold text-green-600">
                   {formatCurrency(results.potentialValue)}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  {results.baseMultiple.toFixed(1)}x
-                </p>
+                {results.baseMultiple > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {results.baseMultiple.toFixed(1)}x
+                  </p>
+                )}
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Gap</p>
@@ -261,8 +268,8 @@ export function ResultsReveal({
           </motion.div>
         )}
 
-        {/* Phase 5: Soft Email Capture */}
-        {effectivePhase >= 5 && (
+        {/* Phase 5: Soft Email Capture (skip in token mode — already have email) */}
+        {effectivePhase >= 5 && !tokenEmail && (
           <SoftEmailCapture
             onEmailCaptured={handleEmailCaptured}
             onSkip={handleEmailSkip}
@@ -278,14 +285,55 @@ export function ResultsReveal({
         {/* Phase 6: Account Gate */}
         {effectivePhase >= 6 && (
           <div ref={gateRef}>
-            <AccountGate
-              prefillEmail={capturedEmail}
-              results={results}
-              basics={basics}
-              profile={profile}
-              scan={scan}
-              onAccountCreated={() => {}}
-            />
+            {tokenEmail ? (
+              /* Token mode: simplified signup CTA (no full assessment data for /api/assess/save) */
+              <motion.div
+                initial={reducedMotion ? false : { opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-card rounded-2xl border border-border p-8 sm:p-10 shadow-lg text-center"
+              >
+                <h3 className="text-xl sm:text-[22px] font-bold text-foreground mb-2">
+                  Your full exit readiness report is ready
+                </h3>
+                <ul className="mt-4 mb-6 space-y-2 text-sm text-muted-foreground text-left max-w-sm mx-auto">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <span>Detailed risk breakdown across 6 buyer confidence factors</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <span>Prioritized action plan with estimated value impact</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                    <span>Track your progress and improve your score over time</span>
+                  </li>
+                </ul>
+                <Link
+                  href={`/signup?email=${encodeURIComponent(tokenEmail)}&ref=drip-results`}
+                  className="inline-flex items-center justify-center h-12 px-8 rounded-lg text-base font-medium text-white transition-colors"
+                  style={{ backgroundColor: 'var(--primary)' }}
+                >
+                  Create Free Account
+                </Link>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Already have an account?{' '}
+                  <Link href="/login" className="text-primary font-medium hover:underline">
+                    Sign in
+                  </Link>
+                </p>
+              </motion.div>
+            ) : (
+              <AccountGate
+                prefillEmail={capturedEmail}
+                results={results}
+                basics={basics}
+                profile={profile}
+                scan={scan}
+                onAccountCreated={() => {}}
+              />
+            )}
           </div>
         )}
       </div>
