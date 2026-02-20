@@ -190,7 +190,7 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ slug:
               </div>
               <div className={styles.metaRow}>
                 <div className={styles.metaLabel}>Difficulty</div>
-                <div className={styles.metaValue}>{definition.difficulty === 'EASY' ? 'Easy' : definition.difficulty === 'MEDIUM' ? 'Medium' : 'Hard'}</div>
+                <div className={styles.metaValue}>{definition.difficulty === 'LOW' || definition.difficulty === 'NONE' ? 'Easy' : definition.difficulty === 'MEDIUM' ? 'Medium' : 'Hard'}</div>
               </div>
               <div className={styles.metaRow}>
                 <div className={styles.metaLabel}>Estimated Time</div>
