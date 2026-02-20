@@ -104,6 +104,30 @@ export function DiagnosisPage() {
     estimatedImpactHigh: number
   }>>([])
   const [showPlaybooks, setShowPlaybooks] = useState(true)
+  const [playbookBoosts, setPlaybookBoosts] = useState<Record<string, { points: number; playbookTitle: string }>>({})
+
+  // Fetch playbook BRI boosts (completed playbooks that improved categories)
+  useEffect(() => {
+    if (!selectedCompanyId) return
+    fetch(`/api/companies/${selectedCompanyId}/playbook-boosts`)
+      .then(res => res.ok ? res.json() : null)
+      .then(result => {
+        if (result?.boosts) {
+          const boostMap: Record<string, { points: number; playbookTitle: string }> = {}
+          for (const b of result.boosts) {
+            const existing = boostMap[b.category]
+            if (existing) {
+              existing.points += b.points
+              existing.playbookTitle += `, ${b.playbookTitle}`
+            } else {
+              boostMap[b.category] = { points: b.points, playbookTitle: b.playbookTitle }
+            }
+          }
+          setPlaybookBoosts(boostMap)
+        }
+      })
+      .catch(() => {})
+  }, [selectedCompanyId])
 
   // Fetch playbook recommendations when assessment exists
   useEffect(() => {
@@ -315,6 +339,7 @@ export function DiagnosisPage() {
                     nextPromptDate={cadenceNextDates[cat.category] ?? null}
                     financialContext={cat.financialContext}
                     planTier={planTier}
+                    playbookBoost={playbookBoosts[cat.category] ?? null}
                   />
                 </div>
               )

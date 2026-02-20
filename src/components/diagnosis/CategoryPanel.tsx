@@ -60,6 +60,8 @@ interface CategoryPanelProps {
     dollarContext: string | null
   } | null
   planTier?: PlanTier
+  /** C5: Playbook-driven BRI category boost (points on 0-100 scale) */
+  playbookBoost?: { points: number; playbookTitle: string } | null
 }
 
 export function CategoryPanel({
@@ -79,6 +81,7 @@ export function CategoryPanel({
   nextPromptDate,
   financialContext,
   planTier = 'foundation',
+  playbookBoost,
 }: CategoryPanelProps) {
   // Fully controlled mode when parent provides onExpand/onCollapse
   const isControlled = onExpand !== undefined && onCollapse !== undefined
@@ -151,9 +154,19 @@ export function CategoryPanel({
           <span className="text-sm font-semibold text-foreground">{label}</span>
         </div>
         {isAssessed ? (
-          <span className={cn('text-lg font-bold', getScoreColor(score))}>
-            {score}/100
-          </span>
+          <div className="flex items-center gap-1.5">
+            {playbookBoost && playbookBoost.points > 0 && (
+              <span
+                className="text-xs font-semibold text-emerald-600 dark:text-emerald-400"
+                title={`+${playbookBoost.points} pts from ${playbookBoost.playbookTitle}`}
+              >
+                +{playbookBoost.points}
+              </span>
+            )}
+            <span className={cn('text-lg font-bold', getScoreColor(score))}>
+              {score}/100
+            </span>
+          </div>
         ) : (
           <span className="text-sm font-medium text-muted-foreground">
             Not Assessed

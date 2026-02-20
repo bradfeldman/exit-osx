@@ -3601,16 +3601,27 @@ model PlaybookPhase {
 }
 
 model CompanyPlaybook {
-  id          String         @id @default(cuid())
-  companyId   String         @map("company_id")
-  playbookId  String         @map("playbook_id")
-  status      PlaybookStatus @default(NOT_STARTED)
-  startedAt   DateTime?      @map("started_at")
-  completedAt DateTime?      @map("completed_at")
-  createdAt   DateTime       @default(now()) @map("created_at")
-  updatedAt   DateTime       @updatedAt @map("updated_at")
-  company     Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  playbook    Playbook       @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+  id                     String         @id @default(cuid())
+  companyId              String         @map("company_id")
+  playbookId             String         @map("playbook_id")
+  status                 PlaybookStatus @default(NOT_STARTED)
+  startedAt              DateTime?      @map("started_at")
+  completedAt            DateTime?      @map("completed_at")
+  // C5: Score tracking fields
+  compositeScore         Float?         @map("composite_score")
+  previousCompositeScore Float?         @map("previous_composite_score")
+  sectionScores          Json?          @map("section_scores")
+  completedSections      Int            @default(0) @map("completed_sections")
+  totalSections          Int            @default(0) @map("total_sections")
+  percentComplete        Float          @default(0) @map("percent_complete")
+  lastActivityAt         DateTime?      @map("last_activity_at")
+  // C5: BRI feedback tracking
+  briCategoryBoosted     String?        @map("bri_category_boosted")
+  briBonusApplied        Float?         @map("bri_bonus_applied")
+  createdAt              DateTime       @default(now()) @map("created_at")
+  updatedAt              DateTime       @updatedAt @map("updated_at")
+  company                Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  playbook               Playbook       @relation(fields: [playbookId], references: [id], onDelete: Cascade)
 
   @@unique([companyId, playbookId])
   @@index([companyId])

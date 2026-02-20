@@ -103,6 +103,38 @@ export async function recalculateSnapshotForCompany(
     const dedupedResponses = deduplicateResponses(scoringResponses)
     const categoryScores = calculateCategoryScores(dedupedResponses)
 
+    // C5: Apply BRI category boosts from completed playbooks (score >= 70)
+    const playbookBoosts = await prisma.companyPlaybook.findMany({
+      where: {
+        companyId,
+        status: 'COMPLETED',
+        briCategoryBoosted: { not: null },
+        briBonusApplied: { not: null, gt: 0 },
+      },
+      select: {
+        briCategoryBoosted: true,
+        briBonusApplied: true,
+      },
+    })
+
+    // Aggregate bonuses per category (multiple playbooks can boost same category)
+    const categoryBonuses = new Map<string, number>()
+    for (const boost of playbookBoosts) {
+      if (boost.briCategoryBoosted && boost.briBonusApplied) {
+        const current = categoryBonuses.get(boost.briCategoryBoosted) ?? 0
+        categoryBonuses.set(boost.briCategoryBoosted, current + boost.briBonusApplied)
+      }
+    }
+
+    // Apply bonuses: convert from 0-100 point scale to 0-1 score scale, cap at 1.0
+    for (const cs of categoryScores) {
+      const bonus = categoryBonuses.get(cs.category)
+      if (bonus && bonus > 0) {
+        cs.score = Math.min(1.0, cs.score + bonus / 100)
+        cs.earnedPoints = cs.score * cs.totalPoints // keep consistent
+      }
+    }
+
     const categoryWeights = await getBriWeightsForCompany(company.briWeights)
     const briScore = calculateWeightedBriScore(categoryScores, categoryWeights)
 

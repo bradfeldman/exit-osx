@@ -5,6 +5,7 @@ import { CompanyProvider } from '@/contexts/CompanyContext'
 import { UserRoleProvider } from '@/contexts/UserRoleContext'
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext'
 import { ProgressionProvider } from '@/contexts/ProgressionContext'
+import { PlaybookProvider } from '@/lib/playbook/PlaybookContext'
 import type { User } from '@supabase/supabase-js'
 
 interface PlaybookShellProps {
@@ -23,7 +24,9 @@ export function PlaybookShell({ children }: PlaybookShellProps) {
       <UserRoleProvider>
         <SubscriptionProvider>
           <ProgressionProvider>
-            {children}
+            <PlaybookProvider>
+              {children}
+            </PlaybookProvider>
           </ProgressionProvider>
         </SubscriptionProvider>
       </UserRoleProvider>

@@ -8,6 +8,7 @@ import { FocusModeContent } from '@/components/layout/FocusModeContent'
 import { PlaybookUpgradeGate } from '@/components/playbook/PlaybookUpgradeGate'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { canAccessPlaybookSection } from '@/lib/subscriptions/playbook-access'
+import { usePlaybookSync } from '@/lib/playbook/PlaybookContext'
 import type { PlaybookSection } from '@/components/playbook/PlaybookSidebar'
 
 interface StoredProgress {
@@ -67,9 +68,39 @@ export default function FocusModePage() {
 
   const [progress, setProgress] = useState<StoredProgress>(() => loadProgress(playbookId))
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'idle'>('idle')
+  const [celebration, setCelebration] = useState<{ score: number; category: string; bonus: number } | null>(null)
+  const { syncProgress } = usePlaybookSync()
+  const syncDebounceRef = useRef<ReturnType<typeof setTimeout>>(null)
 
   // Check freemium gating
   const canAccess = canAccessPlaybookSection(playbookId, sectionIndex, planTier)
+
+  // Debounced backend sync
+  const scheduleBackendSync = useCallback((updatedProgress: StoredProgress) => {
+    if (syncDebounceRef.current) clearTimeout(syncDebounceRef.current)
+    syncDebounceRef.current = setTimeout(async () => {
+      const completedArr = updatedProgress.completedSections
+      const total = definition.phases.length
+      const pct = (completedArr.length / total) * 100
+
+      const result = await syncProgress(playbookId, {
+        compositeScore: updatedProgress.compositeScore ?? null,
+        completedSections: completedArr.length,
+        totalSections: total,
+        percentComplete: pct,
+        sectionScores: {},
+      })
+
+      // Show celebration banner if BRI was boosted
+      if (result?.briFeedback) {
+        setCelebration({
+          score: updatedProgress.compositeScore ?? 0,
+          category: result.briFeedback.category,
+          bonus: result.briFeedback.bonus,
+        })
+      }
+    }, 2000) // 2 second debounce to batch rapid updates
+  }, [playbookId, definition.phases.length, syncProgress])
 
   // Handle postMessage from playbook iframe
   const handleMessage = useCallback((event: MessageEvent) => {
@@ -77,10 +108,13 @@ export default function FocusModePage() {
 
     if (event.data.type === 'playbook:score-update') {
       const detail = event.data.detail
+      let latestProgress: StoredProgress | null = null
+
       if (detail?.compositeScore != null) {
         setProgress(prev => {
           const updated = { ...prev, compositeScore: detail.compositeScore }
           saveProgress(playbookId, updated)
+          latestProgress = updated
           return updated
         })
         setSaveStatus('saving')
@@ -96,8 +130,14 @@ export default function FocusModePage() {
             lastUpdated: new Date().toISOString(),
           }
           saveProgress(playbookId, updated)
+          latestProgress = updated
           return updated
         })
+      }
+
+      // Sync to backend (debounced)
+      if (latestProgress) {
+        scheduleBackendSync(latestProgress)
       }
     }
 
@@ -107,7 +147,7 @@ export default function FocusModePage() {
         window.location.href = `/playbook/${playbookId}/${detail.sectionIndex}`
       }
     }
-  }, [playbookId, sectionIndex, definition.phases.length])
+  }, [playbookId, sectionIndex, definition.phases.length, scheduleBackendSync])
 
   useEffect(() => {
     window.addEventListener('message', handleMessage)
@@ -172,6 +212,24 @@ export default function FocusModePage() {
       saveStatus={saveStatus}
       referrer={null}
     >
+      {/* Completion celebration banner */}
+      {celebration && (
+        <div className="mx-4 mb-4 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40">
+          <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+            Playbook complete — Score: {celebration.score}/100
+          </p>
+          <p className="text-sm text-emerald-700 dark:text-emerald-400 mt-1">
+            This score has been shared with your Exit OS dashboard.
+            Your {celebration.category.toLowerCase().replace('_', ' ')} readiness improved by +{celebration.bonus} points.
+          </p>
+          <a
+            href="/dashboard/diagnosis"
+            className="inline-flex items-center gap-1 text-sm font-medium text-emerald-700 dark:text-emerald-300 hover:underline mt-2"
+          >
+            View Impact on Dashboard →
+          </a>
+        </div>
+      )}
       <iframe
         ref={iframeRef}
         src={iframeSrc}

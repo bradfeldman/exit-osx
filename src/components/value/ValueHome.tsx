@@ -170,6 +170,18 @@ export function ValueHome() {
   const [upgradeFeatureName, setUpgradeFeatureName] = useState<string | undefined>(undefined)
   const [showTour, setShowTour] = useState(false)
   const [tourKey, setTourKey] = useState(0)
+  const [activePlaybooks, setActivePlaybooks] = useState<Array<{ id: string; title: string; percentComplete: number; category: string }>>([])
+
+  // Fetch active playbooks for the ActivePlaybooksRow
+  useEffect(() => {
+    if (!selectedCompanyId) return
+    fetch(`/api/companies/${selectedCompanyId}/active-playbooks`)
+      .then(res => res.ok ? res.json() : null)
+      .then(result => {
+        if (result?.playbooks) setActivePlaybooks(result.playbooks)
+      })
+      .catch(() => {})
+  }, [selectedCompanyId])
 
   const handleUpgrade = useCallback((feature?: string, featureName?: string) => {
     setUpgradeFeature(feature)
@@ -299,8 +311,8 @@ export function ValueHome() {
           />
         </AnimatedItem>
 
-        {/* Active Playbooks Row — empty until C5 ships */}
-        <ActivePlaybooksRow playbooks={[]} />
+        {/* Active Playbooks Row */}
+        <ActivePlaybooksRow playbooks={activePlaybooks} />
 
         {/* Core Score Card — structural factors */}
         {data.coreFactors?.coreScore != null && tier1 && (
