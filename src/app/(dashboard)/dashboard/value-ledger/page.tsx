@@ -1,5 +1,5 @@
-import { ValueLedgerPage } from '@/components/value-ledger/ValueLedgerPage'
+import { redirect } from 'next/navigation'
 
-export default function ValueLedgerRoute() {
-  return <ValueLedgerPage />
+export default function ValueLedgerPage() {
+  redirect('/dashboard/valuation')
 }

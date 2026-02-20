@@ -1,0 +1,655 @@
+/* Valuation pages — pixel-match to mocksite valuation.html */
+
+/* ===== PAGE HEADER ===== */
+.pageHeader {
+  margin-bottom: 32px;
+}
+
+.pageHeader h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+}
+
+.pageHeader p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.pageHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ===== VALUATION HERO ===== */
+.valHero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.valHeroLeft {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+}
+
+.valHeroRight {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.valHeroLabel {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+
+.valHeroAmount {
+  font-size: 48px;
+  font-weight: 800;
+  letter-spacing: -2px;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.valHeroRange {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.valHeroChange {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--green);
+}
+
+.valHeroMeta {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 12px;
+}
+
+/* ===== CONFIDENCE RING ===== */
+.confidenceRing {
+  width: 140px;
+  height: 140px;
+  position: relative;
+}
+
+.confidenceRing svg {
+  width: 140px;
+  height: 140px;
+  transform: rotate(-90deg);
+}
+
+.confidenceText {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.confidenceNum {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: var(--text-primary);
+}
+
+.confidenceSub {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+/* ===== METHODS GRID ===== */
+.methodsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.methodCard {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  border: 2px solid var(--border-light);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+}
+
+.methodCard:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+}
+
+.methodCard.selected {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.methodIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.methodIcon svg { width: 22px; height: 22px; }
+
+.methodIcon.blue { background: var(--accent-light); color: var(--accent); }
+.methodIcon.purple { background: #F5EDFB; color: #AF52DE; }
+.methodIcon.teal { background: #E5F7FB; color: #5AC8FA; }
+
+.methodName {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.methodValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.methodDesc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ===== MATH EQUATION CARD ===== */
+.mathCard {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  margin-bottom: 32px;
+}
+
+.mathHeader {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-tertiary);
+  margin-bottom: 20px;
+}
+
+.mathEquation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.mathBlock {
+  text-align: center;
+  padding: 16px 24px;
+  border-radius: var(--radius);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-light);
+  min-width: 140px;
+}
+
+.mathBlockValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.mathBlockLabel {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
+.mathOperator {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+}
+
+.mathResult {
+  composes: mathBlock;
+  background: var(--accent-light);
+  border-color: var(--accent);
+}
+
+.mathResult .mathBlockValue {
+  color: var(--accent);
+}
+
+/* ===== ADJUSTMENT TABLE ===== */
+.adjTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.adjTable th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-tertiary);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.adjTable td {
+  padding: 10px 12px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.adjPositive { color: var(--green); font-weight: 600; }
+.adjNegative { color: var(--red); font-weight: 600; }
+
+.adjTotal td {
+  font-weight: 700;
+  border-top: 2px solid var(--border);
+  padding-top: 12px;
+}
+
+/* ===== TREND CHART ===== */
+.trendSection {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  margin-bottom: 32px;
+}
+
+.chartArea {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 200px;
+  padding: 0 4px;
+  margin-bottom: 8px;
+}
+
+.chartCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.chartBar {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background: var(--accent-light);
+  transition: height 0.3s ease;
+  min-height: 4px;
+}
+
+.chartBar.current {
+  background: var(--accent);
+}
+
+.chartBarValue {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.chartLabel {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 6px;
+}
+
+.chartLabel.current {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ===== GAP ANALYSIS ===== */
+.gapCard {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  margin-bottom: 32px;
+}
+
+.gapVisual {
+  margin: 20px 0;
+}
+
+.gapBarTrack {
+  width: 100%;
+  height: 24px;
+  background: var(--border-light);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.gapBarCurrent {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #5AC8FA);
+  border-radius: 12px;
+  transition: width 0.5s ease;
+}
+
+.gapAmounts {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.gapAmountValue {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.gapFactors {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.gapFactor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--surface-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.gapFactorIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gapFactorIcon svg { width: 18px; height: 18px; }
+.gapFactorIcon.red { background: var(--red-light); color: var(--red); }
+.gapFactorIcon.orange { background: var(--orange-light); color: var(--orange); }
+.gapFactorIcon.purple { background: #F5EDFB; color: #AF52DE; }
+.gapFactorIcon.teal { background: #E5F7FB; color: #5AC8FA; }
+
+.gapFactorName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.gapFactorAmount {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ===== SECTION HELPERS ===== */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.sectionSubtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.sectionLink {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.sectionLink:hover { text-decoration: underline; }
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  margin-bottom: 24px;
+}
+
+.cardLabel {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+
+/* ===== AI INSIGHT ===== */
+.aiInsight {
+  background: linear-gradient(135deg, #1D1D1F 0%, #2C2C2E 100%);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.aiInsightIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), #AF52DE);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.aiInsightIcon svg { width: 22px; height: 22px; color: white; }
+
+.aiInsightContent { flex: 1; }
+
+.aiInsightTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 4px;
+}
+
+.aiInsightText {
+  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.5;
+}
+
+/* ===== SNAPSHOT LIST ===== */
+.snapshotBadge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.snapshotBadge.current {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.snapshotBadge.auto {
+  background: var(--green-light);
+  color: var(--green);
+}
+
+.snapshotBadge.manual {
+  background: var(--orange-light);
+  color: var(--orange);
+}
+
+/* ===== HERO STATS ===== */
+.heroStats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.heroStat {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+}
+
+.heroStatLabel {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-tertiary);
+  margin-bottom: 6px;
+}
+
+.heroStatValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.heroStatValue.accent { color: var(--accent); }
+.heroStatValue.green { color: var(--green); }
+
+.heroStatSub {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.heroStatDelta {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--green);
+  margin-top: 4px;
+}
+
+/* ===== TABS ===== */
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface-secondary);
+  border-radius: var(--radius-sm);
+  margin-bottom: 24px;
+}
+
+.tab {
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tab:hover {
+  color: var(--text-primary);
+}
+
+.tab.active {
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ===== LOADING ===== */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .valHero {
+    grid-template-columns: 1fr;
+  }
+
+  .methodsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .valHeroAmount {
+    font-size: 36px;
+  }
+
+  .mathEquation {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .heroStats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gapFactors {
+    grid-template-columns: 1fr;
+  }
+}

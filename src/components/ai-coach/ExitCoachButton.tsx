@@ -1,14 +1,14 @@
 'use client'
 
 import { Sparkles } from 'lucide-react'
-import { useExitCoach } from '@/contexts/ExitCoachContext'
+import { useRouter } from 'next/navigation'
 
 export function ExitCoachButton() {
-  const { setIsOpen } = useExitCoach()
+  const router = useRouter()
 
   return (
     <button
-      onClick={() => setIsOpen(true)}
+      onClick={() => router.push('/dashboard/coach')}
       className="relative rounded-full p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
       title="AI Exit Coach"
     >

@@ -10,7 +10,7 @@ import { MoreSheet } from './MoreSheet'
 
 const tabs = [
   { name: 'Value', href: '/dashboard', icon: HomeIcon },
-  { name: 'Actions', href: '/dashboard/actions', icon: ActionsIcon },
+  { name: 'Actions', href: '/dashboard/action-center', icon: ActionsIcon },
   { name: 'Evidence', href: '/dashboard/evidence', icon: EvidenceIcon },
   { name: 'Diagnosis', href: '/dashboard/diagnosis', icon: DiagnosisIcon },
 ]

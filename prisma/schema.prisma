@@ -236,6 +236,7 @@ model Company {
   qbTransactions           QBTransaction[]
   transactionFlags         TransactionFlag[]
   companyPlaybooks         CompanyPlaybook[]
+  coachConversations       CoachConversation[]
 
   @@map("companies")
 }
@@ -3646,4 +3647,30 @@ model AssessmentLead {
   @@index([email])
   @@index([createdAt, convertedAt])
   @@map("assessment_leads")
+}
+
+model CoachConversation {
+  id        String         @id @default(cuid())
+  companyId String         @map("company_id")
+  company   Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  title     String         @default("New conversation")
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+  messages  CoachMessage[]
+
+  @@index([companyId, updatedAt])
+  @@map("coach_conversations")
+}
+
+model CoachMessage {
+  id             String            @id @default(cuid())
+  conversationId String            @map("conversation_id")
+  conversation   CoachConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String
+  content        String
+  contextSources Json?             @map("context_sources")
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  @@index([conversationId, createdAt])
+  @@map("coach_messages")
 }

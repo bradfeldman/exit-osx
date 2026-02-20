@@ -2,11 +2,16 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentDossier } from '@/lib/dossier/build-dossier'
 import type { CompanyDossierContent } from '@/lib/dossier/types'
 
+export interface CoachContextResult {
+  systemPrompt: string
+  contextSources: string[]
+}
+
 /**
  * Build AI Coach context from the company dossier (preferred) or ad-hoc queries (fallback).
  * Using the dossier provides richer, pre-computed context at lower query cost.
  */
-export async function buildCoachContext(companyId: string): Promise<string> {
+export async function buildCoachContext(companyId: string): Promise<CoachContextResult> {
   // Try dossier-first approach
   const dossier = await getCurrentDossier(companyId)
 
@@ -18,8 +23,11 @@ export async function buildCoachContext(companyId: string): Promise<string> {
   return buildContextFromQueries(companyId)
 }
 
-function buildContextFromDossier(companyId: string, d: CompanyDossierContent): string {
+function buildContextFromDossier(_companyId: string, d: CompanyDossierContent): CoachContextResult {
   const { identity, financials, valuation, tasks, signals, evidence, engagement, assessment } = d
+  const contextSources: string[] = []
+
+  contextSources.push('company_profile')
 
   const briScoreText = valuation.briScore !== null
     ? `- Overall BRI Score: ${Math.round(valuation.briScore * 100)}/100`
@@ -31,6 +39,33 @@ function buildContextFromDossier(companyId: string, d: CompanyDossierContent): s
         .join('\n')
     : ''
 
+  if (assessment.hasCompletedAssessment) {
+    contextSources.push('bri_scores')
+  }
+
+  if (financials.annualRevenue > 0 || financials.annualEbitda > 0) {
+    contextSources.push('financials')
+  }
+
+  if (valuation.currentValue !== null) {
+    contextSources.push('valuation')
+  }
+
+  if (tasks.totalTasks > 0) {
+    contextSources.push('tasks')
+  }
+
+  if (signals.openSignalsCount > 0) {
+    contextSources.push('signals')
+  }
+
+  if (evidence.totalDocuments > 0) {
+    contextSources.push('evidence')
+  }
+
+  // Always include dossier since that's the source
+  contextSources.push('dossier')
+
   const topPendingTasks = tasks.topPendingTasks
     .slice(0, 5)
     .map(t => `- ${t.title} (${t.briCategory}, $${t.normalizedValue.toLocaleString()} value)`)
@@ -41,7 +76,7 @@ function buildContextFromDossier(companyId: string, d: CompanyDossierContent): s
     .map(s => `- [${s.severity}] ${s.title}${s.category ? ` (${s.category})` : ''}`)
     .join('\n')
 
-  return `You are an AI Exit Coach for Exit OSx, a platform that helps business owners prepare for a company exit or sale.
+  const systemPrompt = `You are an AI Exit Coach for Exit OSx, a platform that helps business owners prepare for a company exit or sale.
 
 You are advising the owner of "${identity.name}".
 
@@ -89,12 +124,16 @@ INSTRUCTIONS:
 - When asked about risks, reference the open signals and lowest BRI category scores.
 - Keep responses concise (2-4 paragraphs max).
 - If the user asks about something not in the data, say so honestly rather than guessing.`
+
+  return { systemPrompt, contextSources }
 }
 
 /**
  * Legacy fallback: build context from direct DB queries when no dossier exists
  */
-async function buildContextFromQueries(companyId: string): Promise<string> {
+async function buildContextFromQueries(companyId: string): Promise<CoachContextResult> {
+  const contextSources: string[] = []
+
   const [company, snapshot, tasks, signals] = await Promise.all([
     prisma.company.findUnique({
       where: { id: companyId },
@@ -131,6 +170,25 @@ async function buildContextFromQueries(companyId: string): Promise<string> {
 
   if (!company) throw new Error('Company not found')
 
+  contextSources.push('company_profile')
+
+  if (Number(company.annualRevenue) > 0 || Number(company.annualEbitda) > 0) {
+    contextSources.push('financials')
+  }
+
+  if (snapshot) {
+    contextSources.push('valuation')
+    contextSources.push('bri_scores')
+  }
+
+  if (tasks.length > 0) {
+    contextSources.push('tasks')
+  }
+
+  if (signals.length > 0) {
+    contextSources.push('signals')
+  }
+
   const taskCounts = {
     total: tasks.length,
     pending: tasks.filter(t => t.status === 'PENDING').length,
@@ -158,7 +216,7 @@ async function buildContextFromQueries(companyId: string): Promise<string> {
     personal: Math.round(Number(snapshot.briPersonal) * 100),
   } : null
 
-  return `You are an AI Exit Coach for Exit OSx, a platform that helps business owners prepare for a company exit or sale.
+  const systemPrompt = `You are an AI Exit Coach for Exit OSx, a platform that helps business owners prepare for a company exit or sale.
 
 You are advising the owner of "${company.name}".
 
@@ -195,4 +253,6 @@ INSTRUCTIONS:
 - When asked about risks, reference the open signals and lowest BRI category scores.
 - Keep responses concise (2-4 paragraphs max).
 - If the user asks about something not in the data, say so honestly rather than guessing.`
+
+  return { systemPrompt, contextSources }
 }

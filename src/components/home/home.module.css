@@ -1,0 +1,782 @@
+/* Home Dashboard — pixel-match to mocksite index.html */
+
+/* ===== TOP BAR ===== */
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.greeting h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+}
+
+.greeting p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.topActions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+
+.btn svg { width: 16px; height: 16px; }
+
+.btnPrimary {
+  composes: btn;
+  background: var(--accent);
+  color: white;
+}
+.btnPrimary:hover { background: #005BB5; }
+
+.btnSecondary {
+  composes: btn;
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+.btnSecondary:hover { background: var(--surface-secondary); }
+
+/* ===== PHASE JOURNEY ===== */
+.phaseJourney {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  margin-bottom: 24px;
+}
+
+.phaseJourneyHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.phaseJourneyTitle {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-tertiary);
+}
+
+.phaseJourneyCurrent {
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.phaseSteps {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  position: relative;
+}
+
+.phaseStep {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+
+.phaseStepDotRow {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.phaseStepLine {
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+}
+
+.phaseStepLine.completed {
+  background: var(--green);
+}
+
+.phaseStepLine.active {
+  background: linear-gradient(90deg, var(--green), var(--border));
+}
+
+.phaseStepDot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 3px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.phaseStep.completed .phaseStepDot {
+  background: var(--green);
+  border-color: var(--green);
+  color: white;
+}
+
+.phaseStep.active .phaseStepDot {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-light);
+}
+
+.phaseStepLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  max-width: 120px;
+  line-height: 1.3;
+}
+
+.phaseStep.completed .phaseStepLabel { color: var(--green); }
+.phaseStep.active .phaseStepLabel { color: var(--accent); }
+
+/* ===== CARD ===== */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+}
+
+.cardLabel {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+
+/* ===== VALUATION HERO ===== */
+.valuationHero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.valuationCard {
+  composes: card;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+
+.valuationCard:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.valuationAmount {
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -2px;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.valuationChange {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--green);
+}
+
+.valuationChange svg { width: 16px; height: 16px; }
+
+.valuationMethod {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface-secondary);
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+/* ===== TREND BARS ===== */
+.trendRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 48px;
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+
+.trendBar {
+  flex: 1;
+  background: var(--accent-light);
+  border-radius: 3px 3px 0 0;
+  min-height: 8px;
+  transition: height 0.3s ease;
+}
+
+.trendBar:last-child {
+  background: var(--accent);
+}
+
+.trendLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+/* ===== BRI SCORE ===== */
+.briCard {
+  composes: card;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+
+.briCard:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.briScoreRow {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.briCircle {
+  width: 100px;
+  height: 100px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.briCircle svg {
+  width: 100px;
+  height: 100px;
+  transform: rotate(-90deg);
+}
+
+.briCircleBg {
+  fill: none;
+  stroke: var(--border-light);
+  stroke-width: 8;
+}
+
+.briCircleProgress {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 251;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.briCircleText {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.briNumber {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.briOf {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.briFactors {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.briFactor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.briFactorLabel {
+  flex: 1;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.briFactorScore {
+  font-weight: 700;
+  font-size: 13px;
+  min-width: 28px;
+  text-align: right;
+}
+
+.briFactorBar {
+  width: 60px;
+  height: 5px;
+  background: var(--border-light);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.briFactorFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.fillGreen { background: var(--green); }
+.fillOrange { background: var(--orange); }
+.fillRed { background: var(--red); }
+.fillAccent { background: var(--accent); }
+
+/* ===== AI COACH CTA ===== */
+.coachCta {
+  background: linear-gradient(135deg, #1D1D1F 0%, #2C2C2E 100%);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  margin-bottom: 32px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.coachCta:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+
+.coachIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent), #AF52DE);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.coachIcon svg { width: 24px; height: 24px; color: white; }
+
+.coachContent { flex: 1; }
+
+.coachTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 2px;
+}
+
+.coachDesc {
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
+}
+
+.coachArrow {
+  color: rgba(255,255,255,0.4);
+  flex-shrink: 0;
+}
+
+.coachArrow svg { width: 20px; height: 20px; }
+
+/* ===== SECTION HEADER ===== */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.sectionLink {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.sectionLink:hover { text-decoration: underline; }
+
+/* ===== ACTIONS GRID ===== */
+.actionsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.actionItem {
+  composes: card;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.actionItem:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border);
+}
+
+.actionIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.actionIcon svg { width: 20px; height: 20px; }
+
+.impactHigh { background: var(--green-light); color: var(--green); }
+.impactMed { background: var(--orange-light); color: var(--orange); }
+.impactCritical { background: var(--red-light); color: var(--red); }
+.impactInfo { background: var(--accent-light); color: var(--accent); }
+
+.actionContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.actionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.actionDesc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.actionMeta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.actionTag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.tagValue { background: var(--green-light); color: #1B8731; }
+.tagRisk { background: var(--red-light); color: var(--red); }
+.tagPrep { background: #F5EDFB; color: #AF52DE; }
+.tagFinance { background: var(--orange-light); color: #B36B00; }
+
+.actionArrow {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.actionArrow svg { width: 16px; height: 16px; }
+
+/* ===== BOTTOM GRID ===== */
+.bottomGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+/* ===== RETIREMENT SNAPSHOT ===== */
+.retirementCard {
+  composes: card;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+
+.retirementCard:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.retirementBarSection {
+  margin-top: 12px;
+}
+
+.retirementNumbers {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.retirementCurrent {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.retirementTarget {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+
+.retirementBarTrack {
+  width: 100%;
+  height: 10px;
+  background: var(--border-light);
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+}
+
+.retirementBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--orange), var(--green));
+  border-radius: 5px;
+  transition: width 0.5s ease;
+}
+
+.retirementLabel {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.retirementGap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  padding: 10px 14px;
+  background: var(--orange-light);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: #B36B00;
+  font-weight: 500;
+}
+
+.retirementGap svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+/* ===== SIGNALS ===== */
+.signalsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.signalItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.signalDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.signalDot.positive { background: var(--green); }
+.signalDot.warning { background: var(--orange); }
+.signalDot.negative { background: var(--red); }
+
+.signalText {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.signalText strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.signalTime {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+/* ===== WEEKLY CHECKIN ===== */
+.checkinCard {
+  composes: card;
+  border: 2px solid var(--accent);
+  border-style: dashed;
+  background: var(--accent-light);
+  margin-bottom: 32px;
+}
+
+.checkinHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.checkinHeader svg { width: 18px; height: 18px; color: var(--accent); }
+
+.checkinHeader span {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.checkinQuestion {
+  font-size: 15px;
+  color: var(--text-primary);
+  font-weight: 500;
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+
+.checkinOptions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.checkinBtn {
+  padding: 7px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1.5px solid var(--accent);
+  background: white;
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.checkinBtn:hover {
+  background: var(--accent);
+  color: white;
+}
+
+/* ===== LOADING ===== */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .topBar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .topActions {
+    width: 100%;
+  }
+
+  .btn {
+    min-height: 44px;
+  }
+
+  .valuationHero {
+    grid-template-columns: 1fr;
+  }
+
+  .valuationAmount {
+    font-size: 36px;
+  }
+
+  .bottomGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .actionMeta {
+    display: none;
+  }
+
+  .briScoreRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}

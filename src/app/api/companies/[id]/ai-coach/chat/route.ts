@@ -55,7 +55,7 @@ export async function POST(
   }
 
   try {
-    const systemPrompt = await buildCoachContext(companyId)
+    const { systemPrompt } = await buildCoachContext(companyId)
     const client = getAnthropicClient()
 
     // Only send last 10 messages to keep context manageable

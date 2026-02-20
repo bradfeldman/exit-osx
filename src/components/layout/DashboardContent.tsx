@@ -1,14 +1,11 @@
 'use client'
 
-import { ReactNode } from 'react'
+import { ReactNode, useState, useCallback } from 'react'
 import { useProgression } from '@/contexts/ProgressionContext'
 import { useCompany } from '@/contexts/CompanyContext'
-import { Sidebar } from './Sidebar'
-import { Header } from './Header'
-import { TrialBanner } from '@/components/subscription/TrialBanner'
+import { Sidebar, MobileHeader, DrawerOverlay } from './Sidebar'
 import { SessionTimeoutWarning } from '@/components/session/SessionTimeoutWarning'
 import { FeedbackWidget } from '@/components/feedback/FeedbackWidget'
-import { BottomTabBar } from './BottomTabBar'
 import { EntryScreen } from './EntryScreen'
 import { DashboardLoadError } from './DashboardLoadError'
 import type { User } from '@supabase/supabase-js'
@@ -21,6 +18,10 @@ interface DashboardContentProps {
 export function DashboardContent({ children, user }: DashboardContentProps) {
   const { hasCompany, isLoading } = useProgression()
   const { loadError } = useCompany()
+  const [drawerOpen, setDrawerOpen] = useState(false)
+
+  const openDrawer = useCallback(() => setDrawerOpen(true), [])
+  const closeDrawer = useCallback(() => setDrawerOpen(false), [])
 
   // While loading, show a minimal loading state
   if (isLoading) {
@@ -44,20 +45,46 @@ export function DashboardContent({ children, user }: DashboardContentProps) {
     return <EntryScreen />
   }
 
-  // Normal dashboard layout
+  // Normal dashboard layout — matches mocksite spec
   return (
-    <div className="min-h-screen bg-background">
-      <Sidebar />
-      <div className="lg:pl-64">
-        <TrialBanner />
-        <Header user={user} />
-        <main className="px-4 py-4 pb-24 sm:px-6 sm:py-6 lg:pb-6">
+    <>
+      {/* Mobile header — visible < 1024px */}
+      <MobileHeader onMenuToggle={openDrawer} />
+
+      {/* Drawer overlay for mobile */}
+      <DrawerOverlay isOpen={drawerOpen} onClose={closeDrawer} />
+
+      <div style={{ display: 'flex', minHeight: '100vh' }}>
+        {/* Sidebar */}
+        <Sidebar user={user} isOpen={drawerOpen} onClose={closeDrawer} />
+
+        {/* Main content — mocksite: margin-left: 260px, padding: 32px 40px, max-width: 1200px */}
+        <main
+          style={{
+            flex: 1,
+            marginLeft: 260,
+            padding: '32px 40px',
+            maxWidth: 1200,
+            minHeight: '100vh',
+          }}
+          className="main-content"
+        >
           {children}
         </main>
       </div>
+
       <SessionTimeoutWarning />
       <FeedbackWidget />
-      <BottomTabBar />
-    </div>
+
+      {/* Responsive override for mobile */}
+      <style>{`
+        @media (max-width: 1024px) {
+          .main-content {
+            margin-left: 0 !important;
+            padding: 20px !important;
+          }
+        }
+      `}</style>
+    </>
   )
 }

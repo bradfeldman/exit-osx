@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
 
 export default function ValueBuilderPage() {
-  redirect('/dashboard')
+  redirect('/dashboard/valuation')
 }

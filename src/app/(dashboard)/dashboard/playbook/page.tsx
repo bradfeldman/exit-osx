@@ -2,266 +2,242 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
 import { useCompany } from '@/contexts/CompanyContext'
-import { useSubscription } from '@/contexts/SubscriptionContext'
+import { TrackPageView } from '@/components/tracking/TrackPageView'
 import { getAllPlaybooks } from '@/lib/playbook/playbook-registry'
-import { PlaybookCard } from '@/components/playbook/PlaybookCard'
-import type { PlaybookDefinition } from '../../../../../prisma/seed-data/playbook-definitions'
+import styles from '@/components/playbook/playbook.module.css'
 
 const CATEGORY_LABELS: Record<string, string> = {
   PERSONAL: 'Personal',
   FINANCIAL: 'Financial',
   OPERATIONAL: 'Operations',
-  LEGAL: 'Legal',
-  MARKET_GROWTH: 'Growth',
+  LEGAL: 'Legal & Compliance',
+  MARKET_GROWTH: 'Revenue Growth',
   DEAL_PREP: 'Deal Prep',
 }
 
-const JOURNEY_PHASES = [
-  { label: 'Personal Readiness', slugRange: [1, 5] },
-  { label: 'Financial Cleanup', slugRange: [6, 11] },
-  { label: 'Operations', slugRange: [12, 19] },
-  { label: 'Legal & Compliance', slugRange: [20, 25] },
-  { label: 'Growth & Value', slugRange: [26, 30] },
-  { label: 'Deal Preparation', slugRange: [31, 38] },
-  { label: 'Contingency', slugRange: [39, 44] },
-]
+const ICON_COLORS: Record<string, string> = {
+  PERSONAL: 'iconPurple',
+  FINANCIAL: 'iconBlue',
+  OPERATIONAL: 'iconOrange',
+  LEGAL: 'iconTeal',
+  MARKET_GROWTH: 'iconGreen',
+  DEAL_PREP: 'iconRed',
+}
 
-interface RecommendedPlaybook {
-  playbook: PlaybookDefinition
+interface Recommendation {
+  playbook: { slug: string; title: string; category: string; description?: string }
   relevanceScore: number
   estimatedImpactLow: number
   estimatedImpactHigh: number
   isRecommended: boolean
 }
 
-function getSlugNumber(slug: string): number {
-  const match = slug.match(/PB-(\d+)/i)
-  return match ? parseInt(match[1], 10) : 0
+interface ActivePlaybook {
+  id: string
+  title: string
+  percentComplete: number
+  category: string
 }
 
-function getProgress(slug: string): { percent: number; lastActive: string | null } {
-  if (typeof window === 'undefined') return { percent: 0, lastActive: null }
-  try {
-    const stored = localStorage.getItem(`exitosx-${slug.toLowerCase()}`)
-    if (!stored) return { percent: 0, lastActive: null }
-    const data = JSON.parse(stored)
-    const completed = data.completedSections?.length ?? 0
-    const total = data.totalSections ?? 1
-    return {
-      percent: (completed / total) * 100,
-      lastActive: data.lastUpdated ?? null,
-    }
-  } catch {
-    return { percent: 0, lastActive: null }
+function formatImpact(low: number, high: number): string {
+  const fmtK = (v: number) => {
+    if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`
+    return `$${Math.round(v / 1000)}K`
   }
+  return `+${fmtK(low)}–${fmtK(high)}`
 }
 
-/** Generate a brief rationale from BRI category gap */
-function getRationale(category: string): string {
-  const map: Record<string, string> = {
-    PERSONAL: 'Addresses your personal readiness gap',
-    FINANCIAL: 'Strengthens your financial position',
-    OPERATIONAL: 'Reduces operational risk for buyers',
-    LEGAL: 'Closes legal compliance gaps',
-    MARKET_GROWTH: 'Improves growth trajectory for buyers',
-    DEAL_PREP: 'Prepares you for deal execution',
-  }
-  return map[category] || 'Recommended based on your profile'
-}
-
-export default function PlaybookHubPage() {
+export default function PlaybookPage() {
   const { selectedCompanyId } = useCompany()
-  const { planTier } = useSubscription()
   const allPlaybooks = getAllPlaybooks()
-  const [filter, setFilter] = useState<'all' | 'in-progress' | 'not-started'>('all')
-  const [categoryFilter, setCategoryFilter] = useState<string>('all')
-  const [search, setSearch] = useState('')
-  const [progressMap, setProgressMap] = useState<Map<string, { percent: number; lastActive: string | null }>>(new Map())
-  const [recommended, setRecommended] = useState<RecommendedPlaybook[]>([])
+  const [recommended, setRecommended] = useState<Recommendation[]>([])
+  const [activePlaybooks, setActivePlaybooks] = useState<ActivePlaybook[]>([])
+  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [loading, setLoading] = useState(true)
 
-  // Load progress from localStorage
-  useEffect(() => {
-    const map = new Map<string, { percent: number; lastActive: string | null }>()
-    for (const pb of allPlaybooks) {
-      map.set(pb.slug, getProgress(pb.slug))
-    }
-    setProgressMap(map) // eslint-disable-line react-hooks/set-state-in-effect -- localStorage read on mount
-  }, [allPlaybooks])
-
-  // Fetch recommendations from API
   useEffect(() => {
     if (!selectedCompanyId) return
-    fetch(`/api/companies/${selectedCompanyId}/playbook-recommendations`)
-      .then((res) => res.ok ? res.json() : null)
-      .then((data) => {
-        if (data?.recommendations) {
-          setRecommended(
-            data.recommendations
-              .filter((r: RecommendedPlaybook) => r.isRecommended)
-              .slice(0, 3)
-          )
-        }
-      })
-      .catch(() => {}) // non-blocking
+    let cancelled = false
+
+    Promise.all([
+      fetch(`/api/companies/${selectedCompanyId}/playbook-recommendations`).then(r => r.ok ? r.json() : null),
+      fetch(`/api/companies/${selectedCompanyId}/active-playbooks`).then(r => r.ok ? r.json() : null),
+    ]).then(([recData, activeData]) => {
+      if (cancelled) return
+      if (recData?.recommendations) {
+        setRecommended(recData.recommendations.filter((r: Recommendation) => r.isRecommended).slice(0, 3))
+      }
+      if (activeData?.playbooks) {
+        setActivePlaybooks(activeData.playbooks)
+      }
+    }).catch(() => {}).finally(() => { if (!cancelled) setLoading(false) })
+
+    return () => { cancelled = true }
   }, [selectedCompanyId])
 
-  const activePlaybooks = allPlaybooks.filter(
-    (pb) => (progressMap.get(pb.slug)?.percent ?? 0) > 0 && (progressMap.get(pb.slug)?.percent ?? 0) < 100
-  )
+  const categories = Array.from(new Set(allPlaybooks.map(pb => pb.category)))
+  const categoryCounts: Record<string, number> = {}
+  for (const pb of allPlaybooks) {
+    categoryCounts[pb.category] = (categoryCounts[pb.category] || 0) + 1
+  }
 
-  const filteredPlaybooks = allPlaybooks.filter((pb) => {
-    const progress = progressMap.get(pb.slug)?.percent ?? 0
-    if (filter === 'in-progress' && (progress === 0 || progress >= 100)) return false
-    if (filter === 'not-started' && progress > 0) return false
+  const filteredPlaybooks = allPlaybooks.filter(pb => {
     if (categoryFilter !== 'all' && pb.category !== categoryFilter) return false
-    if (search && !pb.title.toLowerCase().includes(search.toLowerCase())) return false
     return true
   })
 
-  const categories = Array.from(new Set(allPlaybooks.map((pb) => pb.category)))
+  if (loading) {
+    return (
+      <div className={styles.loading}>
+        <div className="animate-pulse flex flex-col items-center gap-4">
+          <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="max-w-[1000px] mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary, #1D1D1F)' }}>
-          Programs
-        </h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary, #6E6E73)' }}>
-          Step-by-step playbooks to improve your exit readiness across every category.
-        </p>
+    <>
+      <TrackPageView page="/dashboard/playbook" />
+
+      {/* Page Header */}
+      <div className={styles.pageHeader}>
+        <div>
+          <h1>Playbook</h1>
+          <p>Proven step-by-step guides to increase your business value and close readiness gaps</p>
+        </div>
+        <div>
+          <Link href="/dashboard/playbook/library" className={`${styles.btn} ${styles.btnSecondary}`}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+            View Library
+          </Link>
+        </div>
       </div>
 
-      {/* Active Playbooks (if any) */}
+      {/* Recommended Banner */}
+      {recommended.length > 0 && (
+        <div className={styles.recommendedBanner}>
+          <div className={styles.recHeader}>
+            <div className={styles.recIcon}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+            </div>
+            <h2>Recommended for You</h2>
+          </div>
+          <div className={styles.recDesc}>Based on your assessment results, BRI score, and value gaps — these playbooks will have the highest impact on your valuation.</div>
+          <div className={styles.recCards}>
+            {recommended.map((rec, i) => (
+              <Link key={rec.playbook.slug} href={`/dashboard/playbook/${rec.playbook.slug}`} className={styles.recCard}>
+                <div className={styles.recCardRank} style={i === 1 ? { background: 'var(--orange)' } : i === 2 ? { background: 'var(--accent)' } : undefined}>
+                  #{i + 1} Impact
+                </div>
+                <div className={styles.recCardTitle}>{rec.playbook.title}</div>
+                <div className={styles.recCardDesc}>{rec.playbook.description || 'Targeted playbook to address key value gaps.'}</div>
+                <div className={styles.recCardMeta}>
+                  <span className={styles.recCardImpact}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                    {formatImpact(rec.estimatedImpactLow, rec.estimatedImpactHigh)}
+                  </span>
+                  <span>Score: {Math.round(rec.relevanceScore)}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Active Playbooks */}
       {activePlaybooks.length > 0 && (
-        <section className="mb-10">
-          <h2 className="text-base font-semibold mb-4" style={{ color: 'var(--text-primary, #1D1D1F)' }}>
-            Continue Where You Left Off
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {activePlaybooks.slice(0, 3).map((pb) => {
-              const progress = progressMap.get(pb.slug)
+        <>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>Active Playbooks</h2>
+            <span style={{ fontSize: '13px', color: 'var(--text-tertiary)' }}>{activePlaybooks.length} in progress</span>
+          </div>
+          <div className={styles.playbookGrid} style={{ marginBottom: 32 }}>
+            {activePlaybooks.map(ap => {
+              const def = allPlaybooks.find(p => p.slug === ap.id)
+              const iconColor = ICON_COLORS[ap.category] || 'iconBlue'
               return (
-                <Link
-                  key={pb.slug}
-                  href={`/playbook/${pb.slug}`}
-                  className="bg-white rounded-xl border p-4 hover:shadow-md transition-shadow"
-                  style={{ borderColor: 'var(--border, #E5E7EB)' }}
-                >
-                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary, #1D1D1F)' }}>
-                    {pb.title}
-                  </p>
-                  <div className="mt-3 h-1.5 rounded-full bg-gray-100 overflow-hidden">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${progress?.percent ?? 0}%`,
-                        backgroundColor: 'var(--accent, #0071E3)',
-                      }}
-                    />
+                <Link key={ap.id} href={`/dashboard/playbook/${ap.id}`} className={`${styles.playbookCard} ${styles.activePlaybook}`}>
+                  <div className={styles.playbookCardTop}>
+                    <div className={`${styles.playbookIcon} ${styles[iconColor]}`}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+                    </div>
+                    <div className={styles.playbookInfo}>
+                      <div className={styles.playbookTitle}>{ap.title}</div>
+                      <div className={styles.playbookDesc}>{def?.description || ''}</div>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-xs tabular-nums" style={{ color: 'var(--text-tertiary, #8E8E93)' }}>
-                      {Math.round(progress?.percent ?? 0)}% complete
-                    </span>
-                    <span className="text-xs font-medium flex items-center gap-1" style={{ color: 'var(--accent, #0071E3)' }}>
-                      Continue <ArrowRight className="w-3 h-3" />
-                    </span>
+                  <div className={styles.playbookCardBottom}>
+                    <div className={styles.pbMeta}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      {ap.percentComplete}% complete
+                    </div>
+                    <span className={`${styles.pbStatus} ${styles.pbStatusActive}`}>In Progress</span>
+                  </div>
+                  <div className={styles.pbCta}>
+                    Continue playbook
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                   </div>
                 </Link>
               )
             })}
           </div>
-        </section>
+        </>
       )}
 
-      {/* Recommended For You */}
-      {recommended.length > 0 && (
-        <section className="mb-10">
-          <h2 className="text-base font-semibold mb-4" style={{ color: 'var(--text-primary, #1D1D1F)' }}>
-            Recommended For You
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recommended.map((rec) => (
-              <PlaybookCard
-                key={rec.playbook.slug}
-                definition={rec.playbook}
-                progress={progressMap.get(rec.playbook.slug)}
-                planTier={planTier}
-                rationale={getRationale(rec.playbook.category)}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Filters + Search */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
-        <div className="flex gap-2 flex-wrap">
-          {(['all', 'in-progress', 'not-started'] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-              style={{
-                backgroundColor: filter === f ? 'var(--accent-light, #EBF5FF)' : 'transparent',
-                color: filter === f ? 'var(--accent, #0071E3)' : 'var(--text-secondary, #6E6E73)',
-              }}
-            >
-              {f === 'all' ? 'All' : f === 'in-progress' ? 'In Progress' : 'Not Started'}
-            </button>
-          ))}
-          <span className="w-px h-6 self-center" style={{ backgroundColor: 'var(--border, #E5E7EB)' }} />
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setCategoryFilter(categoryFilter === cat ? 'all' : cat)}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-              style={{
-                backgroundColor: categoryFilter === cat ? 'var(--accent-light, #EBF5FF)' : 'transparent',
-                color: categoryFilter === cat ? 'var(--accent, #0071E3)' : 'var(--text-secondary, #6E6E73)',
-              }}
-            >
-              {CATEGORY_LABELS[cat] ?? cat}
-            </button>
-          ))}
-        </div>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search playbooks..."
-          className="h-9 px-3 text-sm rounded-lg border bg-white w-full sm:w-64"
-          style={{ borderColor: 'var(--border, #E5E7EB)' }}
-        />
+      {/* Browse All */}
+      <div className={styles.browseHeader}>
+        <h2>All Playbooks</h2>
+        <span className={styles.browseCount}>{allPlaybooks.length} playbooks available</span>
       </div>
 
-      {/* Journey view */}
-      <div className="space-y-8">
-        {JOURNEY_PHASES.map((phase) => {
-          const phasePlaybooks = filteredPlaybooks.filter((pb) => {
-            const num = getSlugNumber(pb.slug)
-            return num >= phase.slugRange[0] && num <= phase.slugRange[1]
-          })
+      <div className={styles.catTabs}>
+        <button
+          className={`${styles.catTab} ${categoryFilter === 'all' ? styles.catTabActive : ''}`}
+          onClick={() => setCategoryFilter('all')}
+        >
+          All <span className={styles.catCount}>({allPlaybooks.length})</span>
+        </button>
+        {categories.map(cat => (
+          <button
+            key={cat}
+            className={`${styles.catTab} ${categoryFilter === cat ? styles.catTabActive : ''}`}
+            onClick={() => setCategoryFilter(cat)}
+          >
+            {CATEGORY_LABELS[cat] || cat} <span className={styles.catCount}>({categoryCounts[cat]})</span>
+          </button>
+        ))}
+      </div>
 
-          if (phasePlaybooks.length === 0) return null
-
+      <div className={styles.playbookGrid}>
+        {filteredPlaybooks.map(pb => {
+          const iconColor = ICON_COLORS[pb.category] || 'iconBlue'
           return (
-            <section key={phase.label}>
-              <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary, #6E6E73)' }}>
-                {phase.label}
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {phasePlaybooks.map((pb) => (
-                  <PlaybookCard key={pb.slug} definition={pb} progress={progressMap.get(pb.slug)} planTier={planTier} />
-                ))}
+            <Link key={pb.slug} href={`/dashboard/playbook/${pb.slug}`} className={styles.playbookCard}>
+              <div className={styles.playbookCardTop}>
+                <div className={`${styles.playbookIcon} ${styles[iconColor]}`}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+                </div>
+                <div className={styles.playbookInfo}>
+                  <div className={styles.playbookTitle}>{pb.title}</div>
+                  <div className={styles.playbookDesc}>{pb.description}</div>
+                </div>
               </div>
-            </section>
+              <div className={styles.playbookCardBottom}>
+                <div className={styles.pbMeta}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  {pb.phases.length} phases
+                </div>
+                <div className={styles.pbImpact}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                  {CATEGORY_LABELS[pb.category] || pb.category}
+                </div>
+              </div>
+            </Link>
           )
         })}
       </div>
-    </div>
+    </>
   )
 }

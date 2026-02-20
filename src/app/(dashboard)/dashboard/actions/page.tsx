@@ -1,11 +1,5 @@
-import { ActionsPage } from '@/components/actions/ActionsPage'
-import { TrackPageView } from '@/components/tracking/TrackPageView'
+import { redirect } from 'next/navigation'
 
-export default function ActionsRoute() {
-  return (
-    <>
-      <TrackPageView page="/dashboard/actions" />
-      <ActionsPage />
-    </>
-  )
+export default function ActionsRedirect() {
+  redirect('/dashboard/action-center')
 }
