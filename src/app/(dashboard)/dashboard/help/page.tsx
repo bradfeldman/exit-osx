@@ -81,7 +81,7 @@ export default function HelpPage() {
 
   return (
     <>
-      <TrackPageView pageName="help" />
+      <TrackPageView page="help" />
 
       {/* Header */}
       <div className={styles.pageHeader}>
