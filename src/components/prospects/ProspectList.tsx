@@ -25,7 +25,7 @@ import { AddProspectModal } from './AddProspectModal'
 import { BulkImport } from './BulkImport'
 import { BuyerType, DataQuality } from '@prisma/client'
 import { BUYER_TYPE_LABELS, BUYER_TYPE_COLORS } from '@/lib/deal-tracker/constants'
-import { DATA_QUALITY_LABELS, DATA_QUALITY_COLORS } from '@/lib/contact-system/constants'
+import { DATA_QUALITY_LABELS, DATA_QUALITY_BADGE_CLASSES } from '@/lib/contact-system/constants'
 import { cn } from '@/lib/utils'
 import {
   Search,
@@ -256,7 +256,7 @@ export function ProspectList({ dealId, onAddToDeal }: ProspectListProps) {
                 >
                   {companies.map((company) => {
                     const typeColors = BUYER_TYPE_COLORS[company.companyType]
-                    const qualityColor = DATA_QUALITY_COLORS[company.dataQuality] || 'gray'
+                    const qualityClasses = DATA_QUALITY_BADGE_CLASSES[company.dataQuality] || 'border-muted-foreground/30 text-muted-foreground'
 
                     return (
                       <motion.tr
@@ -316,7 +316,7 @@ export function ProspectList({ dealId, onAddToDeal }: ProspectListProps) {
                             variant="outline"
                             className={cn(
                               'text-xs',
-                              `border-${qualityColor}-300 text-${qualityColor}-700`
+                              qualityClasses
                             )}
                           >
                             {DATA_QUALITY_LABELS[company.dataQuality]}

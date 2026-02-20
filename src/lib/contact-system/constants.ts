@@ -49,6 +49,14 @@ export const DATA_QUALITY_COLORS = {
   ENRICHED: 'blue',
 } as const
 
+/** Fully resolved badge classes for data quality — avoids dynamic class interpolation */
+export const DATA_QUALITY_BADGE_CLASSES: Record<string, string> = {
+  PROVISIONAL: 'border-muted-foreground/30 text-muted-foreground',
+  SUGGESTED: 'border-orange/30 text-orange-dark',
+  VERIFIED: 'border-green/30 text-green-dark',
+  ENRICHED: 'border-primary/30 text-primary',
+}
+
 // ============================================
 // BUYER TYPES
 // ============================================

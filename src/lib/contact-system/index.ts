@@ -87,6 +87,7 @@ export {
   // Data quality
   DATA_QUALITY_LABELS,
   DATA_QUALITY_COLORS,
+  DATA_QUALITY_BADGE_CLASSES,
 
   // Buyer types
   BUYER_TYPE_LABELS,
