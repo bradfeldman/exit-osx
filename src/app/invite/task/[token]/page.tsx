@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
+import styles from '@/components/invite/invite.module.css'
 
 interface InviteData {
   id: string
@@ -122,31 +122,29 @@ export default function TaskInvitePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-muted-foreground">Loading invite...</p>
+      <div className={styles.taskCentered}>
+        <p className={styles.loadingText}>Loading invite...</p>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="max-w-md w-full mx-4">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-                <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-                </svg>
-              </div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Unable to Load Invite</h2>
-              <p className="text-muted-foreground">{error}</p>
-              <Button className="mt-4" onClick={() => router.push('/')}>
-                Go Home
-              </Button>
+      <div className={styles.taskCentered}>
+        <div className={styles.taskErrorCard}>
+          <div className={styles.taskErrorInner}>
+            <div className={styles.iconCircleSmall}>
+              <svg style={{ width: 24, height: 24, color: '#dc2626' }} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+              </svg>
             </div>
-          </CardContent>
-        </Card>
+            <h2 className={styles.taskErrorTitle}>Unable to Load Invite</h2>
+            <p className={styles.taskErrorMessage}>{error}</p>
+            <Button className="mt-4" onClick={() => router.push('/')}>
+              Go Home
+            </Button>
+          </div>
+        </div>
       </div>
     )
   }
@@ -162,33 +160,34 @@ export default function TaskInvitePage() {
       : 'Create Account to Accept'
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="max-w-lg w-full">
-        <CardHeader className="text-center">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <svg className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <div className={styles.taskPage}>
+      <div className={styles.taskCard}>
+        <div className={styles.taskCardHeader}>
+          <div className={styles.iconCirclePrimary}>
+            <svg style={{ width: 32, height: 32, color: 'var(--accent)' }} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
           </div>
-          <CardTitle className="text-xl">You&apos;ve Been Invited to a Task</CardTitle>
-          <p className="text-muted-foreground mt-2">
+          <h1 className={styles.taskCardTitle}>You&apos;ve Been Invited to a Task</h1>
+          <p className={styles.taskCardSubtitle}>
             <strong>{invite.invitedBy.name || invite.invitedBy.email}</strong> has invited you to work on a task for <strong>{invite.company.name}</strong>
           </p>
-        </CardHeader>
-        <CardContent>
-          <div className="bg-gray-50 rounded-lg p-4 mb-6">
-            <h3 className="font-medium text-gray-900 mb-2">{invite.task.title}</h3>
-            <p className="text-sm text-muted-foreground">{invite.task.description}</p>
+        </div>
+
+        <div className={styles.taskCardBody}>
+          <div className={styles.taskBox}>
+            <h3 className={styles.taskBoxTitle}>{invite.task.title}</h3>
+            <p className={styles.taskBoxDesc}>{invite.task.description}</p>
             {invite.isPrimary && (
-              <p className="text-sm text-primary mt-2 font-medium">
+              <p className={styles.taskBoxPrimary}>
                 You will be the primary owner of this task
               </p>
             )}
           </div>
 
-          <div className="space-y-3">
+          <div className={styles.taskActions}>
             {!isLoggedIn && (
-              <p className="text-sm text-center text-muted-foreground mb-4">
+              <p className={styles.taskLoginHint}>
                 {invite.hasExistingAccount
                   ? "You'll need to log in to accept this invite."
                   : "You'll need to create an account to accept this invite."}
@@ -213,11 +212,11 @@ export default function TaskInvitePage() {
             </Button>
           </div>
 
-          <p className="text-xs text-center text-muted-foreground mt-4">
+          <p className={styles.taskExpiry}>
             This invite expires on {new Date(invite.expiresAt).toLocaleDateString()}
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

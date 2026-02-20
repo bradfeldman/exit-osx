@@ -20,6 +20,25 @@ import { completeAuthCallback, handleEmailVerification } from '@/app/actions/aut
  * server action that generates the magic link.
  */
 
+const screenStyle: React.CSSProperties = {
+  display: 'flex',
+  minHeight: '100vh',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: 'var(--background)',
+  padding: '0 16px',
+}
+
+const innerStyle: React.CSSProperties = {
+  width: '100%',
+  maxWidth: '448px',
+  textAlign: 'center',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '16px',
+}
+
 function ConfirmContent() {
   const searchParams = useSearchParams()
   const [status, setStatus] = useState<'loading' | 'expired' | 'error'>('loading')
@@ -85,10 +104,12 @@ function ConfirmContent() {
 
   if (!hasToken) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <div className="w-full max-w-md space-y-4 text-center">
-          <p className="text-destructive font-medium">Invalid confirmation link.</p>
-          <Link href="/login" className="text-sm text-primary hover:underline">
+      <div style={screenStyle}>
+        <div style={innerStyle}>
+          <p style={{ fontWeight: 500, color: 'var(--destructive)', margin: 0 }}>
+            Invalid confirmation link.
+          </p>
+          <Link href="/login" style={{ fontSize: '14px', color: 'var(--primary)', textDecoration: 'none' }}>
             Go to login
           </Link>
         </div>
@@ -98,11 +119,15 @@ function ConfirmContent() {
 
   if (status === 'expired') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <div className="w-full max-w-md space-y-4 text-center">
-          <p className="text-destructive font-medium">This verification link has expired.</p>
-          <p className="text-sm text-muted-foreground">Your account is still active. You can log in with your email and password.</p>
-          <Link href="/login" className="text-sm text-primary hover:underline">
+      <div style={screenStyle}>
+        <div style={innerStyle}>
+          <p style={{ fontWeight: 500, color: 'var(--destructive)', margin: 0 }}>
+            This verification link has expired.
+          </p>
+          <p style={{ fontSize: '14px', color: 'var(--muted-foreground)', margin: 0 }}>
+            Your account is still active. You can log in with your email and password.
+          </p>
+          <Link href="/login" style={{ fontSize: '14px', color: 'var(--primary)', textDecoration: 'none' }}>
             Go to login
           </Link>
         </div>
@@ -112,11 +137,15 @@ function ConfirmContent() {
 
   if (status === 'error') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <div className="w-full max-w-md space-y-4 text-center">
-          <p className="text-destructive font-medium">This verification link is no longer valid.</p>
-          <p className="text-sm text-muted-foreground">Your account is still active. You can log in with your email and password.</p>
-          <Link href="/login" className="text-sm text-primary hover:underline">
+      <div style={screenStyle}>
+        <div style={innerStyle}>
+          <p style={{ fontWeight: 500, color: 'var(--destructive)', margin: 0 }}>
+            This verification link is no longer valid.
+          </p>
+          <p style={{ fontSize: '14px', color: 'var(--muted-foreground)', margin: 0 }}>
+            Your account is still active. You can log in with your email and password.
+          </p>
+          <Link href="/login" style={{ fontSize: '14px', color: 'var(--primary)', textDecoration: 'none' }}>
             Go to login
           </Link>
         </div>
@@ -125,10 +154,12 @@ function ConfirmContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center space-y-4">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-        <p className="text-muted-foreground">Verifying your email...</p>
+    <div style={screenStyle}>
+      <div style={innerStyle}>
+        <Loader2 style={{ width: 32, height: 32, color: 'var(--primary)', animation: 'spin 1s linear infinite' }} />
+        <p style={{ fontSize: '14px', color: 'var(--muted-foreground)', margin: 0 }}>
+          Verifying your email...
+        </p>
       </div>
     </div>
   )
@@ -138,10 +169,12 @@ export default function ConfirmPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-background">
-          <div className="text-center space-y-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-            <p className="text-muted-foreground">Loading...</p>
+        <div style={screenStyle}>
+          <div style={innerStyle}>
+            <Loader2 style={{ width: 32, height: 32, color: 'var(--primary)', animation: 'spin 1s linear infinite' }} />
+            <p style={{ fontSize: '14px', color: 'var(--muted-foreground)', margin: 0 }}>
+              Loading...
+            </p>
           </div>
         </div>
       }

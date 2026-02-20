@@ -13,6 +13,7 @@ import { createClient } from '@/lib/supabase/client'
 import { getRedirectUrl, buildUrlWithRedirect, isInviteRedirect } from '@/lib/utils/redirect'
 import { analytics } from '@/lib/analytics'
 import { useFormTracking } from '@/lib/analytics/hooks'
+import styles from '@/components/auth/auth.module.css'
 
 // Tiny component that reads search params inside its own Suspense boundary.
 // This isolates the BAILOUT_TO_CLIENT_SIDE_RENDERING so the rest of the
@@ -244,39 +245,35 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
   }
 
   return (
-    <div className="flex min-h-[100dvh] bg-background">
+    <div className={styles.authPage}>
       {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden flex-shrink-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
-        {/* Decorative elements */}
-        <div className="absolute top-20 right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-10 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
-        <div className="relative z-10 flex flex-col p-12 text-primary-foreground">
-          <a href="https://exitosx.com" className="flex items-center gap-3">
+      <div className={styles.authBrandPanel}>
+        <div className={styles.authBrandOverlay} />
+        <div className={styles.authBrandBlobTop} />
+        <div className={styles.authBrandBlobBottom} />
+        <div className={styles.authBrandContent}>
+          <a href="https://exitosx.com" className={styles.authBrandLogo}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-icon.png" alt="Exit OSx" width={40} height={40} className="h-10 w-10" />
+            <img src="/logo-icon.png" alt="Exit OSx" width={40} height={40} className={styles.authBrandLogoIcon} />
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/wordmark.svg" alt="Exit OSx" width={120} height={34} className="h-8 w-auto brightness-0 invert" />
+            <img src="/wordmark.svg" alt="Exit OSx" width={120} height={34} className={styles.authBrandLogoWordmark} />
           </a>
 
-          <div className="space-y-6 mt-auto mb-auto">
-            <h1 className="text-4xl font-bold font-display leading-tight tracking-tight">
+          <div className={styles.authBrandBody}>
+            <h1 className={styles.authBrandHeadline}>
               Build a Business<br />Buyers Want to Own
             </h1>
-            <p className="text-lg opacity-90 max-w-md">
+            <p className={styles.authBrandSubtitle}>
               Get your valuation estimate, Buyer Readiness Index, and a personalized roadmap to maximize your exit outcome.
             </p>
-            <div className="space-y-4 pt-4">
+            <div className={styles.authBrandFeatures}>
               {[
                 'Real-time business valuation',
                 'Buyer Readiness Index across 6 dimensions',
                 'Prioritized value-building playbook'
               ].map((text) => (
-                <div
-                  key={text}
-                  className="flex items-center gap-3"
-                >
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                <div key={text} className={styles.authBrandFeatureItem}>
+                  <div className={styles.authBrandFeatureCheck}>
                     <CheckIcon className="w-4 h-4" />
                   </div>
                   <span>{text}</span>
@@ -288,23 +285,23 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
       </div>
 
       {/* Right side - Login Form */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-background min-h-[100dvh] lg:min-h-0">
-        <div className="w-full max-w-md space-y-8 py-8">
+      <div className={styles.authFormPanel}>
+        <div className={styles.authFormInner}>
           {/* Mobile logo */}
-          <div className="lg:hidden text-center">
-            <a href="https://exitosx.com" className="inline-flex items-center gap-2">
+          <div className={styles.authMobileLogo}>
+            <a href="https://exitosx.com" className={styles.authMobileLogoLink}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo-icon.png" alt="Exit OSx" width={32} height={32} className="h-8 w-8" />
+              <img src="/logo-icon.png" alt="Exit OSx" width={32} height={32} className={styles.authMobileLogoIcon} />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/wordmark.svg" alt="Exit OSx" width={100} height={28} className="h-6 w-auto" />
+              <img src="/wordmark.svg" alt="Exit OSx" width={100} height={28} className={styles.authMobileLogoWordmark} />
             </a>
           </div>
 
-          <div className="text-center">
-            <h2 className="text-3xl font-bold font-display text-foreground tracking-tight">
+          <div className={styles.authCardHeader}>
+            <h2 className={styles.authTitle}>
               {isFromInvite ? 'Sign in to accept your invite' : 'Welcome back'}
             </h2>
-            <p className="mt-2 text-muted-foreground">
+            <p className={styles.authSubtitle}>
               {isFromInvite
                 ? 'Log in to your account to join the team'
                 : 'Sign in to continue to your dashboard'}
@@ -312,49 +309,49 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
           </div>
 
           {isTimeout && (
-            <div className="flex items-center gap-3 p-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg">
-              <Clock className="h-5 w-5 text-amber-600 shrink-0" />
+            <div className={styles.authAlertWarning}>
+              <Clock className="h-5 w-5" />
               <p>You were signed out due to inactivity. Please sign in again.</p>
             </div>
           )}
 
           {isExpiredLink && (
-            <div className="p-4 text-sm bg-amber-50 border border-amber-200 rounded-lg space-y-3">
-              <div className="flex items-center gap-3 text-amber-800">
-                <Clock className="h-5 w-5 text-amber-600 shrink-0" />
+            <div className={styles.authAlertExpired}>
+              <div className={styles.authAlertExpiredRow}>
+                <Clock className="h-5 w-5" />
                 <p>Your confirmation link has expired. Enter your email below and resend it.</p>
               </div>
               {resendStatus === 'sent' ? (
-                <p className="text-sm text-emerald-700 font-medium">New confirmation email sent! Check your inbox.</p>
+                <p className={styles.authResendSuccess}>New confirmation email sent! Check your inbox.</p>
               ) : (
                 <button
                   type="button"
                   onClick={handleResendVerification}
                   disabled={!email || resendStatus === 'sending'}
-                  className="text-sm font-medium text-primary hover:underline disabled:opacity-50"
+                  className={styles.authResendButton}
                 >
                   {resendStatus === 'sending' ? 'Sending...' : 'Resend confirmation email'}
                 </button>
               )}
               {resendStatus === 'error' && (
-                <p className="text-sm text-destructive">Failed to resend. Try signing up again.</p>
+                <p className={styles.authResendError}>Failed to resend. Try signing up again.</p>
               )}
             </div>
           )}
 
           {authError && !isExpiredLink && (
-            <div className="flex items-center gap-3 p-4 text-sm text-red-800 bg-red-50 border border-red-200 rounded-lg">
+            <div className={styles.authAlertError}>
               <p>{authError}</p>
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} className={styles.authForm}>
             {/* Error message container */}
             {(error || getLockoutMessage()) && (
-              <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg space-y-1">
-                <p>{getLockoutMessage() || error}</p>
+              <div className={styles.authError}>
+                <p className={styles.authErrorMain}>{getLockoutMessage() || error}</p>
                 {attemptsRemaining !== null && attemptsRemaining > 0 && (
-                  <p className="text-xs text-red-500">
+                  <p className={styles.authErrorSub}>
                     {attemptsRemaining} attempt{attemptsRemaining > 1 ? 's' : ''} remaining before account lockout
                   </p>
                 )}
@@ -363,7 +360,7 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
 
             {!requiresTwoFactor ? (
               <>
-                <div className="space-y-2">
+                <div className={styles.authField}>
                   <Label htmlFor="email">Email address</Label>
                   <Input
                     id="email"
@@ -380,17 +377,14 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                <div className={styles.authField}>
+                  <div className={styles.authFieldLabelRow}>
                     <Label htmlFor="password">Password</Label>
-                    <Link
-                      href="/forgot-password"
-                      className="text-sm text-primary hover:underline"
-                    >
+                    <Link href="/forgot-password" className={styles.authLinkPrimary} style={{ fontSize: '14px' }}>
                       Forgot password?
                     </Link>
                   </div>
-                  <div className="relative">
+                  <div className={styles.authPasswordWrapper}>
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
@@ -407,7 +401,7 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors -m-2 p-2 rounded-md"
+                      className={styles.authPasswordToggle}
                       tabIndex={-1}
                       aria-label={showPassword ? "Hide password" : "Show password"}
                     >
@@ -417,14 +411,14 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
                 </div>
 
                 {showCaptcha && (
-                  <div className="space-y-2">
+                  <div className={styles.authCaptcha}>
                     <Captcha
                       onVerify={handleCaptchaVerify}
                       onExpire={handleCaptchaExpire}
                       onError={(err) => setError(err)}
                     />
                     {!captchaToken && (
-                      <p className="text-xs text-muted-foreground text-center">
+                      <p className={styles.authCaptchaHint}>
                         Please complete the verification above
                       </p>
                     )}
@@ -432,17 +426,17 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
                 )}
               </>
             ) : (
-              <div className="space-y-4">
-                <div className="text-center space-y-2">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                    <ShieldIcon className="w-6 h-6 text-primary" />
+              <div className={styles.authTwoFactor}>
+                <div className={styles.authTwoFactorHeader}>
+                  <div className={styles.authTwoFactorIcon}>
+                    <ShieldIcon className="w-6 h-6" />
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className={styles.authTwoFactorHint}>
                     Enter the 6-digit code from your authenticator app
                   </p>
                 </div>
 
-                <div className="space-y-2">
+                <div className={styles.authField}>
                   <Label htmlFor="twoFactorCode">Verification code</Label>
                   <Input
                     id="twoFactorCode"
@@ -459,7 +453,7 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
                     className="h-12 text-center text-lg tracking-widest font-mono"
                     autoFocus
                   />
-                  <p className="text-xs text-muted-foreground text-center">
+                  <p className={styles.authFieldHint} style={{ textAlign: 'center' }}>
                     You can also use a backup code (format: XXXX-XXXX)
                   </p>
                 </div>
@@ -467,7 +461,7 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
                 <button
                   type="button"
                   onClick={handleBackFromTwoFactor}
-                  className="w-full text-sm text-muted-foreground hover:text-foreground"
+                  className={styles.authBackButton}
                 >
                   &larr; Back to login
                 </button>
@@ -485,11 +479,11 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
           </form>
 
           {/* OR divider + Google */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-border" />
-              <span className="text-xs text-muted-foreground">OR</span>
-              <div className="flex-1 h-px bg-border" />
+          <div className={styles.authSocial}>
+            <div className={styles.authDivider}>
+              <div className={styles.authDividerLine} />
+              <span className={styles.authDividerLabel}>OR</span>
+              <div className={styles.authDividerLine} />
             </div>
             <Button
               variant="outline"
@@ -506,14 +500,14 @@ function LoginPageContent({ redirectUrl, isFromInvite, isTimeout, isExpiredLink,
             </Button>
           </div>
 
-          <div className="text-center space-y-4">
-            <p className="text-sm text-muted-foreground">
+          <div className={styles.authFooter}>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
               Don&apos;t have an account?{' '}
-              <Link href="/assess" className="font-medium text-primary hover:underline">
+              <Link href="/assess" className={styles.authLinkPrimary}>
                 Create one for free
               </Link>
             </p>
-            <a href="https://exitosx.com" className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-block">
+            <a href="https://exitosx.com" className={styles.authLink}>
               &larr; Back to home
             </a>
           </div>

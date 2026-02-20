@@ -16,7 +16,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { buildUrlWithRedirect } from '@/lib/utils/redirect'
-import { cn } from '@/lib/utils'
+import styles from '@/components/invite/invite.module.css'
 
 interface InviteDetails {
   emailHint: string
@@ -131,57 +131,55 @@ export default function InviteAcceptPage() {
   const roleName = invite?.roleTemplate?.name || invite?.role.toLowerCase().replace('_', ' ')
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex flex-col">
+    <div className={styles.page}>
       {/* Header */}
-      <header className="p-6">
-        <Link href="/" className="inline-flex items-center gap-2">
+      <header className={styles.header}>
+        <Link href="/" className={styles.headerLogo}>
           <Image
             src="/logo-icon.png"
             alt="Exit OSx"
             width={32}
             height={32}
-            className="h-8 w-8"
           />
           <Image
             src="/wordmark.svg"
             alt="Exit OSx"
             width={100}
             height={28}
-            className="h-6 w-auto"
           />
         </Link>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-4 pb-12">
+      <main className={styles.main}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="w-full max-w-lg"
+          className={styles.container}
         >
           {/* Loading State */}
           {(inviteStatus === 'loading' || userState === 'checking') && (
-            <div className="text-center py-12">
-              <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto" />
-              <p className="mt-4 text-muted-foreground">Loading invitation...</p>
+            <div className={styles.loadingState}>
+              <Loader2 className={styles.loadingSpinnerIcon} style={{ animation: 'spin 1s linear infinite' }} />
+              <p className={styles.loadingText}>Loading invitation...</p>
             </div>
           )}
 
           {/* Invalid/Expired State */}
           {inviteStatus === 'invalid' && (
-            <div className="text-center space-y-6">
-              <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto">
-                <XCircle className="w-8 h-8 text-red-500" />
+            <div className={styles.invalidState}>
+              <div className={styles.iconCircleRed}>
+                <XCircle style={{ width: 32, height: 32, color: '#ef4444' }} />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-slate-900">Invitation Not Found</h1>
-                <p className="mt-2 text-muted-foreground">
+                <h1 className={styles.stateTitle}>Invitation Not Found</h1>
+                <p className={styles.stateSubtitle}>
                   This invitation may have expired or already been used.
                 </p>
               </div>
-              <div className="pt-4 space-y-3">
-                <p className="text-sm text-muted-foreground">
+              <div className={styles.invalidActions}>
+                <p className={styles.invalidMessage}>
                   Please ask the sender to create a new invitation.
                 </p>
                 <Link href="/login">
@@ -195,22 +193,23 @@ export default function InviteAcceptPage() {
 
           {/* Valid Invite */}
           {inviteStatus === 'valid' && invite && (
-            <div className="space-y-8">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
               {/* Invite Header */}
-              <div className="text-center space-y-4">
+              <div className={styles.inviteHeader}>
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.1 }}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium"
                 >
-                  <Sparkles className="w-4 h-4" />
-                  Team Invitation
+                  <span className={styles.badge}>
+                    <Sparkles style={{ width: 16, height: 16 }} />
+                    Team Invitation
+                  </span>
                 </motion.div>
-                <h1 className="text-3xl font-semibold text-slate-900">
+                <h1 className={styles.inviteTitle}>
                   Join {invite.companyName || invite.organizationName}
                 </h1>
-                <p className="text-muted-foreground">
+                <p className={styles.inviteSubtitle}>
                   {invite.inviterName} invited you to collaborate
                 </p>
               </div>
@@ -220,44 +219,37 @@ export default function InviteAcceptPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+                className={styles.card}
               >
-                <div className="p-6 space-y-4">
+                <div className={styles.cardBody}>
                   {/* Role Badge */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Your Role</span>
-                    <span className={cn(
-                      "px-3 py-1 rounded-full text-sm font-medium",
-                      invite.isExternalAdvisor
-                        ? "bg-violet-100 text-violet-700"
-                        : "bg-primary/10 text-primary"
-                    )}>
+                  <div className={styles.roleRow}>
+                    <span className={styles.roleLabel}>Your Role</span>
+                    <span className={invite.isExternalAdvisor ? styles.roleBadgeExternal : styles.roleBadge}>
                       {roleName}
                     </span>
                   </div>
 
                   {invite.isExternalAdvisor && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Access Type</span>
-                      <span className="text-sm font-medium text-slate-700">External Advisor</span>
+                    <div className={styles.roleRow}>
+                      <span className={styles.roleLabel}>Access Type</span>
+                      <span className={styles.metaValue}>External Advisor</span>
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Invited to</span>
-                    <span className="text-sm font-medium text-slate-700">{invite.emailHint}</span>
+                  <div className={styles.roleRow}>
+                    <span className={styles.roleLabel}>Invited to</span>
+                    <span className={styles.metaValue}>{invite.emailHint}</span>
                   </div>
                 </div>
 
                 {/* Action Section */}
-                <div className="px-6 py-4 bg-slate-50 border-t border-slate-100">
+                <div className={styles.cardFooter}>
                   {/* Logged in with correct email */}
                   {userState === 'logged_in_correct' && (
-                    <div className="space-y-3">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                       {error && (
-                        <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
-                          {error}
-                        </div>
+                        <div className={styles.alertError}>{error}</div>
                       )}
                       <Button
                         onClick={handleAccept}
@@ -272,7 +264,7 @@ export default function InviteAcceptPage() {
                           </>
                         ) : (
                           <>
-                            Accept & Join Team
+                            Accept &amp; Join Team
                             <ArrowRight className="w-4 h-4 ml-2" />
                           </>
                         )}
@@ -282,12 +274,12 @@ export default function InviteAcceptPage() {
 
                   {/* Logged in with wrong email */}
                   {userState === 'logged_in_wrong' && (
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                        <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                        <div className="text-sm">
-                          <p className="font-medium text-amber-800">Wrong account</p>
-                          <p className="text-amber-700 mt-1">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                      <div className={styles.alertWarning}>
+                        <AlertTriangle className={styles.alertWarningIcon} />
+                        <div>
+                          <p className={styles.alertWarningTitle}>Wrong account</p>
+                          <p className={styles.alertWarningBody}>
                             You&apos;re signed in as <strong>{userEmail}</strong>
                           </p>
                         </div>
@@ -300,7 +292,7 @@ export default function InviteAcceptPage() {
 
                   {/* Not logged in */}
                   {userState === 'not_logged_in' && (
-                    <div className="space-y-3">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                       <Button
                         onClick={invite.hasExistingAccount ? handleLogin : handleSignup}
                         className="w-full h-12 text-base"
@@ -309,18 +301,18 @@ export default function InviteAcceptPage() {
                         {invite.hasExistingAccount ? 'Sign In to Accept' : 'Create Account to Accept'}
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
-                      <p className="text-xs text-center text-muted-foreground">
+                      <p className={styles.helperText}>
                         {invite.hasExistingAccount ? (
                           <>
                             Don&apos;t have an account?{' '}
-                            <button onClick={handleSignup} className="text-primary hover:underline">
+                            <button onClick={handleSignup} className={styles.helperLink}>
                               Create one
                             </button>
                           </>
                         ) : (
                           <>
                             Already have an account?{' '}
-                            <button onClick={handleLogin} className="text-primary hover:underline">
+                            <button onClick={handleLogin} className={styles.helperLink}>
                               Sign in
                             </button>
                           </>
@@ -336,16 +328,13 @@ export default function InviteAcceptPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="space-y-3"
+                className={styles.featureSection}
               >
-                <p className="text-sm font-medium text-slate-700 text-center">What you&apos;ll have access to:</p>
-                <div className="flex flex-wrap justify-center gap-2">
+                <p className={styles.featureSectionLabel}>What you&apos;ll have access to:</p>
+                <div className={styles.featureChips}>
                   {['Scorecard', 'Action Plan', 'Data Room', 'Valuations'].map((feature) => (
-                    <span
-                      key={feature}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 text-sm"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                    <span key={feature} className={styles.featureChip}>
+                      <CheckCircle2 style={{ width: 14, height: 14, color: '#10b981' }} />
                       {feature}
                     </span>
                   ))}
@@ -355,7 +344,6 @@ export default function InviteAcceptPage() {
           )}
         </motion.div>
       </main>
-
     </div>
   )
 }

@@ -1,0 +1,642 @@
+/* Auth Pages — CSS Module
+ * Shared across login, forgot-password, and reset-password pages
+ * Design system: globals.css variables
+ * Pattern: Split-panel layout (branding left / form right)
+ */
+
+/* ============================================================
+   Root layout — full viewport split panel
+   ============================================================ */
+.authPage {
+  display: flex;
+  min-height: 100dvh;
+  background: var(--background);
+}
+
+/* Loading / checking state (centered single column) */
+.authPageCentered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  background: var(--background);
+}
+
+.authPageCenteredInner {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.authPageCenteredInner p {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   Left panel — branding / marketing (hidden on mobile)
+   ============================================================ */
+.authBrandPanel {
+  display: none;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--primary);
+}
+
+@media (min-width: 1024px) {
+  .authBrandPanel {
+    display: flex;
+    width: 50%;
+  }
+}
+
+.authBrandOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--primary) 0%, rgba(0, 113, 227, 0.8) 100%);
+}
+
+/* Decorative blobs */
+.authBrandBlobTop {
+  position: absolute;
+  top: 80px;
+  right: 80px;
+  width: 256px;
+  height: 256px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  filter: blur(40px);
+}
+
+.authBrandBlobBottom {
+  position: absolute;
+  bottom: 80px;
+  left: 40px;
+  width: 192px;
+  height: 192px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  filter: blur(32px);
+}
+
+.authBrandContent {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  padding: 48px;
+  color: #ffffff;
+  width: 100%;
+}
+
+.authBrandLogo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.authBrandLogoIcon {
+  width: 40px;
+  height: 40px;
+}
+
+.authBrandLogoWordmark {
+  height: 32px;
+  width: auto;
+  filter: brightness(0) invert(1);
+}
+
+.authBrandBody {
+  margin-top: auto;
+  margin-bottom: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.authBrandHeadline {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.authBrandSubtitle {
+  font-size: 18px;
+  opacity: 0.9;
+  max-width: 400px;
+  line-height: 1.5;
+  color: #ffffff;
+}
+
+.authBrandFeatures {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 16px;
+}
+
+.authBrandFeatureItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.authBrandFeatureCheck {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Right panel — form area
+   ============================================================ */
+.authFormPanel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  background: var(--background);
+  min-height: 100dvh;
+}
+
+@media (min-width: 640px) {
+  .authFormPanel {
+    padding: 32px 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .authFormPanel {
+    min-height: 0;
+    padding: 32px;
+  }
+}
+
+.authFormInner {
+  width: 100%;
+  max-width: 448px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 32px 0;
+}
+
+/* ============================================================
+   Mobile logo (shown only on mobile, hidden on desktop)
+   ============================================================ */
+.authMobileLogo {
+  display: flex;
+  justify-content: center;
+}
+
+@media (min-width: 1024px) {
+  .authMobileLogo {
+    display: none;
+  }
+}
+
+.authMobileLogoLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.authMobileLogoIcon {
+  width: 32px;
+  height: 32px;
+}
+
+.authMobileLogoWordmark {
+  height: 24px;
+  width: auto;
+}
+
+/* ============================================================
+   Page heading block
+   ============================================================ */
+.authCardHeader {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.authTitle {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.authSubtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ============================================================
+   Alert banners (timeout, expired link, auth error)
+   ============================================================ */
+.authAlertWarning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  color: #92400E;
+}
+
+.authAlertWarning svg {
+  flex-shrink: 0;
+  color: #D97706;
+}
+
+.authAlertExpired {
+  padding: 16px;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.authAlertExpiredRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  color: #92400E;
+}
+
+.authAlertExpiredRow svg {
+  flex-shrink: 0;
+  color: #D97706;
+}
+
+.authAlertError {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--red-light);
+  border: 1px solid color-mix(in srgb, var(--red) 25%, transparent);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  color: #991B1B;
+}
+
+/* ============================================================
+   Form — field spacing & layout
+   ============================================================ */
+.authForm {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.authField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.authFieldLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Password toggle wrapper */
+.authPasswordWrapper {
+  position: relative;
+}
+
+.authPasswordToggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 8px;
+  margin: -8px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease;
+  line-height: 0;
+}
+
+.authPasswordToggle:hover {
+  color: var(--text-primary);
+}
+
+/* Field hint text */
+.authFieldHint {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   Error message (inside form)
+   ============================================================ */
+.authError {
+  padding: 16px;
+  background: var(--red-light);
+  border: 1px solid color-mix(in srgb, var(--red) 25%, transparent);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.authErrorMain {
+  font-size: 14px;
+  color: #DC2626;
+}
+
+.authErrorSub {
+  font-size: 12px;
+  color: #EF4444;
+}
+
+/* ============================================================
+   2FA section
+   ============================================================ */
+.authTwoFactor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.authTwoFactorHeader {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.authTwoFactorIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+
+.authTwoFactorHint {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.authBackButton {
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-secondary);
+  transition: color 0.15s ease;
+  text-align: center;
+  padding: 4px 0;
+}
+
+.authBackButton:hover {
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   Captcha area
+   ============================================================ */
+.authCaptcha {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.authCaptchaHint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* ============================================================
+   OR divider
+   ============================================================ */
+.authDivider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.authDividerLine {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.authDividerLabel {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================================
+   Social auth section
+   ============================================================ */
+.authSocial {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ============================================================
+   Footer links
+   ============================================================ */
+.authFooter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.authLink {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.authLink:hover {
+  color: var(--text-primary);
+}
+
+.authLinkPrimary {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.15s ease;
+}
+
+.authLinkPrimary:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+/* Inline link (inside a sentence of muted text) */
+.authLinkInline {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.authLinkInline:hover {
+  color: var(--text-primary);
+}
+
+/* Back link button (styled as link) */
+.authLinkButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 14px;
+  padding: 0;
+  transition: opacity 0.15s ease;
+}
+
+.authLinkButton:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+.authLinkButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Resend link button */
+.authResendButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 500;
+  font-size: 14px;
+  padding: 0;
+  transition: opacity 0.15s ease;
+}
+
+.authResendButton:hover {
+  text-decoration: underline;
+}
+
+.authResendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.authResendSuccess {
+  font-size: 14px;
+  color: #15803D;
+  font-weight: 500;
+}
+
+.authResendError {
+  font-size: 14px;
+  color: var(--red);
+}
+
+/* ============================================================
+   Success state (check email, password updated)
+   ============================================================ */
+.authSuccess {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.authSuccessIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.authSuccessIconGreen {
+  background: #DCFCE7;
+  color: #16A34A;
+}
+
+.authSuccessIconAmber {
+  background: #FEF3C7;
+  color: #D97706;
+}
+
+.authSuccessBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.authSuccessTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.authSuccessText {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.authSuccessNote {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   Resend + retry inline text in success state
+   ============================================================ */
+.authCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Image from 'next/image'
 import { formatCurrency } from '@/lib/utils/currency'
+import styles from '@/components/report/report.module.css'
 
 interface ReportData {
   companyName: string
@@ -23,10 +24,10 @@ interface ReportData {
 }
 
 function getBriLabel(score: number) {
-  if (score >= 80) return { label: 'Strong', color: 'text-emerald-600', bg: 'bg-emerald-50', bar: 'bg-emerald-500' }
-  if (score >= 60) return { label: 'Good', color: 'text-blue-600', bg: 'bg-blue-50', bar: 'bg-blue-500' }
-  if (score >= 40) return { label: 'Moderate', color: 'text-amber-600', bg: 'bg-amber-50', bar: 'bg-amber-500' }
-  return { label: 'Needs Work', color: 'text-red-600', bg: 'bg-red-50', bar: 'bg-red-500' }
+  if (score >= 80) return { label: 'Strong', scoreClass: styles.scoreStrong, barClass: styles.briBarStrong }
+  if (score >= 60) return { label: 'Good', scoreClass: styles.scoreGood, barClass: styles.briBarGood }
+  if (score >= 40) return { label: 'Moderate', scoreClass: styles.scoreModerate, barClass: styles.briBarModerate }
+  return { label: 'Needs Work', scoreClass: styles.scoreWeak, barClass: styles.briBarWeak }
 }
 
 function getCategoryIcon(category: string) {
@@ -67,10 +68,10 @@ export default function SharedReportPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-slate-500">Loading report...</p>
+      <div className={styles.loadingScreen}>
+        <div className={styles.loadingInner}>
+          <div className={styles.spinner} />
+          <p className={styles.loadingText}>Loading report...</p>
         </div>
       </div>
     )
@@ -78,14 +79,11 @@ export default function SharedReportPage() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-        <div className="text-center max-w-md">
-          <h1 className="text-xl font-semibold text-slate-900 mb-2">Report Not Available</h1>
-          <p className="text-sm text-slate-500 mb-6">{error || 'This report link is invalid or has expired.'}</p>
-          <a
-            href="https://exitosx.com"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 transition-colors"
-          >
+      <div className={styles.errorScreen}>
+        <div className={styles.errorInner}>
+          <h1 className={styles.errorTitle}>Report Not Available</h1>
+          <p className={styles.errorMessage}>{error || 'This report link is invalid or has expired.'}</p>
+          <a href="https://exitosx.com" className={styles.errorLink}>
             Learn about Exit OSx
           </a>
         </div>
@@ -98,88 +96,91 @@ export default function SharedReportPage() {
   const risks = data.categoryScores.filter(c => c.score < 60).sort((a, b) => a.score - b.score)
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className={styles.page}>
       {/* Header */}
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Image src="/logo.webp" alt="Exit OSx" width={28} height={28} className="h-7 w-7" />
-            <span className="text-lg font-semibold text-slate-900">
-              Exit OS<span className="text-[#B87333]">x</span>
+      <header className={styles.header}>
+        <div className={styles.headerInner}>
+          <div className={styles.headerBrand}>
+            <Image src="/logo.webp" alt="Exit OSx" width={28} height={28} />
+            <span className={styles.headerBrandName}>
+              Exit OS<span className={styles.headerBrandAccent}>x</span>
             </span>
           </div>
-          <span className="text-xs text-slate-400">Exit Readiness Report</span>
+          <span className={styles.headerLabel}>Exit Readiness Report</span>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-8 space-y-8">
+      <main className={styles.main}>
         {/* Hero */}
-        <div className="bg-gradient-to-br from-slate-900 to-slate-700 rounded-2xl p-8 text-white text-center">
-          <p className="text-xs uppercase tracking-widest text-slate-400 mb-2">Exit Readiness Report</p>
-          <h1 className="text-2xl font-bold mb-1">{data.companyName}</h1>
+        <div className={styles.hero}>
+          <p className={styles.heroEyebrow}>Exit Readiness Report</p>
+          <h1 className={styles.heroTitle}>{data.companyName}</h1>
           {data.industry && (
-            <p className="text-sm text-slate-400 mb-6">{data.industry}</p>
+            <p className={styles.heroIndustry}>{data.industry}</p>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white/10 rounded-xl p-4">
-              <p className="text-xs text-slate-400 uppercase tracking-wide">Estimated Value</p>
-              <p className="text-2xl font-bold mt-1">{formatCurrency(data.currentValue)}</p>
+          <div className={styles.heroMetrics}>
+            <div className={styles.heroMetric}>
+              <p className={styles.heroMetricLabel}>Estimated Value</p>
+              <p className={styles.heroMetricValue}>{formatCurrency(data.currentValue)}</p>
             </div>
-            <div className="bg-white/10 rounded-xl p-4">
-              <p className="text-xs text-slate-400 uppercase tracking-wide">Potential Value</p>
-              <p className="text-2xl font-bold mt-1 text-emerald-400">{formatCurrency(data.potentialValue)}</p>
+            <div className={styles.heroMetric}>
+              <p className={styles.heroMetricLabel}>Potential Value</p>
+              <p className={styles.heroMetricValueGreen}>{formatCurrency(data.potentialValue)}</p>
             </div>
-            <div className="bg-amber-500/20 border border-amber-500/30 rounded-xl p-4">
-              <p className="text-xs text-amber-300 uppercase tracking-wide">Value Gap</p>
-              <p className="text-2xl font-bold mt-1 text-amber-300">{formatCurrency(data.valueGap)}</p>
+            <div className={styles.heroMetricGap}>
+              <p className={styles.heroMetricLabelGap}>Value Gap</p>
+              <p className={styles.heroMetricValueAmber}>{formatCurrency(data.valueGap)}</p>
             </div>
           </div>
         </div>
 
         {/* BRI Score */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className={styles.card}>
+          <div className={styles.briRow}>
             <div>
-              <h2 className="text-sm font-semibold text-slate-900">Buyer Readiness Index</h2>
-              <p className="text-xs text-slate-500 mt-0.5">How attractive this business is to potential buyers</p>
+              <p className={styles.briLabel}>Buyer Readiness Index</p>
+              <p className={styles.briSubLabel}>How attractive this business is to potential buyers</p>
             </div>
-            <div className="text-right">
-              <span className={`text-3xl font-bold ${bri.color}`}>{data.briScore}</span>
-              <span className="text-lg text-slate-400">/100</span>
-              <p className={`text-xs font-semibold ${bri.color} mt-0.5`}>{bri.label}</p>
+            <div className={styles.briScore}>
+              <span className={`${styles.briScoreValue} ${bri.scoreClass}`}>{data.briScore}</span>
+              <span className={styles.briScoreTotal}>/100</span>
+              <p className={`${styles.briScoreLabel} ${bri.scoreClass}`}>{bri.label}</p>
             </div>
           </div>
-          <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+          <div className={styles.briTrack}>
             <div
-              className={`h-full ${bri.bar} rounded-full transition-all duration-700`}
+              className={`${styles.briBar} ${bri.barClass}`}
               style={{ width: `${data.briScore}%` }}
             />
           </div>
         </div>
 
-        {/* Category Breakdown: The Good, The Bad */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Category Breakdown */}
+        <div className={styles.categoryGrid}>
           {/* Strengths */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6">
-            <h3 className="text-sm font-semibold text-emerald-700 mb-4 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          <div className={styles.card}>
+            <h3 className={`${styles.categoryGroupTitle} ${styles.categoryGroupTitleStrengths}`}>
+              <span className={`${styles.categoryDot} ${styles.categoryDotGreen}`} />
               Strengths
             </h3>
             {strengths.length === 0 ? (
-              <p className="text-sm text-slate-400">No areas scoring above 60 yet</p>
+              <p className={styles.categoryEmpty}>No areas scoring above 60 yet</p>
             ) : (
-              <div className="space-y-3">
+              <div className={styles.categoryList}>
                 {strengths.map(cat => (
-                  <div key={cat.category}>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm text-slate-700">
+                  <div key={cat.category} className={styles.categoryItem}>
+                    <div className={styles.categoryItemRow}>
+                      <span className={styles.categoryName}>
                         {getCategoryIcon(cat.category)} {cat.category}
                       </span>
-                      <span className="text-sm font-semibold text-emerald-600">{cat.score}</span>
+                      <span className={styles.categoryScoreStrength}>{cat.score}</span>
                     </div>
-                    <div className="h-2 bg-emerald-50 rounded-full overflow-hidden">
-                      <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${cat.score}%` }} />
+                    <div className={`${styles.categoryTrack} ${styles.categoryTrackGreen}`}>
+                      <div
+                        className={`${styles.categoryBar} ${styles.categoryBarGreen}`}
+                        style={{ width: `${cat.score}%` }}
+                      />
                     </div>
                   </div>
                 ))}
@@ -188,25 +189,28 @@ export default function SharedReportPage() {
           </div>
 
           {/* Risks */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6">
-            <h3 className="text-sm font-semibold text-red-700 mb-4 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-500" />
+          <div className={styles.card}>
+            <h3 className={`${styles.categoryGroupTitle} ${styles.categoryGroupTitleRisks}`}>
+              <span className={`${styles.categoryDot} ${styles.categoryDotRed}`} />
               Areas to Improve
             </h3>
             {risks.length === 0 ? (
-              <p className="text-sm text-slate-400">All areas scoring above 60</p>
+              <p className={styles.categoryEmpty}>All areas scoring above 60</p>
             ) : (
-              <div className="space-y-3">
+              <div className={styles.categoryList}>
                 {risks.map(cat => (
-                  <div key={cat.category}>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm text-slate-700">
+                  <div key={cat.category} className={styles.categoryItem}>
+                    <div className={styles.categoryItemRow}>
+                      <span className={styles.categoryName}>
                         {getCategoryIcon(cat.category)} {cat.category}
                       </span>
-                      <span className="text-sm font-semibold text-red-600">{cat.score}</span>
+                      <span className={styles.categoryScoreRisk}>{cat.score}</span>
                     </div>
-                    <div className="h-2 bg-red-50 rounded-full overflow-hidden">
-                      <div className="h-full bg-red-500 rounded-full" style={{ width: `${cat.score}%` }} />
+                    <div className={`${styles.categoryTrack} ${styles.categoryTrackRed}`}>
+                      <div
+                        className={`${styles.categoryBar} ${styles.categoryBarRed}`}
+                        style={{ width: `${cat.score}%` }}
+                      />
                     </div>
                   </div>
                 ))}
@@ -217,18 +221,16 @@ export default function SharedReportPage() {
 
         {/* Top Priority Actions */}
         {data.topTasks.length > 0 && (
-          <div className="bg-white rounded-2xl border border-slate-200 p-6">
-            <h3 className="text-sm font-semibold text-slate-900 mb-4">Top Priority Actions</h3>
-            <div className="space-y-3">
+          <div className={styles.card}>
+            <h3 className={styles.actionsTitle}>Top Priority Actions</h3>
+            <div className={styles.actionsList}>
               {data.topTasks.map((task, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl">
-                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#B87333] text-white text-xs font-bold shrink-0 mt-0.5">
-                    {i + 1}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-900">{task.title}</p>
+                <div key={i} className={styles.actionItem}>
+                  <span className={styles.actionNumber}>{i + 1}</span>
+                  <div className={styles.actionBody}>
+                    <p className={styles.actionTitle}>{task.title}</p>
                     {task.estimatedValue > 0 && (
-                      <p className="text-xs text-emerald-600 mt-0.5">
+                      <p className={styles.actionImpact}>
                         Potential impact: {formatCurrency(task.estimatedValue)}
                       </p>
                     )}
@@ -240,25 +242,20 @@ export default function SharedReportPage() {
         )}
 
         {/* CTA */}
-        <div className="bg-gradient-to-br from-[#B87333]/10 to-[#B87333]/5 border-2 border-[#B87333]/20 rounded-2xl p-8 text-center">
-          <h3 className="text-lg font-semibold text-slate-900 mb-2">
-            Ready to close the value gap?
-          </h3>
-          <p className="text-sm text-slate-600 mb-6 max-w-md mx-auto">
+        <div className={styles.cta}>
+          <h3 className={styles.ctaTitle}>Ready to close the value gap?</h3>
+          <p className={styles.ctaBody}>
             Exit OSx helps business owners systematically increase their company&apos;s value and prepare for a successful exit.
           </p>
-          <a
-            href="https://exitosx.com"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#B87333] text-white text-sm font-semibold rounded-xl hover:bg-[#A0632D] transition-colors shadow-lg shadow-[#B87333]/20"
-          >
+          <a href="https://exitosx.com" className={styles.ctaLink}>
             Get Started Free
           </a>
         </div>
 
         {/* Footer */}
-        <div className="text-center text-xs text-slate-400 pb-4">
+        <div className={styles.footer}>
           <p>Generated {new Date(data.generatedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-          <p className="mt-1">&copy; {new Date().getFullYear()} Exit OSx. All rights reserved.</p>
+          <p className={styles.footerLine}>&copy; {new Date().getFullYear()} Exit OSx. All rights reserved.</p>
         </div>
       </main>
     </div>

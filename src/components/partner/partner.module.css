@@ -1,0 +1,316 @@
+/* Partner Pages — CSS Module
+ * Covers: /partner/summary/[accessToken] and /partner/invite/[inviteToken]
+ * Design system: globals.css variables
+ */
+
+/* ============================================================
+   Page Shell
+   ============================================================ */
+.page {
+  min-height: 100vh;
+  background: var(--background);
+  padding: 32px 16px;
+}
+
+.pageCentered {
+  min-height: 100vh;
+  background: var(--background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+}
+
+.loading {
+  min-height: 100vh;
+  background: var(--background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-bottom-color: var(--accent);
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   Content Container
+   ============================================================ */
+.container {
+  max-width: 512px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ============================================================
+   Card (replaces shadcn Card / CardContent)
+   ============================================================ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
+}
+
+.cardCentered {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 32px 24px 24px;
+  text-align: center;
+  max-width: 448px;
+  width: 100%;
+}
+
+/* ============================================================
+   Page Header (summary page)
+   ============================================================ */
+.header {
+  text-align: center;
+}
+
+.header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.headerSubtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* ============================================================
+   Readiness Trend card
+   ============================================================ */
+.trendRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.trendLabel {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.trendValue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.trendText {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.trendImproving {
+  color: var(--green);
+}
+
+.trendDeclining {
+  color: var(--red);
+}
+
+.trendStable {
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   Task Progress card
+   ============================================================ */
+.progressLabel {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.progressTrack {
+  height: 8px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.taskGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  text-align: center;
+}
+
+.taskStat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.taskStatValue {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.taskStatValueCompleted {
+  color: var(--green);
+}
+
+.taskStatValueInProgress {
+  color: var(--orange);
+}
+
+.taskStatValuePending {
+  color: var(--text-secondary);
+}
+
+.taskStatLabel {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   Last Activity
+   ============================================================ */
+.lastActivity {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* ============================================================
+   Nudge section
+   ============================================================ */
+.nudgeSection {
+  text-align: center;
+  padding-top: 8px;
+}
+
+.nudgeSentRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--green);
+}
+
+.nudgeSentText {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ============================================================
+   Footer disclaimer
+   ============================================================ */
+.disclaimer {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* ============================================================
+   Invite page — icon avatar
+   ============================================================ */
+.iconAvatar {
+  height: 56px;
+  width: 56px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+/* ============================================================
+   Invite page — status icon (error / success)
+   ============================================================ */
+.statusIcon {
+  margin: 0 auto 16px;
+  display: block;
+}
+
+.statusIconError {
+  color: var(--red);
+}
+
+.statusIconSuccess {
+  color: var(--green);
+}
+
+/* ============================================================
+   Invite page — text blocks
+   ============================================================ */
+.cardTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.cardBody {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.cardBodySmall {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+/* ============================================================
+   Invite page — name input
+   ============================================================ */
+.nameInputWrap {
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.nameInput {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 8px 12px;
+  font-size: 14px;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.nameInput::placeholder {
+  color: var(--text-tertiary);
+}
+
+.nameInput:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-light);
+}

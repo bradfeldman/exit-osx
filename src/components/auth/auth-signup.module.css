@@ -1,0 +1,1090 @@
+/* Auth pages — Signup and Activate
+ * Covers: SignupPage, ActivatePage
+ * Design system: globals.css vars
+ */
+
+/* ─── Shared page shell ─────────────────────────────────────── */
+
+.signupPage {
+  min-height: 100vh;
+  background: var(--background);
+}
+
+.signupHeader {
+  border-bottom: 1px solid var(--border);
+}
+
+.signupHeaderInner {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.signupLogo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.signupLogoImg {
+  height: 32px;
+  width: 32px;
+}
+
+.signupWordmark {
+  height: 24px;
+  width: auto;
+}
+
+.signupHeaderLink {
+  font-size: 14px;
+  color: var(--muted-foreground);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.signupHeaderLink:hover {
+  color: var(--foreground);
+}
+
+.signupHeaderLinkAccent {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.signupMain {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+@media (min-width: 768px) {
+  .signupMain {
+    padding: 64px 32px;
+  }
+}
+
+.signupFooter {
+  border-top: 1px solid var(--border);
+  padding: 24px 0;
+}
+
+.signupFooterInner {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0 24px;
+  text-align: center;
+}
+
+.signupFooterText {
+  font-size: 14px;
+  color: var(--muted-foreground);
+  margin: 0 0 4px;
+}
+
+/* ─── Two-column layout ─────────────────────────────────────── */
+
+.signupGrid {
+  display: grid;
+  gap: 48px;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .signupGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+  }
+}
+
+/* ─── Left column — value proposition ──────────────────────── */
+
+.signupValueProp {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.signupHeadline {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.signupTitle {
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 700;
+  color: var(--foreground);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.signupSubtitle {
+  font-size: 18px;
+  color: var(--muted-foreground);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.signupBodyText {
+  color: var(--foreground);
+  margin: 0;
+}
+
+/* Value anchor box */
+.signupValueAnchor {
+  background: color-mix(in srgb, var(--primary) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.signupValueAnchorText {
+  font-size: 18px;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.signupValueAnchorAmount {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 4px 0 0;
+}
+
+.signupValueAnchorNote {
+  color: var(--muted-foreground);
+  margin: 8px 0 0;
+}
+
+/* What you'll see list — desktop only */
+.signupBenefitsDesktop {
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .signupBenefitsDesktop {
+    display: flex;
+  }
+}
+
+.signupBenefitsTitle {
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.signupBenefitsIntro {
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+.signupBenefitsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.signupBenefitsItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--muted-foreground);
+}
+
+.signupBenefitsNote {
+  font-size: 14px;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+/* Objection handling — desktop only */
+.signupObjectionsDesktop {
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+@media (min-width: 1024px) {
+  .signupObjectionsDesktop {
+    display: flex;
+  }
+}
+
+.signupObjectionList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.signupObjectionQ {
+  font-weight: 500;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.signupObjectionA {
+  font-size: 14px;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+/* ─── Right column — form card ──────────────────────────────── */
+
+.signupFormColumn {
+  /* Sticky on desktop */
+}
+
+@media (min-width: 1024px) {
+  .signupFormColumn {
+    position: sticky;
+    top: 32px;
+  }
+}
+
+.signupCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+@media (min-width: 768px) {
+  .signupCard {
+    padding: 32px;
+  }
+}
+
+.signupCardHeader {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.signupCardTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.signupCardSubtitle {
+  font-size: 14px;
+  color: var(--muted-foreground);
+  margin: 4px 0 0;
+}
+
+.signupForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.signupField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.signupFieldHint {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+.signupErrorAlert {
+  padding: 12px;
+  font-size: 14px;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+}
+
+/* OR divider */
+.signupDivider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.signupDividerLine {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.signupDividerText {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+/* Trust bullet list */
+.signupTrustList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.signupTrustItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--muted-foreground);
+}
+
+.signupTerms {
+  font-size: 12px;
+  text-align: center;
+  color: var(--muted-foreground);
+  padding-top: 8px;
+}
+
+.signupTermsLink {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.signupTermsLink:hover {
+  text-decoration: underline;
+}
+
+/* Social proof strip */
+.signupSocialProof {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.signupStats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  text-align: center;
+}
+
+.signupStat {
+  /* column of number + label */
+}
+
+.signupStatValue {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.signupStatLabel {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+.signupStatDivider {
+  height: 32px;
+  width: 1px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.signupSocialProofNote {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+/* ─── Mobile benefits / objections ─────────────────────────── */
+
+.signupBenefitsMobile {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 48px;
+}
+
+@media (min-width: 1024px) {
+  .signupBenefitsMobile {
+    display: none;
+  }
+}
+
+.signupObjectionsMobile {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+/* ─── Loading screen ────────────────────────────────────────── */
+
+.signupLoading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background);
+}
+
+/* ─── Success / Check-email screen ─────────────────────────── */
+
+.signupSuccessPage {
+  min-height: 100vh;
+  background: var(--background);
+}
+
+.signupSuccessMain {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+}
+
+@media (min-width: 768px) {
+  .signupSuccessMain {
+    padding: 80px 16px;
+  }
+}
+
+.signupSuccessContent {
+  width: 100%;
+  max-width: 512px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Progress steps */
+.signupSteps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.signupStep {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.signupStepCircle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.signupStepCircleDone {
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.signupStepCircleActive {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.signupStepCircleInactive {
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+
+.signupStepLabel {
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.signupStepLabelDone {
+  color: var(--muted-foreground);
+}
+
+.signupStepLabelActive {
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.signupStepLabelInactive {
+  color: var(--muted-foreground);
+}
+
+.signupStepConnector {
+  width: 32px;
+  height: 2px;
+}
+
+.signupStepConnectorDone {
+  background: var(--primary);
+}
+
+.signupStepConnectorInactive {
+  background: var(--border);
+}
+
+/* Success message area */
+.signupSuccessMessage {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.signupSuccessIconWrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.signupSuccessTitle {
+  font-size: clamp(24px, 4vw, 36px);
+  font-weight: 700;
+  color: var(--foreground);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.signupSuccessIntro {
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+.signupSuccessEmail {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.signupSuccessBody {
+  color: var(--foreground);
+  margin: 0;
+}
+
+/* Bullet list box in success state */
+.signupSuccessBox {
+  background: color-mix(in srgb, var(--muted) 50%, transparent);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.signupSuccessBoxTitle {
+  font-weight: 500;
+  color: var(--foreground);
+  font-size: 14px;
+  margin: 0;
+}
+
+.signupSuccessBoxList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.signupSuccessBoxItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--muted-foreground);
+}
+
+/* CTA + resend area */
+.signupSuccessActions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.signupSuccessEmailLink {
+  display: block;
+  text-decoration: none;
+}
+
+.signupResend {
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted-foreground);
+}
+
+.signupResendSuccess {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #15803d;
+  font-weight: 500;
+}
+
+.signupResendButton {
+  color: var(--primary);
+  font-weight: 500;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.signupResendButton:hover {
+  text-decoration: underline;
+}
+
+.signupResendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.signupResendError {
+  color: var(--destructive);
+  margin-top: 4px;
+}
+
+/* Invite banner */
+.signupInviteBanner {
+  padding: 16px;
+  font-size: 14px;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.signupInviteBannerText {
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Trust footer strip */
+.signupTrustFooter {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.signupTrustFooterText {
+  font-size: 14px;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+/* ─── Activate page ─────────────────────────────────────────── */
+
+.activatePage {
+  display: flex;
+  min-height: 100dvh;
+}
+
+/* Left branding panel */
+.activateBranding {
+  display: none;
+  position: relative;
+  overflow: hidden;
+  background: var(--primary);
+}
+
+@media (min-width: 1024px) {
+  .activateBranding {
+    display: flex;
+    width: 50%;
+  }
+}
+
+.activateBrandingGradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom right, var(--primary), color-mix(in srgb, var(--primary) 80%, transparent));
+}
+
+.activateBrandingOrb1 {
+  position: absolute;
+  top: 80px;
+  right: 80px;
+  width: 256px;
+  height: 256px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+  filter: blur(48px);
+}
+
+.activateBrandingOrb2 {
+  position: absolute;
+  bottom: 80px;
+  left: 40px;
+  width: 192px;
+  height: 192px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+  filter: blur(32px);
+}
+
+.activateBrandingContent {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 48px;
+  color: var(--primary-foreground);
+}
+
+.activateBrandingLogo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.activateBrandingLogoImg {
+  height: 40px;
+  width: 40px;
+}
+
+.activateBrandingWordmark {
+  height: 32px;
+  width: auto;
+  filter: brightness(0) invert(1);
+}
+
+.activateBrandingBody {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.activateBrandingTitle {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.activateBrandingTagline {
+  font-size: 18px;
+  opacity: 0.9;
+  max-width: 400px;
+  margin: 0;
+}
+
+.activateBrandingFeatures {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 16px;
+}
+
+.activateBrandingFeature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.activateBrandingFeatureIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Right form panel */
+.activateFormPanel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 24px;
+  background: var(--background);
+}
+
+@media (min-width: 640px) {
+  .activateFormPanel {
+    padding: 24px 32px;
+  }
+}
+
+.activateFormContent {
+  width: 100%;
+  max-width: 448px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Mobile logo — only on small screens */
+.activateMobileLogo {
+  text-align: center;
+}
+
+@media (min-width: 1024px) {
+  .activateMobileLogo {
+    display: none;
+  }
+}
+
+.activateMobileLogoLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.activateMobileLogoImg {
+  height: 32px;
+  width: 32px;
+}
+
+.activateMobileWordmark {
+  height: 24px;
+  width: auto;
+}
+
+/* Checking / loading state */
+.activateChecking {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background);
+}
+
+.activateCheckingContent {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.activateCheckingText {
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+/* Invalid / expired session */
+.activateError {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.activateErrorIconWrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #fef3c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.activateErrorTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0 0 8px;
+}
+
+.activateErrorText {
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+/* Form header */
+.activateFormHeader {
+  text-align: center;
+}
+
+.activateFormTitle {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--foreground);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.activateFormSubtitle {
+  margin: 8px 0 0;
+  color: var(--muted-foreground);
+}
+
+/* Activate form */
+.activateForm {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.activateField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activateFieldHint {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+.activatePasswordWrap {
+  position: relative;
+}
+
+.activatePasswordToggle {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted-foreground);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.activatePasswordToggle:hover {
+  color: var(--foreground);
+}
+
+.activateRequirements {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.activateRequirement {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.activateRequirementMet {
+  color: #15803d;
+}
+
+.activateRequirementUnmet {
+  color: var(--muted-foreground);
+}
+
+.activateMatchSuccess {
+  font-size: 12px;
+  color: #16a34a;
+  margin: 0;
+}
+
+.activateMatchError {
+  font-size: 12px;
+  color: #ef4444;
+  margin: 0;
+}
+
+/* Inline alert banners */
+.activateAlertError {
+  padding: 16px;
+  font-size: 14px;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+}
+
+.activateAlertWarning {
+  padding: 16px;
+  font-size: 14px;
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.activateAlertWarningIcon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.activateAlertWarningBody {
+  /* text content area */
+}
+
+.activateAlertWarningTitle {
+  font-weight: 500;
+  margin: 0;
+}
+
+.activateAlertWarningText {
+  margin: 4px 0 0;
+  color: #d97706;
+}
+
+/* Trust footer strip */
+.activateTrustFooter {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.activateTrustFooterText {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+/* Pulse keyframe for active step */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

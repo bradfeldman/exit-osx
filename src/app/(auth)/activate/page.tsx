@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Eye, EyeOff, Loader2, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react'
 import { setPasswordForMagicLink } from '@/app/actions/auth'
 import { createClient } from '@/lib/supabase/client'
+import styles from '@/components/auth/auth-signup.module.css'
 
 // Password requirement checks
 function getPasswordChecks(password: string) {
@@ -21,15 +22,13 @@ function getPasswordChecks(password: string) {
 
 function PasswordRequirement({ met, label }: { met: boolean; label: string }) {
   return (
-    <div className="flex items-center gap-2 text-sm">
+    <div className={`${styles.activateRequirement} ${met ? styles.activateRequirementMet : styles.activateRequirementUnmet}`}>
       {met ? (
         <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
       ) : (
-        <XCircle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+        <XCircle className="h-4 w-4 shrink-0" style={{ color: 'var(--muted-foreground)', opacity: 0.4 }} />
       )}
-      <span className={met ? 'text-green-700' : 'text-muted-foreground'}>
-        {label}
-      </span>
+      <span>{label}</span>
     </div>
   )
 }
@@ -111,32 +110,32 @@ export default function ActivatePage() {
   // Loading state while verifying session
   if (checking) {
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-          <p className="text-muted-foreground">Verifying your link...</p>
+      <div className={styles.activateChecking}>
+        <div className={styles.activateCheckingContent}>
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className={styles.activateCheckingText}>Verifying your link...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-[100dvh]">
+    <div className={styles.activatePage}>
       {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
+      <div className={styles.activateBranding}>
+        <div className={styles.activateBrandingGradient} />
         {/* Decorative elements */}
-        <div className="absolute top-20 right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-10 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
-        <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground">
-          <a href="https://exitosx.com" className="flex items-center gap-3">
+        <div className={styles.activateBrandingOrb1} />
+        <div className={styles.activateBrandingOrb2} />
+        <div className={styles.activateBrandingContent}>
+          <a href="https://exitosx.com" className={styles.activateBrandingLogo}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo-icon.png"
               alt="Exit OSx"
               width={40}
               height={40}
-              className="h-10 w-10"
+              className={styles.activateBrandingLogoImg}
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -144,25 +143,25 @@ export default function ActivatePage() {
               alt="Exit OSx"
               width={120}
               height={34}
-              className="h-8 w-auto brightness-0 invert"
+              className={styles.activateBrandingWordmark}
             />
           </a>
 
-          <div className="space-y-6">
-            <h1 className="text-4xl font-bold font-display leading-tight tracking-tight">
+          <div className={styles.activateBrandingBody}>
+            <h1 className={styles.activateBrandingTitle}>
               You&apos;re Almost There
             </h1>
-            <p className="text-lg opacity-90 max-w-md">
+            <p className={styles.activateBrandingTagline}>
               Set a password to secure your account, then discover your exit readiness score in minutes.
             </p>
-            <div className="space-y-4 pt-4">
+            <div className={styles.activateBrandingFeatures}>
               {[
                 'Real-time business valuation',
                 'Buyer Readiness Index across 6 dimensions',
                 'Prioritized value-building playbook'
               ].map((text) => (
-                <div key={text} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                <div key={text} className={styles.activateBrandingFeature}>
+                  <div className={styles.activateBrandingFeatureIcon}>
                     <CheckIcon className="w-4 h-4" />
                   </div>
                   <span>{text}</span>
@@ -174,18 +173,18 @@ export default function ActivatePage() {
       </div>
 
       {/* Right side - Activation Form */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-background">
-        <div className="w-full max-w-md space-y-8">
+      <div className={styles.activateFormPanel}>
+        <div className={styles.activateFormContent}>
           {/* Mobile logo */}
-          <div className="lg:hidden text-center">
-            <a href="https://exitosx.com" className="inline-flex items-center gap-2">
+          <div className={styles.activateMobileLogo}>
+            <a href="https://exitosx.com" className={styles.activateMobileLogoLink}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/logo-icon.png"
                 alt="Exit OSx"
                 width={32}
                 height={32}
-                className="h-8 w-8"
+                className={styles.activateMobileLogoImg}
               />
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -193,20 +192,20 @@ export default function ActivatePage() {
                 alt="Exit OSx"
                 width={100}
                 height={28}
-                className="h-6 w-auto"
+                className={styles.activateMobileWordmark}
               />
             </a>
           </div>
 
           {!hasValidSession ? (
             // Invalid/expired session state
-            <div className="text-center space-y-6">
-              <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto">
+            <div className={styles.activateError}>
+              <div className={styles.activateErrorIconWrap}>
                 <AlertTriangle className="w-8 h-8 text-amber-600" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-foreground">Link Expired</h2>
-                <p className="mt-2 text-muted-foreground">
+                <h2 className={styles.activateErrorTitle}>Link Expired</h2>
+                <p className={styles.activateErrorText}>
                   This activation link is invalid or has expired. Please sign up again to receive a new link.
                 </p>
               </div>
@@ -219,34 +218,34 @@ export default function ActivatePage() {
             </div>
           ) : (
             <>
-              <div className="text-center">
-                <h2 className="text-3xl font-bold font-display text-foreground tracking-tight">
+              <div className={styles.activateFormHeader}>
+                <h2 className={styles.activateFormTitle}>
                   Set your password
                 </h2>
-                <p className="mt-2 text-muted-foreground">
+                <p className={styles.activateFormSubtitle}>
                   Create a password to secure your account
                 </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className={styles.activateForm}>
                 {error && (
-                  <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+                  <div className={styles.activateAlertError}>
                     {error}
                   </div>
                 )}
 
                 {warning && (
-                  <div className="p-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
-                    <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-medium">Security Recommendation</p>
-                      <p className="mt-1 text-amber-600">{warning}</p>
+                  <div className={styles.activateAlertWarning}>
+                    <AlertTriangle className={`h-5 w-5 ${styles.activateAlertWarningIcon}`} />
+                    <div className={styles.activateAlertWarningBody}>
+                      <p className={styles.activateAlertWarningTitle}>Security Recommendation</p>
+                      <p className={styles.activateAlertWarningText}>{warning}</p>
                     </div>
                   </div>
                 )}
 
                 {/* Email field - locked/disabled */}
-                <div className="space-y-2">
+                <div className={styles.activateField}>
                   <Label htmlFor="email">Email address</Label>
                   <Input
                     id="email"
@@ -255,15 +254,15 @@ export default function ActivatePage() {
                     disabled
                     className="h-12 bg-muted"
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className={styles.activateFieldHint}>
                     Verified via your signup link.
                   </p>
                 </div>
 
                 {/* Password field */}
-                <div className="space-y-2">
+                <div className={styles.activateField}>
                   <Label htmlFor="password">Create password</Label>
-                  <div className="relative">
+                  <div className={styles.activatePasswordWrap}>
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
@@ -278,7 +277,7 @@ export default function ActivatePage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      className={styles.activatePasswordToggle}
                       tabIndex={-1}
                     >
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -287,7 +286,7 @@ export default function ActivatePage() {
 
                   {/* Password requirements - visible while typing */}
                   {password.length > 0 && (
-                    <div className="space-y-1.5 pt-1">
+                    <div className={styles.activateRequirements}>
                       <PasswordRequirement met={passwordChecks.length} label="At least 8 characters" />
                       <PasswordRequirement met={passwordChecks.uppercase} label="One uppercase letter" />
                       <PasswordRequirement met={passwordChecks.lowercase} label="One lowercase letter" />
@@ -297,7 +296,7 @@ export default function ActivatePage() {
                 </div>
 
                 {/* Confirm password field */}
-                <div className="space-y-2">
+                <div className={styles.activateField}>
                   <Label htmlFor="confirmPassword">Confirm password</Label>
                   <Input
                     id="confirmPassword"
@@ -311,10 +310,10 @@ export default function ActivatePage() {
                     className="h-12"
                   />
                   {confirmPassword.length > 0 && !passwordsMatch && (
-                    <p className="text-xs text-red-500">Passwords do not match.</p>
+                    <p className={styles.activateMatchError}>Passwords do not match.</p>
                   )}
                   {passwordsMatch && (
-                    <p className="text-xs text-green-600">Passwords match.</p>
+                    <p className={styles.activateMatchSuccess}>Passwords match.</p>
                   )}
                 </div>
 
@@ -335,8 +334,8 @@ export default function ActivatePage() {
               </form>
 
               {/* Trust microcopy */}
-              <div className="text-center space-y-1 pt-4 border-t border-border">
-                <p className="text-xs text-muted-foreground">
+              <div className={styles.activateTrustFooter}>
+                <p className={styles.activateTrustFooterText}>
                   Your data is encrypted and never shared. Free plan, no credit card required.
                 </p>
               </div>

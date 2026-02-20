@@ -14,14 +14,14 @@ export default function SellerPortalPage({ params }: PageProps) {
   const { dealId } = use(params)
 
   return (
-    <div className="min-h-screen bg-background">
+    <div style={{ minHeight: '100vh', background: 'var(--background)' }}>
       {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+      <header style={{ borderBottom: '1px solid var(--border)', background: 'var(--card)' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <h1 className="text-xl font-semibold">Seller Portal</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 style={{ fontSize: '20px', fontWeight: 600, margin: 0 }}>Seller Portal</h1>
+              <p style={{ fontSize: '14px', color: 'var(--muted-foreground)', margin: '4px 0 0' }}>
                 Track and approve prospective buyers
               </p>
             </div>
@@ -30,7 +30,7 @@ export default function SellerPortalPage({ params }: PageProps) {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
+      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px 16px' }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

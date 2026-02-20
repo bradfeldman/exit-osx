@@ -7,8 +7,8 @@ import { motion } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { PRICING_PLANS } from '@/lib/pricing'
 import { analytics } from '@/lib/analytics'
-import { cn } from '@/lib/utils'
 import { AnimatedSection, AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
+import styles from '@/components/public/public-pricing.module.css'
 
 function CheckIcon({ className }: { className?: string }) {
   return (
@@ -46,19 +46,16 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <div className="border-b border-border">
+    <div className={styles.faqItem}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full py-5 flex items-center justify-between text-left"
+        className={styles.faqButton}
       >
-        <span className="font-medium text-foreground pr-4">{question}</span>
-        <ChevronDownIcon className={cn(
-          'w-5 h-5 text-muted-foreground transition-transform shrink-0',
-          isOpen && 'rotate-180'
-        )} />
+        <span className={styles.faqQuestion}>{question}</span>
+        <ChevronDownIcon className={`${styles.faqChevron}${isOpen ? ` ${styles.faqChevronOpen}` : ''}`} />
       </button>
       {isOpen && (
-        <div className="pb-5 text-muted-foreground leading-relaxed">
+        <div className={styles.faqAnswer}>
           {answer}
         </div>
       )}
@@ -115,34 +112,36 @@ export default function PricingPage() {
     })
   }
 
+  const isAnnual = billingCycle === 'annual'
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className={styles.page}>
       {/* Minimal Header */}
       <motion.header
-        className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border"
+        className={styles.header}
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-4 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
+        <div className={styles.headerInner}>
+          <div className={styles.headerRow}>
+            <Link href="/" className={styles.logoLink}>
               <Image
                 src="/logo.webp"
                 alt="Exit OSx"
                 width={32}
                 height={32}
-                className="h-8 w-8"
+                className={styles.logoImg}
               />
               <Image
                 src="/wordmark.svg"
                 alt="Exit OSx"
                 width={100}
                 height={28}
-                className="h-6 w-auto"
+                className={styles.wordmarkImg}
               />
             </Link>
-            <div className="flex items-center gap-3">
+            <div className={styles.headerActions}>
               <Link href="/login">
                 <Button variant="ghost" size="sm">Sign In</Button>
               </Link>
@@ -155,12 +154,12 @@ export default function PricingPage() {
       </motion.header>
 
       {/* Main Content */}
-      <main className="py-16 md:py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="text-center mb-12">
+      <main className={styles.main}>
+        <div className={styles.container}>
+          {/* Hero Header */}
+          <div className={styles.heroHeader}>
             <motion.p
-              className="text-sm font-medium text-primary mb-4"
+              className={styles.eyebrow}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
@@ -168,7 +167,7 @@ export default function PricingPage() {
               Simple pricing. No surprises.
             </motion.p>
             <motion.h1
-              className="text-4xl md:text-5xl font-bold text-foreground mb-4 font-display"
+              className={styles.heroTitle}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.1 }}
@@ -176,7 +175,7 @@ export default function PricingPage() {
               The Cost of Not Knowing Is Higher
             </motion.h1>
             <motion.p
-              className="text-xl text-muted-foreground max-w-2xl mx-auto"
+              className={styles.heroSubtitle}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.2 }}
@@ -188,23 +187,23 @@ export default function PricingPage() {
           </div>
 
           {/* Do The Math — ABOVE pricing cards for value anchoring */}
-          <AnimatedSection className="max-w-3xl mx-auto mb-14 text-center">
-            <div className="bg-card border border-border rounded-2xl p-8 shadow-lg">
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6 font-display">
+          <AnimatedSection className={styles.mathSection}>
+            <div className={styles.mathCard}>
+              <h2 className={styles.mathTitle}>
                 Do The Math
               </h2>
-              <p className="text-lg text-muted-foreground mb-6">
-                If your business is worth <span className="text-foreground font-semibold">$5M</span> and you&apos;re leaving
-                <span className="text-foreground font-semibold"> 20% on the table</span> due to preventable risks...
+              <p className={styles.mathBody}>
+                If your business is worth <span className={styles.mathEmphasis}>$5M</span> and you&apos;re leaving
+                <span className={styles.mathEmphasis}> 20% on the table</span> due to preventable risks...
               </p>
-              <p className="text-3xl font-bold text-destructive mb-6">
+              <p className={styles.mathLoss}>
                 That&apos;s $1,000,000 lost.
               </p>
-              <p className="text-muted-foreground mb-2">
-                Exit OSx Growth costs <span className="text-foreground font-medium">$1,788/year</span>.
-                That&apos;s <span className="text-foreground font-medium">0.18%</span> of what you could be losing.
+              <p className={styles.mathCost}>
+                Exit OSx Growth costs <span className={styles.mathEmphasis}>$1,788/year</span>.
+                That&apos;s <span className={styles.mathEmphasis}>0.18%</span> of what you could be losing.
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className={styles.mathFootnote}>
                 Most founders we assess are leaving 1.5&ndash;2.5x more value on the table than they think.
               </p>
             </div>
@@ -212,44 +211,32 @@ export default function PricingPage() {
 
           {/* Billing Toggle */}
           <motion.div
-            className="flex items-center justify-center gap-4 mb-12"
+            className={styles.billingToggle}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <span className={cn(
-              'text-sm font-medium transition-colors',
-              billingCycle === 'monthly' ? 'text-foreground' : 'text-muted-foreground'
-            )}>
+            <span className={`${styles.billingLabel} ${billingCycle === 'monthly' ? styles.billingLabelActive : styles.billingLabelInactive}`}>
               Monthly
             </span>
             <button
               onClick={handleBillingToggle}
-              className={cn(
-                'relative inline-flex h-7 w-12 items-center rounded-full transition-colors',
-                billingCycle === 'annual' ? 'bg-primary' : 'bg-muted'
-              )}
+              className={`${styles.toggleTrack} ${isAnnual ? styles.toggleTrackActive : styles.toggleTrackInactive}`}
             >
               <span
-                className={cn(
-                  'inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform',
-                  billingCycle === 'annual' ? 'translate-x-6' : 'translate-x-1'
-                )}
+                className={`${styles.toggleThumb} ${isAnnual ? styles.toggleThumbActive : styles.toggleThumbInactive}`}
               />
             </button>
-            <span className={cn(
-              'text-sm font-medium transition-colors',
-              billingCycle === 'annual' ? 'text-foreground' : 'text-muted-foreground'
-            )}>
+            <span className={`${styles.billingLabel} ${isAnnual ? styles.billingLabelActive : styles.billingLabelInactive}`}>
               Annual
-              <span className="ml-2 inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+              <span className={styles.saveBadge}>
                 Save 20%
               </span>
             </span>
           </motion.div>
 
           {/* Pricing Cards */}
-          <AnimatedStagger className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-8">
+          <AnimatedStagger className={styles.plansGrid}>
             {PRICING_PLANS.map((plan) => {
               const price = billingCycle === 'annual' ? plan.annualPrice : plan.monthlyPrice
               const isHighlighted = plan.highlighted
@@ -262,43 +249,36 @@ export default function PricingPage() {
 
               return (
                 <AnimatedItem key={plan.id}>
-                  <div
-                    className={cn(
-                      'relative rounded-2xl border p-8 flex flex-col h-full card-hover',
-                      isHighlighted
-                        ? 'border-primary bg-primary/5 shadow-xl md:scale-105 z-10'
-                        : 'border-border bg-card'
-                    )}
-                  >
+                  <div className={`${styles.planCard}${isHighlighted ? ` ${styles.planCardHighlighted}` : ''}`}>
                     {isHighlighted && (
-                      <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                        <span className="inline-flex items-center rounded-full bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground shadow-sm">
+                      <div className={styles.popularBadge}>
+                        <span className={styles.popularBadgeInner}>
                           Most Popular
                         </span>
                       </div>
                     )}
 
-                    <div className="mb-6">
-                      <h3 className="text-2xl font-bold text-foreground mb-2">{plan.name}</h3>
-                      <p className="text-sm text-muted-foreground">{planDescriptions[plan.id] || plan.description}</p>
+                    <div className={styles.planHeader}>
+                      <h3 className={styles.planName}>{plan.name}</h3>
+                      <p className={styles.planDescription}>{planDescriptions[plan.id] || plan.description}</p>
                     </div>
 
-                    <div className="mb-8">
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-5xl font-bold text-foreground">
+                    <div className={styles.planPricing}>
+                      <div className={styles.priceRow}>
+                        <span className={styles.priceAmount}>
                           ${price}
                         </span>
                         {price > 0 && (
-                          <span className="text-muted-foreground">/month</span>
+                          <span className={styles.pricePer}>/month</span>
                         )}
                       </div>
                       {price > 0 && billingCycle === 'annual' && (
-                        <p className="text-sm text-muted-foreground mt-2">
+                        <p className={styles.priceAnnualNote}>
                           Billed annually at ${(price * 12).toLocaleString()}/year
                         </p>
                       )}
                       {price === 0 && (
-                        <p className="text-sm text-muted-foreground mt-2">
+                        <p className={styles.priceFreeNote}>
                           Free forever. No credit card.
                         </p>
                       )}
@@ -306,16 +286,11 @@ export default function PricingPage() {
 
                     <Link
                       href={`/assess?plan=${plan.id}`}
-                      className="mb-8"
+                      className={styles.planCtaLink}
                       onClick={() => handlePlanCtaClick(plan)}
                     >
                       <Button
-                        className={cn(
-                          'w-full h-12 text-base btn-hover',
-                          isHighlighted
-                            ? 'bg-primary hover:bg-primary/90'
-                            : ''
-                        )}
+                        className="w-full h-12 text-base"
                         variant={isHighlighted ? 'default' : 'outline'}
                         size="lg"
                       >
@@ -323,23 +298,20 @@ export default function PricingPage() {
                       </Button>
                     </Link>
 
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-foreground mb-4">What&apos;s included:</p>
-                      <ul className="space-y-3">
+                    <div className={styles.featureList}>
+                      <p className={styles.featureListLabel}>What&apos;s included:</p>
+                      <ul className={styles.featureItems}>
                         {plan.features.map((feature) => (
-                          <li key={feature.name} className="flex items-start gap-3">
+                          <li key={feature.name} className={styles.featureItem}>
                             {feature.included ? (
-                              <CheckIcon className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                              <CheckIcon className={`${styles.featureIcon} ${styles.featureIconCheck}`} />
                             ) : (
-                              <XIcon className="h-5 w-5 text-muted-foreground/30 shrink-0 mt-0.5" />
+                              <XIcon className={`${styles.featureIcon} ${styles.featureIconX}`} />
                             )}
-                            <span className={cn(
-                              'text-sm',
-                              feature.included ? 'text-foreground' : 'text-muted-foreground/50'
-                            )}>
+                            <span className={feature.included ? styles.featureName : styles.featureNameExcluded}>
                               {feature.name}
                               {feature.limit && feature.included && (
-                                <span className="text-muted-foreground"> ({feature.limit})</span>
+                                <span className={styles.featureLimit}> ({feature.limit})</span>
                               )}
                             </span>
                           </li>
@@ -352,80 +324,77 @@ export default function PricingPage() {
             })}
           </AnimatedStagger>
 
-          {/* Trust Indicators — Cancel anytime made prominent */}
-          <AnimatedSection className="flex flex-wrap items-center justify-center gap-8 mb-6 py-6">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckIcon className="h-5 w-5 text-green-600" />
+          {/* Trust Indicators */}
+          <AnimatedSection className={styles.trustRow}>
+            <div className={styles.trustItem}>
+              <CheckIcon className={styles.trustIcon} />
               <span>7-day free trial on paid plans</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckIcon className="h-5 w-5 text-green-600" />
+            <div className={styles.trustItem}>
+              <CheckIcon className={styles.trustIcon} />
               <span>No credit card required during trial</span>
             </div>
-            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-              <CheckIcon className="h-5 w-5 text-green-600" />
+            <div className={`${styles.trustItem} ${styles.trustItemPrimary}`}>
+              <CheckIcon className={styles.trustIcon} />
               <span>Cancel anytime. No penalties.</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckIcon className="h-5 w-5 text-green-600" />
+            <div className={styles.trustItem}>
+              <CheckIcon className={styles.trustIcon} />
               <span>Upgrade or downgrade freely</span>
             </div>
           </AnimatedSection>
 
           {/* 90-Day Outcome Guarantee */}
-          <AnimatedSection className="max-w-2xl mx-auto mb-20">
-            <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded-2xl p-8 text-center">
-              <ShieldIcon className="h-10 w-10 text-green-600 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-foreground mb-3 font-display">
+          <AnimatedSection className={styles.guaranteeSection}>
+            <div className={styles.guaranteeCard}>
+              <ShieldIcon className={styles.guaranteeIcon} />
+              <h3 className={styles.guaranteeTitle}>
                 90-Day Outcome Guarantee
               </h3>
-              <p className="text-muted-foreground leading-relaxed">
+              <p className={styles.guaranteeBody}>
                 If your Buyer Readiness Index doesn&apos;t improve within 90 days of following your
                 action plan, we&apos;ll refund your last 3 months. No questions asked.
               </p>
-              <p className="text-sm text-muted-foreground/70 mt-4">
+              <p className={styles.guaranteeFootnote}>
                 We can make this guarantee because the system works. Complete the actions, and your score goes up.
               </p>
             </div>
           </AnimatedSection>
 
           {/* Feature Comparison */}
-          <AnimatedSection className="mb-20">
-            <h2 className="text-2xl font-bold text-foreground mb-8 text-center font-display">
+          <AnimatedSection className={styles.comparisonSection}>
+            <h2 className={styles.sectionTitle}>
               Compare Plans
             </h2>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
+            <div className={styles.tableWrapper}>
+              <table className={styles.comparisonTable}>
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-4 px-4 font-medium text-muted-foreground">Feature</th>
-                    <th className="text-center py-4 px-4 font-semibold text-foreground">Foundation</th>
-                    <th className="text-center py-4 px-4 font-semibold text-primary bg-primary/5">Growth</th>
-                    <th className="text-center py-4 px-4 font-semibold text-foreground">Deal Room</th>
+                  <tr>
+                    <th>Feature</th>
+                    <th>Foundation</th>
+                    <th className={styles.thHighlighted}>Growth</th>
+                    <th>Deal Room</th>
                   </tr>
                 </thead>
                 <tbody>
                   {PRICING_PLANS[0].features.map((feature, idx) => (
-                    <tr key={feature.name} className={idx % 2 === 0 ? 'bg-muted/30' : ''}>
-                      <td className="py-3 px-4 text-sm text-foreground">{feature.name}</td>
+                    <tr key={feature.name} className={idx % 2 === 0 ? styles.comparisonRowEven : styles.comparisonRowOdd}>
+                      <td>{feature.name}</td>
                       {PRICING_PLANS.map((plan, planIdx) => {
                         const planFeature = plan.features.find(f => f.name === feature.name)
                         return (
                           <td
                             key={plan.id}
-                            className={cn(
-                              "text-center py-3 px-4",
-                              planIdx === 1 && "bg-primary/5"
-                            )}
+                            className={planIdx === 1 ? styles.tdHighlighted : undefined}
                           >
                             {planFeature?.included ? (
                               planFeature.limit ? (
-                                <span className="text-sm text-foreground">{planFeature.limit}</span>
+                                <span className={styles.tableLimit}>{planFeature.limit}</span>
                               ) : (
-                                <CheckIcon className="h-5 w-5 text-green-600 mx-auto" />
+                                <CheckIcon className={styles.tableCheck} />
                               )
                             ) : (
-                              <XIcon className="h-5 w-5 text-muted-foreground/30 mx-auto" />
+                              <XIcon className={styles.tableX} />
                             )}
                           </td>
                         )
@@ -438,63 +407,63 @@ export default function PricingPage() {
           </AnimatedSection>
 
           {/* Which Plan Is Right For You */}
-          <AnimatedSection className="max-w-4xl mx-auto mb-20">
-            <h2 className="text-2xl font-bold text-foreground mb-8 text-center font-display">
+          <AnimatedSection className={styles.planMatchSection}>
+            <h2 className={styles.sectionTitle}>
               Which Plan Is Right For You?
             </h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="bg-card border border-border rounded-xl p-6">
-                <h3 className="font-semibold text-foreground mb-3">Foundation</h3>
-                <p className="text-sm text-muted-foreground mb-4">You should start here if:</p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
+            <div className={styles.planMatchGrid}>
+              <div className={styles.planMatchCard}>
+                <h3 className={styles.planMatchName}>Foundation</h3>
+                <p className={styles.planMatchSubtitle}>You should start here if:</p>
+                <ul className={styles.planMatchList}>
+                  <li className={styles.planMatchItem}>
+                    <span className={styles.planMatchBullet}>•</span>
                     You want to see what buyers would see
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
+                  <li className={styles.planMatchItem}>
+                    <span className={styles.planMatchBullet}>•</span>
                     You&apos;re curious about your risk profile
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
+                  <li className={styles.planMatchItem}>
+                    <span className={styles.planMatchBullet}>•</span>
                     You want a baseline before committing
                   </li>
                 </ul>
               </div>
 
-              <div className="bg-primary/5 border border-primary rounded-xl p-6">
-                <h3 className="font-semibold text-foreground mb-3">Growth</h3>
-                <p className="text-sm text-muted-foreground mb-4">You need this if:</p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
+              <div className={`${styles.planMatchCard} ${styles.planMatchCardHighlighted}`}>
+                <h3 className={styles.planMatchName}>Growth</h3>
+                <p className={styles.planMatchSubtitle}>You need this if:</p>
+                <ul className={styles.planMatchList}>
+                  <li className={styles.planMatchItem}>
+                    <span className={styles.planMatchBullet}>•</span>
                     You know there are risks but not which ones matter most
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
+                  <li className={styles.planMatchItem}>
+                    <span className={styles.planMatchBullet}>•</span>
                     You want a step-by-step plan to increase value
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
+                  <li className={styles.planMatchItem}>
+                    <span className={styles.planMatchBullet}>•</span>
                     Exit is 2&ndash;5 years away and you want to be ready
                   </li>
                 </ul>
               </div>
 
-              <div className="bg-card border border-border rounded-xl p-6">
-                <h3 className="font-semibold text-foreground mb-3">Deal Room</h3>
-                <p className="text-sm text-muted-foreground mb-4">Built for founders who:</p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
+              <div className={styles.planMatchCard}>
+                <h3 className={styles.planMatchName}>Deal Room</h3>
+                <p className={styles.planMatchSubtitle}>Built for founders who:</p>
+                <ul className={styles.planMatchList}>
+                  <li className={styles.planMatchItem}>
+                    <span className={styles.planMatchBullet}>•</span>
                     Are actively talking to buyers or advisors
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
+                  <li className={styles.planMatchItem}>
+                    <span className={styles.planMatchBullet}>•</span>
                     Need a buyer-ready data room and deal tracking
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
+                  <li className={styles.planMatchItem}>
+                    <span className={styles.planMatchBullet}>•</span>
                     Want to run a professional exit process within 24 months
                   </li>
                 </ul>
@@ -502,12 +471,12 @@ export default function PricingPage() {
             </div>
           </AnimatedSection>
 
-          {/* FAQ Section — Operational questions */}
-          <AnimatedSection className="max-w-3xl mx-auto mb-20">
-            <h2 className="text-2xl font-bold text-foreground mb-8 text-center font-display">
+          {/* FAQ Section */}
+          <AnimatedSection className={styles.faqSection}>
+            <h2 className={styles.sectionTitle}>
               Questions? Answers.
             </h2>
-            <div className="border-t border-border">
+            <div className={styles.faqList}>
               <FAQItem
                 question="How long does the assessment take?"
                 answer="About 10 minutes. You'll answer questions about your business across six risk categories. You get your Buyer Readiness Index and a buyer-perspective diagnostic immediately."
@@ -540,21 +509,21 @@ export default function PricingPage() {
           </AnimatedSection>
 
           {/* Final CTA */}
-          <AnimatedSection className="text-center py-12 px-8 rounded-2xl bg-primary">
-            <h2 className="text-2xl md:text-3xl font-bold text-primary-foreground mb-4 font-display">
+          <AnimatedSection className={styles.finalCta}>
+            <h2 className={styles.finalCtaTitle}>
               Every Quarter You Wait Is Unmanaged Risk
             </h2>
-            <p className="text-primary-foreground/80 mb-8 max-w-xl mx-auto">
+            <p className={styles.finalCtaSubtitle}>
               Start with Foundation. It&apos;s free. See your score in 10 minutes.
               <br />
               Then decide if you want to fix what&apos;s costing you.
             </p>
             <Link href="/assess">
-              <Button variant="secondary" size="lg" className="text-base px-8 h-14 btn-hover">
+              <Button variant="secondary" size="lg" className="text-base px-8 h-14">
                 Get Your Buyer Readiness Index
               </Button>
             </Link>
-            <p className="text-sm text-primary-foreground/60 mt-4">
+            <p className={styles.finalCtaFootnote}>
               No credit card required &middot; Cancel anytime
             </p>
           </AnimatedSection>
@@ -562,59 +531,59 @@ export default function PricingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-border bg-muted/30">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
+      <footer className={styles.footer}>
+        <div className={styles.container}>
+          <div className={styles.footerGrid}>
             <div>
-              <div className="flex items-center gap-2 mb-4">
+              <div className={styles.footerBrand}>
                 <Image
                   src="/logo.webp"
                   alt="Exit OSx"
                   width={24}
                   height={24}
-                  className="h-6 w-6"
+                  className={styles.footerLogoImg}
                 />
                 <Image
                   src="/wordmark.svg"
                   alt="Exit OSx"
                   width={80}
                   height={22}
-                  className="h-5 w-auto"
+                  className={styles.footerWordmarkImg}
                 />
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className={styles.footerTagline}>
                 Stop guessing. Start building value.
               </p>
             </div>
 
             <div>
-              <h4 className="font-semibold text-foreground mb-4">Product</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/" className="text-muted-foreground hover:text-foreground">Home</Link></li>
-                <li><Link href="/pricing" className="text-muted-foreground hover:text-foreground">Pricing</Link></li>
+              <h4 className={styles.footerHeading}>Product</h4>
+              <ul className={styles.footerLinks}>
+                <li><Link href="/" className={styles.footerLink}>Home</Link></li>
+                <li><Link href="/pricing" className={styles.footerLink}>Pricing</Link></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold text-foreground mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/privacy" className="text-muted-foreground hover:text-foreground">Privacy Policy</Link></li>
-                <li><Link href="/terms" className="text-muted-foreground hover:text-foreground">Terms of Service</Link></li>
+              <h4 className={styles.footerHeading}>Legal</h4>
+              <ul className={styles.footerLinks}>
+                <li><Link href="/privacy" className={styles.footerLink}>Privacy Policy</Link></li>
+                <li><Link href="/terms" className={styles.footerLink}>Terms of Service</Link></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold text-foreground mb-4">Get Started</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/assess" className="text-muted-foreground hover:text-foreground">Get Your Free Score</Link></li>
-                <li><Link href="/login" className="text-muted-foreground hover:text-foreground">Sign In</Link></li>
-                <li><a href="mailto:support@exitosx.com" className="text-muted-foreground hover:text-foreground">Contact</a></li>
+              <h4 className={styles.footerHeading}>Get Started</h4>
+              <ul className={styles.footerLinks}>
+                <li><Link href="/assess" className={styles.footerLink}>Get Your Free Score</Link></li>
+                <li><Link href="/login" className={styles.footerLink}>Sign In</Link></li>
+                <li><a href="mailto:support@exitosx.com" className={styles.footerLink}>Contact</a></li>
               </ul>
             </div>
           </div>
 
-          <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground">
+          <div className={styles.footerBottom}>
+            <p className={styles.footerCopyright}>
               &copy; {new Date().getFullYear()} Exit OSx. All rights reserved.
             </p>
           </div>

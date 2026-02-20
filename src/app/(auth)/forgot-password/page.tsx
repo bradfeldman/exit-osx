@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Loader2, CheckCircle2, ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import styles from '@/components/auth/auth.module.css'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -43,19 +44,19 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className={styles.authPage}>
       {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
-        <div className="relative z-10 flex flex-col p-12 text-primary-foreground">
-          <a href="https://exitosx.com" className="flex items-center gap-3">
+      <div className={styles.authBrandPanel}>
+        <div className={styles.authBrandOverlay} />
+        <div className={styles.authBrandContent}>
+          <a href="https://exitosx.com" className={styles.authBrandLogo}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo-icon.png"
               alt="Exit OSx"
               width={40}
               height={40}
-              className="h-10 w-10"
+              className={styles.authBrandLogoIcon}
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -63,15 +64,15 @@ export default function ForgotPasswordPage() {
               alt="Exit OSx"
               width={120}
               height={34}
-              className="h-8 w-auto brightness-0 invert"
+              className={styles.authBrandLogoWordmark}
             />
           </a>
 
-          <div className="space-y-6 mt-auto mb-auto">
-            <h1 className="text-4xl font-bold font-display leading-tight tracking-tight">
+          <div className={styles.authBrandBody}>
+            <h1 className={styles.authBrandHeadline}>
               Build a Business<br />Buyers Want to Own
             </h1>
-            <p className="text-lg opacity-90 max-w-md">
+            <p className={styles.authBrandSubtitle}>
               Get your valuation estimate, Buyer Readiness Index, and a personalized roadmap to maximize your exit outcome.
             </p>
           </div>
@@ -79,18 +80,18 @@ export default function ForgotPasswordPage() {
       </div>
 
       {/* Right side - Form */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-background">
-        <div className="w-full max-w-md space-y-8">
+      <div className={styles.authFormPanel}>
+        <div className={styles.authFormInner}>
           {/* Mobile logo */}
-          <div className="lg:hidden text-center">
-            <Link href="/" className="inline-flex items-center gap-2">
+          <div className={styles.authMobileLogo}>
+            <Link href="/" className={styles.authMobileLogoLink}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/logo-icon.png"
                 alt="Exit OSx"
                 width={32}
                 height={32}
-                className="h-8 w-8"
+                className={styles.authMobileLogoIcon}
               />
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -98,30 +99,28 @@ export default function ForgotPasswordPage() {
                 alt="Exit OSx"
                 width={100}
                 height={28}
-                className="h-6 w-auto"
+                className={styles.authMobileLogoWordmark}
               />
             </Link>
           </div>
 
           {!success ? (
             <>
-              <div className="text-center">
-                <h2 className="text-3xl font-bold text-foreground">
-                  Reset your password
-                </h2>
-                <p className="mt-2 text-muted-foreground">
+              <div className={styles.authCardHeader}>
+                <h2 className={styles.authTitle}>Reset your password</h2>
+                <p className={styles.authSubtitle}>
                   Enter your email and we&apos;ll send you a link to reset your password
                 </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className={styles.authForm}>
                 {error && (
-                  <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
-                    {error}
+                  <div className={styles.authError}>
+                    <p className={styles.authErrorMain}>{error}</p>
                   </div>
                 )}
 
-                <div className="space-y-2">
+                <div className={styles.authField}>
                   <Label htmlFor="email">Email address</Label>
                   <Input
                     id="email"
@@ -152,21 +151,21 @@ export default function ForgotPasswordPage() {
               </form>
             </>
           ) : (
-            <div className="text-center space-y-6">
-              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-8 h-8 text-green-600" />
+            <div className={styles.authSuccess}>
+              <div className={`${styles.authSuccessIcon} ${styles.authSuccessIconGreen}`}>
+                <CheckCircle2 className="w-8 h-8" />
               </div>
-              <div>
-                <h2 className="text-2xl font-bold text-foreground">Check your email</h2>
-                <p className="mt-2 text-muted-foreground">
+              <div className={styles.authSuccessBody}>
+                <h2 className={styles.authSuccessTitle}>Check your email</h2>
+                <p className={styles.authSuccessText}>
                   We&apos;ve sent a password reset link to <strong>{email}</strong>
                 </p>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className={styles.authSuccessNote}>
                 Didn&apos;t receive the email? Check your spam folder or{' '}
                 <button
                   onClick={() => setSuccess(false)}
-                  className="text-primary hover:underline"
+                  className={styles.authLinkButton}
                 >
                   try again
                 </button>
@@ -174,10 +173,10 @@ export default function ForgotPasswordPage() {
             </div>
           )}
 
-          <div className="text-center">
+          <div className={styles.authFooter}>
             <Link
               href="/login"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
+              className={styles.authLinkInline}
             >
               <ArrowLeft className="w-4 h-4" />
               Back to sign in

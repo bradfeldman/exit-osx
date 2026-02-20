@@ -13,6 +13,7 @@ import { getRedirectUrl, buildUrlWithRedirect, isInviteRedirect } from '@/lib/ut
 import { type PlanTier } from '@/lib/pricing'
 import { analytics } from '@/lib/analytics'
 import { useFormTracking, useScrollDepthTracking, useExitIntent } from '@/lib/analytics/hooks'
+import styles from '@/components/auth/auth-signup.module.css'
 
 export default function SignupPage() {
   return (
@@ -24,7 +25,7 @@ export default function SignupPage() {
 
 function SignupPageLoading() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className={styles.signupLoading}>
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   )
@@ -165,18 +166,18 @@ function SignupPageContent() {
   // SUCCESS STATE - Show "check your email" message
   if (success) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className={styles.signupSuccessPage}>
         {/* Minimal Header */}
-        <header className="border-b border-border">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <a href="https://exitosx.com" className="inline-flex items-center gap-2">
+        <header className={styles.signupHeader}>
+          <div className={styles.signupHeaderInner}>
+            <a href="https://exitosx.com" className={styles.signupLogo}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/logo.webp"
                 alt="Exit OSx"
                 width={32}
                 height={32}
-                className="h-8 w-8"
+                className={styles.signupLogoImg}
               />
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -184,102 +185,102 @@ function SignupPageContent() {
                 alt="Exit OSx"
                 width={100}
                 height={28}
-                className="h-6 w-auto"
+                className={styles.signupWordmark}
               />
             </a>
           </div>
         </header>
 
-        <main className="flex items-center justify-center px-4 py-12 md:py-20">
-          <div className="w-full max-w-lg space-y-8">
+        <main className={styles.signupSuccessMain}>
+          <div className={styles.signupSuccessContent}>
             {/* Progress Indicator */}
-            <div className="flex items-center justify-center gap-2">
-              <div className="flex items-center gap-1">
-                <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-sm font-medium">
+            <div className={styles.signupSteps}>
+              <div className={styles.signupStep}>
+                <div className={`${styles.signupStepCircle} ${styles.signupStepCircleDone}`}>
                   <CheckIcon className="w-4 h-4" />
                 </div>
-                <span className="text-xs text-muted-foreground ml-1">Email</span>
+                <span className={`${styles.signupStepLabel} ${styles.signupStepLabelDone}`}>Email</span>
               </div>
-              <div className="w-8 h-0.5 bg-primary"></div>
-              <div className="flex items-center gap-1">
-                <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium animate-pulse">
+              <div className={`${styles.signupStepConnector} ${styles.signupStepConnectorDone}`} />
+              <div className={styles.signupStep}>
+                <div className={`${styles.signupStepCircle} ${styles.signupStepCircleActive}`}>
                   2
                 </div>
-                <span className="text-xs text-foreground font-medium ml-1">Verify</span>
+                <span className={`${styles.signupStepLabel} ${styles.signupStepLabelActive}`}>Verify</span>
               </div>
-              <div className="w-8 h-0.5 bg-border"></div>
-              <div className="flex items-center gap-1">
-                <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
+              <div className={`${styles.signupStepConnector} ${styles.signupStepConnectorInactive}`} />
+              <div className={styles.signupStep}>
+                <div className={`${styles.signupStepCircle} ${styles.signupStepCircleInactive}`}>
                   3
                 </div>
-                <span className="text-xs text-muted-foreground ml-1">Set Password</span>
+                <span className={`${styles.signupStepLabel} ${styles.signupStepLabelInactive}`}>Set Password</span>
               </div>
-              <div className="w-8 h-0.5 bg-border"></div>
-              <div className="flex items-center gap-1">
-                <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
+              <div className={`${styles.signupStepConnector} ${styles.signupStepConnectorInactive}`} />
+              <div className={styles.signupStep}>
+                <div className={`${styles.signupStepCircle} ${styles.signupStepCircleInactive}`}>
                   4
                 </div>
-                <span className="text-xs text-muted-foreground ml-1">See Score</span>
+                <span className={`${styles.signupStepLabel} ${styles.signupStepLabelInactive}`}>See Score</span>
               </div>
             </div>
 
             {/* Main Message */}
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+            <div className={styles.signupSuccessMessage}>
+              <div className={styles.signupSuccessIconWrap}>
                 <MailIcon className="w-8 h-8 text-primary" />
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-bold font-display text-foreground tracking-tight">
+              <h1 className={styles.signupSuccessTitle}>
                 {isFromTaskInvite
                   ? 'Almost There -- Check Your Email'
                   : 'Check Your Email to Continue'}
               </h1>
 
-              <p className="text-muted-foreground">
+              <p className={styles.signupSuccessIntro}>
                 We sent a verification link to
               </p>
-              <p className="text-lg font-semibold text-foreground">{email}</p>
-              <p className="text-foreground">
+              <p className={styles.signupSuccessEmail}>{email}</p>
+              <p className={styles.signupSuccessBody}>
                 Click the link in your email to set a password and start your exit readiness assessment.
               </p>
             </div>
 
             {/* Value Reinforcement */}
             {isFromTaskInvite ? (
-              <div className="bg-muted/50 rounded-xl p-6 space-y-3">
-                <p className="font-medium text-foreground text-sm">
+              <div className={styles.signupSuccessBox}>
+                <p className={styles.signupSuccessBoxTitle}>
                   After verifying your email, you will be able to:
                 </p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2">
+                <ul className={styles.signupSuccessBoxList}>
+                  <li className={styles.signupSuccessBoxItem}>
                     <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
                     <span>View your assigned task and details</span>
                   </li>
-                  <li className="flex items-start gap-2">
+                  <li className={styles.signupSuccessBoxItem}>
                     <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
                     <span>Track progress and upload evidence</span>
                   </li>
-                  <li className="flex items-start gap-2">
+                  <li className={styles.signupSuccessBoxItem}>
                     <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
                     <span>Collaborate with your team</span>
                   </li>
                 </ul>
               </div>
             ) : (
-              <div className="bg-muted/50 rounded-xl p-6 space-y-3">
-                <p className="font-medium text-foreground text-sm">
+              <div className={styles.signupSuccessBox}>
+                <p className={styles.signupSuccessBoxTitle}>
                   Founders who complete this step typically uncover:
                 </p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2">
+                <ul className={styles.signupSuccessBoxList}>
+                  <li className={styles.signupSuccessBoxItem}>
                     <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
                     <span>Hidden buyer risks</span>
                   </li>
-                  <li className="flex items-start gap-2">
+                  <li className={styles.signupSuccessBoxItem}>
                     <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
                     <span>Valuation blind spots</span>
                   </li>
-                  <li className="flex items-start gap-2">
+                  <li className={styles.signupSuccessBoxItem}>
                     <CheckIcon className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
                     <span>Clear opportunities to increase exit leverage</span>
                   </li>
@@ -288,7 +289,7 @@ function SignupPageContent() {
             )}
 
             {/* Primary CTA - Open email provider */}
-            <div className="space-y-4">
+            <div className={styles.signupSuccessActions}>
               {(() => {
                 const provider = getEmailProvider(email)
                 return provider.url ? (
@@ -296,6 +297,7 @@ function SignupPageContent() {
                     href={provider.url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    className={styles.signupSuccessEmailLink}
                   >
                     <Button className="w-full h-12 text-base font-medium">
                       <MailIcon className="w-5 h-5 mr-2" />
@@ -311,9 +313,9 @@ function SignupPageContent() {
               })()}
 
               {/* Secondary Action - Resend */}
-              <div className="text-center text-sm text-muted-foreground">
+              <div className={styles.signupResend}>
                 {resendStatus === 'sent' ? (
-                  <span className="inline-flex items-center gap-1.5 text-emerald-700 font-medium">
+                  <span className={styles.signupResendSuccess}>
                     <CheckIcon className="w-4 h-4" />
                     New email sent! Check your inbox.
                   </span>
@@ -322,7 +324,7 @@ function SignupPageContent() {
                     <span>Didn&apos;t receive it? </span>
                     <button
                       type="button"
-                      className="text-primary hover:underline font-medium disabled:opacity-50 inline-flex items-center gap-1"
+                      className={styles.signupResendButton}
                       disabled={resendStatus === 'sending'}
                       onClick={handleResendMagicLink}
                     >
@@ -338,21 +340,21 @@ function SignupPageContent() {
                   </>
                 )}
                 {resendStatus === 'error' && (
-                  <p className="text-destructive mt-1">Failed to resend. Please try again.</p>
+                  <p className={styles.signupResendError}>Failed to resend. Please try again.</p>
                 )}
               </div>
             </div>
 
             {isFromInvite && (
-              <div className="p-4 text-sm text-primary bg-primary/5 border border-primary/20 rounded-lg text-center">
-                <p className="font-medium">After verifying, you will be redirected to accept your team invite.</p>
+              <div className={styles.signupInviteBanner}>
+                <p className={styles.signupInviteBannerText}>After verifying, you will be redirected to accept your team invite.</p>
               </div>
             )}
 
             {/* Trust Footer */}
-            <div className="text-center space-y-1 pt-4 border-t border-border">
-              <p className="text-sm text-muted-foreground">No sales calls. No obligation.</p>
-              <p className="text-sm text-muted-foreground">Just clarity.</p>
+            <div className={styles.signupTrustFooter}>
+              <p className={styles.signupTrustFooterText}>No sales calls. No obligation.</p>
+              <p className={styles.signupTrustFooterText}>Just clarity.</p>
             </div>
           </div>
         </main>
@@ -362,18 +364,18 @@ function SignupPageContent() {
 
   // SIGNUP FORM - Email-only, magic link
   return (
-    <div className="min-h-screen bg-background">
+    <div className={styles.signupPage}>
       {/* Minimal Header */}
-      <header className="border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <a href="https://exitosx.com" className="inline-flex items-center gap-2">
+      <header className={styles.signupHeader}>
+        <div className={styles.signupHeaderInner}>
+          <a href="https://exitosx.com" className={styles.signupLogo}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo.webp"
               alt="Exit OSx"
               width={32}
               height={32}
-              className="h-8 w-8"
+              className={styles.signupLogoImg}
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -381,47 +383,47 @@ function SignupPageContent() {
               alt="Exit OSx"
               width={100}
               height={28}
-              className="h-6 w-auto"
+              className={styles.signupWordmark}
             />
           </a>
           <Link
             href={buildUrlWithRedirect('/login', redirectUrl)}
-            className="text-sm text-muted-foreground hover:text-foreground"
+            className={styles.signupHeaderLink}
           >
-            Already have an account? <span className="text-primary font-medium">Log in</span>
+            Already have an account? <span className={styles.signupHeaderLinkAccent}>Log in</span>
           </Link>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+      <main className={styles.signupMain}>
+        <div className={styles.signupGrid}>
           {/* Left Column - Value Proposition */}
-          <div className="space-y-8">
+          <div className={styles.signupValueProp}>
             {/* Headline */}
-            <div className="space-y-4">
+            <div className={styles.signupHeadline}>
               {isFromTaskInvite ? (
                 <>
-                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-display text-foreground tracking-tight leading-tight">
+                  <h1 className={styles.signupTitle}>
                     Create your account to get started on your assigned task
                   </h1>
-                  <p className="text-lg text-muted-foreground">
+                  <p className={styles.signupSubtitle}>
                     {teamName ? `You've been invited to join the ${teamName} team on Exit OSx.` : "You've been invited to collaborate on Exit OSx."}
                   </p>
-                  <p className="text-foreground">
+                  <p className={styles.signupBodyText}>
                     Enter your email to create a free account and view your assigned task.
                   </p>
                 </>
               ) : (
                 <>
-                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-display text-foreground tracking-tight leading-tight">
+                  <h1 className={styles.signupTitle}>
                     See How Buyers Would Price Your Business Today
                   </h1>
-                  <p className="text-lg text-muted-foreground">
+                  <p className={styles.signupSubtitle}>
                     Most founders don&apos;t lose money at exit because of revenue.
                     <br />
-                    They lose it because of <span className="text-foreground font-medium">hidden risk</span>.
+                    They lose it because of <strong>hidden risk</strong>.
                   </p>
-                  <p className="text-foreground">
+                  <p className={styles.signupBodyText}>
                     Exit OSx shows you where buyers will discount your company -- and what to do about it -- in minutes.
                   </p>
                 </>
@@ -429,84 +431,84 @@ function SignupPageContent() {
             </div>
 
             {/* Value Anchor - The money math */}
-            <div className="bg-primary/5 border border-primary/20 rounded-xl p-6">
-              <p className="text-lg text-foreground">
-                Even a <span className="font-semibold">0.3x multiple swing</span> on a $3M EBITDA business
+            <div className={styles.signupValueAnchor}>
+              <p className={styles.signupValueAnchorText}>
+                Even a <strong>0.3x multiple swing</strong> on a $3M EBITDA business
               </p>
-              <p className="text-2xl font-bold text-primary mt-1">= $900,000</p>
-              <p className="text-muted-foreground mt-2">This assessment costs $0.</p>
+              <p className={styles.signupValueAnchorAmount}>= $900,000</p>
+              <p className={styles.signupValueAnchorNote}>This assessment costs $0.</p>
             </div>
 
-            {/* What You'll See - Below fold on mobile, visible on desktop */}
-            <div className="hidden lg:block space-y-4">
-              <h2 className="font-semibold text-foreground">What You&apos;ll See After Signup</h2>
-              <p className="text-muted-foreground">Within minutes, you&apos;ll get:</p>
-              <ul className="space-y-2 text-muted-foreground">
-                <li className="flex items-start gap-2">
+            {/* What You'll See - Desktop only */}
+            <div className={styles.signupBenefitsDesktop}>
+              <h2 className={styles.signupBenefitsTitle}>What You&apos;ll See After Signup</h2>
+              <p className={styles.signupBenefitsIntro}>Within minutes, you&apos;ll get:</p>
+              <ul className={styles.signupBenefitsList}>
+                <li className={styles.signupBenefitsItem}>
                   <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
                   <span>Your Buyer Readiness Index</span>
                 </li>
-                <li className="flex items-start gap-2">
+                <li className={styles.signupBenefitsItem}>
                   <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
                   <span>A breakdown of buyer risk categories</span>
                 </li>
-                <li className="flex items-start gap-2">
+                <li className={styles.signupBenefitsItem}>
                   <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
                   <span>Where your valuation is most exposed</span>
                 </li>
-                <li className="flex items-start gap-2">
+                <li className={styles.signupBenefitsItem}>
                   <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
                   <span>What matters now vs later</span>
                 </li>
               </ul>
-              <p className="text-sm text-muted-foreground">
+              <p className={styles.signupBenefitsNote}>
                 No guessing. No jargon. No pressure to upgrade.
               </p>
             </div>
 
             {/* Objection Handling - Desktop only */}
-            <div className="hidden lg:block space-y-4 pt-4 border-t border-border">
-              <div className="space-y-3">
+            <div className={styles.signupObjectionsDesktop}>
+              <div className={styles.signupObjectionList}>
                 <div>
-                  <p className="font-medium text-foreground">&quot;I&apos;m not selling yet.&quot;</p>
-                  <p className="text-sm text-muted-foreground">Perfect. This is when leverage is built.</p>
+                  <p className={styles.signupObjectionQ}>&quot;I&apos;m not selling yet.&quot;</p>
+                  <p className={styles.signupObjectionA}>Perfect. This is when leverage is built.</p>
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">&quot;I already have an advisor.&quot;</p>
-                  <p className="text-sm text-muted-foreground">Great. This helps you focus them where it counts.</p>
+                  <p className={styles.signupObjectionQ}>&quot;I already have an advisor.&quot;</p>
+                  <p className={styles.signupObjectionA}>Great. This helps you focus them where it counts.</p>
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">&quot;I&apos;ll do this later.&quot;</p>
-                  <p className="text-sm text-muted-foreground">Later is when buyers decide for you.</p>
+                  <p className={styles.signupObjectionQ}>&quot;I&apos;ll do this later.&quot;</p>
+                  <p className={styles.signupObjectionA}>Later is when buyers decide for you.</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Right Column - Signup Form */}
-          <div className="lg:sticky lg:top-8">
-            <div className="bg-card border border-border rounded-2xl p-6 md:p-8 shadow-sm">
-              <div className="text-center mb-6">
-                <h2 className="text-xl font-semibold text-foreground">
+          <div className={styles.signupFormColumn}>
+            <div className={styles.signupCard}>
+              <div className={styles.signupCardHeader}>
+                <h2 className={styles.signupCardTitle}>
                   {isFromTaskInvite && teamName
                     ? `Create Account to Join ${teamName} Team`
                     : isFromInvite
                       ? 'Create Account to Join Team'
                       : 'Get Started Free'}
                 </h2>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className={styles.signupCardSubtitle}>
                   Enter your email and we&apos;ll send you a link to get started.
                 </p>
               </div>
 
-              <form onSubmit={handleSignup} className="space-y-4">
+              <form onSubmit={handleSignup} className={styles.signupForm}>
                 {error && (
-                  <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+                  <div className={styles.signupErrorAlert}>
                     {error}
                   </div>
                 )}
 
-                <div className="space-y-1.5">
+                <div className={styles.signupField}>
                   <Label htmlFor="email">Email Address</Label>
                   <Input
                     id="email"
@@ -523,7 +525,7 @@ function SignupPageContent() {
                     autoComplete="email"
                     autoFocus={!prefilledEmail}
                   />
-                  <p className="text-xs text-muted-foreground">We&apos;ll send a verification link to this address.</p>
+                  <p className={styles.signupFieldHint}>We&apos;ll send a verification link to this address.</p>
                 </div>
 
                 <Button
@@ -544,10 +546,10 @@ function SignupPageContent() {
                 </Button>
 
                 {/* OR divider + Google */}
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 h-px bg-border" />
-                  <span className="text-xs text-muted-foreground">OR</span>
-                  <div className="flex-1 h-px bg-border" />
+                <div className={styles.signupDivider}>
+                  <div className={styles.signupDividerLine} />
+                  <span className={styles.signupDividerText}>OR</span>
+                  <div className={styles.signupDividerLine} />
                 </div>
                 <Button
                   type="button"
@@ -565,49 +567,49 @@ function SignupPageContent() {
                 </Button>
 
                 {/* Trust Microcopy */}
-                <div className="space-y-2 pt-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className={styles.signupTrustList}>
+                  <div className={styles.signupTrustItem}>
                     <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
                     <span>Free plan. No credit card required.</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className={styles.signupTrustItem}>
                     <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
                     <span>No sales calls. Ever.</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className={styles.signupTrustItem}>
                     <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
                     <span>Your data is private and never shared.</span>
                   </div>
                 </div>
 
-                <p className="text-xs text-center text-muted-foreground pt-2">
+                <p className={styles.signupTerms}>
                   By creating an account, you agree to our{' '}
-                  <Link href="/terms" className="text-primary hover:underline">Terms</Link>
+                  <Link href="/terms" className={styles.signupTermsLink}>Terms</Link>
                   {' '}and{' '}
-                  <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+                  <Link href="/privacy" className={styles.signupTermsLink}>Privacy Policy</Link>
                 </p>
               </form>
             </div>
 
             {/* Social Proof */}
-            <div className="mt-6 space-y-4">
-              <div className="flex items-center justify-center gap-6 text-center">
-                <div>
-                  <p className="text-lg font-semibold text-foreground">500+</p>
-                  <p className="text-xs text-muted-foreground">Assessments run</p>
+            <div className={styles.signupSocialProof}>
+              <div className={styles.signupStats}>
+                <div className={styles.signupStat}>
+                  <p className={styles.signupStatValue}>500+</p>
+                  <p className={styles.signupStatLabel}>Assessments run</p>
                 </div>
-                <div className="h-8 w-px bg-border" />
-                <div>
-                  <p className="text-lg font-semibold text-foreground">$3.5M</p>
-                  <p className="text-xs text-muted-foreground">Avg. value gap found</p>
+                <div className={styles.signupStatDivider} />
+                <div className={styles.signupStat}>
+                  <p className={styles.signupStatValue}>$3.5M</p>
+                  <p className={styles.signupStatLabel}>Avg. value gap found</p>
                 </div>
-                <div className="h-8 w-px bg-border" />
-                <div>
-                  <p className="text-lg font-semibold text-foreground">2 min</p>
-                  <p className="text-xs text-muted-foreground">To first insight</p>
+                <div className={styles.signupStatDivider} />
+                <div className={styles.signupStat}>
+                  <p className={styles.signupStatValue}>2 min</p>
+                  <p className={styles.signupStatLabel}>To first insight</p>
                 </div>
               </div>
-              <p className="text-center text-xs text-muted-foreground">
+              <p className={styles.signupSocialProofNote}>
                 Built for $1M-$100M businesses using real buyer diligence logic
               </p>
             </div>
@@ -615,53 +617,53 @@ function SignupPageContent() {
         </div>
 
         {/* Mobile: What You'll See section */}
-        <div className="lg:hidden mt-12 space-y-6">
-          <h2 className="font-semibold text-foreground text-lg">What You&apos;ll See After Signup</h2>
-          <p className="text-muted-foreground">Within minutes, you&apos;ll get:</p>
-          <ul className="space-y-3 text-muted-foreground">
-            <li className="flex items-start gap-3">
+        <div className={styles.signupBenefitsMobile}>
+          <h2 className={styles.signupBenefitsTitle} style={{ fontSize: '18px' }}>What You&apos;ll See After Signup</h2>
+          <p className={styles.signupBenefitsIntro}>Within minutes, you&apos;ll get:</p>
+          <ul className={styles.signupBenefitsList}>
+            <li className={styles.signupBenefitsItem} style={{ gap: '12px' }}>
               <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
               <span>Your Buyer Readiness Index</span>
             </li>
-            <li className="flex items-start gap-3">
+            <li className={styles.signupBenefitsItem} style={{ gap: '12px' }}>
               <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
               <span>A breakdown of buyer risk categories</span>
             </li>
-            <li className="flex items-start gap-3">
+            <li className={styles.signupBenefitsItem} style={{ gap: '12px' }}>
               <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
               <span>Where your valuation is most exposed</span>
             </li>
-            <li className="flex items-start gap-3">
+            <li className={styles.signupBenefitsItem} style={{ gap: '12px' }}>
               <CheckIcon className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
               <span>What matters now vs later</span>
             </li>
           </ul>
 
           {/* Mobile Objection Handling */}
-          <div className="space-y-4 pt-6 border-t border-border">
+          <div className={styles.signupObjectionsMobile}>
             <div>
-              <p className="font-medium text-foreground">&quot;I&apos;m not selling yet.&quot;</p>
-              <p className="text-sm text-muted-foreground">Perfect. This is when leverage is built.</p>
+              <p className={styles.signupObjectionQ}>&quot;I&apos;m not selling yet.&quot;</p>
+              <p className={styles.signupObjectionA}>Perfect. This is when leverage is built.</p>
             </div>
             <div>
-              <p className="font-medium text-foreground">&quot;I already have an advisor.&quot;</p>
-              <p className="text-sm text-muted-foreground">Great. This helps you focus them where it counts.</p>
+              <p className={styles.signupObjectionQ}>&quot;I already have an advisor.&quot;</p>
+              <p className={styles.signupObjectionA}>Great. This helps you focus them where it counts.</p>
             </div>
             <div>
-              <p className="font-medium text-foreground">&quot;I&apos;ll do this later.&quot;</p>
-              <p className="text-sm text-muted-foreground">Later is when buyers decide for you.</p>
+              <p className={styles.signupObjectionQ}>&quot;I&apos;ll do this later.&quot;</p>
+              <p className={styles.signupObjectionA}>Later is when buyers decide for you.</p>
             </div>
           </div>
         </div>
       </main>
 
       {/* Footer Microcopy */}
-      <footer className="border-t border-border py-6">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-sm text-muted-foreground">
+      <footer className={styles.signupFooter}>
+        <div className={styles.signupFooterInner}>
+          <p className={styles.signupFooterText}>
             Exit OSx is an operating system for exit readiness, not a sales funnel.
           </p>
-          <p className="text-sm text-muted-foreground">
+          <p className={styles.signupFooterText}>
             Start free. Upgrade only when it makes sense.
           </p>
         </div>

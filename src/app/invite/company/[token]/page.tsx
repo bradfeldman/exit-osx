@@ -6,7 +6,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import {
   Loader2,
   CheckCircle2,
@@ -18,6 +17,7 @@ import {
   Crown
 } from 'lucide-react'
 import { buildUrlWithRedirect } from '@/lib/utils/redirect'
+import styles from '@/components/invite/invite.module.css'
 
 interface InviteDetails {
   id: string
@@ -144,13 +144,13 @@ export default function CompanyInviteAcceptPage() {
     // Loading state
     if (inviteStatus === 'loading' || userState === 'checking') {
       return (
-        <div className="w-full max-w-md text-center space-y-6">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        <div className={styles.loadingStateAlt}>
+          <div className={styles.iconCirclePrimary}>
+            <Loader2 style={{ width: 32, height: 32, color: 'var(--accent)', animation: 'spin 1s linear infinite' }} />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-foreground">Loading invitation...</h2>
-            <p className="mt-2 text-muted-foreground">Please wait while we verify your invitation</p>
+            <h2 className={styles.stateTitle}>Loading invitation...</h2>
+            <p className={styles.stateSubtitle}>Please wait while we verify your invitation</p>
           </div>
         </div>
       )
@@ -159,26 +159,27 @@ export default function CompanyInviteAcceptPage() {
     // Invalid or not found
     if (inviteStatus === 'invalid') {
       return (
-        <div className="w-full max-w-md text-center space-y-6">
-          <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto">
-            <XCircle className="w-8 h-8 text-red-600" />
+        <div className={styles.loadingStateAlt}>
+          <div className={styles.iconCircleRed}>
+            <XCircle style={{ width: 32, height: 32, color: '#dc2626' }} />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-foreground">Invitation Not Found</h2>
-            <p className="mt-2 text-muted-foreground">
+            <h2 className={styles.stateTitle}>Invitation Not Found</h2>
+            <p className={styles.stateSubtitle}>
               {error || 'This invitation may have expired or already been used.'}
             </p>
           </div>
-          <Card>
-            <CardContent className="pt-6 space-y-3">
-              <p className="text-sm text-muted-foreground">
+          <div className={styles.companyCard}>
+            <div className={styles.invalidCardBody}>
+              <p className={styles.invalidHelpText}>
                 If you just received this link, please ask the sender to create a new invitation.
               </p>
-              <p className="text-sm text-muted-foreground">
-                Already have an account? <Link href="/login" className="text-primary hover:underline">Sign in</Link>
+              <p className={styles.invalidSignInText}>
+                Already have an account?{' '}
+                <Link href="/login" className={styles.invalidSignInLink}>Sign in</Link>
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       )
     }
@@ -192,46 +193,42 @@ export default function CompanyInviteAcceptPage() {
       // Logged in with correct email
       if (userState === 'logged_in_correct') {
         return (
-          <div className="w-full max-w-md space-y-6">
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+          <div className={styles.companyStateWrap}>
+            <div className={styles.companyStateCenter}>
+              <div className={styles.iconCircleGreen}>
                 {invite.inviteType === 'GUEST_OWNER' ? (
-                  <Crown className="w-8 h-8 text-green-600" />
+                  <Crown style={{ width: 32, height: 32, color: '#16a34a' }} />
                 ) : (
-                  <UserPlus className="w-8 h-8 text-green-600" />
+                  <UserPlus style={{ width: 32, height: 32, color: '#16a34a' }} />
                 )}
               </div>
-              <h2 className="text-2xl font-bold text-foreground">You&apos;re Invited!</h2>
-              <p className="mt-2 text-muted-foreground">
+              <h2 className={styles.stateTitle} style={{ marginTop: 16 }}>You&apos;re Invited!</h2>
+              <p className={styles.stateSubtitle}>
                 Join <strong>{invite.company.name}</strong> on Exit OSx
               </p>
             </div>
 
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                <div className="flex items-center gap-3 pb-4 border-b">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-primary" />
+            <div className={styles.companyCard}>
+              <div className={styles.companyCardBody}>
+                <div className={styles.companyRow}>
+                  <div className={styles.companyIconWrap}>
+                    <Building2 style={{ width: 20, height: 20, color: 'var(--accent)' }} />
                   </div>
                   <div>
-                    <p className="font-medium">{invite.company.name}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className={styles.companyName}>{invite.company.name}</p>
+                    <p className={styles.companyInviter}>
                       Invited by {invite.inviter.name || invite.inviter.email}
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Your role</span>
-                    <span className="font-medium">{roleDisplay}</span>
-                  </div>
+                <div className={styles.metaRow}>
+                  <span className={styles.metaLabel}>Your role</span>
+                  <span className={styles.metaValue}>{roleDisplay}</span>
                 </div>
 
                 {error && (
-                  <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
-                    {error}
-                  </div>
+                  <div className={styles.alertError}>{error}</div>
                 )}
 
                 <Button
@@ -251,8 +248,8 @@ export default function CompanyInviteAcceptPage() {
                     </>
                   )}
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         )
       }
@@ -260,40 +257,40 @@ export default function CompanyInviteAcceptPage() {
       // Logged in with wrong email
       if (userState === 'logged_in_wrong') {
         return (
-          <div className="w-full max-w-md space-y-6">
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
-                <AlertTriangle className="w-8 h-8 text-amber-600" />
+          <div className={styles.companyStateWrap}>
+            <div className={styles.companyStateCenter}>
+              <div className={styles.iconCircleAmber}>
+                <AlertTriangle style={{ width: 32, height: 32, color: '#d97706' }} />
               </div>
-              <h2 className="text-2xl font-bold text-foreground">Wrong Account</h2>
-              <p className="mt-2 text-muted-foreground">
+              <h2 className={styles.stateTitle} style={{ marginTop: 16 }}>Wrong Account</h2>
+              <p className={styles.stateSubtitle}>
                 You&apos;re signed in with a different email
               </p>
             </div>
 
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                <div className="space-y-3 text-sm">
-                  <div className="p-3 bg-muted rounded-lg">
-                    <p className="text-muted-foreground">This invite was sent to:</p>
-                    <p className="font-medium mt-1">{emailHint}</p>
+            <div className={styles.companyCard}>
+              <div className={styles.companyCardBody}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div className={styles.infoBox}>
+                    <p className={styles.infoBoxLabel}>This invite was sent to:</p>
+                    <p className={styles.infoBoxValue}>{emailHint}</p>
                   </div>
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                    <p className="text-amber-800">You&apos;re currently signed in as:</p>
-                    <p className="font-medium mt-1 text-amber-900">{userEmail}</p>
+                  <div className={styles.warningBox}>
+                    <p className={styles.warningBoxLabel}>You&apos;re currently signed in as:</p>
+                    <p className={styles.warningBoxValue}>{userEmail}</p>
                   </div>
                 </div>
 
-                <div className="border-t pt-4 space-y-3">
-                  <p className="text-sm text-muted-foreground text-center">
+                <div className={styles.switchPrompt}>
+                  <p className={styles.switchPromptText}>
                     To accept this invitation, sign in with the correct email address.
                   </p>
                   <Button onClick={handleSwitchAccount} className="w-full h-12">
                     Switch Account
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         )
       }
@@ -301,31 +298,31 @@ export default function CompanyInviteAcceptPage() {
       // Not logged in
       if (userState === 'not_logged_in') {
         return (
-          <div className="w-full max-w-md space-y-6">
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-primary" />
+          <div className={styles.companyStateWrap}>
+            <div className={styles.companyStateCenter}>
+              <div className={styles.iconCirclePrimary}>
+                <Users style={{ width: 32, height: 32, color: 'var(--accent)' }} />
               </div>
-              <h2 className="text-2xl font-bold text-foreground">You&apos;re Invited!</h2>
-              <p className="mt-2 text-muted-foreground">
+              <h2 className={styles.stateTitle} style={{ marginTop: 16 }}>You&apos;re Invited!</h2>
+              <p className={styles.stateSubtitle}>
                 {invite.inviter.name || invite.inviter.email} invited you to join <strong>{invite.company.name}</strong>
               </p>
             </div>
 
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                <div className="flex items-center gap-3 pb-4 border-b">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-primary" />
+            <div className={styles.companyCard}>
+              <div className={styles.companyCardBody}>
+                <div className={styles.companyRow}>
+                  <div className={styles.companyIconWrap}>
+                    <Building2 style={{ width: 20, height: 20, color: 'var(--accent)' }} />
                   </div>
                   <div>
-                    <p className="font-medium">{invite.company.name}</p>
-                    <p className="text-sm text-muted-foreground">Role: {roleDisplay}</p>
+                    <p className={styles.companyName}>{invite.company.name}</p>
+                    <p className={styles.companyInviter}>Role: {roleDisplay}</p>
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground text-center">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <p className={styles.helperText}>
                     Sign in or create an account to accept this invitation
                   </p>
 
@@ -334,16 +331,17 @@ export default function CompanyInviteAcceptPage() {
                     Sign In to Accept
                   </Button>
 
-                  <p className="text-xs text-muted-foreground text-center">
-                    Don&apos;t have an account? <button onClick={handleSignup} className="text-primary hover:underline">Create one</button>
+                  <p className={styles.helperText}>
+                    Don&apos;t have an account?{' '}
+                    <button onClick={handleSignup} className={styles.helperLink}>Create one</button>
                   </p>
                 </div>
 
-                <p className="text-xs text-muted-foreground text-center pt-2">
+                <p className={styles.helperText} style={{ paddingTop: 8 }}>
                   This invitation was sent to <strong>{emailHint}</strong>
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         )
       }
@@ -353,79 +351,75 @@ export default function CompanyInviteAcceptPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className={styles.splitPage}>
       {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
-        <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground">
-          <Link href="/" className="flex items-center gap-3">
+      <div className={styles.brandPanel}>
+        <div className={styles.brandPanelGradient} />
+        <div className={styles.brandPanelContent}>
+          <Link href="/" className={styles.brandLogo}>
             <Image
               src="/logo.webp"
               alt="Exit OSx"
               width={40}
               height={40}
-              className="h-10 w-10"
             />
             <Image
               src="/wordmark.svg"
               alt="Exit OSx"
               width={120}
               height={34}
-              className="h-8 w-auto brightness-0 invert"
+              style={{ filter: 'brightness(0) invert(1)' }}
             />
           </Link>
 
-          <div className="space-y-6">
-            <h1 className="text-4xl font-bold leading-tight">
+          <div className={styles.brandBody}>
+            <h1 className={styles.brandTitle}>
               You&apos;ve Been Invited<br />to Join a Company
             </h1>
-            <p className="text-lg opacity-90 max-w-md">
+            <p className={styles.brandSubtitle}>
               Exit OSx helps businesses prepare for successful exits with real-time valuations,
               buyer readiness scores, and actionable playbooks.
             </p>
-            <div className="space-y-4 pt-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                  <CheckIcon className="w-4 h-4" />
+            <div className={styles.brandFeatureList}>
+              <div className={styles.brandFeature}>
+                <div className={styles.brandFeatureIcon}>
+                  <CheckIcon style={{ width: 16, height: 16 }} />
                 </div>
                 <span>Access company valuations and analytics</span>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                  <CheckIcon className="w-4 h-4" />
+              <div className={styles.brandFeature}>
+                <div className={styles.brandFeatureIcon}>
+                  <CheckIcon style={{ width: 16, height: 16 }} />
                 </div>
                 <span>Collaborate with the exit team</span>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                  <CheckIcon className="w-4 h-4" />
+              <div className={styles.brandFeature}>
+                <div className={styles.brandFeatureIcon}>
+                  <CheckIcon style={{ width: 16, height: 16 }} />
                 </div>
                 <span>Track progress on exit preparation</span>
               </div>
             </div>
           </div>
-
         </div>
       </div>
 
       {/* Right side - Invite Content */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-background">
+      <div className={styles.contentPanel}>
         {/* Mobile logo */}
-        <div className="lg:hidden absolute top-6 left-6">
-          <Link href="/" className="flex items-center gap-2">
+        <div className={styles.mobileLogo}>
+          <Link href="/" className={styles.mobileLogoLink}>
             <Image
               src="/logo.webp"
               alt="Exit OSx"
               width={32}
               height={32}
-              className="h-8 w-8"
             />
             <Image
               src="/wordmark.svg"
               alt="Exit OSx"
               width={100}
               height={28}
-              className="h-6 w-auto"
             />
           </Link>
         </div>
@@ -436,9 +430,9 @@ export default function CompanyInviteAcceptPage() {
   )
 }
 
-function CheckIcon({ className }: { className?: string }) {
+function CheckIcon({ style }: { style?: React.CSSProperties }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+    <svg style={style} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
     </svg>
   )

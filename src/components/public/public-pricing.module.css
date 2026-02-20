@@ -1,0 +1,853 @@
+/* Public Pricing Page — Exit OSx */
+
+/* ===== PAGE WRAPPER ===== */
+.page {
+  min-height: 100vh;
+  background: var(--background);
+}
+
+/* ===== HEADER ===== */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--background) 95%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+
+.headerInner {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .headerInner {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .headerInner {
+    padding: 0 2rem;
+  }
+}
+
+.headerRow {
+  padding: 1rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logoLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.logoImg {
+  height: 2rem;
+  width: 2rem;
+}
+
+.wordmarkImg {
+  height: 1.5rem;
+  width: auto;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* ===== MAIN ===== */
+.main {
+  padding: 4rem 0;
+}
+
+@media (min-width: 768px) {
+  .main {
+    padding: 5rem 0;
+  }
+}
+
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 0 2rem;
+  }
+}
+
+/* ===== HERO HEADER ===== */
+.heroHeader {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.eyebrow {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.heroTitle {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+}
+
+@media (min-width: 768px) {
+  .heroTitle {
+    font-size: 3rem;
+  }
+}
+
+.heroSubtitle {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  max-width: 42rem;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ===== DO THE MATH ===== */
+.mathSection {
+  max-width: 48rem;
+  margin: 0 auto 3.5rem;
+  text-align: center;
+}
+
+.mathCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  padding: 2rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.mathTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.3px;
+}
+
+@media (min-width: 768px) {
+  .mathTitle {
+    font-size: 1.875rem;
+  }
+}
+
+.mathBody {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.mathEmphasis {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.mathLoss {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--destructive);
+  margin-bottom: 1.5rem;
+}
+
+.mathCost {
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.mathFootnote {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+}
+
+/* ===== BILLING TOGGLE ===== */
+.billingToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.billingLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.15s;
+}
+
+.billingLabelActive {
+  color: var(--text-primary);
+}
+
+.billingLabelInactive {
+  color: var(--text-secondary);
+}
+
+.toggleTrack {
+  position: relative;
+  display: inline-flex;
+  height: 1.75rem;
+  width: 3rem;
+  align-items: center;
+  border-radius: 9999px;
+  transition: background-color 0.2s;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.toggleTrackActive {
+  background: var(--primary);
+}
+
+.toggleTrackInactive {
+  background: var(--muted);
+}
+
+.toggleThumb {
+  display: inline-block;
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: 9999px;
+  background: white;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s;
+}
+
+.toggleThumbActive {
+  transform: translateX(1.5rem);
+}
+
+.toggleThumbInactive {
+  transform: translateX(0.25rem);
+}
+
+.saveBadge {
+  margin-left: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  background: #DCFCE7;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #15803D;
+}
+
+/* ===== PRICING CARDS GRID ===== */
+.plansGrid {
+  display: grid;
+  gap: 2rem;
+  max-width: 60rem;
+  margin: 0 auto 2rem;
+}
+
+@media (min-width: 768px) {
+  .plansGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.planCard {
+  position: relative;
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--border);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--surface);
+  transition: box-shadow 0.15s;
+}
+
+.planCard:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.planCardHighlighted {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+  box-shadow: var(--shadow-xl);
+}
+
+@media (min-width: 768px) {
+  .planCardHighlighted {
+    transform: scale(1.05);
+    z-index: 10;
+  }
+}
+
+.popularBadge {
+  position: absolute;
+  top: -1rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.popularBadgeInner {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  background: var(--primary);
+  padding: 0.375rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+}
+
+.planHeader {
+  margin-bottom: 1.5rem;
+}
+
+.planName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.planDescription {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.planPricing {
+  margin-bottom: 2rem;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.priceAmount {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.pricePer {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.priceAnnualNote {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+}
+
+.priceFreeNote {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+}
+
+.planCtaLink {
+  display: block;
+  margin-bottom: 2rem;
+  text-decoration: none;
+}
+
+.featureList {
+  flex: 1;
+}
+
+.featureListLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.featureItems {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.featureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.featureIcon {
+  height: 1.25rem;
+  width: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.featureIconCheck {
+  color: var(--green);
+}
+
+.featureIconX {
+  color: color-mix(in srgb, var(--text-secondary) 30%, transparent);
+}
+
+.featureName {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+.featureNameExcluded {
+  font-size: 0.875rem;
+  color: color-mix(in srgb, var(--text-secondary) 50%, transparent);
+}
+
+.featureLimit {
+  color: var(--text-secondary);
+}
+
+/* ===== TRUST INDICATORS ===== */
+.trustRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem 0;
+}
+
+.trustItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.trustItemPrimary {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.trustIcon {
+  height: 1.25rem;
+  width: 1.25rem;
+  color: var(--green);
+}
+
+/* ===== 90-DAY GUARANTEE ===== */
+.guaranteeSection {
+  max-width: 42rem;
+  margin: 0 auto 5rem;
+}
+
+.guaranteeCard {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: var(--radius-2xl);
+  padding: 2rem;
+  text-align: center;
+}
+
+.guaranteeIcon {
+  height: 2.5rem;
+  width: 2.5rem;
+  color: var(--green);
+  margin: 0 auto 1rem;
+}
+
+.guaranteeTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.2px;
+}
+
+.guaranteeBody {
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.guaranteeFootnote {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+  margin-top: 1rem;
+}
+
+/* ===== FEATURE COMPARISON TABLE ===== */
+.comparisonSection {
+  margin-bottom: 5rem;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2rem;
+  text-align: center;
+  letter-spacing: -0.3px;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.comparisonTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.comparisonTable thead tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.comparisonTable thead th {
+  padding: 1rem;
+}
+
+.comparisonTable thead th:first-child {
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.comparisonTable thead th:not(:first-child) {
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.thHighlighted {
+  color: var(--primary) !important;
+  background: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+.comparisonRowEven {
+  background: color-mix(in srgb, var(--muted) 30%, transparent);
+}
+
+.comparisonRowOdd {
+  background: transparent;
+}
+
+.comparisonTable td {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+}
+
+.comparisonTable td:first-child {
+  color: var(--text-primary);
+}
+
+.comparisonTable td:not(:first-child) {
+  text-align: center;
+}
+
+.tdHighlighted {
+  background: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+.tableCheck {
+  height: 1.25rem;
+  width: 1.25rem;
+  color: var(--green);
+  margin: 0 auto;
+}
+
+.tableX {
+  height: 1.25rem;
+  width: 1.25rem;
+  color: color-mix(in srgb, var(--text-secondary) 30%, transparent);
+  margin: 0 auto;
+}
+
+.tableLimit {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+/* ===== WHICH PLAN IS RIGHT ===== */
+.planMatchSection {
+  max-width: 56rem;
+  margin: 0 auto 5rem;
+}
+
+.planMatchGrid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .planMatchGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.planMatchCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+}
+
+.planMatchCardHighlighted {
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+  border-color: var(--primary);
+}
+
+.planMatchName {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+}
+
+.planMatchSubtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.planMatchList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.planMatchItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.planMatchBullet {
+  color: var(--primary);
+  font-size: 1rem;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+/* ===== FAQ ===== */
+.faqSection {
+  max-width: 48rem;
+  margin: 0 auto 5rem;
+}
+
+.faqList {
+  border-top: 1px solid var(--border);
+}
+
+.faqItem {
+  border-bottom: 1px solid var(--border);
+}
+
+.faqButton {
+  width: 100%;
+  padding: 1.25rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.faqQuestion {
+  font-weight: 500;
+  color: var(--text-primary);
+  padding-right: 1rem;
+  font-size: 0.9375rem;
+}
+
+.faqChevron {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--text-secondary);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.faqChevronOpen {
+  transform: rotate(180deg);
+}
+
+.faqAnswer {
+  padding-bottom: 1.25rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  font-size: 0.9375rem;
+}
+
+/* ===== FINAL CTA ===== */
+.finalCta {
+  text-align: center;
+  padding: 3rem 2rem;
+  border-radius: var(--radius-2xl);
+  background: var(--primary);
+}
+
+.finalCtaTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 1rem;
+  letter-spacing: -0.3px;
+}
+
+@media (min-width: 768px) {
+  .finalCtaTitle {
+    font-size: 1.875rem;
+  }
+}
+
+.finalCtaSubtitle {
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 2rem;
+  max-width: 36rem;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.finalCtaFootnote {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 1rem;
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  padding: 3rem 0;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--muted) 30%, transparent);
+}
+
+.footerGrid {
+  display: grid;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+  .footerGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.footerBrand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.footerLogoImg {
+  height: 1.5rem;
+  width: 1.5rem;
+}
+
+.footerWordmarkImg {
+  height: 1.25rem;
+  width: auto;
+}
+
+.footerTagline {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.footerHeading {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  font-size: 0.9375rem;
+}
+
+.footerLinks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.footerLink {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.footerLink:hover {
+  color: var(--text-primary);
+}
+
+.footerBottom {
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .footerBottom {
+    flex-direction: row;
+  }
+}
+
+.footerCopyright {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* ===== DARK MODE ===== */
+@media (prefers-color-scheme: dark) {
+  .guaranteeCard {
+    background: color-mix(in srgb, var(--green) 10%, var(--surface));
+    border-color: color-mix(in srgb, var(--green) 30%, transparent);
+  }
+}

@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { CheckCircle, XCircle, Users } from 'lucide-react'
+import styles from '@/components/partner/partner.module.css'
 
 interface InviteData {
   companyName: string
@@ -62,65 +62,63 @@ export default function PartnerInvitePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className={styles.loading}>
+        <div className={styles.spinner} />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <Card className="max-w-md w-full">
-        <CardContent className="pt-8 pb-6 text-center">
-          {error ? (
-            <>
-              <XCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-              <h1 className="text-xl font-semibold mb-2">Invitation Not Found</h1>
-              <p className="text-sm text-muted-foreground">{error}</p>
-            </>
-          ) : accepted ? (
-            <>
-              <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-4" />
-              <h1 className="text-xl font-semibold mb-2">You&apos;re In</h1>
-              <p className="text-sm text-muted-foreground">
-                You&apos;re now the accountability partner for <strong>{invite?.companyName}</strong>.
-                You&apos;ll receive monthly progress summaries via email.
-              </p>
-            </>
-          ) : (
-            <>
-              <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Users className="h-7 w-7 text-primary" />
-              </div>
-              <h1 className="text-xl font-semibold mb-2">Accountability Partner</h1>
-              <p className="text-sm text-muted-foreground mb-6">
-                <strong>{invite?.inviterName}</strong> wants you as their accountability partner
-                for <strong>{invite?.companyName}</strong>.
-              </p>
-              <p className="text-xs text-muted-foreground mb-6">
-                You&apos;ll receive monthly progress summaries (no sensitive financial data) and can
-                send nudge reminders.
-              </p>
-              <div className="mb-4">
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Your name (optional)"
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                />
-              </div>
-              <Button
-                onClick={handleAccept}
-                disabled={submitting}
-                className="w-full"
-              >
-                {submitting ? 'Accepting...' : 'Accept Invitation'}
-              </Button>
-            </>
-          )}
-        </CardContent>
-      </Card>
+    <div className={styles.pageCentered}>
+      <div className={styles.cardCentered}>
+        {error ? (
+          <>
+            <XCircle className={`${styles.statusIcon} ${styles.statusIconError}`} size={48} />
+            <h1 className={styles.cardTitle}>Invitation Not Found</h1>
+            <p className={styles.cardBody}>{error}</p>
+          </>
+        ) : accepted ? (
+          <>
+            <CheckCircle className={`${styles.statusIcon} ${styles.statusIconSuccess}`} size={48} />
+            <h1 className={styles.cardTitle}>You&apos;re In</h1>
+            <p className={styles.cardBody}>
+              You&apos;re now the accountability partner for <strong>{invite?.companyName}</strong>.
+              You&apos;ll receive monthly progress summaries via email.
+            </p>
+          </>
+        ) : (
+          <>
+            <div className={styles.iconAvatar}>
+              <Users size={28} color="var(--accent)" />
+            </div>
+            <h1 className={styles.cardTitle}>Accountability Partner</h1>
+            <p className={styles.cardBody}>
+              <strong>{invite?.inviterName}</strong> wants you as their accountability partner
+              for <strong>{invite?.companyName}</strong>.
+            </p>
+            <p className={styles.cardBodySmall}>
+              You&apos;ll receive monthly progress summaries (no sensitive financial data) and can
+              send nudge reminders.
+            </p>
+            <div className={styles.nameInputWrap}>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name (optional)"
+                className={styles.nameInput}
+              />
+            </div>
+            <Button
+              onClick={handleAccept}
+              disabled={submitting}
+              className="w-full"
+            >
+              {submitting ? 'Accepting...' : 'Accept Invitation'}
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   )
 }

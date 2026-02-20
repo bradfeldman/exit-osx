@@ -20,6 +20,25 @@ import { completeAuthCallback } from '@/app/actions/auth'
  * 2. Implicit flow: Supabase sends #access_token=...&refresh_token=... → setSession()
  */
 
+const screenStyle: React.CSSProperties = {
+  display: 'flex',
+  minHeight: '100vh',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: 'var(--background)',
+  padding: '0 16px',
+}
+
+const innerStyle: React.CSSProperties = {
+  width: '100%',
+  maxWidth: '448px',
+  textAlign: 'center',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '16px',
+}
+
 function CallbackContent() {
   const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
@@ -90,10 +109,15 @@ function CallbackContent() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <div className="w-full max-w-md space-y-4 text-center">
-          <p className="text-destructive font-medium">Authentication failed. Please try again.</p>
-          <Link href="/login" className="text-sm text-primary hover:underline">
+      <div style={screenStyle}>
+        <div style={innerStyle}>
+          <p style={{ fontWeight: 500, color: 'var(--destructive)' }}>
+            Authentication failed. Please try again.
+          </p>
+          <Link
+            href="/login"
+            style={{ fontSize: '14px', color: 'var(--primary)', textDecoration: 'none' }}
+          >
             Go to login
           </Link>
         </div>
@@ -102,10 +126,12 @@ function CallbackContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center space-y-4">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-        <p className="text-muted-foreground">Completing sign in...</p>
+    <div style={screenStyle}>
+      <div style={innerStyle}>
+        <Loader2 style={{ width: 32, height: 32, color: 'var(--primary)', animation: 'spin 1s linear infinite' }} />
+        <p style={{ fontSize: '14px', color: 'var(--muted-foreground)', margin: 0 }}>
+          Completing sign in...
+        </p>
       </div>
     </div>
   )
@@ -115,10 +141,12 @@ export default function CallbackPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-background">
-          <div className="text-center space-y-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-            <p className="text-muted-foreground">Loading...</p>
+        <div style={screenStyle}>
+          <div style={innerStyle}>
+            <Loader2 style={{ width: 32, height: 32, color: 'var(--primary)', animation: 'spin 1s linear infinite' }} />
+            <p style={{ fontSize: '14px', color: 'var(--muted-foreground)', margin: 0 }}>
+              Loading...
+            </p>
           </div>
         </div>
       }

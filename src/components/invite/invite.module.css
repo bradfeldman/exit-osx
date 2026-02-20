@@ -1,0 +1,721 @@
+/* Invite Pages — org invite, company invite, task invite */
+
+/* ===== PAGE SHELLS ===== */
+
+/* Single-column centered layout (org invite + task invite) */
+.page {
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #f8fafc, var(--background));
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 24px;
+}
+
+.headerLogo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px 48px;
+}
+
+.container {
+  width: 100%;
+  max-width: 512px;
+}
+
+/* Two-column split layout (company invite) */
+.splitPage {
+  min-height: 100vh;
+  display: flex;
+}
+
+.brandPanel {
+  display: none;
+  background: var(--accent);
+  position: relative;
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  .brandPanel {
+    display: flex;
+    width: 50%;
+  }
+}
+
+.brandPanelGradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom right, var(--accent), color-mix(in srgb, var(--accent) 80%, transparent));
+}
+
+.brandPanelContent {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 48px;
+  color: #ffffff;
+}
+
+.brandLogo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.brandBody {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.brandTitle {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #ffffff;
+}
+
+.brandSubtitle {
+  font-size: 18px;
+  opacity: 0.9;
+  max-width: 448px;
+  color: #ffffff;
+}
+
+.brandFeatureList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 16px;
+}
+
+.brandFeature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.brandFeatureIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.contentPanel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--background);
+}
+
+.mobileLogo {
+  display: block;
+  position: absolute;
+  top: 24px;
+  left: 24px;
+}
+
+@media (min-width: 1024px) {
+  .mobileLogo {
+    display: none;
+  }
+}
+
+.mobileLogoLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+/* ===== LOADING STATE ===== */
+
+.loadingState {
+  text-align: center;
+  padding: 48px 0;
+}
+
+.loadingSpinnerIcon {
+  width: 40px;
+  height: 40px;
+  color: var(--accent);
+  margin: 0 auto;
+}
+
+.loadingText {
+  margin-top: 16px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Loading state with icon circle (company invite) */
+.loadingStateAlt {
+  width: 100%;
+  max-width: 448px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.iconCircle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.iconCirclePrimary {
+  composes: iconCircle;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.iconCircleRed {
+  composes: iconCircle;
+  background: #fee2e2;
+}
+
+.iconCircleGreen {
+  composes: iconCircle;
+  background: #dcfce7;
+}
+
+.iconCircleAmber {
+  composes: iconCircle;
+  background: #fef3c7;
+}
+
+.iconCircleSmall {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fee2e2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.stateTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stateSubtitle {
+  margin-top: 8px;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+/* ===== INVALID STATE ===== */
+
+.invalidState {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.invalidActions {
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.invalidMessage {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* ===== VALID INVITE HEADER ===== */
+
+.inviteHeader {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.inviteTitle {
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.inviteSubtitle {
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+/* ===== CARD ===== */
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.cardBody {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cardFooter {
+  padding: 16px 24px;
+  background: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ===== ROLE ROW ===== */
+
+.roleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.roleLabel {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.roleBadge {
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 500;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+}
+
+.roleBadgeExternal {
+  composes: roleBadge;
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+/* ===== COMPANY ROW (company invite) ===== */
+
+.companyRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.companyIconWrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.companyName {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.companyInviter {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ===== META ROW ===== */
+
+.metaRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.metaLabel {
+  color: var(--text-secondary);
+}
+
+.metaValue {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* ===== ALERT BANNERS ===== */
+
+.alertError {
+  padding: 12px;
+  font-size: 14px;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+}
+
+.alertWarning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-sm);
+}
+
+.alertWarningIcon {
+  width: 20px;
+  height: 20px;
+  color: #d97706;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.alertWarningTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: #92400e;
+}
+
+.alertWarningBody {
+  font-size: 14px;
+  color: #b45309;
+  margin-top: 4px;
+}
+
+/* ===== WRONG ACCOUNT BOXES ===== */
+
+.infoBox {
+  padding: 12px;
+  background: color-mix(in srgb, var(--text-secondary) 8%, transparent);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.infoBoxLabel {
+  color: var(--text-secondary);
+}
+
+.infoBoxValue {
+  font-weight: 500;
+  margin-top: 4px;
+  color: var(--text-primary);
+}
+
+.warningBox {
+  padding: 12px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.warningBoxLabel {
+  color: #92400e;
+}
+
+.warningBoxValue {
+  font-weight: 500;
+  margin-top: 4px;
+  color: #78350f;
+}
+
+.switchPrompt {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.switchPromptText {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* ===== FEATURE CHIPS ===== */
+
+.featureSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.featureSectionLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.featureChips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.featureChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 14px;
+}
+
+/* ===== FOOTER HELPER TEXT ===== */
+
+.helperText {
+  font-size: 12px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.helperLink {
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.helperLink:hover {
+  text-decoration: underline;
+}
+
+/* ===== TASK INVITE SPECIFICS ===== */
+
+.taskPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9fafb;
+  padding: 16px;
+}
+
+.taskCard {
+  width: 100%;
+  max-width: 512px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.taskCardHeader {
+  padding: 24px 24px 0;
+  text-align: center;
+}
+
+.taskCardTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 16px;
+}
+
+.taskCardSubtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.taskCardBody {
+  padding: 24px;
+}
+
+.taskBox {
+  background: #f9fafb;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.taskBoxTitle {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.taskBoxDesc {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.taskBoxPrimary {
+  font-size: 14px;
+  color: var(--accent);
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+.taskActions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.taskLoginHint {
+  font-size: 14px;
+  text-align: center;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.taskExpiry {
+  font-size: 12px;
+  text-align: center;
+  color: var(--text-secondary);
+  margin-top: 16px;
+}
+
+/* Task error / loading screens */
+.taskCentered {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9fafb;
+}
+
+.taskErrorCard {
+  width: 100%;
+  max-width: 448px;
+  margin: 0 16px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
+}
+
+.taskErrorInner {
+  text-align: center;
+}
+
+.taskErrorTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  margin-top: 16px;
+}
+
+.taskErrorMessage {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* ===== COMPANY INVITE — FULL LAYOUTS ===== */
+
+.companyStateWrap {
+  width: 100%;
+  max-width: 448px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.companyStateCenter {
+  text-align: center;
+}
+
+.companyCard {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.companyCardBody {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.invalidCardBody {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.invalidHelpText {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.invalidSignInText {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.invalidSignInLink {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.invalidSignInLink:hover {
+  text-decoration: underline;
+}
