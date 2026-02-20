@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { useCompany } from '@/contexts/CompanyContext'
 import { CalendarClock, CheckCircle2 } from 'lucide-react'
+import styles from './settings.module.css'
 
 type CadencePreference = 'weekly' | 'monthly' | 'manual'
 
@@ -98,35 +98,43 @@ export function AssessmentCadenceCard() {
   if (!selectedCompanyId) return null
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <CalendarClock className="h-5 w-5 text-primary" />
-          <CardTitle>Assessment Cadence</CardTitle>
-        </div>
-        <CardDescription>
+    <div className={styles.card}>
+      <div className={styles.cardHeader}>
+        <h2 className={styles.cardTitle}>
+          <CalendarClock className="h-5 w-5" style={{ color: 'var(--accent)' }} />
+          Assessment Cadence
+        </h2>
+        <p className={styles.cardDescription}>
           Control how often you&apos;re prompted to re-assess your scores.
           You can always re-assess manually at any time.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </p>
+      </div>
+      <div className={styles.cardContent}>
         {loading ? (
-          <div className="animate-pulse space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-16 bg-muted rounded-lg" />
+              <div
+                key={i}
+                style={{
+                  height: '64px',
+                  background: 'var(--surface-secondary)',
+                  borderRadius: 'var(--radius-md)',
+                  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                }}
+              />
             ))}
           </div>
         ) : (
           <>
-            <div className="space-y-3">
+            <div className={styles.cadenceOptions}>
               {CADENCE_OPTIONS.map((option) => (
                 <label
                   key={option.value}
-                  className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                    cadence === option.value
-                      ? 'border-primary/50 bg-primary/5'
-                      : 'border-border hover:border-primary/20 hover:bg-muted/30'
-                  } ${saving ? 'opacity-50 pointer-events-none' : ''}`}
+                  className={[
+                    styles.cadenceOption,
+                    cadence === option.value ? styles.cadenceOptionActive : '',
+                    saving ? styles.cadenceOptionDisabled : '',
+                  ].filter(Boolean).join(' ')}
                 >
                   <input
                     type="radio"
@@ -134,30 +142,27 @@ export function AssessmentCadenceCard() {
                     value={option.value}
                     checked={cadence === option.value}
                     onChange={() => handleChange(option.value)}
-                    className="mt-1 accent-primary"
                     disabled={saving}
                   />
                   <div>
-                    <Label className="font-medium cursor-pointer">{option.label}</Label>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      {option.description}
-                    </p>
+                    <Label className={styles.cadenceOptionLabel}>{option.label}</Label>
+                    <p className={styles.cadenceOptionDesc}>{option.description}</p>
                   </div>
                 </label>
               ))}
             </div>
 
             {saved && (
-              <div className="flex items-center gap-2 text-sm text-emerald-600">
+              <div className={styles.cadenceSaved}>
                 <CheckCircle2 className="h-4 w-4" />
                 <span>Cadence updated</span>
               </div>
             )}
 
             {cadence !== 'manual' && nextPromptDate && (
-              <p className="text-sm text-muted-foreground">
+              <p className={styles.cadenceNextDate}>
                 Next suggested re-assessment:{' '}
-                <span className="font-medium">
+                <span>
                   {new Date(nextPromptDate) <= new Date()
                     ? 'Available now'
                     : new Date(nextPromptDate).toLocaleDateString('en-US', {
@@ -170,7 +175,7 @@ export function AssessmentCadenceCard() {
             )}
           </>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

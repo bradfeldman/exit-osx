@@ -6,10 +6,9 @@ import { useSubscription } from '@/contexts/SubscriptionContext'
 import { PRICING_PLANS, getPlan, type PlanTier } from '@/lib/pricing'
 import { analytics } from '@/lib/analytics'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Check, Clock, CreditCard, Sparkles, ArrowRight, AlertCircle, ExternalLink } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import styles from './settings.module.css'
 
 export function BillingSettings() {
   const searchParams = useSearchParams()
@@ -155,72 +154,70 @@ export function BillingSettings() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className={styles.loadingCenter}>
+        <div className={styles.spinner} />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className={styles.billingPage}>
       {/* Checkout Success Message */}
       {checkoutSuccess && (
-        <Card className="border-green-200 bg-green-50">
-          <CardContent className="flex items-center gap-3 py-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
-              <Check className="h-5 w-5 text-green-600" />
-            </div>
-            <div>
-              <p className="font-medium text-green-800">Subscription activated!</p>
-              <p className="text-sm text-green-600">
-                Welcome to {currentPlanData?.name}. You now have full access to all plan features.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className={styles.checkoutSuccess}>
+          <div className={styles.checkoutSuccessIcon}>
+            <Check size={20} />
+          </div>
+          <div className={styles.checkoutSuccessText}>
+            <strong>Subscription activated!</strong>
+            <span>
+              Welcome to {currentPlanData?.name}. You now have full access to all plan features.
+            </span>
+          </div>
+        </div>
       )}
 
       {/* Current Plan Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>
             Current Plan
             {isTrialing && (
-              <Badge variant="secondary" className="bg-amber-100 text-amber-700">
-                <Clock className="mr-1 h-3 w-3" />
+              <span className={styles.trialBadge}>
+                <Clock size={12} />
                 Trial
-              </Badge>
+              </span>
             )}
             {status === 'PAST_DUE' && (
-              <Badge variant="destructive">
-                <AlertCircle className="mr-1 h-3 w-3" />
+              <span className={styles.pastDueBadge}>
+                <AlertCircle size={12} />
                 Past Due
-              </Badge>
+              </span>
             )}
-          </CardTitle>
-          <CardDescription>
+          </h2>
+          <p className={styles.cardDescription}>
             {isTrialing && trialDaysRemaining !== null
               ? `Your trial ends in ${trialDaysRemaining} day${trialDaysRemaining !== 1 ? 's' : ''}`
               : status === 'PAST_DUE'
               ? 'Please update your payment method to continue service'
               : 'Your active subscription plan'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          </p>
+        </div>
+        <div className={styles.cardContent}>
+          <div className={styles.currentPlanRow}>
             <div>
-              <h3 className="text-2xl font-bold">{currentPlanData?.name || 'Foundation'}</h3>
-              <p className="text-muted-foreground">
+              <h3 className={styles.currentPlanName}>{currentPlanData?.name || 'Foundation'}</h3>
+              <p className={styles.currentPlanDesc}>
                 {currentPlanData?.description || 'Free plan with basic features'}
               </p>
             </div>
-            <div className="sm:text-right">
-              <p className="text-3xl font-bold">
+            <div>
+              <p className={styles.currentPlanPrice}>
                 ${billingCycle === 'annual' ? (currentPlanData?.annualPrice || 0) : (currentPlanData?.monthlyPrice || 0)}
-                <span className="text-base font-normal text-muted-foreground">/mo</span>
+                <span>/mo</span>
               </p>
               {(currentPlanData?.annualPrice || 0) > 0 && (
-                <p className="text-sm text-muted-foreground">
+                <p className={styles.currentPlanBilling}>
                   billed {billingCycle === 'annual' ? 'annually' : 'monthly'}
                 </p>
               )}
@@ -228,15 +225,15 @@ export function BillingSettings() {
           </div>
 
           {status === 'EXPIRED' && (
-            <div className="mt-4 flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-destructive">
-              <AlertCircle className="h-5 w-5" />
+            <div className={styles.expiredBanner}>
+              <AlertCircle size={18} />
               <span>Your trial has expired. Upgrade to continue using premium features.</span>
             </div>
           )}
 
           {/* Manage Billing button — only shown if user has a Stripe subscription */}
           {hasStripeSubscription && planTier !== 'foundation' && (
-            <div className="mt-4">
+            <div style={{ marginTop: 16 }}>
               <Button
                 variant="outline"
                 onClick={handleManageBilling}
@@ -248,51 +245,37 @@ export function BillingSettings() {
               </Button>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Available Plans */}
       <div>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-          <h2 className="text-lg font-semibold">
+        <div className={styles.planSectionHeader}>
+          <h2 className={styles.planSectionTitle}>
             {planTier === 'deal-room' ? 'Your Plan' : 'Upgrade Your Plan'}
           </h2>
 
           {/* Billing Cycle Toggle */}
-          <div className="flex items-center gap-3">
-            <span className={cn(
-              'text-sm font-medium transition-colors',
-              billingCycle === 'monthly' ? 'text-foreground' : 'text-muted-foreground'
-            )}>
+          <div className={styles.billingToggle}>
+            <span className={`${styles.billingToggleLabel}${billingCycle === 'monthly' ? ` ${styles.billingToggleLabelActive}` : ''}`}>
               Monthly
             </span>
             <button
               onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'annual' : 'monthly')}
-              className={cn(
-                'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-                billingCycle === 'annual' ? 'bg-primary' : 'bg-muted'
-              )}
+              className={`${styles.toggleTrack}${billingCycle === 'annual' ? ` ${styles.toggleTrackActive}` : ''}`}
             >
               <span
-                className={cn(
-                  'inline-block h-4 w-4 transform rounded-full bg-background shadow-sm transition-transform',
-                  billingCycle === 'annual' ? 'translate-x-6' : 'translate-x-1'
-                )}
+                className={`${styles.toggleThumb}${billingCycle === 'annual' ? ` ${styles.toggleThumbActive}` : ''}`}
               />
             </button>
-            <span className={cn(
-              'text-sm font-medium transition-colors',
-              billingCycle === 'annual' ? 'text-foreground' : 'text-muted-foreground'
-            )}>
+            <span className={`${styles.billingToggleLabel}${billingCycle === 'annual' ? ` ${styles.billingToggleLabelActive}` : ''}`}>
               Annual
-              <span className="ml-1.5 inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-                Save 20%
-              </span>
+              <span className={styles.saveBadge}>Save 20%</span>
             </span>
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className={styles.planGrid}>
           {PRICING_PLANS.map((plan) => {
             const isCurrentPlan = plan.id === planTier
             const isDowngrade =
@@ -301,18 +284,17 @@ export function BillingSettings() {
             const canUpgrade = !isCurrentPlan && !isDowngrade
             const price = billingCycle === 'annual' ? plan.annualPrice : plan.monthlyPrice
 
+            const planCardClass = [
+              styles.planCard,
+              isCurrentPlan ? styles.planCardCurrent : '',
+              plan.highlighted && !isCurrentPlan ? styles.planCardHighlighted : '',
+              selectedPlan === plan.id ? styles.planCardSelected : '',
+            ].filter(Boolean).join(' ')
+
             return (
-              <Card
-                key={plan.id}
-                className={cn(
-                  'relative transition-all',
-                  isCurrentPlan && 'border-primary ring-1 ring-primary',
-                  plan.highlighted && !isCurrentPlan && 'border-primary/50',
-                  selectedPlan === plan.id && 'ring-2 ring-primary'
-                )}
-              >
+              <div key={plan.id} className={planCardClass}>
                 {plan.highlighted && !isCurrentPlan && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <div className={styles.planBadge}>
                     <Badge className="bg-primary">
                       <Sparkles className="mr-1 h-3 w-3" />
                       Most Popular
@@ -320,38 +302,32 @@ export function BillingSettings() {
                   </div>
                 )}
                 {isCurrentPlan && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <div className={styles.planBadge}>
                     <Badge variant="secondary">Current Plan</Badge>
                   </div>
                 )}
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">{plan.name}</CardTitle>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold">${price}</span>
-                    <span className="text-muted-foreground">/mo</span>
+                <div className={styles.planCardHeader}>
+                  <p className={styles.planName}>{plan.name}</p>
+                  <div className={styles.planPrice}>
+                    <strong>${price}</strong>
+                    <span>/mo</span>
                   </div>
                   {price > 0 && billingCycle === 'annual' && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className={styles.planAnnualNote}>
                       billed annually at ${(price * 12).toLocaleString()}/yr
                     </p>
                   )}
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground">{plan.description}</p>
-                  <ul className="space-y-2 text-sm">
+                </div>
+                <div className={styles.planCardBody}>
+                  <p className={styles.planDescription}>{plan.description}</p>
+                  <ul className={styles.featureList}>
                     {plan.features.slice(0, 5).map((feature) => (
                       <li
                         key={feature.name}
-                        className={cn(
-                          'flex items-center gap-2',
-                          !feature.included && 'text-muted-foreground/50'
-                        )}
+                        className={`${styles.featureItem}${!feature.included ? ` ${styles.featureItemDisabled}` : ''}`}
                       >
                         <Check
-                          className={cn(
-                            'h-4 w-4',
-                            feature.included ? 'text-green-600' : 'text-muted-foreground/30'
-                          )}
+                          className={`${styles.featureCheck} ${feature.included ? styles.featureCheckEnabled : styles.featureCheckDisabled}`}
                         />
                         <span>{feature.name}</span>
                       </li>
@@ -401,8 +377,8 @@ export function BillingSettings() {
                       N/A
                     </Button>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )
           })}
         </div>
@@ -410,7 +386,7 @@ export function BillingSettings() {
 
       {/* Trial Notice */}
       {isTrialing && (
-        <p className="text-center text-sm text-muted-foreground">
+        <p className={styles.trialNote}>
           You won&apos;t be charged until your trial ends.{' '}
           {trialDaysRemaining !== null && `${trialDaysRemaining} days remaining.`}
         </p>

@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence } from '@/lib/motion'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,6 +12,7 @@ import { IndustryListInline } from '@/components/company/IndustryListInline'
 import { AccountabilityPartnerCard } from '@/components/settings/AccountabilityPartnerCard'
 import { AssessmentCadenceCard } from '@/components/settings/AssessmentCadenceCard'
 import { getFlattenedOptionBySubSector } from '@/lib/data/industries'
+import styles from './settings.module.css'
 
 const ENTITY_TYPES = [
   { value: 'C_CORP', label: 'C-Corporation' },
@@ -263,179 +263,177 @@ export function CompanySettings() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className={styles.loadingCenter}>
+        <div className={styles.spinner} />
       </div>
     )
   }
 
   if (!selectedCompanyId) {
     return (
-      <div className="space-y-6 max-w-2xl">
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">
-              No company selected. Please select a company from the sidebar.
-            </p>
-            <div className="flex justify-center mt-4">
+      <div className={styles.section}>
+        <div className={styles.card}>
+          <div className={styles.cardContent}>
+            <div className={styles.emptyState}>
+              <p>No company selected. Please select a company from the sidebar.</p>
               <Button onClick={() => router.push('/dashboard/company/setup')}>
                 Create New Company
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className={styles.section}>
       {/* Basic Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
-          <CardDescription>Company name and identification</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Company Name</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter company name"
-            />
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Basic Information</h2>
+          <p className={styles.cardDescription}>Company name and identification</p>
+        </div>
+        <div className={styles.cardContent}>
+          <div className={styles.fieldStack}>
+            <div className={styles.formGroup}>
+              <Label htmlFor="name">Company Name</Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter company name"
+              />
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Industry Classification */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Industry Classification</CardTitle>
-          <CardDescription>
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Industry Classification</h2>
+          <p className={styles.cardDescription}>
             {icbSubSector
               ? 'Your current industry classification. This affects valuation multiples.'
               : 'Describe your business and we\'ll find the best industry classification. This affects valuation multiples.'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {icbSubSector ? (
-            <div className="p-4 bg-muted/50 rounded-lg border flex items-start gap-3">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium">
-                  {getFlattenedOptionBySubSector(icbSubSector)?.subSectorLabel || icbSubSector}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {getFlattenedOptionBySubSector(icbSubSector)?.industryLabel} &gt;{' '}
-                  {getFlattenedOptionBySubSector(icbSubSector)?.superSectorLabel} &gt;{' '}
-                  {getFlattenedOptionBySubSector(icbSubSector)?.sectorLabel}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setIcbIndustry('')
-                  setIcbSuperSector('')
-                  setIcbSector('')
-                  setIcbSubSector('')
-                  setBusinessDescription('')
-                  setIndustryMatchResult(null)
-                }}
-                className="p-1.5 hover:bg-destructive/10 rounded-full transition-colors group"
-                title="Remove selection"
-              >
-                <svg className="w-4 h-4 text-muted-foreground group-hover:text-destructive" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          ) : (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="business-description">What does your business do?</Label>
-                <textarea
-                  id="business-description"
-                  value={businessDescription}
-                  onChange={(e) => setBusinessDescription(e.target.value.slice(0, 250))}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey && businessDescription.trim()) {
-                      e.preventDefault()
-                      handleFindIndustry()
-                    }
-                  }}
-                  placeholder="e.g., We manufacture and sell a mouthguard to help people stop bruxing (teeth grinding)"
-                  rows={3}
-                  maxLength={250}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm resize-none"
-                  disabled={matchingIndustry}
-                />
-                <div className="flex justify-between items-center text-xs text-muted-foreground">
-                  <button
-                    type="button"
-                    onClick={() => setShowIndustryList(!showIndustryList)}
-                    className="text-xs text-primary hover:text-primary/80 hover:underline focus:outline-none"
-                  >
-                    {showIndustryList ? 'Hide Industry List' : 'Choose from Industry List'}
-                  </button>
-                  <span>{businessDescription.length}/250</span>
-                </div>
-              </div>
-
-              <AnimatePresence>
-                {showIndustryList && (
-                  <IndustryListInline
-                    value={undefined}
-                    onSelect={handleIndustrySelect}
-                    onClose={() => setShowIndustryList(false)}
-                  />
-                )}
-              </AnimatePresence>
-
-              {industryMatchError && (
-                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm text-destructive">
-                  {industryMatchError}
-                </div>
-              )}
-
-              {matchingIndustry && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </p>
+        </div>
+        <div className={styles.cardContent}>
+          <div className={styles.fieldStack}>
+            {icbSubSector ? (
+              <div className={styles.industryDisplay}>
+                <div className={styles.industryIcon}>
+                  <svg width="20" height="20" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
                   </svg>
-                  Finding classification...
                 </div>
-              )}
+                <div className={styles.industryInfo}>
+                  <p>
+                    {getFlattenedOptionBySubSector(icbSubSector)?.subSectorLabel || icbSubSector}
+                  </p>
+                  <p>
+                    {getFlattenedOptionBySubSector(icbSubSector)?.industryLabel} &gt;{' '}
+                    {getFlattenedOptionBySubSector(icbSubSector)?.superSectorLabel} &gt;{' '}
+                    {getFlattenedOptionBySubSector(icbSubSector)?.sectorLabel}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIcbIndustry('')
+                    setIcbSuperSector('')
+                    setIcbSector('')
+                    setIcbSubSector('')
+                    setBusinessDescription('')
+                    setIndustryMatchResult(null)
+                  }}
+                  className={styles.industryRemove}
+                  title="Remove selection"
+                >
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className={styles.formGroup}>
+                  <Label htmlFor="business-description">What does your business do?</Label>
+                  <textarea
+                    id="business-description"
+                    value={businessDescription}
+                    onChange={(e) => setBusinessDescription(e.target.value.slice(0, 250))}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey && businessDescription.trim()) {
+                        e.preventDefault()
+                        handleFindIndustry()
+                      }
+                    }}
+                    placeholder="e.g., We manufacture and sell a mouthguard to help people stop bruxing (teeth grinding)"
+                    rows={3}
+                    maxLength={250}
+                    className={styles.textarea}
+                    disabled={matchingIndustry}
+                  />
+                  <div className={styles.charCount}>
+                    <button
+                      type="button"
+                      onClick={() => setShowIndustryList(!showIndustryList)}
+                    >
+                      {showIndustryList ? 'Hide Industry List' : 'Choose from Industry List'}
+                    </button>
+                    <span>{businessDescription.length}/250</span>
+                  </div>
+                </div>
 
-              {industryMatchResult && (
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <AnimatePresence>
+                  {showIndustryList && (
+                    <IndustryListInline
+                      value={undefined}
+                      onSelect={handleIndustrySelect}
+                      onClose={() => setShowIndustryList(false)}
+                    />
+                  )}
+                </AnimatePresence>
+
+                {industryMatchError && (
+                  <div className={styles.messageError}>
+                    {industryMatchError}
+                  </div>
+                )}
+
+                {matchingIndustry && (
+                  <div className={styles.matchingSpinner}>
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" style={{ opacity: 0.25 }} />
+                      <path fill="currentColor" style={{ opacity: 0.75 }} d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Finding classification...
+                  </div>
+                )}
+
+                {industryMatchResult && (
+                  <div className={styles.industryMatch}>
+                    <div className={styles.industryMatchHeader}>
+                      <div className={styles.industryMatchIcon}>
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                         </svg>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-amber-900">
+                      <div>
+                        <p className={styles.industryMatchLabel}>
                           {industryMatchResult.source === 'ai' ? 'Recommended Classification' : 'Keyword Classification'}
                         </p>
-                        <p className="text-base font-bold text-amber-800 mt-1">{industryMatchResult.subSectorLabel}</p>
-                        <p className="text-xs text-amber-700 mt-1">{industryMatchResult.reasoning}</p>
+                        <p className={styles.industryMatchValue}>{industryMatchResult.subSectorLabel}</p>
+                        <p className={styles.industryMatchReasoning}>{industryMatchResult.reasoning}</p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className={styles.industryMatchActions}>
                       <Button
                         type="button"
                         onClick={handleAcceptRecommendation}
                         size="sm"
-                        className="bg-primary hover:bg-primary/90"
                       >
                         Accept
                       </Button>
@@ -452,22 +450,22 @@ export function CompanySettings() {
                       </Button>
                     </div>
                   </div>
-                </div>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Entity Type */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Entity Type</CardTitle>
-          <CardDescription>
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Entity Type</h2>
+          <p className={styles.cardDescription}>
             Your business entity structure affects tax treatment of sale proceeds
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className={styles.cardContent}>
           <Select
             value={entityType || ''}
             onValueChange={(val) => setEntityType(val || null)}
@@ -483,8 +481,8 @@ export function CompanySettings() {
               ))}
             </SelectContent>
           </Select>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Assessment Cadence */}
       <AssessmentCadenceCard />
@@ -493,18 +491,12 @@ export function CompanySettings() {
       <AccountabilityPartnerCard />
 
       {message && (
-        <div
-          className={`p-3 rounded-md text-sm ${
-            message.type === 'success'
-              ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
-              : 'bg-destructive/10 text-destructive border border-destructive/20'
-          }`}
-        >
+        <div className={message.type === 'success' ? styles.messageSuccess : styles.messageError}>
           {message.text}
         </div>
       )}
 
-      <div className="flex gap-3">
+      <div className={styles.buttonRow}>
         <Button onClick={handleSave} disabled={saving}>
           {saving ? 'Saving...' : 'Save Changes'}
         </Button>
@@ -514,26 +506,26 @@ export function CompanySettings() {
       </div>
 
       {/* Danger Zone */}
-      <Card className="border-destructive/20 bg-destructive/5">
-        <CardHeader>
-          <CardTitle className="text-destructive">Danger Zone</CardTitle>
-          <CardDescription className="text-destructive/80">
+      <div className={styles.dangerZone}>
+        <div className={styles.dangerZoneHeader}>
+          <h2 className={styles.dangerZoneTitle}>Danger Zone</h2>
+          <p className={styles.dangerZoneDescription}>
             Irreversible and destructive actions
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="rounded-md border border-destructive/20 bg-card p-4 space-y-4">
+          </p>
+        </div>
+        <div className={styles.dangerZoneContent}>
+          <div className={styles.dangerInner}>
             <div>
-              <h3 className="font-medium text-foreground">Delete this company</h3>
-              <p className="text-sm text-muted-foreground mt-1">
+              <h3>Delete this company</h3>
+              <p>
                 Once deleted, your company data will be retained for 30 days before permanent deletion.
                 During this period, you may contact support to restore your data.
               </p>
             </div>
 
-            <div className="space-y-3">
-              <div className="space-y-2">
-                <Label htmlFor="delete-reason" className="text-foreground">
+            <div className={styles.fieldStack}>
+              <div className={styles.formGroup}>
+                <Label htmlFor="delete-reason">
                   Reason for deletion (optional)
                 </Label>
                 <Input
@@ -541,20 +533,18 @@ export function CompanySettings() {
                   value={deleteReason}
                   onChange={(e) => setDeleteReason(e.target.value)}
                   placeholder="Help us understand why you're leaving..."
-                  className="bg-card"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="delete-confirmation" className="text-foreground">
-                  To confirm, type <span className="font-semibold text-destructive">{company?.name}</span> below
+              <div className={styles.formGroup}>
+                <Label htmlFor="delete-confirmation">
+                  To confirm, type <strong>{company?.name}</strong> below
                 </Label>
                 <Input
                   id="delete-confirmation"
                   value={deleteConfirmation}
                   onChange={(e) => setDeleteConfirmation(e.target.value)}
                   placeholder="Enter company name to confirm"
-                  className="bg-card"
                 />
               </div>
 
@@ -568,8 +558,8 @@ export function CompanySettings() {
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

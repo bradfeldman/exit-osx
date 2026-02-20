@@ -1,19 +1,26 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { WorkspaceSettings } from '@/components/settings/WorkspaceSettings'
 import { BillingSettings } from '@/components/settings/BillingSettings'
 import { CompanySettings } from '@/components/settings/CompanySettings'
 import { UserSettings } from '@/components/settings/UserSettings'
-import { Loader2 } from 'lucide-react'
+import styles from './settings.module.css'
 
-const VALID_TABS = ['company', 'account', 'team', 'billing'] as const
-type SettingsTab = typeof VALID_TABS[number]
+const TABS = [
+  { key: 'company', label: 'Company' },
+  { key: 'account', label: 'Account' },
+  { key: 'team', label: 'Team' },
+  { key: 'billing', label: 'Billing' },
+] as const
+
+type SettingsTab = typeof TABS[number]['key']
+
+const VALID_KEYS = TABS.map(t => t.key)
 
 function isValidTab(tab: string | null): tab is SettingsTab {
-  return VALID_TABS.includes(tab as SettingsTab)
+  return VALID_KEYS.includes(tab as SettingsTab)
 }
 
 export function SettingsPage() {
@@ -22,49 +29,43 @@ export function SettingsPage() {
   const tabParam = searchParams.get('tab')
   const activeTab = isValidTab(tabParam) ? tabParam : 'company'
 
-  const handleTabChange = (value: string) => {
+  const handleTabChange = (key: string) => {
     const params = new URLSearchParams(searchParams.toString())
-    params.set('tab', value)
+    params.set('tab', key)
     router.replace(`/dashboard/settings?${params.toString()}`, { scroll: false })
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground">Manage your company, account, team, and billing</p>
+    <div className={styles.page}>
+      <div className={styles.pageHeader}>
+        <h1>Settings</h1>
+        <p>Manage your company, account, team, and billing</p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="w-full justify-start">
-          <TabsTrigger value="company">Company</TabsTrigger>
-          <TabsTrigger value="account">Account</TabsTrigger>
-          <TabsTrigger value="team">Team</TabsTrigger>
-          <TabsTrigger value="billing">Billing</TabsTrigger>
-        </TabsList>
+      <div className={styles.tabBar}>
+        {TABS.map((tab) => (
+          <button
+            key={tab.key}
+            className={`${styles.tab} ${activeTab === tab.key ? styles.tabActive : ''}`}
+            onClick={() => handleTabChange(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-        <TabsContent value="company">
-          <CompanySettings />
-        </TabsContent>
-
-        <TabsContent value="account">
-          <UserSettings />
-        </TabsContent>
-
-        <TabsContent value="team">
-          <WorkspaceSettings />
-        </TabsContent>
-
-        <TabsContent value="billing">
-          <Suspense fallback={
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          }>
-            <BillingSettings />
-          </Suspense>
-        </TabsContent>
-      </Tabs>
+      {activeTab === 'company' && <CompanySettings />}
+      {activeTab === 'account' && <UserSettings />}
+      {activeTab === 'team' && <WorkspaceSettings />}
+      {activeTab === 'billing' && (
+        <Suspense fallback={
+          <div className={styles.loadingCenter}>
+            <div className={styles.spinner} />
+          </div>
+        }>
+          <BillingSettings />
+        </Suspense>
+      )}
     </div>
   )
 }

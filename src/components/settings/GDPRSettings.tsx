@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CookieSettingsButton } from '@/components/gdpr/CookieConsent'
 import { Download, Trash2, Shield, FileText, AlertTriangle } from 'lucide-react'
+import styles from './settings.module.css'
 
 interface DeletionRequest {
   id: string
@@ -199,37 +199,37 @@ export function GDPRSettings() {
 
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>
             <Shield className="h-5 w-5" aria-hidden="true" />
             Privacy & Data
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+          </h2>
+        </div>
+        <div className={styles.cardContent}>
+          <div className={styles.loadingCenter}>
+            <div className={styles.spinner} />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className={styles.gdprPage}>
       {/* Privacy Documents */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>
             <FileText className="h-5 w-5" aria-hidden="true" />
             Privacy Documents
-          </CardTitle>
-          <CardDescription>
+          </h2>
+          <p className={styles.cardDescription}>
             Review our privacy policy and terms of service
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-3">
+          </p>
+        </div>
+        <div className={styles.cardContent}>
+          <div className={styles.linkRow}>
             <a href="/privacy" target="_blank" rel="noopener noreferrer">
               <Button variant="outline">Privacy Policy</Button>
             </a>
@@ -237,34 +237,34 @@ export function GDPRSettings() {
               <Button variant="outline">Terms of Service</Button>
             </a>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Cookie Preferences */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Cookie Preferences</CardTitle>
-          <CardDescription>
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Cookie Preferences</h2>
+          <p className={styles.cardDescription}>
             Manage your cookie consent settings
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className={styles.cardContent}>
           <CookieSettingsButton />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Data Export */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>
             <Download className="h-5 w-5" aria-hidden="true" />
             Export Your Data
-          </CardTitle>
-          <CardDescription>
+          </h2>
+          <p className={styles.cardDescription}>
             Download a copy of all your data (GDPR Article 20 - Right to Data Portability)
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+          </p>
+        </div>
+        <div className={styles.cardContent}>
           <Button
             onClick={handleRequestExport}
             disabled={actionLoading === 'export'}
@@ -275,64 +275,59 @@ export function GDPRSettings() {
           </Button>
 
           {exportRequests.length > 0 && (
-            <div className="mt-4">
-              <h4 className="text-sm font-medium text-foreground mb-2">Recent Exports</h4>
-              <div className="space-y-2">
-                {exportRequests.map((exp) => (
-                  <div
-                    key={exp.id}
-                    className="flex items-center justify-between p-3 bg-muted rounded-lg text-sm"
-                  >
-                    <div>
-                      <span className="font-medium">
-                        {formatDate(exp.requestedAt)}
-                      </span>
-                      <span className="text-muted-foreground ml-2">
-                        ({exp.status})
-                        {exp.fileSize && ` - ${formatFileSize(exp.fileSize)}`}
-                      </span>
-                    </div>
-                    {exp.status === 'READY' && exp.downloadToken && (
-                      <a
-                        href={`/api/user/gdpr/export/${exp.downloadToken}/download`}
-                        className="text-primary hover:underline"
-                      >
-                        Download
-                      </a>
-                    )}
+            <div className={styles.exportList}>
+              <h4 className={styles.exportListTitle}>Recent Exports</h4>
+              {exportRequests.map((exp) => (
+                <div key={exp.id} className={styles.exportItem}>
+                  <div>
+                    <span className={styles.exportDate}>
+                      {formatDate(exp.requestedAt)}
+                    </span>
+                    <span className={styles.exportStatus}>
+                      ({exp.status})
+                      {exp.fileSize && ` - ${formatFileSize(exp.fileSize)}`}
+                    </span>
                   </div>
-                ))}
-              </div>
+                  {exp.status === 'READY' && exp.downloadToken && (
+                    <a
+                      href={`/api/user/gdpr/export/${exp.downloadToken}/download`}
+                      className={styles.exportDownload}
+                    >
+                      Download
+                    </a>
+                  )}
+                </div>
+              ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Account Deletion — Danger Zone (BF-027) */}
-      <Card className="border-destructive/20 bg-destructive/5">
-        <CardHeader>
-          <CardTitle className="text-destructive">Danger Zone</CardTitle>
-          <CardDescription className="text-destructive/80">
+      <div className={styles.dangerZone}>
+        <div className={styles.dangerZoneHeader}>
+          <h2 className={styles.dangerZoneTitle}>Danger Zone</h2>
+          <p className={styles.dangerZoneDescription}>
             Irreversible and destructive actions
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border border-destructive/20 bg-card p-4 space-y-4">
+          </p>
+        </div>
+        <div className={styles.dangerZoneContent}>
+          <div className={styles.dangerInner}>
             <div>
-              <h3 className="font-medium text-foreground">Delete your account</h3>
-              <p className="text-sm text-muted-foreground mt-1">
+              <h3>Delete your account</h3>
+              <p>
                 Permanently delete your entire account, including your company, all team members, financial data, assessments, and uploaded documents. You will have a 30-day grace period to cancel.
               </p>
             </div>
 
             {deletionRequest ? (
-              <div className="space-y-4">
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" aria-hidden="true" />
+              <div>
+                <div className={styles.deletionWarning}>
+                  <div className={styles.deletionWarningInner}>
+                    <AlertTriangle className="h-5 w-5" aria-hidden="true" style={{ color: 'var(--orange)', flexShrink: 0, marginTop: 2 }} />
                     <div>
-                      <h4 className="font-medium text-amber-800">Deletion Scheduled</h4>
-                      <p className="text-sm text-amber-700 mt-1">
+                      <h4 className={styles.deletionWarningTitle}>Deletion Scheduled</h4>
+                      <p className={styles.deletionWarningText}>
                         Your account is scheduled for deletion on{' '}
                         <strong>{formatDate(deletionRequest.scheduledFor)}</strong>.
                         {!deletionRequest.confirmedAt && ' Please confirm to proceed.'}
@@ -341,7 +336,7 @@ export function GDPRSettings() {
                   </div>
                 </div>
 
-                <div className="flex gap-3">
+                <div className={styles.buttonRow} style={{ marginTop: 16 }}>
                   {!deletionRequest.confirmedAt && (
                     <Button
                       variant="destructive"
@@ -361,14 +356,14 @@ export function GDPRSettings() {
                 </div>
               </div>
             ) : showDeleteConfirm ? (
-              <div className="space-y-4">
-                <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                  <h4 className="font-medium text-destructive">Are you sure?</h4>
-                  <p className="text-sm text-destructive/80 mt-1">
+              <div>
+                <div className={styles.deletionConfirm}>
+                  <h4>Are you sure?</h4>
+                  <p>
                     This will permanently delete your account, company, all team members, financial data, assessments, tasks, evidence documents, and deal room. This action cannot be undone.
                   </p>
                 </div>
-                <div className="flex gap-3">
+                <div className={styles.buttonRow} style={{ marginTop: 16 }}>
                   <Button
                     variant="destructive"
                     onClick={handleRequestDeletion}
@@ -395,17 +390,13 @@ export function GDPRSettings() {
               </Button>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Messages */}
       {message && (
         <div
-          className={`p-3 rounded-md text-sm ${
-            message.type === 'success'
-              ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
-              : 'bg-destructive/10 text-destructive border border-destructive/20'
-          }`}
+          className={message.type === 'success' ? styles.messageSuccess : styles.messageError}
           role="alert"
         >
           {message.text}

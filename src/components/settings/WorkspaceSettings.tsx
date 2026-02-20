@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -42,7 +41,7 @@ import {
   Pencil,
   EyeOff,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import styles from './settings.module.css'
 
 // Types
 interface Member {
@@ -300,10 +299,10 @@ const affiliationIcons: Record<Affiliation, React.ElementType> = {
   advisor: UserCheck,
 }
 
-const affiliationColors: Record<Affiliation, string> = {
-  owner: 'bg-amber-100 text-amber-800 border-amber-200',
-  employee: 'bg-blue-100 text-blue-800 border-blue-200',
-  advisor: 'bg-purple-100 text-purple-800 border-purple-200',
+const affiliationStyles: Record<Affiliation, string> = {
+  owner: styles.affiliationOwner,
+  employee: styles.affiliationEmployee,
+  advisor: styles.affiliationAdvisor,
 }
 
 const roleLabels: Record<'ADMIN' | 'MEMBER', string> = {
@@ -584,34 +583,36 @@ export function WorkspaceSettings() {
 
   if (loading) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-8">
-          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-        </CardContent>
-      </Card>
+      <div className={styles.card}>
+        <div className={styles.cardContent}>
+          <div className={styles.loadingCenter}>
+            <div className={styles.spinner} />
+          </div>
+        </div>
+      </div>
     )
   }
 
   if (!workspace) {
     return (
-      <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">
-          No workspace found
-        </CardContent>
-      </Card>
+      <div className={styles.card}>
+        <div className={styles.cardContent}>
+          <div className={styles.emptyState}>No workspace found</div>
+        </div>
+      </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className={styles.page}>
       {/* Members Table */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+      <div className={styles.card}>
+        <div className={styles.cardHeaderRow}>
           <div>
-            <CardTitle>Exit Team</CardTitle>
-            <CardDescription>
+            <h2 className={styles.cardTitle}>Exit Team</h2>
+            <p className={styles.cardDescription}>
               {workspace.members.length} member{workspace.members.length !== 1 ? 's' : ''} in {workspace.name}
-            </CardDescription>
+            </p>
           </div>
           {canInvite && (
             <Dialog
@@ -638,12 +639,10 @@ export function WorkspaceSettings() {
                 </DialogHeader>
 
                 {inviteUrl ? (
-                  <div className="py-4 space-y-4">
-                    <div className="p-4 bg-muted rounded-lg space-y-3">
-                      <p className="text-sm text-muted-foreground">
-                        Share this invite link:
-                      </p>
-                      <div className="flex items-center gap-2">
+                  <div style={{ padding: '16px 0', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div className={styles.inviteSentBox}>
+                      <p>Share this invite link:</p>
+                      <div className={styles.inviteLinkRow}>
                         <Input
                           readOnly
                           value={inviteUrl}
@@ -658,7 +657,7 @@ export function WorkspaceSettings() {
                             setInviteCopied(true)
                             setTimeout(() => setInviteCopied(false), 2000)
                           }}
-                          className="shrink-0"
+                          style={{ flexShrink: 0 }}
                         >
                           {inviteCopied ? (
                             <Check className="h-4 w-4 text-green-600" />
@@ -668,14 +667,14 @@ export function WorkspaceSettings() {
                         </Button>
                       </div>
                     </div>
-                    <p className="text-sm text-muted-foreground text-center">
+                    <p className={styles.inviteSentNote}>
                       An email has also been sent to {inviteEmail}
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-6 py-4">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', padding: '16px 0' }}>
                     {/* Email */}
-                    <div className="space-y-2">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <Label htmlFor="email">Email Address</Label>
                       <Input
                         id="email"
@@ -687,7 +686,7 @@ export function WorkspaceSettings() {
                     </div>
 
                     {/* Role */}
-                    <div className="space-y-2">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <Label htmlFor="role">Role</Label>
                       <Select
                         value={inviteRole}
@@ -701,15 +700,15 @@ export function WorkspaceSettings() {
                           <SelectItem value="MEMBER">Member</SelectItem>
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-muted-foreground">
+                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
                         Admins can manage team members and settings
                       </p>
                     </div>
 
                     {/* Affiliation */}
-                    <div className="space-y-2">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <Label>Affiliation</Label>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className={styles.affiliationGrid}>
                         {(['owner', 'employee', 'advisor'] as Affiliation[]).map((aff) => {
                           const Icon = affiliationIcons[aff]
                           const isSelected = inviteAffiliation === aff
@@ -718,15 +717,10 @@ export function WorkspaceSettings() {
                               key={aff}
                               type="button"
                               onClick={() => setInviteAffiliation(aff)}
-                              className={cn(
-                                'p-3 border rounded-lg text-center transition-colors',
-                                isSelected
-                                  ? 'border-primary bg-primary/5'
-                                  : 'hover:bg-muted'
-                              )}
+                              className={`${styles.affiliationOption} ${isSelected ? styles.affiliationOptionActive : ''}`}
                             >
-                              <Icon className="h-5 w-5 mx-auto mb-1" />
-                              <div className="text-sm font-medium">{affiliationLabels[aff]}</div>
+                              <Icon className="h-5 w-5" />
+                              <span>{affiliationLabels[aff]}</span>
                             </button>
                           )
                         })}
@@ -734,18 +728,25 @@ export function WorkspaceSettings() {
                     </div>
 
                     {/* Page Permissions */}
-                    <div className="space-y-3">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       <Label>Permissions</Label>
-                      <div className="border rounded-lg divide-y max-h-[200px] sm:max-h-[300px] overflow-y-auto">
+                      <div className={styles.permissionsList}>
                         {PAGE_PERMISSIONS.map((page) => {
                           const currentLevel = invitePagePermissions[page.key] || 'hide'
                           return (
-                            <div key={page.key} className="flex items-center justify-between p-3">
-                              <span className="text-sm">{page.label}</span>
-                              <div className="flex gap-1">
+                            <div key={page.key} className={styles.permissionRow}>
+                              <span className={styles.permissionLabel}>{page.label}</span>
+                              <div className={styles.permissionActions}>
                                 {(['edit', 'view', 'hide'] as PermissionLevel[]).map((level) => {
                                   const Icon = permissionLevelIcons[level]
                                   const isSelected = currentLevel === level
+                                  const activeCls = isSelected
+                                    ? level === 'edit'
+                                      ? styles.permBtnEdit
+                                      : level === 'view'
+                                        ? styles.permBtnView
+                                        : styles.permBtnHide
+                                    : ''
                                   return (
                                     <button
                                       key={level}
@@ -756,16 +757,7 @@ export function WorkspaceSettings() {
                                           [page.key]: level,
                                         })
                                       }}
-                                      className={cn(
-                                        'p-2 rounded transition-colors',
-                                        isSelected
-                                          ? level === 'edit'
-                                            ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
-                                            : level === 'view'
-                                              ? 'bg-blue-500/15 text-blue-700 dark:text-blue-400'
-                                              : 'bg-destructive/15 text-destructive'
-                                          : 'hover:bg-muted text-muted-foreground'
-                                      )}
+                                      className={`${styles.permBtn} ${activeCls}`}
                                       title={permissionLevelLabels[level]}
                                     >
                                       <Icon className="h-4 w-4" />
@@ -777,23 +769,17 @@ export function WorkspaceSettings() {
                           )
                         })}
                       </div>
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Pencil className="h-3 w-3" /> Edit
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Eye className="h-3 w-3" /> View
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <EyeOff className="h-3 w-3" /> Hide
-                        </span>
+                      <div className={styles.permLegend}>
+                        <span><Pencil className="h-3 w-3" /> Edit</span>
+                        <span><Eye className="h-3 w-3" /> View</span>
+                        <span><EyeOff className="h-3 w-3" /> Hide</span>
                       </div>
                     </div>
                   </div>
                 )}
 
                 {inviteError && (
-                  <p className="text-sm text-destructive">{inviteError}</p>
+                  <p style={{ fontSize: '14px', color: 'var(--red)' }}>{inviteError}</p>
                 )}
 
                 <DialogFooter>
@@ -810,8 +796,8 @@ export function WorkspaceSettings() {
               </DialogContent>
             </Dialog>
           )}
-        </CardHeader>
-        <CardContent>
+        </div>
+        <div className={styles.cardContent}>
           <Table>
             <TableHeader>
               <TableRow>
@@ -833,17 +819,17 @@ export function WorkspaceSettings() {
                 return (
                   <TableRow key={member.id}>
                     <TableCell>
-                      <div className="flex items-center gap-3">
+                      <div className={styles.memberCell}>
                         <UserAvatar
                           email={member.user.email}
                           name={member.user.name || undefined}
                           size="sm"
                         />
-                        <div>
-                          <div className="font-medium">
+                        <div className={styles.memberDetails}>
+                          <div className={styles.memberName}>
                             {member.user.name || 'No name'}
                           </div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className={styles.memberEmail}>
                             {member.user.email}
                           </div>
                         </div>
@@ -922,10 +908,7 @@ export function WorkspaceSettings() {
                           </SelectContent>
                         </Select>
                       ) : (
-                        <span className={cn(
-                          'inline-flex items-center gap-1 px-2 py-1 rounded text-xs border',
-                          affiliationColors[affiliation]
-                        )}>
+                        <span className={`${styles.affiliationBadge} ${affiliationStyles[affiliation]}`}>
                           <AffiliationIcon className="h-3 w-3" />
                           {affiliationLabels[affiliation]}
                         </span>
@@ -941,12 +924,12 @@ export function WorkspaceSettings() {
                           Configure
                         </Button>
                       ) : (
-                        <span className="text-muted-foreground text-sm">
+                        <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
                           {member.workspaceRole === 'OWNER' || member.workspaceRole === 'ADMIN' ? 'Full Access' : 'Default'}
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell style={{ color: 'var(--text-secondary)' }}>
                       {new Date(member.joinedAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
@@ -979,19 +962,19 @@ export function WorkspaceSettings() {
               })}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Pending Invites */}
       {canInvite && workspace.invites.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Pending Invites</CardTitle>
-            <CardDescription>
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>Pending Invites</h2>
+            <p className={styles.cardDescription}>
               {workspace.invites.length} pending invite{workspace.invites.length !== 1 ? 's' : ''}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </p>
+          </div>
+          <div className={styles.cardContent}>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -1017,19 +1000,16 @@ export function WorkspaceSettings() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <span className={cn(
-                          'inline-flex items-center gap-1 px-2 py-1 rounded text-xs border',
-                          affiliationColors[affiliation]
-                        )}>
+                        <span className={`${styles.affiliationBadge} ${affiliationStyles[affiliation]}`}>
                           <AffiliationIcon className="h-3 w-3" />
                           {affiliationLabels[affiliation]}
                         </span>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
+                      <TableCell style={{ color: 'var(--text-secondary)' }}>
                         {new Date(invite.expiresAt).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1">
+                        <div className={styles.buttonRow}>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -1063,8 +1043,8 @@ export function WorkspaceSettings() {
                 })}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* Permissions Dialog */}
@@ -1194,24 +1174,31 @@ function MemberPermissionsEditor({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      <div className={styles.loadingCenter}>
+        <div className={styles.spinner} />
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
-      <div className="border rounded-lg divide-y max-h-[400px] overflow-y-auto">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div className={styles.permissionsList}>
         {PAGE_PERMISSIONS.map((page) => {
           const currentLevel = pagePermissions[page.key] || 'hide'
           return (
-            <div key={page.key} className="flex items-center justify-between p-3">
-              <span className="text-sm">{page.label}</span>
-              <div className="flex gap-1">
+            <div key={page.key} className={styles.permissionRow}>
+              <span className={styles.permissionLabel}>{page.label}</span>
+              <div className={styles.permissionActions}>
                 {(['edit', 'view', 'hide'] as PermissionLevel[]).map((level) => {
                   const Icon = permissionLevelIcons[level]
                   const isSelected = currentLevel === level
+                  const activeCls = isSelected
+                    ? level === 'edit'
+                      ? styles.permBtnEdit
+                      : level === 'view'
+                        ? styles.permBtnView
+                        : styles.permBtnHide
+                    : ''
                   return (
                     <button
                       key={level}
@@ -1222,16 +1209,7 @@ function MemberPermissionsEditor({
                           [page.key]: level,
                         })
                       }}
-                      className={cn(
-                        'p-2 rounded transition-colors',
-                        isSelected
-                          ? level === 'edit'
-                            ? 'bg-green-100 text-green-700'
-                            : level === 'view'
-                              ? 'bg-blue-100 text-blue-700'
-                              : 'bg-red-100 text-red-700'
-                          : 'hover:bg-muted text-muted-foreground'
-                      )}
+                      className={`${styles.permBtn} ${activeCls}`}
                       title={permissionLevelLabels[level]}
                     >
                       <Icon className="h-4 w-4" />
@@ -1244,19 +1222,13 @@ function MemberPermissionsEditor({
         })}
       </div>
 
-      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1">
-          <Pencil className="h-3 w-3" /> Edit
-        </span>
-        <span className="flex items-center gap-1">
-          <Eye className="h-3 w-3" /> View
-        </span>
-        <span className="flex items-center gap-1">
-          <EyeOff className="h-3 w-3" /> Hide
-        </span>
+      <div className={styles.permLegend}>
+        <span><Pencil className="h-3 w-3" /> Edit</span>
+        <span><Eye className="h-3 w-3" /> View</span>
+        <span><EyeOff className="h-3 w-3" /> Hide</span>
       </div>
 
-      <div className="flex justify-end gap-2 pt-4">
+      <div className={styles.buttonRow} style={{ justifyContent: 'flex-end', paddingTop: '16px' }}>
         <Button variant="outline" onClick={onClose}>
           Cancel
         </Button>

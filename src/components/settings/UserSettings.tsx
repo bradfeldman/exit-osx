@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,6 +10,7 @@ import { UserAvatar } from '@/components/ui/user-avatar'
 import { GDPRSettings } from '@/components/settings/GDPRSettings'
 import { TwoFactorSettings } from '@/components/security/two-factor-settings'
 import { SessionManager } from '@/components/security/session-manager'
+import styles from './settings.module.css'
 
 export function UserSettings() {
   const [user, setUser] = useState<{ email: string; name: string | null } | null>(null)
@@ -87,90 +87,84 @@ export function UserSettings() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className={styles.loadingCenter}>
+        <div className={styles.spinner} />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile</CardTitle>
-          <CardDescription>Your personal account information</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center gap-4">
-            <UserAvatar
-              email={user?.email || ''}
-              name={user?.name || undefined}
-              size="lg"
-            />
-            <div>
-              <p className="text-sm font-medium text-foreground">{user?.name || 'No name set'}</p>
-              <p className="text-sm text-muted-foreground">{user?.email}</p>
+    <div className={styles.section}>
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Profile</h2>
+          <p className={styles.cardDescription}>Your personal account information</p>
+        </div>
+        <div className={styles.cardContent}>
+          <div className={styles.fieldStack}>
+            <div className={styles.profileRow}>
+              <UserAvatar
+                email={user?.email || ''}
+                name={user?.name || undefined}
+                size="lg"
+              />
+              <div>
+                <p className={styles.profileName}>{user?.name || 'No name set'}</p>
+                <p className={styles.profileEmail}>{user?.email}</p>
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="name">Display Name</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter your name"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              value={user?.email || ''}
-              disabled
-              className="bg-muted"
-            />
-            <p className="text-xs text-muted-foreground">
-              Email cannot be changed
-            </p>
-          </div>
-
-          {message && (
-            <div
-              className={`p-3 rounded-md text-sm ${
-                message.type === 'success'
-                  ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
-                  : 'bg-destructive/10 text-destructive border border-destructive/20'
-              }`}
-            >
-              {message.text}
+            <div className={styles.formGroup}>
+              <Label htmlFor="name">Display Name</Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your name"
+              />
             </div>
-          )}
 
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving...' : 'Save Changes'}
-          </Button>
-        </CardContent>
-      </Card>
+            <div className={styles.formGroup}>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                value={user?.email || ''}
+                disabled
+                className="bg-muted"
+              />
+              <p className={styles.formHint}>
+                Email cannot be changed
+              </p>
+            </div>
+
+            {message && (
+              <div className={message.type === 'success' ? styles.messageSuccess : styles.messageError}>
+                {message.text}
+              </div>
+            )}
+
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
+        </div>
+      </div>
 
       {/* Security Settings */}
-      <div className="pt-6 border-t">
-        <h2 className="text-xl font-semibold text-foreground mb-4">Security</h2>
-        <div className="space-y-6">
-          <TwoFactorSettings />
+      <h2 className={styles.sectionTitle}>Security</h2>
+      <div className={styles.fieldStack}>
+        <TwoFactorSettings />
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Active Sessions</CardTitle>
-              <CardDescription>
-                Manage devices where you&apos;re signed in
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <SessionManager />
-            </CardContent>
-          </Card>
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>Active Sessions</h2>
+            <p className={styles.cardDescription}>
+              Manage devices where you&apos;re signed in
+            </p>
+          </div>
+          <div className={styles.cardContent}>
+            <SessionManager />
+          </div>
         </div>
       </div>
 

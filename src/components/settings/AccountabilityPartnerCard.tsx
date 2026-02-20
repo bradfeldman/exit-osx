@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useCompany } from '@/contexts/CompanyContext'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Users, Trash2, CheckCircle, Clock, Mail } from 'lucide-react'
+import styles from './settings.module.css'
 
 interface PartnerData {
   id: string
@@ -91,56 +91,54 @@ export function AccountabilityPartnerCard() {
   if (loading) return null
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+    <div className={styles.card}>
+      <div className={styles.cardHeader}>
+        <h2 className={styles.cardTitle}>
           <Users className="h-5 w-5" />
           Accountability Partner
-        </CardTitle>
-        <CardDescription>
+        </h2>
+        <p className={styles.cardDescription}>
           Invite someone to receive monthly progress summaries and send you nudge reminders. No sensitive financial data is shared.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+        </p>
+      </div>
+      <div className={styles.cardContent}>
         {partner ? (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between rounded-lg border p-3">
-              <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Mail className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">{partner.name || partner.email}</p>
-                  {partner.name && <p className="text-xs text-muted-foreground">{partner.email}</p>}
-                </div>
+          <div className={styles.partnerRow}>
+            <div className={styles.partnerInfo}>
+              <div className={styles.partnerAvatar}>
+                <Mail className="h-4 w-4" />
               </div>
-              <div className="flex items-center gap-2">
-                {partner.acceptedAt ? (
-                  <span className="flex items-center gap-1 text-xs text-emerald-600">
-                    <CheckCircle className="h-3 w-3" />
-                    Accepted
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1 text-xs text-amber-600">
-                    <Clock className="h-3 w-3" />
-                    Pending
-                  </span>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleRemove}
-                  disabled={removing}
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
+              <div>
+                <p className={styles.partnerName}>{partner.name || partner.email}</p>
+                {partner.name && <p className={styles.partnerEmail}>{partner.email}</p>}
               </div>
+            </div>
+            <div className={styles.partnerActions}>
+              {partner.acceptedAt ? (
+                <span className={styles.statusAccepted}>
+                  <CheckCircle className="h-3 w-3" />
+                  Accepted
+                </span>
+              ) : (
+                <span className={styles.statusPending}>
+                  <Clock className="h-3 w-3" />
+                  Pending
+                </span>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleRemove}
+                disabled={removing}
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
             </div>
           </div>
         ) : (
-          <div className="space-y-3">
-            <div className="space-y-2">
+          <div className={styles.fieldStack}>
+            <div className={styles.formGroup}>
               <Label htmlFor="partner-email">Email address</Label>
               <Input
                 id="partner-email"
@@ -150,7 +148,7 @@ export function AccountabilityPartnerCard() {
                 placeholder="partner@example.com"
               />
             </div>
-            <div className="space-y-2">
+            <div className={styles.formGroup}>
               <Label htmlFor="partner-name">Name (optional)</Label>
               <Input
                 id="partner-name"
@@ -166,17 +164,11 @@ export function AccountabilityPartnerCard() {
         )}
 
         {message && (
-          <div
-            className={`mt-3 p-2 rounded text-xs ${
-              message.type === 'success'
-                ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
-                : 'bg-destructive/10 text-destructive'
-            }`}
-          >
+          <div className={message.type === 'success' ? styles.messageSuccess : styles.messageError}>
             {message.text}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
