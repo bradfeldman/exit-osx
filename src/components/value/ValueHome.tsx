@@ -6,21 +6,17 @@ import { useCompany } from '@/contexts/CompanyContext'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { useExposure } from '@/contexts/ExposureContext'
 import { useProgression } from '@/contexts/ProgressionContext'
+import dynamic from 'next/dynamic'
 import { AnimatedStagger, AnimatedItem } from '@/components/ui/animated-section'
 import { HeroMetricsBar } from './HeroMetricsBar'
 import { ValuationBridge } from './ValuationBridge'
 import { NextMoveCard } from './NextMoveCard'
 import { ProgressContext } from './ProgressContext'
-import { ValueTimeline } from './ValueTimeline'
 import { ValueHomeLoading } from './ValueHomeLoading'
 import { ValueHomeError } from './ValueHomeError'
-import { ValueLedgerSection } from '@/components/value-ledger/ValueLedgerSection'
 import { DisclosureTrigger } from '@/components/disclosures/DisclosureTrigger'
-import { DriftReportBanner } from '@/components/drift-report/DriftReportBanner'
 import { WeeklyCheckInTrigger } from '@/components/weekly-check-in/WeeklyCheckInTrigger'
 import { CoreScoreCard } from './CoreScoreCard'
-import { WhatIfScenarios } from './WhatIfScenarios'
-import { ProceedsWaterfall } from './ProceedsWaterfall'
 import { SignalSummaryCard } from './SignalSummaryCard'
 import { ActivePlaybooksRow } from './ActivePlaybooksRow'
 import { UpgradeModal } from '@/components/subscription/UpgradeModal'
@@ -30,6 +26,13 @@ import { Button } from '@/components/ui/button'
 import { SinceLastVisitBanner } from './SinceLastVisitBanner'
 import { EmailVerificationBanner } from './EmailVerificationBanner'
 import type { CoreFactors } from '@/lib/valuation/calculate-valuation'
+
+// Dynamic imports for heavy below-fold components
+const ValueTimeline = dynamic(() => import('./ValueTimeline').then(m => ({ default: m.ValueTimeline })), { ssr: false })
+const WhatIfScenarios = dynamic(() => import('./WhatIfScenarios').then(m => ({ default: m.WhatIfScenarios })), { ssr: false })
+const ProceedsWaterfall = dynamic(() => import('./ProceedsWaterfall').then(m => ({ default: m.ProceedsWaterfall })), { ssr: false })
+const ValueLedgerSection = dynamic(() => import('@/components/value-ledger/ValueLedgerSection').then(m => ({ default: m.ValueLedgerSection })), { ssr: false })
+const DriftReportBanner = dynamic(() => import('@/components/drift-report/DriftReportBanner').then(m => ({ default: m.DriftReportBanner })), { ssr: false })
 
 interface DashboardData {
   company: {
@@ -257,7 +260,7 @@ export function ValueHome() {
       </div>
       <EmailVerificationBanner emailVerified={data.emailVerified ?? true} />
       <SinceLastVisitBanner events={data.sinceLastVisit ?? []} lastVisitAt={data.lastVisitAt ?? null} />
-      <AnimatedStagger className="space-y-4 sm:space-y-8" staggerDelay={0.15}>
+      <AnimatedStagger className="space-y-4 sm:space-y-8" staggerDelay={0.08}>
         {/* Check-In: show only ONE at a time — Weekly takes priority over Quick Check */}
         {hasFullAssessment && (
           <AnimatedItem>
