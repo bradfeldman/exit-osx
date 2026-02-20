@@ -57,7 +57,7 @@ export function Slider({
           disabled && 'opacity-50 cursor-not-allowed'
         )}
         style={{
-          background: `linear-gradient(to right, hsl(var(--primary)) ${percentage}%, #e5e7eb ${percentage}%)`,
+          background: `linear-gradient(to right, var(--primary) ${percentage}%, var(--input) ${percentage}%)`,
         }}
       />
     </div>

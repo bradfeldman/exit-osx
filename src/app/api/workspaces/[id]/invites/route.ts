@@ -257,7 +257,7 @@ export async function POST(
           <!-- Header -->
           <tr>
             <td style="padding: 40px 40px 30px 40px; text-align: center; border-bottom: 1px solid #f0f0f0;">
-              <span style="font-size: 28px; font-weight: 700; color: #3D3D3D; letter-spacing: -0.5px;">Exit OS<span style="color: #B87333;">x</span></span>
+              <span style="font-size: 28px; font-weight: 700; color: #1D1D1F; letter-spacing: -0.5px;">Exit OS<span style="color: #0071E3;">x</span></span>
             </td>
           </tr>
 
@@ -274,7 +274,7 @@ export async function POST(
               </table>
 
               <!-- Heading -->
-              <h1 style="margin: 0 0 16px 0; font-size: 28px; font-weight: 700; color: #3D3D3D; text-align: center; letter-spacing: -0.5px;">
+              <h1 style="margin: 0 0 16px 0; font-size: 28px; font-weight: 700; color: #1D1D1F; text-align: center; letter-spacing: -0.5px;">
                 You've Been Invited!
               </h1>
 
@@ -286,7 +286,7 @@ export async function POST(
               <!-- CTA Button -->
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 32px auto;">
                 <tr>
-                  <td style="background-color: #B87333; border-radius: 8px;">
+                  <td style="background-color: #0071E3; border-radius: 8px;">
                     <a href="${inviteUrl}" target="_blank" style="display: inline-block; padding: 16px 40px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none;">
                       Accept Invitation
                     </a>
@@ -298,7 +298,7 @@ export async function POST(
               <p style="margin: 0 0 8px 0; font-size: 14px; color: #9CA3AF; text-align: center;">
                 Or copy and paste this link into your browser:
               </p>
-              <p style="margin: 0 0 32px 0; font-size: 13px; color: #B87333; text-align: center; word-break: break-all;">
+              <p style="margin: 0 0 32px 0; font-size: 13px; color: #0071E3; text-align: center; word-break: break-all;">
                 ${inviteUrl}
               </p>
 
@@ -310,7 +310,7 @@ export async function POST(
               </table>
 
               <!-- What's Next Section -->
-              <h2 style="margin: 0 0 20px 0; font-size: 18px; font-weight: 600; color: #3D3D3D; text-align: center;">
+              <h2 style="margin: 0 0 20px 0; font-size: 18px; font-weight: 600; color: #1D1D1F; text-align: center;">
                 What You'll Get Access To
               </h2>
 

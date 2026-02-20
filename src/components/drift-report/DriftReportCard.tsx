@@ -34,7 +34,7 @@ export function DriftReportCard({ report, compact = false }: DriftReportCardProp
   if (compact) {
     return (
       <Link href="/dashboard/drift-report">
-        <Card className={`hover:border-primary/30 transition-colors cursor-pointer ${isUnviewed ? 'border-[#B87333]/40 bg-[#B87333]/5' : ''}`}>
+        <Card className={`hover:border-primary/30 transition-colors cursor-pointer ${isUnviewed ? 'border-primary/40 bg-primary/5' : ''}`}>
           <CardContent className="py-3 px-4">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
@@ -72,7 +72,7 @@ export function DriftReportCard({ report, compact = false }: DriftReportCardProp
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold">{monthLabel}</h3>
             {isUnviewed && (
-              <span className="text-xs bg-[#B87333]/10 text-[#B87333] px-2 py-0.5 rounded-full font-medium">New</span>
+              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">New</span>
             )}
           </div>
           <div className="grid grid-cols-2 gap-4">

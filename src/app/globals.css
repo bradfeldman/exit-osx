@@ -56,6 +56,11 @@
   --color-teal: var(--teal);
   --color-teal-light: var(--teal-light);
   --color-accent-light: var(--accent-light);
+  --color-green-dark: var(--green-dark);
+  --color-orange-dark: var(--orange-dark);
+  --color-red-dark: var(--red-dark);
+  --color-purple-dark: var(--purple-dark);
+  --color-teal-dark: var(--teal-dark);
   /* Radius scale: 8px / 12px / 16px / 20px / 24px */
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -104,14 +109,19 @@
   /* Semantic colors */
   --green: #34C759;
   --green-light: #EAFBEF;
+  --green-dark: #059669;
   --orange: #FF9500;
   --orange-light: #FFF6E8;
+  --orange-dark: #92400E;
   --red: #FF3B30;
   --red-light: #FFEBEA;
+  --red-dark: #DC2626;
   --purple: #AF52DE;
   --purple-light: #F5EDFB;
+  --purple-dark: #7C3AED;
   --teal: #5AC8FA;
   --teal-light: #EAF8FE;
+  --teal-dark: #0891B2;
 
   /* Text hierarchy */
   --text-primary: #1D1D1F;
@@ -169,14 +179,19 @@
   --ring: #4DA3FF;
   --green: #30D158;
   --green-light: #1A2D1E;
+  --green-dark: #6EE7B7;
   --orange: #FFB340;
   --orange-light: #2D2410;
+  --orange-dark: #FCD34D;
   --red: #FF6B6B;
   --red-light: #2D1A1A;
+  --red-dark: #FCA5A5;
   --purple: #BF6DFF;
   --purple-light: #2A1D33;
+  --purple-dark: #D8B4FE;
   --teal: #6DD5FA;
   --teal-light: #1A2D33;
+  --teal-dark: #67E8F9;
   --text-primary: #F5F5F7;
   --text-secondary: #AEAEB2;
   --text-tertiary: #6E6E73;

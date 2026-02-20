@@ -75,7 +75,7 @@ export async function sendWeeklyDigestEmail(params: WeeklyDigestEmailParams): Pr
           <!-- Header -->
           <tr>
             <td style="padding: 40px 40px 30px 40px; text-align: center; border-bottom: 1px solid #f0f0f0;">
-              <span style="font-size: 28px; font-weight: 700; color: #3D3D3D; letter-spacing: -0.5px;">Exit OS<span style="color: #B87333;">x</span></span>
+              <span style="font-size: 28px; font-weight: 700; color: #1D1D1F; letter-spacing: -0.5px;">Exit OS<span style="color: #0071E3;">x</span></span>
               <p style="margin: 8px 0 0 0; font-size: 14px; color: #888888;">
                 Weekly Exit Pulse
               </p>
@@ -85,7 +85,7 @@ export async function sendWeeklyDigestEmail(params: WeeklyDigestEmailParams): Pr
           <!-- Greeting -->
           <tr>
             <td style="padding: 32px 40px 16px 40px;">
-              <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #3D3D3D;">
+              <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #1D1D1F;">
                 ${hasProgress ? `Great progress, ${firstName}!` : `Here's your week, ${firstName}`}
               </h1>
               <p style="margin: 8px 0 0 0; font-size: 16px; color: #666666;">
@@ -104,7 +104,7 @@ export async function sendWeeklyDigestEmail(params: WeeklyDigestEmailParams): Pr
                     <p style="margin: 0 0 4px 0; font-size: 12px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px;">
                       Estimated Value
                     </p>
-                    <p style="margin: 0; font-size: 24px; font-weight: 700; color: #3D3D3D;">
+                    <p style="margin: 0; font-size: 24px; font-weight: 700; color: #1D1D1F;">
                       ${formatCurrency(currentValue)}
                     </p>
                     ${valueChange !== 0 ? `
@@ -118,7 +118,7 @@ export async function sendWeeklyDigestEmail(params: WeeklyDigestEmailParams): Pr
                     <p style="margin: 0 0 4px 0; font-size: 12px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px;">
                       Buyer Readiness
                     </p>
-                    <p style="margin: 0; font-size: 24px; font-weight: 700; color: #3D3D3D;">
+                    <p style="margin: 0; font-size: 24px; font-weight: 700; color: #1D1D1F;">
                       ${roundedBRI}/100
                     </p>
                     ${briChange !== 0 ? `
@@ -175,10 +175,10 @@ export async function sendWeeklyDigestEmail(params: WeeklyDigestEmailParams): Pr
               <p style="margin: 0 0 12px 0; font-size: 14px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px;">
                 This Week's Priority
               </p>
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #f8f4f0 0%, #ffffff 100%); border: 2px solid #B8733330; border-radius: 12px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #F5F5F7 0%, #ffffff 100%); border: 2px solid #0071E330; border-radius: 12px;">
                 <tr>
                   <td style="padding: 20px;">
-                    <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #3D3D3D;">
+                    <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #1D1D1F;">
                       ${topTask.title}
                     </p>
                     ${topTask.estimatedValue > 0 ? `
@@ -198,7 +198,7 @@ export async function sendWeeklyDigestEmail(params: WeeklyDigestEmailParams): Pr
             <td style="padding: 0 40px 32px 40px; text-align: center;">
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                 <tr>
-                  <td style="border-radius: 8px; background-color: #B87333;">
+                  <td style="border-radius: 8px; background-color: #0071E3;">
                     <a href="${dashboardUrl}" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
                       View Your Dashboard
                     </a>

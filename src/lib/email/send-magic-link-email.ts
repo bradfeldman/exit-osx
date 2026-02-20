@@ -40,7 +40,7 @@ export async function sendMagicLinkEmail({ email, magicLinkUrl }: SendMagicLinkE
           <!-- Header -->
           <tr>
             <td style="padding: 40px 40px 30px 40px; text-align: center; border-bottom: 1px solid #f0f0f0;">
-              <span style="font-size: 28px; font-weight: 700; color: #3D3D3D; letter-spacing: -0.5px;">Exit OS<span style="color: #B87333;">x</span></span>
+              <span style="font-size: 28px; font-weight: 700; color: #1D1D1F; letter-spacing: -0.5px;">Exit OS<span style="color: #0071E3;">x</span></span>
             </td>
           </tr>
 
@@ -48,7 +48,7 @@ export async function sendMagicLinkEmail({ email, magicLinkUrl }: SendMagicLinkE
           <tr>
             <td style="padding: 40px;">
               <!-- Heading -->
-              <h1 style="margin: 0 0 16px 0; font-size: 28px; font-weight: 700; color: #3D3D3D; text-align: center; letter-spacing: -0.5px;">
+              <h1 style="margin: 0 0 16px 0; font-size: 28px; font-weight: 700; color: #1D1D1F; text-align: center; letter-spacing: -0.5px;">
                 Complete Your Account Setup
               </h1>
 
@@ -60,7 +60,7 @@ export async function sendMagicLinkEmail({ email, magicLinkUrl }: SendMagicLinkE
               <!-- CTA Button -->
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 24px auto;">
                 <tr>
-                  <td style="border-radius: 8px; background-color: #B87333;">
+                  <td style="border-radius: 8px; background-color: #0071E3;">
                     <a href="${magicLinkUrl}" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
                       Set Up My Account
                     </a>
@@ -72,7 +72,7 @@ export async function sendMagicLinkEmail({ email, magicLinkUrl }: SendMagicLinkE
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 24px auto; background-color: #faf8f5; border-radius: 8px; padding: 0;">
                 <tr>
                   <td style="padding: 20px 24px;">
-                    <p style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #3D3D3D;">
+                    <p style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #1D1D1F;">
                       After a quick onboarding (about 5 minutes), you will get:
                     </p>
                     <p style="margin: 0 0 6px 0; font-size: 14px; line-height: 1.5; color: #666666;">
@@ -91,7 +91,7 @@ export async function sendMagicLinkEmail({ email, magicLinkUrl }: SendMagicLinkE
               <!-- Fallback link -->
               <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #999999; text-align: center;">
                 If the button does not work, copy and paste this URL into your browser:<br>
-                <a href="${magicLinkUrl}" style="color: #B87333; word-break: break-all;">${magicLinkUrl}</a>
+                <a href="${magicLinkUrl}" style="color: #0071E3; word-break: break-all;">${magicLinkUrl}</a>
               </p>
             </td>
           </tr>

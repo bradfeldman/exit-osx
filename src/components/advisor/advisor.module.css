@@ -273,18 +273,18 @@
 }
 
 .statIconBlue {
-  background: #EBF2FF;
-  color: #2563EB;
+  background: var(--accent-light);
+  color: var(--primary);
 }
 
 .statIconGreen {
-  background: #ECFDF5;
-  color: #16A34A;
+  background: var(--green-light);
+  color: var(--green);
 }
 
 .statIconAmber {
-  background: #FFFBEB;
-  color: #D97706;
+  background: var(--orange-light);
+  color: var(--orange-dark);
 }
 
 .statLabel {
@@ -303,21 +303,21 @@
 .statValueGreen {
   font-size: 24px;
   font-weight: 700;
-  color: #16A34A;
+  color: var(--green);
   line-height: 1.1;
 }
 
 .statValueBlue {
   font-size: 24px;
   font-weight: 700;
-  color: #2563EB;
+  color: var(--primary);
   line-height: 1.1;
 }
 
 .statValueAmber {
   font-size: 24px;
   font-weight: 700;
-  color: #D97706;
+  color: var(--orange-dark);
   line-height: 1.1;
 }
 
@@ -510,7 +510,7 @@
   align-items: center;
   gap: 4px;
   font-size: 13px;
-  color: #16A34A;
+  color: var(--green);
 }
 
 /* ===== COMPANY INFO BLOCK ===== */
@@ -756,24 +756,24 @@
 /* These are applied via the className prop on Badge — kept as plain CSS classes
    that can be passed in via template literals when needed.               */
 .severityCritical {
-  background: #FEE2E2;
-  color: #B91C1C;
-  border-color: #FECACA;
+  background: var(--red-light);
+  color: var(--red-dark);
+  border-color: var(--red-light);
 }
 .severityHigh {
-  background: #FFEDD5;
-  color: #C2410C;
-  border-color: #FED7AA;
+  background: var(--orange-light);
+  color: var(--orange-dark);
+  border-color: var(--orange);
 }
 .severityMedium {
-  background: #FFFBEB;
-  color: #B45309;
-  border-color: #FDE68A;
+  background: var(--orange-light);
+  color: var(--orange-dark);
+  border-color: var(--orange);
 }
 .severityLow {
-  background: #EFF6FF;
-  color: #1D4ED8;
-  border-color: #BFDBFE;
+  background: var(--accent-light);
+  color: var(--primary);
+  border-color: var(--accent-light);
 }
 .severityInfo {
   background: #F4F4F5;
@@ -786,22 +786,22 @@
   color: #52525B;
 }
 .confidenceSomewhat {
-  background: #FEFCE8;
+  background: var(--orange-light);
   color: #A16207;
 }
 .confidenceConfident {
-  background: #EFF6FF;
-  color: #1D4ED8;
+  background: var(--accent-light);
+  color: var(--primary);
 }
 .confidenceVerified {
-  background: #ECFDF5;
-  color: #065F46;
+  background: var(--green-light);
+  color: var(--green-dark);
 }
 
 .badgeConfirmed {
-  background: #ECFDF5;
-  color: #065F46;
-  border-color: #6EE7B7;
+  background: var(--green-light);
+  color: var(--green-dark);
+  border-color: var(--green);
 }
 .badgeDismissed {
   background: #F4F4F5;

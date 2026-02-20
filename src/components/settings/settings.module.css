@@ -197,7 +197,7 @@
   border-radius: var(--radius-sm);
   font-size: 13px;
   background: var(--green-light);
-  color: #166534;
+  color: var(--green-dark);
   border: 1px solid var(--green);
   border-color: color-mix(in srgb, var(--green) 30%, transparent);
 }
@@ -207,7 +207,7 @@
   border-radius: var(--radius-sm);
   font-size: 13px;
   background: var(--red-light);
-  color: #991B1B;
+  color: var(--red-dark);
   border: 1px solid var(--red);
   border-color: color-mix(in srgb, var(--red) 30%, transparent);
 }
@@ -358,7 +358,7 @@
 .industryMatchLabel {
   font-size: 13px;
   font-weight: 600;
-  color: #92400e;
+  color: var(--orange-dark);
 }
 
 .industryMatchValue {
@@ -370,7 +370,7 @@
 
 .industryMatchReasoning {
   font-size: 12px;
-  color: #92400e;
+  color: var(--orange-dark);
   margin-top: 4px;
 }
 
@@ -456,7 +456,7 @@
 
 .affiliationOwner {
   background: var(--orange-light);
-  color: #92400e;
+  color: var(--orange-dark);
   border-color: color-mix(in srgb, var(--orange) 30%, transparent);
 }
 
@@ -563,7 +563,7 @@
 
 .permBtnEdit {
   background: var(--green-light);
-  color: #15803d;
+  color: var(--green-dark);
 }
 
 .permBtnView {
@@ -651,13 +651,13 @@
 }
 
 .checkoutSuccessText strong {
-  color: #166534;
+  color: var(--green-dark);
   display: block;
   font-size: 14px;
 }
 
 .checkoutSuccessText span {
-  color: #15803d;
+  color: var(--green-dark);
   font-size: 13px;
 }
 
@@ -793,7 +793,7 @@
   padding: 2px 8px;
   border-radius: 10px;
   background: var(--green-light);
-  color: #15803d;
+  color: var(--green-dark);
   font-size: 11px;
   font-weight: 500;
   margin-left: 6px;
@@ -1011,12 +1011,12 @@
 
 .deletionWarningTitle {
   font-weight: 500;
-  color: #92400e;
+  color: var(--orange-dark);
 }
 
 .deletionWarningText {
   font-size: 13px;
-  color: #b45309;
+  color: var(--orange-dark);
   margin-top: 4px;
 }
 
@@ -1253,7 +1253,7 @@
   font-size: 12px;
   font-weight: 500;
   background: var(--orange-light);
-  color: #92400e;
+  color: var(--orange-dark);
 }
 
 .pastDueBadge {

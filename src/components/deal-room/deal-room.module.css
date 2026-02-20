@@ -87,7 +87,7 @@
 }
 
 .btnPrimary:hover {
-  background: #005BB5;
+  background: var(--primary);
 }
 
 .btnSecondary {
@@ -729,7 +729,7 @@
 
 .meetingStatusCompleted {
   background: var(--green-light);
-  color: #1B8731;
+  color: var(--green-dark);
 }
 
 /* LOI Summary Card (inline in hero) */
@@ -739,7 +739,7 @@
   border-radius: var(--radius-sm);
   padding: 16px;
   margin-bottom: 20px;
-  border: 1px solid #B8EDCA;
+  border: 1px solid var(--green);
   transition: box-shadow 0.15s;
   text-decoration: none;
   color: inherit;
@@ -752,14 +752,14 @@
 .loiAmount {
   font-size: 24px;
   font-weight: 800;
-  color: #1B8731;
+  color: var(--green-dark);
   letter-spacing: -0.8px;
   margin-bottom: 4px;
 }
 
 .loiAmountSub {
   font-size: 12px;
-  color: #1B8731;
+  color: var(--green-dark);
   font-weight: 500;
 }
 
@@ -847,7 +847,7 @@
 
 .statusBadgeComplete {
   background: var(--green-light);
-  color: #1B7A34;
+  color: var(--green-dark);
   border: 1px solid rgba(52, 199, 89, 0.25);
 }
 
@@ -1695,11 +1695,11 @@
 }
 
 .reqStatusDone {
-  color: #1B8731;
+  color: var(--green-dark);
 }
 
 .reqStatusProg {
-  color: #B36B00;
+  color: var(--orange-dark);
 }
 
 .reqStatusNone {
@@ -1860,7 +1860,7 @@
 }
 
 .dvGood {
-  color: #1B8731;
+  color: var(--green-dark);
 }
 
 .flagAlert {
@@ -1923,7 +1923,7 @@
 }
 
 .panelBtnPrimary:hover {
-  background: #005BB5;
+  background: var(--primary);
   color: white;
 }
 
@@ -2303,7 +2303,7 @@
 }
 
 .checkItemCelebrate:hover {
-  background: linear-gradient(to right, #D4F7E2, #F9FAFB);
+  background: linear-gradient(to right, #D4F7E2, var(--surface-secondary));
 }
 
 .checkBox {
@@ -2374,7 +2374,7 @@
 }
 
 .checkNoteInprog {
-  color: #B36B00;
+  color: var(--orange-dark);
 }
 
 .checkDate {
@@ -2384,7 +2384,7 @@
 }
 
 .checkDateDone {
-  color: #1B8731;
+  color: var(--green-dark);
 }
 
 .milestoneTag {
@@ -2410,7 +2410,7 @@
 .celebrateName {
   font-size: 14px;
   font-weight: 700;
-  color: #1B8731;
+  color: var(--green-dark);
 }
 
 .celebrateNote {
@@ -2492,7 +2492,7 @@
 }
 
 .kdValDone {
-  color: #1B8731;
+  color: var(--green-dark);
 }
 
 .kdValUpcoming {

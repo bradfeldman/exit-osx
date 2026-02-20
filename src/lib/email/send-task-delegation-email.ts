@@ -88,7 +88,7 @@ export async function sendTaskDelegationEmail(params: TaskDelegationEmailParams)
           <!-- Header -->
           <tr>
             <td style="padding: 40px 40px 30px 40px; text-align: center; border-bottom: 1px solid #f0f0f0;">
-              <span style="font-size: 28px; font-weight: 700; color: #3D3D3D; letter-spacing: -0.5px;">Exit OS<span style="color: #B87333;">x</span></span>
+              <span style="font-size: 28px; font-weight: 700; color: #1D1D1F; letter-spacing: -0.5px;">Exit OS<span style="color: #0071E3;">x</span></span>
               <p style="margin: 8px 0 0 0; font-size: 14px; color: #888888;">
                 Task Assignment
               </p>
@@ -98,7 +98,7 @@ export async function sendTaskDelegationEmail(params: TaskDelegationEmailParams)
           <!-- Main Content -->
           <tr>
             <td style="padding: 32px 40px 16px 40px;">
-              <h1 style="margin: 0 0 12px 0; font-size: 24px; font-weight: 700; color: #3D3D3D;">
+              <h1 style="margin: 0 0 12px 0; font-size: 24px; font-weight: 700; color: #1D1D1F;">
                 Hey ${firstName} 👋
               </h1>
               <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.6; color: #666666;">
@@ -110,7 +110,7 @@ export async function sendTaskDelegationEmail(params: TaskDelegationEmailParams)
           <!-- Task Card -->
           <tr>
             <td style="padding: 0 40px 32px 40px;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #f8f4f0 0%, #ffffff 100%); border: 2px solid #B8733330; border-radius: 12px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #F5F5F7 0%, #ffffff 100%); border: 2px solid #0071E330; border-radius: 12px;">
                 <tr>
                   <td style="padding: 24px;">
                     <!-- Category Badge -->
@@ -124,7 +124,7 @@ export async function sendTaskDelegationEmail(params: TaskDelegationEmailParams)
                       </tr>
                     </table>
 
-                    <p style="margin: 0 0 12px 0; font-size: 18px; font-weight: 600; color: #3D3D3D;">
+                    <p style="margin: 0 0 12px 0; font-size: 18px; font-weight: 600; color: #1D1D1F;">
                       ${taskTitle}
                     </p>
 
@@ -180,7 +180,7 @@ export async function sendTaskDelegationEmail(params: TaskDelegationEmailParams)
             <td style="padding: 0 40px 32px 40px; text-align: center;">
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                 <tr>
-                  <td style="border-radius: 8px; background-color: #B87333;">
+                  <td style="border-radius: 8px; background-color: #0071E3;">
                     <a href="${taskUrl}" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
                       ${inviteToken ? 'Accept Invite & View Task' : 'View Task Details'}
                     </a>
@@ -194,7 +194,7 @@ export async function sendTaskDelegationEmail(params: TaskDelegationEmailParams)
           <tr>
             <td style="padding: 0 40px 32px 40px;">
               <p style="margin: 0; font-size: 13px; color: #888888; text-align: center;">
-                Questions? Reply to this email or reach out to ${delegatedBy.name} at <a href="mailto:${delegatedBy.email}" style="color: #B87333; text-decoration: none;">${delegatedBy.email}</a>
+                Questions? Reply to this email or reach out to ${delegatedBy.name} at <a href="mailto:${delegatedBy.email}" style="color: #0071E3; text-decoration: none;">${delegatedBy.email}</a>
               </p>
             </td>
           </tr>

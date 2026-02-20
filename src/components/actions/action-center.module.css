@@ -19,7 +19,7 @@
 }
 .btn svg { width: 16px; height: 16px; }
 .btnPrimary { background: var(--accent); color: white; }
-.btnPrimary:hover { background: #005BB5; }
+.btnPrimary:hover { background: var(--primary); }
 .btnSecondary { background: var(--surface); color: var(--text-primary); border: 1px solid var(--border); }
 .btnSecondary:hover { background: var(--surface-secondary); }
 
@@ -131,8 +131,8 @@
 .tagCustomer { background: var(--orange-light); color: #8B5E00; }
 .tagOps { background: var(--purple-light); color: var(--purple); }
 .tagFinancial { background: var(--accent-light); color: var(--accent); }
-.tagLegal { background: var(--teal-light); color: #0891B2; }
-.tagGrowth { background: var(--green-light); color: #1B8731; }
+.tagLegal { background: var(--teal-light); color: var(--teal-dark); }
+.tagGrowth { background: var(--green-light); color: var(--green-dark); }
 
 /* Due date */
 .taskDue { font-size: 12px; color: var(--text-tertiary); font-weight: 500; }
@@ -156,7 +156,7 @@
 }
 .badgeBlue { background: var(--accent-light); color: var(--accent); }
 .badgeRed { background: var(--red-light); color: var(--red); }
-.badgeGreen { background: var(--green-light); color: #1B7A34; }
+.badgeGreen { background: var(--green-light); color: var(--green-dark); }
 .badgeOrange { background: var(--orange-light); color: #C47000; }
 .badgeGray { background: var(--surface-secondary); color: var(--text-secondary); border: 1px solid var(--border); }
 .statusDivider { width: 1px; height: 16px; background: var(--border); }
@@ -173,9 +173,9 @@
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .valueImpactIcon svg { width: 22px; height: 22px; stroke: #fff; }
-.valueImpactLabel { font-size: 12px; font-weight: 600; color: #1B7A34; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-.valueImpactAmount { font-size: 22px; font-weight: 800; color: #1B7A34; letter-spacing: -0.5px; }
-.valueImpactDesc { font-size: 12px; color: #2D8A47; margin-top: 2px; }
+.valueImpactLabel { font-size: 12px; font-weight: 600; color: var(--green-dark); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+.valueImpactAmount { font-size: 22px; font-weight: 800; color: var(--green-dark); letter-spacing: -0.5px; }
+.valueImpactDesc { font-size: 12px; color: var(--green-dark); margin-top: 2px; }
 
 /* Card */
 .card {
@@ -274,7 +274,7 @@
 .signalTagSource { background: var(--surface-secondary); color: var(--text-tertiary); border: 1px solid var(--border-light); }
 .signalTagFinancial { background: var(--accent-light); color: var(--accent); }
 .signalTagOperational { background: var(--purple-light); color: var(--purple); }
-.signalTagMarket { background: var(--teal-light); color: #0891B2; }
+.signalTagMarket { background: var(--teal-light); color: var(--teal-dark); }
 .signalTagCustomer { background: var(--orange-light); color: #8B5E00; }
 
 /* Signal right */

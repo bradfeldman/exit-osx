@@ -39,7 +39,7 @@
 }
 .btn svg { width: 16px; height: 16px; }
 .btnPrimary { background: var(--accent); color: white; }
-.btnPrimary:hover { background: #005BB5; }
+.btnPrimary:hover { background: var(--primary); }
 .btnSecondary { background: var(--surface); color: var(--text-primary); border: 1px solid var(--border); }
 .btnSecondary:hover { background: var(--surface-secondary); }
 
@@ -73,8 +73,8 @@
 .alertBar svg { width: 20px; height: 20px; flex-shrink: 0; }
 .alertBarWarning {
   background: var(--orange-light);
-  color: #8B5E00;
-  border: 1px solid #FFD08A;
+  color: var(--orange-dark);
+  border: 1px solid var(--orange);
 }
 .alertAction {
   margin-left: auto;
@@ -93,10 +93,10 @@
   padding: 12px 18px;
   background: var(--green-light);
   border-radius: var(--radius-sm);
-  border: 1px solid #B8EDCA;
+  border: 1px solid var(--green);
   margin-bottom: 24px;
   font-size: 13px;
-  color: #1B7A34;
+  color: var(--green-dark);
   font-weight: 500;
 }
 .qbStatus svg { width: 18px; height: 18px; flex-shrink: 0; }
@@ -485,7 +485,7 @@
   border-radius: 4px;
   margin-left: 6px;
 }
-.yoyPillUp { background: var(--green-light); color: #1B8731; }
+.yoyPillUp { background: var(--green-light); color: var(--green-dark); }
 .yoyPillDown { background: var(--red-light); color: var(--red); }
 
 /* ===== ADJUSTMENTS ===== */
@@ -523,7 +523,7 @@
   min-width: 70px;
   text-align: center;
 }
-.adjTypeBadgeAdd { background: var(--green-light); color: #1B8731; }
+.adjTypeBadgeAdd { background: var(--green-light); color: var(--green-dark); }
 .adjTypeBadgeSub { background: var(--red-light); color: var(--red); }
 .adjInfo { flex: 1; }
 .adjName { font-size: 14px; font-weight: 600; }
@@ -768,7 +768,7 @@
   border-radius: 4px;
   margin-top: 4px;
 }
-.ratioBadgeGood { background: var(--green-light); color: #1B8731; }
+.ratioBadgeGood { background: var(--green-light); color: var(--green-dark); }
 .ratioBadgeOk { background: var(--orange-light); color: var(--orange); }
 
 /* ===== CASH FLOW ===== */
@@ -839,9 +839,9 @@
   border-radius: 8px;
   transition: width 0.3s;
 }
-.waterfallBarGreen { background: linear-gradient(90deg, #22c55e, #16a34a); }
-.waterfallBarRed { background: linear-gradient(90deg, #ef4444, #dc2626); }
-.waterfallBarOrange { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.waterfallBarGreen { background: linear-gradient(90deg, var(--green), var(--green-dark)); }
+.waterfallBarRed { background: linear-gradient(90deg, var(--red), var(--red-dark)); }
+.waterfallBarOrange { background: linear-gradient(90deg, var(--orange), var(--orange-dark)); }
 .waterfallNetChange {
   border-top: 2px solid var(--border);
   margin-top: 12px;
@@ -968,7 +968,7 @@
   letter-spacing: 0.7px;
   border-top: 2px solid var(--border);
 }
-.adjSectionAddbacks { background: var(--green-light); color: #1B8731; }
+.adjSectionAddbacks { background: var(--green-light); color: var(--green-dark); }
 .adjSectionSubtractions { background: var(--red-light); color: var(--red); }
 .adjSectionSummary { background: var(--surface-secondary); color: var(--text-primary); }
 .adjSubtotalRow td {
@@ -994,7 +994,7 @@
   white-space: nowrap;
 }
 .catPillOwner { background: var(--purple-light); color: var(--purple); }
-.catPillOnetime { background: var(--teal-light); color: #0891B2; }
+.catPillOnetime { background: var(--teal-light); color: var(--teal-dark); }
 .catPillPersonal { background: var(--orange-light); color: var(--orange); }
 .catPillNormalize { background: var(--red-light); color: var(--red); }
 
@@ -1014,7 +1014,7 @@
   height: 5px;
   border-radius: 50%;
 }
-.statusBadgeAccepted { background: var(--green-light); color: #1B8731; }
+.statusBadgeAccepted { background: var(--green-light); color: var(--green-dark); }
 .statusBadgeAccepted::before { background: var(--green); }
 .statusBadgePending { background: var(--orange-light); color: var(--orange); }
 .statusBadgePending::before { background: var(--orange); }
@@ -1115,7 +1115,7 @@
 .retirementModeToggle {
   display: flex;
   align-items: center;
-  background: #F3F4F6;
+  background: var(--background);
   border-radius: 10px;
   padding: 4px;
 }
@@ -1355,11 +1355,11 @@
 }
 .retirementModelingBannerInner {
   padding: 12px;
-  background: #EFF6FF;
-  border: 1px solid #BFDBFE;
+  background: var(--accent-light);
+  border: 1px solid var(--accent-light);
   border-radius: var(--radius-sm);
   font-size: 14px;
-  color: #1E40AF;
+  color: var(--primary);
 }
 .retirementModelingBannerBold {
   font-weight: 600;
@@ -1693,16 +1693,16 @@
 .retirementChipAdded {
   font-size: 11px;
   font-weight: 600;
-  background: #DBEAFE;
-  color: #1D4ED8;
+  background: var(--accent-light);
+  color: var(--primary);
   padding: 2px 6px;
   border-radius: 4px;
 }
 .retirementChipModified {
   font-size: 11px;
   font-weight: 600;
-  background: #FEF3C7;
-  color: #B45309;
+  background: var(--orange-light);
+  color: var(--orange-dark);
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -1750,8 +1750,8 @@
   display: inline;
   font-size: 11px;
   font-weight: 600;
-  background: #DBEAFE;
-  color: #1D4ED8;
+  background: var(--accent-light);
+  color: var(--primary);
   padding: 1px 6px;
   border-radius: 4px;
 }
@@ -2121,16 +2121,16 @@
   justify-content: space-between;
 }
 .profileHealthGradientGood {
-  background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
+  background: linear-gradient(135deg, var(--green) 0%, #0d9488 100%);
 }
 .profileHealthGradientOk {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: linear-gradient(135deg, var(--orange) 0%, var(--orange-dark) 100%);
 }
 .profileHealthGradientPoor {
-  background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+  background: linear-gradient(135deg, var(--red) 0%, #f97316 100%);
 }
 .profileHealthGradientUnknown {
-  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  background: linear-gradient(135deg, var(--muted-foreground) 0%, var(--muted-foreground) 100%);
 }
 .profileHealthText { color: white; }
 .profileHealthLabel {
@@ -2203,9 +2203,9 @@
   flex-shrink: 0;
 }
 .profileCategoryIcon svg { width: 18px; height: 18px; }
-.profileCategoryIconProfitability { background: #d1fae5; color: #059669; }
-.profileCategoryIconLiquidity { background: #dbeafe; color: #2563eb; }
-.profileCategoryIconLeverage { background: #ede9fe; color: #7c3aed; }
+.profileCategoryIconProfitability { background: var(--green-light); color: var(--green-dark); }
+.profileCategoryIconLiquidity { background: var(--accent-light); color: var(--primary); }
+.profileCategoryIconLeverage { background: var(--purple-light); color: var(--purple-dark); }
 .profileCategoryIconEfficiency { background: #ffedd5; color: #ea580c; }
 
 .profileMetricGrid {
@@ -2238,9 +2238,9 @@
   border-radius: 50%;
 }
 .profileMetricStatus svg { width: 16px; height: 16px; }
-.profileMetricStatusGood { color: #059669; background: #d1fae5; }
-.profileMetricStatusWarning { color: #d97706; background: #fef3c7; }
-.profileMetricStatusPoor { color: #dc2626; background: #fee2e2; }
+.profileMetricStatusGood { color: var(--green-dark); background: var(--green-light); }
+.profileMetricStatusWarning { color: var(--orange-dark); background: var(--orange-light); }
+.profileMetricStatusPoor { color: var(--red-dark); background: var(--red-light); }
 .profileMetricStatusUnknown { color: var(--text-tertiary); background: var(--surface-secondary); }
 .profileMetricBottom {
   display: flex;
@@ -2262,8 +2262,8 @@
   font-weight: 600;
 }
 .profileMetricTrend svg { width: 12px; height: 12px; }
-.profileMetricTrendUp { color: #059669; }
-.profileMetricTrendDown { color: #dc2626; }
+.profileMetricTrendUp { color: var(--green-dark); }
+.profileMetricTrendDown { color: var(--red-dark); }
 .profileMetricDesc {
   font-size: 12px;
   color: var(--text-tertiary);
@@ -2324,7 +2324,7 @@
   align-items: flex-start;
   gap: 8px;
   font-size: 14px;
-  color: #1B7A34;
+  color: var(--green-dark);
   background: var(--green-light);
   padding: 12px 16px;
   border-radius: var(--radius-sm);
@@ -2415,21 +2415,21 @@
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
+  background: var(--green-light);
+  border: 1px solid var(--green);
   border-radius: var(--radius-sm);
   font-size: 14px;
-  color: #065f46;
+  color: var(--green-dark);
 }
 .editBannerEmeraldIcon {
   padding: 6px;
-  background: #d1fae5;
+  background: var(--green-light);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: #059669;
+  color: var(--green-dark);
 }
 
 .editBannerBlue {
@@ -2437,21 +2437,21 @@
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  background: var(--accent-light);
+  border: 1px solid var(--accent-light);
   border-radius: var(--radius-sm);
   font-size: 14px;
-  color: #1e40af;
+  color: var(--primary);
 }
 .editBannerBlueIcon {
   padding: 6px;
-  background: #dbeafe;
+  background: var(--accent-light);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: #2563eb;
+  color: var(--primary);
 }
 
 .editBannerBold { font-weight: 600; }
@@ -2643,7 +2643,7 @@
   align-items: center;
   gap: 6px;
   font-size: 14px;
-  color: #1B7A34;
+  color: var(--green-dark);
 }
 
 .editQbNotConfigured {
@@ -2785,9 +2785,9 @@
 
 .stmtIconBadge { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; }
 .stmtIconBadge svg { width: 16px; height: 16px; }
-.stmtIconBadgeGreen  { background: #DCFCE7; color: #059669; }
+.stmtIconBadgeGreen  { background: var(--green-light); color: var(--green-dark); }
 .stmtIconBadgeOrange { background: #FFEDD5; color: #EA580C; }
-.stmtIconBadgeBlue   { background: #DBEAFE; color: #2563EB; }
+.stmtIconBadgeBlue   { background: var(--accent-light); color: var(--primary); }
 .stmtIconBadgeGray   { background: var(--surface-secondary); color: var(--text-secondary); }
 
 .stmtSectionLabel { font-size: 15px; font-weight: 600; color: var(--text-primary); }
@@ -2848,22 +2848,22 @@
   padding: 16px;
 }
 .stmtResultCardBlue {
-  background: linear-gradient(135deg, #EFF6FF 0%, #EEF2FF 100%);
-  border: 1px solid #BFDBFE;
+  background: linear-gradient(135deg, var(--accent-light) 0%, #EEF2FF 100%);
+  border: 1px solid var(--accent-light);
   border-radius: var(--radius-md);
   padding: 16px;
 }
 .stmtResultCardHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
 .stmtResultCardName     { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
-.stmtResultCardNameBlue { font-size: 13px; font-weight: 500; color: #1D4ED8; }
+.stmtResultCardNameBlue { font-size: 13px; font-weight: 500; color: var(--primary); }
 .stmtResultValue        { font-size: 24px; font-weight: 700; color: var(--text-primary); }
-.stmtResultValueBlue    { font-size: 24px; font-weight: 700; color: #1D4ED8; }
+.stmtResultValueBlue    { font-size: 24px; font-weight: 700; color: var(--primary); }
 .stmtResultValueNeg     { color: var(--red); }
 .stmtResultHint         { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
 .stmtResultHintBlue     { font-size: 11px; color: rgba(29,78,216,0.6); margin-top: 4px; }
 
 .stmtMarginBadge       { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
-.stmtMarginBadgeGreen  { background: #DCFCE7; color: #15803D; }
+.stmtMarginBadgeGreen  { background: var(--green-light); color: var(--green-dark); }
 .stmtMarginBadgeYellow { background: #FEF9C3; color: #854D0E; }
 .stmtMarginBadgeGray   { background: var(--surface-secondary); color: var(--text-secondary); }
 
@@ -2899,7 +2899,7 @@
 .stmtBelowLineRowValue { font-size: 14px; font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
 .stmtBelowLineRowTotal { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--surface-secondary); }
 .stmtBelowLineRowTotalLabel { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-.stmtBelowLineRowTotalValuePos { font-size: 18px; font-weight: 700; color: #059669; font-variant-numeric: tabular-nums; }
+.stmtBelowLineRowTotalValuePos { font-size: 18px; font-weight: 700; color: var(--green-dark); font-variant-numeric: tabular-nums; }
 .stmtBelowLineRowTotalValueNeg { font-size: 18px; font-weight: 700; color: var(--red); font-variant-numeric: tabular-nums; }
 
 /* ===== BALANCE SHEET TAB (stmt*) ===== */
@@ -2910,25 +2910,25 @@
 .stmtNetPPEValue { font-size: 13px; font-weight: 500; color: var(--text-primary); font-variant-numeric: tabular-nums; }
 
 .stmtTotalRow { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-radius: var(--radius-sm); background: var(--surface-secondary); }
-.stmtTotalRowPrimary  { background: #EFF6FF; }
-.stmtTotalRowSuccess  { background: #ECFDF5; }
-.stmtTotalRowError    { background: #FEF2F2; }
+.stmtTotalRowPrimary  { background: var(--accent-light); }
+.stmtTotalRowSuccess  { background: var(--green-light); }
+.stmtTotalRowError    { background: var(--red-light); }
 .stmtTotalRowLabel    { font-size: 14px; font-weight: 500; color: var(--text-primary); }
 .stmtTotalRowValue    { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-primary); }
-.stmtTotalRowValuePrimary { color: #1D4ED8; }
-.stmtTotalRowValueSuccess { color: #059669; }
+.stmtTotalRowValuePrimary { color: var(--primary); }
+.stmtTotalRowValueSuccess { color: var(--green-dark); }
 .stmtTotalRowValueError   { color: var(--red); }
 
 .stmtBalanceCheck { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-radius: var(--radius-md); border: 2px solid; }
-.stmtBalanceCheckOk   { background: #ECFDF5; border-color: #A7F3D0; }
-.stmtBalanceCheckErr  { background: #FEF2F2; border-color: #FECACA; }
+.stmtBalanceCheckOk   { background: var(--green-light); border-color: var(--green); }
+.stmtBalanceCheckErr  { background: var(--red-light); border-color: var(--red-light); }
 .stmtBalanceCheckTitle    { font-size: 14px; font-weight: 600; }
-.stmtBalanceCheckTitleOk  { color: #059669; }
+.stmtBalanceCheckTitleOk  { color: var(--green-dark); }
 .stmtBalanceCheckTitleErr { color: var(--red); }
 .stmtBalanceCheckSubtitle { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
 .stmtBalanceCheckResult   { text-align: right; }
 .stmtBalanceCheckStatus   { font-size: 18px; font-weight: 700; }
-.stmtBalanceCheckStatusOk  { color: #059669; }
+.stmtBalanceCheckStatusOk  { color: var(--green-dark); }
 .stmtBalanceCheckStatusErr { color: var(--red); }
 .stmtBalanceCheckDiff { font-size: 13px; color: var(--red); margin-top: 2px; font-variant-numeric: tabular-nums; }
 
@@ -3068,8 +3068,8 @@
   align-items: center;
   gap: 8px;
 }
-.loansQualStatusTitlePass { color: #1a7a32; }
-.loansQualStatusTitleFail { color: #8b5e00; }
+.loansQualStatusTitlePass { color: var(--green-dark); }
+.loansQualStatusTitleFail { color: var(--orange-dark); }
 .loansQualStatusTitlePass svg { width: 20px; height: 20px; }
 .loansQualStatusDesc { font-size: 13px; margin-top: 2px; }
 .loansQualStatusDescPass { color: rgb(26 122 50 / 80%); }
@@ -3140,8 +3140,8 @@
 .loansCriterionNameRowPass svg { color: var(--green); }
 .loansCriterionNameRowFail svg { color: var(--red); }
 .loansCriterionName { font-size: 14px; font-weight: 600; }
-.loansCriterionNamePass { color: #1a7a32; }
-.loansCriterionNameFail { color: #b82222; }
+.loansCriterionNamePass { color: var(--green-dark); }
+.loansCriterionNameFail { color: var(--red-dark); }
 .loansRequiredBadge {
   font-size: 11px;
   font-weight: 600;
@@ -3192,7 +3192,7 @@
   flex-direction: column;
   gap: 4px;
   font-size: 13px;
-  color: #005bb5;
+  color: var(--primary);
 }
 .loansActionCard {
   background: linear-gradient(135deg, rgb(0 113 227 / 4%) 0%, rgb(0 113 227 / 8%) 50%, rgb(0 113 227 / 4%) 100%);
@@ -3263,7 +3263,7 @@
   justify-content: center;
 }
 .loansSuccessIconWrap svg { width: 40px; height: 40px; color: var(--green); }
-.loansSuccessTitle { font-size: 24px; font-weight: 700; letter-spacing: -0.4px; color: #1a7a32; }
+.loansSuccessTitle { font-size: 24px; font-weight: 700; letter-spacing: -0.4px; color: var(--green-dark); }
 .loansSuccessDesc { font-size: 14px; color: rgb(26 122 50 / 85%); max-width: 440px; line-height: 1.6; }
 .loansSuccessDesc strong { font-weight: 600; }
 .loansSuccessFootnote { font-size: 13px; color: var(--text-tertiary); }
@@ -3387,8 +3387,8 @@
   gap: 4px;
   font-size: 13px;
 }
-.pfsSaveMsgError { color: #dc2626; max-width: 260px; }
-.pfsSaveMsgSuccess { color: #16a34a; }
+.pfsSaveMsgError { color: var(--red-dark); max-width: 260px; }
+.pfsSaveMsgSuccess { color: var(--green); }
 .pfsSaveTimestamp { font-size: 12px; color: var(--text-tertiary); }
 
 .pfsReadOnlyBar {
@@ -3397,10 +3397,10 @@
   gap: 12px;
   padding: 10px 16px;
   border-radius: var(--radius-sm);
-  background: #fffbeb;
-  border: 1px solid #fcd34d;
+  background: var(--orange-light);
+  border: 1px solid var(--orange);
   font-size: 13px;
-  color: #92400e;
+  color: var(--orange-dark);
 }
 
 .pfsNetWorthCard {
@@ -3437,8 +3437,8 @@
   font-weight: 700;
   letter-spacing: -0.5px;
 }
-.pfsNetWorthValueGreen { color: #16a34a; }
-.pfsNetWorthValueRed { color: #ef4444; }
+.pfsNetWorthValueGreen { color: var(--green); }
+.pfsNetWorthValueRed { color: var(--red); }
 .pfsNetWorthValuePrimary { color: var(--accent); }
 
 .pfsSection {
@@ -3586,8 +3586,8 @@
 .pfsTableTotalAsset { grid-template-columns: 8fr 3fr 1fr; }
 .pfsTableTotalLabel { text-align: right; font-weight: 600; color: var(--text-primary); font-size: 14px; }
 .pfsTableTotalValue { text-align: right; font-weight: 700; font-size: 17px; }
-.pfsTableTotalValueGreen { color: #16a34a; }
-.pfsTableTotalValueRed { color: #ef4444; }
+.pfsTableTotalValueGreen { color: var(--green); }
+.pfsTableTotalValueRed { color: var(--red); }
 .pfsTableTotalValuePrimary { color: var(--accent); }
 
 .pfsBizName { font-weight: 500; color: var(--text-primary); font-size: 14px; }
@@ -3622,8 +3622,8 @@
 .pfsSummaryRow { display: flex; justify-content: space-between; font-size: 13px; }
 .pfsSummaryRowLabel { color: var(--text-secondary); }
 .pfsSummaryRowValue { font-weight: 500; color: var(--text-primary); }
-.pfsSummaryRowValueGreen { color: #16a34a; font-weight: 600; }
-.pfsSummaryRowValueRed { color: #ef4444; font-weight: 500; }
+.pfsSummaryRowValueGreen { color: var(--green); font-weight: 600; }
+.pfsSummaryRowValueRed { color: var(--red); font-weight: 500; }
 .pfsSummaryDivider { padding-bottom: 12px; border-bottom: 1px solid var(--border); }
 .pfsSummaryTotalRow {
   display: flex;
@@ -3635,7 +3635,7 @@
 }
 .pfsSummaryTotalLabel { font-weight: 700; color: var(--text-primary); }
 .pfsSummaryTotalValuePositive { font-weight: 700; color: var(--accent); }
-.pfsSummaryTotalValueNegative { font-weight: 700; color: #ef4444; }
+.pfsSummaryTotalValueNegative { font-weight: 700; color: var(--red); }
 
 .pfsNote { font-size: 11px; color: var(--text-tertiary); text-align: center; padding-bottom: 16px; }
 
@@ -3706,7 +3706,7 @@
 .pfsWizardCardLabel { font-size: 11px; color: var(--text-secondary); font-weight: 500; }
 .pfsWizardCardGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-.pfsFieldError { font-size: 11px; color: #dc2626; }
+.pfsFieldError { font-size: 11px; color: var(--red-dark); }
 
 .pfsContinueWrap { padding-top: 16px; }
 .pfsNavRow { display: flex; align-items: center; gap: 12px; padding-top: 16px; }
@@ -3773,9 +3773,9 @@
 }
 .pfsBreakdownLabel { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
 .pfsBreakdownValue { font-size: 13px; font-weight: 600; }
-.pfsBreakdownValueGreen { color: #16a34a; }
+.pfsBreakdownValueGreen { color: var(--green); }
 .pfsBreakdownValuePrimary { color: var(--accent); }
-.pfsBreakdownValueRed { color: #ef4444; }
+.pfsBreakdownValueRed { color: var(--red); }
 
 .pfsInsightCards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
 .pfsInsightCard {
@@ -3803,7 +3803,7 @@
   background: rgba(220, 38, 38, 0.1);
   border: 1px solid rgba(220, 38, 38, 0.2);
 }
-.pfsRevealErrorInner { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #dc2626; }
+.pfsRevealErrorInner { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--red-dark); }
 
 .pfsTaxBadge {
   display: inline-flex;
@@ -3814,10 +3814,10 @@
   font-weight: 500;
   white-space: nowrap;
 }
-.pfsTaxBadgeFree { background: #dcfce7; color: #15803d; }
-.pfsTaxBadgeDeferred { background: #fef3c7; color: #b45309; }
-.pfsTaxBadgeCapGains { background: #dbeafe; color: #1d4ed8; }
-.pfsTaxBadgeTaxed { background: #f3f4f6; color: #4b5563; }
+.pfsTaxBadgeFree { background: var(--green-light); color: var(--green-dark); }
+.pfsTaxBadgeDeferred { background: var(--orange-light); color: var(--orange-dark); }
+.pfsTaxBadgeCapGains { background: var(--accent-light); color: var(--primary); }
+.pfsTaxBadgeTaxed { background: var(--background); color: var(--foreground); }
 
 @media (max-width: 768px) {
   .pfsNetWorthGrid { grid-template-columns: 1fr; gap: 12px; }

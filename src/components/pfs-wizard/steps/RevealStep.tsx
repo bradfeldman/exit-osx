@@ -76,7 +76,7 @@ function AnimatedCounter({
 }
 
 // Pre-generate confetti particle randomness outside render
-const CONFETTI_COLORS = ['#B87333', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6']
+const CONFETTI_COLORS = ['#0071E3', '#34C759', '#FF9500', '#AF52DE', '#5AC8FA']
 const CONFETTI_PARTICLES = Array.from({ length: 30 }, (_, i) => ({
   id: i,
   color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],

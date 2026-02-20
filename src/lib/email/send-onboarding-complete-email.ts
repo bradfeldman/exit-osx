@@ -88,7 +88,7 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
           <!-- Header -->
           <tr>
             <td style="padding: 40px 40px 30px 40px; text-align: center; border-bottom: 1px solid #f0f0f0;">
-              <span style="font-size: 28px; font-weight: 700; color: #3D3D3D; letter-spacing: -0.5px;">Exit OS<span style="color: #B87333;">x</span></span>
+              <span style="font-size: 28px; font-weight: 700; color: #1D1D1F; letter-spacing: -0.5px;">Exit OS<span style="color: #0071E3;">x</span></span>
             </td>
           </tr>
 
@@ -173,7 +173,7 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                       <tr>
                         <td>
-                          <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #3D3D3D;">
+                          <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #1D1D1F;">
                             ${topRisk.label}
                           </p>
                         </td>
@@ -200,12 +200,12 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
           ${topTask ? `
           <tr>
             <td style="padding: 32px 40px;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #f8f4f0 0%, #ffffff 100%); border: 2px solid #B8733330; border-radius: 12px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #F5F5F7 0%, #ffffff 100%); border: 2px solid #0071E330; border-radius: 12px;">
                 <tr>
                   <td style="padding: 24px;">
                     <table role="presentation" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
                       <tr>
-                        <td style="background-color: #B87333; padding: 6px 12px; border-radius: 20px;">
+                        <td style="background-color: #0071E3; padding: 6px 12px; border-radius: 20px;">
                           <span style="font-size: 11px; font-weight: 700; color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px;">
                             Your #1 Priority
                           </span>
@@ -213,7 +213,7 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
                       </tr>
                     </table>
 
-                    <p style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #3D3D3D;">
+                    <p style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #1D1D1F;">
                       ${topTask.title}
                     </p>
 
@@ -225,7 +225,7 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
 
                     <table role="presentation" cellspacing="0" cellpadding="0">
                       <tr>
-                        <td style="border-radius: 8px; background-color: #B87333;">
+                        <td style="border-radius: 8px; background-color: #0071E3;">
                           <a href="${baseUrl}/dashboard/action-center" target="_blank" style="display: inline-block; padding: 14px 32px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
                             Start This Task
                           </a>
@@ -242,7 +242,7 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
             <td style="padding: 32px 40px; text-align: center;">
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                 <tr>
-                  <td style="border-radius: 8px; background-color: #B87333;">
+                  <td style="border-radius: 8px; background-color: #0071E3;">
                     <a href="${baseUrl}/dashboard/action-center" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
                       View Your Action Plan
                     </a>
@@ -261,8 +261,8 @@ export async function sendOnboardingCompleteEmail(params: OnboardingCompleteEmai
               </p>
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                 <tr>
-                  <td style="border-radius: 8px; border: 2px solid #B87333;">
-                    <a href="${baseUrl}/report/${reportToken}" target="_blank" style="display: inline-block; padding: 12px 32px; font-size: 14px; font-weight: 600; color: #B87333; text-decoration: none; border-radius: 8px;">
+                  <td style="border-radius: 8px; border: 2px solid #0071E3;">
+                    <a href="${baseUrl}/report/${reportToken}" target="_blank" style="display: inline-block; padding: 12px 32px; font-size: 14px; font-weight: 600; color: #0071E3; text-decoration: none; border-radius: 8px;">
                       View &amp; Share Full Report
                     </a>
                   </td>

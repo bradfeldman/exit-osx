@@ -126,11 +126,11 @@
 }
 
 .statValueBlue {
-  color: #2563EB;
+  color: var(--primary);
 }
 
 .statValueYellow {
-  color: #D97706;
+  color: var(--orange-dark);
 }
 
 .statValuePurple {
@@ -153,13 +153,13 @@
 }
 
 .bannerCardGreen {
-  background: linear-gradient(to right, #F0FDF4, #ECFDF5);
+  background: linear-gradient(to right, var(--green-light), var(--green-light));
   border-color: #BBF7D0;
 }
 
 .bannerCardRed {
-  background: linear-gradient(to right, #FEF2F2, #FFF7ED);
-  border-color: #FECACA;
+  background: linear-gradient(to right, var(--red-light), var(--orange-light));
+  border-color: var(--red-light);
 }
 
 .bannerHeader {
@@ -188,11 +188,11 @@
 }
 
 .bannerIconGreen {
-  background: #16A34A;
+  background: var(--green);
 }
 
 .bannerIconRed {
-  background: #DC2626;
+  background: var(--red-dark);
 }
 
 .bannerTitle {
@@ -272,7 +272,7 @@
 }
 
 .toolCardIconBlue {
-  color: #2563EB;
+  color: var(--primary);
 }
 
 .toolCardIconPurple {
@@ -280,11 +280,11 @@
 }
 
 .toolCardIconGreen {
-  color: #16A34A;
+  color: var(--green);
 }
 
 .toolCardIconRed {
-  color: #DC2626;
+  color: var(--red-dark);
 }
 
 .toolCardIconGray {
@@ -491,7 +491,7 @@
 }
 
 .messageInternal {
-  background: #FEFCE8;
+  background: var(--orange-light);
   border: 1px solid #FEF08A;
 }
 
@@ -680,13 +680,13 @@
 }
 
 .ticketStatusInProgress {
-  background: #DBEAFE;
-  color: #1E40AF;
+  background: var(--accent-light);
+  color: var(--primary);
 }
 
 .ticketStatusResolved {
-  background: #DCFCE7;
-  color: #166534;
+  background: var(--green-light);
+  color: var(--green-dark);
 }
 
 .ticketStatusDefault {

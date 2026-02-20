@@ -36,7 +36,7 @@
   color: white;
 }
 .btnPrimary:hover {
-  background: #005BBB;
+  background: var(--primary);
 }
 .btnSecondary {
   background: var(--surface);
@@ -124,7 +124,7 @@
 }
 .badgeReady {
   background: var(--green-light);
-  color: #1B7A34;
+  color: var(--green-dark);
 }
 .badgeDraft {
   background: var(--orange-light);
@@ -279,7 +279,7 @@
 }
 .pillShared {
   background: var(--green-light);
-  color: #1B7A34;
+  color: var(--green-dark);
 }
 .pillPrivate {
   background: var(--surface-secondary);

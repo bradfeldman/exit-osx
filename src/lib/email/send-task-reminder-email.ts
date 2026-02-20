@@ -63,7 +63,7 @@ export async function sendTaskReminderEmail(params: TaskReminderEmailParams): Pr
           <!-- Header -->
           <tr>
             <td style="padding: 40px 40px 30px 40px; text-align: center; border-bottom: 1px solid #f0f0f0;">
-              <span style="font-size: 28px; font-weight: 700; color: #3D3D3D; letter-spacing: -0.5px;">Exit OS<span style="color: #B87333;">x</span></span>
+              <span style="font-size: 28px; font-weight: 700; color: #1D1D1F; letter-spacing: -0.5px;">Exit OS<span style="color: #0071E3;">x</span></span>
             </td>
           </tr>
 
@@ -80,13 +80,13 @@ export async function sendTaskReminderEmail(params: TaskReminderEmailParams): Pr
               </table>
 
               <!-- Heading -->
-              <h1 style="margin: 0 0 16px 0; font-size: 26px; font-weight: 700; color: #3D3D3D; text-align: center; letter-spacing: -0.5px;">
+              <h1 style="margin: 0 0 16px 0; font-size: 26px; font-weight: 700; color: #1D1D1F; text-align: center; letter-spacing: -0.5px;">
                 Hey ${firstName}, it's been ${daysSinceOnboarding} days...
               </h1>
 
               <!-- The hook - loss framing -->
               <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.6; color: #666666; text-align: center;">
-                Your <strong style="color: #B87333;">${formatCurrency(valueGap)} value gap</strong> at ${companyName} is still sitting there, waiting.
+                Your <strong style="color: #0071E3;">${formatCurrency(valueGap)} value gap</strong> at ${companyName} is still sitting there, waiting.
               </p>
 
               <!-- Stat callout -->
@@ -111,10 +111,10 @@ export async function sendTaskReminderEmail(params: TaskReminderEmailParams): Pr
                 Your #1 Priority
               </p>
 
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 24px; background: linear-gradient(135deg, #f8f4f0 0%, #ffffff 100%); border: 2px solid #B8733330; border-radius: 12px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 24px; background: linear-gradient(135deg, #F5F5F7 0%, #ffffff 100%); border: 2px solid #0071E330; border-radius: 12px;">
                 <tr>
                   <td style="padding: 24px;">
-                    <p style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #3D3D3D;">
+                    <p style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #1D1D1F;">
                       ${topTask.title}
                     </p>
                     ${topTask.estimatedValue > 0 ? `
@@ -129,7 +129,7 @@ export async function sendTaskReminderEmail(params: TaskReminderEmailParams): Pr
               <!-- CTA Button -->
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                 <tr>
-                  <td style="border-radius: 8px; background-color: #B87333;">
+                  <td style="border-radius: 8px; background-color: #0071E3;">
                     <a href="${dashboardUrl}" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
                       Close This Gap Now
                     </a>

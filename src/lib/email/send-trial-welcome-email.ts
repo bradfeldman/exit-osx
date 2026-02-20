@@ -35,7 +35,7 @@ export async function sendTrialWelcomeEmail(params: TrialWelcomeEmailParams) {
           <!-- Header -->
           <tr>
             <td style="padding: 40px 40px 30px 40px; text-align: center; border-bottom: 1px solid #f0f0f0;">
-              <span style="font-size: 28px; font-weight: 700; color: #3D3D3D; letter-spacing: -0.5px;">Exit OS<span style="color: #B87333;">x</span></span>
+              <span style="font-size: 28px; font-weight: 700; color: #1D1D1F; letter-spacing: -0.5px;">Exit OS<span style="color: #0071E3;">x</span></span>
             </td>
           </tr>
 
@@ -52,7 +52,7 @@ export async function sendTrialWelcomeEmail(params: TrialWelcomeEmailParams) {
               </table>
 
               <!-- Heading -->
-              <h1 style="margin: 0 0 16px 0; font-size: 26px; font-weight: 700; color: #3D3D3D; text-align: center; letter-spacing: -0.5px;">
+              <h1 style="margin: 0 0 16px 0; font-size: 26px; font-weight: 700; color: #1D1D1F; text-align: center; letter-spacing: -0.5px;">
                 Welcome, ${firstName}!
               </h1>
 
@@ -70,27 +70,27 @@ export async function sendTrialWelcomeEmail(params: TrialWelcomeEmailParams) {
                   <td style="padding: 24px;">
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                       <tr>
-                        <td style="padding: 8px 0; font-size: 15px; color: #3D3D3D; line-height: 1.5;">
+                        <td style="padding: 8px 0; font-size: 15px; color: #1D1D1F; line-height: 1.5;">
                           &#9989; <strong>Risk Diagnostic</strong> &mdash; See where your business is vulnerable to buyer scrutiny
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 8px 0; font-size: 15px; color: #3D3D3D; line-height: 1.5;">
+                        <td style="padding: 8px 0; font-size: 15px; color: #1D1D1F; line-height: 1.5;">
                           &#9989; <strong>Personalized Action Plan</strong> &mdash; Prioritized tasks to close readiness gaps
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 8px 0; font-size: 15px; color: #3D3D3D; line-height: 1.5;">
+                        <td style="padding: 8px 0; font-size: 15px; color: #1D1D1F; line-height: 1.5;">
                           &#9989; <strong>Data Room</strong> &mdash; Organize and stage due diligence documents
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 8px 0; font-size: 15px; color: #3D3D3D; line-height: 1.5;">
+                        <td style="padding: 8px 0; font-size: 15px; color: #1D1D1F; line-height: 1.5;">
                           &#9989; <strong>Financial Sync</strong> &mdash; Connect QuickBooks for live financial monitoring
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 8px 0; font-size: 15px; color: #3D3D3D; line-height: 1.5;">
+                        <td style="padding: 8px 0; font-size: 15px; color: #1D1D1F; line-height: 1.5;">
                           &#9989; <strong>Retirement Model</strong> &mdash; See if your exit will fund your next chapter
                         </td>
                       </tr>
@@ -102,7 +102,7 @@ export async function sendTrialWelcomeEmail(params: TrialWelcomeEmailParams) {
               <!-- CTA Button -->
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                 <tr>
-                  <td style="border-radius: 8px; background-color: #B87333;">
+                  <td style="border-radius: 8px; background-color: #0071E3;">
                     <a href="${dashboardUrl}" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
                       Explore Your Dashboard
                     </a>

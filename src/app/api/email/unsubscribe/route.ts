@@ -61,7 +61,7 @@ export async function GET(request: Request) {
     }
     h1 {
       font-size: 24px;
-      color: #3D3D3D;
+      color: #1D1D1F;
       margin: 0 0 16px 0;
     }
     p {
@@ -73,7 +73,7 @@ export async function GET(request: Request) {
     button {
       display: inline-block;
       padding: 12px 32px;
-      background-color: #B87333;
+      background-color: #0071E3;
       color: white;
       border: none;
       border-radius: 8px;
@@ -82,7 +82,7 @@ export async function GET(request: Request) {
       cursor: pointer;
     }
     button:hover {
-      background-color: #A0621E;
+      background-color: #0058B0;
     }
   </style>
 </head>
@@ -170,7 +170,7 @@ export async function POST(request: Request) {
     }
     h1 {
       font-size: 24px;
-      color: #3D3D3D;
+      color: #1D1D1F;
       margin: 0 0 16px 0;
     }
     p {
@@ -182,7 +182,7 @@ export async function POST(request: Request) {
     a {
       display: inline-block;
       padding: 12px 32px;
-      background-color: #B87333;
+      background-color: #0071E3;
       color: white;
       text-decoration: none;
       border-radius: 8px;
@@ -190,7 +190,7 @@ export async function POST(request: Request) {
       font-size: 14px;
     }
     a:hover {
-      background-color: #A0621E;
+      background-color: #0058B0;
     }
   </style>
 </head>

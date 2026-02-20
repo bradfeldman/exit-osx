@@ -117,7 +117,7 @@ export async function sendDriftReportEmail(params: DriftReportEmailParams): Prom
     </div>` : ''}
 
     <div style="text-align:center;margin:32px 0 16px;">
-      <a href="${baseUrl}/dashboard/drift-report" style="display:inline-block;background:#B87333;color:#fff;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:600;font-size:14px;">
+      <a href="${baseUrl}/dashboard/drift-report" style="display:inline-block;background:#0071E3;color:#fff;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:600;font-size:14px;">
         View Full Report
       </a>
     </div>

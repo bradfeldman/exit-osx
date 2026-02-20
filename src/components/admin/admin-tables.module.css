@@ -175,53 +175,53 @@
    (applied as className on shadcn Badge)
    ============================================================ */
 .badgeGrowth {
-  background-color: #DBEAFE;
-  color: #1E40AF;
+  background-color: var(--accent-light);
+  color: var(--primary);
 }
 
 .badgeGrowth:hover {
-  background-color: #DBEAFE;
+  background-color: var(--accent-light);
 }
 
 .badgeDealRoom {
-  background-color: #DCFCE7;
-  color: #166534;
+  background-color: var(--green-light);
+  color: var(--green-dark);
 }
 
 .badgeDealRoom:hover {
-  background-color: #DCFCE7;
+  background-color: var(--green-light);
 }
 
 .badgeQbConnected {
-  background-color: #DCFCE7;
-  color: #166534;
+  background-color: var(--green-light);
+  color: var(--green-dark);
 }
 
 .badgeQbConnected:hover {
-  background-color: #DCFCE7;
+  background-color: var(--green-light);
 }
 
 .badgeStatusActive {
-  background-color: #DCFCE7;
-  color: #166534;
+  background-color: var(--green-light);
+  color: var(--green-dark);
 }
 
 .badgeStatusActive:hover {
-  background-color: #DCFCE7;
+  background-color: var(--green-light);
 }
 
 .badgeStatusTrialing {
-  background-color: #FEF3C7;
-  color: #92400E;
+  background-color: var(--orange-light);
+  color: var(--orange-dark);
 }
 
 .badgeStatusTrialing:hover {
-  background-color: #FEF3C7;
+  background-color: var(--orange-light);
 }
 
 .badgeStatusPastDue {
   background-color: var(--red-light);
-  color: #991B1B;
+  color: var(--red-dark);
 }
 
 .badgeStatusPastDue:hover {
@@ -229,12 +229,12 @@
 }
 
 .badgeStatusCancelled {
-  background-color: #F3F4F6;
-  color: #374151;
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 .badgeStatusCancelled:hover {
-  background-color: #F3F4F6;
+  background-color: var(--background);
 }
 
 /* ============================================================
@@ -472,7 +472,7 @@
 
 .warningBoxBody {
   font-size: 13px;
-  color: #92400E;
+  color: var(--orange-dark);
 }
 
 .warningBoxBody p {
@@ -498,7 +498,7 @@
   border-radius: var(--radius-sm);
   font-size: 13px;
   background: var(--red-light);
-  color: #991B1B;
+  color: var(--red-dark);
   border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
 }
 

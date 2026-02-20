@@ -255,11 +255,11 @@
   display: inline-flex;
   align-items: center;
   border-radius: 9999px;
-  background: #DCFCE7;
+  background: var(--green-light);
   padding: 0.125rem 0.625rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #15803D;
+  color: var(--green-dark);
 }
 
 /* ===== PRICING CARDS GRID ===== */
@@ -474,8 +474,8 @@
 }
 
 .guaranteeCard {
-  background: #F0FDF4;
-  border: 1px solid #BBF7D0;
+  background: var(--green-light);
+  border: 1px solid var(--green);
   border-radius: var(--radius-2xl);
   padding: 2rem;
   text-align: center;

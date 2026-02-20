@@ -87,17 +87,17 @@
   border: 1px solid #93C5FD;
   border-radius: var(--radius-sm);
   font-size: 13px;
-  color: #1D4ED8;
+  color: var(--primary);
   line-height: 1.5;
 }
 
 .noticeWarning {
   padding: 12px 16px;
   background: var(--orange-light);
-  border: 1px solid #FCD34D;
+  border: 1px solid var(--orange);
   border-radius: var(--radius-sm);
   font-size: 13px;
-  color: #92400E;
+  color: var(--orange-dark);
   line-height: 1.5;
 }
 
@@ -107,7 +107,7 @@
   border: 1px solid #86EFAC;
   border-radius: var(--radius-sm);
   font-size: 13px;
-  color: #166534;
+  color: var(--green-dark);
   line-height: 1.5;
 }
 
@@ -117,7 +117,7 @@
   border: 1px solid #FCA5A5;
   border-radius: var(--radius-sm);
   font-size: 13px;
-  color: #991B1B;
+  color: var(--red-dark);
   line-height: 1.5;
 }
 
@@ -636,11 +636,11 @@
 
 .subsectorRowModified {
   background: var(--orange-light);
-  border: 1px solid #FCD34D;
+  border: 1px solid var(--orange);
 }
 
 .subsectorRowModified:hover {
-  background: #FEF3C7;
+  background: var(--orange-light);
 }
 
 .subsectorName {

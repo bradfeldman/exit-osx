@@ -42,7 +42,7 @@ export async function sendTrialMidpointEmail(params: TrialMidpointEmailParams) {
           <!-- Header -->
           <tr>
             <td style="padding: 40px 40px 30px 40px; text-align: center; border-bottom: 1px solid #f0f0f0;">
-              <span style="font-size: 28px; font-weight: 700; color: #3D3D3D; letter-spacing: -0.5px;">Exit OS<span style="color: #B87333;">x</span></span>
+              <span style="font-size: 28px; font-weight: 700; color: #1D1D1F; letter-spacing: -0.5px;">Exit OS<span style="color: #0071E3;">x</span></span>
             </td>
           </tr>
 
@@ -59,7 +59,7 @@ export async function sendTrialMidpointEmail(params: TrialMidpointEmailParams) {
               </table>
 
               <!-- Heading -->
-              <h1 style="margin: 0 0 16px 0; font-size: 26px; font-weight: 700; color: #3D3D3D; text-align: center; letter-spacing: -0.5px;">
+              <h1 style="margin: 0 0 16px 0; font-size: 26px; font-weight: 700; color: #1D1D1F; text-align: center; letter-spacing: -0.5px;">
                 Your exit readiness snapshot
               </h1>
 
@@ -75,7 +75,7 @@ export async function sendTrialMidpointEmail(params: TrialMidpointEmailParams) {
                       <tr>
                         <td style="width: 33%; text-align: center; border-right: 1px solid #E5E7EB;">
                           <p style="margin: 0 0 4px 0; font-size: 12px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px;">Buyer Readiness</p>
-                          <p style="margin: 0; font-size: 28px; font-weight: 700; color: #3D3D3D;">${roundedBRI}</p>
+                          <p style="margin: 0; font-size: 28px; font-weight: 700; color: #1D1D1F;">${roundedBRI}</p>
                         </td>
                         <td style="width: 33%; text-align: center; border-right: 1px solid #E5E7EB;">
                           <p style="margin: 0 0 4px 0; font-size: 12px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px;">Value Gap</p>
@@ -83,7 +83,7 @@ export async function sendTrialMidpointEmail(params: TrialMidpointEmailParams) {
                         </td>
                         <td style="width: 33%; text-align: center;">
                           <p style="margin: 0 0 4px 0; font-size: 12px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px;">Tasks</p>
-                          <p style="margin: 0; font-size: 28px; font-weight: 700; color: #3D3D3D;">${tasksPending}</p>
+                          <p style="margin: 0; font-size: 28px; font-weight: 700; color: #1D1D1F;">${tasksPending}</p>
                           <p style="margin: 4px 0 0 0; font-size: 11px; color: #888888;">pending</p>
                         </td>
                       </tr>
@@ -106,7 +106,7 @@ export async function sendTrialMidpointEmail(params: TrialMidpointEmailParams) {
               <!-- CTA Button -->
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                 <tr>
-                  <td style="border-radius: 8px; background-color: #B87333;">
+                  <td style="border-radius: 8px; background-color: #0071E3;">
                     <a href="${dashboardUrl}" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
                       View Your Risk Breakdown
                     </a>
@@ -114,7 +114,7 @@ export async function sendTrialMidpointEmail(params: TrialMidpointEmailParams) {
                 </tr>
               </table>
 
-              <p style="margin: 24px 0 0 0; font-size: 14px; color: #B87333; text-align: center; font-weight: 600;">
+              <p style="margin: 24px 0 0 0; font-size: 14px; color: #0071E3; text-align: center; font-weight: 600;">
                 4 days left in your trial &mdash; ends ${endsFormatted}
               </p>
             </td>

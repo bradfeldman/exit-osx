@@ -208,7 +208,7 @@ export function FocusedOnboardingWizard({ userName: _userName }: FocusedOnboardi
       particleCount: 150,
       spread: 100,
       origin: { y: 0.5, x: 0.5 },
-      colors: ['#B87333', '#D4A574', '#FFD700', '#FFFFFF'],
+      colors: ['#0071E3', '#4DA3FF', '#FFD700', '#FFFFFF'],
       startVelocity: 45,
       gravity: 0.8,
       scalar: 1.2,
@@ -221,7 +221,7 @@ export function FocusedOnboardingWizard({ userName: _userName }: FocusedOnboardi
         angle: 60,
         spread: 80,
         origin: { x: 0, y: 0.7 },
-        colors: ['#B87333', '#FFD700', '#FFFFFF'],
+        colors: ['#0071E3', '#FFD700', '#FFFFFF'],
         startVelocity: 35,
         zIndex: 9999,
       })
@@ -230,7 +230,7 @@ export function FocusedOnboardingWizard({ userName: _userName }: FocusedOnboardi
         angle: 120,
         spread: 80,
         origin: { x: 1, y: 0.7 },
-        colors: ['#B87333', '#FFD700', '#FFFFFF'],
+        colors: ['#0071E3', '#FFD700', '#FFFFFF'],
         startVelocity: 35,
         zIndex: 9999,
       })

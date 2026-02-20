@@ -46,7 +46,7 @@ export async function sendPartnerInviteEmail(params: PartnerInviteEmailParams): 
     </p>
 
     <div style="text-align:center;margin:32px 0;">
-      <a href="${inviteUrl}" style="display:inline-block;background:#B87333;color:#fff;padding:14px 36px;border-radius:6px;text-decoration:none;font-weight:600;font-size:14px;">
+      <a href="${inviteUrl}" style="display:inline-block;background:#0071E3;color:#fff;padding:14px 36px;border-radius:6px;text-decoration:none;font-weight:600;font-size:14px;">
         Accept Invitation
       </a>
     </div>

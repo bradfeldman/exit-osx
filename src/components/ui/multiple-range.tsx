@@ -179,7 +179,7 @@ export function MultipleRange({ low, high, current, onDragChange, onDragEnd }: M
                 ? 'bg-emerald-500'
                 : isBelowRange && !isDragging
                   ? 'bg-amber-500'
-                  : 'bg-[#B87333]'
+                  : 'bg-primary'
             }`}
             style={{ left: `calc(${displayPosition}% - 10px)` }}
           />
@@ -230,7 +230,7 @@ export function MultipleRange({ low, high, current, onDragChange, onDragEnd }: M
             style={{ left: `${displayPosition}%` }}
           >
             <span className={`text-sm font-semibold ${
-              isDragging ? 'text-[#B87333] scale-110' : 'text-[#B87333]'
+              isDragging ? 'text-primary scale-110' : 'text-primary'
             }`}>
               {displayMultiple.toFixed(1)}x
             </span>
@@ -257,7 +257,7 @@ export function MultipleRange({ low, high, current, onDragChange, onDragEnd }: M
         </p>
       )}
       {isDragging && (
-        <p className="text-xs text-[#B87333] text-center mt-3 font-medium">
+        <p className="text-xs text-primary text-center mt-3 font-medium">
           Release to return to actual multiple
         </p>
       )}

@@ -42,7 +42,7 @@ export async function sendAccountExistsEmail({ email, name }: SendAccountExistsE
           <!-- Header -->
           <tr>
             <td style="padding: 40px 40px 30px 40px; text-align: center; border-bottom: 1px solid #f0f0f0;">
-              <span style="font-size: 28px; font-weight: 700; color: #3D3D3D; letter-spacing: -0.5px;">Exit OS<span style="color: #B87333;">x</span></span>
+              <span style="font-size: 28px; font-weight: 700; color: #1D1D1F; letter-spacing: -0.5px;">Exit OS<span style="color: #0071E3;">x</span></span>
             </td>
           </tr>
 
@@ -59,7 +59,7 @@ export async function sendAccountExistsEmail({ email, name }: SendAccountExistsE
               </table>
 
               <!-- Heading -->
-              <h1 style="margin: 0 0 16px 0; font-size: 28px; font-weight: 700; color: #3D3D3D; text-align: center; letter-spacing: -0.5px;">
+              <h1 style="margin: 0 0 16px 0; font-size: 28px; font-weight: 700; color: #1D1D1F; text-align: center; letter-spacing: -0.5px;">
                 Welcome Back${name ? `, ${name}` : ''}!
               </h1>
 
@@ -75,7 +75,7 @@ export async function sendAccountExistsEmail({ email, name }: SendAccountExistsE
               <!-- Sign In Button -->
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 24px auto;">
                 <tr>
-                  <td style="border-radius: 8px; background-color: #B87333;">
+                  <td style="border-radius: 8px; background-color: #0071E3;">
                     <a href="${loginUrl}" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
                       Sign In to Your Account
                     </a>
@@ -85,7 +85,7 @@ export async function sendAccountExistsEmail({ email, name }: SendAccountExistsE
 
               <!-- Forgot Password Link -->
               <p style="margin: 0 0 0 0; font-size: 14px; line-height: 1.6; color: #888888; text-align: center;">
-                Forgot your password? <a href="${resetPasswordUrl}" style="color: #B87333; text-decoration: none;">Reset it here</a>
+                Forgot your password? <a href="${resetPasswordUrl}" style="color: #0071E3; text-decoration: none;">Reset it here</a>
               </p>
             </td>
           </tr>

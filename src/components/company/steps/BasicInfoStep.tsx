@@ -346,7 +346,7 @@ export function BasicInfoStep({ formData, updateFormData, businessDescription, o
                       type="button"
                       onClick={handleAcceptRecommendation}
                       size="sm"
-                      className="bg-[#B87333] hover:bg-[#9A5F2A]"
+                      className="bg-primary hover:bg-primary/80"
                     >
                       Accept
                     </Button>

@@ -75,7 +75,7 @@ export async function sendVerificationCongratsEmail(params: VerificationCongrats
           <!-- Dark Hero — The Gut Punch -->
           <tr>
             <td style="padding: 48px 40px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); text-align: center;">
-              <span style="font-size: 22px; font-weight: 700; color: rgba(255,255,255,0.9); letter-spacing: -0.5px;">Exit OS<span style="color: #B87333;">x</span></span>
+              <span style="font-size: 22px; font-weight: 700; color: rgba(255,255,255,0.9); letter-spacing: -0.5px;">Exit OS<span style="color: #0071E3;">x</span></span>
 
               <p style="margin: 32px 0 8px 0; font-size: 13px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1.5px;">
                 ${companyName}
@@ -158,7 +158,7 @@ export async function sendVerificationCongratsEmail(params: VerificationCongrats
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top: 12px; background-color: #FEF2F2; border-left: 4px solid #EF4444; border-radius: 0 8px 8px 0;">
                 <tr>
                   <td style="padding: 16px 20px;">
-                    <p style="margin: 0 0 4px 0; font-size: 18px; font-weight: 700; color: #3D3D3D;">
+                    <p style="margin: 0 0 4px 0; font-size: 18px; font-weight: 700; color: #1D1D1F;">
                       ${topRisk.label}
                     </p>
                     <p style="margin: 0; font-size: 14px; color: #666666; line-height: 1.5;">
@@ -177,7 +177,7 @@ export async function sendVerificationCongratsEmail(params: VerificationCongrats
               <p style="margin: 0 0 4px 0; font-size: 12px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px;">
                 Start here
               </p>
-              <p style="margin: 0 0 4px 0; font-size: 18px; font-weight: 600; color: #3D3D3D;">
+              <p style="margin: 0 0 4px 0; font-size: 18px; font-weight: 600; color: #1D1D1F;">
                 ${topTask.title}
               </p>
               ${topTask.estimatedImpact > 0 ? `
@@ -187,7 +187,7 @@ export async function sendVerificationCongratsEmail(params: VerificationCongrats
               ` : '<div style="height: 24px;"></div>'}
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                 <tr>
-                  <td style="border-radius: 8px; background-color: #B87333;">
+                  <td style="border-radius: 8px; background-color: #0071E3;">
                     <a href="${baseUrl}/dashboard/action-center" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
                       See Your Full Report
                     </a>
@@ -201,7 +201,7 @@ export async function sendVerificationCongratsEmail(params: VerificationCongrats
             <td style="padding: 32px 40px; text-align: center;">
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                 <tr>
-                  <td style="border-radius: 8px; background-color: #B87333;">
+                  <td style="border-radius: 8px; background-color: #0071E3;">
                     <a href="${baseUrl}/dashboard" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
                       See Your Full Report
                     </a>

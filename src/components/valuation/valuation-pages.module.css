@@ -170,7 +170,7 @@
 .methodIcon svg { width: 22px; height: 22px; }
 
 .methodIcon.blue { background: var(--accent-light); color: var(--accent); }
-.methodIcon.purple { background: #F5EDFB; color: #AF52DE; }
+.methodIcon.purple { background: #F5EDFB; color: var(--purple); }
 .methodIcon.teal { background: #E5F7FB; color: #5AC8FA; }
 
 .methodName {
@@ -417,7 +417,7 @@
 .gapFactorIcon svg { width: 18px; height: 18px; }
 .gapFactorIcon.red { background: var(--red-light); color: var(--red); }
 .gapFactorIcon.orange { background: var(--orange-light); color: var(--orange); }
-.gapFactorIcon.purple { background: #F5EDFB; color: #AF52DE; }
+.gapFactorIcon.purple { background: #F5EDFB; color: var(--purple); }
 .gapFactorIcon.teal { background: #E5F7FB; color: #5AC8FA; }
 
 .gapFactorName {
@@ -492,7 +492,7 @@
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent), #AF52DE);
+  background: linear-gradient(135deg, var(--accent), var(--purple));
   display: flex;
   align-items: center;
   justify-content: center;

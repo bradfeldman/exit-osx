@@ -2,7 +2,7 @@
 
 .page {
   min-height: 100vh;
-  background: #F8FAFC;
+  background: var(--surface-secondary);
 }
 
 /* Header */
@@ -33,7 +33,7 @@
 }
 
 .headerBrandAccent {
-  color: #B87333;
+  color: var(--primary);
 }
 
 .headerLabel {
@@ -54,7 +54,7 @@
 /* Loading state */
 .loadingScreen {
   min-height: 100vh;
-  background: #F8FAFC;
+  background: var(--surface-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -67,8 +67,8 @@
 .spinner {
   width: 32px;
   height: 32px;
-  border: 2px solid #CBD5E1;
-  border-top-color: #475569;
+  border: 2px solid var(--border);
+  border-top-color: var(--foreground);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
   margin: 0 auto 12px;
@@ -86,7 +86,7 @@
 /* Error state */
 .errorScreen {
   min-height: 100vh;
-  background: #F8FAFC;
+  background: var(--surface-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -266,14 +266,14 @@
 }
 
 /* score color modifiers — applied inline via style or via data attrs */
-.scoreStrong { color: #059669; }
-.scoreGood { color: #2563EB; }
-.scoreModerate { color: #D97706; }
-.scoreWeak { color: #DC2626; }
+.scoreStrong { color: var(--green-dark); }
+.scoreGood { color: var(--primary); }
+.scoreModerate { color: var(--orange-dark); }
+.scoreWeak { color: var(--red-dark); }
 
 .briTrack {
   height: 12px;
-  background: #F1F5F9;
+  background: var(--background);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -284,10 +284,10 @@
   transition: width 0.7s ease;
 }
 
-.briBarStrong { background: #10B981; }
-.briBarGood { background: #3B82F6; }
-.briBarModerate { background: #F59E0B; }
-.briBarWeak { background: #EF4444; }
+.briBarStrong { background: var(--green); }
+.briBarGood { background: var(--primary); }
+.briBarModerate { background: var(--orange); }
+.briBarWeak { background: var(--red); }
 
 /* Category grid */
 .categoryGrid {
@@ -312,11 +312,11 @@
 }
 
 .categoryGroupTitleStrengths {
-  color: #065F46;
+  color: var(--green-dark);
 }
 
 .categoryGroupTitleRisks {
-  color: #991B1B;
+  color: var(--red-dark);
 }
 
 .categoryDot {
@@ -326,8 +326,8 @@
   flex-shrink: 0;
 }
 
-.categoryDotGreen { background: #10B981; }
-.categoryDotRed { background: #EF4444; }
+.categoryDotGreen { background: var(--green); }
+.categoryDotRed { background: var(--red); }
 
 .categoryEmpty {
   font-size: 13px;
@@ -357,13 +357,13 @@
 .categoryScoreStrength {
   font-size: 13px;
   font-weight: 600;
-  color: #059669;
+  color: var(--green-dark);
 }
 
 .categoryScoreRisk {
   font-size: 13px;
   font-weight: 600;
-  color: #DC2626;
+  color: var(--red-dark);
 }
 
 .categoryTrack {
@@ -372,16 +372,16 @@
   overflow: hidden;
 }
 
-.categoryTrackGreen { background: #D1FAE5; }
-.categoryTrackRed { background: #FEE2E2; }
+.categoryTrackGreen { background: var(--green-light); }
+.categoryTrackRed { background: var(--red-light); }
 
 .categoryBar {
   height: 100%;
   border-radius: 999px;
 }
 
-.categoryBarGreen { background: #10B981; }
-.categoryBarRed { background: #EF4444; }
+.categoryBarGreen { background: var(--green); }
+.categoryBarRed { background: var(--red); }
 
 /* Top Actions */
 .actionsTitle {
@@ -413,7 +413,7 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #B87333;
+  background: var(--primary);
   color: #fff;
   font-size: 11px;
   font-weight: 700;
@@ -434,14 +434,14 @@
 
 .actionImpact {
   font-size: 12px;
-  color: #059669;
+  color: var(--green-dark);
   margin-top: 2px;
 }
 
 /* CTA section */
 .cta {
-  background: linear-gradient(135deg, rgba(184, 115, 51, 0.08) 0%, rgba(184, 115, 51, 0.04) 100%);
-  border: 2px solid rgba(184, 115, 51, 0.18);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 8%, transparent) 0%, color-mix(in srgb, var(--primary) 4%, transparent) 100%);
+  border: 2px solid color-mix(in srgb, var(--primary) 18%, transparent);
   border-radius: 20px;
   padding: 32px;
   text-align: center;
@@ -468,14 +468,14 @@
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background: #B87333;
+  background: var(--primary);
   color: #fff;
   font-size: 13px;
   font-weight: 600;
   border-radius: 12px;
   text-decoration: none;
   transition: background 0.15s;
-  box-shadow: 0 4px 12px rgba(184, 115, 51, 0.25);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 25%, transparent);
 }
 
 .ctaLink:hover {

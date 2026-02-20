@@ -152,7 +152,7 @@ export function IndustryFinderDialog({ onSelect }: IndustryFinderDialogProps) {
                   type="button"
                   onClick={handleSubmit}
                   disabled={loading || !description.trim()}
-                  className="bg-[#B87333] hover:bg-[#9A5F2A]"
+                  className="bg-primary hover:bg-primary/80"
                 >
                   {loading ? (
                     <>
@@ -212,7 +212,7 @@ export function IndustryFinderDialog({ onSelect }: IndustryFinderDialogProps) {
                 <Button
                   type="button"
                   onClick={handleUseResult}
-                  className="bg-[#B87333] hover:bg-[#9A5F2A]"
+                  className="bg-primary hover:bg-primary/80"
                 >
                   Use This Classification
                 </Button>

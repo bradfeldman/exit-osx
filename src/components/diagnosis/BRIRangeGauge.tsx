@@ -131,7 +131,7 @@ export function BRIRangeGauge({ briScore, isEstimated = false }: BRIRangeGaugePr
                   zone === 'excellent'
                     ? '#059669'
                     : zone === 'strong'
-                      ? '#3D3D3D'
+                      ? '#1D1D1F'
                       : zone === 'developing'
                         ? '#d97706'
                         : '#dc2626',

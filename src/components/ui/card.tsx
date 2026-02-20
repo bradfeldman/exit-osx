@@ -60,8 +60,8 @@ function Card({
           hover === 'lift' || hover === 'glow'
             ? {
                 y: -4,
-                boxShadow: '0 12px 24px -8px rgba(61, 61, 61, 0.15)',
-                borderColor: hover === 'glow' ? 'rgba(184, 115, 51, 0.2)' : undefined,
+                boxShadow: '0 12px 24px -8px rgba(0, 0, 0, 0.08)',
+                borderColor: hover === 'glow' ? 'rgba(0, 113, 227, 0.2)' : undefined,
               }
             : undefined
         }

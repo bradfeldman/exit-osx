@@ -219,7 +219,7 @@ export function UserAvatar({ email, name, size = 'md', className }: UserAvatarPr
   return (
     <div
       className={cn(
-        'relative rounded-full bg-[#3D3D3D] text-white flex items-center justify-center font-medium overflow-hidden',
+        'relative rounded-full bg-muted-foreground text-white flex items-center justify-center font-medium overflow-hidden',
         sizeClasses[size],
         className
       )}

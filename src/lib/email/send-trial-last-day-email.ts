@@ -42,7 +42,7 @@ export async function sendTrialLastDayEmail(params: TrialLastDayEmailParams) {
           <!-- Header -->
           <tr>
             <td style="padding: 40px 40px 30px 40px; text-align: center; border-bottom: 1px solid #f0f0f0;">
-              <span style="font-size: 28px; font-weight: 700; color: #3D3D3D; letter-spacing: -0.5px;">Exit OS<span style="color: #B87333;">x</span></span>
+              <span style="font-size: 28px; font-weight: 700; color: #1D1D1F; letter-spacing: -0.5px;">Exit OS<span style="color: #0071E3;">x</span></span>
             </td>
           </tr>
 
@@ -65,7 +65,7 @@ export async function sendTrialLastDayEmail(params: TrialLastDayEmailParams) {
               </table>
 
               <!-- Impact Stats -->
-              <p style="margin: 0 0 16px 0; font-size: 16px; color: #3D3D3D; text-align: center; font-weight: 600;">
+              <p style="margin: 0 0 16px 0; font-size: 16px; color: #1D1D1F; text-align: center; font-weight: 600;">
                 Here's what's at stake, ${firstName}:
               </p>
 
@@ -76,7 +76,7 @@ export async function sendTrialLastDayEmail(params: TrialLastDayEmailParams) {
                       <tr>
                         <td style="width: 33%; text-align: center; border-right: 1px solid #E5E7EB;">
                           <p style="margin: 0 0 4px 0; font-size: 12px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px;">Buyer Readiness</p>
-                          <p style="margin: 0; font-size: 28px; font-weight: 700; color: #3D3D3D;">${roundedBRI}</p>
+                          <p style="margin: 0; font-size: 28px; font-weight: 700; color: #1D1D1F;">${roundedBRI}</p>
                           <p style="margin: 4px 0 0 0; font-size: 11px; color: #DC2626;">will freeze</p>
                         </td>
                         <td style="width: 33%; text-align: center; border-right: 1px solid #E5E7EB;">
@@ -86,7 +86,7 @@ export async function sendTrialLastDayEmail(params: TrialLastDayEmailParams) {
                         </td>
                         <td style="width: 33%; text-align: center;">
                           <p style="margin: 0 0 4px 0; font-size: 12px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px;">Tasks</p>
-                          <p style="margin: 0; font-size: 28px; font-weight: 700; color: #3D3D3D;">${tasksPending}</p>
+                          <p style="margin: 0; font-size: 28px; font-weight: 700; color: #1D1D1F;">${tasksPending}</p>
                           <p style="margin: 4px 0 0 0; font-size: 11px; color: #DC2626;">will lock</p>
                         </td>
                       </tr>
@@ -98,7 +98,7 @@ export async function sendTrialLastDayEmail(params: TrialLastDayEmailParams) {
               <!-- Large CTA Button -->
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                 <tr>
-                  <td style="border-radius: 10px; background-color: #B87333;">
+                  <td style="border-radius: 10px; background-color: #0071E3;">
                     <a href="${upgradeUrl}" target="_blank" style="display: inline-block; padding: 20px 56px; font-size: 18px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 10px;">
                       Upgrade Before It's Too Late
                     </a>

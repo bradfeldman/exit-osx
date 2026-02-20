@@ -77,7 +77,7 @@ export function CategorySectionHeader({
   // Color logic: burnt-orange < 70%, emerald >= 70%
   const progressColor = percentage >= 70
     ? 'stroke-emerald-500'
-    : 'stroke-[#B87333]'
+    : 'stroke-primary'
 
   return (
     <div className="flex items-center gap-3 sm:gap-4 py-4">

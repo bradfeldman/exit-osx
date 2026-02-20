@@ -8,7 +8,7 @@
 .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; border: none; cursor: pointer; transition: all 0.15s; text-decoration: none; font-family: inherit; }
 .btn svg { width: 16px; height: 16px; }
 .btnPrimary { background: var(--accent); color: white; }
-.btnPrimary:hover { background: #005BB5; }
+.btnPrimary:hover { background: var(--primary); }
 .btnSecondary { background: var(--surface); color: var(--text-primary); border: 1px solid var(--border); }
 .btnSecondary:hover { background: var(--surface-secondary); }
 .btnSm { padding: 6px 12px; font-size: 12px; }
@@ -60,7 +60,7 @@
 .iconPurple { background: var(--purple-light); color: var(--purple); }
 .iconBlue { background: var(--accent-light); color: var(--accent); }
 .iconGreen { background: var(--green-light); color: var(--green); }
-.iconTeal { background: var(--teal-light); color: #0891B2; }
+.iconTeal { background: var(--teal-light); color: var(--teal-dark); }
 .playbookInfo { flex: 1; min-width: 0; }
 .playbookTitle { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
 .playbookDesc { font-size: 13px; color: var(--text-secondary); line-height: 1.4; }
@@ -75,7 +75,7 @@
 .pbStatus { margin-left: auto; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 6px; }
 .pbStatusActive { background: var(--accent-light); color: var(--accent); }
 .pbStatusAvailable { background: var(--surface); color: var(--text-tertiary); border: 1px solid var(--border); }
-.pbStatusCompleted { background: var(--green-light); color: #1B8731; }
+.pbStatusCompleted { background: var(--green-light); color: var(--green-dark); }
 
 /* Steps Preview */
 .playbookStepsPreview { padding: 0 24px 16px; }
@@ -102,7 +102,7 @@
 .playbookHero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); border-radius: var(--radius-lg); padding: 32px 36px; margin-bottom: 24px; display: flex; gap: 32px; align-items: center; position: relative; overflow: hidden; }
 .playbookHero::after { content: ''; position: absolute; top: -40%; right: -10%; width: 280px; height: 280px; background: radial-gradient(circle, rgba(192,132,252,0.12) 0%, transparent 70%); border-radius: 50%; }
 .heroLeft { flex: 1; }
-.heroCategory { display: inline-flex; align-items: center; gap: 6px; background: rgba(192,132,252,0.2); color: #C084FC; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 12px; border-radius: 4px; margin-bottom: 12px; }
+.heroCategory { display: inline-flex; align-items: center; gap: 6px; background: rgba(192,132,252,0.2); color: var(--purple); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 12px; border-radius: 4px; margin-bottom: 12px; }
 .heroTitle { font-size: 32px; font-weight: 800; letter-spacing: -0.8px; color: #fff; margin-bottom: 12px; }
 .heroBadges { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .heroBadge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
@@ -114,7 +114,7 @@
 .progressRing { position: relative; flex-shrink: 0; z-index: 1; }
 .progressRing svg { width: 120px; height: 120px; transform: rotate(-90deg); }
 .ringBg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 8; }
-.ringFill { fill: none; stroke: #C084FC; stroke-width: 8; stroke-linecap: round; }
+.ringFill { fill: none; stroke: var(--purple); stroke-width: 8; stroke-linecap: round; }
 .ringCenter { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
 .ringPct { font-size: 26px; font-weight: 800; color: #fff; letter-spacing: -1px; }
 .ringLabel { font-size: 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 1px; }
@@ -138,7 +138,7 @@
 .phaseTitle { font-size: 17px; font-weight: 700; color: var(--text-primary); }
 .phaseTimeline { font-size: 12px; color: var(--text-tertiary); margin-top: 1px; }
 .phaseProgress { font-size: 12px; font-weight: 600; margin-left: auto; padding: 3px 10px; border-radius: 10px; }
-.phaseProgressDone { background: var(--green-light); color: #1B7A34; }
+.phaseProgressDone { background: var(--green-light); color: var(--green-dark); }
 .phaseProgressPartial { background: var(--accent-light); color: var(--accent); }
 .phaseProgressPending { background: var(--surface-secondary); color: var(--text-tertiary); border: 1px solid var(--border-light); }
 .phaseTasks { padding-bottom: 28px; }
@@ -230,7 +230,7 @@
 .buyerTypeBadge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; padding: 3px 8px; border-radius: 4px; white-space: nowrap; }
 .typePe { background: #E8E8EA; color: #3A3A3C; }
 .typeStrategic { background: var(--accent-light); color: var(--accent); }
-.typeIndividual { background: var(--green-light); color: #1B8731; }
+.typeIndividual { background: var(--green-light); color: var(--green-dark); }
 .typeFamily { background: var(--purple-light); color: var(--purple); }
 .typeFinancial { background: #E8E8EA; color: #3A3A3C; }
 
@@ -244,9 +244,9 @@
 .stageBadge { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px; white-space: nowrap; }
 .stageNew { background: var(--surface-secondary); color: var(--text-tertiary); border: 1px solid var(--border); }
 .stageContacted { background: var(--accent-light); color: var(--accent); }
-.stageNda { background: var(--orange-light); color: #8B5E00; }
+.stageNda { background: var(--orange-light); color: var(--orange-dark); }
 .stageLoi { background: var(--purple-light); color: var(--purple); }
-.stageDd { background: var(--green-light); color: #1B8731; }
+.stageDd { background: var(--green-light); color: var(--green-dark); }
 .stageDeclined { background: var(--red-light); color: var(--red); }
 .stageIdentified { background: var(--surface-secondary); color: var(--text-tertiary); border: 1px solid var(--border); }
 

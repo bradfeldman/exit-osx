@@ -167,7 +167,7 @@ function emailWrapper(content: string): string {
           <!-- Header -->
           <tr>
             <td style="padding: 40px 40px 30px 40px; text-align: center; border-bottom: 1px solid #f0f0f0;">
-              <span style="font-size: 28px; font-weight: 700; color: #3D3D3D; letter-spacing: -0.5px;">Exit OS<span style="color: #B87333;">x</span></span>
+              <span style="font-size: 28px; font-weight: 700; color: #1D1D1F; letter-spacing: -0.5px;">Exit OS<span style="color: #0071E3;">x</span></span>
             </td>
           </tr>
 
@@ -205,7 +205,7 @@ function emailWrapper(content: string): string {
 function ctaButton(href: string, text: string): string {
   return `<table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
     <tr>
-      <td style="border-radius: 8px; background-color: #B87333;">
+      <td style="border-radius: 8px; background-color: #0071E3;">
         <a href="${href}" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
           ${text}
         </a>
@@ -249,13 +249,13 @@ function buildDay0Html(lead: AssessmentLeadData, resultsUrl: string): string {
 
   const riskRow = riskLabel ? `
               <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #666666; text-align: center;">
-                Your #1 risk area: <strong style="color: #3D3D3D;">${riskLabel}</strong>.<br>
+                Your #1 risk area: <strong style="color: #1D1D1F;">${riskLabel}</strong>.<br>
                 We&rsquo;ll send you actionable tips to improve this in a couple days.
               </p>
   ` : ''
 
   return emailWrapper(`
-              <h1 style="margin: 0 0 8px 0; font-size: 26px; font-weight: 700; color: #3D3D3D; text-align: center; letter-spacing: -0.5px;">
+              <h1 style="margin: 0 0 8px 0; font-size: 26px; font-weight: 700; color: #1D1D1F; text-align: center; letter-spacing: -0.5px;">
                 Your Exit Readiness Results
               </h1>
 
@@ -297,17 +297,17 @@ function buildDay2Html(lead: AssessmentLeadData, signupUrl: string): string {
   const tipsHtml = tips
     .map(
       (tip) =>
-        `<tr><td style="padding: 8px 0; font-size: 14px; line-height: 1.6; color: #666666;"><span style="color: #B87333; margin-right: 8px; font-weight: 700;">&#8594;</span> ${tip}</td></tr>`
+        `<tr><td style="padding: 8px 0; font-size: 14px; line-height: 1.6; color: #666666;"><span style="color: #0071E3; margin-right: 8px; font-weight: 700;">&#8594;</span> ${tip}</td></tr>`
     )
     .join('\n')
 
   return emailWrapper(`
-              <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #3D3D3D; text-align: center; letter-spacing: -0.5px;">
+              <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #1D1D1F; text-align: center; letter-spacing: -0.5px;">
                 Improve Your #1 Risk Area
               </h1>
 
               <p style="margin: 0 0 4px 0; font-size: 15px; color: #666666; text-align: center;">
-                Your assessment flagged <strong style="color: #3D3D3D;">${riskLabel}</strong> as the area most likely to concern buyers.
+                Your assessment flagged <strong style="color: #1D1D1F;">${riskLabel}</strong> as the area most likely to concern buyers.
               </p>
 
               <p style="margin: 0 0 24px 0; font-size: 14px; color: #999999; text-align: center;">
@@ -340,7 +340,7 @@ function buildDay5Html(lead: AssessmentLeadData, signupUrl: string): string {
   const scoreColor = getScoreColor(score)
 
   return emailWrapper(`
-              <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #3D3D3D; text-align: center; letter-spacing: -0.5px;">
+              <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #1D1D1F; text-align: center; letter-spacing: -0.5px;">
                 Your Results Expire in 48 Hours
               </h1>
 
@@ -352,7 +352,7 @@ function buildDay5Html(lead: AssessmentLeadData, signupUrl: string): string {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 24px; padding: 20px; background-color: #FAFAFA; border-radius: 10px; border: 1px solid #f0f0f0;">
                 <tr>
                   <td style="text-align: center;">
-                    <p style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #3D3D3D;">What you&rsquo;ll lose access to:</p>
+                    <p style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #1D1D1F;">What you&rsquo;ll lose access to:</p>
                   </td>
                 </tr>
                 <tr>

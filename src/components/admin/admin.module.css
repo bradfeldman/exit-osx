@@ -318,7 +318,7 @@
   justify-content: space-between;
   gap: 16px;
   padding: 8px 24px;
-  background: #F59E0B; /* amber-400 — warning yellow */
+  background: var(--orange); /* amber-400 — warning yellow */
   color: #451A03;      /* amber-950 */
 }
 
@@ -341,7 +341,7 @@
 
 .adminBannerTimer {
   margin-left: 8px;
-  color: #92400E; /* amber-800 */
+  color: var(--orange-dark); /* amber-800 */
 }
 
 /* ─── Auth Layout ────────────────────────────────────────────────────────── */
@@ -487,10 +487,10 @@
 
 .adminModalWarning {
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, #F59E0B 10%, transparent);
+  background: color-mix(in srgb, var(--orange) 10%, transparent);
   padding: 12px;
   font-size: 14px;
-  color: #92400E;
+  color: var(--orange-dark);
 }
 
 .adminModalWarningTitle {

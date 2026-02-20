@@ -42,7 +42,7 @@ Displays a company's BRI (Buyer Readiness Index) score as a position on a colore
 - **Color:** `bg-gradient-to-r from-zinc-200 to-zinc-300`
 - **Width:** 15% of bar
 - **Message:** "Buyer-ready with minor gaps. Excellent zone starts at 75."
-- **Marker Color:** `#3D3D3D` (charcoal)
+- **Marker Color:** `#1D1D1F` (charcoal)
 
 ### Excellent Zone (75-100) — Green Gradient
 - **Color:** `bg-gradient-to-r from-emerald-200 to-emerald-300`
@@ -55,7 +55,7 @@ Displays a company's BRI (Buyer Readiness Index) score as a position on a colore
 ### Example 1: BRI Score = 67 (Strong Zone)
 ```
 Position: 67% from left
-Color: Charcoal (#3D3D3D)
+Color: Charcoal (#1D1D1F)
 Label: "You: 67 (Strong)"
 Message: "Buyer-ready with minor gaps. Excellent zone starts at 75."
 ```

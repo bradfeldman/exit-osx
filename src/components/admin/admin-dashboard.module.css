@@ -596,7 +596,7 @@
 }
 
 .externalIconWrapGreen {
-  background: #16A34A;
+  background: var(--green);
 }
 
 .externalIconWrapPurple {

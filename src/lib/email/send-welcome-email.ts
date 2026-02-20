@@ -86,7 +86,7 @@ export async function sendWelcomeEmail({ email, magicLinkUrl, companyName, briSc
           <!-- Header -->
           <tr>
             <td style="padding: 40px 40px 30px 40px; text-align: center; border-bottom: 1px solid #f0f0f0;">
-              <span style="font-size: 28px; font-weight: 700; color: #3D3D3D; letter-spacing: -0.5px;">Exit OS<span style="color: #B87333;">x</span></span>
+              <span style="font-size: 28px; font-weight: 700; color: #1D1D1F; letter-spacing: -0.5px;">Exit OS<span style="color: #0071E3;">x</span></span>
             </td>
           </tr>
 
@@ -94,7 +94,7 @@ export async function sendWelcomeEmail({ email, magicLinkUrl, companyName, briSc
           <tr>
             <td style="padding: 40px;">
               <!-- Heading -->
-              <h1 style="margin: 0 0 16px 0; font-size: 28px; font-weight: 700; color: #3D3D3D; text-align: center; letter-spacing: -0.5px;">
+              <h1 style="margin: 0 0 16px 0; font-size: 28px; font-weight: 700; color: #1D1D1F; text-align: center; letter-spacing: -0.5px;">
                 Welcome to Exit OSx
               </h1>
 
@@ -106,7 +106,7 @@ export async function sendWelcomeEmail({ email, magicLinkUrl, companyName, briSc
               ${teaserSection}
 
               <!-- Unlock List -->
-              <p style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #3D3D3D;">
+              <p style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #1D1D1F;">
                 Verify your email to unlock:
               </p>
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 24px;">
@@ -135,7 +135,7 @@ export async function sendWelcomeEmail({ email, magicLinkUrl, companyName, briSc
               <!-- CTA Button -->
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 24px auto;">
                 <tr>
-                  <td style="border-radius: 8px; background-color: #B87333;">
+                  <td style="border-radius: 8px; background-color: #0071E3;">
                     <a href="${magicLinkUrl}" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
                       Verify Email
                     </a>
@@ -145,13 +145,13 @@ export async function sendWelcomeEmail({ email, magicLinkUrl, companyName, briSc
 
               <!-- Already Active Notice -->
               <p style="margin: 0 0 16px 0; font-size: 14px; color: #888888; text-align: center;">
-                Your account is ready — you can <a href="${baseUrl}/login" style="color: #B87333;">log in anytime</a>.
+                Your account is ready — you can <a href="${baseUrl}/login" style="color: #0071E3;">log in anytime</a>.
               </p>
 
               <!-- Fallback link -->
               <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #999999; text-align: center;">
                 If the button does not work, copy and paste this URL into your browser:<br>
-                <a href="${magicLinkUrl}" style="color: #B87333; word-break: break-all;">${magicLinkUrl}</a>
+                <a href="${magicLinkUrl}" style="color: #0071E3; word-break: break-all;">${magicLinkUrl}</a>
               </p>
             </td>
           </tr>

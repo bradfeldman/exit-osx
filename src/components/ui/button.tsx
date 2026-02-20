@@ -16,7 +16,7 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
-          "border border-[#3D3D3D] text-[#3D3D3D] bg-background shadow-xs hover:bg-[#3D3D3D] hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-[#3D3D3D]",
+          "border border-foreground text-foreground bg-background shadow-xs hover:bg-foreground hover:text-background dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-foreground",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost:
@@ -85,8 +85,8 @@ function Button({
           scale: 1.02,
           y: -2,
           boxShadow: variant === 'default'
-            ? '0 4px 12px rgba(184, 115, 51, 0.25)'
-            : '0 4px 12px rgba(61, 61, 61, 0.15)',
+            ? '0 4px 12px rgba(0, 113, 227, 0.25)'
+            : '0 4px 12px rgba(0, 0, 0, 0.12)',
         }}
         whileTap={{
           scale: 0.98,

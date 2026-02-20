@@ -258,22 +258,22 @@
   align-items: flex-start;
   gap: 12px;
   padding: 16px;
-  background: #FFFBEB;
-  border: 1px solid #FDE68A;
+  background: var(--orange-light);
+  border: 1px solid var(--orange);
   border-radius: var(--radius-md);
   font-size: 14px;
-  color: #92400E;
+  color: var(--orange-dark);
 }
 
 .authAlertWarning svg {
   flex-shrink: 0;
-  color: #D97706;
+  color: var(--orange-dark);
 }
 
 .authAlertExpired {
   padding: 16px;
-  background: #FFFBEB;
-  border: 1px solid #FDE68A;
+  background: var(--orange-light);
+  border: 1px solid var(--orange);
   border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
@@ -285,12 +285,12 @@
   align-items: flex-start;
   gap: 12px;
   font-size: 14px;
-  color: #92400E;
+  color: var(--orange-dark);
 }
 
 .authAlertExpiredRow svg {
   flex-shrink: 0;
-  color: #D97706;
+  color: var(--orange-dark);
 }
 
 .authAlertError {
@@ -302,7 +302,7 @@
   border: 1px solid color-mix(in srgb, var(--red) 25%, transparent);
   border-radius: var(--radius-md);
   font-size: 14px;
-  color: #991B1B;
+  color: var(--red-dark);
 }
 
 /* ============================================================
@@ -372,12 +372,12 @@
 
 .authErrorMain {
   font-size: 14px;
-  color: #DC2626;
+  color: var(--red-dark);
 }
 
 .authErrorSub {
   font-size: 12px;
-  color: #EF4444;
+  color: var(--red);
 }
 
 /* ============================================================
@@ -569,7 +569,7 @@
 
 .authResendSuccess {
   font-size: 14px;
-  color: #15803D;
+  color: var(--green-dark);
   font-weight: 500;
 }
 
@@ -600,13 +600,13 @@
 }
 
 .authSuccessIconGreen {
-  background: #DCFCE7;
-  color: #16A34A;
+  background: var(--green-light);
+  color: var(--green);
 }
 
 .authSuccessIconAmber {
-  background: #FEF3C7;
-  color: #D97706;
+  background: var(--orange-light);
+  color: var(--orange-dark);
 }
 
 .authSuccessBody {

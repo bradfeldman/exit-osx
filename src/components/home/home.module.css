@@ -47,7 +47,7 @@
   background: var(--accent);
   color: white;
 }
-.btnPrimary:hover { background: #005BB5; }
+.btnPrimary:hover { background: var(--primary); }
 
 .btnSecondary {
   composes: btn;
@@ -410,7 +410,7 @@
   width: 48px;
   height: 48px;
   border-radius: 14px;
-  background: linear-gradient(135deg, var(--accent), #AF52DE);
+  background: linear-gradient(135deg, var(--accent), var(--purple));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -538,9 +538,9 @@
   white-space: nowrap;
 }
 
-.tagValue { background: var(--green-light); color: #1B8731; }
+.tagValue { background: var(--green-light); color: var(--green-dark); }
 .tagRisk { background: var(--red-light); color: var(--red); }
-.tagPrep { background: #F5EDFB; color: #AF52DE; }
+.tagPrep { background: #F5EDFB; color: var(--purple); }
 .tagFinance { background: var(--orange-light); color: #B36B00; }
 
 .actionArrow {

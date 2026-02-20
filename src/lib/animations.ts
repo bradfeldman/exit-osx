@@ -301,8 +301,8 @@ export const metricCardVariants: Variants = {
   }),
   hover: {
     y: -4,
-    boxShadow: '0 12px 24px -8px rgb(61 61 61 / 0.15)',
-    borderColor: 'rgba(184, 115, 51, 0.3)',
+    boxShadow: '0 12px 24px -8px rgba(0, 0, 0, 0.08)',
+    borderColor: 'rgba(0, 113, 227, 0.3)',
     transition: smoothEase,
   },
 }

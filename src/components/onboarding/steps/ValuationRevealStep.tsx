@@ -74,7 +74,7 @@ export function ValuationRevealStep({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#B87333', '#3D3D3D', '#FFD700', '#FFFFFF']
+        colors: ['#0071E3', '#1D1D1F', '#FFD700', '#FFFFFF']
       })
     }
   }, [revealStage])
@@ -193,13 +193,13 @@ export function ValuationRevealStep({
                   <circle
                     cx="50" cy="50" r="42"
                     fill="none"
-                    stroke="rgba(184, 115, 51, 0.2)"
+                    stroke="rgba(0, 113, 227, 0.2)"
                     strokeWidth="8"
                   />
                   <motion.circle
                     cx="50" cy="50" r="42"
                     fill="none"
-                    stroke="#B87333"
+                    stroke="var(--primary)"
                     strokeWidth="8"
                     strokeLinecap="round"
                     strokeDasharray={2 * Math.PI * 42}
