@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Key Employee Retention & Risk Mitigation | Exit Planning Playbook #13</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Brand */
+  --color-primary: #0071E3;
+  --color-primary-light: #3A7A50;
+  --color-primary-bg: rgba(45,90,61,0.07);
+  --color-accent: #FF9500;
+  --color-accent-light: #D4956A;
+  --color-accent-bg: rgba(184,115,51,0.08);
+
+  /* Surfaces */
+  --color-bg: #FAF9F7;
+  --color-surface: #FFFFFF;
+  --color-muted: #F5F3F0;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+
+  /* Text */
+  --color-text: #1A1A18;
+  --color-text-secondary: #5C5A55;
+  --color-text-muted: #8A8780;
+
+  /* Semantic */
+  --color-emerald: #0D9668;
+  --color-emerald-bg: rgba(13,150,104,0.08);
+  --color-red: #DC2626;
+  --color-red-bg: rgba(220,38,38,0.06);
+  --color-amber: #D97706;
+  --color-amber-bg: rgba(217,119,6,0.08);
+  --color-blue: #2563EB;
+  --color-blue-bg: rgba(37,99,235,0.06);
+
+  /* Score colors */
+  --score-1: #DC2626;
+  --score-2: #E87B35;
+  --score-3: #D4A843;
+  --score-4: #5BA865;
+  --score-5: #1B7A3D;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+
+  /* Transitions */
+  --transition: 200ms ease;
+  --transition-slow: 400ms ease;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Typography */
+.t-display { font-family: Georgia, 'Times New Roman', serif; font-size: 1.75rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.025em; }
+.t-h1 { font-family: Georgia, 'Times New Roman', serif; font-size: 1.375rem; font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 1.125rem; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 1rem; font-weight: 600; line-height: 1.35; }
+.t-body { font-size: 0.938rem; line-height: 1.7; color: var(--color-text-secondary); }
+.t-small { font-size: 0.85rem; line-height: 1.6; color: var(--color-text-secondary); }
+.t-caption { font-size: 0.78rem; color: var(--color-text-muted); }
+.t-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
+
+/* Skip link */
+.skip-link {
+  position: absolute; left: -9999px; top: 0;
+  background: var(--color-primary); color: #fff;
+  padding: 8px 16px; z-index: 9999;
+  font-size: 0.85rem; border-radius: 0 0 var(--radius-sm) 0;
+}
+.skip-link:focus { left: 0; }
+
+/* Layout */
+.app { display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar {
+  width: 260px; background: #1A1A18; color: #fff;
+  position: fixed; top: 0; left: 0; bottom: 0;
+  display: flex; flex-direction: column; z-index: 100;
+  transition: transform 0.3s ease;
+}
+.sidebar-header {
+  padding: var(--space-lg); border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-brand {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--color-accent); font-weight: 600; margin-bottom: var(--space-xs);
+}
+.sidebar-title { font-size: 1rem; font-weight: 600; color: #fff; line-height: 1.3; }
+
+.sidebar-progress {
+  padding: var(--space-md) var(--space-lg); border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.progress-label {
+  font-size: 0.75rem; color: rgba(255,255,255,0.5);
+  margin-bottom: var(--space-sm); display: flex; justify-content: space-between;
+}
+.progress-bar-bg { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: var(--color-primary); border-radius: 2px; transition: width 0.5s ease; }
+
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 0; }
+
+.nav-phase-label {
+  font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.35); padding: var(--space-md) var(--space-lg) var(--space-xs); font-weight: 600;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px var(--space-lg); color: rgba(255,255,255,0.55);
+  cursor: pointer; transition: all var(--transition);
+  font-size: 0.85rem; border-left: 3px solid transparent; user-select: none;
+}
+.nav-item:hover:not(.locked) { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.85); }
+.nav-item.active { background: rgba(255,255,255,0.08); color: #fff; border-left-color: var(--color-primary); }
+.nav-item.completed { color: rgba(255,255,255,0.7); }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-check {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; flex-shrink: 0;
+}
+.nav-item.completed .nav-check { border-color: var(--color-emerald); background: rgba(13,150,104,0.2); color: var(--color-emerald); }
+.nav-item.active .nav-check { border-color: var(--color-primary-light); background: rgba(45,90,61,0.25); }
+
+.sidebar-footer {
+  padding: var(--space-md) var(--space-lg); border-top: 1px solid var(--color-border);
+  font-size: 0.75rem; color: rgba(255,255,255,0.4);
+  display: flex; align-items: center; gap: 6px;
+}
+.save-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-emerald); }
+
+/* Main */
+.main { flex: 1; margin-left: 260px; min-height: 100vh; }
+.main-content { max-width: 760px; margin: 0 auto; padding: 40px 32px 120px; }
+
+/* Mobile */
+.mobile-header {
+  display: none; position: fixed; top: 0; left: 0; right: 0;
+  height: 56px; background: #1A1A18; color: #fff;
+  align-items: center; justify-content: space-between;
+  padding: 0 var(--space-md); z-index: 150;
+}
+.mobile-header-title { font-size: 0.9rem; font-weight: 600; }
+.hamburger {
+  width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+  background: none; border: none; color: #fff; cursor: pointer; font-size: 1.3rem;
+}
+.mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; }
+
+/* Pages */
+.page { display: none; animation: fadeIn 0.35s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Section header */
+.section-eyebrow {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--color-primary); font-weight: 600; margin-bottom: var(--space-sm);
+}
+.section-desc { margin-top: var(--space-sm); font-size: 0.95rem; max-width: 600px; color: var(--color-text-secondary); line-height: 1.7; }
+
+/* Card */
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-lg); margin-bottom: var(--space-md);
+  transition: box-shadow var(--transition);
+}
+.card:hover { box-shadow: var(--shadow-sm); }
+
+/* Callout boxes */
+.callout-info {
+  background: var(--color-primary-bg); border-left: 3px solid var(--color-primary);
+  padding: var(--space-md) var(--space-lg); border-radius: 0 var(--radius-md) var(--radius-md) 0; margin: var(--space-lg) 0;
+}
+.callout-info-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-primary); font-weight: 700; margin-bottom: 4px; }
+.callout-info p { font-size: 0.9rem; color: var(--color-text); }
+
+.callout-warning {
+  background: var(--color-red-bg); border-left: 3px solid var(--color-red);
+  padding: var(--space-md) var(--space-lg); border-radius: 0 var(--radius-md) var(--radius-md) 0; margin: var(--space-lg) 0;
+}
+.callout-warning-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-red); font-weight: 700; margin-bottom: 4px; }
+.callout-warning p { font-size: 0.9rem; color: var(--color-text); }
+
+.callout-success {
+  background: var(--color-emerald-bg); border-left: 3px solid var(--color-emerald);
+  padding: var(--space-md) var(--space-lg); border-radius: 0 var(--radius-md) var(--radius-md) 0; margin: var(--space-lg) 0;
+}
+.callout-success-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-emerald); font-weight: 700; margin-bottom: 4px; }
+.callout-success p { font-size: 0.9rem; color: var(--color-text); }
+
+.callout-accent {
+  background: var(--color-accent-bg); border-left: 3px solid var(--color-accent);
+  padding: var(--space-md) var(--space-lg); border-radius: 0 var(--radius-md) var(--radius-md) 0; margin: var(--space-lg) 0;
+}
+.callout-accent-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); font-weight: 700; margin-bottom: 4px; }
+.callout-accent p { font-size: 0.9rem; color: var(--color-text); }
+
+/* Forms */
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: var(--space-xs); }
+.form-hint { font-size: 0.78rem; color: var(--color-text-muted); margin-bottom: var(--space-sm); }
+
+.form-input {
+  width: 100%; padding: 10px 14px;
+  border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+  font-size: 0.938rem; font-family: inherit; color: var(--color-text);
+  background: var(--color-surface); outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.form-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(45,90,61,0.12); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.6; }
+select.form-input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238A8780' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; border-radius: var(--radius-sm);
+  font-size: 0.88rem; font-weight: 500; font-family: inherit;
+  cursor: pointer; border: none; transition: all var(--transition); outline: none;
+}
+.btn:focus-visible { box-shadow: 0 0 0 3px rgba(45,90,61,0.25); }
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-light); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-muted); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-border-light); }
+.btn-ghost { background: transparent; color: var(--color-primary); padding: 10px 12px; }
+.btn-ghost:hover { background: var(--color-primary-bg); }
+.btn-sm { padding: 8px 16px; font-size: 0.82rem; }
+
+.page-nav { display: flex; gap: 12px; margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--color-border-light); justify-content: space-between; }
+
+/* Score selector (5 buttons) */
+.score-selector { display: flex; gap: 8px; margin: var(--space-sm) 0; }
+.score-btn {
+  flex: 1; padding: 10px 4px; text-align: center;
+  border: 1.5px solid var(--color-border); border-radius: var(--radius-sm);
+  background: var(--color-surface); cursor: pointer; transition: all var(--transition);
+  font-size: 0.88rem; font-weight: 600; color: var(--color-text-secondary); font-family: inherit;
+}
+.score-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.score-btn.selected { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+
+/* Risk selector (L/M/H) */
+.risk-selector { display: flex; gap: 8px; margin: var(--space-sm) 0; }
+.risk-btn {
+  flex: 1; padding: 10px; text-align: center;
+  border: 1.5px solid var(--color-border); border-radius: var(--radius-sm);
+  background: var(--color-surface); cursor: pointer; transition: all var(--transition);
+  font-size: 0.82rem; font-weight: 600; font-family: inherit;
+}
+.risk-btn:hover { opacity: 0.85; }
+.risk-btn[data-val="L"] { color: var(--color-emerald); }
+.risk-btn[data-val="M"] { color: var(--color-amber); }
+.risk-btn[data-val="H"] { color: var(--color-red); }
+.risk-btn.selected[data-val="L"] { background: var(--color-emerald); color: #fff; border-color: var(--color-emerald); }
+.risk-btn.selected[data-val="M"] { background: var(--color-amber); color: #fff; border-color: var(--color-amber); }
+.risk-btn.selected[data-val="H"] { background: var(--color-red); color: #fff; border-color: var(--color-red); }
+/* Non-compete status buttons */
+.risk-btn[data-val="signed"] { color: var(--color-emerald); }
+.risk-btn[data-val="pending"] { color: var(--color-amber); }
+.risk-btn[data-val="none"] { color: var(--color-red); }
+.risk-btn.selected[data-val="signed"] { background: var(--color-emerald); color: #fff; border-color: var(--color-emerald); }
+.risk-btn.selected[data-val="pending"] { background: var(--color-amber); color: #fff; border-color: var(--color-amber); }
+.risk-btn.selected[data-val="none"] { background: var(--color-red); color: #fff; border-color: var(--color-red); }
+
+/* Employee cards */
+.employee-card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); margin-bottom: var(--space-md); overflow: hidden;
+  transition: box-shadow var(--transition);
+}
+.employee-card:hover { box-shadow: var(--shadow-md); }
+.employee-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-md) var(--space-lg); cursor: pointer;
+}
+.employee-header-left { display: flex; align-items: center; gap: 12px; }
+.employee-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--color-accent-bg); color: var(--color-accent);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+}
+.employee-name { font-weight: 600; font-size: 0.938rem; }
+.employee-role { font-size: 0.82rem; color: var(--color-text-muted); }
+.employee-badges { display: flex; gap: 8px; align-items: center; }
+.badge { padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+.badge-score { background: var(--color-muted); color: var(--color-text-secondary); }
+.badge-critical { background: var(--color-red-bg); color: var(--color-red); }
+.badge-high { background: var(--color-amber-bg); color: var(--color-amber); }
+.badge-moderate { background: var(--color-blue-bg); color: var(--color-blue); }
+.badge-low { background: var(--color-emerald-bg); color: var(--color-emerald); }
+.chevron { transition: transform var(--transition); color: var(--color-text-muted); }
+.employee-body { display: none; padding: 0 var(--space-lg) var(--space-lg); border-top: 1px solid var(--color-border-light); }
+.employee-card.expanded .employee-body { display: block; padding-top: var(--space-md); }
+.employee-card.expanded .chevron { transform: rotate(180deg); }
+
+/* Add button */
+.add-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 14px; border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md); background: transparent;
+  cursor: pointer; font-size: 0.88rem; color: var(--color-text-muted);
+  font-weight: 500; transition: all var(--transition); font-family: inherit;
+}
+.add-btn:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-bg); }
+
+/* KPI / Score grid */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: var(--space-lg) 0; }
+.kpi-card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); padding: var(--space-md) 18px; text-align: center;
+}
+.kpi-value { font-family: Georgia, 'Times New Roman', serif; font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.kpi-label { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* Gauge row */
+.gauge-row { display: flex; gap: var(--space-md); margin: var(--space-lg) 0; flex-wrap: wrap; }
+.gauge-item {
+  flex: 1; min-width: 140px; background: var(--color-surface);
+  border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  padding: var(--space-lg); text-align: center;
+}
+.gauge-label { font-size: 0.82rem; color: var(--color-text-secondary); font-weight: 500; }
+
+/* Data table */
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.85rem; margin: var(--space-md) 0; }
+.data-table th {
+  text-align: left; padding: 10px 12px; font-size: 0.7rem;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  color: var(--color-text-muted); font-weight: 600; border-bottom: 1px solid var(--color-border);
+}
+.data-table td { padding: 10px 12px; border-bottom: 1px solid var(--color-border-light); color: var(--color-text-secondary); }
+
+/* Structure cards */
+.structure-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: var(--space-md) 0; }
+.structure-card {
+  border: 1.5px solid var(--color-border); border-radius: var(--radius-md);
+  padding: var(--space-md); transition: all var(--transition);
+}
+
+/* Tier grid */
+.tier-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: var(--space-lg) 0; }
+.tier-card { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); text-align: center; }
+.tier-num { font-family: Georgia, 'Times New Roman', serif; font-size: 1.5rem; font-weight: 800; color: var(--color-accent); }
+.tier-label { font-size: 0.75rem; color: var(--color-text-secondary); margin-top: 4px; }
+.tier-desc { font-size: 0.7rem; color: var(--color-text-muted); margin-top: 8px; line-height: 1.4; }
+
+/* Checklist */
+.check-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--color-border-light); cursor: pointer; user-select: none;
+}
+.check-item:last-child { border-bottom: none; }
+.check-box {
+  width: 22px; height: 22px; border-radius: 4px;
+  border: 2px solid var(--color-border); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition); background: var(--color-surface);
+  font-size: 0.7rem; margin-top: 1px;
+}
+.check-box:hover { border-color: var(--color-primary); }
+.check-box.checked { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.check-text { font-size: 0.88rem; color: var(--color-text-secondary); flex: 1; }
+.check-item.done .check-text { text-decoration: line-through; opacity: 0.5; }
+
+/* Toast */
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 999; }
+.toast {
+  background: #1A1A18; color: #fff; padding: 12px 20px;
+  border-radius: var(--radius-md); font-size: 0.85rem;
+  box-shadow: var(--shadow-md); animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); width: 280px; }
+  .sidebar.open { transform: translateX(0); }
+  .mobile-header { display: flex; }
+  .mobile-overlay.open { display: block; }
+  .main { margin-left: 0; }
+  .main-content { padding: 72px 20px 100px; max-width: 100%; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .structure-grid { grid-template-columns: 1fr; }
+  .tier-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media print {
+  .sidebar, .mobile-header, .page-nav, .toast-container { display: none !important; }
+  .main { margin-left: 0; }
+  .page { display: block !important; page-break-inside: avoid; margin-bottom: 24px; }
+  .card, .employee-card { break-inside: avoid; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  html { scroll-behavior: auto; }
+}
+
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+</style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<div class="mobile-header">
+  <button class="hamburger" aria-label="Open navigation" onclick="PB.toggleSidebar()">&#9776;</button>
+  <span class="mobile-header-title">Key Employee Retention</span>
+  <div style="width:44px;"></div>
+</div>
+<div class="mobile-overlay" id="mobileOverlay" onclick="PB.toggleSidebar()"></div>
+
+<div class="app">
+  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">Exit Planning Playbook #13</div>
+      <div class="sidebar-title">Key Employee Retention & Risk Mitigation</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="progress-label">
+        <span>Your Progress</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="sidebar-nav" id="sidebarNav"></div>
+    <div class="sidebar-footer">
+      <div class="save-dot"></div>
+      <span>Auto-saved locally</span>
+    </div>
+  </nav>
+
+  <main class="main" role="main">
+    <div class="main-content" id="main-content"></div>
+  </main>
+</div>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script>
+(function() {
+'use strict';
+
+var PAGES = [
+  { id: 'welcome',       title: 'Overview',                    phase: 'Understand' },
+  { id: 'criticality',   title: 'Criticality Matrix',          phase: 'Assess' },
+  { id: 'flightrisk',    title: 'Flight Risk Assessment',      phase: 'Assess' },
+  { id: 'heatmap',       title: 'Risk Heat Map',               phase: 'Analyze' },
+  { id: 'retention',     title: 'Retention Programs',           phase: 'Plan' },
+  { id: 'staybonus',     title: 'Stay Bonuses & Incentives',   phase: 'Plan' },
+  { id: 'knowledge',     title: 'Knowledge Capture',            phase: 'Execute' },
+  { id: 'communication', title: 'Communication & Next Steps',   phase: 'Execute' }
+];
+
+var STORAGE_KEY = 'exitosx-pb13-key-employee-retention';
+
+function makeDefault() {
+  return {
+    currentPage: 'welcome',
+    completed: {},
+    employees: [],
+    retentionPlans: {},
+    knowledgeAreas: [],
+    checklistItems: {},
+    communicationTier: {},
+    notes: {}
+  };
+}
+
+function loadState() {
+  try {
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      var p = JSON.parse(saved);
+      return {
+        currentPage: p.currentPage || 'welcome',
+        completed: p.completed || {},
+        employees: Array.isArray(p.employees) ? p.employees : [],
+        retentionPlans: p.retentionPlans || {},
+        knowledgeAreas: Array.isArray(p.knowledgeAreas) ? p.knowledgeAreas : [],
+        checklistItems: p.checklistItems || {},
+        communicationTier: p.communicationTier || {},
+        notes: p.notes || {}
+      };
+    }
+  } catch(e) {}
+  return makeDefault();
+}
+
+var state = loadState();
+
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+/* Navigation */
+function pageIndex(id) { return PAGES.findIndex(function(p) { return p.id === id; }); }
+
+function isUnlocked(id) {
+  var idx = pageIndex(id);
+  if (idx <= 0) return true;
+  return !!state.completed[PAGES[idx - 1].id];
+}
+
+function goToPage(id) {
+  if (!isUnlocked(id)) return;
+  state.currentPage = id;
+  saveState(); renderNav(); renderPage();
+  closeSidebar();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function completePage(id) {
+  if (!state.completed[id]) { state.completed[id] = true; saveState(); renderNav(); }
+}
+
+function nextPage() {
+  var idx = pageIndex(state.currentPage);
+  completePage(state.currentPage);
+  if (idx < PAGES.length - 1) goToPage(PAGES[idx + 1].id);
+}
+
+function prevPage() {
+  var idx = pageIndex(state.currentPage);
+  if (idx > 0) goToPage(PAGES[idx - 1].id);
+}
+
+function renderNav() {
+  var nav = document.getElementById('sidebarNav');
+  var currentPhase = ''; var html = '';
+  PAGES.forEach(function(p) {
+    if (p.phase !== currentPhase) {
+      currentPhase = p.phase;
+      html += '<div class="nav-phase-label">' + currentPhase + '</div>';
+    }
+    var active = p.id === state.currentPage;
+    var done = !!state.completed[p.id];
+    var locked = !isUnlocked(p.id);
+    var cls = 'nav-item';
+    if (active) cls += ' active';
+    if (done) cls += ' completed';
+    if (locked) cls += ' locked';
+    html += '<div class="' + cls + '" data-page="' + p.id + '" role="button" tabindex="' + (locked ? '-1' : '0') + '">'
+      + '<div class="nav-check">' + (done ? '&#10003;' : '') + '</div>'
+      + '<span>' + p.title + '</span></div>';
+  });
+  nav.innerHTML = html;
+
+  var completed = Object.keys(state.completed).length;
+  var pct = Math.round((completed / PAGES.length) * 100);
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('mobileOverlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('mobileOverlay').classList.remove('open');
+}
+
+/* Helpers */
+function escHtml(s) { if (!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function getInitials(name) { if (!name) return '?'; return name.split(' ').map(function(w){ return w[0]; }).join('').toUpperCase().substring(0,2); }
+function getCritLabel(score) {
+  if (score >= 8) return { label: 'Critical', cls: 'badge-critical' };
+  if (score >= 6) return { label: 'High', cls: 'badge-high' };
+  if (score >= 4) return { label: 'Moderate', cls: 'badge-moderate' };
+  return { label: 'Low', cls: 'badge-low' };
+}
+function getFlightColor(risk) { return risk === 'H' ? 'badge-critical' : risk === 'M' ? 'badge-high' : 'badge-low'; }
+
+function pageNav(showPrev, nextLabel) {
+  if (showPrev === undefined) showPrev = true;
+  return '<div class="page-nav">'
+    + (showPrev ? '<button class="btn btn-secondary" data-action="prev">&larr; Back</button>' : '<div></div>')
+    + (nextLabel !== false ? '<button class="btn btn-primary" data-action="next">' + (nextLabel || 'Continue') + ' &rarr;</button>' : '')
+    + '</div>';
+}
+
+function toast(msg) {
+  var c = document.getElementById('toastContainer');
+  var t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  c.appendChild(t); setTimeout(function(){ t.remove(); }, 3000);
+}
+
+function scoreSel(field, empIdx, currentVal) {
+  var descs = {
+    impact: { 1:'Minimal', 2:'Low', 3:'Moderate', 4:'High', 5:'Critical' },
+    replace: { 1:'Easy', 2:'Simple', 3:'Moderate', 4:'Hard', 5:'Very Hard' }
+  };
+  var html = '<div class="score-selector">';
+  for (var v = 1; v <= 5; v++) {
+    html += '<button class="score-btn' + (currentVal === v ? ' selected' : '') + '" data-action="score-emp" data-field="' + field + '" data-idx="' + empIdx + '" data-val="' + v + '">'
+      + v + '<br><span style="font-size:0.65rem;font-weight:400;color:var(--color-text-muted)">' + descs[field][v] + '</span></button>';
+  }
+  return html + '</div>';
+}
+
+/* Page Renderers */
+function renderPage() {
+  var el = document.getElementById('main-content');
+  var renderers = {
+    welcome: rWelcome, criticality: rCriticality, flightrisk: rFlightRisk,
+    heatmap: rHeatMap, retention: rRetention, staybonus: rStayBonus,
+    knowledge: rKnowledge, communication: rCommunication
+  };
+  var fn = renderers[state.currentPage];
+  el.innerHTML = '<div class="page active">' + (fn ? fn() : '') + '</div>';
+}
+
+function rWelcome() {
+  return '<div class="section-eyebrow">Getting Started</div>'
+    + '<h1 class="t-display">Your People Are Your Business</h1>'
+    + '<p class="section-desc">Key employee risk is the second most common reason deals fail or get re-traded. This tool helps you identify, assess, and protect your most critical human capital.</p>'
+    + '<div class="callout-accent"><div class="callout-accent-label">The Core Principle</div>'
+    + '<p>A buyer is underwriting your team, not just your financials. If three people hold the keys to the business and none of them are contractually committed to stay, the buyer faces catastrophic risk &mdash; and will price accordingly.</p></div>'
+    + '<div class="card" style="border-left:3px solid var(--color-accent);">'
+    + '<h3 class="t-h1" style="margin-bottom:12px;">Why This Matters</h3>'
+    + '<p class="t-body">Every $100K of annual salary for an irreplaceable employee who lacks retention incentives represents <strong>$400K&ndash;$800K of perceived enterprise value risk</strong>.</p>'
+    + '<div style="overflow-x:auto;margin-top:16px;"><table class="data-table"><thead><tr><th>Risk Scenario</th><th>Buyer Impact</th><th>Typical Response</th></tr></thead><tbody>'
+    + '<tr><td>Key salesperson holds top 3 client relationships</td><td>Revenue at risk if they leave</td><td>1.0x&ndash;2.0x EBITDA discount</td></tr>'
+    + '<tr><td>Only one person can operate critical systems</td><td>Production stops</td><td>Employment contract as closing condition</td></tr>'
+    + '<tr><td>Owner handles all sales; no sales team</td><td>Revenue ceases at transition</td><td>Heavy earnout structure</td></tr>'
+    + '<tr><td>No documented processes; tribal knowledge</td><td>Cannot onboard new hires</td><td>0.5x&ndash;1.0x multiple reduction</td></tr>'
+    + '<tr><td>CFO departs during diligence</td><td>Financial reporting disrupted</td><td>Deal pause or termination</td></tr>'
+    + '</tbody></table></div></div>'
+    + '<h3 class="t-h1" style="margin-top:var(--space-xl);">What You Will Do</h3>'
+    + '<div class="gauge-row">'
+    + gaugeCard('Identify', 'Critical personnel', 'var(--color-accent)')
+    + gaugeCard('Assess', 'Flight risk', 'var(--color-amber)')
+    + gaugeCard('Design', 'Retention plans', 'var(--color-blue)')
+    + gaugeCard('Protect', 'Knowledge capture', 'var(--color-emerald)')
+    + '</div>'
+    + pageNav(false, 'Start Assessment');
+}
+
+function gaugeCard(title, subtitle, color) {
+  return '<div class="gauge-item"><div style="font-size:0.88rem;font-weight:700;color:' + color + '">' + title + '</div><div class="gauge-label">' + subtitle + '</div></div>';
+}
+
+function rCriticality() {
+  var emps = state.employees;
+  var html = '<div class="section-eyebrow">Step 1 of 7</div>'
+    + '<h1 class="t-display">Key Employee Criticality Matrix</h1>'
+    + '<p class="section-desc">Identify the 5&ndash;15% of your workforce whose departure would materially impact revenue, operations, or the transaction. Score each person on two dimensions.</p>'
+    + '<div class="kpi-grid">'
+    + '<div class="kpi-card"><div class="kpi-value">' + emps.length + '</div><div class="kpi-label">Employees Added</div></div>'
+    + '<div class="kpi-card"><div class="kpi-value">' + emps.filter(function(e){ return (e.impact||0)+(e.replace||0)>=8; }).length + '</div><div class="kpi-label">Critical (8+)</div></div>'
+    + '</div>'
+    + '<div class="callout-info"><div class="callout-info-label">Scoring Guide</div>'
+    + '<p><strong>Impact of Departure (1&ndash;5):</strong> 5 = Revenue loss &gt;20%, operations halt. 1 = No material impact.<br>'
+    + '<strong>Difficulty of Replacement (1&ndash;5):</strong> 5 = Unique skills, 6+ month search. 1 = Easily replaceable.</p></div>';
+
+  emps.forEach(function(emp, i) {
+    var combined = (emp.impact||0) + (emp.replace||0);
+    var crit = getCritLabel(combined);
+    html += '<div class="employee-card' + (emp.expanded ? ' expanded' : '') + '">'
+      + '<div class="employee-header" data-action="toggle-emp" data-idx="' + i + '">'
+      + '<div class="employee-header-left">'
+      + '<div class="employee-avatar">' + getInitials(emp.name) + '</div>'
+      + '<div><div class="employee-name">' + (emp.name || 'Unnamed') + '</div>'
+      + '<div class="employee-role">' + (emp.role || 'No role specified') + '</div></div></div>'
+      + '<div class="employee-badges">'
+      + (combined > 0 ? '<span class="badge badge-score">' + combined + '/10</span>' : '')
+      + (combined >= 6 ? '<span class="badge ' + crit.cls + '">' + crit.label + '</span>' : '')
+      + '<span class="chevron">&#9662;</span></div></div>'
+      + '<div class="employee-body">'
+      + '<div class="form-group"><label class="form-label">Employee Name</label>'
+      + '<input class="form-input" type="text" value="' + escHtml(emp.name||'') + '" data-bind="emp-name" data-idx="' + i + '" placeholder="Full name"></div>'
+      + '<div class="form-group"><label class="form-label">Role / Title</label>'
+      + '<input class="form-input" type="text" value="' + escHtml(emp.role||'') + '" data-bind="emp-role" data-idx="' + i + '" placeholder="e.g., VP of Sales"></div>'
+      + '<div class="form-group"><label class="form-label">Impact of Departure</label>'
+      + '<div class="form-hint">How much damage would their departure cause?</div>'
+      + scoreSel('impact', i, emp.impact) + '</div>'
+      + '<div class="form-group"><label class="form-label">Difficulty of Replacement</label>'
+      + '<div class="form-hint">How hard would it be to find and onboard a replacement?</div>'
+      + scoreSel('replace', i, emp.replace) + '</div>'
+      + '<button class="btn btn-ghost btn-sm" style="color:var(--color-red);" data-action="remove-emp" data-idx="' + i + '">Remove Employee</button>'
+      + '</div></div>';
+  });
+
+  html += '<button class="add-btn" data-action="add-emp">+ Add Key Employee</button>'
+    + '<div class="callout-warning" style="margin-top:var(--space-lg);"><div class="callout-warning-label">Red Flag</div>'
+    + '<p>If your highest-impact employees are also your highest flight risks, this is a five-alarm fire. Address this before any buyer interaction.</p></div>'
+    + pageNav(true);
+  return html;
+}
+
+function rFlightRisk() {
+  var emps = state.employees;
+  var keyEmps = emps.filter(function(e){ return (e.impact||0)+(e.replace||0) >= 6; });
+
+  if (keyEmps.length === 0) {
+    return '<div class="section-eyebrow">Step 2 of 7</div>'
+      + '<h1 class="t-display">Flight Risk Assessment</h1>'
+      + '<div class="callout-warning"><div class="callout-warning-label">No Key Employees</div>'
+      + '<p>Go back to the Criticality Matrix and add at least one employee scoring 6+ before assessing flight risk.</p></div>'
+      + pageNav(true);
+  }
+
+  var factors = [
+    { key:'tenure', label:'Tenure', low:'10+ years, deeply embedded', mod:'5-10 years, stable but restless', high:'<5 years, still exploring' },
+    { key:'comp', label:'Compensation vs. Market', low:'Above market', mod:'At market', high:'Below market' },
+    { key:'personal', label:'Personal Situation', low:'Deep roots, stable', mod:'Flexible, not seeking change', high:'Seeking change' },
+    { key:'relationship', label:'Relationship with Owner', low:'Loyal, mentor relationship', mod:'Professional, neutral', high:'Strained, frustrated' },
+    { key:'career', label:'Career Trajectory', low:'Happy in role', mod:'Wants growth, satisfiable', high:'Actively seeking exit' },
+    { key:'market', label:'Market Demand for Skills', low:'Niche, limited options', mod:'Some demand', high:'Hot market, recruiters calling' },
+    { key:'equity', label:'Equity / Ownership', low:'Has meaningful equity', mod:'Minor stake or profit sharing', high:'No ownership interest' }
+  ];
+
+  var html = '<div class="section-eyebrow">Step 2 of 7</div>'
+    + '<h1 class="t-display">Flight Risk Assessment</h1>'
+    + '<p class="section-desc">For each key employee, assess the factors that drive departure risk. This combines with criticality to form your risk heat map.</p>';
+
+  keyEmps.forEach(function(emp) {
+    var i = emps.indexOf(emp);
+    var frLabels = { H:'High Risk', M:'Moderate Risk', L:'Low Risk' };
+    html += '<div class="employee-card' + (emp.frExpanded ? ' expanded' : '') + '">'
+      + '<div class="employee-header" data-action="toggle-fr" data-idx="' + i + '">'
+      + '<div class="employee-header-left"><div class="employee-avatar">' + getInitials(emp.name) + '</div>'
+      + '<div><div class="employee-name">' + (emp.name||'Unnamed') + '</div>'
+      + '<div class="employee-role">' + (emp.role||'') + '</div></div></div>'
+      + '<div class="employee-badges">'
+      + (emp.flightRisk ? '<span class="badge ' + getFlightColor(emp.flightRisk) + '">' + frLabels[emp.flightRisk] + '</span>' : '')
+      + '<span class="chevron">&#9662;</span></div></div>'
+      + '<div class="employee-body">';
+
+    factors.forEach(function(f) {
+      var val = (emp.riskFactors && emp.riskFactors[f.key]) || '';
+      html += '<div class="form-group"><label class="form-label">' + f.label + '</label>'
+        + '<div class="risk-selector">'
+        + '<button class="risk-btn' + (val==='L' ? ' selected' : '') + '" data-val="L" data-action="set-risk" data-emp="' + i + '" data-factor="' + f.key + '">' + f.low + '</button>'
+        + '<button class="risk-btn' + (val==='M' ? ' selected' : '') + '" data-val="M" data-action="set-risk" data-emp="' + i + '" data-factor="' + f.key + '">' + f.mod + '</button>'
+        + '<button class="risk-btn' + (val==='H' ? ' selected' : '') + '" data-val="H" data-action="set-risk" data-emp="' + i + '" data-factor="' + f.key + '">' + f.high + '</button>'
+        + '</div></div>';
+    });
+
+    html += '<div class="form-group"><label class="form-label">Overall Flight Risk</label>'
+      + '<div class="form-hint">Based on the factors above, what is your overall assessment?</div>'
+      + '<div class="risk-selector">'
+      + '<button class="risk-btn' + (emp.flightRisk==='L' ? ' selected' : '') + '" data-val="L" data-action="set-risk" data-emp="' + i + '" data-factor="_overall">Low Risk</button>'
+      + '<button class="risk-btn' + (emp.flightRisk==='M' ? ' selected' : '') + '" data-val="M" data-action="set-risk" data-emp="' + i + '" data-factor="_overall">Moderate Risk</button>'
+      + '<button class="risk-btn' + (emp.flightRisk==='H' ? ' selected' : '') + '" data-val="H" data-action="set-risk" data-emp="' + i + '" data-factor="_overall">High Risk</button>'
+      + '</div></div></div></div>';
+  });
+
+  html += pageNav(true);
+  return html;
+}
+
+function rHeatMap() {
+  var emps = state.employees.filter(function(e){ return (e.impact||0)+(e.replace||0) >= 6; });
+  var critCount = emps.filter(function(e){ return (e.impact||0)+(e.replace||0) >= 8; }).length;
+  var highFR = emps.filter(function(e){ return e.flightRisk === 'H'; }).length;
+  var redZone = emps.filter(function(e){ return (e.impact||0)+(e.replace||0) >= 8 && e.flightRisk === 'H'; }).length;
+
+  var html = '<div class="section-eyebrow">Step 3 of 7</div>'
+    + '<h1 class="t-display">Risk Heat Map</h1>'
+    + '<p class="section-desc">Your critical employees plotted by criticality and flight risk. Red zones demand immediate action.</p>'
+    + '<div class="gauge-row">'
+    + '<div class="gauge-item"><div style="font-size:2rem;font-weight:800;color:var(--color-accent);">' + emps.length + '</div><div class="gauge-label">Key Employees</div></div>'
+    + '<div class="gauge-item"><div style="font-size:2rem;font-weight:800;color:var(--color-red);">' + critCount + '</div><div class="gauge-label">Critical (8+)</div></div>'
+    + '<div class="gauge-item"><div style="font-size:2rem;font-weight:800;color:var(--color-amber);">' + highFR + '</div><div class="gauge-label">High Flight Risk</div></div>'
+    + '<div class="gauge-item"><div style="font-size:2rem;font-weight:800;color:' + (redZone > 0 ? 'var(--color-red)' : 'var(--color-emerald)') + ';">' + redZone + '</div><div class="gauge-label">Red Zone (Both)</div></div>'
+    + '</div>';
+
+  html += '<div class="card" style="margin-top:var(--space-lg);"><h3 class="t-h1" style="margin-bottom:var(--space-md);">Criticality vs. Flight Risk Matrix</h3>'
+    + '<div style="display:grid;grid-template-columns:100px 1fr 1fr 1fr;gap:2px;">'
+    + '<div></div>'
+    + '<div style="text-align:center;padding:8px;background:var(--color-emerald-bg);border-radius:4px 0 0 0;font-size:0.7rem;font-weight:600;color:var(--color-text-muted);">Low Risk</div>'
+    + '<div style="text-align:center;padding:8px;background:var(--color-amber-bg);font-size:0.7rem;font-weight:600;color:var(--color-text-muted);">Moderate Risk</div>'
+    + '<div style="text-align:center;padding:8px;background:var(--color-red-bg);border-radius:0 4px 0 0;font-size:0.7rem;font-weight:600;color:var(--color-text-muted);">High Risk</div>';
+
+  var tiers = [
+    { label:'Critical (8-10)', min:8, max:10 },
+    { label:'High (6-7)', min:6, max:7 },
+    { label:'Moderate (4-5)', min:4, max:5 }
+  ];
+  var riskLevels = ['L','M','H'];
+  var cellColors = {
+    '8L':'#FEF3C7','8M':'#FED7AA','8H':'#FECACA',
+    '6L':'#D1FAE5','6M':'#FEF3C7','6H':'#FED7AA',
+    '4L':'#DBEAFE','4M':'#D1FAE5','4H':'#FEF3C7'
+  };
+
+  tiers.forEach(function(tier) {
+    html += '<div style="display:flex;align-items:center;justify-content:flex-end;padding-right:12px;font-size:0.75rem;font-weight:600;color:var(--color-text-secondary);">' + tier.label + '</div>';
+    riskLevels.forEach(function(rl) {
+      var cellEmps = emps.filter(function(e) {
+        var score = (e.impact||0)+(e.replace||0);
+        return score >= tier.min && score <= tier.max && e.flightRisk === rl;
+      });
+      var bg = cellColors[tier.min + rl] || '#F5F5F5';
+      html += '<div style="background:' + bg + ';border-radius:4px;padding:10px;min-height:60px;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;">';
+      if (cellEmps.length === 0) {
+        html += '<span style="font-size:0.75rem;color:var(--color-text-muted);">&mdash;</span>';
+      } else {
+        cellEmps.forEach(function(e) {
+          html += '<div style="display:flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:500;">'
+            + '<div style="width:24px;height:24px;border-radius:50%;background:var(--color-accent-bg);color:var(--color-accent);display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;">' + getInitials(e.name) + '</div>'
+            + (e.name || 'Unnamed') + '</div>';
+        });
+      }
+      html += '</div>';
+    });
+  });
+
+  html += '</div></div>';
+
+  if (redZone > 0) {
+    html += '<div class="callout-warning"><div class="callout-warning-label">Immediate Action Required</div>'
+      + '<p>You have ' + redZone + ' employee' + (redZone > 1 ? 's' : '') + ' in the red zone &mdash; critical to your business AND at high flight risk. Address these individuals with retention agreements before any buyer interaction.</p></div>';
+  } else if (emps.length > 0) {
+    html += '<div class="callout-success"><div class="callout-success-label">Looking Good</div>'
+      + '<p>No employees are in the critical + high flight risk zone. Continue to the retention planning section to lock in these positions.</p></div>';
+  }
+
+  html += pageNav(true);
+  return html;
+}
+
+function rRetention() {
+  var html = '<div class="section-eyebrow">Step 4 of 7</div>'
+    + '<h1 class="t-display">Retention Program Design</h1>'
+    + '<p class="section-desc">Retention is not just about money. The best programs address four drivers: manager relationship, purpose and growth, compensation, and flexibility.</p>'
+    + '<h3 class="t-h1" style="margin-top:var(--space-xl);">The Four Pillars of Retention</h3>'
+    + '<div class="gauge-row" style="margin-bottom:var(--space-lg);">'
+    + '<div class="gauge-item" style="border-top:3px solid var(--color-accent);"><h4 class="t-h3" style="margin:0;">Compensation</h4><p class="t-caption" style="margin:6px 0 0;">Market benchmarking, retention bonuses, equity-like instruments</p></div>'
+    + '<div class="gauge-item" style="border-top:3px solid var(--color-blue);"><h4 class="t-h3" style="margin:0;">Growth</h4><p class="t-caption" style="margin:6px 0 0;">Title clarity, expanded responsibility, professional development</p></div>'
+    + '<div class="gauge-item" style="border-top:3px solid var(--color-emerald);"><h4 class="t-h3" style="margin:0;">Flexibility</h4><p class="t-caption" style="margin:6px 0 0;">Remote options, flexible schedules, additional PTO</p></div>'
+    + '<div class="gauge-item" style="border-top:3px solid var(--color-amber);"><h4 class="t-h3" style="margin:0;">Relationship</h4><p class="t-caption" style="margin:6px 0 0;">Trust with leadership, sense of belonging, clear communication</p></div>'
+    + '</div>';
+
+  var keyEmps = state.employees.filter(function(e){ return (e.impact||0)+(e.replace||0) >= 6; });
+
+  if (keyEmps.length > 0) {
+    html += '<h3 class="t-h1">Individual Retention Plans</h3>';
+    keyEmps.forEach(function(emp) {
+      var i = state.employees.indexOf(emp);
+      var plan = state.retentionPlans[i] || {};
+      html += '<div class="card"><div style="display:flex;align-items:center;gap:12px;margin-bottom:var(--space-md);">'
+        + '<div class="employee-avatar">' + getInitials(emp.name) + '</div>'
+        + '<div><div style="font-weight:600;">' + (emp.name||'Unnamed') + '</div>'
+        + '<div class="t-caption">' + (emp.role||'') + '</div></div></div>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">'
+        + '<div class="form-group"><label class="form-label">Current Compensation</label>'
+        + '<input class="form-input" type="text" value="' + escHtml(plan.currentComp||'') + '" data-bind="plan-field" data-plan="' + i + '" data-pfield="currentComp" placeholder="$150,000"></div>'
+        + '<div class="form-group"><label class="form-label">Market Compensation</label>'
+        + '<input class="form-input" type="text" value="' + escHtml(plan.marketComp||'') + '" data-bind="plan-field" data-plan="' + i + '" data-pfield="marketComp" placeholder="$175,000"></div></div>'
+        + '<div class="form-group"><label class="form-label">Retention Bonus Amount</label>'
+        + '<div class="form-hint">Typically 25&ndash;100% of annual salary for key employees</div>'
+        + '<input class="form-input" type="text" value="' + escHtml(plan.retentionBonus||'') + '" data-bind="plan-field" data-plan="' + i + '" data-pfield="retentionBonus" placeholder="$75,000"></div>'
+        + '<div class="form-group"><label class="form-label">Vesting Schedule</label>'
+        + '<select class="form-input" data-bind="plan-select" data-plan="' + i + '" data-pfield="vesting">'
+        + '<option value="">Select schedule...</option>'
+        + '<option value="closing"' + (plan.vesting==='closing' ? ' selected' : '') + '>100% at closing</option>'
+        + '<option value="6-12"' + (plan.vesting==='6-12' ? ' selected' : '') + '>50% at 6 months, 50% at 12 months</option>'
+        + '<option value="6-12-18"' + (plan.vesting==='6-12-18' ? ' selected' : '') + '>33% at 6, 12, and 18 months</option>'
+        + '<option value="12-24"' + (plan.vesting==='12-24' ? ' selected' : '') + '>50% at 12 months, 50% at 24 months</option>'
+        + '<option value="custom"' + (plan.vesting==='custom' ? ' selected' : '') + '>Custom</option></select></div>'
+        + '<div class="form-group"><label class="form-label">Non-Compete Status</label>'
+        + '<div class="risk-selector">'
+        + '<button class="risk-btn' + (plan.nonCompete==='signed' ? ' selected' : '') + '" data-val="signed" data-action="set-plan-btn" data-plan="' + i + '" data-pfield="nonCompete">Signed</button>'
+        + '<button class="risk-btn' + (plan.nonCompete==='pending' ? ' selected' : '') + '" data-val="pending" data-action="set-plan-btn" data-plan="' + i + '" data-pfield="nonCompete">Pending</button>'
+        + '<button class="risk-btn' + (plan.nonCompete==='none' ? ' selected' : '') + '" data-val="none" data-action="set-plan-btn" data-plan="' + i + '" data-pfield="nonCompete">Not Started</button>'
+        + '</div></div>'
+        + '<div class="form-group"><label class="form-label">Non-Financial Retention Actions</label>'
+        + '<textarea class="form-input" data-bind="plan-field" data-plan="' + i + '" data-pfield="nonFinancial" placeholder="e.g., Promoted to VP title, added to leadership team, flexible Fridays...">' + escHtml(plan.nonFinancial||'') + '</textarea></div></div>';
+    });
+  } else {
+    html += '<div class="callout-info"><div class="callout-info-label">No Key Employees to Plan For</div><p>Add employees in the Criticality Matrix step first.</p></div>';
+  }
+
+  html += '<div class="callout-accent" style="margin-top:var(--space-lg);"><div class="callout-accent-label">Buyer Perspective</div>'
+    + '<p>Many buyers will fund or co-fund retention bonuses because they share the risk. A well-designed plan presented during the deal signals operational maturity and can improve your valuation by more than the cost of the plan.</p></div>'
+    + pageNav(true);
+  return html;
+}
+
+function rStayBonus() {
+  var structures = [
+    { title:'Closing Bonus', desc:'Paid at close if still employed', amount:'10-25% of salary', best:'Retaining through diligence uncertainty' },
+    { title:'Retention Bonus', desc:'Installments at 6, 12, 18 months post-close', amount:'25-75% of salary', best:'Ensuring transition continuity' },
+    { title:'Performance Bonus', desc:'Paid if business hits targets post-close', amount:'15-50% of salary', best:'Aligning incentives with buyer' },
+    { title:'Phantom Equity / SAR', desc:'Payout at exit based on value creation', amount:'1-5% of equity value', best:'Long-term alignment; significant upside' },
+    { title:'Transaction Bonus Pool', desc:'Fixed pool allocated at close', amount:'2-5% of deal value', best:'Broad-based retention across team' },
+    { title:'Deferred Compensation', desc:'Unfunded promise to pay at future date', amount:'Varies', best:'Tax-advantaged; long vesting' }
+  ];
+
+  var html = '<div class="section-eyebrow">Step 5 of 7</div>'
+    + '<h1 class="t-display">Stay Bonus Structures</h1>'
+    + '<p class="section-desc">Choose the right incentive structure for each key employee. Different structures serve different objectives.</p>'
+    + '<div class="structure-grid">';
+
+  structures.forEach(function(s) {
+    html += '<div class="structure-card"><h4 class="t-h3" style="color:var(--color-accent);margin:0 0 4px;">' + s.title + '</h4>'
+      + '<p class="t-small" style="margin:4px 0;">' + s.desc + '</p>'
+      + '<div class="t-caption" style="margin-top:8px;"><strong>Typical:</strong> ' + s.amount + '</div>'
+      + '<div class="t-caption" style="margin-top:4px;"><strong>Best for:</strong> ' + s.best + '</div></div>';
+  });
+  html += '</div>';
+
+  html += '<h3 class="t-h1" style="margin-top:var(--space-xl);">Non-Compete & Non-Solicitation Strategy</h3>'
+    + '<p class="t-body">Retention incentives keep people. Restrictive covenants provide a backstop if they leave.</p>'
+    + '<div class="card"><h4 class="t-h2" style="margin-bottom:var(--space-md);">Enforceability by State</h4>'
+    + '<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Jurisdiction</th><th>Non-Compete</th><th>Key Notes</th></tr></thead><tbody>'
+    + '<tr><td><strong>California</strong></td><td style="color:var(--color-red);">Not Enforceable</td><td>Non-solicitation of employees may be enforceable</td></tr>'
+    + '<tr><td><strong>New York</strong></td><td style="color:var(--color-emerald);">Enforceable if Reasonable</td><td>Must be limited in time, geography, and scope</td></tr>'
+    + '<tr><td><strong>Texas</strong></td><td style="color:var(--color-emerald);">Enforceable</td><td>Must be ancillary to an otherwise enforceable agreement</td></tr>'
+    + '<tr><td><strong>Florida</strong></td><td style="color:var(--color-emerald);">Generally Enforceable</td><td>Statutory framework; presumption of reasonableness &lt;2 years</td></tr>'
+    + '<tr><td><strong>Massachusetts</strong></td><td style="color:var(--color-amber);">With Restrictions</td><td>Garden leave or mutually-agreed consideration required</td></tr>'
+    + '</tbody></table></div></div>'
+    + '<div class="callout-accent" style="margin-top:var(--space-md);"><div class="callout-accent-label">Practical Tip</div>'
+    + '<p>Get restrictive covenants signed <strong>before</strong> the employee knows about a potential sale. Once a transaction is announced, employees have maximum leverage and may refuse to sign. A retention bonus or raise can serve as the required consideration.</p></div>'
+    + pageNav(true);
+  return html;
+}
+
+function rKnowledge() {
+  var categories = [
+    { key:'customer', label:'Customer Relationships', desc:'Key contacts, preferences, history, buying patterns', method:'CRM with full notes; relationship mapping' },
+    { key:'vendor', label:'Vendor Relationships', desc:'Negotiated terms, contacts, escalation procedures', method:'Vendor management database; documented contracts' },
+    { key:'process', label:'Process Knowledge', desc:'How to run equipment, handle exceptions, troubleshoot', method:'Standard Operating Procedures' },
+    { key:'pricing', label:'Pricing & Deal History', desc:'Customer-specific pricing, quotes, discount approvals', method:'Pricing database; documented policies' },
+    { key:'regulatory', label:'Regulatory Knowledge', desc:'Compliance requirements, inspection prep, filing deadlines', method:'Compliance calendar; procedural documentation' },
+    { key:'tribal', label:'Tribal Knowledge', desc:'Undocumented norms and institutional memory', method:'Video interviews; knowledge transfer sessions' }
+  ];
+
+  if (!state.knowledgeAreas || state.knowledgeAreas.length === 0) {
+    state.knowledgeAreas = categories.map(function(c) {
+      return { key:c.key, label:c.label, holder:'', backup:'', status:'not-started', date:'' };
+    });
+    saveState();
+  }
+
+  var html = '<div class="section-eyebrow">Step 6 of 7</div>'
+    + '<h1 class="t-display">Institutional Knowledge Capture</h1>'
+    + '<p class="section-desc">The most dangerous form of key-employee risk is not that someone leaves &mdash; it is that what they know leaves with them.</p>'
+    + '<h3 class="t-h1" style="margin-top:var(--space-xl);">Knowledge Categories</h3>';
+
+  categories.forEach(function(cat, ci) {
+    var ka = state.knowledgeAreas[ci] || {};
+    html += '<div class="card" style="margin-bottom:12px;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">'
+      + '<div style="flex:1;min-width:200px;"><h4 class="t-h3" style="color:var(--color-accent);margin:0;">' + cat.label + '</h4>'
+      + '<p class="t-small" style="margin:4px 0 0;">' + cat.desc + '</p>'
+      + '<div class="t-caption" style="margin-top:4px;"><em>Method: ' + cat.method + '</em></div></div>'
+      + '<select class="form-input" style="width:auto;padding:6px 10px;font-size:0.82rem;" data-bind="ka-status" data-ka="' + ci + '">'
+      + '<option value="not-started"' + (ka.status==='not-started' ? ' selected' : '') + '>Not Started</option>'
+      + '<option value="in-progress"' + (ka.status==='in-progress' ? ' selected' : '') + '>In Progress</option>'
+      + '<option value="complete"' + (ka.status==='complete' ? ' selected' : '') + '>Complete</option></select></div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px;">'
+      + '<div class="form-group" style="margin:0;"><label class="form-label" style="font-size:0.78rem;">Current Holder</label>'
+      + '<input class="form-input" type="text" value="' + escHtml(ka.holder||'') + '" data-bind="ka-field" data-ka="' + ci + '" data-kafield="holder" placeholder="Who holds this knowledge?" style="font-size:0.85rem;padding:8px 10px;"></div>'
+      + '<div class="form-group" style="margin:0;"><label class="form-label" style="font-size:0.78rem;">Backup Person</label>'
+      + '<input class="form-input" type="text" value="' + escHtml(ka.backup||'') + '" data-bind="ka-field" data-ka="' + ci + '" data-kafield="backup" placeholder="Who is being trained?" style="font-size:0.85rem;padding:8px 10px;"></div>'
+      + '<div class="form-group" style="margin:0;"><label class="form-label" style="font-size:0.78rem;">Target Date</label>'
+      + '<input class="form-input" type="date" value="' + escHtml(ka.date||'') + '" data-bind="ka-field" data-ka="' + ci + '" data-kafield="date" style="font-size:0.85rem;padding:8px 10px;"></div></div></div>';
+  });
+
+  html += '<h3 class="t-h1" style="margin-top:var(--space-xl);">The 5-Step Knowledge Transfer Process</h3><div class="card">';
+  var steps = [
+    { num:1, title:'Inventory', desc:'Map every critical function to the person(s) who perform it.' },
+    { num:2, title:'Single-Point-of-Failure Audit', desc:'Identify functions where only one person holds the knowledge.' },
+    { num:3, title:'Document or Cross-Train', desc:'Have knowledge holders document processes, record video walkthroughs, or train a backup.' },
+    { num:4, title:'Validate', desc:'Test by having the backup perform the function independently.' },
+    { num:5, title:'Maintain', desc:'Schedule quarterly reviews to keep documentation current.' }
+  ];
+  steps.forEach(function(s) {
+    var checked = state.checklistItems['kstep_' + s.num] || false;
+    html += '<div class="check-item' + (checked ? ' done' : '') + '" data-action="toggle-check" data-key="kstep_' + s.num + '">'
+      + '<div class="check-box' + (checked ? ' checked' : '') + '" role="checkbox" aria-checked="' + checked + '" tabindex="0">' + (checked ? '&#10003;' : '') + '</div>'
+      + '<div class="check-text"><strong>Step ' + s.num + ': ' + s.title + '</strong><br>' + s.desc + '</div></div>';
+  });
+  html += '</div>';
+
+  html += '<h3 class="t-h1" style="margin-top:var(--space-xl);">Succession Readiness</h3>'
+    + '<div class="callout-info"><div class="callout-info-label">What Buyers Want to See</div>'
+    + '<p>Clear reporting lines (not everything to the owner), at least two layers of management, named successors for top 5 roles, no person in more than one box, and a realistic post-close structure.</p></div>'
+    + '<div class="tier-grid">'
+    + '<div class="tier-card" style="border-top:3px solid var(--color-emerald);"><div style="font-weight:700;font-size:0.88rem;">Ready Now</div><div class="tier-desc">Internal candidate can step in within 30 days</div></div>'
+    + '<div class="tier-card" style="border-top:3px solid var(--color-amber);"><div style="font-weight:700;font-size:0.88rem;">Ready in 6-12 Mo.</div><div class="tier-desc">Candidate needs development but is on track</div></div>'
+    + '<div class="tier-card" style="border-top:3px solid var(--color-red);"><div style="font-weight:700;font-size:0.88rem;">External Hire</div><div class="tier-desc">No internal candidate; must recruit</div></div>'
+    + '<div class="tier-card" style="border-top:3px solid var(--color-text-muted);"><div style="font-weight:700;font-size:0.88rem;">Eliminate Role</div><div class="tier-desc">Can be absorbed or outsourced</div></div>'
+    + '</div>'
+    + pageNav(true);
+  return html;
+}
+
+function rCommunication() {
+  var html = '<div class="section-eyebrow">Step 7 of 7</div>'
+    + '<h1 class="t-display">Communication Strategy & Action Plan</h1>'
+    + '<p class="section-desc">When and how you tell employees about a potential sale is one of the most delicate decisions in the entire exit process.</p>'
+    + '<h3 class="t-h1" style="margin-top:var(--space-xl);">The Four Disclosure Tiers</h3>'
+    + '<div class="tier-grid">'
+    + '<div class="tier-card" style="border-top:3px solid var(--color-red);"><div class="tier-num">1</div><div class="tier-label">Inner Circle</div><div class="tier-desc">CFO, COO, key executives. Tell before going to market. Full disclosure with NDA. Retention incentive in place first.</div></div>'
+    + '<div class="tier-card" style="border-top:3px solid var(--color-amber);"><div class="tier-num">2</div><div class="tier-label">Key Managers</div><div class="tier-desc">Department heads, senior managers. Tell after LOI, before diligence. High-level disclosure.</div></div>'
+    + '<div class="tier-card" style="border-top:3px solid var(--color-blue);"><div class="tier-num">3</div><div class="tier-label">All Employees</div><div class="tier-desc">Remaining staff. Tell at or near closing. Positive framing, emphasize opportunity.</div></div>'
+    + '<div class="tier-card" style="border-top:3px solid var(--color-text-muted);"><div class="tier-num">4</div><div class="tier-label">External</div><div class="tier-desc">Customers, vendors, public. At closing per deal terms. Coordinated announcement.</div></div>'
+    + '</div>'
+    + '<div class="callout-warning"><div class="callout-warning-label">Critical Warning</div>'
+    + '<p>Never tell key employees about a potential sale without first having their retention incentive ready to present. The conversation should be: "We are exploring strategic options. You are critical to this business. Here is your retention agreement that guarantees you $X if you stay through the transition." Sequence matters.</p></div>';
+
+  var keyEmps = state.employees.filter(function(e){ return (e.impact||0)+(e.replace||0) >= 6; });
+  if (keyEmps.length > 0) {
+    html += '<h3 class="t-h1">Employee Communication Plan</h3>';
+    keyEmps.forEach(function(emp) {
+      var i = state.employees.indexOf(emp);
+      var ct = state.communicationTier[i] || {};
+      html += '<div class="card" style="display:flex;gap:var(--space-md);align-items:flex-start;flex-wrap:wrap;">'
+        + '<div style="flex:1;min-width:160px;"><div style="display:flex;align-items:center;gap:10px;">'
+        + '<div class="employee-avatar" style="width:32px;height:32px;font-size:0.7rem;">' + getInitials(emp.name) + '</div>'
+        + '<div><div style="font-weight:600;font-size:0.88rem;">' + (emp.name||'Unnamed') + '</div>'
+        + '<div class="t-caption">' + (emp.role||'') + '</div></div></div></div>'
+        + '<div style="flex:1;min-width:160px;"><label class="form-label" style="font-size:0.78rem;">Disclosure Tier</label>'
+        + '<select class="form-input" style="font-size:0.85rem;padding:8px;" data-bind="ct-field" data-ct="' + i + '" data-ctfield="tier">'
+        + '<option value="">Assign tier...</option>'
+        + '<option value="1"' + (ct.tier==='1' ? ' selected' : '') + '>Tier 1 - Inner Circle</option>'
+        + '<option value="2"' + (ct.tier==='2' ? ' selected' : '') + '>Tier 2 - Key Managers</option>'
+        + '<option value="3"' + (ct.tier==='3' ? ' selected' : '') + '>Tier 3 - All Employees</option></select></div>'
+        + '<div style="flex:1;min-width:200px;"><label class="form-label" style="font-size:0.78rem;">Key Talking Points</label>'
+        + '<input class="form-input" type="text" value="' + escHtml(ct.talkingPoints||'') + '" data-bind="ct-field" data-ct="' + i + '" data-ctfield="talkingPoints" placeholder="Their role post-close, comp changes..." style="font-size:0.85rem;padding:8px;"></div></div>';
+    });
+  }
+
+  html += '<h3 class="t-h1" style="margin-top:var(--space-xl);">Common Mistakes Checklist</h3><div class="card">';
+  var mistakes = [
+    { key:'m1', text:'We are NOT assuming loyalty will survive the news &mdash; we have economic retention in place.' },
+    { key:'m2', text:'We will NOT tell everyone at the same time &mdash; inner circle gets told first with agreements signed.' },
+    { key:'m3', text:'We are NOT waiting for the buyer to demand retention plans &mdash; we will present proactively.' },
+    { key:'m4', text:'We HAVE prepared individual talking points for each key employee addressing their future.' },
+    { key:'m5', text:'We have restrictive covenants signed BEFORE any transaction announcement.' },
+    { key:'m6', text:'Our institutional knowledge is documented and cross-trained, not trapped in individual heads.' }
+  ];
+  mistakes.forEach(function(m) {
+    var checked = state.checklistItems[m.key] || false;
+    html += '<div class="check-item' + (checked ? ' done' : '') + '" data-action="toggle-check" data-key="' + m.key + '">'
+      + '<div class="check-box' + (checked ? ' checked' : '') + '" role="checkbox" aria-checked="' + checked + '" tabindex="0">' + (checked ? '&#10003;' : '') + '</div>'
+      + '<div class="check-text">' + m.text + '</div></div>';
+  });
+  html += '</div>';
+
+  // Summary dashboard
+  html += '<h3 class="t-h1" style="margin-top:var(--space-xl);">Your Retention Readiness Summary</h3>';
+  var totalEmps = state.employees.length;
+  var keyCount = state.employees.filter(function(e){ return (e.impact||0)+(e.replace||0) >= 6; }).length;
+  var highFR = state.employees.filter(function(e){ return e.flightRisk === 'H'; }).length;
+  var plansCreated = Object.keys(state.retentionPlans).filter(function(k){ return state.retentionPlans[k].retentionBonus; }).length;
+  var kaDone = (state.knowledgeAreas || []).filter(function(ka){ return ka.status === 'complete'; }).length;
+  var totalKA = (state.knowledgeAreas || []).length || 6;
+
+  html += '<div class="gauge-row">'
+    + '<div class="gauge-item"><div style="font-size:2rem;font-weight:800;color:' + (totalEmps > 0 ? 'var(--color-emerald)' : 'var(--color-text-muted)') + ';">' + totalEmps + '</div><div class="gauge-label">Employees Assessed</div></div>'
+    + '<div class="gauge-item"><div style="font-size:2rem;font-weight:800;color:' + (keyCount > 0 ? 'var(--color-accent)' : 'var(--color-text-muted)') + ';">' + keyCount + '</div><div class="gauge-label">Key Employees</div></div>'
+    + '<div class="gauge-item"><div style="font-size:2rem;font-weight:800;color:' + (highFR > 0 ? 'var(--color-red)' : 'var(--color-emerald)') + ';">' + highFR + '</div><div class="gauge-label">High Flight Risk</div></div>'
+    + '<div class="gauge-item"><div style="font-size:2rem;font-weight:800;color:' + (plansCreated > 0 ? 'var(--color-blue)' : 'var(--color-text-muted)') + ';">' + plansCreated + '</div><div class="gauge-label">Plans Created</div></div>'
+    + '</div>';
+
+  html += '<div class="card" style="text-align:center;padding:var(--space-xl);">'
+    + '<div class="t-caption" style="margin-bottom:8px;">Knowledge Transfer Progress</div>'
+    + '<div style="height:12px;background:var(--color-muted);border-radius:6px;overflow:hidden;max-width:400px;margin:0 auto;">'
+    + '<div style="height:100%;width:' + Math.round((kaDone/totalKA)*100) + '%;background:var(--color-emerald);border-radius:6px;transition:width 0.5s;"></div></div>'
+    + '<div style="font-family:Georgia,serif;font-size:1.5rem;font-weight:800;margin-top:12px;">' + kaDone + ' of ' + totalKA + ' areas documented</div></div>';
+
+  html += '<div style="text-align:center;margin-top:var(--space-xl);padding:var(--space-lg);background:var(--color-accent-bg);border-radius:var(--radius-lg);">'
+    + '<div class="t-h1" style="margin-bottom:4px;">Your People Are Your Business.</div>'
+    + '<p class="t-body">Retain them with intention, not hope.</p>'
+    + '<div style="margin-top:var(--space-md);display:flex;gap:12px;justify-content:center;">'
+    + '<button class="btn btn-ghost" data-action="export">Export Results</button>'
+    + '<button class="btn btn-ghost btn-sm" style="color:var(--color-red);" data-action="reset">Reset All Data</button></div></div>'
+    + '<div class="page-nav"><button class="btn btn-secondary" data-action="prev">&larr; Back</button><div></div></div>';
+
+  return html;
+}
+
+/* Export */
+function exportResults() {
+  var lines = ['KEY EMPLOYEE RETENTION -- RESULTS','======================================','Date: ' + new Date().toLocaleDateString(),''];
+  state.employees.forEach(function(emp, i) {
+    var combined = (emp.impact||0)+(emp.replace||0);
+    lines.push('EMPLOYEE: ' + (emp.name||'Unnamed') + ' (' + (emp.role||'No role') + ')');
+    lines.push('  Criticality: ' + combined + '/10 (' + getCritLabel(combined).label + ')');
+    lines.push('  Flight Risk: ' + (emp.flightRisk||'Not assessed'));
+    var plan = state.retentionPlans[i];
+    if (plan && plan.retentionBonus) lines.push('  Retention Bonus: ' + plan.retentionBonus);
+    lines.push('');
+  });
+  var kaDone = (state.knowledgeAreas||[]).filter(function(ka){ return ka.status==='complete'; }).length;
+  lines.push('KNOWLEDGE TRANSFER: ' + kaDone + '/' + (state.knowledgeAreas||[]).length + ' areas complete');
+  lines.push(''); lines.push('Generated by Exit OSx Playbook');
+
+  var blob = new Blob([lines.join('\n')], { type:'text/plain' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'key-employee-retention-results.txt';
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('Results exported');
+}
+
+/* Event delegation */
+document.addEventListener('click', function(e) {
+  var t = e.target.closest('[data-action]');
+  if (!t) return;
+  var action = t.dataset.action;
+
+  if (action === 'next') { nextPage(); return; }
+  if (action === 'prev') { prevPage(); return; }
+  if (action === 'export') { exportResults(); return; }
+  if (action === 'reset') {
+    if (confirm('This will erase all your data in this playbook. Are you sure?')) {
+      localStorage.removeItem(STORAGE_KEY);
+      state = makeDefault();
+      goToPage('welcome');
+    }
+    return;
+  }
+
+  if (action === 'add-emp') {
+    state.employees.push({ name:'', role:'', impact:0, replace:0, flightRisk:'', riskFactors:{}, expanded:true });
+    saveState(); renderPage(); return;
+  }
+  if (action === 'remove-emp') {
+    state.employees.splice(parseInt(t.dataset.idx), 1);
+    saveState(); renderPage(); return;
+  }
+  if (action === 'toggle-emp') {
+    var ei = parseInt(t.dataset.idx);
+    state.employees[ei].expanded = !state.employees[ei].expanded;
+    saveState(); renderPage(); return;
+  }
+  if (action === 'toggle-fr') {
+    var fi = parseInt(t.dataset.idx);
+    state.employees[fi].frExpanded = !state.employees[fi].frExpanded;
+    saveState(); renderPage(); return;
+  }
+  if (action === 'score-emp') {
+    var si = parseInt(t.dataset.idx);
+    state.employees[si][t.dataset.field] = parseInt(t.dataset.val);
+    saveState(); renderPage(); return;
+  }
+  if (action === 'set-risk') {
+    var ri = parseInt(t.dataset.emp);
+    var factor = t.dataset.factor;
+    var val = t.dataset.val;
+    if (factor === '_overall') { state.employees[ri].flightRisk = val; }
+    else {
+      if (!state.employees[ri].riskFactors) state.employees[ri].riskFactors = {};
+      state.employees[ri].riskFactors[factor] = val;
+    }
+    saveState(); renderPage(); return;
+  }
+  if (action === 'set-plan-btn') {
+    var pi = t.dataset.plan;
+    if (!state.retentionPlans[pi]) state.retentionPlans[pi] = {};
+    state.retentionPlans[pi][t.dataset.pfield] = t.dataset.val;
+    saveState(); renderPage(); return;
+  }
+  if (action === 'toggle-check') {
+    var key = t.dataset.key;
+    state.checklistItems[key] = !state.checklistItems[key];
+    saveState(); renderPage(); return;
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  var t = e.target.closest('[data-action]');
+  if (!t) return;
+  if (e.key === 'Enter' || e.key === ' ') {
+    var action = t.dataset.action;
+    if (action === 'toggle-check' || action === 'score-emp' || action === 'set-risk' || action === 'set-plan-btn') {
+      e.preventDefault(); t.click();
+    }
+  }
+});
+
+/* Input bindings */
+document.addEventListener('input', function(e) {
+  var bind = e.target.dataset.bind;
+  if (!bind) return;
+  if (bind === 'emp-name') { state.employees[parseInt(e.target.dataset.idx)].name = e.target.value; saveState(); return; }
+  if (bind === 'emp-role') { state.employees[parseInt(e.target.dataset.idx)].role = e.target.value; saveState(); return; }
+  if (bind === 'plan-field') {
+    var pi = e.target.dataset.plan;
+    if (!state.retentionPlans[pi]) state.retentionPlans[pi] = {};
+    state.retentionPlans[pi][e.target.dataset.pfield] = e.target.value;
+    saveState(); return;
+  }
+  if (bind === 'ka-field') {
+    var ki = parseInt(e.target.dataset.ka);
+    if (state.knowledgeAreas[ki]) { state.knowledgeAreas[ki][e.target.dataset.kafield] = e.target.value; saveState(); }
+    return;
+  }
+  if (bind === 'ct-field') {
+    var ci = e.target.dataset.ct;
+    if (!state.communicationTier[ci]) state.communicationTier[ci] = {};
+    state.communicationTier[ci][e.target.dataset.ctfield] = e.target.value;
+    saveState(); return;
+  }
+});
+
+document.addEventListener('change', function(e) {
+  var bind = e.target.dataset.bind;
+  if (!bind) return;
+  if (bind === 'plan-select') {
+    var pi = e.target.dataset.plan;
+    if (!state.retentionPlans[pi]) state.retentionPlans[pi] = {};
+    state.retentionPlans[pi][e.target.dataset.pfield] = e.target.value;
+    saveState(); return;
+  }
+  if (bind === 'ka-status') {
+    var ki = parseInt(e.target.dataset.ka);
+    if (state.knowledgeAreas[ki]) { state.knowledgeAreas[ki].status = e.target.value; saveState(); }
+    return;
+  }
+  if (bind === 'ct-field') {
+    var ci = e.target.dataset.ct;
+    if (!state.communicationTier[ci]) state.communicationTier[ci] = {};
+    state.communicationTier[ci][e.target.dataset.ctfield] = e.target.value;
+    saveState(); return;
+  }
+  if (bind === 'ka-field') {
+    var ki = parseInt(e.target.dataset.ka);
+    if (state.knowledgeAreas[ki]) { state.knowledgeAreas[ki][e.target.dataset.kafield] = e.target.value; saveState(); }
+    return;
+  }
+});
+
+/* Nav click delegation */
+document.getElementById('sidebarNav').addEventListener('click', function(e) {
+  var item = e.target.closest('.nav-item');
+  if (item && !item.classList.contains('locked')) goToPage(item.dataset.page);
+});
+document.getElementById('sidebarNav').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    var item = e.target.closest('.nav-item');
+    if (item && !item.classList.contains('locked')) goToPage(item.dataset.page);
+  }
+});
+
+/* Public API */
+window.PB = { goToPage: goToPage, toggleSidebar: toggleSidebar };
+
+/* Init */
+renderNav();
+renderPage();
+
+})();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

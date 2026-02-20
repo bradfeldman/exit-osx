@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOPs & Process Documentation | Exit Planning Playbook #15</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  color: var(--color-text); background: var(--color-bg);
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a { color: var(--color-primary); text-decoration: none; }
+
+.t-display { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.t-tertiary { color: var(--color-text-tertiary); }
+
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 260px; min-width: 260px; background: var(--color-text); color: #fff;
+  padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow); overflow-y: auto;
+}
+.sidebar.collapsed { transform: translateX(-260px); }
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; transition: margin-left var(--transition-slow); }
+.sidebar.collapsed + .main-content { margin-left: 0; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.6);
+  font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--color-text-tertiary); }
+.nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-lg);
+  transition: box-shadow var(--transition-normal);
+}
+.card:hover { box-shadow: var(--shadow-sm); }
+.card-elevated { box-shadow: var(--shadow-md); border-color: transparent; }
+.callout { padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); border-left: 3px solid; font-size: 14px; line-height: 1.6; }
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); border-color: var(--color-text-tertiary); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.btn-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); color: var(--color-text); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.form-input::placeholder { color: var(--color-text-tertiary); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center; min-width: 0;
+}
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+
+@media (max-width: 600px) {
+  .score-selector { gap: 4px; }
+  .score-option { padding: 10px 4px; }
+  .score-number { font-size: 18px; }
+  .score-label-text { font-size: 9px; }
+}
+
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+
+.progress-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.progress-ring-text { position: absolute; text-align: center; }
+.progress-ring-value { font-family: var(--font-display); font-weight: 700; line-height: 1; }
+.progress-ring-label { font-size: 10px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 24px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; min-width: 0; }
+.bar-fill.animated { min-width: 30px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+
+@media (max-width: 600px) { .bar-label { width: 90px; font-size: 11px; } }
+
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.section-divider { height: 1px; background: var(--color-border); margin: var(--space-2xl) 0; }
+
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-hero .t-display { margin-bottom: var(--space-md); }
+.welcome-hero .t-body { margin-bottom: var(--space-2xl); }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+.welcome-phases { display: flex; flex-direction: column; gap: var(--space-md); margin: var(--space-2xl) 0; text-align: left; }
+.welcome-phase { display: flex; gap: var(--space-lg); padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-phase-num { width: 36px; height: 36px; background: var(--color-primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--color-primary); flex-shrink: 0; font-size: 15px; }
+.welcome-phase-title { font-weight: 600; margin-bottom: 2px; }
+.welcome-phase-desc { font-size: 14px; color: var(--color-text-secondary); }
+
+@media (max-width: 600px) {
+  .welcome-stats { grid-template-columns: 1fr; }
+  .welcome-hero { padding: var(--space-2xl) var(--space-md); }
+}
+
+.mb-xs { margin-bottom: var(--space-xs); }
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+.mb-xl { margin-bottom: var(--space-xl); }
+.mb-2xl { margin-bottom: var(--space-2xl); }
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-sm { gap: var(--space-sm); }
+.gap-md { gap: var(--space-md); }
+
+.process-card {
+  border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  overflow: hidden; margin-bottom: var(--space-sm); background: var(--color-surface);
+}
+.process-card-header {
+  display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md) var(--space-lg);
+  cursor: pointer; transition: background var(--transition-fast);
+}
+.process-card-header:hover { background: var(--color-surface-alt); }
+.process-card-body { padding: 0 var(--space-lg) var(--space-lg); display: none; }
+.process-card-body.open { display: block; }
+.process-card-chevron { transition: transform var(--transition-fast); color: var(--color-text-tertiary); }
+.process-card-chevron.rotated { transform: rotate(90deg); }
+
+.maturity-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; margin: var(--space-md) 0; }
+.maturity-cell {
+  padding: var(--space-sm) var(--space-md); text-align: center; font-size: 12px; font-weight: 500;
+  border-radius: 4px; transition: all var(--transition-fast); cursor: pointer; border: 2px solid transparent;
+}
+.maturity-cell:hover { opacity: 0.85; }
+.maturity-cell.selected { border-color: var(--color-text); box-shadow: var(--shadow-sm); }
+.maturity-cell.m1 { background: #FEE2E2; color: var(--color-score-1); }
+.maturity-cell.m2 { background: #FEF3C7; color: var(--color-score-2); }
+.maturity-cell.m3 { background: #FFF8EB; color: var(--color-score-3); }
+.maturity-cell.m4 { background: var(--color-success-light); color: var(--color-score-5); }
+
+.checklist-item {
+  display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+.checklist-box {
+  width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: var(--radius-sm);
+  flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition-fast); margin-top: 1px;
+}
+.checklist-box:hover { border-color: var(--color-primary); }
+.checklist-box.checked { background: var(--color-primary); border-color: var(--color-primary); }
+.checklist-box.checked svg { display: block; }
+.checklist-box svg { display: none; width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+.toast {
+  position: fixed; bottom: 24px; right: 24px; background: var(--color-text);
+  color: #fff; padding: 12px 20px; border-radius: var(--radius-md);
+  font-size: 14px; z-index: 1000; opacity: 0; transform: translateY(10px);
+  transition: all var(--transition-normal); max-width: 360px;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+.page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+
+.heatmap { display: grid; gap: 2px; }
+.heatmap-cell {
+  aspect-ratio: 1; border-radius: var(--radius-sm); display: flex; align-items: center;
+  justify-content: center; font-size: 13px; font-weight: 600; color: #fff;
+  transition: transform var(--transition-fast);
+}
+.heatmap-cell:hover { transform: scale(1.08); z-index: 1; }
+.heatmap-cell.hs0 { background: var(--color-border); color: var(--color-text-tertiary); }
+.heatmap-cell.hs1 { background: var(--color-score-1); }
+.heatmap-cell.hs2 { background: var(--color-score-2); }
+.heatmap-cell.hs3 { background: var(--color-score-3); }
+.heatmap-cell.hs4 { background: var(--color-score-4); }
+.heatmap-cell.hs5 { background: var(--color-score-5); }
+.heatmap-row-label { font-size: 12px; color: var(--color-text-secondary); display: flex; align-items: center; padding-right: var(--space-sm); }
+.heatmap-col-label { font-size: 10px; color: var(--color-text-tertiary); text-align: center; text-transform: uppercase; letter-spacing: 0.03em; padding-bottom: 4px; }
+
+.timeline-row { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md) 0; border-bottom: 1px solid var(--color-border-light); }
+.timeline-month { width: 80px; flex-shrink: 0; font-weight: 600; font-size: 14px; color: var(--color-primary); }
+.timeline-bar { flex: 1; height: 8px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; }
+.timeline-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+.timeline-desc { flex: 1; font-size: 13px; color: var(--color-text-secondary); }
+
+.priority-matrix { display: grid; grid-template-columns: auto 1fr 1fr; gap: 2px; }
+.matrix-header { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-tertiary); padding: var(--space-sm); text-align: center; }
+.matrix-cell { padding: var(--space-md); border-radius: var(--radius-md); min-height: 100px; }
+.matrix-cell.p1 { background: #FFF0F0; }
+.matrix-cell.p2 { background: #FFF8EB; }
+.matrix-cell.p3 { background: #FFF9E8; }
+.matrix-cell.p4 { background: var(--color-surface-alt); }
+.matrix-chip { display: inline-block; padding: 2px 8px; background: rgba(255,255,255,0.8); border-radius: 4px; font-size: 12px; margin: 2px; }
+
+.gauge-wrap { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); }
+.gauge-label { font-size: 12px; color: var(--color-text-secondary); font-weight: 500; }
+
+.sop-template-preview {
+  background: var(--color-surface-alt); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  padding: var(--space-lg); font-size: 13px; line-height: 1.6;
+}
+.sop-template-row { display: flex; gap: var(--space-md); padding: var(--space-sm) 0; border-bottom: 1px solid var(--color-border-light); }
+.sop-template-key { width: 120px; flex-shrink: 0; font-weight: 600; color: var(--color-primary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+
+.inline-edit { background: none; border: none; border-bottom: 1px dashed var(--color-border); padding: 2px 4px; font-size: inherit; font-family: inherit; color: inherit; width: 100%; }
+.inline-edit:focus { outline: none; border-bottom-color: var(--color-primary); background: var(--color-primary-light); }
+
+/* ACCESSIBILITY */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; }
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+
+/* REDUCED MOTION */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* PRINT */
+@media print {
+  .sidebar, .mobile-header, .toast, .btn-group, .skip-link, .page-nav { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; }
+  .content-area { max-width: 100%; padding: 0; }
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<div class="app">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #15</div>
+      <div class="sidebar-brand-title">SOPs & Process Documentation</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav" role="navigation" aria-label="Playbook sections"></nav>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Documentation Maturity</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete assessments to see score</div>
+    </div>
+  </div>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <div class="main-content" id="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="Open navigation"><span></span></button>
+      <div style="font-weight:600;font-size:15px">Playbook #15: SOPs</div>
+    </div>
+    <div class="content-area" id="contentArea"></div>
+  </div>
+</div>
+<div class="toast" id="toast" aria-live="polite" role="status"></div>
+
+<script>
+const STORAGE_KEY = 'exitosx-pb15-sops-process-documentation';
+// Migrate from old key
+(function() { const old = localStorage.getItem('playbook15-sops-v1'); if (old && !localStorage.getItem(STORAGE_KEY)) { localStorage.setItem(STORAGE_KEY, old); localStorage.removeItem('playbook15-sops-v1'); } })();
+
+const PAGES = [
+  { id: 'welcome', title: 'Welcome', icon: '\u2302', section: 'start' },
+  { id: 'maturity', title: 'Maturity Assessment', icon: '\u2261', section: 'assess' },
+  { id: 'inventory', title: 'Process Inventory', icon: '\u2630', section: 'assess' },
+  { id: 'priority', title: 'Priority Framework', icon: '\u25B2', section: 'assess' },
+  { id: 'standards', title: 'Documentation Standards', icon: '\u2611', section: 'plan' },
+  { id: 'template', title: 'SOP Template Builder', icon: '\u2692', section: 'plan' },
+  { id: 'mapping', title: 'Process Mapping', icon: '\u21C4', section: 'plan' },
+  { id: 'ownership', title: 'Ownership & Maintenance', icon: '\u263A', section: 'build' },
+  { id: 'transferability', title: 'Transferability Checklist', icon: '\u2713', section: 'build' },
+  { id: 'timeline', title: 'Implementation Timeline', icon: '\u23F0', section: 'build' },
+  { id: 'dashboard', title: 'Your Dashboard', icon: '\u2605', section: 'results' }
+];
+
+const PRIORITY_CATEGORIES = [
+  { id: 'revenue', title: 'Revenue-Generating', priority: 1, color: 'var(--color-danger)', processes: [
+    { id: 'sales', name: 'Sales process (lead to close)' },
+    { id: 'onboarding', name: 'Customer onboarding & implementation' },
+    { id: 'delivery', name: 'Service delivery / product fulfillment' },
+    { id: 'billing', name: 'Invoicing, billing & collections' },
+    { id: 'contracts', name: 'Contract management & renewals' }
+  ]},
+  { id: 'operations', title: 'Core Operations', priority: 2, color: 'var(--color-warning)', processes: [
+    { id: 'production', name: 'Production / service execution' },
+    { id: 'qc', name: 'Quality control & assurance' },
+    { id: 'inventory_mgmt', name: 'Inventory management & purchasing' },
+    { id: 'equipment', name: 'Equipment operation & maintenance' },
+    { id: 'vendor', name: 'Vendor management & procurement' }
+  ]},
+  { id: 'finance', title: 'Financial & Administrative', priority: 3, color: 'var(--color-score-3)', processes: [
+    { id: 'monthend', name: 'Month-end close process' },
+    { id: 'payroll', name: 'Payroll processing' },
+    { id: 'ap_ar', name: 'Accounts payable & receivable' },
+    { id: 'tax', name: 'Tax filing & compliance' },
+    { id: 'insurance', name: 'Insurance management' }
+  ]},
+  { id: 'hr', title: 'HR & People', priority: 4, color: 'var(--color-primary)', processes: [
+    { id: 'hiring', name: 'Hiring & onboarding procedures' },
+    { id: 'performance', name: 'Performance review process' },
+    { id: 'handbook', name: 'Employee handbook & policies' },
+    { id: 'benefits', name: 'Benefits administration' },
+    { id: 'termination', name: 'Termination procedures' }
+  ]},
+  { id: 'compliance', title: 'Compliance & Safety', priority: 5, color: 'var(--color-text-tertiary)', processes: [
+    { id: 'regulatory', name: 'Regulatory compliance procedures' },
+    { id: 'safety', name: 'Safety protocols & training' },
+    { id: 'environmental', name: 'Environmental compliance' },
+    { id: 'data_privacy', name: 'Data privacy & security procedures' }
+  ]}
+];
+
+const MATURITY_LEVELS = [
+  { id: 1, label: 'None', desc: 'Tribal knowledge only. No documentation exists.' },
+  { id: 2, label: 'Minimal', desc: 'Some notes exist but incomplete, outdated, or inaccessible.' },
+  { id: 3, label: 'Partial', desc: 'Key processes documented but not tested or regularly updated.' },
+  { id: 4, label: 'Comprehensive', desc: 'All critical processes documented, tested, maintained, and accessible.' }
+];
+
+const QUALITY_DIMENSIONS = [
+  { id: 'clarity', label: 'Clarity', short: 'Clear', desc: 'Steps are clear enough for a new employee to follow without asking questions' },
+  { id: 'tested', label: 'Tested', short: 'Tested', desc: 'SOP has been validated by someone other than the author' },
+  { id: 'current', label: 'Current', short: 'Current', desc: 'SOP reflects the actual process as performed today' },
+  { id: 'owned', label: 'Owned', short: 'Owned', desc: 'A specific person is responsible for keeping this SOP accurate' },
+  { id: 'accessible', label: 'Accessible', short: 'Access', desc: 'SOP is stored in a central, searchable location' }
+];
+
+const TRANSFERABILITY_ITEMS = [
+  { id: 't1', text: 'Every revenue-generating process has a written SOP' },
+  { id: 't2', text: 'Every SOP has been tested by someone other than the process owner' },
+  { id: 't3', text: 'All SOPs are stored in a central, accessible location' },
+  { id: 't4', text: 'Key processes have been cross-trained to at least two people' },
+  { id: 't5', text: 'Customer-facing processes are documented (sales, service, support)' },
+  { id: 't6', text: 'Financial processes are documented (close, reporting, compliance)' },
+  { id: 't7', text: 'HR processes are documented (hire, onboard, terminate)' },
+  { id: 't8', text: 'Technology processes are documented (admin, backup, recovery)' },
+  { id: 't9', text: 'No process depends solely on the owner\'s personal involvement' },
+  { id: 't10', text: 'A new owner could find and understand any process within 15 minutes' }
+];
+
+const DOC_FORMATS = [
+  { id: 'written', label: 'Written SOP (step-by-step)', best: 'Procedural tasks with defined steps', tools: 'Word, Google Docs, Notion, Confluence' },
+  { id: 'flowchart', label: 'Process Map / Flowchart', best: 'Decision-heavy processes with branches', tools: 'Lucidchart, Visio, Miro, draw.io' },
+  { id: 'checklist', label: 'Checklist', best: 'Repetitive tasks completed consistently', tools: 'Checklist apps, Google Sheets, Notion' },
+  { id: 'video', label: 'Video Walkthrough', best: 'Software processes, equipment operation', tools: 'Loom, Screencast-O-Matic' },
+  { id: 'decision', label: 'Decision Matrix', best: 'Processes requiring judgment calls', tools: 'Spreadsheet with criteria and thresholds' },
+  { id: 'wiki', label: 'Wiki / Knowledge Base', best: 'Reference material, policies, FAQs', tools: 'Notion, Confluence, SharePoint' }
+];
+
+function getDefaultState() {
+  return {
+    currentPage: 'welcome',
+    completedPages: [],
+    unlockedPages: ['welcome'],
+    maturityScores: {},
+    inventory: {},
+    qualityScores: {},
+    prioritySettings: {},
+    docStandards: { primaryFormat: '', repository: '', naming: '', review: '' },
+    sopBuilder: { title: '', purpose: '', scope: '', steps: ['','','',''], exceptions: '', notes: '' },
+    sipoc: { supplier: '', input: '', process: '', output: '', customer: '' },
+    discoveryNotes: ['','','',''],
+    ownership: {},
+    transferability: {},
+    timelineNotes: {},
+    actionItems: []
+  };
+}
+
+let state = getDefaultState();
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) { state = { ...getDefaultState(), ...JSON.parse(saved) }; }
+  } catch(e) { console.warn('Load error', e); }
+}
+
+function saveData() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) { console.warn('Save error', e); }
+}
+const loadState = loadData;
+const saveState = saveData;
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebarOverlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('show');
+}
+
+function goToPage(pageId) {
+  if (!state.unlockedPages.includes(pageId)) return;
+  state.currentPage = pageId;
+  saveData();
+  renderAll();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (window.innerWidth <= 900) {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+  }
+  setTimeout(() => {
+    const heading = document.querySelector('#contentArea .t-display, #contentArea .t-h1, #contentArea h1, #contentArea h2');
+    if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); }
+  }, 100);
+}
+
+function completePage(pageId) {
+  if (!state.completedPages.includes(pageId)) {
+    state.completedPages.push(pageId);
+  }
+  const idx = PAGES.findIndex(p => p.id === pageId);
+  if (idx < PAGES.length - 1) {
+    const next = PAGES[idx + 1].id;
+    if (!state.unlockedPages.includes(next)) state.unlockedPages.push(next);
+  }
+  saveData();
+}
+
+function calcOverallScore() {
+  let totalProcesses = 0;
+  let totalScore = 0;
+  PRIORITY_CATEGORIES.forEach(cat => {
+    cat.processes.forEach(proc => {
+      const inv = state.inventory[proc.id] || {};
+      const mat = state.maturityScores[proc.id] || 0;
+      if (mat > 0) {
+        totalProcesses++;
+        let procScore = mat * 5;
+        const qs = state.qualityScores[proc.id] || {};
+        QUALITY_DIMENSIONS.forEach(d => {
+          if (qs[d.id]) procScore += qs[d.id] === 'yes' ? 2 : 0;
+        });
+        totalScore += Math.min(procScore, 30);
+      }
+    });
+  });
+  if (totalProcesses === 0) return 0;
+  const allProcs = PRIORITY_CATEGORIES.reduce((sum, c) => sum + c.processes.length, 0);
+  const coverageBonus = (totalProcesses / allProcs) * 20;
+  const transferChecked = TRANSFERABILITY_ITEMS.filter(t => state.transferability[t.id]).length;
+  const transferBonus = (transferChecked / TRANSFERABILITY_ITEMS.length) * 10;
+  const rawScore = (totalScore / (totalProcesses * 30)) * 70 + coverageBonus + transferBonus;
+  return Math.round(Math.min(rawScore, 100));
+}
+
+function getScoreColor(s) {
+  if (s >= 80) return 'var(--color-score-5)';
+  if (s >= 60) return 'var(--color-score-4)';
+  if (s >= 40) return 'var(--color-score-3)';
+  if (s >= 20) return 'var(--color-score-2)';
+  return 'var(--color-score-1)';
+}
+
+function getScoreLabel(s) {
+  if (s >= 80) return 'Buyer-Ready';
+  if (s >= 60) return 'Strong Foundation';
+  if (s >= 40) return 'Work In Progress';
+  if (s >= 20) return 'Early Stage';
+  return 'Not Started';
+}
+
+function getMaturityLabel(m) {
+  return MATURITY_LEVELS.find(l => l.id === m)?.label || 'Not Assessed';
+}
+
+function renderSidebar() {
+  const progress = state.completedPages.length / (PAGES.length - 1) * 100;
+  document.getElementById('progressFill').style.width = progress + '%';
+  document.getElementById('progressText').textContent = Math.round(progress) + '% complete';
+  const score = calcOverallScore();
+  document.getElementById('sidebarScore').innerHTML = score + '<span class="sidebar-score-max">/100</span>';
+  document.getElementById('sidebarScoreDesc').textContent = getScoreLabel(score);
+
+  const sections = { start: 'Start', assess: 'Assess', plan: 'Plan', build: 'Build', results: 'Results' };
+  let html = '';
+  let lastSection = '';
+  PAGES.forEach(p => {
+    if (p.section !== lastSection) {
+      html += `<div class="nav-section-label">${sections[p.section]}</div>`;
+      lastSection = p.section;
+    }
+    const isActive = state.currentPage === p.id;
+    const isCompleted = state.completedPages.includes(p.id);
+    const isLocked = !state.unlockedPages.includes(p.id);
+    html += `
+      <div class="nav-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''} ${isLocked ? 'locked' : ''}"
+           onclick="${isLocked ? '' : "goToPage('"+p.id+"')"}" role="button" tabindex="${isLocked ? -1 : 0}"
+           aria-current="${isActive ? 'page' : 'false'}">
+        <span class="nav-icon">${p.icon}</span>
+        <span>${p.title}</span>
+        <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+      </div>`;
+  });
+  document.getElementById('sidebarNav').innerHTML = html;
+}
+
+function renderContent() {
+  const area = document.getElementById('contentArea');
+  switch (state.currentPage) {
+    case 'welcome': area.innerHTML = renderWelcome(); break;
+    case 'maturity': area.innerHTML = renderMaturity(); break;
+    case 'inventory': area.innerHTML = renderInventory(); break;
+    case 'priority': area.innerHTML = renderPriorityPage(); break;
+    case 'standards': area.innerHTML = renderStandards(); break;
+    case 'template': area.innerHTML = renderTemplateBuilder(); break;
+    case 'mapping': area.innerHTML = renderMapping(); break;
+    case 'ownership': area.innerHTML = renderOwnership(); break;
+    case 'transferability': area.innerHTML = renderTransferability(); break;
+    case 'timeline': area.innerHTML = renderTimeline(); break;
+    case 'dashboard': area.innerHTML = renderDashboard(); break;
+  }
+}
+
+function renderAll() { renderSidebar(); renderContent(); }
+
+function svgCheck() { return '<svg viewBox="0 0 12 12" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polyline points="2 6 5 9 10 3"/></svg>'; }
+
+function renderWelcome() {
+  return `
+    <div class="welcome-hero">
+      <div class="welcome-icon">\u{1F4CB}</div>
+      <div class="t-display">SOPs & Process Documentation</div>
+      <p class="t-body t-secondary">A business that runs on tribal knowledge is a business that cannot be transferred. This playbook will help you inventory your processes, assess documentation quality, and build a system that makes your business buyer-ready.</p>
+      <div class="welcome-stats">
+        <div class="welcome-stat">
+          <div class="welcome-stat-value">24</div>
+          <div class="welcome-stat-label">Critical processes to assess</div>
+        </div>
+        <div class="welcome-stat">
+          <div class="welcome-stat-value">12</div>
+          <div class="welcome-stat-label">Months typical timeline</div>
+        </div>
+        <div class="welcome-stat">
+          <div class="welcome-stat-value">2-4x</div>
+          <div class="welcome-stat-label">Return on documentation</div>
+        </div>
+      </div>
+      <div class="callout callout-accent mb-2xl">
+        <strong>The core principle:</strong> If a process is not documented, it does not exist -- it is a habit. Habits leave when people leave. Documentation is the difference between a business that transfers cleanly and one that falls apart under new ownership.
+      </div>
+      <div class="welcome-phases">
+        <div class="welcome-phase">
+          <div class="welcome-phase-num">1</div>
+          <div>
+            <div class="welcome-phase-title">Assess Current State</div>
+            <div class="welcome-phase-desc">Evaluate documentation maturity, inventory all critical processes, and identify the biggest gaps.</div>
+          </div>
+        </div>
+        <div class="welcome-phase">
+          <div class="welcome-phase-num">2</div>
+          <div>
+            <div class="welcome-phase-title">Plan Your Approach</div>
+            <div class="welcome-phase-desc">Set documentation standards, build SOP templates, and learn process mapping methodology.</div>
+          </div>
+        </div>
+        <div class="welcome-phase">
+          <div class="welcome-phase-num">3</div>
+          <div>
+            <div class="welcome-phase-title">Build & Maintain</div>
+            <div class="welcome-phase-desc">Assign ownership, check transferability, create an implementation timeline, and track progress.</div>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-lg" onclick="completePage('welcome');goToPage('maturity')">Begin Assessment</button>
+    </div>`;
+}
+
+function renderMaturity() {
+  const cats = PRIORITY_CATEGORIES;
+  let totalAssessed = 0;
+  cats.forEach(c => c.processes.forEach(p => { if (state.maturityScores[p.id]) totalAssessed++; }));
+  const allProcs = cats.reduce((s,c) => s + c.processes.length, 0);
+
+  return `
+    <div class="page-header">
+      <div class="t-label">Phase 1: Assess</div>
+      <div class="t-display">Documentation Maturity</div>
+      <p class="t-body t-secondary">Rate the current documentation state for each process area. Be honest -- this assessment drives your action plan.</p>
+    </div>
+    <div class="callout callout-info mb-xl">
+      <strong>How buyers see your documentation:</strong> Comprehensive SOPs = premium multiple. Partial coverage = market multiple. Tribal knowledge only = significant discount or deal-breaker.
+    </div>
+    <div class="flex items-center justify-between mb-lg" style="flex-wrap:wrap;gap:8px">
+      <div class="t-h3">Rate Each Process Area</div>
+      <span class="badge ${totalAssessed === allProcs ? 'badge-success' : 'badge-neutral'}">${totalAssessed}/${allProcs} assessed</span>
+    </div>
+    <div class="maturity-grid mb-md" style="grid-template-columns: 140px repeat(4, 1fr)">
+      <div></div>
+      ${MATURITY_LEVELS.map(l => `<div style="text-align:center;font-size:11px;font-weight:600;color:var(--color-text-tertiary);padding-bottom:8px">${l.label}</div>`).join('')}
+    </div>
+    ${cats.map(cat => `
+      <div class="mb-lg">
+        <div class="flex items-center gap-sm mb-sm">
+          <span style="width:8px;height:8px;border-radius:50%;background:${cat.color};flex-shrink:0"></span>
+          <span class="t-h3">Priority ${cat.priority}: ${cat.title}</span>
+        </div>
+        ${cat.processes.map(proc => {
+          const current = state.maturityScores[proc.id] || 0;
+          return `
+            <div class="maturity-grid mb-xs" style="grid-template-columns: 140px repeat(4, 1fr)" role="radiogroup" aria-label="${proc.name.split('(')[0].trim()} maturity level">
+              <div style="font-size:13px;color:var(--color-text-secondary);display:flex;align-items:center;padding-right:8px">${proc.name.split('(')[0].trim()}</div>
+              ${MATURITY_LEVELS.map(l => `
+                <div class="maturity-cell m${l.id} ${current === l.id ? 'selected' : ''}"
+                     onclick="setMaturity('${proc.id}', ${l.id})" title="${l.desc}"
+                     role="radio" aria-checked="${current === l.id}" tabindex="0"
+                     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();setMaturity('${proc.id}',${l.id})}">
+                  ${l.id}
+                </div>
+              `).join('')}
+            </div>`;
+        }).join('')}
+      </div>
+    `).join('')}
+    ${renderPageNav('welcome', totalAssessed >= 5 ? 'inventory' : null, totalAssessed >= 5 ? 'Continue to Process Inventory' : 'Assess at least 5 processes to continue')}`;
+}
+
+function setMaturity(procId, level) {
+  state.maturityScores[procId] = level;
+  saveData();
+  renderAll();
+}
+
+function renderInventory() {
+  const cats = PRIORITY_CATEGORIES;
+  return `
+    <div class="page-header">
+      <div class="t-label">Phase 1: Assess</div>
+      <div class="t-display">Process Inventory</div>
+      <p class="t-body t-secondary">For each documented process, capture key details. This becomes the inventory buyers request during technology due diligence.</p>
+    </div>
+    ${cats.map(cat => {
+      const relevantProcs = cat.processes.filter(p => state.maturityScores[p.id] && state.maturityScores[p.id] >= 2);
+      if (relevantProcs.length === 0) return `
+        <div class="card mb-md" style="opacity:0.6">
+          <div class="t-h3 mb-xs">${cat.title}</div>
+          <p class="t-small t-tertiary">No documented processes in this category. Rate them as "Minimal" or above in Maturity Assessment to detail them here.</p>
+        </div>`;
+      return `
+        <div class="mb-xl">
+          <div class="t-h2 mb-md">${cat.title}</div>
+          ${relevantProcs.map(proc => {
+            const inv = state.inventory[proc.id] || {};
+            return `
+              <div class="process-card">
+                <div class="process-card-header" onclick="toggleProcess('${proc.id}')">
+                  <span class="badge ${state.maturityScores[proc.id] >= 3 ? 'badge-success' : 'badge-warning'}">${getMaturityLabel(state.maturityScores[proc.id])}</span>
+                  <span style="flex:1;font-weight:500;font-size:14px">${proc.name}</span>
+                  <span class="process-card-chevron ${inv._open ? 'rotated' : ''}">\u25B6</span>
+                </div>
+                <div class="process-card-body ${inv._open ? 'open' : ''}">
+                  <div class="form-group">
+                    <label class="form-label">Current Owner</label>
+                    <input class="form-input" placeholder="Who performs this process today?" value="${inv.owner || ''}" oninput="setInventory('${proc.id}','owner',this.value)">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Documentation Location</label>
+                    <input class="form-input" placeholder="Where is the current documentation stored?" value="${inv.location || ''}" oninput="setInventory('${proc.id}','location',this.value)">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Last Updated</label>
+                    <input class="form-input" type="date" value="${inv.lastUpdated || ''}" oninput="setInventory('${proc.id}','lastUpdated',this.value)">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Format</label>
+                    <select class="form-input" onchange="setInventory('${proc.id}','format',this.value)">
+                      <option value="">Select format...</option>
+                      ${DOC_FORMATS.map(f => `<option value="${f.id}" ${inv.format === f.id ? 'selected' : ''}>${f.label}</option>`).join('')}
+                    </select>
+                  </div>
+                  <div class="form-group" style="margin-bottom:0">
+                    <label class="form-label">Notes / Known Issues</label>
+                    <textarea class="form-input" placeholder="Any gaps, outdated sections, or concerns?" oninput="setInventory('${proc.id}','notes',this.value)">${inv.notes || ''}</textarea>
+                  </div>
+                </div>
+              </div>`;
+          }).join('')}
+        </div>`;
+    }).join('')}
+    ${renderPageNav('maturity', 'priority', 'Continue to Priority Framework')}`;
+}
+
+function toggleProcess(procId) {
+  if (!state.inventory[procId]) state.inventory[procId] = {};
+  state.inventory[procId]._open = !state.inventory[procId]._open;
+  saveData();
+  renderContent();
+}
+
+function setInventory(procId, field, val) {
+  if (!state.inventory[procId]) state.inventory[procId] = {};
+  state.inventory[procId][field] = val;
+  saveData();
+}
+
+function renderPriorityPage() {
+  const undocumented = [];
+  const partial = [];
+  PRIORITY_CATEGORIES.forEach(cat => {
+    cat.processes.forEach(proc => {
+      const m = state.maturityScores[proc.id] || 0;
+      if (m <= 1) undocumented.push({ ...proc, category: cat.title, priority: cat.priority });
+      else if (m === 2) partial.push({ ...proc, category: cat.title, priority: cat.priority });
+    });
+  });
+
+  return `
+    <div class="page-header">
+      <div class="t-label">Phase 1: Assess</div>
+      <div class="t-display">Priority Framework</div>
+      <p class="t-body t-secondary">Focus your documentation effort where it matters most. Revenue-generating processes first, then work outward.</p>
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-md">Gap Analysis</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg)">
+        <div>
+          <div class="flex items-center gap-sm mb-sm">
+            <span class="badge badge-danger">${undocumented.length}</span>
+            <span class="t-h3">Undocumented</span>
+          </div>
+          ${undocumented.length === 0 ? '<p class="t-small t-tertiary">No undocumented processes. Excellent coverage.</p>' :
+            undocumented.map(p => `
+              <div style="padding:6px 0;border-bottom:1px solid var(--color-border-light);font-size:13px">
+                <div style="font-weight:500">${p.name}</div>
+                <div class="t-caption t-tertiary">P${p.priority}: ${p.category}</div>
+              </div>`).join('')}
+        </div>
+        <div>
+          <div class="flex items-center gap-sm mb-sm">
+            <span class="badge badge-warning">${partial.length}</span>
+            <span class="t-h3">Needs Improvement</span>
+          </div>
+          ${partial.length === 0 ? '<p class="t-small t-tertiary">No partially documented processes.</p>' :
+            partial.map(p => `
+              <div style="padding:6px 0;border-bottom:1px solid var(--color-border-light);font-size:13px">
+                <div style="font-weight:500">${p.name}</div>
+                <div class="t-caption t-tertiary">P${p.priority}: ${p.category}</div>
+              </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-md">Prioritize Your Gaps</div>
+      <p class="t-small t-secondary mb-lg">For each undocumented or partially documented process, rate the deal impact and feasibility of documenting it.</p>
+      ${[...undocumented, ...partial].length === 0 ? '<p class="t-small t-tertiary">All processes are at least partially documented. Review quality scores in the inventory.</p>' : `
+        <div style="display:grid;grid-template-columns:1fr 80px 120px 120px;gap:8px;margin-bottom:8px;padding:0 4px">
+          <div class="t-caption t-tertiary">Process</div>
+          <div class="t-caption t-tertiary">Priority</div>
+          <div class="t-caption t-tertiary">Deal Impact</div>
+          <div class="t-caption t-tertiary">Effort</div>
+        </div>
+        ${[...undocumented, ...partial].map(p => {
+          const ps = state.prioritySettings[p.id] || {};
+          return `
+            <div style="display:grid;grid-template-columns:1fr 80px 120px 120px;gap:8px;align-items:center;margin-bottom:6px">
+              <div class="t-small">${p.name}</div>
+              <div><span class="badge ${p.priority <= 2 ? 'badge-danger' : (p.priority <= 3 ? 'badge-warning' : 'badge-neutral')}">P${p.priority}</span></div>
+              <select class="form-input" style="padding:6px 10px;font-size:13px" onchange="setPrioritySetting('${p.id}','impact',this.value)">
+                <option value="">--</option>
+                <option value="high" ${ps.impact==='high'?'selected':''}>High</option>
+                <option value="medium" ${ps.impact==='medium'?'selected':''}>Medium</option>
+                <option value="low" ${ps.impact==='low'?'selected':''}>Low</option>
+              </select>
+              <select class="form-input" style="padding:6px 10px;font-size:13px" onchange="setPrioritySetting('${p.id}','effort',this.value)">
+                <option value="">--</option>
+                <option value="low" ${ps.effort==='low'?'selected':''}>Low Effort</option>
+                <option value="medium" ${ps.effort==='medium'?'selected':''}>Medium</option>
+                <option value="high" ${ps.effort==='high'?'selected':''}>High Effort</option>
+              </select>
+            </div>`;
+        }).join('')}
+      `}
+    </div>
+    ${renderPriorityMatrix([...undocumented, ...partial])}
+    ${renderPageNav('inventory', 'standards', 'Continue to Documentation Standards')}`;
+}
+
+function setPrioritySetting(procId, field, val) {
+  if (!state.prioritySettings[procId]) state.prioritySettings[procId] = {};
+  state.prioritySettings[procId][field] = val;
+  saveData();
+  renderContent();
+}
+
+function renderPriorityMatrix(gaps) {
+  const buckets = { p1: [], p2: [], p3: [], p4: [] };
+  gaps.forEach(g => {
+    const ps = state.prioritySettings[g.id] || {};
+    if (!ps.impact || !ps.effort) return;
+    const label = g.name.split('(')[0].trim().substring(0, 30);
+    if (ps.impact === 'high' && ps.effort === 'low') buckets.p1.push(label);
+    else if (ps.impact === 'high') buckets.p2.push(label);
+    else if (ps.effort === 'low') buckets.p3.push(label);
+    else buckets.p4.push(label);
+  });
+
+  return `
+    <div class="card mb-xl">
+      <div class="t-h2 mb-md">Priority Matrix</div>
+      <div class="priority-matrix">
+        <div class="matrix-header"></div>
+        <div class="matrix-header">Low Effort</div>
+        <div class="matrix-header">Higher Effort</div>
+        <div class="matrix-header" style="writing-mode:vertical-rl;transform:rotate(180deg);text-align:center">High Impact</div>
+        <div class="matrix-cell p1">
+          <div class="t-caption" style="font-weight:600;color:var(--color-danger)">Do First</div>
+          ${buckets.p1.map(l => `<div class="matrix-chip">${l}</div>`).join('')}
+          ${buckets.p1.length === 0 ? '<div class="t-caption t-tertiary">Assign impact and effort above</div>' : ''}
+        </div>
+        <div class="matrix-cell p2">
+          <div class="t-caption" style="font-weight:600;color:var(--color-warning)">Plan & Execute</div>
+          ${buckets.p2.map(l => `<div class="matrix-chip">${l}</div>`).join('')}
+          ${buckets.p2.length === 0 ? '<div class="t-caption t-tertiary">--</div>' : ''}
+        </div>
+        <div class="matrix-header" style="writing-mode:vertical-rl;transform:rotate(180deg);text-align:center">Lower Impact</div>
+        <div class="matrix-cell p3">
+          <div class="t-caption" style="font-weight:600;color:var(--color-score-3)">Quick Wins</div>
+          ${buckets.p3.map(l => `<div class="matrix-chip">${l}</div>`).join('')}
+          ${buckets.p3.length === 0 ? '<div class="t-caption t-tertiary">--</div>' : ''}
+        </div>
+        <div class="matrix-cell p4">
+          <div class="t-caption" style="font-weight:600;color:var(--color-text-tertiary)">Later</div>
+          ${buckets.p4.map(l => `<div class="matrix-chip">${l}</div>`).join('')}
+          ${buckets.p4.length === 0 ? '<div class="t-caption t-tertiary">--</div>' : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderStandards() {
+  const ds = state.docStandards;
+  return `
+    <div class="page-header">
+      <div class="t-label">Phase 2: Plan</div>
+      <div class="t-display">Documentation Standards</div>
+      <p class="t-body t-secondary">Consistency matters more than perfection. Decide on standards now so every SOP follows the same format.</p>
+    </div>
+    <div class="callout callout-accent mb-xl">
+      <strong>Buyer perspective:</strong> A consistent documentation library signals operational maturity. Mixed formats, scattered storage, and inconsistent naming suggest a business that documents reactively rather than systematically.
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-lg">Choose Your Documentation Formats</div>
+      <p class="t-small t-secondary mb-lg">Select the formats you will standardize on. Most businesses need 2-3 formats.</p>
+      ${DOC_FORMATS.map(f => `
+        <div class="checklist-item">
+          <div class="checklist-box ${ds['fmt_'+f.id] ? 'checked' : ''}" onclick="toggleStandardFormat('${f.id}')" tabindex="0" role="checkbox" aria-checked="${!!ds['fmt_'+f.id]}"
+               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleStandardFormat('${f.id}')}">
+            <svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg>
+          </div>
+          <div>
+            <div style="font-weight:500;font-size:14px">${f.label}</div>
+            <div class="t-caption t-secondary">Best for: ${f.best}</div>
+            <div class="t-caption t-tertiary">Tools: ${f.tools}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-lg">Your Standards</div>
+      <div class="form-group">
+        <label class="form-label">Central Repository</label>
+        <div class="form-hint">Where will all SOPs be stored? Pick one place.</div>
+        <input class="form-input" placeholder="e.g., Notion workspace, Google Drive folder, SharePoint site" value="${ds.repository || ''}" oninput="setStandard('repository',this.value)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Naming Convention</label>
+        <div class="form-hint">How will SOPs be named? e.g., SOP-[DEPT]-[NUMBER]: Title</div>
+        <input class="form-input" placeholder="e.g., SOP-SALES-001: Lead Qualification Process" value="${ds.naming || ''}" oninput="setStandard('naming',this.value)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Review Cadence</label>
+        <select class="form-input" onchange="setStandard('review',this.value)">
+          <option value="">Select review frequency...</option>
+          <option value="monthly" ${ds.review==='monthly'?'selected':''}>Monthly</option>
+          <option value="quarterly" ${ds.review==='quarterly'?'selected':''}>Quarterly (recommended)</option>
+          <option value="semiannual" ${ds.review==='semiannual'?'selected':''}>Semi-Annually</option>
+          <option value="annual" ${ds.review==='annual'?'selected':''}>Annually</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Quality Standards</label>
+        <div class="form-hint">Your SOPs must meet these five quality dimensions:</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:var(--space-sm);margin-top:var(--space-md)">
+          ${QUALITY_DIMENSIONS.map(d => `
+            <div style="text-align:center;padding:var(--space-md);background:var(--color-primary-light);border-radius:var(--radius-md)">
+              <div style="font-weight:600;font-size:14px;color:var(--color-primary);margin-bottom:4px">${d.short}</div>
+              <div style="font-size:11px;color:var(--color-text-secondary)">${d.desc.substring(0,50)}...</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    ${renderPageNav('priority', 'template', 'Continue to SOP Template Builder')}`;
+}
+
+function toggleStandardFormat(fmtId) {
+  state.docStandards['fmt_'+fmtId] = !state.docStandards['fmt_'+fmtId];
+  saveData();
+  renderContent();
+}
+
+function setStandard(field, val) {
+  state.docStandards[field] = val;
+  saveData();
+}
+
+function renderTemplateBuilder() {
+  const sb = state.sopBuilder;
+  return `
+    <div class="page-header">
+      <div class="t-label">Phase 2: Plan</div>
+      <div class="t-display">SOP Template Builder</div>
+      <p class="t-body t-secondary">Build a template for your first SOP. This structure should be used for every SOP you create.</p>
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-lg">Build Your Template</div>
+      <div class="form-group">
+        <label class="form-label">SOP Title & ID</label>
+        <input class="form-input" placeholder="e.g., SOP-SALES-001: Lead Qualification Process" value="${sb.title || ''}" oninput="setSopBuilder('title',this.value)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Purpose</label>
+        <div class="form-hint">Why does this process exist? What does it accomplish?</div>
+        <textarea class="form-input" placeholder="This process ensures that..." oninput="setSopBuilder('purpose',this.value)">${sb.purpose || ''}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Scope</label>
+        <div class="form-hint">Who performs this? When? What triggers it?</div>
+        <textarea class="form-input" placeholder="Performed by [role] when [trigger]..." oninput="setSopBuilder('scope',this.value)">${sb.scope || ''}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Procedure Steps</label>
+        <div class="form-hint">Enter key steps in sequence. Add more as needed.</div>
+        ${(sb.steps || ['','','','']).map((step, i) => `
+          <div class="flex items-center gap-sm mb-sm">
+            <span style="width:28px;height:28px;background:var(--color-primary-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--color-primary);flex-shrink:0">${i+1}</span>
+            <input class="form-input" placeholder="Step ${i+1}..." value="${step}" oninput="setSopStep(${i},this.value)">
+          </div>`).join('')}
+        <button class="btn btn-ghost btn-sm" onclick="addSopStep()">+ Add Step</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Exceptions & Edge Cases</label>
+        <textarea class="form-input" placeholder="Known variations, edge cases, escalation procedures..." oninput="setSopBuilder('exceptions',this.value)">${sb.exceptions || ''}</textarea>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Quality Check</label>
+        <textarea class="form-input" placeholder="How do you verify this process was completed correctly?" oninput="setSopBuilder('qualityCheck',this.value)">${sb.qualityCheck || ''}</textarea>
+      </div>
+    </div>
+    ${sb.title ? `
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Live Preview</div>
+        <div class="sop-template-preview">
+          <div class="sop-template-row"><div class="sop-template-key">Title & ID</div><div>${sb.title || '--'}</div></div>
+          <div class="sop-template-row"><div class="sop-template-key">Purpose</div><div>${sb.purpose || '--'}</div></div>
+          <div class="sop-template-row"><div class="sop-template-key">Scope</div><div>${sb.scope || '--'}</div></div>
+          <div class="sop-template-row"><div class="sop-template-key">Steps</div><div>${(sb.steps||[]).filter(s=>s).map((s,i) => `<div>${i+1}. ${s}</div>`).join('') || '--'}</div></div>
+          <div class="sop-template-row"><div class="sop-template-key">Exceptions</div><div>${sb.exceptions || '--'}</div></div>
+          <div class="sop-template-row"><div class="sop-template-key">Quality Check</div><div>${sb.qualityCheck || '--'}</div></div>
+          <div class="sop-template-row"><div class="sop-template-key">Version</div><div>v1.0 -- ${new Date().toLocaleDateString()}</div></div>
+        </div>
+      </div>` : ''}
+    ${renderPageNav('standards', 'mapping', 'Continue to Process Mapping')}`;
+}
+
+function setSopBuilder(field, val) { state.sopBuilder[field] = val; saveData(); renderContent(); }
+function setSopStep(i, val) {
+  if (!state.sopBuilder.steps) state.sopBuilder.steps = ['','','',''];
+  state.sopBuilder.steps[i] = val; saveData();
+}
+function addSopStep() {
+  if (!state.sopBuilder.steps) state.sopBuilder.steps = ['','','',''];
+  state.sopBuilder.steps.push(''); saveData(); renderContent();
+}
+
+function renderMapping() {
+  const s = state.sipoc;
+  const dn = state.discoveryNotes;
+  return `
+    <div class="page-header">
+      <div class="t-label">Phase 2: Plan</div>
+      <div class="t-display">Process Mapping</div>
+      <p class="t-body t-secondary">Before writing an SOP, map the process to understand it completely. Use the SIPOC framework to structure your thinking.</p>
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-md">SIPOC Framework</div>
+      <p class="t-small t-secondary mb-lg">Map any process by identifying its Supplier, Input, Process, Output, and Customer. Try it with your most critical undocumented process.</p>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:var(--space-sm)">
+        ${['Supplier','Input','Process','Output','Customer'].map((label, i) => {
+          const key = label.toLowerCase();
+          const hints = [
+            'Who provides the input? (e.g., Sales team)',
+            'What starts the process? (e.g., Signed contract)',
+            'The steps that transform input to output',
+            'What the process produces (e.g., Active customer)',
+            'Who receives the output? (e.g., Account team)'
+          ];
+          return `
+            <div>
+              <div style="text-align:center;padding:var(--space-sm);background:var(--color-primary);color:#fff;border-radius:var(--radius-sm) var(--radius-sm) 0 0;font-weight:600;font-size:13px">${label.charAt(0)}</div>
+              <div style="padding:var(--space-sm);background:var(--color-primary-light);border-radius:0 0 var(--radius-sm) var(--radius-sm);min-height:120px">
+                <div style="font-weight:600;font-size:12px;margin-bottom:4px">${label}</div>
+                <textarea style="width:100%;border:1px solid var(--color-border);border-radius:4px;padding:6px;font-size:12px;min-height:70px;resize:vertical;font-family:inherit" placeholder="${hints[i]}" oninput="setSipoc('${key}',this.value)">${s[key] || ''}</textarea>
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-md">The Discovery Interview</div>
+      <p class="t-small t-secondary mb-lg">When documenting a process currently performed by one person, use these four essential questions:</p>
+      ${[
+        { q: 'What do you do if [exception]? (Ask for every decision point)', placeholder: 'Record the exceptions and decision branches...' },
+        { q: 'What is the most common mistake new people make?', placeholder: 'Common mistakes and how to avoid them...' },
+        { q: 'What do you wish someone had told you when you started?', placeholder: 'Tribal knowledge that should be written down...' },
+        { q: 'Where do things most often go wrong or slow down?', placeholder: 'Bottlenecks and failure points...' }
+      ].map((item, i) => `
+        <div class="form-group">
+          <label class="form-label">${item.q}</label>
+          <textarea class="form-input" placeholder="${item.placeholder}" oninput="setDiscoveryNote(${i},this.value)">${dn[i] || ''}</textarea>
+        </div>`).join('')}
+    </div>
+    <div class="callout callout-info mb-xl">
+      <strong>Pro tip:</strong> Have someone else attempt the process using only the draft SOP. Where they get stuck reveals what the documentation is missing. This is the single most effective quality check.
+    </div>
+    ${renderPageNav('template', 'ownership', 'Continue to Ownership & Maintenance')}`;
+}
+
+function setSipoc(key, val) { state.sipoc[key] = val; saveData(); }
+function setDiscoveryNote(i, val) { state.discoveryNotes[i] = val; saveData(); }
+
+function renderOwnership() {
+  const roles = [
+    { id: 'processOwner', title: 'Process Owner', desc: 'Ensures the SOP is accurate and current; approves changes', freq: 'Quarterly review' },
+    { id: 'performer', title: 'Process Performer', desc: 'Flags when actual practice deviates from the SOP', freq: 'Ongoing' },
+    { id: 'docLead', title: 'Documentation Lead', desc: 'Maintains the central repository; enforces standards', freq: 'Monthly audit of 10% of SOPs' },
+    { id: 'deptHead', title: 'Department Head', desc: 'Ensures all critical processes in their area are documented', freq: 'Quarterly status report' },
+    { id: 'sponsor', title: 'Executive Sponsor', desc: 'Champions the initiative; allocates resources', freq: 'Semi-annual review' }
+  ];
+
+  return `
+    <div class="page-header">
+      <div class="t-label">Phase 3: Build</div>
+      <div class="t-display">Ownership & Maintenance</div>
+      <p class="t-body t-secondary">Documentation that is not maintained is worse than no documentation. It gives false confidence. Assign clear ownership now.</p>
+    </div>
+    <div class="callout callout-warning mb-xl">
+      <strong>Common mistake:</strong> Treating documentation as a one-time project. Creating SOPs once and never updating them produces a library of outdated documents that no one trusts.
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-lg">Assign Roles</div>
+      ${roles.map(r => {
+        const ow = state.ownership[r.id] || {};
+        return `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-lg);padding-bottom:var(--space-lg);border-bottom:1px solid var(--color-border-light)">
+            <div>
+              <div class="t-h3">${r.title}</div>
+              <div class="t-small t-secondary mb-sm">${r.desc}</div>
+              <span class="badge badge-neutral">${r.freq}</span>
+            </div>
+            <div>
+              <div class="form-group mb-sm">
+                <input class="form-input" placeholder="Name of person in this role" value="${ow.name || ''}" oninput="setOwnership('${r.id}','name',this.value)">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <input class="form-input" placeholder="Email or department" value="${ow.contact || ''}" oninput="setOwnership('${r.id}','contact',this.value)">
+              </div>
+            </div>
+          </div>`;
+      }).join('')}
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-md">Maintenance Triggers</div>
+      <p class="t-small t-secondary mb-lg">SOPs should be updated in these situations. Check each trigger you will enforce:</p>
+      ${[
+        { id: 'trigger_change', text: 'Process change: SOP updated within 5 business days of any change' },
+        { id: 'trigger_quarterly', text: 'Quarterly review: Every SOP reviewed by its owner once per quarter' },
+        { id: 'trigger_annual', text: 'Annual audit: Full audit of all SOPs; archive obsolete documents' },
+        { id: 'trigger_pretrans', text: 'Pre-transaction: All SOPs reviewed in the 6 months before going to market' },
+        { id: 'trigger_onboard', text: 'New hire trigger: SOPs validated when a new employee uses them for the first time' }
+      ].map(t => `
+        <div class="checklist-item">
+          <div class="checklist-box ${state.ownership[t.id] ? 'checked' : ''}" onclick="toggleOwnershipCheck('${t.id}')" tabindex="0" role="checkbox" aria-checked="${!!state.ownership[t.id]}"
+               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleOwnershipCheck('${t.id}')}">
+            <svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg>
+          </div>
+          <div class="t-small">${t.text}</div>
+        </div>`).join('')}
+    </div>
+    ${renderPageNav('mapping', 'transferability', 'Continue to Transferability Checklist')}`;
+}
+
+function setOwnership(roleId, field, val) {
+  if (!state.ownership[roleId]) state.ownership[roleId] = {};
+  state.ownership[roleId][field] = val;
+  saveData();
+}
+
+function toggleOwnershipCheck(id) {
+  state.ownership[id] = !state.ownership[id];
+  saveData();
+  renderContent();
+}
+
+function renderTransferability() {
+  const checked = TRANSFERABILITY_ITEMS.filter(t => state.transferability[t.id]).length;
+  const total = TRANSFERABILITY_ITEMS.length;
+  const pct = Math.round((checked / total) * 100);
+
+  return `
+    <div class="page-header">
+      <div class="t-label">Phase 3: Build</div>
+      <div class="t-display">Transferability Checklist</div>
+      <p class="t-body t-secondary">The ultimate test: could a competent new owner run this business using only the documentation and the existing team?</p>
+    </div>
+    <div class="card mb-xl" style="text-align:center;padding:var(--space-2xl)">
+      <div class="gauge-wrap">
+        ${renderProgressRing(pct, 120, 10, getScoreColor(pct))}
+        <div class="t-h2" style="margin-top:var(--space-md)">${checked}/${total} Requirements Met</div>
+        <div class="t-small t-secondary">${pct >= 80 ? 'Your business is approaching transferable status.' : pct >= 50 ? 'Good progress. Keep building documentation coverage.' : 'Significant work remains to make the business transferable.'}</div>
+      </div>
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-lg">The Transferability Test</div>
+      ${TRANSFERABILITY_ITEMS.map(t => `
+        <div class="checklist-item">
+          <div class="checklist-box ${state.transferability[t.id] ? 'checked' : ''}" onclick="toggleTransfer('${t.id}')" tabindex="0" role="checkbox" aria-checked="${!!state.transferability[t.id]}"
+               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTransfer('${t.id}')}">
+            <svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg>
+          </div>
+          <div class="t-small">${t.text}</div>
+        </div>`).join('')}
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-md">The "Hit by a Bus" Test</div>
+      <p class="t-small t-secondary mb-lg">For each key function, ask: if the person who does this were unavailable for 30 days, could the business continue without significant disruption?</p>
+      <div class="callout callout-danger">If the answer is <strong>no</strong> for any function, that function needs documentation and cross-training immediately. This is the single most important signal buyers look for.</div>
+    </div>
+    ${renderPageNav('ownership', 'timeline', 'Continue to Implementation Timeline')}`;
+}
+
+function toggleTransfer(id) {
+  state.transferability[id] = !state.transferability[id];
+  saveData();
+  renderAll();
+}
+
+function renderProgressRing(pct, size, stroke, color) {
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const offset = c - (pct / 100) * c;
+  return `
+    <div class="progress-ring-wrap" style="width:${size}px;height:${size}px">
+      <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+        <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--color-border)" stroke-width="${stroke}"/>
+        <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}"
+                stroke-dasharray="${c}" stroke-dashoffset="${offset}" stroke-linecap="round"
+                transform="rotate(-90 ${size/2} ${size/2})" style="transition:stroke-dashoffset 0.8s ease"/>
+      </svg>
+      <div class="progress-ring-text">
+        <div class="progress-ring-value" style="font-size:${size/4}px;color:${color}">${pct}%</div>
+      </div>
+    </div>`;
+}
+
+function renderTimeline() {
+  const months = [
+    { month: '1', action: 'Inventory all critical processes; identify gaps; assign owners', deliverable: 'Process inventory with gap analysis' },
+    { month: '2-3', action: 'Document Priority 1 processes (revenue-generating)', deliverable: 'SOPs for sales, delivery, billing' },
+    { month: '4-5', action: 'Document Priority 2 processes (core operations)', deliverable: 'SOPs for production, QC, vendor management' },
+    { month: '6-7', action: 'Document Priority 3 processes (finance & admin)', deliverable: 'SOPs for close, payroll, AP/AR' },
+    { month: '8-9', action: 'Document Priority 4-5 processes (HR, compliance)', deliverable: 'SOPs for hiring, safety, regulatory' },
+    { month: '10', action: 'Test all SOPs with non-expert users; revise', deliverable: 'Validated SOP library' },
+    { month: '11-12', action: 'Establish maintenance cadence; train owners; launch repository', deliverable: 'Living documentation system' }
+  ];
+
+  return `
+    <div class="page-header">
+      <div class="t-label">Phase 3: Build</div>
+      <div class="t-display">Implementation Timeline</div>
+      <p class="t-body t-secondary">A 12-month plan to build a comprehensive, buyer-ready documentation library. Adjust timing based on your exit horizon.</p>
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-lg">12-Month Roadmap</div>
+      ${months.map((m, i) => {
+        const progress = ((i + 1) / months.length) * 100;
+        const note = state.timelineNotes['m'+i] || {};
+        return `
+          <div class="timeline-row" style="flex-wrap:wrap">
+            <div class="timeline-month">Month ${m.month}</div>
+            <div style="flex:1;min-width:200px">
+              <div class="t-small" style="font-weight:500">${m.action}</div>
+              <div class="t-caption t-tertiary">${m.deliverable}</div>
+            </div>
+            <div style="width:120px">
+              <select class="form-input" style="padding:6px 10px;font-size:12px" onchange="setTimelineStatus(${i},this.value)">
+                <option value="">Not Started</option>
+                <option value="active" ${note.status==='active'?'selected':''}>In Progress</option>
+                <option value="done" ${note.status==='done'?'selected':''}>Completed</option>
+                <option value="skip" ${note.status==='skip'?'selected':''}>Not Applicable</option>
+              </select>
+            </div>
+          </div>`;
+      }).join('')}
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-md">Common Mistakes to Avoid</div>
+      ${[
+        { title: 'Treating it as a one-time project', desc: 'Building SOPs once without a maintenance system produces outdated documents within months.', solution: 'Assign owners. Schedule reviews. Make accuracy a performance expectation.' },
+        { title: 'Over-documenting low-impact processes', desc: 'Weeks spent on office supply ordering while sales process remains undocumented.', solution: 'Follow the priority framework. Revenue-generating processes first.' },
+        { title: 'Writing SOPs no one can follow', desc: 'Expert authors skip steps that seem obvious but are critical for new people.', solution: 'Always test SOPs with someone unfamiliar with the process.' },
+        { title: 'Storing documentation in scattered locations', desc: 'SOPs in email, random drives, desk drawers, and people\'s heads.', solution: 'Single source of truth. One central repository. Everyone knows where it is.' }
+      ].map(m => `
+        <div style="padding:var(--space-md) 0;border-bottom:1px solid var(--color-border-light)">
+          <div class="t-h3 mb-xs" style="color:var(--color-danger)">${m.title}</div>
+          <div class="t-small t-secondary mb-sm">${m.desc}</div>
+          <div class="t-small"><strong>Solution:</strong> ${m.solution}</div>
+        </div>`).join('')}
+    </div>
+    ${renderPageNav('transferability', 'dashboard', 'View Your Dashboard')}`;
+}
+
+function setTimelineStatus(idx, val) {
+  state.timelineNotes['m'+idx] = { status: val };
+  saveData();
+  renderContent();
+}
+
+function renderDashboard() {
+  const score = calcOverallScore();
+  const totalProcs = PRIORITY_CATEGORIES.reduce((s,c) => s + c.processes.length, 0);
+  let documented = 0, undocumented = 0, partial = 0, comprehensive = 0;
+  PRIORITY_CATEGORIES.forEach(c => c.processes.forEach(p => {
+    const m = state.maturityScores[p.id] || 0;
+    if (m >= 4) comprehensive++;
+    else if (m >= 3) partial++;
+    else if (m >= 2) { partial++; }
+    else if (m === 1 || m === 0) undocumented++;
+    if (m >= 2) documented++;
+  }));
+  const transferChecked = TRANSFERABILITY_ITEMS.filter(t => state.transferability[t.id]).length;
+
+  return `
+    <div class="page-header">
+      <div class="t-label">Your Results</div>
+      <div class="t-display">Documentation Dashboard</div>
+      <p class="t-body t-secondary">Your complete documentation maturity assessment at a glance.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-md);margin-bottom:var(--space-xl)">
+      <div class="card" style="text-align:center;padding:var(--space-lg)">
+        <div style="font-family:var(--font-display);font-size:32px;font-weight:700;color:${getScoreColor(score)}">${score}</div>
+        <div class="t-caption t-tertiary">Overall Score</div>
+        <span class="badge ${score >= 60 ? 'badge-success' : score >= 30 ? 'badge-warning' : 'badge-danger'}" style="margin-top:8px">${getScoreLabel(score)}</span>
+      </div>
+      <div class="card" style="text-align:center;padding:var(--space-lg)">
+        <div style="font-family:var(--font-display);font-size:32px;font-weight:700;color:var(--color-primary)">${documented}</div>
+        <div class="t-caption t-tertiary">Processes Documented</div>
+        <div class="t-caption t-tertiary">of ${totalProcs} total</div>
+      </div>
+      <div class="card" style="text-align:center;padding:var(--space-lg)">
+        <div style="font-family:var(--font-display);font-size:32px;font-weight:700;color:var(--color-danger)">${undocumented}</div>
+        <div class="t-caption t-tertiary">Undocumented</div>
+        <div class="t-caption t-tertiary">Gaps to address</div>
+      </div>
+      <div class="card" style="text-align:center;padding:var(--space-lg)">
+        <div style="font-family:var(--font-display);font-size:32px;font-weight:700;color:${transferChecked >= 8 ? 'var(--color-success)' : 'var(--color-warning)'}">${transferChecked}/10</div>
+        <div class="t-caption t-tertiary">Transferability</div>
+        <div class="t-caption t-tertiary">Requirements met</div>
+      </div>
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-md">Maturity by Category</div>
+      <div class="bar-chart">
+        ${PRIORITY_CATEGORIES.map(cat => {
+          const scores = cat.processes.map(p => state.maturityScores[p.id] || 0);
+          const avg = scores.reduce((a,b)=>a+b,0) / scores.length;
+          const pct = (avg / 4) * 100;
+          const color = avg >= 3 ? 'var(--color-success)' : avg >= 2 ? 'var(--color-warning)' : 'var(--color-danger)';
+          return `
+            <div class="bar-row">
+              <div class="bar-label">P${cat.priority}: ${cat.title}</div>
+              <div class="bar-track">
+                <div class="bar-fill animated" style="width:${pct}%;background:${color}">
+                  <span class="bar-value">${avg.toFixed(1)}/4</span>
+                </div>
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-md">Process Detail Heatmap</div>
+      <p class="t-small t-secondary mb-md">Each cell shows the maturity level (1-4) for a process. Darker green = more mature.</p>
+      <div style="overflow-x:auto">
+        <div class="heatmap" style="grid-template-columns:160px repeat(${PRIORITY_CATEGORIES.length},1fr);min-width:500px">
+          <div></div>
+          ${PRIORITY_CATEGORIES.map(c => `<div class="heatmap-col-label">P${c.priority}</div>`).join('')}
+          ${(() => {
+            const maxProcs = Math.max(...PRIORITY_CATEGORIES.map(c => c.processes.length));
+            let rows = '';
+            for (let i = 0; i < maxProcs; i++) {
+              const labels = PRIORITY_CATEGORIES.map(c => c.processes[i]);
+              const firstName = labels.find(l => l)?.name.split('(')[0].trim().substring(0,20) || '';
+              rows += `<div class="heatmap-row-label" style="font-size:11px">${firstName}</div>`;
+              PRIORITY_CATEGORIES.forEach(c => {
+                const proc = c.processes[i];
+                if (!proc) { rows += '<div class="heatmap-cell hs0">-</div>'; return; }
+                const m = state.maturityScores[proc.id] || 0;
+                const hm = m === 0 ? 0 : m <= 1 ? 1 : m === 2 ? 2 : m === 3 ? 4 : 5;
+                rows += `<div class="heatmap-cell hs${hm}" title="${proc.name}: ${getMaturityLabel(m)}">${m || '-'}</div>`;
+              });
+            }
+            return rows;
+          })()}
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);margin-bottom:var(--space-xl)">
+      <div class="card">
+        <div class="t-h2 mb-md">Buyer Perception</div>
+        ${(() => {
+          if (score >= 80) return '<div class="callout callout-info"><strong>Institutional quality.</strong> Your documentation signals a transferable, scalable business. Buyers will perceive lower risk and pay a premium multiple.</div>';
+          if (score >= 60) return '<div class="callout callout-info"><strong>Acceptable with minor gaps.</strong> Major processes are covered. Focus on testing and maintenance to reach buyer-ready status.</div>';
+          if (score >= 40) return '<div class="callout callout-warning"><strong>Work needed.</strong> Key processes are documented but gaps remain. Buyers will note this as a transition risk.</div>';
+          if (score >= 20) return '<div class="callout callout-warning"><strong>Owner-dependent.</strong> Limited documentation signals that knowledge lives in people, not systems. Expect a discount and extended transition period.</div>';
+          return '<div class="callout callout-danger"><strong>Tribal knowledge only.</strong> Without documentation, buyers see a lifestyle business. Significant discount, heavy earnout, or walk away.</div>';
+        })()}
+      </div>
+      <div class="card">
+        <div class="t-h2 mb-md">Next Steps</div>
+        <div style="display:flex;flex-direction:column;gap:var(--space-sm)">
+          ${undocumented > 0 ? `<div class="t-small" style="padding:8px 0;border-bottom:1px solid var(--color-border-light)"><span style="color:var(--color-danger);font-weight:600">1.</span> Document ${undocumented} undocumented processes, starting with Priority 1</div>` : ''}
+          ${transferChecked < 10 ? `<div class="t-small" style="padding:8px 0;border-bottom:1px solid var(--color-border-light)"><span style="color:var(--color-warning);font-weight:600">2.</span> Address ${10-transferChecked} remaining transferability requirements</div>` : ''}
+          <div class="t-small" style="padding:8px 0;border-bottom:1px solid var(--color-border-light)"><span style="color:var(--color-primary);font-weight:600">3.</span> Test every SOP with someone other than the author</div>
+          <div class="t-small" style="padding:8px 0"><span style="color:var(--color-primary);font-weight:600">4.</span> Establish your quarterly review cadence</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout callout-accent mb-xl" style="text-align:center;padding:var(--space-xl)">
+      <div style="font-family:var(--font-display);font-size:20px;font-weight:700;margin-bottom:8px">A business that cannot be explained cannot be transferred.</div>
+      <div class="t-small">Document today what you want to sell tomorrow.</div>
+    </div>
+    <div class="btn-group" style="justify-content:center">
+      <button class="btn btn-primary" onclick="exportReport()">Export Report</button>
+      <button class="btn btn-secondary" onclick="window.print()">Print Summary</button>
+      <button class="btn btn-ghost" onclick="if(confirm('This will reset all your data. Are you sure?')){localStorage.removeItem(STORAGE_KEY);state=getDefaultState();renderAll();showToast('Data cleared.')}">Reset All Data</button>
+    </div>`;
+}
+
+function exportReport() {
+  const score = calcOverallScore();
+  const totalProcs = PRIORITY_CATEGORIES.reduce((s,c) => s + c.processes.length, 0);
+  let documented = 0, undocumented = 0;
+  PRIORITY_CATEGORIES.forEach(c => c.processes.forEach(p => {
+    const m = state.maturityScores[p.id] || 0;
+    if (m >= 2) documented++; else undocumented++;
+  }));
+  const transferChecked = TRANSFERABILITY_ITEMS.filter(t => state.transferability[t.id]).length;
+
+  let text = 'SOPs & PROCESS DOCUMENTATION - Summary Report\n';
+  text += '='.repeat(50) + '\n';
+  text += 'Generated: ' + new Date().toLocaleDateString() + '\n\n';
+  text += 'OVERALL SCORE: ' + score + '/100 (' + getScoreLabel(score) + ')\n';
+  text += 'Documented: ' + documented + '/' + totalProcs + '\n';
+  text += 'Undocumented: ' + undocumented + '\n';
+  text += 'Transferability: ' + transferChecked + '/10\n\n';
+  text += 'MATURITY BY CATEGORY\n' + '-'.repeat(30) + '\n';
+  PRIORITY_CATEGORIES.forEach(cat => {
+    const scores = cat.processes.map(p => state.maturityScores[p.id] || 0);
+    const avg = scores.length > 0 ? (scores.reduce((a,b)=>a+b,0) / scores.length).toFixed(1) : '0.0';
+    text += 'P' + cat.priority + ': ' + cat.title + ' - ' + avg + '/4\n';
+    cat.processes.forEach(p => {
+      const m = state.maturityScores[p.id] || 0;
+      text += '  ' + p.name.split('(')[0].trim() + ': ' + getMaturityLabel(m) + ' (' + m + ')\n';
+    });
+  });
+  text += '\nPROCESS INVENTORY (' + state.processes.length + ' processes)\n' + '-'.repeat(30) + '\n';
+  state.processes.forEach(p => {
+    text += '- ' + (p.name || 'Unnamed') + ' | Format: ' + (p.format || '-') + ' | Owner: ' + (p.owner || '-') + '\n';
+  });
+  text += '\nTRANSFERABILITY (' + transferChecked + '/10)\n' + '-'.repeat(30) + '\n';
+  TRANSFERABILITY_ITEMS.forEach(t => {
+    text += (state.transferability[t.id] ? '[X] ' : '[ ] ') + t.label + '\n';
+  });
+
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'sops-process-documentation-report.txt';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Report exported.');
+}
+
+function renderPageNav(prevPage, nextPage, nextLabel) {
+  return `
+    <div class="page-nav">
+      ${prevPage ? `<button class="btn btn-secondary" onclick="goToPage('${prevPage}')">Back</button>` : '<div></div>'}
+      ${nextPage ? `<button class="btn btn-primary" onclick="completePage('${state.currentPage}');goToPage('${nextPage}')">${nextLabel || 'Continue'}</button>` :
+        `<button class="btn btn-primary" disabled>${nextLabel || 'Complete more to continue'}</button>`}
+    </div>`;
+}
+
+// Initialize
+loadData();
+if (state.unlockedPages.length === 0) state.unlockedPages = ['welcome'];
+renderAll();
+
+// Keyboard nav for sidebar
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+  }
+});
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

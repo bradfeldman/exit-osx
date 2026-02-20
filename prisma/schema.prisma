@@ -3616,3 +3616,22 @@ model CompanyPlaybook {
   @@index([companyId])
   @@map("company_playbooks")
 }
+
+model AssessmentLead {
+  id              String    @id @default(cuid())
+  email           String
+  briScore        Int?      @map("bri_score")
+  currentValue    Float?    @map("current_value")
+  potentialValue  Float?    @map("potential_value")
+  topRisk         String?   @map("top_risk")
+  ipAddress       String?   @map("ip_address")
+  convertedAt     DateTime? @map("converted_at")
+  day0SentAt      DateTime? @map("day0_sent_at")
+  day2SentAt      DateTime? @map("day2_sent_at")
+  day5SentAt      DateTime? @map("day5_sent_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@index([email])
+  @@index([createdAt, convertedAt])
+  @@map("assessment_leads")
+}

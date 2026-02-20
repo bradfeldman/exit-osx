@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strategic Growth Initiatives | Exit Planning Playbook #27</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a { color: var(--color-primary); text-decoration: none; }
+
+.t-display { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 280px; min-width: 280px; background: var(--color-text);
+  color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow);
+  overflow-y: auto;
+}
+.sidebar.collapsed { transform: translateX(-280px); }
+.main-content { flex: 1; margin-left: 280px; min-height: 100vh; transition: margin-left var(--transition-slow); }
+.sidebar.collapsed + .main-content { margin-left: 0; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-280px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: #fff; line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.6);
+  font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-lg);
+  transition: box-shadow var(--transition-normal);
+}
+.card:hover { box-shadow: var(--shadow-sm); }
+.card + .card { margin-top: var(--space-md); }
+
+.callout {
+  padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md);
+  border-left: 3px solid; font-size: 14px; line-height: 1.6;
+}
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+.callout-success { background: var(--color-success-light); border-color: var(--color-success); color: #1a5c2e; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); border-color: var(--color-text-tertiary); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.btn-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); color: var(--color-text); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.form-input::placeholder { color: var(--color-text-tertiary); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center; min-width: 0;
+}
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+@media (max-width: 600px) {
+  .score-selector { gap: 4px; }
+  .score-option { padding: 10px 4px; }
+  .score-number { font-size: 18px; }
+  .score-label-text { font-size: 9px; }
+}
+
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+  border-radius: 999px; font-size: 12px; font-weight: 500;
+}
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+
+.progress-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.progress-ring-text { position: absolute; text-align: center; }
+.progress-ring-value { font-family: var(--font-display); font-weight: 700; line-height: 1; }
+.progress-ring-label { font-size: 10px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 28px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; min-width: 30px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+@media (max-width: 600px) { .bar-label { width: 80px; font-size: 11px; } }
+
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+
+.section-divider { height: 1px; background: var(--color-border); margin: var(--space-2xl) 0; }
+
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-hero .t-display { margin-bottom: var(--space-md); }
+.welcome-hero .t-body { margin-bottom: var(--space-2xl); }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+.welcome-phases { display: flex; flex-direction: column; gap: var(--space-md); margin: var(--space-2xl) 0; text-align: left; }
+.welcome-phase { display: flex; gap: var(--space-lg); padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-phase-num { width: 36px; height: 36px; background: var(--color-primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--color-primary); flex-shrink: 0; }
+.welcome-phase-title { font-weight: 600; margin-bottom: 2px; }
+.welcome-phase-desc { font-size: 14px; color: var(--color-text-secondary); }
+@media (max-width: 600px) {
+  .welcome-stats { grid-template-columns: 1fr; }
+  .welcome-hero { padding: var(--space-2xl) var(--space-md); }
+}
+
+.nav-footer { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+
+.eval-grid { display: grid; grid-template-columns: 1fr; gap: var(--space-md); }
+.eval-card {
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+  padding: var(--space-lg); transition: all var(--transition-normal); position: relative; overflow: hidden;
+}
+.eval-card:hover { box-shadow: var(--shadow-sm); }
+.eval-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-md); }
+.eval-card-title { font-weight: 600; font-size: 16px; }
+.eval-card-desc { font-size: 14px; color: var(--color-text-secondary); margin-bottom: var(--space-md); line-height: 1.5; }
+
+.gauge-wrap { display: flex; align-items: center; gap: var(--space-lg); padding: var(--space-lg); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.gauge-ring { flex-shrink: 0; }
+.gauge-info { flex: 1; }
+.gauge-title { font-size: 13px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+.gauge-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1; }
+.gauge-desc { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+
+.impact-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.impact-table th { text-align: left; padding: 10px 12px; background: var(--color-surface-alt); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); border-bottom: 2px solid var(--color-border); }
+.impact-table td { padding: 10px 12px; border-bottom: 1px solid var(--color-border-light); }
+.impact-table tr:last-child td { border-bottom: none; }
+.impact-table .total-row td { font-weight: 700; background: var(--color-primary-light); border-top: 2px solid var(--color-primary); }
+
+.sprint-timeline { position: relative; padding-left: 28px; }
+.sprint-timeline::before { content: ''; position: absolute; left: 8px; top: 8px; bottom: 8px; width: 2px; background: var(--color-border); }
+.sprint-week { position: relative; padding-bottom: var(--space-lg); }
+.sprint-week:last-child { padding-bottom: 0; }
+.sprint-dot { position: absolute; left: -24px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--color-border); border: 2px solid var(--color-bg); }
+.sprint-week.active .sprint-dot { background: var(--color-primary); }
+.sprint-week.done .sprint-dot { background: var(--color-success); }
+.sprint-week-label { font-size: 12px; font-weight: 600; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+.sprint-week-title { font-weight: 600; margin-bottom: 4px; }
+.sprint-week-desc { font-size: 14px; color: var(--color-text-secondary); }
+
+.checklist-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md) 0; border-bottom: 1px solid var(--color-border-light); cursor: pointer; }
+.checklist-item:last-child { border-bottom: none; }
+.checklist-box {
+  width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+  transition: all var(--transition-fast);
+}
+.checklist-item.checked .checklist-box { background: var(--color-success); border-color: var(--color-success); }
+.checklist-box svg { width: 12px; height: 12px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; transition: opacity var(--transition-fast); }
+.checklist-item.checked .checklist-box svg { opacity: 1; }
+.checklist-text { font-size: 14px; line-height: 1.5; }
+.checklist-item.checked .checklist-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+
+.metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md); }
+.metric-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); text-align: center; }
+.metric-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.metric-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+.metric-input { text-align: center; font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--color-primary); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 8px; width: 100%; }
+.metric-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+
+.valuation-scenario { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-lg) 0; }
+.scenario-card { background: var(--color-surface); border: 2px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); text-align: center; transition: all var(--transition-normal); }
+.scenario-card.highlight { border-color: var(--color-primary); background: var(--color-primary-light); }
+.scenario-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.scenario-ebitda { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.scenario-multiple { font-size: 14px; color: var(--color-text-secondary); margin-bottom: var(--space-sm); }
+.scenario-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; line-height: 1.2; }
+.scenario-card.highlight .scenario-value { color: var(--color-primary); }
+.scenario-delta { font-size: 13px; margin-top: var(--space-xs); }
+@media (max-width: 600px) { .valuation-scenario { grid-template-columns: 1fr; } }
+
+.toast {
+  position: fixed; bottom: var(--space-lg); right: var(--space-lg); background: var(--color-text);
+  color: #fff; padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md);
+  font-size: 14px; box-shadow: var(--shadow-lg); transform: translateY(100px); opacity: 0;
+  transition: all var(--transition-slow); z-index: 200; max-width: 360px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* Accessibility */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; }
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+
+/* Print */
+@media print { .sidebar, .mobile-header, .toast, .btn-group, .skip-link, .sidebar-overlay { display: none !important; } .main-content { margin-left: 0 !important; } .page { display: block !important; page-break-inside: avoid; } .content-area { max-width: 100%; padding: 0; } }
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<div class="app">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #27</div>
+      <div class="sidebar-brand-title">Strategic Growth Initiatives</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <div class="sidebar-nav" id="sidebarNav"></div>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Growth Readiness Score</div>
+      <div class="sidebar-score-value" id="sidebarScore">0<span class="sidebar-score-max">/100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete assessments to calculate</div>
+    </div>
+  </nav>
+
+  <div class="main-content" id="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation"><span></span></button>
+      <div style="font-weight:600;font-size:15px;">Playbook #27</div>
+    </div>
+    <div class="content-area" id="contentArea"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" aria-live="polite" role="status"></div>
+
+<script>
+const STORAGE_KEY = 'exitosx-pb27-growth-initiatives';
+// Migrate from old key
+(function() { try { const old = localStorage.getItem('playbook27_growth_initiatives'); if (old && !localStorage.getItem('exitosx-pb27-growth-initiatives')) { localStorage.setItem('exitosx-pb27-growth-initiatives', old); localStorage.removeItem('playbook27_growth_initiatives'); } } catch(e) {} })();
+const CHECK_SVG = '<svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"></polyline></svg>';
+
+const PAGES = [
+  { id:'welcome', title:'Welcome', icon:'&#9889;', phase:'start' },
+  { id:'why_growth', title:'Why Growth Matters', icon:'&#128200;', phase:'learn' },
+  { id:'eval_matrix', title:'Initiative Evaluation', icon:'&#9878;', phase:'assess' },
+  { id:'market_entry', title:'New Market Entry', icon:'&#127758;', phase:'plan' },
+  { id:'product_ext', title:'Product Extension', icon:'&#128230;', phase:'plan' },
+  { id:'channels', title:'Channel Partnerships', icon:'&#129309;', phase:'plan' },
+  { id:'geo_expansion', title:'Geographic Expansion', icon:'&#127961;', phase:'plan' },
+  { id:'sprint_planner', title:'90-Day Sprint', icon:'&#9201;', phase:'execute' },
+  { id:'mistakes', title:'Pitfall Avoidance', icon:'&#9888;', phase:'execute' },
+  { id:'timeline', title:'Implementation Timeline', icon:'&#128197;', phase:'execute' },
+  { id:'results', title:'Your Growth Plan', icon:'&#127942;', phase:'results' }
+];
+
+const PHASES = {
+  start: 'Getting Started',
+  learn: 'Understanding',
+  assess: 'Assessment',
+  plan: 'Strategy Planning',
+  execute: 'Execution',
+  results: 'Your Results'
+};
+
+let state = loadState();
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return {
+    currentPage: 'welcome',
+    completedPages: [],
+    evalScores: {},
+    selectedInitiatives: [],
+    marketEntry: { approach:'', targetMarket:'', timeline:'', notes:'' },
+    productExt: { type:'', nrr:'', target:'', notes:'' },
+    channels: { partnerType:'', partners:[], notes:'' },
+    geoExpansion: { approach:'', regions:'', notes:'' },
+    sprint: { name:'', owner:'', objective:'', metrics:['','',''], budget:'', killCriteria:'', weekChecks:{} },
+    pitfallChecks: {},
+    timelineChecks: {},
+    businessEbitda: '',
+    businessMultiple: '',
+    growthEbitdaAdd: '',
+    growthMultipleAdd: ''
+  };
+}
+function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){} }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function toggleSidebar() {
+  const s = document.getElementById('sidebar');
+  const o = document.getElementById('sidebarOverlay');
+  s.classList.toggle('open');
+  o.classList.toggle('show');
+}
+
+function navigate(pageId) {
+  state.currentPage = pageId;
+  saveState();
+  render();
+  document.getElementById('contentArea').scrollIntoView({ behavior:'smooth', block:'start' });
+  if (window.innerWidth <= 900) {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+  }
+  // Focus management
+  setTimeout(() => { const area = document.getElementById('contentArea'); if (area) { const heading = area.querySelector('h1, h2, .t-display'); if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); } } }, 100);
+}
+
+function markComplete(pageId) {
+  if (!state.completedPages.includes(pageId)) {
+    state.completedPages.push(pageId);
+    saveState();
+    showToast('Section complete. Nice progress.');
+  }
+  const idx = PAGES.findIndex(p => p.id === pageId);
+  if (idx < PAGES.length - 1) navigate(PAGES[idx + 1].id);
+  else render();
+}
+
+function calcScore() {
+  let score = 0;
+  const evalKeys = ['adjacent_market','product_extension','channel_partners','geo_expansion'];
+  evalKeys.forEach(k => { if (state.evalScores[k]) score += state.evalScores[k]; });
+  if (state.selectedInitiatives.length > 0) score += 10;
+  if (state.selectedInitiatives.length === 2) score += 5;
+  if (state.sprint.name) score += 5;
+  if (state.sprint.owner) score += 5;
+  if (state.sprint.objective) score += 5;
+  const pitfallCount = Object.values(state.pitfallChecks).filter(Boolean).length;
+  score += pitfallCount * 2;
+  const timelineCount = Object.values(state.timelineChecks).filter(Boolean).length;
+  score += timelineCount * 1;
+  return Math.min(100, score);
+}
+
+function getScoreLevel(s) {
+  if (s >= 80) return { label:'Strong', color: 'var(--color-success)' };
+  if (s >= 60) return { label:'Good', color: 'var(--color-primary)' };
+  if (s >= 40) return { label:'Developing', color: 'var(--color-warning)' };
+  return { label:'Getting Started', color: 'var(--color-text-tertiary)' };
+}
+
+function renderSidebar() {
+  const nav = document.getElementById('sidebarNav');
+  let html = '';
+  let lastPhase = '';
+  PAGES.forEach(p => {
+    if (p.phase !== lastPhase) {
+      html += `<div class="nav-section-label">${PHASES[p.phase]}</div>`;
+      lastPhase = p.phase;
+    }
+    const isActive = state.currentPage === p.id;
+    const isDone = state.completedPages.includes(p.id);
+    html += `<div class="nav-item${isActive?' active':''}${isDone?' completed':''}" onclick="navigate('${p.id}')" role="button" tabindex="0" aria-current="${isActive?'page':'false'}">
+      <span class="nav-icon">${p.icon}</span>
+      <span>${p.title}</span>
+      <span class="nav-check">${CHECK_SVG}</span>
+    </div>`;
+  });
+  nav.innerHTML = html;
+
+  const pct = Math.round((state.completedPages.length / PAGES.length) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+
+  const score = calcScore();
+  document.getElementById('sidebarScore').innerHTML = score + '<span class="sidebar-score-max">/100</span>';
+  const level = getScoreLevel(score);
+  document.getElementById('sidebarScoreDesc').textContent = level.label;
+  document.getElementById('sidebarScore').style.color = level.color;
+}
+
+function renderProgressRing(size, pct, color, label) {
+  const r = (size - 8) / 2;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (pct / 100) * circ;
+  return `<div class="progress-ring-wrap" style="width:${size}px;height:${size}px;">
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--color-border)" stroke-width="6"/>
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${offset}" transform="rotate(-90 ${size/2} ${size/2})" style="transition:stroke-dashoffset 0.8s cubic-bezier(0.16,1,0.3,1)"/>
+    </svg>
+    <div class="progress-ring-text">
+      <div class="progress-ring-value" style="font-size:${size/4}px;color:${color}">${Math.round(pct)}</div>
+      <div class="progress-ring-label">${label}</div>
+    </div>
+  </div>`;
+}
+
+function scoreSelector(name, labels) {
+  const current = state.evalScores[name] || 0;
+  let html = '<div class="score-selector" role="radiogroup" aria-label="Score for '+name+'">';
+  labels.forEach((lbl, i) => {
+    const val = i + 1;
+    const sel = current === val ? ' selected' : '';
+    html += `<div class="score-option s${val}${sel}" onclick="setEvalScore('${name}',${val})" role="radio" aria-checked="${current===val}" tabindex="0">
+      <input type="radio" name="${name}" value="${val}" ${current===val?'checked':''}>
+      <div class="score-number">${val}</div>
+      <div class="score-label-text">${lbl}</div>
+    </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function setEvalScore(name, val) {
+  state.evalScores[name] = val;
+  saveState();
+  render();
+}
+
+function toggleInitiative(id) {
+  const idx = state.selectedInitiatives.indexOf(id);
+  if (idx === -1) {
+    if (state.selectedInitiatives.length >= 2) {
+      showToast('Limit yourself to 1-2 initiatives. Remove one first.');
+      return;
+    }
+    state.selectedInitiatives.push(id);
+  } else {
+    state.selectedInitiatives.splice(idx, 1);
+  }
+  saveState();
+  render();
+}
+
+function setField(path, value) {
+  const parts = path.split('.');
+  let obj = state;
+  for (let i = 0; i < parts.length - 1; i++) obj = obj[parts[i]];
+  obj[parts[parts.length - 1]] = value;
+  saveState();
+}
+
+function toggleCheck(group, key) {
+  state[group][key] = !state[group][key];
+  saveState();
+  render();
+}
+
+function toggleSprintWeek(week) {
+  state.sprint.weekChecks[week] = !state.sprint.weekChecks[week];
+  saveState();
+  render();
+}
+
+function setSprintMetric(idx, val) {
+  state.sprint.metrics[idx] = val;
+  saveState();
+}
+
+function navFooter(prevId, nextId, nextLabel) {
+  let html = '<div class="nav-footer">';
+  if (prevId) html += `<button class="btn btn-secondary" onclick="navigate('${prevId}')">&#8592; Back</button>`;
+  else html += '<div></div>';
+  if (nextId) html += `<button class="btn btn-primary" onclick="markComplete('${state.currentPage}');${nextId==='__stay'?'':'navigate(\''+nextId+'\')'}">${nextLabel || 'Continue'} &#8594;</button>`;
+  html += '</div>';
+  return html;
+}
+
+function renderPage() {
+  const area = document.getElementById('contentArea');
+  const pg = state.currentPage;
+
+  if (pg === 'welcome') {
+    area.innerHTML = renderWelcome();
+  } else if (pg === 'why_growth') {
+    area.innerHTML = renderWhyGrowth();
+  } else if (pg === 'eval_matrix') {
+    area.innerHTML = renderEvalMatrix();
+  } else if (pg === 'market_entry') {
+    area.innerHTML = renderMarketEntry();
+  } else if (pg === 'product_ext') {
+    area.innerHTML = renderProductExt();
+  } else if (pg === 'channels') {
+    area.innerHTML = renderChannels();
+  } else if (pg === 'geo_expansion') {
+    area.innerHTML = renderGeoExpansion();
+  } else if (pg === 'sprint_planner') {
+    area.innerHTML = renderSprintPlanner();
+  } else if (pg === 'mistakes') {
+    area.innerHTML = renderMistakes();
+  } else if (pg === 'timeline') {
+    area.innerHTML = renderTimeline();
+  } else if (pg === 'results') {
+    area.innerHTML = renderResults();
+  }
+}
+
+function renderWelcome() {
+  return `<div class="welcome-hero">
+    <div class="welcome-icon">&#128640;</div>
+    <h1 class="t-display">Strategic Growth Initiatives</h1>
+    <p class="t-body t-secondary">Buyers do not just pay for what your business is today -- they pay for what it could become. This playbook helps you identify, evaluate, and launch 1-2 growth initiatives that show buyers the future they are buying.</p>
+    <div class="welcome-stats">
+      <div class="welcome-stat">
+        <div class="welcome-stat-value">0.5-1.5x</div>
+        <div class="welcome-stat-label">Potential multiple expansion</div>
+      </div>
+      <div class="welcome-stat">
+        <div class="welcome-stat-value">12-18mo</div>
+        <div class="welcome-stat-label">Timeline for credible traction</div>
+      </div>
+      <div class="welcome-stat">
+        <div class="welcome-stat-value">1-2</div>
+        <div class="welcome-stat-label">Initiatives to launch (not more)</div>
+      </div>
+    </div>
+    <div class="welcome-phases">
+      <div class="welcome-phase">
+        <div class="welcome-phase-num">1</div>
+        <div><div class="welcome-phase-title">Understand the Value Impact</div><div class="welcome-phase-desc">Learn how growth initiatives affect buyer models and exit multiples.</div></div>
+      </div>
+      <div class="welcome-phase">
+        <div class="welcome-phase-num">2</div>
+        <div><div class="welcome-phase-title">Evaluate Your Options</div><div class="welcome-phase-desc">Score each initiative type against four critical criteria.</div></div>
+      </div>
+      <div class="welcome-phase">
+        <div class="welcome-phase-num">3</div>
+        <div><div class="welcome-phase-title">Plan Your Strategy</div><div class="welcome-phase-desc">Deep-dive into the 1-2 initiatives with the highest strategic fit.</div></div>
+      </div>
+      <div class="welcome-phase">
+        <div class="welcome-phase-num">4</div>
+        <div><div class="welcome-phase-title">Build Your Execution Sprint</div><div class="welcome-phase-desc">Structure a 90-day sprint with clear metrics and accountability.</div></div>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-lg" onclick="markComplete('welcome')">Begin Assessment &#8594;</button>
+  </div>`;
+}
+
+function renderWhyGrowth() {
+  const ebitda = parseFloat(state.businessEbitda) || 2.0;
+  const mult = parseFloat(state.businessMultiple) || 4.5;
+  const noGrowthVal = ebitda * mult;
+  const earlyVal = (ebitda * 1.1) * (mult + 1.0);
+  const matureVal = (ebitda * 1.25) * (mult + 1.5);
+  const delta = matureVal - noGrowthVal;
+
+  return `<div class="page-header">
+    <div class="t-label">Understanding</div>
+    <h1 class="t-display">Why Growth Initiatives Drive Exit Value</h1>
+    <p class="t-body t-secondary">Buyers build 3-5 year financial models. Your growth initiatives directly influence their revenue projections, execution risk assessment, and willingness to compete for your business.</p>
+  </div>
+
+  <div class="callout callout-accent" style="margin-bottom:var(--space-2xl)">
+    <strong>The core principle:</strong> Buyers bid on the future, not just the past. A business with a proven growth trajectory commands a premium over one that has plateaued -- even if today's EBITDA is identical.
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h2 class="t-h2" style="margin-bottom:var(--space-lg)">Your Valuation Scenario</h2>
+    <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Enter your current EBITDA and estimated multiple to see how growth initiatives could impact your enterprise value.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-lg)">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Current EBITDA ($M)</label>
+        <input type="number" class="form-input metric-input" style="font-size:18px" value="${state.businessEbitda||''}" placeholder="2.0" step="0.1" onchange="setField('businessEbitda',this.value);render()">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Current Multiple (x)</label>
+        <input type="number" class="form-input metric-input" style="font-size:18px" value="${state.businessMultiple||''}" placeholder="4.5" step="0.1" onchange="setField('businessMultiple',this.value);render()">
+      </div>
+    </div>
+    <div class="valuation-scenario">
+      <div class="scenario-card">
+        <div class="scenario-label">No Growth</div>
+        <div class="scenario-ebitda">$${ebitda.toFixed(1)}M EBITDA</div>
+        <div class="scenario-multiple">${mult.toFixed(1)}x multiple</div>
+        <div class="scenario-value">$${noGrowthVal.toFixed(1)}M</div>
+        <div class="scenario-delta t-caption t-secondary">Baseline</div>
+      </div>
+      <div class="scenario-card highlight">
+        <div class="scenario-label">Early Traction</div>
+        <div class="scenario-ebitda">$${(ebitda*1.1).toFixed(1)}M EBITDA</div>
+        <div class="scenario-multiple">${(mult+1.0).toFixed(1)}x multiple</div>
+        <div class="scenario-value">$${earlyVal.toFixed(1)}M</div>
+        <div class="scenario-delta" style="color:var(--color-success)">+$${(earlyVal-noGrowthVal).toFixed(1)}M</div>
+      </div>
+      <div class="scenario-card">
+        <div class="scenario-label">Mature Initiative</div>
+        <div class="scenario-ebitda">$${(ebitda*1.25).toFixed(1)}M EBITDA</div>
+        <div class="scenario-multiple">${(mult+1.5).toFixed(1)}x multiple</div>
+        <div class="scenario-value">$${matureVal.toFixed(1)}M</div>
+        <div class="scenario-delta" style="color:var(--color-success)">+$${delta.toFixed(1)}M</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 class="t-h2" style="margin-bottom:var(--space-md)">The Buyer's Three Lenses</h3>
+    <div style="display:flex;flex-direction:column;gap:var(--space-md)">
+      <div style="display:flex;gap:var(--space-md);align-items:flex-start;padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)">
+        <div style="width:40px;height:40px;background:var(--color-primary-light);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">&#128200;</div>
+        <div><div style="font-weight:600;margin-bottom:4px">Higher Revenue Projections</div><div class="t-small t-secondary">Active growth signals the business has not reached its ceiling. Buyers model continued upside.</div></div>
+      </div>
+      <div style="display:flex;gap:var(--space-md);align-items:flex-start;padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)">
+        <div style="width:40px;height:40px;background:var(--color-success-light);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">&#128737;</div>
+        <div><div style="font-weight:600;margin-bottom:4px">Reduced Execution Risk</div><div class="t-small t-secondary">A business already executing growth is less risky than one where the buyer must create it from scratch.</div></div>
+      </div>
+      <div style="display:flex;gap:var(--space-md);align-items:flex-start;padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)">
+        <div style="width:40px;height:40px;background:var(--color-accent-light);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">&#128293;</div>
+        <div><div style="font-weight:600;margin-bottom:4px">Competitive Tension</div><div class="t-small t-secondary">When multiple buyers see the same opportunity, they compete harder, driving up your price.</div></div>
+      </div>
+    </div>
+  </div>
+
+  ${navFooter('welcome','eval_matrix','Evaluate Your Options')}`;
+}
+
+function renderEvalMatrix() {
+  const initiatives = [
+    { id:'adjacent_market', title:'Adjacent Market Entry', desc:'Enter a new industry vertical, customer segment, or use case that leverages your existing capabilities.', impact:'High', risk:'Moderate', legibility:'High', fit:'High', grade:'Strong' },
+    { id:'product_extension', title:'Product / Service Extension', desc:'Upsell premium tiers, cross-sell complementary offerings, or productize services for existing customers.', impact:'Moderate-High', risk:'Low-Moderate', legibility:'High', fit:'High', grade:'Strong' },
+    { id:'channel_partners', title:'Channel Partnerships', desc:'Access new customers through referral, reseller, technology integration, or white-label partnerships.', impact:'Moderate', risk:'Low', legibility:'High', fit:'Moderate-High', grade:'Good' },
+    { id:'geo_expansion', title:'Geographic Expansion', desc:'Expand into new domestic regions or international markets through sales, offices, or digital channels.', impact:'Moderate', risk:'Moderate-High', legibility:'High', fit:'Moderate', grade:'Good' }
+  ];
+
+  let evalTotal = 0;
+  const evalKeys = ['adjacent_market','product_extension','channel_partners','geo_expansion'];
+  evalKeys.forEach(k => { evalTotal += (state.evalScores[k+'_impact']||0) + (state.evalScores[k+'_risk']||0) + (state.evalScores[k+'_legibility']||0) + (state.evalScores[k+'_fit']||0); });
+
+  let cardsHtml = '';
+  initiatives.forEach(init => {
+    const isSelected = state.selectedInitiatives.includes(init.id);
+    const impactScore = state.evalScores[init.id+'_impact'] || 0;
+    const riskScore = state.evalScores[init.id+'_risk'] || 0;
+    const legScore = state.evalScores[init.id+'_legibility'] || 0;
+    const fitScore = state.evalScores[init.id+'_fit'] || 0;
+    const total = impactScore + riskScore + legScore + fitScore;
+    const pct = total > 0 ? Math.round((total / 20) * 100) : 0;
+    const ringColor = pct >= 70 ? 'var(--color-success)' : pct >= 40 ? 'var(--color-warning)' : 'var(--color-text-tertiary)';
+
+    cardsHtml += `<div class="eval-card" style="${isSelected?'border-color:var(--color-primary);background:var(--color-primary-light)':''}">
+      <div class="eval-card-header">
+        <div>
+          <div class="eval-card-title">${init.title}</div>
+          <span class="badge badge-${init.grade==='Strong'?'success':'warning'}" style="margin-top:4px">${init.grade} candidate</span>
+        </div>
+        ${total > 0 ? renderProgressRing(56, pct, ringColor, 'score') : ''}
+      </div>
+      <div class="eval-card-desc">${init.desc}</div>
+      <div style="display:grid;gap:var(--space-md)">
+        <div><div class="form-label">Near-Term Impact <span class="t-caption t-secondary">(Reference: ${init.impact})</span></div>
+        ${scoreSelector(init.id+'_impact',['Very Low','Low','Moderate','High','Very High'])}</div>
+        <div><div class="form-label">Risk Level <span class="t-caption t-secondary">(5 = lowest risk)</span></div>
+        ${scoreSelector(init.id+'_risk',['Very High','High','Moderate','Low','Very Low'])}</div>
+        <div><div class="form-label">Buyer Legibility <span class="t-caption t-secondary">(Reference: ${init.legibility})</span></div>
+        ${scoreSelector(init.id+'_legibility',['Unclear','Needs Explaining','Understandable','Clear','Obvious'])}</div>
+        <div><div class="form-label">Strategic Fit <span class="t-caption t-secondary">(Reference: ${init.fit})</span></div>
+        ${scoreSelector(init.id+'_fit',['No Fit','Weak','Moderate','Strong','Perfect'])}</div>
+      </div>
+      <div style="margin-top:var(--space-lg);display:flex;justify-content:space-between;align-items:center">
+        <div class="t-small"><strong>Your Score:</strong> ${total}/20 ${total > 0 ? '(' + pct + '%)' : ''}</div>
+        <button class="btn ${isSelected?'btn-primary':'btn-secondary'} btn-sm" onclick="toggleInitiative('${init.id}')">
+          ${isSelected ? '&#10003; Selected' : 'Select This Initiative'}
+        </button>
+      </div>
+    </div>`;
+  });
+
+  return `<div class="page-header">
+    <div class="t-label">Assessment</div>
+    <h1 class="t-display">Evaluate Growth Initiatives</h1>
+    <p class="t-body t-secondary">Score each initiative type on four criteria. Then select the 1-2 you will pursue. The right initiative must have near-term impact, manageable risk, buyer legibility, and strategic fit.</p>
+  </div>
+  <div class="callout callout-info" style="margin-bottom:var(--space-2xl)">
+    <strong>Constraint is a feature.</strong> One well-executed growth initiative is worth more than three half-finished ones. Select a maximum of two.
+  </div>
+  <div class="eval-grid">${cardsHtml}</div>
+  ${state.selectedInitiatives.length > 0 ? `<div class="callout callout-success" style="margin-top:var(--space-lg)"><strong>Selected (${state.selectedInitiatives.length}/2):</strong> ${state.selectedInitiatives.map(id => initiatives.find(i=>i.id===id)?.title).join(', ')}</div>` : ''}
+  ${navFooter('why_growth','market_entry','Plan: Market Entry')}`;
+}
+
+function renderMarketEntry() {
+  const approaches = [
+    { id:'beachhead', label:'Beachhead Account', desc:'Win 2-3 reference customers', time:'3-6 months' },
+    { id:'partnership', label:'Partnership Entry', desc:'Partner with established player', time:'3-9 months' },
+    { id:'dedicated_sales', label:'Dedicated Sales', desc:'Hire experienced rep in target market', time:'6-12 months' },
+    { id:'acquisition', label:'Acquisition Entry', desc:'Acquire small company in target market', time:'6-18 months' }
+  ];
+
+  return `<div class="page-header">
+    <div class="t-label">Strategy Planning</div>
+    <h1 class="t-display">New Market Entry</h1>
+    <p class="t-body t-secondary">Entering an adjacent market demonstrates broader applicability. The key is choosing a market where your capabilities translate with minimal modification.</p>
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-md)">Adjacent Market Discovery</h3>
+    <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Answer these questions to identify your best adjacent market opportunity.</p>
+    <div class="form-group">
+      <label class="form-label">What industries or segments are adjacent to your current customers?</label>
+      <textarea class="form-input" placeholder="e.g., We serve restaurants; adjacent could be catering, food trucks, hotel F&B..." onchange="setField('marketEntry.targetMarket',this.value)">${state.marketEntry.targetMarket}</textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Where do your existing capabilities translate with minimal modification?</label>
+      <textarea class="form-input" placeholder="e.g., Our scheduling software could serve any shift-based industry..." onchange="setField('marketEntry.notes',this.value)">${state.marketEntry.notes}</textarea>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Choose Your Entry Approach</h3>
+    <div style="display:grid;gap:var(--space-sm)">
+      ${approaches.map(a => {
+        const sel = state.marketEntry.approach === a.id;
+        return `<div style="display:flex;gap:var(--space-md);padding:var(--space-md);border:2px solid ${sel?'var(--color-primary)':'var(--color-border)'};border-radius:var(--radius-md);cursor:pointer;background:${sel?'var(--color-primary-light)':'var(--color-surface)'};transition:all 150ms ease" onclick="setField('marketEntry.approach','${a.id}');render()">
+          <div style="width:20px;height:20px;border-radius:50%;border:2px solid ${sel?'var(--color-primary)':'var(--color-border)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
+            ${sel?'<div style="width:10px;height:10px;border-radius:50%;background:var(--color-primary)"></div>':''}
+          </div>
+          <div style="flex:1">
+            <div style="font-weight:600">${a.label}</div>
+            <div class="t-small t-secondary">${a.desc}</div>
+          </div>
+          <div class="badge badge-neutral" style="flex-shrink:0;align-self:center">${a.time}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 class="t-h2" style="margin-bottom:var(--space-md)">Success Metrics to Track</h3>
+    <div class="metric-grid">
+      <div class="metric-card"><div class="metric-value">10-20%</div><div class="metric-label">New market revenue as % of total (18mo target)</div></div>
+      <div class="metric-card"><div class="metric-value">5-10</div><div class="metric-label">Reference customers in new market</div></div>
+      <div class="metric-card"><div class="metric-value">&#8776;</div><div class="metric-label">Win rate trending toward existing market</div></div>
+      <div class="metric-card"><div class="metric-value">&#8595;</div><div class="metric-label">CAC trending toward existing levels</div></div>
+    </div>
+  </div>
+
+  ${navFooter('eval_matrix','product_ext','Plan: Product Extension')}`;
+}
+
+function renderProductExt() {
+  const types = [
+    { id:'upsell', label:'Upsell (Premium Tier)', desc:'Higher-value version of existing offering', impact:'15-30% lift from existing base' },
+    { id:'cross_sell', label:'Cross-Sell (Complementary)', desc:'New offering that pairs with existing product', impact:'10-25% revenue lift' },
+    { id:'productize', label:'Productize a Service', desc:'Package expertise into repeatable product', impact:'New stream; improves margins' },
+    { id:'service_wrap', label:'Service Wrap', desc:'Add services around existing product', impact:'20-40% add-on per customer' }
+  ];
+
+  const nrrVal = parseFloat(state.productExt.nrr) || 0;
+  let nrrColor = 'var(--color-text-tertiary)';
+  let nrrLabel = 'Enter your NRR';
+  if (nrrVal > 0) {
+    if (nrrVal < 90) { nrrColor = 'var(--color-danger)'; nrrLabel = 'Leaky bucket. Fix churn first.'; }
+    else if (nrrVal < 100) { nrrColor = 'var(--color-warning)'; nrrLabel = 'Stable but not growing. Expansion opportunities exist.'; }
+    else if (nrrVal < 110) { nrrColor = 'var(--color-primary)'; nrrLabel = 'Healthy expansion. Good exit foundation.'; }
+    else { nrrColor = 'var(--color-success)'; nrrLabel = 'Best-in-class. Buyers will pay significant premiums.'; }
+  }
+
+  return `<div class="page-header">
+    <div class="t-label">Strategy Planning</div>
+    <h1 class="t-display">Product & Service Extension</h1>
+    <p class="t-body t-secondary">Selling more to existing customers is typically the lowest-risk, highest-return growth initiative. Your customer base already trusts you, and expansion revenue is 5-7x cheaper than new acquisition.</p>
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Extension Type</h3>
+    <div style="display:grid;gap:var(--space-sm)">
+      ${types.map(t => {
+        const sel = state.productExt.type === t.id;
+        return `<div style="display:flex;gap:var(--space-md);padding:var(--space-md);border:2px solid ${sel?'var(--color-primary)':'var(--color-border)'};border-radius:var(--radius-md);cursor:pointer;background:${sel?'var(--color-primary-light)':'var(--color-surface)'};transition:all 150ms ease" onclick="setField('productExt.type','${t.id}');render()">
+          <div style="width:20px;height:20px;border-radius:50%;border:2px solid ${sel?'var(--color-primary)':'var(--color-border)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
+            ${sel?'<div style="width:10px;height:10px;border-radius:50%;background:var(--color-primary)"></div>':''}
+          </div>
+          <div style="flex:1">
+            <div style="font-weight:600">${t.label}</div>
+            <div class="t-small t-secondary">${t.desc}</div>
+          </div>
+          <div class="badge badge-primary" style="flex-shrink:0;align-self:center">${t.impact}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-sm)">Net Revenue Retention (NRR)</h3>
+    <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">NRR measures whether your existing customer base is growing. Enter your current NRR to get a diagnosis.</p>
+    <div class="form-group">
+      <label class="form-label">Your NRR (%)</label>
+      <input type="number" class="form-input" style="max-width:200px;font-size:20px;font-weight:600;text-align:center" value="${state.productExt.nrr||''}" placeholder="105" onchange="setField('productExt.nrr',this.value);render()">
+      <div class="form-hint" style="font-size:12px;margin-top:var(--space-sm);color:var(--color-text-tertiary)">NRR = (Starting MRR + Expansion - Contraction - Churn) / Starting MRR x 100</div>
+    </div>
+    ${nrrVal > 0 ? `<div class="callout" style="border-color:${nrrColor};background:${nrrColor}10;color:${nrrColor}"><strong>${nrrVal}% NRR:</strong> ${nrrLabel}</div>` : ''}
+  </div>
+
+  <div class="card">
+    <h3 class="t-h2" style="margin-bottom:var(--space-md)">Your Extension Plan</h3>
+    <div class="form-group">
+      <label class="form-label">What will you offer?</label>
+      <textarea class="form-input" placeholder="Describe the specific product or service extension you plan to launch..." onchange="setField('productExt.target',this.value)">${state.productExt.target}</textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes and considerations</label>
+      <textarea class="form-input" placeholder="Pricing approach, customer segments to target first, resources needed..." onchange="setField('productExt.notes',this.value)">${state.productExt.notes}</textarea>
+    </div>
+  </div>
+
+  ${navFooter('market_entry','channels','Plan: Channels')}`;
+}
+
+function renderChannels() {
+  const partnerTypes = [
+    { id:'referral', label:'Referral Partner', desc:'Refers leads, receives 10-20% commission', time:'1-3 months' },
+    { id:'reseller', label:'Reseller / VAR', desc:'Sells your product under their brand', time:'3-6 months' },
+    { id:'tech_integration', label:'Technology Integration', desc:'Your product integrates with larger platform', time:'3-9 months' },
+    { id:'white_label', label:'White-Label / OEM', desc:'Partner sells your product as their own', time:'6-12 months' },
+    { id:'strategic_alliance', label:'Strategic Alliance', desc:'Joint go-to-market with complementary company', time:'3-9 months' }
+  ];
+
+  const factors = [
+    { key:'incentives', label:'Aligned Incentives', desc:'Both partners benefit economically. Lopsided partnerships fail.' },
+    { key:'agreement', label:'Clear Agreement', desc:'Brief, specific document covering roles, targets, and commercials.' },
+    { key:'enablement', label:'Enablement', desc:'Invest in training partner sales teams. They will not sell what they do not understand.' },
+    { key:'measurement', label:'Measurement', desc:'Track partner-sourced revenue weekly. Partnerships not measured die.' }
+  ];
+
+  return `<div class="page-header">
+    <div class="t-label">Strategy Planning</div>
+    <h1 class="t-display">Channel Partnership Strategy</h1>
+    <p class="t-body t-secondary">Channel partnerships let you access new customers through established distribution networks without building a direct sales force. They demonstrate scalability and market validation.</p>
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Partnership Type</h3>
+    <div style="display:grid;gap:var(--space-sm)">
+      ${partnerTypes.map(t => {
+        const sel = state.channels.partnerType === t.id;
+        return `<div style="display:flex;gap:var(--space-md);padding:var(--space-md);border:2px solid ${sel?'var(--color-primary)':'var(--color-border)'};border-radius:var(--radius-md);cursor:pointer;background:${sel?'var(--color-primary-light)':'var(--color-surface)'};transition:all 150ms ease" onclick="setField('channels.partnerType','${t.id}');render()">
+          <div style="width:20px;height:20px;border-radius:50%;border:2px solid ${sel?'var(--color-primary)':'var(--color-border)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
+            ${sel?'<div style="width:10px;height:10px;border-radius:50%;background:var(--color-primary)"></div>':''}
+          </div>
+          <div style="flex:1">
+            <div style="font-weight:600">${t.label}</div>
+            <div class="t-small t-secondary">${t.desc}</div>
+          </div>
+          <div class="badge badge-neutral" style="flex-shrink:0;align-self:center">${t.time}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Success Factors Checklist</h3>
+    ${factors.map(f => {
+      const checked = state.pitfallChecks['chan_'+f.key];
+      return `<div class="checklist-item${checked?' checked':''}" onclick="toggleCheck('pitfallChecks','chan_${f.key}')">
+        <div class="checklist-box">${CHECK_SVG.replace('<svg','<svg style="'+(checked?'':'opacity:0')+'"')}</div>
+        <div><div class="checklist-text" style="font-weight:500">${f.label}</div><div class="t-small t-secondary" style="text-decoration:none !important">${f.desc}</div></div>
+      </div>`;
+    }).join('')}
+  </div>
+
+  <div class="card">
+    <h3 class="t-h2" style="margin-bottom:var(--space-md)">Your Partnership Plan</h3>
+    <div class="form-group">
+      <label class="form-label">Potential partners you are considering</label>
+      <textarea class="form-input" placeholder="List specific companies or types of partners..." onchange="setField('channels.notes',this.value)">${state.channels.notes}</textarea>
+    </div>
+  </div>
+
+  ${navFooter('product_ext','geo_expansion','Plan: Geographic')}`;
+}
+
+function renderGeoExpansion() {
+  const approaches = [
+    { id:'remote_sales', label:'Remote Sales Coverage', desc:'Hire reps in new regions', invest:'$100-200K/rep', time:'6-12 months', risk:'Moderate' },
+    { id:'branch', label:'Office / Branch Opening', desc:'Physical presence in new market', invest:'$200-500K setup', time:'12-18 months', risk:'High' },
+    { id:'acquisition', label:'Regional Acquisition', desc:'Acquire a competitor in target region', invest:'$500K-$5M+', time:'6-12 months', risk:'High' },
+    { id:'digital', label:'Digital / E-Commerce', desc:'Expand reach through digital channels', invest:'$50-200K', time:'3-9 months', risk:'Low-Moderate' }
+  ];
+
+  return `<div class="page-header">
+    <div class="t-label">Strategy Planning</div>
+    <h1 class="t-display">Geographic Expansion</h1>
+    <p class="t-body t-secondary">Geographic expansion is a credible growth narrative that buyers understand immediately. However, it carries higher execution risk and must be carefully planned.</p>
+  </div>
+
+  <div class="callout callout-warning" style="margin-bottom:var(--space-2xl)">
+    <strong>International expansion</strong> is generally not recommended pre-exit unless you have clear demand signals. Complexity is high and timeline to meaningful revenue is typically 18-36 months. Consider domestic expansion first.
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Domestic Expansion Approach</h3>
+    <div style="display:grid;gap:var(--space-sm)">
+      ${approaches.map(a => {
+        const sel = state.geoExpansion.approach === a.id;
+        return `<div style="display:flex;gap:var(--space-md);padding:var(--space-md);border:2px solid ${sel?'var(--color-primary)':'var(--color-border)'};border-radius:var(--radius-md);cursor:pointer;background:${sel?'var(--color-primary-light)':'var(--color-surface)'};transition:all 150ms ease" onclick="setField('geoExpansion.approach','${a.id}');render()">
+          <div style="width:20px;height:20px;border-radius:50%;border:2px solid ${sel?'var(--color-primary)':'var(--color-border)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
+            ${sel?'<div style="width:10px;height:10px;border-radius:50%;background:var(--color-primary)"></div>':''}
+          </div>
+          <div style="flex:1">
+            <div style="font-weight:600">${a.label}</div>
+            <div class="t-small t-secondary">${a.desc}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0">
+            <div class="badge badge-neutral">${a.invest}</div>
+            <div class="badge badge-${a.risk==='High'?'danger':a.risk==='Moderate'?'warning':'primary'}">${a.risk} risk</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 class="t-h2" style="margin-bottom:var(--space-md)">Your Geographic Plan</h3>
+    <div class="form-group">
+      <label class="form-label">Target regions or markets</label>
+      <textarea class="form-input" placeholder="Which regions are you considering? What signals suggest demand?" onchange="setField('geoExpansion.regions',this.value)">${state.geoExpansion.regions}</textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes and considerations</label>
+      <textarea class="form-input" placeholder="Timeline, resources needed, competitive landscape..." onchange="setField('geoExpansion.notes',this.value)">${state.geoExpansion.notes}</textarea>
+    </div>
+  </div>
+
+  ${navFooter('channels','sprint_planner','Build Your Sprint')}`;
+}
+
+function renderSprintPlanner() {
+  const weeks = [
+    { id:'w1_2', label:'Weeks 1-2', title:'Define Objectives & Success Criteria', desc:'Set 3-5 measurable goals. Write a sprint charter.' },
+    { id:'w3_4', label:'Weeks 3-4', title:'Build the Team & Remove Blockers', desc:'Assign roles. Allocate resources. Clear the path.' },
+    { id:'w5_8', label:'Weeks 5-8', title:'Execute Core Activities', desc:'Weekly check-ins. Track activity metrics. Stay focused.' },
+    { id:'w9_10', label:'Weeks 9-10', title:'Assess Early Results', desc:'Mid-sprint review. Adjust tactics based on data.' },
+    { id:'w11_12', label:'Weeks 11-12', title:'Close Sprint & Document', desc:'Capture results. Write recommendations. Plan next sprint.' }
+  ];
+
+  const weeksDone = Object.values(state.sprint.weekChecks).filter(Boolean).length;
+  const sprintPct = Math.round((weeksDone / weeks.length) * 100);
+
+  return `<div class="page-header">
+    <div class="t-label">Execution</div>
+    <h1 class="t-display">90-Day Sprint Planner</h1>
+    <p class="t-body t-secondary">Growth initiatives fail from poor execution, not bad strategy. Structure your first 90 days with clear objectives, single ownership, and kill criteria.</p>
+  </div>
+
+  <div class="callout callout-accent" style="margin-bottom:var(--space-2xl)">
+    <strong>Execution tip:</strong> One person must be accountable for each initiative. Not a committee. Hold a 30-minute weekly stand-up focused on problem-solving, not status reporting.
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Sprint Charter</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+      <div class="form-group">
+        <label class="form-label">Initiative Name</label>
+        <input type="text" class="form-input" value="${state.sprint.name}" placeholder="e.g., Healthcare Vertical Entry" onchange="setField('sprint.name',this.value)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Sprint Owner</label>
+        <input type="text" class="form-input" value="${state.sprint.owner}" placeholder="Single accountable person" onchange="setField('sprint.owner',this.value)">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Objective (one sentence)</label>
+      <input type="text" class="form-input" value="${state.sprint.objective}" placeholder="e.g., Sign 3 pilot customers in healthcare by end of sprint" onchange="setField('sprint.objective',this.value)">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md)">
+      <div class="form-group"><label class="form-label">Key Metric #1</label><input type="text" class="form-input" value="${state.sprint.metrics[0]}" placeholder="e.g., Pipeline value" onchange="setSprintMetric(0,this.value)"></div>
+      <div class="form-group"><label class="form-label">Key Metric #2</label><input type="text" class="form-input" value="${state.sprint.metrics[1]}" placeholder="e.g., Meetings booked" onchange="setSprintMetric(1,this.value)"></div>
+      <div class="form-group"><label class="form-label">Key Metric #3</label><input type="text" class="form-input" value="${state.sprint.metrics[2]}" placeholder="e.g., Proposals sent" onchange="setSprintMetric(2,this.value)"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+      <div class="form-group">
+        <label class="form-label">Budget Allocated</label>
+        <input type="text" class="form-input" value="${state.sprint.budget}" placeholder="e.g., $25,000" onchange="setField('sprint.budget',this.value)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Kill Criteria</label>
+        <input type="text" class="form-input" value="${state.sprint.killCriteria}" placeholder="e.g., No traction after 2 sprints" onchange="setField('sprint.killCriteria',this.value)">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg)">
+      <h3 class="t-h2">Sprint Timeline</h3>
+      <div class="badge badge-${sprintPct>=80?'success':sprintPct>=40?'warning':'neutral'}">${weeksDone}/${weeks.length} phases planned</div>
+    </div>
+    <div class="sprint-timeline">
+      ${weeks.map(w => {
+        const done = state.sprint.weekChecks[w.id];
+        return `<div class="sprint-week${done?' done':''}" onclick="toggleSprintWeek('${w.id}')" style="cursor:pointer">
+          <div class="sprint-dot"></div>
+          <div class="sprint-week-label">${w.label}</div>
+          <div class="sprint-week-title">${w.title}</div>
+          <div class="sprint-week-desc">${w.desc}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+
+  ${navFooter('geo_expansion','mistakes','Avoid Pitfalls')}`;
+}
+
+function renderMistakes() {
+  const mistakes = [
+    { key:'timing', title:'Launching Too Close to Exit', problem:'An initiative 3 months old when you go to market is not credible. Buyers see it as window dressing.', solution:'Plan timing backwards from target exit. Launch 18-24 months before.' },
+    { key:'clarity', title:'Choosing Something Buyers Cannot Understand', problem:'A complex initiative requiring 30 minutes to explain will not move your multiple.', solution:'Use the elevator test: explain the initiative and its impact in 60 seconds or choose simpler.' },
+    { key:'core', title:'Neglecting the Core Business', problem:'Growth initiatives that cause core revenue to decline are worse than no initiative at all.', solution:'Ensure core is healthy and stable first. Assign separate resources to growth.' },
+    { key:'overspend', title:'Overspending on Unproven Initiatives', problem:'Dumping $500K into unvalidated growth consumes EBITDA and may not produce results.', solution:'Start lean. Validate with minimal investment. Scale only after early traction.' }
+  ];
+
+  const checkedCount = mistakes.filter(m => state.pitfallChecks[m.key]).length;
+
+  return `<div class="page-header">
+    <div class="t-label">Execution</div>
+    <h1 class="t-display">Pitfall Avoidance</h1>
+    <p class="t-body t-secondary">The most successful growth initiatives are as much about what you avoid as what you pursue. Acknowledge each pitfall to confirm you have a mitigation plan.</p>
+  </div>
+
+  <div style="display:flex;gap:var(--space-md);align-items:center;margin-bottom:var(--space-2xl)">
+    ${renderProgressRing(80, (checkedCount/mistakes.length)*100, checkedCount===mistakes.length?'var(--color-success)':'var(--color-warning)', 'mitigated')}
+    <div>
+      <div class="t-h2">${checkedCount} of ${mistakes.length} pitfalls addressed</div>
+      <div class="t-small t-secondary">${checkedCount===mistakes.length?'All common pitfalls mitigated. Well done.':'Review each pitfall and confirm your mitigation plan.'}</div>
+    </div>
+  </div>
+
+  ${mistakes.map(m => {
+    const checked = state.pitfallChecks[m.key];
+    return `<div class="card" style="margin-bottom:var(--space-md);${checked?'border-color:var(--color-success);background:#fafff9':''}">
+      <div style="display:flex;gap:var(--space-md);align-items:flex-start;cursor:pointer" onclick="toggleCheck('pitfallChecks','${m.key}')">
+        <div class="checklist-box" style="${checked?'background:var(--color-success);border-color:var(--color-success)':''}">
+          <svg viewBox="0 0 12 12" style="${checked?'':'opacity:0'}"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2.5" fill="none"></polyline></svg>
+        </div>
+        <div style="flex:1">
+          <div class="t-h3" style="margin-bottom:var(--space-sm)">${m.title}</div>
+          <div class="callout callout-warning" style="margin-bottom:var(--space-sm)"><strong>The mistake:</strong> ${m.problem}</div>
+          <div class="callout callout-info"><strong>The fix:</strong> ${m.solution}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('')}
+
+  ${navFooter('sprint_planner','timeline','Set Timeline')}`;
+}
+
+function renderTimeline() {
+  const milestones = [
+    { key:'t1', month:'Month 1-2', action:'Evaluate growth initiative options using the selection matrix', deliverable:'Shortlist of 2-3 candidates' },
+    { key:'t2', month:'Month 2-3', action:'Select 1-2 initiatives; build business cases', deliverable:'Initiative charter with budget, team, and metrics' },
+    { key:'t3', month:'Month 3-4', action:'Launch Sprint 1; quick-start activities', deliverable:'Sprint 1 charter and team in place' },
+    { key:'t4', month:'Month 4-6', action:'Complete Sprint 1; assess results; launch Sprint 2', deliverable:'Sprint 1 results documented' },
+    { key:'t5', month:'Month 6-12', action:'Continue execution; build momentum; track metrics', deliverable:'Monthly dashboard with traction evidence' },
+    { key:'t6', month:'Month 12-18', action:'Mature initiative; demonstrate trend; document narrative', deliverable:'Growth narrative for CIM / buyer presentation' },
+    { key:'t7', month:'Month 18-24', action:'Show 12+ months of results; growth contributing to EBITDA', deliverable:'Market-ready growth story' }
+  ];
+
+  const completedMilestones = Object.values(state.timelineChecks).filter(Boolean).length;
+  const timelinePct = Math.round((completedMilestones / milestones.length) * 100);
+
+  return `<div class="page-header">
+    <div class="t-label">Execution</div>
+    <h1 class="t-display">Implementation Timeline</h1>
+    <p class="t-body t-secondary">Growth initiatives need 12-18 months of visible execution to be credible. Plan backwards from your target exit date and track each milestone.</p>
+  </div>
+
+  <div class="gauge-wrap" style="margin-bottom:var(--space-2xl)">
+    <div class="gauge-ring">${renderProgressRing(80, timelinePct, timelinePct>=80?'var(--color-success)':'var(--color-primary)', 'done')}</div>
+    <div class="gauge-info">
+      <div class="gauge-title">Timeline Progress</div>
+      <div class="gauge-value" style="font-size:24px">${completedMilestones} of ${milestones.length}</div>
+      <div class="gauge-desc">milestones planned or completed</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sprint-timeline">
+      ${milestones.map(m => {
+        const done = state.timelineChecks[m.key];
+        return `<div class="sprint-week${done?' done':''}" onclick="toggleCheck('timelineChecks','${m.key}')" style="cursor:pointer">
+          <div class="sprint-dot"></div>
+          <div class="sprint-week-label">${m.month}</div>
+          <div class="sprint-week-title">${m.action}</div>
+          <div class="sprint-week-desc" style="font-style:italic">Deliverable: ${m.deliverable}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+
+  ${navFooter('mistakes','results','See Your Growth Plan')}`;
+}
+
+function renderResults() {
+  const score = calcScore();
+  const level = getScoreLevel(score);
+  const ebitda = parseFloat(state.businessEbitda) || 2.0;
+  const mult = parseFloat(state.businessMultiple) || 4.5;
+  const baseVal = ebitda * mult;
+  const growthVal = (ebitda * 1.25) * (mult + 1.5);
+  const delta = growthVal - baseVal;
+
+  const initiatives = {
+    adjacent_market: 'Adjacent Market Entry',
+    product_extension: 'Product / Service Extension',
+    channel_partners: 'Channel Partnerships',
+    geo_expansion: 'Geographic Expansion'
+  };
+
+  const completedCount = state.completedPages.length;
+  const totalPages = PAGES.length;
+
+  return `<div class="page-header" style="text-align:center">
+    <div class="t-label">Your Results</div>
+    <h1 class="t-display">Your Growth Plan Summary</h1>
+    <p class="t-body t-secondary" style="margin:0 auto">Here is your personalized strategic growth plan based on your assessments and selections throughout this playbook.</p>
+  </div>
+
+  <div style="display:flex;justify-content:center;gap:var(--space-2xl);margin-bottom:var(--space-2xl);flex-wrap:wrap">
+    <div style="text-align:center">
+      ${renderProgressRing(120, score, level.color, 'readiness')}
+      <div class="t-small" style="margin-top:var(--space-sm);font-weight:600">${level.label}</div>
+    </div>
+    <div style="text-align:center">
+      ${renderProgressRing(120, (completedCount/totalPages)*100, completedCount===totalPages?'var(--color-success)':'var(--color-primary)', 'complete')}
+      <div class="t-small" style="margin-top:var(--space-sm);font-weight:600">${completedCount}/${totalPages} Sections</div>
+    </div>
+  </div>
+
+  ${state.selectedInitiatives.length > 0 ? `<div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Selected Growth Initiatives</h3>
+    ${state.selectedInitiatives.map((id, i) => {
+      const totalScore = (state.evalScores[id+'_impact']||0) + (state.evalScores[id+'_risk']||0) + (state.evalScores[id+'_legibility']||0) + (state.evalScores[id+'_fit']||0);
+      const pct = Math.round((totalScore/20)*100);
+      return `<div style="display:flex;gap:var(--space-lg);align-items:center;padding:var(--space-md);background:var(--color-primary-light);border-radius:var(--radius-md);${i>0?'margin-top:var(--space-sm)':''}">
+        <div style="width:36px;height:36px;background:var(--color-primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">${i+1}</div>
+        <div style="flex:1"><div style="font-weight:600">${initiatives[id]}</div><div class="t-small t-secondary">Evaluation score: ${totalScore}/20 (${pct}%)</div></div>
+        ${renderProgressRing(48, pct, pct>=70?'var(--color-success)':'var(--color-warning)', '')}
+      </div>`;
+    }).join('')}
+  </div>` : '<div class="callout callout-warning" style="margin-bottom:var(--space-lg)">You have not yet selected any growth initiatives. Go back to the Evaluation section to choose 1-2.</div>'}
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Potential Value Impact</h3>
+    <div class="valuation-scenario">
+      <div class="scenario-card">
+        <div class="scenario-label">Current</div>
+        <div class="scenario-ebitda">$${ebitda.toFixed(1)}M EBITDA</div>
+        <div class="scenario-multiple">${mult.toFixed(1)}x multiple</div>
+        <div class="scenario-value">$${baseVal.toFixed(1)}M</div>
+      </div>
+      <div class="scenario-card highlight">
+        <div class="scenario-label">With Growth</div>
+        <div class="scenario-ebitda">$${(ebitda*1.25).toFixed(1)}M EBITDA</div>
+        <div class="scenario-multiple">${(mult+1.5).toFixed(1)}x multiple</div>
+        <div class="scenario-value">$${growthVal.toFixed(1)}M</div>
+        <div class="scenario-delta" style="color:var(--color-success);font-weight:600">+$${delta.toFixed(1)}M potential</div>
+      </div>
+      <div class="scenario-card">
+        <div class="scenario-label">Value Created</div>
+        <div style="margin-top:var(--space-md)">${renderProgressRing(72, Math.min(100,(delta/baseVal)*100), 'var(--color-success)', 'uplift')}</div>
+        <div class="scenario-delta" style="margin-top:var(--space-sm);font-weight:600">${Math.round((delta/baseVal)*100)}% increase</div>
+      </div>
+    </div>
+  </div>
+
+  ${state.sprint.name ? `<div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-md)">Sprint Charter Summary</h3>
+    <table class="impact-table">
+      <tr><td style="font-weight:600;width:160px">Initiative</td><td>${state.sprint.name}</td></tr>
+      <tr><td style="font-weight:600">Owner</td><td>${state.sprint.owner || 'Not assigned'}</td></tr>
+      <tr><td style="font-weight:600">Objective</td><td>${state.sprint.objective || 'Not defined'}</td></tr>
+      <tr><td style="font-weight:600">Key Metrics</td><td>${state.sprint.metrics.filter(Boolean).join(', ') || 'Not defined'}</td></tr>
+      <tr><td style="font-weight:600">Budget</td><td>${state.sprint.budget || 'Not set'}</td></tr>
+      <tr><td style="font-weight:600">Kill Criteria</td><td>${state.sprint.killCriteria || 'Not defined'}</td></tr>
+    </table>
+  </div>` : ''}
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-md)">Recommended Next Steps</h3>
+    <div style="display:flex;flex-direction:column;gap:var(--space-sm)">
+      ${[
+        score < 40 ? 'Complete all evaluation sections to build your full growth readiness score.' : null,
+        state.selectedInitiatives.length === 0 ? 'Select 1-2 growth initiatives from the Evaluation Matrix.' : null,
+        !state.sprint.name ? 'Define your 90-Day Sprint Charter with a clear owner and objective.' : null,
+        Object.values(state.pitfallChecks).filter(Boolean).length < 4 ? 'Review and mitigate all four common pitfalls.' : null,
+        Object.values(state.timelineChecks).filter(Boolean).length < 3 ? 'Plan your implementation timeline milestones.' : null,
+        'Share this plan with your M&A advisor for alignment.',
+        'Launch Sprint 1 within the next 2 weeks.',
+        'Set up weekly accountability check-ins.'
+      ].filter(Boolean).map((step, i) => `<div style="display:flex;gap:var(--space-md);align-items:flex-start;padding:var(--space-sm) 0">
+        <div style="width:24px;height:24px;background:var(--color-primary-light);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;color:var(--color-primary)">${i+1}</div>
+        <div class="t-small">${step}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  <div class="callout callout-accent" style="margin-bottom:var(--space-lg)">
+    <strong>Final thought:</strong> Growth is the ultimate buyer magnet. Show them the future, and they will pay a premium to own it.
+  </div>
+
+  <div style="display:flex;gap:var(--space-md);flex-wrap:wrap">
+    <button class="btn btn-secondary" onclick="navigate('welcome')">&#8592; Start Over</button>
+    <button class="btn btn-primary" onclick="exportPlan()">Export Plan Summary</button>
+    <button class="btn btn-secondary" style="margin-left:auto" onclick="if(confirm('This will clear all your data. Continue?')){localStorage.removeItem('${STORAGE_KEY}');location.reload()}">Reset Playbook</button>
+  </div>`;
+}
+
+function exportPlan() {
+  const score = calcScore();
+  const initiatives = { adjacent_market:'Adjacent Market Entry', product_extension:'Product/Service Extension', channel_partners:'Channel Partnerships', geo_expansion:'Geographic Expansion' };
+  let text = 'STRATEGIC GROWTH INITIATIVES - PLAN SUMMARY\n';
+  text += '='.repeat(50) + '\n\n';
+  text += 'Growth Readiness Score: ' + score + '/100\n';
+  text += 'Selected Initiatives: ' + (state.selectedInitiatives.map(id=>initiatives[id]).join(', ') || 'None') + '\n\n';
+  if (state.sprint.name) {
+    text += 'SPRINT CHARTER\n' + '-'.repeat(30) + '\n';
+    text += 'Initiative: ' + state.sprint.name + '\n';
+    text += 'Owner: ' + (state.sprint.owner||'TBD') + '\n';
+    text += 'Objective: ' + (state.sprint.objective||'TBD') + '\n';
+    text += 'Budget: ' + (state.sprint.budget||'TBD') + '\n';
+    text += 'Kill Criteria: ' + (state.sprint.killCriteria||'TBD') + '\n';
+  }
+  const blob = new Blob([text], { type:'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'growth-initiatives-plan.txt';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Plan exported successfully.');
+}
+
+function render() {
+  renderSidebar();
+  renderPage();
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' && e.altKey) {
+    const idx = PAGES.findIndex(p => p.id === state.currentPage);
+    if (idx < PAGES.length - 1) navigate(PAGES[idx + 1].id);
+  }
+  if (e.key === 'ArrowLeft' && e.altKey) {
+    const idx = PAGES.findIndex(p => p.id === state.currentPage);
+    if (idx > 0) navigate(PAGES[idx - 1].id);
+  }
+});
+
+render();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

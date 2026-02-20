@@ -48,6 +48,9 @@ async function checkRateLimit(userId: string, emailType: EmailType): Promise<boo
     TRIAL_EXPIRED: 365 * 24 * 60 * 60 * 1000,
     TRIAL_WINBACK_14: 365 * 24 * 60 * 60 * 1000,
     TRIAL_WINBACK_30: 365 * 24 * 60 * 60 * 1000,
+    ASSESS_DRIP_DAY_0: 365 * 24 * 60 * 60 * 1000, // Once per year (effectively once-ever)
+    ASSESS_DRIP_DAY_2: 365 * 24 * 60 * 60 * 1000,
+    ASSESS_DRIP_DAY_5: 365 * 24 * 60 * 60 * 1000,
   }
 
   const limit = rateLimits[emailType]

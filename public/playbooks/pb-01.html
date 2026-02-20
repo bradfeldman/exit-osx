@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal Financial Independence Assessment | Exit Planning Playbook #1</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.6; color: var(--color-text); background: var(--color-bg); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 1000; }
+a.skip-link:focus { position: fixed; top: 10px; left: 10px; width: auto; height: auto; padding: 12px 20px; background: var(--color-primary); color: #fff; border-radius: var(--radius-sm); font-weight: 600; z-index: 1000; }
+.t-display { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; min-width: 260px; background: #FFFFFF; border-right: 1px solid var(--color-border); color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: transform var(--transition-slow); overflow-y: auto; }
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+.mobile-header { display: none; position: sticky; top: 0; z-index: 90; background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md); }
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+  .form-row { grid-template-columns: 1fr !important; }
+}
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item { display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px; border-radius: var(--radius-sm); color: var(--color-text-secondary); font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative; }
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--color-text-tertiary); }
+.nav-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-text); line-height: 1; }
+.sidebar-score-sub { font-size: 14px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+.sidebar-footer { margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--color-border); font-size: 12px; color: rgba(255,255,255,0.3); display: flex; align-items: center; gap: 6px; }
+.sidebar-footer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-success); }
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); transition: box-shadow var(--transition-normal); margin-bottom: var(--space-md); }
+.card:hover { box-shadow: var(--shadow-sm); }
+.callout { padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); border-left: 3px solid; font-size: 14px; line-height: 1.6; margin-bottom: var(--space-md); }
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+.callout-success { background: var(--color-success-light); border-color: var(--color-success); color: var(--color-success); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm); padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; transition: all var(--transition-fast); white-space: nowrap; }
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface); transition: all var(--transition-fast); color: var(--color-text); }
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.form-input::placeholder { color: var(--color-text-tertiary); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+.currency-wrap { position: relative; }
+.currency-wrap::before { content: '$'; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--color-text-tertiary); font-size: 15px; pointer-events: none; }
+.currency-wrap .form-input { padding-left: 28px; }
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--color-border); }
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+@media (max-width: 600px) { .welcome-stats { grid-template-columns: 1fr; } .welcome-hero { padding: var(--space-2xl) var(--space-md); } }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-lg); }
+.summary-item { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-align: center; }
+.summary-item-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; }
+.summary-item-label { font-size: 12px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-top: var(--space-xs); }
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 24px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; min-width: 2px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+.bar-amount { width: 80px; font-size: 13px; font-weight: 600; color: var(--color-text); font-variant-numeric: tabular-nums; }
+@media (max-width: 600px) { .bar-label { width: 90px; font-size: 11px; } .summary-grid { grid-template-columns: 1fr 1fr; } }
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; margin-bottom: var(--space-md); }
+.data-table th { text-align: left; padding: var(--space-sm) var(--space-md); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); }
+.data-table td { padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table .total-row td { font-weight: 700; border-top: 2px solid var(--color-text); background: var(--color-surface-alt); }
+.data-table input, .data-table select { width: 100%; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; background: var(--color-surface); }
+.data-table input:focus, .data-table select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-light); }
+.gauge-wrap { display: flex; justify-content: center; margin: var(--space-lg) 0; }
+.gauge-ring { position: relative; width: 160px; height: 160px; }
+.gauge-ring svg { width: 160px; height: 160px; transform: rotate(-90deg); }
+.gauge-ring circle { fill: none; stroke-width: 8; stroke-linecap: round; }
+.gauge-bg { stroke: var(--color-border); }
+.gauge-fill { transition: stroke-dashoffset 1s ease; }
+.gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gauge-center-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; line-height: 1; }
+.gauge-center-label { font-size: 12px; color: var(--color-text-tertiary); margin-top: 4px; }
+.checklist { display: flex; flex-direction: column; gap: 2px; }
+.check-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md); border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast); }
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box { width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); margin-top: 1px; }
+.check-item.checked .check-box { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+/* Range slider */
+.range-group { margin-bottom: var(--space-lg); }
+.range-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-sm); }
+.range-value { font-weight: 600; color: var(--color-primary); font-variant-numeric: tabular-nums; }
+input[type="range"] { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 3px; background: var(--color-border); outline: none; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--color-primary); cursor: pointer; box-shadow: var(--shadow-sm); transition: transform 0.15s ease; }
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--color-primary); cursor: pointer; border: none; }
+/* Results hero */
+.results-hero { background: var(--color-text); color: #fff; border-radius: var(--radius-xl); padding: 40px 32px; text-align: center; margin-bottom: var(--space-lg); }
+.results-hero-title { color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+.results-hero-number { font-family: var(--font-display); font-size: clamp(36px, 5vw, 48px); font-weight: 800; letter-spacing: -0.03em; color: var(--color-accent); margin: 12px 0; font-variant-numeric: tabular-nums; }
+.results-hero-sub { font-size: 14px; color: rgba(255,255,255,0.6); }
+/* Gap meter */
+.gap-meter { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); margin: var(--space-lg) 0; }
+.gap-visual { display: flex; gap: 4px; height: 40px; border-radius: var(--radius-sm); overflow: hidden; margin: var(--space-md) 0; }
+.gap-segment { transition: width 0.5s ease; }
+.gap-legend { display: flex; gap: 20px; margin-top: 12px; flex-wrap: wrap; }
+.gap-legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--color-text-secondary); }
+.gap-legend-swatch { width: 10px; height: 10px; border-radius: 2px; }
+/* Timeline */
+.timeline { margin: var(--space-md) 0; }
+.timeline-item { display: flex; gap: var(--space-md); padding-bottom: var(--space-lg); position: relative; }
+.timeline-item:not(:last-child)::after { content: ''; position: absolute; left: 15px; top: 36px; bottom: 0; width: 2px; background: var(--color-border); }
+.timeline-marker { width: 32px; height: 32px; border-radius: 50%; background: var(--color-surface-alt); border: 2px solid var(--color-border); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--color-text-tertiary); flex-shrink: 0; cursor: pointer; transition: all var(--transition-fast); }
+.timeline-item.done .timeline-marker { background: var(--color-success-light); border-color: var(--color-success); color: var(--color-success); }
+.timeline-body h4 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+.timeline-body p { font-size: 13px; color: var(--color-text-secondary); }
+/* Advisor card */
+.advisor-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg); margin-bottom: var(--space-sm); display: flex; align-items: center; gap: var(--space-md); transition: box-shadow var(--transition-normal); }
+.advisor-card:hover { box-shadow: var(--shadow-sm); }
+.advisor-icon { width: 40px; height: 40px; border-radius: var(--radius-sm); background: var(--color-primary-light); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.advisor-info { flex: 1; }
+.advisor-type { font-weight: 600; font-size: 14px; }
+.advisor-desc { font-size: 13px; color: var(--color-text-tertiary); }
+.advisor-select { width: 130px; padding: 6px 10px; font-size: 13px; }
+@media print {
+  .sidebar, .mobile-header, .page-nav, .sidebar-overlay { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; margin-bottom: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<a href="#contentArea" class="skip-link">Skip to content</a>
+<div class="app">
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #1</div>
+      <div class="sidebar-brand-title">Personal Financial Independence</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Your Number</div>
+      <div class="sidebar-score-value" id="sidebarScore">--</div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete sections to calculate</div>
+    </div>
+    <div class="sidebar-footer"><div class="sidebar-footer-dot"></div>Auto-saved locally</div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation"><span></span></button>
+      <div style="flex:1"><strong style="font-size:15px;">Financial Independence</strong></div>
+      <div class="badge badge-primary" id="mobileScore">--</div>
+    </div>
+    <main class="content-area" id="contentArea" role="main"></main>
+  </div>
+</div>
+
+<script>
+(function() {
+'use strict';
+
+var STORAGE_KEY = 'exitosx-pb01-financial-independence';
+
+var PAGES = [
+  { id: 'welcome', title: 'Welcome', phase: 'START', icon: '1' },
+  { id: 'why-first', title: 'Why This Comes First', phase: 'LEARN', icon: '2' },
+  { id: 'budget', title: 'Post-Exit Budget', phase: 'BUILD YOUR NUMBER', icon: '3' },
+  { id: 'one-time', title: 'One-Time Costs', phase: 'BUILD YOUR NUMBER', icon: '4' },
+  { id: 'legacy', title: 'Legacy Goals', phase: 'BUILD YOUR NUMBER', icon: '5' },
+  { id: 'your-number', title: 'Your Number', phase: 'BUILD YOUR NUMBER', icon: '6' },
+  { id: 'retirement-phases', title: 'Retirement Phases', phase: 'REFINE', icon: '7' },
+  { id: 'gap-analysis', title: 'Gap Analysis', phase: 'ANALYZE', icon: '8' },
+  { id: 'closing-gap', title: 'Closing the Gap', phase: 'ANALYZE', icon: '9' },
+  { id: 'advisors', title: 'Advisor Team', phase: 'PLAN', icon: '10' },
+  { id: 'common-mistakes', title: 'Common Mistakes', phase: 'PLAN', icon: '11' },
+  { id: 'timeline', title: 'Implementation', phase: 'PLAN', icon: '12' },
+  { id: 'dashboard', title: 'Your Summary', phase: 'RESULTS', icon: '13' }
+];
+
+function defaultState() {
+  return {
+    currentPage: 'welcome',
+    completed: {},
+    budget: {
+      coreHousing: '', coreFood: '', coreTransport: '', coreUtilities: '', coreInsurance: '',
+      healthcare: '', travel: '', charitableGiving: '', familySupport: '',
+      hobbies: '', professionalDev: '', miscellaneous: ''
+    },
+    oneTime: {
+      mortgage: '', property: '', newVenture: '', majorPurchases: '', transactionCosts: ''
+    },
+    legacy: {
+      estateTrust: '', charitableBequest: '', educationFund: '', endowment: ''
+    },
+    withdrawalRate: 4,
+    inflationRate: 3,
+    planningHorizon: 30,
+    businessValue: '',
+    otherAssets: '',
+    transactionCostPct: 7,
+    taxRate: 38,
+    phases: {
+      gogoYears: 15,
+      gogoSpendPct: 110,
+      slowgoSpendPct: 85,
+      nogoSpendPct: 65
+    },
+    strategies: [],
+    advisors: {
+      wealthManager: 'not-started',
+      taxAttorney: 'not-started',
+      estatePlanner: 'not-started',
+      insuranceAdvisor: 'not-started'
+    },
+    implementation: [],
+    mistakeFlags: {}
+  };
+}
+
+var state = loadState();
+
+function loadState() {
+  try {
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return mergeDeep(defaultState(), JSON.parse(saved));
+  } catch(e) {}
+  return defaultState();
+}
+
+function mergeDeep(target, source) {
+  var result = {};
+  for (var key in target) {
+    if (target.hasOwnProperty(key)) {
+      if (source && source.hasOwnProperty(key)) {
+        if (typeof target[key] === 'object' && target[key] !== null && !Array.isArray(target[key])) {
+          result[key] = mergeDeep(target[key], source[key]);
+        } else {
+          result[key] = source[key];
+        }
+      } else {
+        result[key] = target[key];
+      }
+    }
+  }
+  for (var key2 in source) {
+    if (source.hasOwnProperty(key2) && !target.hasOwnProperty(key2)) {
+      result[key2] = source[key2];
+    }
+  }
+  return result;
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  updateProgress();
+  updateSidebarScore();
+}
+
+// ==================== COMPUTED VALUES ====================
+function calcAnnualSpending() {
+  var b = state.budget;
+  return [b.coreHousing, b.coreFood, b.coreTransport, b.coreUtilities, b.coreInsurance,
+    b.healthcare, b.travel, b.charitableGiving, b.familySupport, b.hobbies,
+    b.professionalDev, b.miscellaneous].reduce(function(s, v) { return s + (parseFloat(v) || 0); }, 0);
+}
+
+function calcOneTimeCosts() {
+  var o = state.oneTime;
+  return [o.mortgage, o.property, o.newVenture, o.majorPurchases, o.transactionCosts]
+    .reduce(function(s, v) { return s + (parseFloat(v) || 0); }, 0);
+}
+
+function calcLegacyGoals() {
+  var l = state.legacy;
+  return [l.estateTrust, l.charitableBequest, l.educationFund, l.endowment]
+    .reduce(function(s, v) { return s + (parseFloat(v) || 0); }, 0);
+}
+
+function calcYourNumber() {
+  var annual = calcAnnualSpending();
+  var multiplier = state.withdrawalRate > 0 ? (100 / state.withdrawalRate) : 25;
+  return (annual * multiplier) + calcOneTimeCosts() + calcLegacyGoals();
+}
+
+function calcNetProceeds() {
+  var bv = parseFloat(state.businessValue) || 0;
+  var tc = bv * (state.transactionCostPct / 100);
+  var afterCosts = bv - tc;
+  var taxes = afterCosts * (state.taxRate / 100);
+  return afterCosts - taxes;
+}
+
+function calcTotalAvailable() {
+  return calcNetProceeds() + (parseFloat(state.otherAssets) || 0);
+}
+
+function calcGap() {
+  return calcTotalAvailable() - calcYourNumber();
+}
+
+function calcGrossNeeded() {
+  var num = calcYourNumber();
+  if (num <= 0) return 0;
+  var effectiveRate = 1 - (state.transactionCostPct / 100);
+  var afterTaxRate = 1 - (state.taxRate / 100);
+  return num / (effectiveRate * afterTaxRate);
+}
+
+function fmt(n) {
+  if (n === 0) return '$0';
+  var abs = Math.abs(n);
+  if (abs >= 1000000) return (n < 0 ? '-' : '') + '$' + (abs / 1000000).toFixed(1) + 'M';
+  if (abs >= 1000) return (n < 0 ? '-' : '') + '$' + (abs / 1000).toFixed(0) + 'K';
+  return '$' + n.toLocaleString();
+}
+
+function fmtFull(n) {
+  return '$' + Math.round(n).toLocaleString();
+}
+
+function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+// ==================== SCORE / PROGRESS ====================
+function updateSidebarScore() {
+  var num = calcYourNumber();
+  var el = document.getElementById('sidebarScore');
+  var descEl = document.getElementById('sidebarScoreDesc');
+  var mobileEl = document.getElementById('mobileScore');
+  if (num > 0) {
+    el.textContent = fmt(num);
+    mobileEl.textContent = fmt(num);
+    var gap = calcGap();
+    if (parseFloat(state.businessValue) > 0) {
+      descEl.textContent = gap >= 0 ? 'Surplus: ' + fmt(gap) : 'Gap: ' + fmt(Math.abs(gap));
+    } else {
+      descEl.textContent = 'Enter business value for gap analysis';
+    }
+  } else {
+    el.textContent = '--';
+    mobileEl.textContent = '--';
+    descEl.textContent = 'Complete sections to calculate';
+  }
+}
+
+function updateProgress() {
+  var total = PAGES.length - 2;
+  var done = Object.keys(state.completed).length;
+  var pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+}
+
+function isUnlocked(pageId) {
+  var idx = PAGES.findIndex(function(p) { return p.id === pageId; });
+  if (idx <= 0) return true;
+  return state.completed[PAGES[idx - 1].id] === true;
+}
+
+// ==================== NAV ====================
+function renderNav() {
+  var nav = document.getElementById('sidebarNav');
+  var html = '';
+  var lastPhase = '';
+  PAGES.forEach(function(p) {
+    if (p.phase !== lastPhase) {
+      html += '<div class="nav-section-label">' + p.phase + '</div>';
+      lastPhase = p.phase;
+    }
+    var isActive = state.currentPage === p.id;
+    var isDone = state.completed[p.id];
+    var locked = !isUnlocked(p.id);
+    html += '<div class="nav-item' + (isActive ? ' active' : '') + (isDone ? ' completed' : '') + (locked ? ' locked' : '') + '" data-page="' + p.id + '" role="button" tabindex="' + (locked ? '-1' : '0') + '" aria-current="' + (isActive ? 'step' : 'false') + '">';
+    html += '<span class="nav-icon">' + p.icon + '</span>';
+    html += '<span>' + p.title + '</span>';
+    if (isDone) html += '<span class="nav-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></span>';
+    html += '</div>';
+  });
+  nav.innerHTML = html;
+  nav.querySelectorAll('.nav-item:not(.locked)').forEach(function(el) {
+    el.addEventListener('click', function() { goToPage(el.dataset.page); });
+    el.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToPage(el.dataset.page); } });
+  });
+}
+
+function goToPage(pageId) {
+  if (!isUnlocked(pageId)) return;
+  state.currentPage = pageId;
+  saveState();
+  renderPage();
+  renderNav();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  closeSidebar();
+}
+
+function completePage(pageId) {
+  state.completed[pageId] = true;
+  var idx = PAGES.findIndex(function(p) { return p.id === pageId; });
+  if (idx < PAGES.length - 1) {
+    state.currentPage = PAGES[idx + 1].id;
+  }
+  saveState();
+  renderPage();
+  renderNav();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function prevPage() {
+  var idx = PAGES.findIndex(function(p) { return p.id === state.currentPage; });
+  if (idx > 0) goToPage(PAGES[idx - 1].id);
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+document.getElementById('hamburgerBtn').addEventListener('click', toggleSidebar);
+document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+// ==================== PAGE NAV HELPER ====================
+function pageNav(showPrev, nextLabel, currentId) {
+  var html = '<div class="page-nav">';
+  html += showPrev ? '<button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button>' : '<div></div>';
+  if (nextLabel !== false) {
+    html += '<button class="btn btn-primary" onclick="PB.completePage(\'' + currentId + '\')">' + (nextLabel || 'Continue') + ' &rarr;</button>';
+  }
+  html += '</div>';
+  return html;
+}
+
+// ==================== RENDERING ====================
+function renderPage() {
+  var area = document.getElementById('contentArea');
+  var renderers = {
+    'welcome': renderWelcome,
+    'why-first': renderWhyFirst,
+    'budget': renderBudget,
+    'one-time': renderOneTime,
+    'legacy': renderLegacy,
+    'your-number': renderYourNumber,
+    'retirement-phases': renderRetirementPhases,
+    'gap-analysis': renderGapAnalysis,
+    'closing-gap': renderClosingGap,
+    'advisors': renderAdvisors,
+    'common-mistakes': renderCommonMistakes,
+    'timeline': renderTimeline,
+    'dashboard': renderDashboard
+  };
+  var fn = renderers[state.currentPage];
+  area.innerHTML = '<div class="page active">' + (fn ? fn() : '') + '</div>';
+  bindInputs();
+}
+
+function bindInputs() {
+  document.querySelectorAll('[data-bind]').forEach(function(el) {
+    var keys = el.dataset.bind.split('.');
+    var handler = function() {
+      var obj = state;
+      for (var i = 0; i < keys.length - 1; i++) obj = obj[keys[i]];
+      obj[keys[keys.length - 1]] = el.value;
+      saveState();
+      // Live update totals
+      updateLiveTotals();
+    };
+    el.addEventListener('input', handler);
+    el.addEventListener('change', handler);
+  });
+}
+
+function updateLiveTotals() {
+  var totalEl = document.getElementById('liveTotal');
+  if (totalEl) {
+    var pg = state.currentPage;
+    var val = 0;
+    if (pg === 'budget') val = calcAnnualSpending();
+    else if (pg === 'one-time') val = calcOneTimeCosts();
+    else if (pg === 'legacy') val = calcLegacyGoals();
+    totalEl.textContent = fmtFull(val);
+    var monthlyEl = document.getElementById('liveMonthly');
+    if (monthlyEl) monthlyEl.textContent = fmtFull(val / 12);
+  }
+}
+
+// ==================== PAGE RENDERERS ====================
+
+function renderWelcome() {
+  return '<div class="welcome-hero">' +
+    '<div class="welcome-icon">&#128176;</div>' +
+    '<div class="t-display">Personal Financial Independence Assessment</div>' +
+    '<p class="t-body t-secondary" style="margin-top:var(--space-md)">Define your number. Model your post-exit life. Determine whether the gap is closeable.</p>' +
+    '<div class="welcome-stats">' +
+    '<div class="welcome-stat"><div class="welcome-stat-value">35-50%</div><div class="welcome-stat-label">Of proceeds consumed by taxes and costs</div></div>' +
+    '<div class="welcome-stat"><div class="welcome-stat-value">70-90%</div><div class="welcome-stat-label">Of owner net worth tied in the business</div></div>' +
+    '<div class="welcome-stat"><div class="welcome-stat-value">5</div><div class="welcome-stat-label">Steps to calculate your number</div></div>' +
+    '</div>' +
+    '<div class="callout callout-accent" style="text-align:left"><strong>The Core Principle:</strong> Your exit is not a business event -- it is a personal financial event. If you do not know your number, you cannot evaluate any offer intelligently.</div>' +
+    '<div class="card" style="text-align:left;margin-top:var(--space-lg)">' +
+    '<div class="t-h3">What this playbook will help you do</div>' +
+    '<div style="margin-top:var(--space-md);font-size:14px;color:var(--color-text-secondary);line-height:1.8">' +
+    '<div style="display:flex;gap:var(--space-sm);align-items:flex-start;padding:var(--space-xs) 0"><span style="color:var(--color-primary);font-weight:700;min-width:24px">1.</span> Calculate your after-tax financial independence number</div>' +
+    '<div style="display:flex;gap:var(--space-sm);align-items:flex-start;padding:var(--space-xs) 0"><span style="color:var(--color-primary);font-weight:700;min-width:24px">2.</span> Model retirement income, lifestyle costs, healthcare, and inflation</div>' +
+    '<div style="display:flex;gap:var(--space-sm);align-items:flex-start;padding:var(--space-xs) 0"><span style="color:var(--color-primary);font-weight:700;min-width:24px">3.</span> Run a gap analysis: business value vs. what you need</div>' +
+    '<div style="display:flex;gap:var(--space-sm);align-items:flex-start;padding:var(--space-xs) 0"><span style="color:var(--color-primary);font-weight:700;min-width:24px">4.</span> Develop strategies for closing the gap</div>' +
+    '<div style="display:flex;gap:var(--space-sm);align-items:flex-start;padding:var(--space-xs) 0"><span style="color:var(--color-primary);font-weight:700;min-width:24px">5.</span> Build your advisory team and implementation plan</div>' +
+    '</div></div>' +
+    '<p class="t-small" style="margin-top:var(--space-lg);color:var(--color-text-tertiary)">Your data is saved automatically in your browser. You can leave and return at any time.</p>' +
+    '</div>' +
+    pageNav(false, 'Get Started', 'welcome');
+}
+
+function renderWhyFirst() {
+  var risks = [
+    { title: 'Selling Too Cheap', desc: 'Accepting an offer that seems large but leaves you short after taxes and costs.' },
+    { title: 'Holding Too Long', desc: 'Rejecting reasonable offers while the market shifts or your business deteriorates.' },
+    { title: 'Wrong Deal Structure', desc: 'Structuring the deal poorly because you do not understand your liquidity needs.' },
+    { title: 'Tax Destruction', desc: 'Leaving hundreds of thousands in tax savings on the table by not planning 2-3 years ahead.' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Understanding</div><div class="t-display">Why Financial Independence Comes First</div><p class="t-body t-secondary">Most owners approach exit planning backwards -- they start with "what is my business worth?" instead of "what do I need?"</p></div>';
+  html += '<div class="card"><div class="t-h3">The Consequences of Not Knowing Your Number</div><div style="margin-top:var(--space-md)">';
+  risks.forEach(function(r) {
+    html += '<div style="display:flex;gap:var(--space-md);align-items:flex-start;padding:var(--space-sm) 0;border-bottom:1px solid var(--color-border-light)"><div style="width:8px;height:8px;border-radius:50%;background:var(--color-danger);flex-shrink:0;margin-top:6px"></div><div><div class="t-h3">' + r.title + '</div><p class="t-small t-secondary" style="margin-top:2px">' + r.desc + '</p></div></div>';
+  });
+  html += '</div></div>';
+  html += '<div class="card"><div class="t-h3">The Wealth Concentration Trap</div>' +
+    '<p class="t-small t-secondary" style="margin-top:var(--space-sm)">For most owners, 70-90% of net worth is tied up in their business. This creates three critical risks:</p>' +
+    '<table class="data-table" style="margin-top:var(--space-md)"><thead><tr><th>Risk</th><th>Mitigation</th></tr></thead><tbody>' +
+    '<tr><td><strong>Illiquidity</strong><br><span class="t-caption" style="color:var(--color-text-tertiary)">Wealth on paper, not in pocket</span></td><td>Pre-exit financial planning; diversification</td></tr>' +
+    '<tr><td><strong>Concentration</strong><br><span class="t-caption" style="color:var(--color-text-tertiary)">One asset, one outcome</span></td><td>Plan for downside scenarios</td></tr>' +
+    '<tr><td><strong>Valuation Uncertainty</strong><br><span class="t-caption" style="color:var(--color-text-tertiary)">You think X; the market says Y</span></td><td>Get a professional valuation early</td></tr>' +
+    '<tr><td><strong>Tax Erosion</strong><br><span class="t-caption" style="color:var(--color-text-tertiary)">35-50% can disappear in taxes</span></td><td>Engage tax counsel 2-3 years before exit</td></tr>' +
+    '</tbody></table></div>';
+  html += '<div class="callout callout-danger"><strong>Reality Check:</strong> Federal + state + ACA surcharges can consume 35-50% of your proceeds. If you think your business selling for $5M means $5M in your pocket, you are in for a shock.</div>';
+  html += pageNav(true, 'Continue', 'why-first');
+  return html;
+}
+
+function renderBudget() {
+  var b = state.budget;
+  var items = [
+    { key: 'coreHousing', label: 'Housing (mortgage/rent, property tax, maintenance)', hint: 'Typical: $24K-$72K' },
+    { key: 'coreFood', label: 'Food & Groceries', hint: 'Typical: $8K-$18K' },
+    { key: 'coreTransport', label: 'Transportation', hint: 'Typical: $6K-$15K' },
+    { key: 'coreUtilities', label: 'Utilities & Services', hint: 'Typical: $4K-$8K' },
+    { key: 'coreInsurance', label: 'Insurance (home, auto, umbrella)', hint: 'Typical: $4K-$12K' },
+    { key: 'healthcare', label: 'Healthcare', hint: 'Pre-Medicare: $15K-$50K/yr for a couple' },
+    { key: 'travel', label: 'Travel & Leisure', hint: 'Typical: $10K-$80K' },
+    { key: 'charitableGiving', label: 'Charitable Giving', hint: '' },
+    { key: 'familySupport', label: 'Family Support', hint: 'Children, parents, education' },
+    { key: 'hobbies', label: 'Hobbies, Clubs & Social', hint: '' },
+    { key: 'professionalDev', label: 'Professional Development', hint: 'Boards, memberships' },
+    { key: 'miscellaneous', label: 'Miscellaneous / Buffer', hint: '' }
+  ];
+  var total = calcAnnualSpending();
+  var html = '<div class="page-header"><div class="t-label">Step 1 of 4</div><div class="t-display">Post-Exit Annual Budget</div><p class="t-body t-secondary">Estimate your annual spending after you exit. Think about what changes -- some costs decrease (business expenses), while others increase (healthcare, travel).</p></div>';
+  html += '<div class="callout callout-accent"><strong>Tip:</strong> Enter annual amounts. If you are unsure, use the midpoint of the suggested range. You can always refine later.</div>';
+  html += '<div class="card"><div class="t-h3">Annual Expense Categories</div><p class="t-small t-secondary" style="margin-top:var(--space-xs)">All amounts in annual dollars</p>';
+  items.forEach(function(item) {
+    html += '<div class="form-group"><label class="form-label">' + item.label + '</label>';
+    if (item.hint) html += '<div class="form-hint" style="margin-bottom:var(--space-sm)">' + item.hint + '</div>';
+    html += '<div class="currency-wrap"><input class="form-input" type="number" min="0" step="1000" placeholder="0" value="' + esc(b[item.key]) + '" data-bind="budget.' + item.key + '"></div></div>';
+  });
+  html += '</div>';
+  html += '<div class="summary-grid"><div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)" id="liveTotal">' + fmtFull(total) + '</div><div class="summary-item-label">Annual Total</div></div>';
+  html += '<div class="summary-item"><div class="summary-item-value" id="liveMonthly">' + fmtFull(total / 12) + '</div><div class="summary-item-label">Per Month</div></div></div>';
+  html += pageNav(true, 'Continue', 'budget');
+  return html;
+}
+
+function renderOneTime() {
+  var o = state.oneTime;
+  var items = [
+    { key: 'mortgage', label: 'Pay Off Mortgage / New Home Purchase' },
+    { key: 'property', label: 'Second Property / Vacation Home' },
+    { key: 'newVenture', label: 'New Business Venture / Investment' },
+    { key: 'majorPurchases', label: 'Major Deferred Purchases' },
+    { key: 'transactionCosts', label: 'Transaction Advisory Costs (5-10% of deal)' }
+  ];
+  var total = calcOneTimeCosts();
+  var html = '<div class="page-header"><div class="t-label">Step 2 of 4</div><div class="t-display">One-Time Post-Exit Costs</div><p class="t-body t-secondary">These are significant one-time expenditures you plan to make after the sale closes.</p></div>';
+  html += '<div class="card">';
+  items.forEach(function(item) {
+    html += '<div class="form-group"><label class="form-label">' + item.label + '</label><div class="currency-wrap"><input class="form-input" type="number" min="0" step="10000" placeholder="0" value="' + esc(o[item.key]) + '" data-bind="oneTime.' + item.key + '"></div></div>';
+  });
+  html += '</div>';
+  html += '<div class="summary-grid"><div class="summary-item"><div class="summary-item-value" id="liveTotal">' + fmtFull(total) + '</div><div class="summary-item-label">One-Time Total</div></div></div>';
+  html += pageNav(true, 'Continue', 'one-time');
+  return html;
+}
+
+function renderLegacy() {
+  var l = state.legacy;
+  var items = [
+    { key: 'estateTrust', label: 'Estate / Family Trusts', hint: 'Trusts for children or grandchildren' },
+    { key: 'charitableBequest', label: 'Charitable Bequests', hint: 'Planned giving, foundation' },
+    { key: 'educationFund', label: 'Education Funding', hint: '529 plans, grandchildren education' },
+    { key: 'endowment', label: 'Endowments / Other Legacy', hint: '' }
+  ];
+  var total = calcLegacyGoals();
+  var html = '<div class="page-header"><div class="t-label">Step 3 of 4</div><div class="t-display">Legacy Goals</div><p class="t-body t-secondary">What do you want to leave behind? These are not "nice to have" -- they change your number significantly.</p></div>';
+  html += '<div class="card">';
+  items.forEach(function(item) {
+    html += '<div class="form-group"><label class="form-label">' + item.label + '</label>';
+    if (item.hint) html += '<div class="form-hint" style="margin-bottom:var(--space-sm)">' + item.hint + '</div>';
+    html += '<div class="currency-wrap"><input class="form-input" type="number" min="0" step="10000" placeholder="0" value="' + esc(l[item.key]) + '" data-bind="legacy.' + item.key + '"></div></div>';
+  });
+  html += '</div>';
+  html += '<div class="summary-grid"><div class="summary-item"><div class="summary-item-value" id="liveTotal">' + fmtFull(total) + '</div><div class="summary-item-label">Legacy Total</div></div></div>';
+  html += pageNav(true, 'Continue', 'legacy');
+  return html;
+}
+
+function renderYourNumber() {
+  var annual = calcAnnualSpending();
+  var oneTime = calcOneTimeCosts();
+  var legacy = calcLegacyGoals();
+  var multiplier = state.withdrawalRate > 0 ? (100 / state.withdrawalRate) : 25;
+  var portfolioBase = annual * multiplier;
+  var yourNumber = calcYourNumber();
+  var grossNeeded = calcGrossNeeded();
+
+  var segments = [
+    { label: 'Portfolio Base', value: portfolioBase, color: 'var(--color-primary)' },
+    { label: 'One-Time Costs', value: oneTime, color: 'var(--color-warning)' },
+    { label: 'Legacy Goals', value: legacy, color: '#2563EB' }
+  ];
+  var totalParts = portfolioBase + oneTime + legacy;
+
+  var html = '<div class="page-header"><div class="t-label">Step 4 of 4</div><div class="t-display">Your Financial Independence Number</div><p class="t-body t-secondary">This is the after-tax amount you need to fund your post-exit life indefinitely.</p></div>';
+
+  html += '<div class="card"><div class="t-h3">Assumptions</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Adjust these to see how they affect your number</p>';
+  html += '<div class="range-group"><div class="range-header"><span class="form-label">Safe Withdrawal Rate</span><span class="range-value">' + state.withdrawalRate + '%</span></div>';
+  html += '<input type="range" min="2" max="6" step="0.5" value="' + state.withdrawalRate + '" oninput="PB.setSlider(\'withdrawalRate\',parseFloat(this.value))" aria-label="Withdrawal rate">';
+  html += '<div class="form-hint">Industry standard is 4%. Lower = more conservative (larger number needed).</div></div>';
+  html += '<div class="range-group"><div class="range-header"><span class="form-label">Assumed Tax Rate on Proceeds</span><span class="range-value">' + state.taxRate + '%</span></div>';
+  html += '<input type="range" min="20" max="50" step="1" value="' + state.taxRate + '" oninput="PB.setSlider(\'taxRate\',parseFloat(this.value))" aria-label="Tax rate">';
+  html += '<div class="form-hint">Combined federal + state + surcharges. Typically 25-45%.</div></div></div>';
+
+  html += '<div class="results-hero"><div class="results-hero-title">Your After-Tax Number</div><div class="results-hero-number">' + fmtFull(yourNumber) + '</div><div class="results-hero-sub">Based on ' + fmtFull(annual) + '/yr spend x ' + multiplier.toFixed(1) + ' + one-time + legacy</div></div>';
+
+  html += '<div class="card"><div class="t-h3">The Formula</div><table class="data-table" style="margin-top:var(--space-md)"><tbody>' +
+    '<tr><td>Annual Post-Exit Spending</td><td style="text-align:right;font-weight:600">' + fmtFull(annual) + '</td></tr>' +
+    '<tr><td>x ' + multiplier.toFixed(1) + ' (' + state.withdrawalRate + '% withdrawal rate)</td><td style="text-align:right;font-weight:600">' + fmtFull(portfolioBase) + '</td></tr>' +
+    '<tr><td>+ One-Time Costs</td><td style="text-align:right;font-weight:600">' + fmtFull(oneTime) + '</td></tr>' +
+    '<tr><td>+ Legacy Goals</td><td style="text-align:right;font-weight:600">' + fmtFull(legacy) + '</td></tr>' +
+    '<tr class="total-row"><td>YOUR NUMBER (after-tax)</td><td style="text-align:right">' + fmtFull(yourNumber) + '</td></tr>' +
+    '</tbody></table></div>';
+
+  html += '<div class="card"><div class="t-h3">What This Means for the Deal</div>' +
+    '<p class="t-small t-secondary" style="margin-top:var(--space-sm)">To net ' + fmtFull(yourNumber) + ' after taxes (~' + state.taxRate + '%) and transaction costs (~' + state.transactionCostPct + '%), your business needs to sell for approximately:</p>' +
+    '<div class="summary-grid" style="margin-top:var(--space-md)"><div class="summary-item" style="border-color:var(--color-primary)"><div class="summary-item-value" style="color:var(--color-primary)">' + fmtFull(grossNeeded) + '</div><div class="summary-item-label">Required Gross Sale Price</div></div></div></div>';
+
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Number Breakdown</div><div class="bar-chart">';
+  segments.forEach(function(s) {
+    var pct = totalParts > 0 ? (s.value / totalParts * 100) : 0;
+    html += '<div class="bar-row"><div class="bar-label">' + s.label + '</div><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;background:' + s.color + '"></div></div><div class="bar-amount">' + fmt(s.value) + '</div></div>';
+  });
+  html += '</div></div>';
+
+  html += '<div class="callout callout-accent"><strong>Key Insight:</strong> Most owners are shocked by the gap between what they think they need and what the business must actually sell for. The tax haircut alone typically requires the deal price to be 60-80% higher than the after-tax number.</div>';
+  html += pageNav(true, 'Continue', 'your-number');
+  return html;
+}
+
+function renderRetirementPhases() {
+  var annual = calcAnnualSpending();
+  var p = state.phases;
+  var gogoSpend = annual * (p.gogoSpendPct / 100);
+  var slowgoSpend = annual * (p.slowgoSpendPct / 100);
+  var nogoSpend = annual * (p.nogoSpendPct / 100);
+
+  var html = '<div class="page-header"><div class="t-label">Refinement</div><div class="t-display">Three-Phase Retirement Model</div><p class="t-body t-secondary">Your spending will not be constant. Financial planners model three distinct phases, each with different spending patterns.</p></div>';
+
+  html += '<div class="card"><div class="t-h3">Spending by Phase</div><p class="t-small t-secondary" style="margin-top:var(--space-xs)">Adjust the spending intensity relative to your baseline annual budget of ' + fmtFull(annual) + '.</p>';
+  html += '<div class="range-group" style="margin-top:var(--space-lg)"><div class="range-header"><span class="form-label">"Go-Go Years" (55-70): Active, exploratory</span><span class="range-value">' + p.gogoSpendPct + '% = ' + fmtFull(gogoSpend) + '/yr</span></div>';
+  html += '<input type="range" min="80" max="150" step="5" value="' + p.gogoSpendPct + '" oninput="PB.setPhase(\'gogoSpendPct\',parseInt(this.value))"></div>';
+  html += '<div class="range-group"><div class="range-header"><span class="form-label">"Slow-Go Years" (70-80): Settled, comfortable</span><span class="range-value">' + p.slowgoSpendPct + '% = ' + fmtFull(slowgoSpend) + '/yr</span></div>';
+  html += '<input type="range" min="50" max="120" step="5" value="' + p.slowgoSpendPct + '" oninput="PB.setPhase(\'slowgoSpendPct\',parseInt(this.value))"></div>';
+  html += '<div class="range-group"><div class="range-header"><span class="form-label">"No-Go Years" (80+): Healthcare-driven</span><span class="range-value">' + p.nogoSpendPct + '% = ' + fmtFull(nogoSpend) + '/yr</span></div>';
+  html += '<input type="range" min="40" max="110" step="5" value="' + p.nogoSpendPct + '" oninput="PB.setPhase(\'nogoSpendPct\',parseInt(this.value))"></div>';
+  html += '</div>';
+
+  html += '<div class="card"><div class="t-h3">Spending Projection</div><div class="bar-chart" style="margin-top:var(--space-md)">';
+  var phases = [
+    { label: 'Go-Go (55-70)', spend: gogoSpend, color: 'var(--color-primary)', pct: p.gogoSpendPct },
+    { label: 'Slow-Go (70-80)', spend: slowgoSpend, color: 'var(--color-warning)', pct: p.slowgoSpendPct },
+    { label: 'No-Go (80+)', spend: nogoSpend, color: '#2563EB', pct: p.nogoSpendPct }
+  ];
+  phases.forEach(function(ph) {
+    var barPct = (ph.pct / 150) * 100;
+    html += '<div class="bar-row"><div class="bar-label">' + ph.label + '</div><div class="bar-track"><div class="bar-fill" style="width:' + barPct + '%;background:' + ph.color + '"></div></div><div class="bar-amount">' + fmt(ph.spend) + '/yr</div></div>';
+  });
+  html += '</div></div>';
+
+  html += '<div class="callout callout-accent"><strong>Planning Note:</strong> Most owners overspend in the "Go-Go" years (travel, new home, philanthropy). Build a realistic model that accounts for 110-130% of baseline spending in the first 10-15 years.</div>';
+  html += pageNav(true, 'Continue', 'retirement-phases');
+  return html;
+}
+
+function renderGapAnalysis() {
+  var yourNumber = calcYourNumber();
+  var bv = parseFloat(state.businessValue) || 0;
+  var oa = parseFloat(state.otherAssets) || 0;
+  var netProc = calcNetProceeds();
+  var totalAvail = calcTotalAvailable();
+  var gap = calcGap();
+  var gapPct = yourNumber > 0 ? Math.round((gap / yourNumber) * 100) : 0;
+
+  var scenario, scenarioColor, scenarioAdvice;
+  if (gapPct > 20) { scenario = 'Surplus'; scenarioColor = 'var(--color-success)'; scenarioAdvice = 'You have flexibility. Optimize for deal terms, timing, and lifestyle rather than price alone.'; }
+  else if (gapPct >= -10) { scenario = 'Close'; scenarioColor = 'var(--color-success)'; scenarioAdvice = 'Achievable but tight. Focus on value acceleration and tax optimization.'; }
+  else if (gapPct >= -30) { scenario = 'Moderate Gap'; scenarioColor = 'var(--color-warning)'; scenarioAdvice = 'Closeable with work. Invest 2-3 years in value drivers before going to market.'; }
+  else { scenario = 'Large Gap'; scenarioColor = 'var(--color-danger)'; scenarioAdvice = 'Fundamental rethink needed. May need to adjust expectations, extend timeline, or grow significantly.'; }
+
+  var maxBar = Math.max(yourNumber, totalAvail, 1);
+
+  var html = '<div class="page-header"><div class="t-label">Analysis</div><div class="t-display">Gap Analysis</div><p class="t-body t-secondary">Now compare what you need against what you have. The gap determines your exit strategy.</p></div>';
+
+  html += '<div class="card"><div class="t-h3">Your Business & Assets</div>';
+  html += '<div class="form-group" style="margin-top:var(--space-md)"><label class="form-label">Estimated Business Value (pre-tax)</label><div class="form-hint" style="margin-bottom:var(--space-sm)">Use a professional valuation or broker opinion of value if you have one.</div><div class="currency-wrap"><input class="form-input" type="number" min="0" step="50000" placeholder="0" value="' + esc(state.businessValue) + '" data-bind="businessValue"></div></div>';
+  html += '<div class="form-row"><div class="form-group"><label class="form-label">Transaction Costs</label><div class="range-header" style="margin-top:var(--space-xs)"><span class="form-hint">Advisory, legal, accounting</span><span class="range-value" style="font-size:14px">' + state.transactionCostPct + '%</span></div>';
+  html += '<input type="range" min="3" max="12" step="1" value="' + state.transactionCostPct + '" oninput="PB.setSlider(\'transactionCostPct\',parseInt(this.value))"></div>';
+  html += '<div class="form-group"><label class="form-label">Tax Rate on Proceeds</label><div class="range-header" style="margin-top:var(--space-xs)"><span class="form-hint">Federal + state + surcharges</span><span class="range-value" style="font-size:14px">' + state.taxRate + '%</span></div>';
+  html += '<input type="range" min="20" max="50" step="1" value="' + state.taxRate + '" oninput="PB.setSlider(\'taxRate\',parseFloat(this.value))"></div></div>';
+  html += '<div class="form-group"><label class="form-label">Other Liquid Assets (savings, investments, real estate equity)</label><div class="currency-wrap"><input class="form-input" type="number" min="0" step="10000" placeholder="0" value="' + esc(state.otherAssets) + '" data-bind="otherAssets"></div></div></div>';
+
+  html += '<div class="card"><div class="t-h3">The Math</div><table class="data-table" style="margin-top:var(--space-md)"><tbody>' +
+    '<tr><td>Estimated Business Value</td><td style="text-align:right">' + fmtFull(bv) + '</td></tr>' +
+    '<tr><td>- Transaction Costs (' + state.transactionCostPct + '%)</td><td style="text-align:right;color:var(--color-danger)">-' + fmtFull(bv * state.transactionCostPct / 100) + '</td></tr>' +
+    '<tr><td>- Taxes on Proceeds (' + state.taxRate + '%)</td><td style="text-align:right;color:var(--color-danger)">-' + fmtFull((bv - bv * state.transactionCostPct / 100) * state.taxRate / 100) + '</td></tr>' +
+    '<tr><td>= Net Proceeds</td><td style="text-align:right;font-weight:600">' + fmtFull(netProc) + '</td></tr>' +
+    '<tr><td>+ Other Liquid Assets</td><td style="text-align:right">' + fmtFull(oa) + '</td></tr>' +
+    '<tr class="total-row"><td>TOTAL AVAILABLE</td><td style="text-align:right">' + fmtFull(totalAvail) + '</td></tr>' +
+    '<tr><td>Your Number (after-tax)</td><td style="text-align:right">' + fmtFull(yourNumber) + '</td></tr>' +
+    '<tr class="total-row"><td>GAP / SURPLUS</td><td style="text-align:right;color:' + (gap >= 0 ? 'var(--color-success)' : 'var(--color-danger)') + '">' + (gap >= 0 ? '+' : '') + fmtFull(gap) + '</td></tr>' +
+    '</tbody></table></div>';
+
+  html += '<div class="gap-meter"><div style="display:flex;justify-content:space-between;align-items:baseline"><div class="t-h3">Visual Gap</div><span style="font-size:14px;font-weight:600;color:' + scenarioColor + '">' + scenario + '</span></div>';
+  html += '<div style="margin-top:var(--space-md)"><div class="bar-row"><div class="bar-label">What You Need</div><div class="bar-track"><div class="bar-fill" style="width:' + (yourNumber/maxBar*100) + '%;background:var(--color-text)"></div></div><div class="bar-amount">' + fmt(yourNumber) + '</div></div>';
+  html += '<div class="bar-row"><div class="bar-label">What You Have</div><div class="bar-track"><div class="bar-fill" style="width:' + (totalAvail/maxBar*100) + '%;background:' + (gap >= 0 ? 'var(--color-success)' : 'var(--color-danger)') + '"></div></div><div class="bar-amount">' + fmt(totalAvail) + '</div></div></div>';
+  html += '<div style="margin-top:var(--space-md);padding:var(--space-md);background:' + (gap >= 0 ? 'var(--color-success-light)' : 'var(--color-danger-light)') + ';border-radius:var(--radius-sm)"><p style="font-size:14px;color:var(--color-text)"><strong>' + scenario + ':</strong> ' + scenarioAdvice + '</p></div></div>';
+
+  html += pageNav(true, 'Continue', 'gap-analysis');
+  return html;
+}
+
+function renderClosingGap() {
+  var strategies = [
+    { id: 'grow-ebitda', category: 'Grow Value', title: 'Increase EBITDA through revenue growth or cost optimization', impact: 'High' },
+    { id: 'improve-multiple', category: 'Grow Value', title: 'Improve the multiple by reducing risk factors (owner dependence, customer concentration)', impact: 'High' },
+    { id: 'recurring-revenue', category: 'Grow Value', title: 'Invest in recurring revenue, management team, and IP', impact: 'High' },
+    { id: 'downsize', category: 'Reduce Number', title: 'Downsize housing or relocate to lower cost-of-living area', impact: 'Medium' },
+    { id: 'adjust-legacy', category: 'Reduce Number', title: 'Adjust legacy goals (fund education directly vs. large trusts)', impact: 'Medium' },
+    { id: 'part-time', category: 'Reduce Number', title: 'Plan part-time work or consulting in first 5-10 years', impact: 'Medium' },
+    { id: 'qsbs', category: 'Tax Optimization', title: 'QSBS exclusion -- up to $10M tax-free for qualifying C-corps', impact: 'Very High' },
+    { id: 'installment', category: 'Tax Optimization', title: 'Installment sale to spread recognition over multiple years', impact: 'High' },
+    { id: 'crt', category: 'Tax Optimization', title: 'Charitable remainder trust to defer and reduce tax liability', impact: 'High' },
+    { id: 'oz', category: 'Tax Optimization', title: 'Opportunity Zone reinvestment for capital gains deferral', impact: 'Medium' },
+    { id: 'state-tax', category: 'Tax Optimization', title: 'State tax planning (relocating to a no-income-tax state)', impact: 'Medium-High' },
+    { id: 'retirement-plans', category: 'Pre-Exit Diversification', title: 'Maximize retirement plan contributions (401k, defined benefit)', impact: 'Medium' },
+    { id: 'real-estate', category: 'Pre-Exit Diversification', title: 'Real estate investments for passive income', impact: 'Medium' },
+    { id: 'portfolio', category: 'Pre-Exit Diversification', title: 'Build an investment portfolio alongside the business', impact: 'Medium' }
+  ];
+
+  var html = '<div class="page-header"><div class="t-label">Strategy</div><div class="t-display">Closing the Gap</div><p class="t-body t-secondary">Select the strategies you are willing to pursue. This becomes your action plan.</p></div>';
+  var currentCat = '';
+  strategies.forEach(function(s) {
+    if (s.category !== currentCat) {
+      currentCat = s.category;
+      html += '<div class="t-h2" style="margin-top:var(--space-lg);margin-bottom:var(--space-sm)">' + currentCat + '</div>';
+    }
+    var checked = state.strategies.indexOf(s.id) >= 0;
+    html += '<div class="check-item' + (checked ? ' checked' : '') + '" data-strategy="' + s.id + '" role="checkbox" aria-checked="' + checked + '" tabindex="0" style="border-bottom:1px solid var(--color-border-light)">';
+    html += '<div class="check-box"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div>';
+    html += '<div style="flex:1"><div class="check-text">' + s.title + '</div></div>';
+    html += '<span class="badge badge-neutral">' + s.impact + '</span>';
+    html += '</div>';
+  });
+  html += '<div class="summary-grid" style="margin-top:var(--space-lg)"><div class="summary-item"><div class="summary-item-value">' + state.strategies.length + '</div><div class="summary-item-label">Strategies Selected</div></div></div>';
+  html += pageNav(true, 'Continue', 'closing-gap');
+  return html;
+}
+
+function renderAdvisors() {
+  var advisors = [
+    { key: 'wealthManager', icon: '&#128176;', type: 'Wealth Manager / Financial Planner', desc: 'Model your number; investment strategy. Engage 3+ years before exit.', cost: 'AUM-based (0.5-1%) or flat fee ($5K-$15K)' },
+    { key: 'taxAttorney', icon: '&#9878;', type: 'Tax Attorney / CPA', desc: 'Tax projection; entity structuring. Engage 2-3 years before exit.', cost: '$5K-$25K for pre-exit planning' },
+    { key: 'estatePlanner', icon: '&#128220;', type: 'Estate Planning Attorney', desc: 'Trusts, gifting, legacy structures. Engage 2-3 years before exit.', cost: '$5K-$20K depending on complexity' },
+    { key: 'insuranceAdvisor', icon: '&#128737;', type: 'Insurance Advisor', desc: 'Life, disability, long-term care. Engage 2+ years before exit.', cost: 'Commission-based or fee-only' }
+  ];
+  var statusLabels = { 'not-started': 'Not Started', 'in-progress': 'In Progress', 'complete': 'Complete' };
+
+  var html = '<div class="page-header"><div class="t-label">Team</div><div class="t-display">Your Advisory Team</div><p class="t-body t-secondary">The financial independence assessment requires expertise you likely do not have in-house. Track your advisor engagement here.</p></div>';
+  html += '<div class="callout callout-accent"><strong>Selection Tip:</strong> Look for advisors with specific experience in business owner exits. Ask: "How many clients have you guided through a business sale in the last 3 years?" The answer should be at least 5-10.</div>';
+  advisors.forEach(function(a) {
+    html += '<div class="advisor-card"><div class="advisor-icon">' + a.icon + '</div><div class="advisor-info"><div class="advisor-type">' + a.type + '</div><div class="advisor-desc">' + a.desc + '</div><div class="advisor-desc" style="margin-top:2px">Cost: ' + a.cost + '</div></div>';
+    html += '<select class="form-input advisor-select" data-advisor="' + a.key + '" onchange="PB.updateAdvisor(this)" aria-label="Status for ' + a.type + '">';
+    ['not-started', 'in-progress', 'complete'].forEach(function(o) {
+      html += '<option value="' + o + '"' + (state.advisors[a.key] === o ? ' selected' : '') + '>' + statusLabels[o] + '</option>';
+    });
+    html += '</select></div>';
+  });
+  html += pageNav(true, 'Continue', 'advisors');
+  return html;
+}
+
+function renderCommonMistakes() {
+  var mistakes = [
+    { key: 'm1', num: 1, title: 'Using Pre-Tax Numbers', desc: 'Comparing your "number" to the gross deal price. Taxes and costs consume 35-50%.', fix: 'Build your model from net proceeds, not gross.' },
+    { key: 'm2', num: 2, title: 'Ignoring Inflation', desc: 'A 30-year retirement at 3% inflation means costs roughly double.', fix: 'Use inflation-adjusted projections for all long-term estimates.' },
+    { key: 'm3', num: 3, title: 'Underestimating Healthcare', desc: 'Pre-Medicare healthcare for a couple can cost $30K-$50K/year.', fix: 'Get actual quotes for private insurance at your age and health status.' },
+    { key: 'm4', num: 4, title: 'Assuming Deal Closes at Asking Price', desc: 'Diligence adjustments, working capital pegs, and earnouts reduce actual proceeds.', fix: 'Use a conservative estimate (70-80% of initial valuation) for planning.' },
+    { key: 'm5', num: 5, title: 'Not Accounting for Lifestyle Creep', desc: 'Owners often increase spending after exit. The first 2-3 years are the danger zone.', fix: 'Build a post-exit budget before the check arrives.' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Awareness</div><div class="t-display">Common Mistakes to Avoid</div><p class="t-body t-secondary">Five pitfalls that derail even sophisticated business owners during exit planning.</p></div>';
+  mistakes.forEach(function(m) {
+    var checked = state.mistakeFlags[m.key];
+    html += '<div class="card"><div class="check-item' + (checked ? ' checked' : '') + '" data-mistake="' + m.key + '" role="checkbox" aria-checked="' + !!checked + '" tabindex="0" style="padding:0">';
+    html += '<div class="check-box"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div>';
+    html += '<div style="flex:1"><div class="t-h3">' + m.title + '</div>';
+    html += '<p class="t-small t-secondary" style="margin:var(--space-sm) 0">' + m.desc + '</p>';
+    html += '<div style="padding:var(--space-sm) var(--space-md);background:var(--color-success-light);border-radius:var(--radius-sm);font-size:13px;color:var(--color-success)"><strong>Solution:</strong> ' + m.fix + '</div></div></div></div>';
+  });
+  html += pageNav(true, 'Continue', 'common-mistakes');
+  return html;
+}
+
+function renderTimeline() {
+  var items = [
+    { month: 'Month 1', action: 'Gather all financial data', deliverable: 'Personal balance sheet and cash flow statement' },
+    { month: 'Month 1-2', action: 'Engage a wealth manager or financial planner', deliverable: 'Advisor selected and engaged' },
+    { month: 'Month 2-3', action: 'Build detailed post-exit lifestyle model', deliverable: 'Lifestyle budget with three-phase projections' },
+    { month: 'Month 3-4', action: 'Calculate your financial independence number', deliverable: 'Documented number with assumptions' },
+    { month: 'Month 4-5', action: 'Obtain a business valuation estimate', deliverable: 'Professional valuation or broker opinion' },
+    { month: 'Month 5-6', action: 'Perform gap analysis and strategy selection', deliverable: 'Gap analysis report with action plan' },
+    { month: 'Ongoing', action: 'Review and update annually', deliverable: 'Annual refresh of all assumptions' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Execution</div><div class="t-display">Implementation Timeline</div><p class="t-body t-secondary">A 6-month roadmap to fully define your financial independence number and strategy.</p></div>';
+  html += '<div class="card"><div class="timeline">';
+  items.forEach(function(item, i) {
+    var done = state.implementation.indexOf(i) >= 0;
+    html += '<div class="timeline-item' + (done ? ' done' : '') + '"><div class="timeline-marker" data-impl="' + i + '" role="checkbox" aria-checked="' + done + '" tabindex="0">' + (done ? '&#10003;' : (i + 1)) + '</div>';
+    html += '<div class="timeline-body"><h4>' + item.month + ': ' + item.action + '</h4><p>Deliverable: ' + item.deliverable + '</p></div></div>';
+  });
+  html += '</div></div>';
+  html += pageNav(true, 'View Summary', 'timeline');
+  return html;
+}
+
+function renderDashboard() {
+  var annual = calcAnnualSpending();
+  var oneTime = calcOneTimeCosts();
+  var legacy = calcLegacyGoals();
+  var yourNumber = calcYourNumber();
+  var grossNeeded = calcGrossNeeded();
+  var totalAvail = calcTotalAvailable();
+  var gap = calcGap();
+  var gapPct = yourNumber > 0 ? Math.round((gap / yourNumber) * 100) : 0;
+
+  var readiness, readinessColor;
+  if (gapPct > 20) { readiness = 'Strong Position'; readinessColor = 'var(--color-success)'; }
+  else if (gapPct >= -10) { readiness = 'Close -- Achievable'; readinessColor = 'var(--color-success)'; }
+  else if (gapPct >= -30) { readiness = 'Moderate Gap -- Work Needed'; readinessColor = 'var(--color-warning)'; }
+  else { readiness = 'Significant Gap -- Rethink Required'; readinessColor = 'var(--color-danger)'; }
+
+  var advisorsDone = Object.values(state.advisors).filter(function(v) { return v === 'complete'; }).length;
+
+  var html = '<div class="page-header"><div class="t-label">Results</div><div class="t-display">Your Financial Independence Summary</div></div>';
+
+  html += '<div class="results-hero"><div class="results-hero-title">Your After-Tax Number</div><div class="results-hero-number">' + fmtFull(yourNumber) + '</div><div class="results-hero-sub">Required gross sale price: ' + fmtFull(grossNeeded) + '</div></div>';
+
+  html += '<div class="summary-grid">' +
+    '<div class="summary-item"><div class="summary-item-value">' + fmtFull(annual) + '</div><div class="summary-item-label">Annual Spending</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value">' + fmtFull(oneTime) + '</div><div class="summary-item-label">One-Time Costs</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value">' + fmtFull(legacy) + '</div><div class="summary-item-label">Legacy Goals</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:' + (gap >= 0 ? 'var(--color-success)' : 'var(--color-danger)') + '">' + (gap >= 0 ? '+' : '') + fmtFull(gap) + '</div><div class="summary-item-label">Gap / Surplus</div></div>' +
+    '</div>';
+
+  html += '<div class="card" style="border-left:3px solid ' + readinessColor + '"><div style="display:flex;justify-content:space-between;align-items:center"><div class="t-h3">Readiness Assessment</div><span style="font-weight:600;color:' + readinessColor + '">' + readiness + '</span></div>';
+  html += '<div class="gap-visual" style="margin-top:var(--space-md)">';
+  html += '<div class="gap-segment" style="width:' + Math.min((totalAvail / Math.max(yourNumber, 1)) * 100, 100) + '%;background:' + (gap >= 0 ? 'var(--color-success)' : 'var(--color-warning)') + ';border-radius:4px"></div>';
+  if (gap < 0) html += '<div class="gap-segment" style="width:' + Math.min((-gap / Math.max(yourNumber, 1)) * 100, 100) + '%;background:var(--color-danger);opacity:0.3;border-radius:0 4px 4px 0"></div>';
+  html += '</div>';
+  html += '<div class="gap-legend">';
+  html += '<div class="gap-legend-item"><div class="gap-legend-swatch" style="background:' + (gap >= 0 ? 'var(--color-success)' : 'var(--color-warning)') + '"></div>Total Available: ' + fmt(totalAvail) + '</div>';
+  if (gap < 0) html += '<div class="gap-legend-item"><div class="gap-legend-swatch" style="background:var(--color-danger);opacity:0.3"></div>Gap: ' + fmt(Math.abs(gap)) + '</div>';
+  html += '<div class="gap-legend-item"><div class="gap-legend-swatch" style="background:var(--color-text)"></div>Your Number: ' + fmt(yourNumber) + '</div>';
+  html += '</div></div>';
+
+  html += '<div class="summary-grid">' +
+    '<div class="summary-item"><div class="summary-item-value">' + state.strategies.length + '</div><div class="summary-item-label">Strategies Selected</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value">' + advisorsDone + '/4</div><div class="summary-item-label">Advisors Engaged</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value">' + state.implementation.length + '/7</div><div class="summary-item-label">Milestones Done</div></div>' +
+    '</div>';
+
+  html += '<div class="card"><div class="t-h3">Key Assumptions</div><table class="data-table" style="margin-top:var(--space-sm)"><tbody>' +
+    '<tr><td>Safe Withdrawal Rate</td><td style="text-align:right">' + state.withdrawalRate + '%</td></tr>' +
+    '<tr><td>Tax Rate on Proceeds</td><td style="text-align:right">' + state.taxRate + '%</td></tr>' +
+    '<tr><td>Transaction Costs</td><td style="text-align:right">' + state.transactionCostPct + '%</td></tr>' +
+    '<tr><td>Estimated Business Value</td><td style="text-align:right">' + fmtFull(parseFloat(state.businessValue) || 0) + '</td></tr>' +
+    '<tr><td>Other Liquid Assets</td><td style="text-align:right">' + fmtFull(parseFloat(state.otherAssets) || 0) + '</td></tr>' +
+    '</tbody></table></div>';
+
+  html += '<div class="callout callout-accent"><strong>Final Thought:</strong> Know your number before you know your price. The exit that funds your life is the only exit that matters.</div>';
+
+  html += '<div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-top:var(--space-lg)">' +
+    '<button class="btn btn-primary" onclick="PB.exportResults()">Export Summary</button>' +
+    '<button class="btn btn-secondary" onclick="window.print()">Print</button>' +
+    '<button class="btn btn-ghost" onclick="PB.resetAll()" style="color:var(--color-danger)">Reset All Data</button></div>';
+
+  html += '<div class="page-nav"><button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button><div></div></div>';
+  return html;
+}
+
+// ==================== EXPORT ====================
+function exportResults() {
+  var annual = calcAnnualSpending();
+  var oneTime = calcOneTimeCosts();
+  var legacy = calcLegacyGoals();
+  var yourNumber = calcYourNumber();
+  var grossNeeded = calcGrossNeeded();
+  var totalAvail = calcTotalAvailable();
+  var gap = calcGap();
+
+  var text = 'PLAYBOOK #1: PERSONAL FINANCIAL INDEPENDENCE ASSESSMENT\n';
+  text += 'Generated: ' + new Date().toLocaleDateString() + '\n';
+  text += '='.repeat(50) + '\n\n';
+  text += 'YOUR AFTER-TAX NUMBER: ' + fmtFull(yourNumber) + '\n';
+  text += 'REQUIRED GROSS SALE PRICE: ' + fmtFull(grossNeeded) + '\n\n';
+  text += 'COMPONENTS:\n';
+  text += '  Annual Spending: ' + fmtFull(annual) + '\n';
+  text += '  One-Time Costs: ' + fmtFull(oneTime) + '\n';
+  text += '  Legacy Goals: ' + fmtFull(legacy) + '\n\n';
+  text += 'GAP ANALYSIS:\n';
+  text += '  Total Available: ' + fmtFull(totalAvail) + '\n';
+  text += '  Your Number: ' + fmtFull(yourNumber) + '\n';
+  text += '  Gap/Surplus: ' + (gap >= 0 ? '+' : '') + fmtFull(gap) + '\n\n';
+  text += 'ASSUMPTIONS:\n';
+  text += '  Withdrawal Rate: ' + state.withdrawalRate + '%\n';
+  text += '  Tax Rate: ' + state.taxRate + '%\n';
+  text += '  Transaction Costs: ' + state.transactionCostPct + '%\n';
+  text += '  Business Value: ' + fmtFull(parseFloat(state.businessValue) || 0) + '\n';
+  text += '  Other Assets: ' + fmtFull(parseFloat(state.otherAssets) || 0) + '\n\n';
+  text += 'STRATEGIES SELECTED: ' + state.strategies.length + '\n';
+  state.strategies.forEach(function(s) { text += '  - ' + s + '\n'; });
+  text += '\nADVISORS:\n';
+  var labels = { 'not-started': 'Not Started', 'in-progress': 'In Progress', 'complete': 'Complete' };
+  Object.keys(state.advisors).forEach(function(k) { text += '  ' + k + ': ' + labels[state.advisors[k]] + '\n'; });
+
+  var blob = new Blob([text], { type: 'text/plain' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'playbook-01-financial-independence.txt'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function resetAll() {
+  if (confirm('This will erase all your data in this playbook. Are you sure?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    state = defaultState();
+    saveState();
+    goToPage('welcome');
+  }
+}
+
+// ==================== EVENT DELEGATION ====================
+document.addEventListener('click', function(e) {
+  var strategyEl = e.target.closest('[data-strategy]');
+  if (strategyEl) {
+    var id = strategyEl.dataset.strategy;
+    var idx = state.strategies.indexOf(id);
+    if (idx >= 0) state.strategies.splice(idx, 1);
+    else state.strategies.push(id);
+    saveState();
+    renderPage();
+    return;
+  }
+  var mistakeEl = e.target.closest('[data-mistake]');
+  if (mistakeEl) {
+    var key = mistakeEl.dataset.mistake;
+    state.mistakeFlags[key] = !state.mistakeFlags[key];
+    saveState();
+    renderPage();
+    return;
+  }
+  var implEl = e.target.closest('[data-impl]');
+  if (implEl) {
+    var implIdx = parseInt(implEl.dataset.impl);
+    var pos = state.implementation.indexOf(implIdx);
+    if (pos >= 0) state.implementation.splice(pos, 1);
+    else state.implementation.push(implIdx);
+    saveState();
+    renderPage();
+    return;
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    var strategyEl = e.target.closest('[data-strategy]');
+    if (strategyEl) { e.preventDefault(); strategyEl.click(); return; }
+    var mistakeEl = e.target.closest('[data-mistake]');
+    if (mistakeEl) { e.preventDefault(); mistakeEl.click(); return; }
+    var implEl = e.target.closest('[data-impl]');
+    if (implEl) { e.preventDefault(); implEl.click(); return; }
+  }
+});
+
+// ==================== PUBLIC API ====================
+window.PB = {
+  prevPage: prevPage,
+  completePage: completePage,
+  exportResults: exportResults,
+  resetAll: resetAll,
+  updateAdvisor: function(el) {
+    state.advisors[el.dataset.advisor] = el.value;
+    saveState();
+  },
+  setSlider: function(key, val) {
+    state[key] = val;
+    saveState();
+    renderPage();
+  },
+  setPhase: function(key, val) {
+    state.phases[key] = val;
+    saveState();
+    renderPage();
+  }
+};
+
+// ==================== INIT ====================
+renderNav();
+renderPage();
+updateProgress();
+updateSidebarScore();
+
+})();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

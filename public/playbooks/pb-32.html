@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deal Team Assembly | Exit Planning Playbook #32</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.6; color: var(--color-text); background: var(--color-bg); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 1000; }
+a.skip-link:focus { position: fixed; top: 10px; left: 10px; width: auto; height: auto; padding: 12px 20px; background: var(--color-primary); color: #fff; border-radius: var(--radius-sm); font-weight: 600; z-index: 1000; }
+.t-display { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; min-width: 260px; background: #FFFFFF; border-right: 1px solid var(--color-border); color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: transform var(--transition-slow); overflow-y: auto; }
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+.mobile-header { display: none; position: sticky; top: 0; z-index: 90; background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md); }
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item { display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px; border-radius: var(--radius-sm); color: var(--color-text-secondary); font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative; }
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--color-text-tertiary); }
+.nav-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+.sidebar-footer { margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--color-border); font-size: 12px; color: rgba(255,255,255,0.3); display: flex; align-items: center; gap: 6px; }
+.sidebar-footer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-success); }
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); transition: box-shadow var(--transition-normal); margin-bottom: var(--space-md); }
+.card:hover { box-shadow: var(--shadow-sm); }
+.callout { padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); border-left: 3px solid; font-size: 14px; line-height: 1.6; margin-bottom: var(--space-md); }
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+.callout-success { background: var(--color-success-light); border-color: var(--color-success); color: #1A5C30; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm); padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; transition: all var(--transition-fast); white-space: nowrap; }
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface); transition: all var(--transition-fast); color: var(--color-text); }
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+.input-prefix { position: relative; }
+.input-prefix::before { content: '$'; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--color-text-tertiary); font-size: 15px; pointer-events: none; }
+.input-prefix .form-input { padding-left: 28px; }
+.input-row { display: grid; gap: var(--space-md); }
+.input-row.cols-2 { grid-template-columns: 1fr 1fr; }
+.input-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); text-align: center; }
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+.score-selector.compact .score-option { padding: 6px 4px; }
+.score-selector.compact .score-number { font-size: 16px; }
+.score-selector.compact .score-label-text { display: none; }
+@media (max-width: 600px) { .score-selector { gap: 4px; } .score-option { padding: 10px 4px; } .score-number { font-size: 18px; } .score-label-text { font-size: 9px; } .input-row.cols-2, .input-row.cols-3 { grid-template-columns: 1fr; } .eval-grid { grid-template-columns: 1fr !important; } }
+.check-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md); border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast); }
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box { width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); margin-top: 1px; }
+.check-item.checked .check-box { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--color-border); }
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+@media (max-width: 600px) { .welcome-stats { grid-template-columns: 1fr; } .welcome-hero { padding: var(--space-2xl) var(--space-md); } }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-lg); }
+.summary-item { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-align: center; }
+.summary-item-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; }
+.summary-item-label { font-size: 12px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-top: var(--space-xs); }
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; margin-bottom: var(--space-md); }
+.data-table th { text-align: left; padding: var(--space-sm) var(--space-md); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); }
+.data-table td { padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table input, .data-table select { width: 100%; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; background: var(--color-surface); }
+.data-table input:focus, .data-table select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-light); }
+.gauge-wrap { display: flex; justify-content: center; margin: var(--space-lg) 0; }
+.gauge-ring { position: relative; width: 160px; height: 160px; }
+.gauge-ring svg { width: 160px; height: 160px; transform: rotate(-90deg); }
+.gauge-ring circle { fill: none; stroke-width: 8; stroke-linecap: round; }
+.gauge-bg { stroke: var(--color-border); }
+.gauge-fill { transition: stroke-dashoffset 1s ease; }
+.gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gauge-center-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; line-height: 1; }
+.gauge-center-label { font-size: 12px; color: var(--color-text-tertiary); margin-top: 4px; }
+.dark-hero { background: linear-gradient(135deg, var(--color-text), #2A2A28); border-radius: var(--radius-xl); padding: 36px; color: #fff; text-align: center; margin-bottom: var(--space-lg); }
+.dark-hero h3 { color: #fff; font-size: 16px; font-weight: 500; margin-bottom: 6px; opacity: 0.8; }
+.dark-hero .hero-value { font-family: var(--font-display); font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; }
+.dark-hero .hero-sub { font-size: 14px; color: var(--color-accent); margin-top: var(--space-xs); }
+.heat-row { display: flex; align-items: center; margin-bottom: 6px; gap: 10px; }
+.heat-label { width: 140px; font-size: 13px; color: var(--color-text-secondary); flex-shrink: 0; text-align: right; }
+.heat-bar-wrap { flex: 1; height: 28px; background: var(--color-surface-alt); border-radius: var(--radius-sm); overflow: hidden; }
+.heat-bar { height: 100%; border-radius: var(--radius-sm); transition: width 0.6s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+.heat-bar .heat-val { font-size: 11px; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+.timeline { position: relative; padding-left: 28px; margin: var(--space-lg) 0; }
+.timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--color-border); }
+.timeline-item { position: relative; padding-bottom: var(--space-lg); }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-item::before { content: ''; position: absolute; left: -24px; top: 4px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--color-border); background: var(--color-surface); }
+.coord-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-sm); display: flex; align-items: center; gap: var(--space-md); }
+.coord-num { width: 28px; height: 28px; border-radius: 50%; background: var(--color-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.eval-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md); margin-top: var(--space-md); }
+.eval-col { background: var(--color-surface-alt); border-radius: var(--radius-md); padding: var(--space-md); }
+.eval-col h4 { font-size: 14px; text-align: center; margin-bottom: var(--space-md); padding-bottom: var(--space-sm); border-bottom: 1px solid var(--color-border); }
+.fee-grid { display: grid; grid-template-columns: 120px 1fr 100px 100px; gap: var(--space-sm); align-items: center; padding: var(--space-sm) 0; border-bottom: 1px solid var(--color-border-light); font-size: 14px; }
+.fee-grid.fee-header { font-weight: 600; color: var(--color-text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; padding-bottom: var(--space-sm); border-bottom: 2px solid var(--color-border); }
+@media (max-width: 600px) { .fee-grid { grid-template-columns: 1fr 1fr; } .heat-label { width: 100px; font-size: 11px; } }
+.toast-container { position: fixed; bottom: var(--space-lg); right: var(--space-lg); z-index: 200; display: flex; flex-direction: column; gap: var(--space-sm); }
+.toast { padding: 12px 20px; background: var(--color-text); color: #fff; border-radius: var(--radius-md); font-size: 14px; animation: toastIn 0.3s ease; box-shadow: var(--shadow-lg); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@media print {
+  .sidebar, .mobile-header, .page-nav, .sidebar-overlay, .toast-container { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; margin-bottom: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<a href="#contentArea" class="skip-link">Skip to content</a>
+<div class="app">
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #32</div>
+      <div class="sidebar-brand-title">Deal Team Assembly</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Team Readiness</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete sections to build your score</div>
+    </div>
+    <div class="sidebar-footer"><div class="sidebar-footer-dot"></div>Auto-saved locally</div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation"><span></span></button>
+      <div style="flex:1"><strong style="font-size:15px;">Deal Team Assembly</strong></div>
+      <div class="badge badge-primary" id="mobileScore">--/100</div>
+    </div>
+    <main class="content-area" id="contentArea" role="main"></main>
+  </div>
+</div>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script>
+(function() {
+'use strict';
+
+var STORAGE_KEY = 'exitosx-pb32-deal-team-assembly';
+
+var PAGES = [
+  { id: 'welcome', title: 'Welcome', phase: 'START', icon: '1' },
+  { id: 'why', title: 'Why You Need a Team', phase: 'LEARN', icon: '2' },
+  { id: 'overview', title: 'Four Core Roles', phase: 'LEARN', icon: '3' },
+  { id: 'attorney', title: 'M&A Attorney', phase: 'EVALUATE', icon: '4' },
+  { id: 'cpa', title: 'Transaction CPA', phase: 'EVALUATE', icon: '5' },
+  { id: 'wealth', title: 'Wealth Manager', phase: 'EVALUATE', icon: '6' },
+  { id: 'banker', title: 'Banker / Broker', phase: 'EVALUATE', icon: '7' },
+  { id: 'fees', title: 'Fee Tracker', phase: 'PLAN', icon: '8' },
+  { id: 'coordination', title: 'Coordination & Mistakes', phase: 'PLAN', icon: '9' },
+  { id: 'dashboard', title: 'Summary & Next Steps', phase: 'RESULTS', icon: '10' }
+];
+
+var RISK_FIELDS = [
+  { key: 'risk_negotiation', label: 'Negotiation Disadvantage -- buyers (especially PE) negotiate deals monthly; you do not' },
+  { key: 'risk_bandwidth', label: 'Bandwidth Risk -- selling while running the business causes both to suffer' },
+  { key: 'risk_tax', label: 'Tax Complexity -- difference between good and bad tax structure can be seven figures' },
+  { key: 'risk_legal', label: 'Legal Risk -- a single poorly drafted clause can cost more than the entire team\'s fees' },
+  { key: 'risk_emotional', label: 'Emotional Toll -- selling is emotionally brutal; you need advisors who keep the process moving' }
+];
+
+var EVAL_CRITERIA = {
+  att: [
+    { id: 'm_deal_vol', label: 'M&A deal volume (10+ in 3 yrs)' },
+    { id: 'm_seller_exp', label: 'Seller-side experience (50%+)' },
+    { id: 'm_deal_size', label: 'Deal size match' },
+    { id: 'm_industry', label: 'Industry familiarity' },
+    { id: 'm_responsive', label: 'Responsiveness' },
+    { id: 'm_fee_trans', label: 'Fee transparency' }
+  ],
+  cpa: [
+    { id: 'c_ma_exp', label: 'M&A transaction experience' },
+    { id: 'c_modeling', label: 'After-tax modeling capability' },
+    { id: 'c_1202', label: 'QSBS / Section 453 knowledge' },
+    { id: 'c_collab', label: 'Willingness to collaborate' },
+    { id: 'c_qoe', label: 'QofE preparation capability' },
+    { id: 'c_responsiveness', label: 'Responsiveness' }
+  ],
+  wm: [
+    { id: 'w_gap', label: 'Gap analysis capability' },
+    { id: 'w_retirement', label: 'Retirement modeling' },
+    { id: 'w_estate', label: 'Estate planning coordination' },
+    { id: 'w_pre_sale', label: 'Pre-sale strategy knowledge' },
+    { id: 'w_fee_clarity', label: 'Fee structure clarity' },
+    { id: 'w_fiduciary', label: 'Fiduciary standard' }
+  ]
+};
+
+var MISTAKES = [
+  { key: 'mistake_regular_lawyer', title: 'Using Your Regular Lawyer', desc: 'M&A requires specialized knowledge. A general practitioner is like a family doctor for heart surgery.' },
+  { key: 'mistake_engage_late', title: 'Engaging Too Late', desc: 'Pre-transaction planning (QSBS, installment sales, entity restructuring) requires months or years of lead time.' },
+  { key: 'mistake_broker_picks', title: 'Letting the Broker Pick All Advisors', desc: 'Interview multiple candidates independently. A broker\'s preferred attorney may prioritize deal speed over your protection.' },
+  { key: 'mistake_skip_wealth', title: 'Skipping the Wealth Manager', desc: 'Without a walk-away number, you cannot negotiate effectively. You may accept or reject the wrong offer.' },
+  { key: 'mistake_conflicts', title: 'Not Checking for Conflicts of Interest', desc: 'Ask directly: "Do you currently represent any of the likely buyers for my business?"' }
+];
+
+var ROLES = [
+  { key: 'att', title: 'M&A Attorney', icon: '&#9878;', timing: '6-12 mo before' },
+  { key: 'cpa', title: 'Transaction CPA', icon: '&#128200;', timing: '12-18 mo before' },
+  { key: 'wm', title: 'Wealth Manager', icon: '&#127968;', timing: '18-24 mo before' },
+  { key: 'bk', title: 'Banker / Broker', icon: '&#128176;', timing: '6-12 mo before' }
+];
+
+function defaultState() {
+  return { currentPage: 'welcome', completed: {}, fields: {}, checks: {} };
+}
+
+var state = loadState();
+
+function loadState() {
+  try { var s = localStorage.getItem(STORAGE_KEY); return s ? merge(defaultState(), JSON.parse(s)) : defaultState(); }
+  catch(e) { return defaultState(); }
+}
+function merge(d, s) { var m = {}; for (var k in d) m[k] = d[k]; for (var k2 in s) m[k2] = s[k2]; return m; }
+function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {} updateProgress(); updateScore(); }
+
+function calcScore() {
+  var score = 0;
+  var f = state.fields;
+  // Roles filled (0-40, 10 each)
+  ROLES.forEach(function(r) { if (f[r.key + '_selected_name']) score += 10; });
+  // Fee estimates provided (0-10)
+  var feeCount = 0;
+  ['fee_att_est','fee_cpa_est','fee_wm_est','fee_bk_est'].forEach(function(k) { if (parseFloat(f[k]) > 0) feeCount++; });
+  score += Math.round((feeCount / 4) * 10);
+  // Quarterback selected (0-10)
+  if (f.quarterback && f.quarterback !== 'tbd') score += 10;
+  // Risk assessment done (0-15)
+  var riskDone = 0;
+  RISK_FIELDS.forEach(function(r) { if (parseInt(f[r.key]) > 0) riskDone++; });
+  score += Math.round((riskDone / 5) * 15);
+  // Deal context filled (0-10)
+  if (f.deal_size) score += 5;
+  if (f.sale_timeline) score += 5;
+  // Eval criteria filled (0-15)
+  var evalTotal = 0, evalFilled = 0;
+  ['att','cpa','wm'].forEach(function(prefix) {
+    var criteria = EVAL_CRITERIA[prefix];
+    for (var c = 1; c <= 3; c++) {
+      criteria.forEach(function(crit) {
+        evalTotal++;
+        if (parseInt(f[prefix + '_cand' + c + '_' + crit.id]) > 0) evalFilled++;
+      });
+    }
+  });
+  if (evalTotal > 0) score += Math.round((evalFilled / evalTotal) * 15);
+  return Math.min(Math.round(score), 100);
+}
+
+function getScoreColor(s) {
+  if (s >= 81) return 'var(--color-score-5)';
+  if (s >= 61) return 'var(--color-score-4)';
+  if (s >= 41) return 'var(--color-score-3)';
+  if (s >= 21) return 'var(--color-score-2)';
+  return 'var(--color-score-1)';
+}
+function getScoreLabel(s) {
+  if (s >= 81) return 'Deal team well-assembled';
+  if (s >= 61) return 'Strong progress, fill remaining gaps';
+  if (s >= 41) return 'Making progress -- keep evaluating';
+  if (s >= 21) return 'Early stage -- much work ahead';
+  return 'Complete sections to build your score';
+}
+function updateScore() {
+  var s = calcScore();
+  document.getElementById('sidebarScore').innerHTML = s + '<span class="sidebar-score-max">/100</span>';
+  document.getElementById('mobileScore').textContent = s + '/100';
+  document.getElementById('sidebarScoreDesc').textContent = getScoreLabel(s);
+}
+function updateProgress() {
+  var total = PAGES.length - 2;
+  var done = Object.keys(state.completed).length;
+  var pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+}
+function isUnlocked(pid) {
+  var idx = PAGES.findIndex(function(p) { return p.id === pid; });
+  if (idx <= 0) return true;
+  return state.completed[PAGES[idx - 1].id] === true;
+}
+function renderNav() {
+  var nav = document.getElementById('sidebarNav');
+  var html = '', last = '';
+  PAGES.forEach(function(p) {
+    if (p.phase !== last) { html += '<div class="nav-section-label">' + p.phase + '</div>'; last = p.phase; }
+    var ac = state.currentPage === p.id, dn = state.completed[p.id], lk = !isUnlocked(p.id);
+    html += '<div class="nav-item' + (ac ? ' active' : '') + (dn ? ' completed' : '') + (lk ? ' locked' : '') + '" data-page="' + p.id + '" role="button" tabindex="' + (lk ? '-1' : '0') + '" aria-current="' + (ac ? 'step' : 'false') + '">';
+    html += '<span class="nav-icon">' + p.icon + '</span><span>' + p.title + '</span>';
+    if (dn) html += '<span class="nav-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></span>';
+    html += '</div>';
+  });
+  nav.innerHTML = html;
+  nav.querySelectorAll('.nav-item:not(.locked)').forEach(function(el) {
+    el.addEventListener('click', function() { goToPage(el.dataset.page); });
+    el.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToPage(el.dataset.page); } });
+  });
+}
+function goToPage(pid) { if (!isUnlocked(pid)) return; state.currentPage = pid; saveState(); renderPage(); renderNav(); window.scrollTo({ top: 0, behavior: 'smooth' }); closeSidebar(); }
+function completePage(pid) { state.completed[pid] = true; var idx = PAGES.findIndex(function(p) { return p.id === pid; }); if (idx < PAGES.length - 1) state.currentPage = PAGES[idx + 1].id; saveState(); renderPage(); renderNav(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function prevPage() { var idx = PAGES.findIndex(function(p) { return p.id === state.currentPage; }); if (idx > 0) goToPage(PAGES[idx - 1].id); }
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('show'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('show'); }
+document.getElementById('hamburgerBtn').addEventListener('click', toggleSidebar);
+document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+function showToast(msg) { var c = document.getElementById('toastContainer'); var t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; c.appendChild(t); setTimeout(function() { t.remove(); }, 3000); }
+function fieldVal(k) { return parseFloat(state.fields[k]) || 0; }
+function fieldStr(k) { return state.fields[k] || ''; }
+function formatCurrency(n) { if (!n || isNaN(n)) return '$0'; n = Math.round(n); if (Math.abs(n) >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M'; if (Math.abs(n) >= 1000) return '$' + (n / 1000).toFixed(0) + 'K'; return '$' + n.toLocaleString(); }
+
+function pageNav(prev, next, id) {
+  var h = '<div class="page-nav">';
+  h += prev ? '<button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button>' : '<div></div>';
+  if (next !== false) h += '<button class="btn btn-primary" onclick="PB.completePage(\'' + id + '\')">' + (next || 'Continue') + ' &rarr;</button>';
+  h += '</div>'; return h;
+}
+
+function scoreSelector(fk, labels) {
+  var cur = parseInt(state.fields[fk]) || 0;
+  var h = '<div class="score-selector" role="radiogroup" aria-label="Score for ' + fk + '">';
+  for (var i = 1; i <= 5; i++) {
+    var sel = cur === i ? ' selected' : '';
+    h += '<label class="score-option s' + i + sel + '" tabindex="0" role="radio" aria-checked="' + (cur === i) + '" data-field="' + fk + '" data-value="' + i + '">';
+    h += '<input type="radio" name="score-' + fk + '" value="' + i + '"' + (cur === i ? ' checked' : '') + '>';
+    h += '<span class="score-number">' + i + '</span>';
+    h += '<span class="score-label-text">' + (labels ? labels[i - 1] : ['Poor', 'Below Avg', 'Average', 'Good', 'Excellent'][i - 1]) + '</span>';
+    h += '</label>';
+  }
+  h += '</div>'; return h;
+}
+
+function compactScoreSelector(fk) {
+  var cur = parseInt(state.fields[fk]) || 0;
+  var h = '<div class="score-selector compact" role="radiogroup" aria-label="Score for ' + fk + '">';
+  for (var i = 1; i <= 5; i++) {
+    var sel = cur === i ? ' selected' : '';
+    h += '<label class="score-option s' + i + sel + '" tabindex="0" role="radio" aria-checked="' + (cur === i) + '" data-field="' + fk + '" data-value="' + i + '">';
+    h += '<input type="radio" name="score-' + fk + '" value="' + i + '"' + (cur === i ? ' checked' : '') + '>';
+    h += '<span class="score-number">' + i + '</span>';
+    h += '</label>';
+  }
+  h += '</div>'; return h;
+}
+
+function checkItem(key, label) {
+  var c = state.checks[key];
+  return '<div class="check-item' + (c ? ' checked' : '') + '" data-check="' + key + '" role="checkbox" aria-checked="' + (c ? 'true' : 'false') + '" tabindex="0"><div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div><div class="check-text">' + label + '</div></div>';
+}
+
+function selectField(fk, options, onChange) {
+  var cur = fieldStr(fk);
+  var h = '<select class="form-input" data-field="' + fk + '" onchange="PB.saveField(\'' + fk + '\',this.value)' + (onChange ? ';' + onChange : '') + '">';
+  options.forEach(function(o) { h += '<option value="' + o.v + '"' + (cur === o.v ? ' selected' : '') + '>' + esc(o.l) + '</option>'; });
+  h += '</select>'; return h;
+}
+
+function textField(fk, placeholder, type) {
+  return '<input type="' + (type || 'text') + '" class="form-input" data-field="' + fk + '" value="' + esc(fieldStr(fk)) + '" placeholder="' + esc(placeholder || '') + '" onchange="PB.saveField(\'' + fk + '\',this.value)">';
+}
+
+function numberField(fk, placeholder) {
+  return '<div class="input-prefix"><input type="number" class="form-input" data-field="' + fk + '" value="' + (fieldStr(fk) || '') + '" placeholder="' + (placeholder || '0') + '" onchange="PB.saveField(\'' + fk + '\',this.value)"></div>';
+}
+
+function textareaField(fk, placeholder) {
+  return '<textarea class="form-input" data-field="' + fk + '" placeholder="' + esc(placeholder || '') + '" onchange="PB.saveField(\'' + fk + '\',this.value)">' + esc(fieldStr(fk)) + '</textarea>';
+}
+
+function evalGrid(prefix) {
+  var criteria = EVAL_CRITERIA[prefix];
+  if (!criteria) return '';
+  var h = '<div class="eval-grid">';
+  for (var c = 1; c <= 3; c++) {
+    h += '<div class="eval-col"><h4>Candidate ' + c + '</h4>';
+    h += '<div class="form-group"><div class="form-label" style="font-size:12px">Name</div>' + textField(prefix + '_cand' + c + '_name', 'Name/Firm') + '</div>';
+    criteria.forEach(function(crit) {
+      h += '<div class="form-group"><div class="form-label" style="font-size:12px">' + esc(crit.label) + '</div>' + compactScoreSelector(prefix + '_cand' + c + '_' + crit.id) + '</div>';
+    });
+    h += '</div>';
+  }
+  h += '</div>';
+  return h;
+}
+
+function renderPage() {
+  var area = document.getElementById('contentArea');
+  var r = { welcome: renderWelcome, why: renderWhy, overview: renderOverview, attorney: renderAttorney, cpa: renderCPA, wealth: renderWealth, banker: renderBanker, fees: renderFees, coordination: renderCoordination, dashboard: renderDashboard };
+  var fn = r[state.currentPage];
+  if (fn) area.innerHTML = '<div class="page active">' + fn() + '</div>';
+}
+
+function renderWelcome() {
+  return '<div class="welcome-hero"><div class="welcome-icon">&#128101;</div><div class="t-display">Deal Team Assembly</div>' +
+    '<p class="t-body t-secondary" style="margin-top:var(--space-md)">Selling a business is the most complex financial transaction most entrepreneurs will ever undertake. This guided tool helps you evaluate, select, and coordinate the four core advisors who will protect your interests and maximize your proceeds.</p>' +
+    '<div class="welcome-stats"><div class="welcome-stat"><div class="welcome-stat-value">4</div><div class="welcome-stat-label">Core Advisor Roles</div></div><div class="welcome-stat"><div class="welcome-stat-value">30</div><div class="welcome-stat-label">Minutes to Complete</div></div><div class="welcome-stat"><div class="welcome-stat-value">20-40%</div><div class="welcome-stat-label">Added to Net Proceeds</div></div></div>' +
+    '<p class="t-small t-secondary">Your progress saves automatically.</p>' +
+    '<button class="btn btn-primary btn-lg" onclick="PB.completePage(\'welcome\')" style="margin-top:var(--space-lg)">Build Your Deal Team &rarr;</button></div>';
+}
+
+function renderWhy() {
+  var riskHtml = '';
+  RISK_FIELDS.forEach(function(r) {
+    riskHtml += '<div class="form-group"><div class="form-label">' + r.label + '</div>' + scoreSelector(r.key, ['1 - Low', '2', '3 - Med', '4', '5 - High']) + '</div>';
+  });
+  return '<div class="page-header"><div class="t-label">Phase 1 of 9</div><div class="t-display">Why You Cannot Do This Alone</div><p class="t-body t-secondary">Your instinct to be the expert and decision-maker built the business. In a sale process, that instinct becomes a liability.</p></div>' +
+    '<div class="callout callout-info"><strong>The Math.</strong> A well-assembled deal team typically adds 20-40% to net proceeds compared to sellers who go it alone. On a $5M deal, that is $1-2M of additional value -- far exceeding the $200-400K in total advisory fees.</div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-xs)">Self-Assessment: Your Exposure Without a Team</div><p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Rate your vulnerability in each area</p>' + riskHtml + '</div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Your Deal Context</div>' +
+      '<div class="input-row cols-2"><div class="form-group"><div class="form-label">Estimated deal size</div>' +
+        selectField('deal_size', [{v:'',l:'Select range...'},{v:'2m',l:'Under $2M'},{v:'5m',l:'$2M - $5M'},{v:'10m',l:'$5M - $10M'},{v:'25m',l:'$10M - $25M'},{v:'50m',l:'$25M - $50M'},{v:'50m_plus',l:'$50M+'}]) +
+      '</div><div class="form-group"><div class="form-label">Target sale timeline</div>' +
+        selectField('sale_timeline', [{v:'',l:'Select...'},{v:'6',l:'Less than 6 months'},{v:'12',l:'6-12 months'},{v:'18',l:'12-18 months'},{v:'24',l:'18-24 months'},{v:'36',l:'2-3 years'}]) +
+      '</div></div>' +
+      '<div class="form-group"><div class="form-label">Entity type</div>' +
+        selectField('entity_type', [{v:'',l:'Select...'},{v:'s_corp',l:'S-Corporation'},{v:'c_corp',l:'C-Corporation'},{v:'llc',l:'LLC (taxed as partnership)'},{v:'llc_s',l:'LLC (S-Corp election)'},{v:'sole',l:'Sole Proprietorship'}]) +
+      '</div></div>' +
+    pageNav(true, 'The Four Core Roles', 'why');
+}
+
+function renderOverview() {
+  var rolesHtml = '<div class="summary-grid" style="grid-template-columns:repeat(4,1fr)">';
+  var timingBadges = { att: 'badge-warning', cpa: 'badge-primary', wm: 'badge-success', bk: 'badge-warning' };
+  ROLES.forEach(function(r) {
+    rolesHtml += '<div class="summary-item" style="cursor:pointer" onclick="PB.goToPage(\'' + (r.key === 'att' ? 'attorney' : r.key === 'bk' ? 'banker' : r.key) + '\')"><div style="font-size:24px;margin-bottom:var(--space-sm)">' + r.icon + '</div><div style="font-weight:600;font-size:14px">' + r.title + '</div><div style="margin-top:var(--space-sm)"><span class="badge ' + timingBadges[r.key] + '">' + r.timing + '</span></div></div>';
+  });
+  rolesHtml += '</div>';
+
+  return '<div class="page-header"><div class="t-label">Phase 2 of 9</div><div class="t-display">The Four Core Deal Team Roles</div><p class="t-body t-secondary">Every deal needs these four advisors. Depending on size and complexity, you may add specialists, but these are non-negotiable.</p></div>' +
+    rolesHtml +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-xs)">Engagement Timeline</div><p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">The order matters -- each advisor builds on the work of the previous</p>' +
+      '<div class="timeline">' +
+        '<div class="timeline-item"><div class="t-label">24 months before close</div><div class="t-h3">Wealth Manager</div><div class="t-small t-secondary" style="margin-top:var(--space-xs)">Gap analysis, retirement modeling, walk-away number. Determines whether you are financially ready to sell.</div></div>' +
+        '<div class="timeline-item"><div class="t-label">18 months before close</div><div class="t-h3">Transaction CPA</div><div class="t-small t-secondary" style="margin-top:var(--space-xs)">Tax structure planning, financial cleanup, Quality of Earnings preparation.</div></div>' +
+        '<div class="timeline-item"><div class="t-label">12 months before close</div><div class="t-h3">Investment Banker / Broker</div><div class="t-small t-secondary" style="margin-top:var(--space-xs)">Valuation, buyer identification, CIM preparation, market launch.</div></div>' +
+        '<div class="timeline-item"><div class="t-label">9 months before close</div><div class="t-h3">M&A Attorney</div><div class="t-small t-secondary" style="margin-top:var(--space-xs)">LOI negotiation, purchase agreement drafting, closing management.</div></div>' +
+        '<div class="timeline-item"><div class="t-label">Ongoing</div><div class="t-h3">Coordinated Team Calls</div><div class="t-small t-secondary" style="margin-top:var(--space-xs)">Quarterly pre-process, weekly/biweekly once live. Aligned strategy across all four advisors.</div></div>' +
+      '</div></div>' +
+    pageNav(true, 'Evaluate M&A Attorney', 'overview');
+}
+
+function renderAdvisorPage(prefix, title, phaseNum, scopeItems, feeTable, nextPage, nextLabel, prevPageId) {
+  var scopeHtml = '<div class="checklist">';
+  scopeItems.forEach(function(item) { scopeHtml += checkItem(prefix + '_scope_' + scopeItems.indexOf(item), item); });
+  scopeHtml += '</div>';
+
+  return '<div class="page-header"><div class="t-label">Phase ' + phaseNum + ' of 9</div><div class="t-display">' + title + '</div></div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">What They Do</div>' + scopeHtml + '</div>' +
+    (feeTable || '') +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Candidate Evaluation</div><p class="t-small t-secondary" style="margin-bottom:var(--space-sm)">Score up to 3 candidates on key criteria</p>' + evalGrid(prefix) + '</div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Your Selection</div>' +
+      '<div class="input-row cols-2"><div class="form-group"><div class="form-label">Selected name/firm</div>' + textField(prefix + '_selected_name', 'Name/Firm') + '</div>' +
+      '<div class="form-group"><div class="form-label">Estimated fee</div>' + (prefix === 'bk' ? textField('bk_fee_estimate', 'e.g., 5% success fee + $25K retainer') : numberField(prefix + '_fee_estimate', '0')) + '</div></div>' +
+      '<div class="form-group"><div class="form-label">Contact info</div>' + textField(prefix + '_contact', 'Phone, email') + '</div>' +
+      '<div class="form-group"><div class="form-label">Notes</div>' + textareaField(prefix + '_notes', 'Key observations from interviews...') + '</div></div>' +
+    pageNav(true, nextLabel, prevPageId === 'overview' ? 'attorney' : prevPageId === 'attorney' ? 'cpa' : prevPageId === 'cpa' ? 'wealth' : 'banker');
+}
+
+function renderAttorney() {
+  var feeTable = '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Fee Reference</div>' +
+    '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Firm Type</th><th>Partner Rate</th><th>Associate Rate</th><th>Typical Total</th></tr></thead><tbody>' +
+    '<tr><td>AmLaw 100 / Major Market</td><td>$800-$1,500/hr</td><td>$400-$800/hr</td><td>$100K-$300K+</td></tr>' +
+    '<tr><td>Regional M&A Boutique</td><td>$500-$800/hr</td><td>$250-$450/hr</td><td>$50K-$150K</td></tr>' +
+    '<tr><td>Small Firm with M&A Focus</td><td>$350-$550/hr</td><td>$200-$350/hr</td><td>$30K-$75K</td></tr></tbody></table></div>' +
+    '<div class="callout callout-info" style="margin-top:var(--space-sm)"><strong>Pro Tip: Fee Caps.</strong> Ask for a fee estimate broken into phases (LOI review, purchase agreement, diligence, closing). Negotiate a soft cap with commitment to discuss before exceeding it.</div></div>';
+  return renderAdvisorPage('att', 'The M&A Attorney', 3,
+    ['Drafts or reviews the Letter of Intent (LOI)', 'Negotiates the definitive purchase agreement (APA or stock purchase)', 'Manages representations, warranties, and indemnification provisions', 'Structures escrow or holdback provisions', 'Reviews employment/consulting/non-compete agreements', 'Manages closing checklist and fund flow mechanics', 'Advises on R&W insurance if applicable'],
+    feeTable, 'cpa', 'Transaction CPA', 'overview');
+}
+
+function renderCPA() {
+  var extra = '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Asset Sale vs. Stock Sale: Why It Matters</div>' +
+    '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Factor</th><th>Asset Sale</th><th>Stock Sale</th></tr></thead><tbody>' +
+    '<tr><td>Who prefers it</td><td>Buyers (almost always)</td><td>Sellers (usually)</td></tr>' +
+    '<tr><td>Tax treatment</td><td>Ordinary income + capital gains (blended)</td><td>Capital gains (lower rate)</td></tr>' +
+    '<tr><td>Tax difference</td><td>Higher -- often 5-15% more</td><td>Lower -- capital gains rates</td></tr>' +
+    '<tr><td>Liability transfer</td><td>Buyer does NOT assume liabilities</td><td>Buyer assumes all liabilities</td></tr>' +
+    '<tr><td>C-Corp problem</td><td>Double taxation risk</td><td>Single layer of tax</td></tr></tbody></table></div>' +
+    '<div class="form-group" style="margin-top:var(--space-md)"><div class="form-label">Expected deal structure</div>' +
+    selectField('deal_structure', [{v:'',l:'Select...'},{v:'asset',l:'Asset Sale'},{v:'stock',l:'Stock Sale'},{v:'338',l:'338(h)(10) Election'},{v:'unsure',l:'Not sure yet (need CPA guidance)'}]) + '</div></div>';
+  return '<div class="page-header"><div class="t-label">Phase 4 of 9</div><div class="t-display">The Transaction CPA / Tax Advisor</div><p class="t-body t-secondary">Two critical functions: structuring the deal for tax efficiency and preparing your financials for buyer scrutiny. This is usually not your regular tax preparer.</p></div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">What They Do</div><div class="checklist">' +
+    checkItem('cpa_scope_0', 'Model tax impact of asset sale vs. stock sale vs. 338(h)(10) election') +
+    checkItem('cpa_scope_1', 'Prepare or support Quality of Earnings (QofE) analysis') +
+    checkItem('cpa_scope_2', 'Advise on Section 453 installment sales, QSBS (1202), Opportunity Zones') +
+    checkItem('cpa_scope_3', 'Model federal, state, and local tax on various deal structures') +
+    checkItem('cpa_scope_4', 'Optimize purchase price allocation between asset classes') +
+    '</div></div>' + extra +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Candidate Evaluation</div><p class="t-small t-secondary" style="margin-bottom:var(--space-sm)">Score up to 3 candidates on key criteria</p>' + evalGrid('cpa') + '</div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Your Selection</div>' +
+    '<div class="input-row cols-2"><div class="form-group"><div class="form-label">Selected CPA name/firm</div>' + textField('cpa_selected_name', 'e.g., Johnson Tax Advisory') + '</div><div class="form-group"><div class="form-label">Estimated fee</div>' + numberField('cpa_fee_estimate', '0') + '</div></div>' +
+    '<div class="form-group"><div class="form-label">Contact info</div>' + textField('cpa_contact', 'Phone, email') + '</div>' +
+    '<div class="form-group"><div class="form-label">Notes</div>' + textareaField('cpa_notes', 'Key observations...') + '</div></div>' +
+    pageNav(true, 'Wealth Manager', 'cpa');
+}
+
+function renderWealth() {
+  var feeTable = '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Fee Structure Comparison</div>' +
+    '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Model</th><th>Typical Range</th><th>Pros</th><th>Cons</th></tr></thead><tbody>' +
+    '<tr><td>AUM (% of assets)</td><td>0.50-1.00%/yr</td><td>Aligned incentive</td><td>Expensive on large balances</td></tr>' +
+    '<tr><td>Flat Fee / Retainer</td><td>$5K-$25K/yr</td><td>Predictable cost</td><td>May not scale</td></tr>' +
+    '<tr><td>Hourly</td><td>$200-$500/hr</td><td>Pay for what you use</td><td>Less proactive guidance</td></tr>' +
+    '<tr><td>Commission-based</td><td>Varies</td><td>No direct fee</td><td>Potential conflicts</td></tr></tbody></table></div>' +
+    '<div class="form-group" style="margin-top:var(--space-md)"><div class="form-label">Preferred fee model</div>' +
+    selectField('wealth_fee_model', [{v:'',l:'Select...'},{v:'aum',l:'AUM-based (percentage of assets managed)'},{v:'flat',l:'Flat fee / retainer'},{v:'hourly',l:'Hourly'},{v:'unsure',l:'Not sure -- need to evaluate'}]) + '</div></div>';
+  return '<div class="page-header"><div class="t-label">Phase 5 of 9</div><div class="t-display">The Wealth Manager / Financial Planner</div><p class="t-body t-secondary">Often the most overlooked team member, but arguably the most important for long-term outcomes. Their job is to ensure sale proceeds fund your life -- not just clear the closing table.</p></div>' +
+    '<div class="callout callout-danger"><strong>The Wealth Manager Mistake.</strong> Too many sellers engage their wealth manager after the deal closes. By then, the most powerful planning strategies (installment sales, GRAT structures, Opportunity Zone deferrals, pre-sale charitable planning) are off the table. Engage 18-24 months before sale.</div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">What They Do</div><div class="checklist">' +
+    checkItem('wm_scope_0', 'Gap Analysis: minimum after-tax, after-fee proceeds needed for your lifestyle') +
+    checkItem('wm_scope_1', 'Retirement Modeling: post-sale investment returns at various risk levels') +
+    checkItem('wm_scope_2', 'Estate Planning: trusts, estate tax minimization, asset protection') +
+    checkItem('wm_scope_3', 'Investment Strategy: diversified portfolio for proceeds') +
+    checkItem('wm_scope_4', 'Walk-Away Number: minimum acceptable price before going to market') +
+    '</div></div>' + feeTable +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Candidate Evaluation</div><p class="t-small t-secondary" style="margin-bottom:var(--space-sm)">Score up to 3 candidates on key criteria</p>' + evalGrid('wm') + '</div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Your Selection</div>' +
+    '<div class="input-row cols-2"><div class="form-group"><div class="form-label">Selected wealth manager</div>' + textField('wm_selected_name', 'e.g., Pinnacle Wealth Partners') + '</div><div class="form-group"><div class="form-label">Estimated annual fee</div>' + numberField('wm_fee_estimate', '0') + '</div></div>' +
+    '<div class="form-group"><div class="form-label">Contact info</div>' + textField('wm_contact', 'Phone, email') + '</div>' +
+    '<div class="form-group"><div class="form-label">Notes</div>' + textareaField('wm_notes', 'Key observations...') + '</div></div>' +
+    pageNav(true, 'Investment Banker / Broker', 'wealth');
+}
+
+function renderBanker() {
+  return '<div class="page-header"><div class="t-label">Phase 6 of 9</div><div class="t-display">The Investment Banker / Business Broker</div><p class="t-body t-secondary">They run the sale process: finding buyers, creating competitive tension, managing confidentiality, and negotiating the highest possible price.</p></div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Banker vs. Broker: Which Do You Need?</div>' +
+    '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Factor</th><th>Business Broker</th><th>Investment Banker</th></tr></thead><tbody>' +
+    '<tr><td>Typical deal size</td><td>$500K - $10M</td><td>$5M - $500M+</td></tr>' +
+    '<tr><td>Buyer pool</td><td>Individuals, small PE, SBA</td><td>PE firms, strategics, family offices</td></tr>' +
+    '<tr><td>Process formality</td><td>Less formal; bilateral</td><td>Structured auction; CIM; mgmt presentations</td></tr>' +
+    '<tr><td>Fee structure</td><td>8-12% success fee</td><td>1-5% + $10-50K retainer</td></tr>' +
+    '<tr><td>Licensing</td><td>State broker license</td><td>FINRA registered or M&A exemption</td></tr></tbody></table></div>' +
+    '<div class="form-group" style="margin-top:var(--space-md)"><div class="form-label">Which is right for your deal?</div>' +
+    selectField('banker_type', [{v:'',l:'Select...'},{v:'broker',l:'Business Broker (deal under $10M)'},{v:'banker',l:'Investment Banker (deal over $5M)'},{v:'unsure',l:'Not sure -- need to evaluate'}]) + '</div></div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">The Lehman Formula & Fee Variations</div>' +
+    '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Deal Value Tranche</th><th>Original Lehman</th><th>Double Lehman</th><th>Modified (Common)</th></tr></thead><tbody>' +
+    '<tr><td>First $1M</td><td>5%</td><td>10%</td><td>5-8%</td></tr><tr><td>$1M - $2M</td><td>4%</td><td>8%</td><td>4-6%</td></tr><tr><td>$2M - $3M</td><td>3%</td><td>6%</td><td>3-5%</td></tr><tr><td>$3M - $4M</td><td>2%</td><td>4%</td><td>2-4%</td></tr><tr><td>$4M+</td><td>1%</td><td>2%</td><td>1-3%</td></tr></tbody></table></div>' +
+    '<p class="t-small t-secondary">Many mid-market bankers use a flat 3-5% with a minimum fee ($150K-$250K). Always negotiate.</p></div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Selection Interview Checklist</div><div class="checklist">' +
+    checkItem('bk_q1', 'How many deals have you closed in my industry and size range in the last 3 years?') +
+    checkItem('bk_q2', 'Who are the specific buyers you would contact for my business?') +
+    checkItem('bk_q3', 'What is your average time from engagement to close?') +
+    checkItem('bk_q4', 'What is your close rate (deals closed / deals engaged)?') +
+    checkItem('bk_q5', 'Will the senior person who pitches be the one who runs the day-to-day?') +
+    checkItem('bk_q6', 'Can you provide references from sellers of similar businesses?') +
+    checkItem('bk_q7', 'What happens if we terminate the engagement early?') +
+    '</div></div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Your Selection</div>' +
+    '<div class="input-row cols-2"><div class="form-group"><div class="form-label">Selected banker/broker</div>' + textField('bk_selected_name', 'e.g., Meridian Capital') + '</div><div class="form-group"><div class="form-label">Fee structure / estimated fee</div>' + textField('bk_fee_estimate', 'e.g., 5% success fee + $25K retainer') + '</div></div>' +
+    '<div class="form-group"><div class="form-label">Contact info</div>' + textField('bk_contact', 'Phone, email') + '</div>' +
+    '<div class="form-group"><div class="form-label">Notes</div>' + textareaField('bk_notes', 'Key observations...') + '</div></div>' +
+    pageNav(true, 'Fee Tracker', 'banker');
+}
+
+function renderFees() {
+  var totalEst = fieldVal('fee_att_est') + fieldVal('fee_cpa_est') + fieldVal('fee_wm_est') + fieldVal('fee_bk_est');
+  var totalInv = fieldVal('fee_att_inv') + fieldVal('fee_cpa_inv') + fieldVal('fee_wm_inv') + fieldVal('fee_bk_inv');
+  function feeRow(label, prefix) {
+    return '<div class="fee-grid"><div style="font-weight:600">' + label + '</div><div>' + textField('fee_' + prefix + '_detail', 'Details...') + '</div><div>' + numberField('fee_' + prefix + '_est', '0') + '</div><div>' + numberField('fee_' + prefix + '_inv', '0') + '</div></div>';
+  }
+  return '<div class="page-header"><div class="t-label">Phase 7 of 9</div><div class="t-display">Fee Structures & Total Cost</div><p class="t-body t-secondary">Understanding total deal team costs helps you budget and evaluate whether advisory fees deliver value.</p></div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Your Deal Team Fee Tracker</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Enter estimates based on your selections. Updates the summary automatically.</p>' +
+    '<div class="fee-grid fee-header"><div>Advisor</div><div>Details</div><div>Estimate</div><div>Invoiced</div></div>' +
+    feeRow('M&A Attorney', 'att') + feeRow('Transaction CPA', 'cpa') + feeRow('Wealth Manager', 'wm') + feeRow('Banker / Broker', 'bk') +
+    '<div style="display:flex;justify-content:space-between;padding:var(--space-md) 0;border-top:2px solid var(--color-text);margin-top:var(--space-md);font-weight:700"><div>Total Estimated Fees</div><div>' + formatCurrency(totalEst) + '</div></div>' +
+    '<div style="display:flex;justify-content:space-between;padding:var(--space-sm) 0;border-top:1px solid var(--color-border);font-size:14px;color:var(--color-text-secondary)"><div>Total Invoiced to Date</div><div>' + formatCurrency(totalInv) + '</div></div></div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Fee Benchmarks by Deal Size</div>' +
+    '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Deal Size</th><th>Banker/Broker</th><th>Attorney</th><th>CPA</th><th>Wealth Mgr</th><th>Total</th><th>% of Deal</th></tr></thead><tbody>' +
+    '<tr><td>$2M</td><td>$160-240K</td><td>$30-50K</td><td>$15-25K</td><td>$5-15K</td><td>$210-330K</td><td>10-17%</td></tr>' +
+    '<tr><td>$5M</td><td>$250-400K</td><td>$50-100K</td><td>$25-50K</td><td>$10-25K</td><td>$335-575K</td><td>7-12%</td></tr>' +
+    '<tr><td>$10M</td><td>$350-500K</td><td>$75-150K</td><td>$35-75K</td><td>$15-30K</td><td>$475-755K</td><td>5-8%</td></tr>' +
+    '<tr><td>$25M</td><td>$625-875K</td><td>$100-200K</td><td>$50-100K</td><td>$20-50K</td><td>$795K-1.2M</td><td>3-5%</td></tr>' +
+    '<tr><td>$50M</td><td>$1.0-1.5M</td><td>$150-300K</td><td>$75-150K</td><td>$25-75K</td><td>$1.25-2.0M</td><td>2.5-4%</td></tr></tbody></table></div>' +
+    '<div class="callout callout-info" style="margin-top:var(--space-sm)"><strong>Perspective on Fees.</strong> A bad deal structure can cost 15-20% in excess taxes. A weak negotiation leaves 10-20% on the table. A poorly drafted agreement can result in 6-figure indemnification claims. The fees are the cheapest part of the transaction.</div></div>' +
+    pageNav(true, 'Coordination', 'fees');
+}
+
+function renderCoordination() {
+  var coordItems = [
+    { title: 'Designate a Quarterback', desc: 'Typically the investment banker or M&A attorney. They manage the timeline, coordinate communication, and ensure nothing falls through the cracks. You should NOT be the quarterback.' },
+    { title: 'Shared Information Protocol', desc: 'Shared folder (Dropbox, Google Drive, or VDR) for all deal documents. Single master timeline. All advisors copy the team on material communications.' },
+    { title: 'Regular Team Calls', desc: 'Quarterly before the process is active. Weekly or biweekly once live (post-CIM distribution).' },
+    { title: 'Conflict Management', desc: 'Advisors will disagree. This is healthy. Your job is to hear both sides and make the final call. Never let one advisor overrule another without understanding tradeoffs.' }
+  ];
+  var coordHtml = '';
+  coordItems.forEach(function(c, i) {
+    coordHtml += '<div class="coord-card"><div class="coord-num">' + (i + 1) + '</div><div><div class="t-h3">' + c.title + '</div><div class="t-small t-secondary" style="margin-top:var(--space-xs)">' + c.desc + '</div></div></div>';
+  });
+
+  var mistakesHtml = '<div class="checklist">';
+  MISTAKES.forEach(function(m) {
+    var c = state.checks[m.key];
+    mistakesHtml += '<div class="check-item' + (c ? ' checked' : '') + '" data-check="' + m.key + '" role="checkbox" aria-checked="' + (c ? 'true' : 'false') + '" tabindex="0"><div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div><div class="check-text"><strong>' + esc(m.title) + '</strong><br><span class="t-small t-secondary">' + esc(m.desc) + '</span></div></div>';
+  });
+  mistakesHtml += '</div>';
+
+  return '<div class="page-header"><div class="t-label">Phase 8 of 9</div><div class="t-display">Coordinating Your Deal Team</div><p class="t-body t-secondary">The most common deal team failure is not incompetence -- it is lack of coordination. Four brilliant advisors working in silos produce worse outcomes than four good advisors working as a team.</p></div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Coordination Framework</div>' + coordHtml +
+    '<div class="form-group" style="margin-top:var(--space-lg)"><div class="form-label">Who will quarterback your deal?</div>' +
+    selectField('quarterback', [{v:'',l:'Select...'},{v:'banker',l:'Investment Banker / Broker'},{v:'attorney',l:'M&A Attorney'},{v:'self',l:'Myself (not recommended)'},{v:'tbd',l:'To be determined'}]) + '</div></div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Team Call Agenda Template</div><div class="checklist">' +
+    checkItem('agenda_1', 'Process status update (broker/banker leads)') +
+    checkItem('agenda_2', 'Buyer feedback and negotiation strategy') +
+    checkItem('agenda_3', 'Tax structure implications of current offers') +
+    checkItem('agenda_4', 'Legal issues or concerns from diligence') +
+    checkItem('agenda_5', 'Wealth planning updates (gap analysis vs. current price)') +
+    checkItem('agenda_6', 'Action items and deadlines for each advisor') +
+    '</div></div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-xs)">Common Deal Team Mistakes</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Check any that apply to your current situation</p>' + mistakesHtml + '</div>' +
+    pageNav(true, 'View Summary', 'coordination');
+}
+
+function renderDashboard() {
+  var totalEst = fieldVal('fee_att_est') + fieldVal('fee_cpa_est') + fieldVal('fee_wm_est') + fieldVal('fee_bk_est');
+  var filled = ROLES.filter(function(r) { return fieldStr(r.key + '_selected_name'); }).length;
+  var score = calcScore();
+
+  // Risk map
+  var riskLabels = ['Negotiation', 'Bandwidth', 'Tax Complexity', 'Legal Risk', 'Emotional Toll'];
+  var riskHtml = '';
+  RISK_FIELDS.forEach(function(r, i) {
+    var v = parseInt(state.fields[r.key]) || 0;
+    var color = v >= 4 ? 'var(--color-danger)' : v >= 3 ? 'var(--color-warning)' : v > 0 ? 'var(--color-success)' : 'var(--color-border)';
+    riskHtml += '<div class="heat-row"><div class="heat-label">' + riskLabels[i] + '</div><div class="heat-bar-wrap"><div class="heat-bar" style="width:' + ((v / 5) * 100) + '%;background:' + color + '"><span class="heat-val">' + (v || '-') + '/5</span></div></div></div>';
+  });
+
+  // Roster
+  var rosterHtml = '';
+  ROLES.forEach(function(r) {
+    var name = fieldStr(r.key + '_selected_name');
+    var contact = fieldStr(r.key + '_contact');
+    var fee = r.key === 'bk' ? fieldStr('bk_fee_estimate') : fieldVal(r.key + '_fee_estimate');
+    var feeDisplay = r.key === 'bk' ? (fee || '--') : (fee ? formatCurrency(fee) : '--');
+    rosterHtml += '<div style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md) 0;border-bottom:1px solid var(--color-border-light)"><div style="font-size:20px;width:36px;text-align:center">' + r.icon + '</div><div style="flex:1"><div style="font-weight:600;font-size:14px">' + r.title + '</div><div class="t-small t-secondary">' + (name || 'Not yet selected') + '</div>' + (contact ? '<div class="t-caption t-secondary">' + esc(contact) + '</div>' : '') + '</div><div style="text-align:right"><div style="font-size:14px;font-weight:600">' + feeDisplay + '</div><span class="badge ' + (name ? 'badge-success' : 'badge-warning') + '">' + (name ? 'Selected' : 'Pending') + '</span></div></div>';
+  });
+
+  // Actions
+  var actions = [];
+  if (!fieldStr('wm_selected_name')) actions.push('Engage a wealth manager first. Their gap analysis determines whether you are financially ready to sell and informs every subsequent decision.');
+  if (!fieldStr('cpa_selected_name')) actions.push('Select a transaction CPA for tax structure planning. Pre-transaction strategies (QSBS, installment sales) require months of lead time.');
+  if (!fieldStr('bk_selected_name')) actions.push('Interview 2-3 investment bankers or brokers. Compare deal volume, buyer lists, and fee structures.');
+  if (!fieldStr('att_selected_name')) actions.push('Identify M&A attorneys with seller-side experience in your industry and deal size range.');
+  var tl = fieldStr('sale_timeline');
+  if (tl && parseInt(tl) <= 12 && !fieldStr('wm_selected_name')) actions.push('Your timeline is tight. Engage all four advisors within the next 30 days to preserve planning optionality.');
+  if (fieldStr('quarterback') === 'self') actions.push('Reconsider self-quarterbacking the deal. Your job is to run the business and make final decisions, not coordinate professionals.');
+  if (fieldVal('risk_tax') >= 4 && !fieldStr('cpa_selected_name')) actions.push('Your tax risk is high. A transaction CPA should be your top priority -- the difference between structures can be seven figures.');
+  if (fieldStr('entity_type') === 'c_corp') actions.push('C-Corp sellers face unique double-taxation risks. Ensure your CPA has specific C-Corp M&A experience.');
+  if (totalEst === 0) actions.push('Complete the Fee Tracker to understand your total advisory costs and ensure they are proportionate to deal size.');
+  if (actions.length === 0) actions.push('Your deal team is taking shape. Schedule an initial all-hands call to align on timeline, strategy, and communication protocols.');
+  var actionsHtml = '<ol style="margin:0;padding-left:var(--space-lg);font-size:14px;color:var(--color-text-secondary)">';
+  actions.forEach(function(a) { actionsHtml += '<li style="margin-bottom:var(--space-sm)">' + a + '</li>'; });
+  actionsHtml += '</ol>';
+
+  // Gauge
+  var circ = 2 * Math.PI * 68;
+  var offset = circ - (score / 100) * circ;
+
+  // Risk avg
+  var riskTotal = 0, riskCount = 0;
+  RISK_FIELDS.forEach(function(r) { var v = parseInt(state.fields[r.key]) || 0; if (v) { riskTotal += v; riskCount++; } });
+  var riskAvg = riskCount ? (riskTotal / riskCount).toFixed(1) : '--';
+
+  return '<div class="page-header"><div class="t-label">Phase 9 of 9</div><div class="t-display">Your Deal Team Summary</div><p class="t-body t-secondary">Everything you have assessed and decided, in one view.</p></div>' +
+    '<div class="dark-hero"><h3>Deal Team Assembly Progress</h3><div class="hero-value">' + filled + ' of 4 Roles Filled</div><div class="hero-sub">' + (totalEst ? 'Estimated total fees: ' + formatCurrency(totalEst) : 'Complete fee estimates in the Fee Tracker') + '</div></div>' +
+    '<div class="gauge-wrap"><div class="gauge-ring"><svg viewBox="0 0 160 160"><circle class="gauge-bg" cx="80" cy="80" r="68"/><circle class="gauge-fill" cx="80" cy="80" r="68" stroke="' + getScoreColor(score) + '" stroke-dasharray="' + circ.toFixed(1) + '" stroke-dashoffset="' + offset.toFixed(1) + '"/></svg><div class="gauge-center"><div class="gauge-center-value" style="color:' + getScoreColor(score) + '">' + score + '</div><div class="gauge-center-label">Readiness</div></div></div></div>' +
+    '<div class="summary-grid" style="grid-template-columns:repeat(4,1fr)"><div class="summary-item"><div class="summary-item-value">' + filled + '/4</div><div class="summary-item-label">Roles Filled</div></div><div class="summary-item"><div class="summary-item-value">' + (totalEst ? formatCurrency(totalEst) : '--') + '</div><div class="summary-item-label">Est. Total Fees</div></div><div class="summary-item"><div class="summary-item-value" style="color:' + (riskCount && riskTotal / riskCount >= 3.5 ? 'var(--color-danger)' : 'var(--color-warning)') + '">' + riskAvg + '</div><div class="summary-item-label">Avg Risk Score</div></div><div class="summary-item"><div class="summary-item-value">' + (fieldStr('deal_size') || '--') + '</div><div class="summary-item-label">Deal Size</div></div></div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Your Deal Team Roster</div>' + rosterHtml + '</div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Risk Exposure Assessment</div>' + riskHtml + '</div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Recommended Next Steps</div>' + actionsHtml + '</div>' +
+    '<div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Conflict of Interest Checklist</div><div class="checklist">' +
+    checkItem('coi_1', 'Asked M&A attorney about buyer-side relationships') +
+    checkItem('coi_2', 'Asked CPA about buyer-side relationships') +
+    checkItem('coi_3', 'Asked wealth manager about product conflicts') +
+    checkItem('coi_4', 'Confirmed broker does not represent any likely buyer') +
+    checkItem('coi_5', 'Verified all advisors represent MY interests exclusively') +
+    '</div></div>' +
+    '<div class="callout callout-success" style="text-align:center;margin-top:var(--space-lg)"><strong>"If you think hiring professionals is expensive, try hiring amateurs."</strong> -- Red Adair<br>Your deal team is the highest-ROI investment you will make in the entire exit process.</div>' +
+    '<div class="page-nav" style="margin-top:var(--space-2xl);padding-top:var(--space-xl);border-top:1px solid var(--color-border)"><button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button><div style="display:flex;gap:var(--space-sm)"><button class="btn btn-secondary" onclick="PB.exportData()">Export</button><button class="btn btn-secondary" onclick="window.print()">Print</button><button class="btn btn-accent" onclick="PB.resetAll()">Start Over</button></div></div>';
+}
+
+// === EVENT DELEGATION ===
+document.addEventListener('click', function(e) {
+  var opt = e.target.closest('.score-option');
+  if (opt) {
+    var sel = opt.closest('.score-selector');
+    sel.querySelectorAll('.score-option').forEach(function(o) { o.classList.remove('selected'); o.setAttribute('aria-checked', 'false'); });
+    opt.classList.add('selected'); opt.setAttribute('aria-checked', 'true');
+    var fld = opt.getAttribute('data-field'), val = parseInt(opt.getAttribute('data-value'));
+    if (fld && val) { state.fields[fld] = val; saveState(); }
+    return;
+  }
+  var ci = e.target.closest('.check-item');
+  if (ci) {
+    var now = !ci.classList.contains('checked');
+    ci.classList.toggle('checked'); ci.setAttribute('aria-checked', String(now));
+    var ck = ci.getAttribute('data-check');
+    if (ck) { state.checks[ck] = now; saveState(); }
+    return;
+  }
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    var opt = e.target.closest('.score-option');
+    if (opt) { e.preventDefault(); opt.click(); return; }
+    var ci = e.target.closest('.check-item');
+    if (ci) { e.preventDefault(); ci.click(); return; }
+  }
+});
+
+// === PUBLIC API ===
+window.PB = {
+  goToPage: goToPage, completePage: completePage, prevPage: prevPage,
+  saveField: function(k, v) { state.fields[k] = v; saveState(); },
+  refreshPage: function() { renderPage(); },
+  exportData: function() {
+    var lines = ['DEAL TEAM ASSEMBLY -- EXPORT', '============================', ''];
+    var filled = ROLES.filter(function(r) { return fieldStr(r.key + '_selected_name'); }).length;
+    lines.push('ROLES FILLED: ' + filled + ' of 4');
+    lines.push('READINESS SCORE: ' + calcScore() + '/100');
+    lines.push('');
+    ROLES.forEach(function(r) {
+      var name = fieldStr(r.key + '_selected_name');
+      lines.push(r.title.toUpperCase() + ': ' + (name || 'Not selected'));
+      if (name) {
+        if (fieldStr(r.key + '_contact')) lines.push('  Contact: ' + fieldStr(r.key + '_contact'));
+        var fee = r.key === 'bk' ? fieldStr('bk_fee_estimate') : fieldVal(r.key + '_fee_estimate');
+        if (fee) lines.push('  Fee: ' + (r.key === 'bk' ? fee : formatCurrency(fee)));
+      }
+      lines.push('');
+    });
+    var totalEst = fieldVal('fee_att_est') + fieldVal('fee_cpa_est') + fieldVal('fee_wm_est') + fieldVal('fee_bk_est');
+    if (totalEst) lines.push('TOTAL ESTIMATED FEES: ' + formatCurrency(totalEst));
+    lines.push(''); lines.push('Generated: ' + new Date().toLocaleDateString());
+    var blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a'); a.href = url; a.download = 'deal-team-assembly-export.txt'; a.click();
+    URL.revokeObjectURL(url); showToast('Export downloaded');
+  },
+  resetAll: function() {
+    if (confirm('This will clear all your data. Are you sure?')) {
+      localStorage.removeItem(STORAGE_KEY); state = defaultState();
+      renderPage(); renderNav(); updateProgress(); updateScore(); showToast('All data cleared');
+    }
+  }
+};
+
+// === INIT ===
+renderNav(); renderPage(); updateProgress(); updateScore();
+})();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

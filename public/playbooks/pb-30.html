@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brand & Market Position Strengthening | Exit Planning Playbook #30</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #5B4FC4;
+  --color-primary-light: #EDE9FF;
+  --color-primary-hover: #4A3FB0;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.6; color: var(--color-text); background: var(--color-bg); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 1000; }
+a.skip-link:focus { position: fixed; top: 10px; left: 10px; width: auto; height: auto; padding: 12px 20px; background: var(--color-primary); color: #fff; border-radius: var(--radius-sm); font-weight: 600; z-index: 1000; }
+.t-display { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; min-width: 260px; background: #FFFFFF; border-right: 1px solid var(--color-border); color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: transform var(--transition-slow); overflow-y: auto; }
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+.mobile-header { display: none; position: sticky; top: 0; z-index: 90; background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md); }
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item { display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px; border-radius: var(--radius-sm); color: var(--color-text-secondary); font-size: 14px; transition: all var(--transition-fast); cursor: pointer; }
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--color-text-tertiary); }
+.nav-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+.sidebar-footer { margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--color-border); font-size: 12px; color: rgba(255,255,255,0.3); display: flex; align-items: center; gap: 6px; }
+.sidebar-footer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-success); }
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); transition: box-shadow var(--transition-normal); margin-bottom: var(--space-md); }
+.card:hover { box-shadow: var(--shadow-sm); }
+.callout { padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); border-left: 3px solid; font-size: 14px; line-height: 1.6; margin-bottom: var(--space-md); }
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm); padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; transition: all var(--transition-fast); white-space: nowrap; }
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface); transition: all var(--transition-fast); color: var(--color-text); }
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); text-align: center; }
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+@media (max-width: 600px) { .score-selector { gap: 4px; } .score-option { padding: 10px 4px; } .score-number { font-size: 18px; } .score-label-text { font-size: 9px; } }
+.checklist { display: flex; flex-direction: column; gap: 2px; }
+.check-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md); border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast); }
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box { width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); margin-top: 1px; }
+.check-item.checked .check-box { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--color-border); }
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+@media (max-width: 600px) { .welcome-stats { grid-template-columns: 1fr; } .welcome-hero { padding: var(--space-2xl) var(--space-md); } }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-lg); }
+.summary-item { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-align: center; }
+.summary-item-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; }
+.summary-item-label { font-size: 12px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-top: var(--space-xs); }
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 24px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+@media (max-width: 600px) { .bar-label { width: 90px; font-size: 11px; } }
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; margin-bottom: var(--space-md); }
+.data-table th { text-align: left; padding: var(--space-sm) var(--space-md); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); }
+.data-table td { padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table input, .data-table select { width: 100%; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; background: var(--color-surface); }
+.data-table input:focus, .data-table select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-light); }
+.gauge-wrap { display: flex; justify-content: center; margin: var(--space-lg) 0; }
+.gauge-ring { position: relative; width: 160px; height: 160px; }
+.gauge-ring svg { width: 160px; height: 160px; transform: rotate(-90deg); }
+.gauge-ring circle { fill: none; stroke-width: 8; stroke-linecap: round; }
+.gauge-bg { stroke: var(--color-border); }
+.gauge-fill { transition: stroke-dashoffset 1s ease; }
+.gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gauge-center-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; line-height: 1; }
+.gauge-center-label { font-size: 12px; color: var(--color-text-tertiary); margin-top: 4px; }
+.add-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; border: 2px dashed var(--color-border); border-radius: var(--radius-md); background: transparent; cursor: pointer; font-size: 14px; color: var(--color-text-tertiary); font-weight: 500; transition: all var(--transition-fast); font-family: inherit; margin-bottom: var(--space-md); }
+.add-btn:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-light); }
+@media print {
+  .sidebar, .mobile-header, .page-nav, .sidebar-overlay { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; margin-bottom: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<a href="#contentArea" class="skip-link">Skip to content</a>
+<div class="app">
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #30</div>
+      <div class="sidebar-brand-title">Brand & Market Position</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Brand Strength Score</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete sections to build your score</div>
+    </div>
+    <div class="sidebar-footer"><div class="sidebar-footer-dot"></div>Auto-saved locally</div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation"><span></span></button>
+      <div style="flex:1"><strong style="font-size:15px;">Brand & Market</strong></div>
+      <div class="badge badge-primary" id="mobileScore">--/100</div>
+    </div>
+    <main class="content-area" id="contentArea" role="main"></main>
+  </div>
+</div>
+
+<script>
+(function() {
+'use strict';
+
+var STORAGE_KEY = 'exitosx-pb30-brand-market';
+
+var PAGES = [
+  { id: 'welcome', title: 'Welcome', phase: 'START', icon: '1' },
+  { id: 'why-brand-matters', title: 'Why Brand Affects Value', phase: 'UNDERSTAND', icon: '2' },
+  { id: 'brand-audit', title: 'Brand Audit', phase: 'ASSESS', icon: '3' },
+  { id: 'thought-leadership', title: 'Thought Leadership', phase: 'BUILD', icon: '4' },
+  { id: 'case-studies', title: 'Case Studies & Social Proof', phase: 'BUILD', icon: '5' },
+  { id: 'awards', title: 'Awards & Recognition', phase: 'BUILD', icon: '6' },
+  { id: 'digital-presence', title: 'Digital Presence', phase: 'BUILD', icon: '7' },
+  { id: 'positioning', title: 'Market Positioning', phase: 'STRATEGY', icon: '8' },
+  { id: 'brand-independence', title: 'Brand Independence', phase: 'STRATEGY', icon: '9' },
+  { id: 'mistakes', title: 'Common Mistakes', phase: 'PLAN', icon: '10' },
+  { id: 'dashboard', title: 'Dashboard', phase: 'RESULTS', icon: '11' }
+];
+
+function defaultState() {
+  return {
+    currentPage: 'welcome',
+    completed: {},
+    // Brand audit scores (1-5 each, mapped to 1-10 for display)
+    brandScores: { awareness: 0, perception: 0, digital: 0, socialProof: 0, thoughtLeadership: 0, independence: 0 },
+    brandNotes: { awareness: '', perception: '', digital: '', socialProof: '', thoughtLeadership: '', independence: '' },
+    // Thought leadership channels
+    tlChannels: { speaking: 0, articles: 0, linkedin: 0, podcasts: 0, research: 0, webinars: 0 },
+    // Owner-to-brand transition checklist
+    transitionChecklist: {},
+    // Case study pipeline
+    caseStudies: [
+      { customer: '', segment: '', outcome: '', status: '' }
+    ],
+    socialProofAssets: {},
+    // Awards tracker
+    awards: [
+      { name: '', org: '', deadline: '', submitted: '', result: '' }
+    ],
+    // Digital presence scores
+    digitalScores: { design: 0, content: 0, seo: 0, social: 0, leadGen: 0 },
+    digitalMetrics: { visitors: '', domainAuth: '', keywords: '', caseStudiesCount: '', followers: '' },
+    // Positioning
+    positionType: '',
+    positionStatement: '',
+    // Brand independence checklist
+    independenceChecklist: {},
+    // Brand assets inventory
+    brandAssets: [
+      { asset: 'Trademarks', status: '', ownership: '', transferReady: '' },
+      { asset: 'Domain names', status: '', ownership: '', transferReady: '' },
+      { asset: 'Social media accounts', status: '', ownership: '', transferReady: '' },
+      { asset: 'Content library', status: '', ownership: '', transferReady: '' },
+      { asset: 'Case studies', status: '', ownership: '', transferReady: '' },
+      { asset: 'Industry memberships', status: '', ownership: '', transferReady: '' },
+      { asset: 'Awards', status: '', ownership: '', transferReady: '' }
+    ],
+    mistakeFlags: {},
+    notes: {}
+  };
+}
+
+var state = loadState();
+
+function loadState() {
+  try { var s = localStorage.getItem(STORAGE_KEY); return s ? Object.assign(defaultState(), JSON.parse(s)) : defaultState(); }
+  catch(e) { return defaultState(); }
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  updateProgress(); updateScore();
+}
+
+function calcScore() {
+  var score = 0;
+  // Brand audit (0-30, 6 dims at 5 each)
+  var auditVals = Object.values(state.brandScores);
+  auditVals.forEach(function(v) { score += v; });
+  // Thought leadership activity (0-15)
+  var tlVals = Object.values(state.tlChannels);
+  var tlActive = tlVals.filter(function(v) { return v >= 3; }).length;
+  score += Math.min(tlActive * 3, 15);
+  // Case studies (0-15)
+  var publishedCS = state.caseStudies.filter(function(c) { return c.status === 'Published'; }).length;
+  score += Math.min(publishedCS * 3, 15);
+  // Digital scores (0-25, 5 dims at 5 each)
+  var digVals = Object.values(state.digitalScores);
+  digVals.forEach(function(v) { score += v; });
+  // Independence checklist (0-10)
+  var indCount = Object.keys(state.independenceChecklist).filter(function(k) { return state.independenceChecklist[k]; }).length;
+  score += Math.min(Math.round((indCount / 8) * 10), 10);
+  // Mistake awareness (0-5)
+  var mCount = Object.keys(state.mistakeFlags).filter(function(k) { return state.mistakeFlags[k]; }).length;
+  score += Math.min(mCount, 5);
+  return Math.min(Math.round(score), 100);
+}
+
+function getScoreColor(s) {
+  if (s >= 81) return 'var(--color-score-5)';
+  if (s >= 61) return 'var(--color-score-4)';
+  if (s >= 41) return 'var(--color-score-3)';
+  if (s >= 21) return 'var(--color-score-2)';
+  return 'var(--color-score-1)';
+}
+
+function getScoreLabel(s) {
+  if (s >= 81) return 'Strong brand -- premium multiple territory';
+  if (s >= 61) return 'Good foundation, build momentum';
+  if (s >= 41) return 'Moderate -- invest in key gaps';
+  if (s >= 21) return 'Significant brand building needed';
+  return 'Complete sections to build your score';
+}
+
+function updateScore() {
+  var score = calcScore();
+  document.getElementById('sidebarScore').innerHTML = score + '<span class="sidebar-score-max">/100</span>';
+  document.getElementById('mobileScore').textContent = score + '/100';
+  document.getElementById('sidebarScoreDesc').textContent = getScoreLabel(score);
+}
+
+function updateProgress() {
+  var total = PAGES.length - 2;
+  var done = Object.keys(state.completed).length;
+  var pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+}
+
+function isUnlocked(pageId) {
+  var idx = PAGES.findIndex(function(p) { return p.id === pageId; });
+  if (idx <= 0) return true;
+  return state.completed[PAGES[idx - 1].id] === true;
+}
+
+function renderNav() {
+  var nav = document.getElementById('sidebarNav');
+  var html = '', lastPhase = '';
+  PAGES.forEach(function(p) {
+    if (p.phase !== lastPhase) { html += '<div class="nav-section-label">' + p.phase + '</div>'; lastPhase = p.phase; }
+    var isActive = state.currentPage === p.id, isDone = state.completed[p.id], locked = !isUnlocked(p.id);
+    html += '<div class="nav-item' + (isActive?' active':'') + (isDone?' completed':'') + (locked?' locked':'') + '" data-page="' + p.id + '" role="button" tabindex="' + (locked?'-1':'0') + '" aria-current="' + (isActive?'step':'false') + '">';
+    html += '<span class="nav-icon">' + p.icon + '</span><span>' + p.title + '</span>';
+    if (isDone) html += '<span class="nav-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></span>';
+    html += '</div>';
+  });
+  nav.innerHTML = html;
+  nav.querySelectorAll('.nav-item:not(.locked)').forEach(function(el) {
+    el.addEventListener('click', function() { goToPage(el.dataset.page); });
+    el.addEventListener('keydown', function(e) { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); goToPage(el.dataset.page); } });
+  });
+}
+
+function goToPage(id) { if (!isUnlocked(id)) return; state.currentPage = id; saveState(); renderPage(); renderNav(); window.scrollTo({top:0,behavior:'smooth'}); closeSidebar(); }
+function completePage(id) { state.completed[id] = true; var idx = PAGES.findIndex(function(p){return p.id===id;}); if (idx < PAGES.length-1) state.currentPage = PAGES[idx+1].id; saveState(); renderPage(); renderNav(); window.scrollTo({top:0,behavior:'smooth'}); }
+function prevPage() { var idx = PAGES.findIndex(function(p){return p.id===state.currentPage;}); if (idx>0) goToPage(PAGES[idx-1].id); }
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('show'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('show'); }
+document.getElementById('hamburgerBtn').addEventListener('click', toggleSidebar);
+document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+function pageNav(showPrev, nextLabel, currentId) {
+  var html = '<div class="page-nav">';
+  html += showPrev ? '<button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button>' : '<div></div>';
+  if (nextLabel !== false) html += '<button class="btn btn-primary" onclick="PB.completePage(\'' + currentId + '\')">' + (nextLabel || 'Continue') + ' &rarr;</button>';
+  html += '</div>'; return html;
+}
+function scoreSelector(key, stateObj, stateKey, labels) {
+  var current = stateObj[stateKey] || 0;
+  var html = '<div class="score-selector" role="radiogroup" aria-label="Score for ' + key + '">';
+  for (var i = 1; i <= 5; i++) {
+    var sel = current === i ? ' selected' : '';
+    html += '<label class="score-option s' + i + sel + '" onclick="PB.setScore(\'' + stateKey + '\',\'' + key + '\',' + i + ')" tabindex="0" role="radio" aria-checked="' + (current===i) + '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();PB.setScore(\'' + stateKey + '\',\'' + key + '\',' + i + ');}">';
+    html += '<input type="radio" name="score-' + key + '" value="' + i + '"' + (current===i?' checked':'') + '>';
+    html += '<span class="score-number">' + i + '</span>';
+    html += '<span class="score-label-text">' + (labels ? labels[i-1] : ['Poor','Below Avg','Average','Good','Excellent'][i-1]) + '</span>';
+    html += '</label>';
+  }
+  html += '</div>'; return html;
+}
+
+function renderPage() {
+  var area = document.getElementById('contentArea');
+  var renderers = {
+    'welcome': renderWelcome, 'why-brand-matters': renderWhyBrand, 'brand-audit': renderBrandAudit,
+    'thought-leadership': renderThoughtLeadership, 'case-studies': renderCaseStudies, 'awards': renderAwards,
+    'digital-presence': renderDigitalPresence, 'positioning': renderPositioning,
+    'brand-independence': renderBrandIndependence, 'mistakes': renderMistakes, 'dashboard': renderDashboard
+  };
+  var fn = renderers[state.currentPage];
+  area.innerHTML = '<div class="page active">' + (fn ? fn() : '') + '</div>';
+  bindInputs();
+}
+
+function bindInputs() {
+  document.querySelectorAll('[data-bind]').forEach(function(el) {
+    var keys = el.dataset.bind.split('.');
+    var handler = function() {
+      var obj = state;
+      for (var i = 0; i < keys.length - 1; i++) { if (keys[i].match(/^\d+$/)) obj = obj[parseInt(keys[i])]; else obj = obj[keys[i]]; }
+      obj[keys[keys.length-1]] = el.value; saveState();
+    };
+    el.addEventListener('input', handler); el.addEventListener('change', handler);
+  });
+  document.querySelectorAll('.check-item[data-check]').forEach(function(el) {
+    var handler = function() {
+      var key = el.dataset.check;
+      if (key.startsWith('tl_')) state.transitionChecklist[key] = !state.transitionChecklist[key];
+      else if (key.startsWith('sp_')) state.socialProofAssets[key] = !state.socialProofAssets[key];
+      else if (key.startsWith('ind_')) state.independenceChecklist[key] = !state.independenceChecklist[key];
+      else state.mistakeFlags[key] = !state.mistakeFlags[key];
+      saveState(); renderPage();
+    };
+    el.addEventListener('click', handler);
+    el.addEventListener('keydown', function(e) { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); handler(); } });
+  });
+}
+
+function renderWelcome() {
+  return '<div class="welcome-hero">' +
+    '<div class="welcome-icon">&#127775;</div>' +
+    '<div class="t-display">Brand & Market Position Strengthening</div>' +
+    '<p class="t-body t-secondary" style="margin-top:var(--space-md)">Perception is valuation. A strong brand reduces customer acquisition costs, supports premium pricing, and gives buyers confidence the business will retain its market position through the ownership transition.</p>' +
+    '<div class="welcome-stats">' +
+    '<div class="welcome-stat"><div class="welcome-stat-value">+0.7x</div><div class="welcome-stat-label">Multiple premium for market recognition</div></div>' +
+    '<div class="welcome-stat"><div class="welcome-stat-value">-1.5x</div><div class="welcome-stat-label">Discount for owner-dependent brand</div></div>' +
+    '<div class="welcome-stat"><div class="welcome-stat-value">18mo</div><div class="welcome-stat-label">Lead time for brand building results</div></div>' +
+    '</div>' +
+    '<div class="callout callout-accent" style="text-align:left"><strong>The Core Principle:</strong> A buyer is not just purchasing revenue -- they are purchasing a market position. A business that is known, respected, and recognized in its industry is worth more than an equally profitable business that is invisible. Brand is the multiplier on top of the multiple.</div>' +
+    '</div>' + pageNav(false, 'Begin Assessment', 'welcome');
+}
+
+function renderWhyBrand() {
+  var html = '<div class="page-header"><div class="t-label">Understanding</div><div class="t-display">Why Brand Affects Exit Value</div><p class="t-body t-secondary">Brand attributes directly impact your multiple. Here is how buyers calculate brand value.</p></div>';
+  html += '<div class="card"><table class="data-table"><thead><tr><th>Brand Attribute</th><th>Multiple Impact</th><th>Why</th></tr></thead><tbody>' +
+    '<tr><td><strong>Market recognition</strong></td><td style="color:var(--color-success);font-weight:600">+0.3x to +0.7x</td><td>Reduces acquisition cost; brand is a balance sheet asset</td></tr>' +
+    '<tr><td><strong>Thought leadership</strong></td><td style="color:var(--color-success);font-weight:600">+0.2x to +0.5x</td><td>Creates competitive moat buyers cannot replicate quickly</td></tr>' +
+    '<tr><td><strong>Customer loyalty / NPS</strong></td><td style="color:var(--color-success);font-weight:600">+0.3x to +1.0x</td><td>Predicts retention; supports premium pricing</td></tr>' +
+    '<tr><td><strong>Digital presence / SEO</strong></td><td style="color:var(--color-success);font-weight:600">+0.2x to +0.5x</td><td>Organic traffic is an asset; reduces paid dependency</td></tr>' +
+    '<tr><td><strong>Awards and press</strong></td><td style="color:var(--color-success);font-weight:600">+0.1x to +0.3x</td><td>Third-party validation; simplifies buyer narrative</td></tr>' +
+    '<tr><td><strong>Owner-dependent brand</strong></td><td style="color:var(--color-danger);font-weight:600">-0.5x to -1.5x</td><td>Brand tied to founder is a liability, not an asset</td></tr>' +
+    '</tbody></table></div>';
+  html += '<div class="callout callout-danger"><strong>Brand vs. Owner Reputation:</strong> If your market position is "people buy from us because of John," that is a personal asset, not a business asset. If it is "people buy from Acme Corp because of our quality," that is a transferable asset buyers will pay for.</div>';
+  html += pageNav(true, 'Continue', 'why-brand-matters');
+  return html;
+}
+
+function renderBrandAudit() {
+  var dims = [
+    { key: 'awareness', label: 'Awareness', hint: 'When prospects think of your category, do they think of you? Are you on shortlists?' },
+    { key: 'perception', label: 'Perception', hint: 'Are you known for quality, value, innovation, or reliability?' },
+    { key: 'digital', label: 'Digital Presence', hint: 'Professional website? Key term rankings? Active social profiles?' },
+    { key: 'socialProof', label: 'Social Proof', hint: 'Published case studies, testimonials, reviews, press coverage?' },
+    { key: 'thoughtLeadership', label: 'Thought Leadership', hint: 'Content production, event speaking, quoted in industry media?' },
+    { key: 'independence', label: 'Brand Independence', hint: 'Is the brand tied to the company or to the owner personally?' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Assessment</div><div class="t-display">Brand Audit Baseline</div><p class="t-body t-secondary">Assess where your brand stands today across six dimensions. Score each 1-5.</p></div>';
+  dims.forEach(function(d) {
+    html += '<div class="card"><div class="form-label">' + d.label + '</div>' +
+      '<div class="form-hint" style="margin-bottom:var(--space-sm)">' + d.hint + '</div>' +
+      scoreSelector(d.key, state.brandScores, d.key, ['Invisible','Weak','Moderate','Strong','Dominant']) +
+      '<div class="form-group" style="margin-top:var(--space-sm)"><textarea class="form-input" placeholder="Key gaps and priority actions..." rows="2" data-bind="brandNotes.' + d.key + '">' + esc(state.brandNotes[d.key]) + '</textarea></div></div>';
+  });
+  var total = Object.values(state.brandScores).reduce(function(a,v){return a+v;},0);
+  if (total > 0) {
+    html += '<div class="summary-grid"><div class="summary-item"><div class="summary-item-value" style="color:' + getScoreColor(total*100/30) + '">' + total + '/30</div><div class="summary-item-label">Brand Audit Score</div></div></div>';
+  }
+  html += pageNav(true, 'Continue', 'brand-audit');
+  return html;
+}
+
+function renderThoughtLeadership() {
+  var channels = [
+    { key: 'speaking', label: 'Conference Speaking', hint: 'Establishes authority; transitions personal to company' },
+    { key: 'articles', label: 'Published Articles (Trade Media)', hint: 'Reaches your exact buyer persona; boosts SEO' },
+    { key: 'linkedin', label: 'LinkedIn Content Program', hint: 'Regular visibility; easy to start; demonstrates consistency' },
+    { key: 'podcasts', label: 'Podcast Guest Appearances', hint: 'Expanding reach; personal-to-company transition' },
+    { key: 'research', label: 'Original Research / Reports', hint: 'Becoming the source of truth; media citations' },
+    { key: 'webinars', label: 'Webinars / Workshops', hint: 'Lead generation; demonstrating expertise' }
+  ];
+  var transitionItems = [
+    'Co-authoring content with other team members',
+    'Introducing other leaders as speakers and media contacts',
+    'Publishing under the company brand, not your personal name',
+    'Building company social media alongside personal profiles',
+    'Creating a company newsletter, not a personal one'
+  ];
+  var html = '<div class="page-header"><div class="t-label">Build</div><div class="t-display">Thought Leadership Strategy</div><p class="t-body t-secondary">Thought leadership positions your company as the authoritative voice in your market. Score your activity level in each channel.</p></div>';
+  channels.forEach(function(ch) {
+    html += '<div class="card"><div class="form-label">' + ch.label + '</div>' +
+      '<div class="form-hint" style="margin-bottom:var(--space-sm)">' + ch.hint + '</div>' +
+      scoreSelector(ch.key, state.tlChannels, ch.key, ['None','Starting','Occasional','Regular','Dominant']) + '</div>';
+  });
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Owner-to-Brand Transition</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">If you are the personal thought leader, transition that authority to the company brand before exit.</p><div class="checklist">';
+  transitionItems.forEach(function(item, i) {
+    var key = 'tl_' + i;
+    var checked = state.transitionChecklist[key];
+    html += '<div class="check-item' + (checked ? ' checked' : '') + '" data-check="' + key + '" role="checkbox" aria-checked="' + !!checked + '" tabindex="0"><div class="check-box"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div><div class="check-text">' + item + '</div></div>';
+  });
+  html += '</div></div>';
+  html += pageNav(true, 'Continue', 'thought-leadership');
+  return html;
+}
+
+function renderCaseStudies() {
+  var spAssets = [
+    { key: 'sp_reviews', label: 'Active presence on review sites (G2, Capterra, Trustpilot)' },
+    { key: 'sp_logos', label: 'Customer logos displayed on website (with permission)' },
+    { key: 'sp_nps', label: 'NPS score measured and above 50' },
+    { key: 'sp_press', label: 'Media mentions or analyst coverage' },
+    { key: 'sp_video', label: 'Video testimonials from customers' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Build</div><div class="t-display">Case Studies & Social Proof</div><p class="t-body t-secondary">Case studies are the most powerful brand asset for B2B. Buyers read them during diligence to validate customer relationships.</p></div>';
+  html += '<div class="callout callout-info"><strong>Target:</strong> 5-8 case studies covering diverse industries, sizes, and outcomes. Best-in-class: 10-15 plus video testimonials and review site presence.</div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Case Study Pipeline</div>';
+  html += '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Customer</th><th>Segment</th><th>Key Outcome</th><th>Status</th><th></th></tr></thead><tbody>';
+  state.caseStudies.forEach(function(cs, i) {
+    html += '<tr><td><input class="form-input" type="text" value="' + esc(cs.customer) + '" data-bind="caseStudies.' + i + '.customer" placeholder="Customer name"></td>';
+    html += '<td><input class="form-input" type="text" value="' + esc(cs.segment) + '" data-bind="caseStudies.' + i + '.segment" placeholder="Industry/segment"></td>';
+    html += '<td><input class="form-input" type="text" value="' + esc(cs.outcome) + '" data-bind="caseStudies.' + i + '.outcome" placeholder="Key measurable result"></td>';
+    html += '<td><select class="form-input" data-bind="caseStudies.' + i + '.status"><option value="">--</option><option value="Identified"' + (cs.status==='Identified'?' selected':'') + '>Identified</option><option value="Draft"' + (cs.status==='Draft'?' selected':'') + '>Draft</option><option value="Review"' + (cs.status==='Review'?' selected':'') + '>In Review</option><option value="Published"' + (cs.status==='Published'?' selected':'') + '>Published</option></select></td>';
+    html += '<td>' + (state.caseStudies.length > 1 ? '<button class="btn btn-ghost btn-sm" onclick="PB.removeCaseStudy(' + i + ')" style="color:var(--color-danger)">Remove</button>' : '') + '</td></tr>';
+  });
+  html += '</tbody></table></div><button class="add-btn" onclick="PB.addCaseStudy()">+ Add Case Study</button></div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Additional Social Proof Assets</div><div class="checklist">';
+  spAssets.forEach(function(a) {
+    var checked = state.socialProofAssets[a.key];
+    html += '<div class="check-item' + (checked ? ' checked' : '') + '" data-check="' + a.key + '" role="checkbox" aria-checked="' + !!checked + '" tabindex="0"><div class="check-box"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div><div class="check-text">' + a.label + '</div></div>';
+  });
+  html += '</div></div>';
+  html += pageNav(true, 'Continue', 'case-studies');
+  return html;
+}
+
+function renderAwards() {
+  var html = '<div class="page-header"><div class="t-label">Build</div><div class="t-display">Awards & Recognition</div><p class="t-body t-secondary">Awards provide third-party validation disproportionately valuable in an exit context. Buyers cite awards in investment memos.</p></div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Awards Tracker</div>';
+  html += '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Award Name</th><th>Organization</th><th>Deadline</th><th>Submitted?</th><th>Result</th><th></th></tr></thead><tbody>';
+  state.awards.forEach(function(a, i) {
+    html += '<tr><td><input class="form-input" type="text" value="' + esc(a.name) + '" data-bind="awards.' + i + '.name" placeholder="Award name"></td>';
+    html += '<td><input class="form-input" type="text" value="' + esc(a.org) + '" data-bind="awards.' + i + '.org" placeholder="Org"></td>';
+    html += '<td><input class="form-input" type="date" value="' + esc(a.deadline) + '" data-bind="awards.' + i + '.deadline"></td>';
+    html += '<td><select class="form-input" data-bind="awards.' + i + '.submitted"><option value="">--</option><option value="No"' + (a.submitted==='No'?' selected':'') + '>No</option><option value="Yes"' + (a.submitted==='Yes'?' selected':'') + '>Yes</option></select></td>';
+    html += '<td><select class="form-input" data-bind="awards.' + i + '.result"><option value="">--</option><option value="Pending"' + (a.result==='Pending'?' selected':'') + '>Pending</option><option value="Won"' + (a.result==='Won'?' selected':'') + '>Won</option><option value="Finalist"' + (a.result==='Finalist'?' selected':'') + '>Finalist</option><option value="Not Selected"' + (a.result==='Not Selected'?' selected':'') + '>Not Selected</option></select></td>';
+    html += '<td>' + (state.awards.length > 1 ? '<button class="btn btn-ghost btn-sm" onclick="PB.removeAward(' + i + ')" style="color:var(--color-danger)">Remove</button>' : '') + '</td></tr>';
+  });
+  html += '</tbody></table></div><button class="add-btn" onclick="PB.addAward()">+ Add Award</button></div>';
+  html += '<div class="callout callout-accent"><strong>Strategy:</strong> Research which awards your competitors have won. Target those first. Submit broadly -- win rates are typically 10-20%. Feature every win on website, press release, email signature, and CIM.</div>';
+  html += pageNav(true, 'Continue', 'awards');
+  return html;
+}
+
+function renderDigitalPresence() {
+  var dims = [
+    { key: 'design', label: 'Website Design & UX', hint: 'Clean, professional, mobile-responsive, fast load times?' },
+    { key: 'content', label: 'Content Quality', hint: 'Clear value prop, case studies, blog, resource center?' },
+    { key: 'seo', label: 'Search Engine Optimization', hint: 'Ranking for key industry terms? Domain authority above 40?' },
+    { key: 'social', label: 'Social Media Presence', hint: 'Consistent posting? Company-branded (not owner-branded)?' },
+    { key: 'leadGen', label: 'Lead Generation', hint: 'Content offers, email capture, lead nurturing workflows?' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Build</div><div class="t-display">Digital Presence Optimization</div><p class="t-body t-secondary">Your digital presence is often the first thing a buyer reviews. Score each dimension and track key metrics.</p></div>';
+  dims.forEach(function(d) {
+    html += '<div class="card"><div class="form-label">' + d.label + '</div>' +
+      '<div class="form-hint" style="margin-bottom:var(--space-sm)">' + d.hint + '</div>' +
+      scoreSelector(d.key, state.digitalScores, d.key, ['Non-existent','Basic','Adequate','Strong','Best-in-Class']) + '</div>';
+  });
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Key Metrics (Baseline)</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">' +
+    '<div class="form-group"><label class="form-label">Monthly Website Visitors</label><input class="form-input" type="text" placeholder="e.g., 5,000" value="' + esc(state.digitalMetrics.visitors) + '" data-bind="digitalMetrics.visitors"></div>' +
+    '<div class="form-group"><label class="form-label">Domain Authority Score</label><input class="form-input" type="text" placeholder="e.g., 35" value="' + esc(state.digitalMetrics.domainAuth) + '" data-bind="digitalMetrics.domainAuth"></div>' +
+    '<div class="form-group"><label class="form-label">Keywords Ranking Page 1</label><input class="form-input" type="text" placeholder="e.g., 12" value="' + esc(state.digitalMetrics.keywords) + '" data-bind="digitalMetrics.keywords"></div>' +
+    '<div class="form-group"><label class="form-label">Company Social Followers</label><input class="form-input" type="text" placeholder="e.g., 2,500" value="' + esc(state.digitalMetrics.followers) + '" data-bind="digitalMetrics.followers"></div>' +
+    '</div></div>';
+  html += pageNav(true, 'Continue', 'digital-presence');
+  return html;
+}
+
+function renderPositioning() {
+  var positions = [
+    { type: 'leader', label: 'Category Leader', template: '"We are the leading [category] for [target market]"', example: '"The leading IT managed services provider for mid-market healthcare"' },
+    { type: 'specialist', label: 'Specialist / Niche', template: '"We are the only [company] that [unique capability]"', example: '"The only compliance platform built specifically for community banks"' },
+    { type: 'innovator', label: 'Innovator', template: '"We pioneered [approach] that delivers [outcome]"', example: '"We pioneered AI-driven quality inspection that reduces defect rates by 80%"' },
+    { type: 'trusted', label: 'Trusted Partner', template: '"For [X years], [customers] have trusted us for [outcome]"', example: '"For 25 years, Fortune 500 manufacturers have trusted us for critical components"' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Strategy</div><div class="t-display">Market Positioning</div><p class="t-body t-secondary">A clear, defensible market position is one of the most powerful value drivers. Choose your position and articulate it.</p></div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Choose Your Position Type</div>';
+  positions.forEach(function(pos) {
+    var selected = state.positionType === pos.type;
+    html += '<div class="card" style="cursor:pointer;border-color:' + (selected ? 'var(--color-primary)' : 'var(--color-border)') + ';background:' + (selected ? 'var(--color-primary-light)' : 'var(--color-surface)') + '" onclick="PB.setPosition(\'' + pos.type + '\')">' +
+      '<div class="t-h3">' + pos.label + '</div>' +
+      '<p class="t-small t-secondary" style="margin-top:4px">' + pos.template + '</p>' +
+      '<p class="t-caption" style="margin-top:4px;color:var(--color-text-tertiary);font-style:italic">Example: ' + pos.example + '</p></div>';
+  });
+  html += '</div>';
+  html += '<div class="card"><div class="form-group"><label class="form-label">Your Positioning Statement</label>' +
+    '<textarea class="form-input" placeholder="Write your one-sentence market positioning statement..." rows="3" data-bind="positionStatement">' + esc(state.positionStatement) + '</textarea>' +
+    '<div class="form-hint">Every employee should be able to articulate this in one sentence.</div></div></div>';
+  html += '<div class="callout callout-info"><strong>Positioning and Multiples:</strong> A company positioned as the category leader or the specialist in a growing niche will attract strategic buyers willing to pay premium multiples. Strategic buyers pay for market position because it is the one thing they cannot build internally.</div>';
+  html += pageNav(true, 'Continue', 'positioning');
+  return html;
+}
+
+function renderBrandIndependence() {
+  var items = [
+    'Company name, logo, and visual identity are formally owned by the company',
+    'Customer relationships are managed by the team, not exclusively by the owner',
+    'Thought leadership content is published under the company brand',
+    'Social media presence is company-branded, not owner-branded',
+    'Key industry relationships are held by the company',
+    'Speaking engagements include team members, not just the owner',
+    'Brand guidelines document exists and is followed consistently',
+    'Customer-facing materials reference the company, not the individual'
+  ];
+  var html = '<div class="page-header"><div class="t-label">Strategy</div><div class="t-display">Building a Brand That Outlasts the Owner</div><p class="t-body t-secondary">The most important brand task pre-exit: ensuring the brand is a company asset, not the founder\'s personal property.</p></div>';
+  html += '<div class="callout callout-danger"><strong>Key Question:</strong> If you were hit by a bus tomorrow, would your brand still attract and retain customers? If the answer is no, your brand is a personal asset -- and buyers will discount accordingly.</div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Brand Independence Checklist</div><div class="checklist">';
+  items.forEach(function(item, i) {
+    var key = 'ind_' + i;
+    var checked = state.independenceChecklist[key];
+    html += '<div class="check-item' + (checked ? ' checked' : '') + '" data-check="' + key + '" role="checkbox" aria-checked="' + !!checked + '" tabindex="0"><div class="check-box"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div><div class="check-text">' + item + '</div></div>';
+  });
+  html += '</div></div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Brand Assets Inventory</div>';
+  html += '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Asset</th><th>Status</th><th>Ownership</th><th>Transfer Ready?</th></tr></thead><tbody>';
+  state.brandAssets.forEach(function(a, i) {
+    html += '<tr><td><strong>' + esc(a.asset) + '</strong></td>';
+    html += '<td><input class="form-input" type="text" value="' + esc(a.status) + '" data-bind="brandAssets.' + i + '.status" placeholder="Active/Pending"></td>';
+    html += '<td><input class="form-input" type="text" value="' + esc(a.ownership) + '" data-bind="brandAssets.' + i + '.ownership" placeholder="Company/Personal"></td>';
+    html += '<td><select class="form-input" data-bind="brandAssets.' + i + '.transferReady"><option value="">--</option><option value="Yes"' + (a.transferReady==='Yes'?' selected':'') + '>Yes</option><option value="No"' + (a.transferReady==='No'?' selected':'') + '>No</option><option value="Partial"' + (a.transferReady==='Partial'?' selected':'') + '>Partial</option></select></td></tr>';
+  });
+  html += '</tbody></table></div></div>';
+  html += pageNav(true, 'Continue', 'brand-independence');
+  return html;
+}
+
+function renderMistakes() {
+  var mistakes = [
+    { key: 'm1', title: 'Building the Owner\'s Personal Brand Instead of the Company Brand', desc: 'An owner who is the face of the industry but whose company is invisible has created a personal asset, not a business asset.', fix: 'Shift all thought leadership from personal to company branding 18-24 months before exit.' },
+    { key: 'm2', title: 'Neglecting Digital Presence', desc: 'A buyer\'s analyst will Google your company in the first 5 minutes. A dated website and empty social profiles create an immediate negative impression.', fix: 'Invest in website, SEO, and social media as non-negotiable brand infrastructure.' },
+    { key: 'm3', title: 'Skipping Case Studies Because Customers Are "Too Busy"', desc: 'Businesses that ask customers for case studies get them 80% of the time.', fix: 'Offer to write the case study for the customer. Send a draft for approval. Most will say yes.' },
+    { key: 'm4', title: 'Pursuing Awards Randomly', desc: 'Random applications waste time. A targeted strategy focused on 5-10 most relevant awards is far more effective.', fix: 'Research which awards your competitors have won. Target those first.' },
+    { key: 'm5', title: 'Waiting Until Ready to Sell to Build Brand', desc: 'Brand building takes 12-24 months to show results. Starting 3 months before going to market will not move the needle.', fix: 'Start brand building the moment you begin thinking about exit. It compounds over time.' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Plan</div><div class="t-display">Common Mistakes</div><p class="t-body t-secondary">Flag each mistake you have addressed or are actively working on.</p></div>';
+  mistakes.forEach(function(m) {
+    var checked = state.mistakeFlags[m.key];
+    html += '<div class="card"><div class="check-item' + (checked ? ' checked' : '') + '" data-check="' + m.key + '" role="checkbox" aria-checked="' + !!checked + '" tabindex="0" style="padding:0"><div class="check-box"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div>' +
+      '<div style="flex:1"><div class="t-h3">' + m.title + '</div><p class="t-small t-secondary" style="margin:var(--space-sm) 0">' + m.desc + '</p>' +
+      '<div style="padding:var(--space-sm) var(--space-md);background:var(--color-success-light);border-radius:var(--radius-sm);font-size:13px;color:var(--color-success)"><strong>Solution:</strong> ' + m.fix + '</div></div></div></div>';
+  });
+  html += pageNav(true, 'View Dashboard', 'mistakes');
+  return html;
+}
+
+function renderDashboard() {
+  var score = calcScore();
+  var sc = getScoreColor(score);
+  var r = 60, circ = 2 * Math.PI * r, offset = circ - (score/100) * circ;
+  var html = '<div class="page-header"><div class="t-label">Results</div><div class="t-display">Brand Strength Dashboard</div></div>';
+  html += '<div class="gauge-wrap"><div class="gauge-ring"><svg viewBox="0 0 160 160"><circle class="gauge-bg" cx="80" cy="80" r="' + r + '"/><circle class="gauge-fill" cx="80" cy="80" r="' + r + '" stroke="' + sc + '" stroke-dasharray="' + circ + '" stroke-dashoffset="' + offset + '"/></svg><div class="gauge-center"><div class="gauge-center-value" style="color:' + sc + '">' + score + '</div><div class="gauge-center-label">of 100</div></div></div></div>';
+
+  var auditTotal = Object.values(state.brandScores).reduce(function(a,v){return a+v;},0);
+  var digTotal = Object.values(state.digitalScores).reduce(function(a,v){return a+v;},0);
+  var pubCS = state.caseStudies.filter(function(c){return c.status==='Published';}).length;
+  var wonAwards = state.awards.filter(function(a){return a.result==='Won'||a.result==='Finalist';}).length;
+  var indDone = Object.keys(state.independenceChecklist).filter(function(k){return state.independenceChecklist[k];}).length;
+
+  html += '<div class="summary-grid">' +
+    '<div class="summary-item"><div class="summary-item-value">' + auditTotal + '/30</div><div class="summary-item-label">Brand Audit</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value">' + digTotal + '/25</div><div class="summary-item-label">Digital Score</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value">' + pubCS + '</div><div class="summary-item-label">Case Studies</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value">' + wonAwards + '</div><div class="summary-item-label">Awards Won</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value">' + indDone + '/8</div><div class="summary-item-label">Independence</div></div>' +
+    '</div>';
+
+  var cats = [
+    { label: 'Brand Audit', score: Math.round(auditTotal*100/30) },
+    { label: 'Digital Presence', score: digTotal*4 },
+    { label: 'Case Studies', score: Math.min(pubCS*20, 100) },
+    { label: 'Awards', score: Math.min(wonAwards*25, 100) },
+    { label: 'Independence', score: Math.round(indDone*100/8) }
+  ];
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Score Breakdown</div><div class="bar-chart">';
+  cats.forEach(function(c) {
+    var color = c.score >= 70 ? 'var(--color-success)' : c.score >= 40 ? 'var(--color-warning)' : 'var(--color-danger)';
+    html += '<div class="bar-row"><div class="bar-label">' + c.label + '</div><div class="bar-track"><div class="bar-fill" style="width:' + c.score + '%;background:' + color + '"><span class="bar-value">' + c.score + '%</span></div></div></div>';
+  });
+  html += '</div></div>';
+
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Recommendations</div>';
+  if (auditTotal < 18) html += '<div class="callout callout-warning" style="margin-bottom:var(--space-sm)">Brand audit score below 60%. Start with the lowest-scoring dimensions and invest 18-24 months before going to market.</div>';
+  if (state.brandScores.independence <= 2) html += '<div class="callout callout-danger" style="margin-bottom:var(--space-sm)">Brand independence is critically low. Your brand appears tied to the owner. Begin transitioning immediately -- this is the #1 brand risk.</div>';
+  if (pubCS < 3) html += '<div class="callout callout-warning" style="margin-bottom:var(--space-sm)">Fewer than 3 published case studies. Target 5-8 covering diverse segments.</div>';
+  if (digTotal < 15) html += '<div class="callout callout-warning" style="margin-bottom:var(--space-sm)">Digital presence needs investment. Prioritize website redesign and SEO program.</div>';
+  if (score >= 70) html += '<div class="callout callout-info" style="background:var(--color-success-light);border-color:var(--color-success);color:var(--color-success)"><strong>Strong brand position.</strong> Your brand is a genuine value driver. Feature this prominently in your CIM and buyer presentations.</div>';
+  html += '</div>';
+
+  html += '<div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-top:var(--space-lg)">' +
+    '<button class="btn btn-primary" onclick="PB.exportResults()">Export Summary</button>' +
+    '<button class="btn btn-secondary" onclick="window.print()">Print</button>' +
+    '<button class="btn btn-ghost" onclick="PB.resetAll()" style="color:var(--color-danger)">Reset All Data</button></div>';
+  html += '<div class="page-nav"><button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button><div></div></div>';
+  return html;
+}
+
+function exportResults() {
+  var score = calcScore();
+  var text = 'PLAYBOOK #30: BRAND & MARKET POSITION STRENGTHENING\nGenerated: ' + new Date().toLocaleDateString() + '\n' + '='.repeat(50) + '\n\n';
+  text += 'BRAND STRENGTH SCORE: ' + score + '/100\n\n';
+  text += 'BRAND AUDIT: ' + Object.values(state.brandScores).reduce(function(a,v){return a+v;},0) + '/30\n';
+  text += 'DIGITAL SCORE: ' + Object.values(state.digitalScores).reduce(function(a,v){return a+v;},0) + '/25\n';
+  text += 'CASE STUDIES PUBLISHED: ' + state.caseStudies.filter(function(c){return c.status==='Published';}).length + '\n';
+  text += 'AWARDS WON: ' + state.awards.filter(function(a){return a.result==='Won';}).length + '\n';
+  text += 'POSITIONING: ' + (state.positionStatement || 'Not defined') + '\n';
+  var blob = new Blob([text], {type:'text/plain'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href = url; a.download = 'playbook-30-brand-market.txt'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function resetAll() {
+  if (confirm('This will erase all your data. Are you sure?')) { localStorage.removeItem(STORAGE_KEY); state = defaultState(); saveState(); goToPage('welcome'); }
+}
+
+window.PB = {
+  prevPage: prevPage, completePage: completePage, exportResults: exportResults, resetAll: resetAll,
+  setScore: function(stateKey, dimKey, val) {
+    if (state[stateKey] !== undefined && typeof state[stateKey] === 'object' && !Array.isArray(state[stateKey])) state[stateKey][dimKey] = val;
+    else state[stateKey] = val;
+    saveState(); renderPage();
+  },
+  setPosition: function(type) { state.positionType = type; saveState(); renderPage(); },
+  addCaseStudy: function() { state.caseStudies.push({customer:'',segment:'',outcome:'',status:''}); saveState(); renderPage(); },
+  removeCaseStudy: function(i) { state.caseStudies.splice(i,1); saveState(); renderPage(); },
+  addAward: function() { state.awards.push({name:'',org:'',deadline:'',submitted:'',result:''}); saveState(); renderPage(); },
+  removeAward: function(i) { state.awards.splice(i,1); saveState(); renderPage(); }
+};
+
+renderNav(); renderPage(); updateProgress(); updateScore();
+})();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

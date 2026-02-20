@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deal Fatigue Management | Exit Planning Playbook #42</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #8B4513;
+  --color-primary-light: #FDF4EC;
+  --color-primary-hover: #723A0F;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px; --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06); --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease; --transition-normal: 250ms ease; --transition-slow: 400ms cubic-bezier(0.16,1,0.3,1);
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 32px; --space-2xl: 48px; --space-3xl: 64px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--font-body);font-size:16px;line-height:1.6;color:var(--color-text);background:var(--color-bg);-webkit-font-smoothing:antialiased;min-height:100vh}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,textarea,select{font-family:inherit;font-size:inherit}
+a.skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:1000}
+a.skip-link:focus{position:fixed;top:10px;left:10px;width:auto;height:auto;padding:12px 20px;background:var(--color-primary);color:#fff;border-radius:var(--radius-sm);font-weight:600;z-index:1000}
+.t-display{font-family:var(--font-display);font-size:clamp(26px,4vw,38px);font-weight:700;line-height:1.2;letter-spacing:-0.02em}
+.t-h1{font-family:var(--font-display);font-size:clamp(22px,3vw,30px);font-weight:700;line-height:1.25}
+.t-h2{font-size:20px;font-weight:600;line-height:1.3}
+.t-h3{font-size:16px;font-weight:600;line-height:1.4}
+.t-body{font-size:16px;line-height:1.6}
+.t-small{font-size:14px;line-height:1.5}
+.t-caption{font-size:12px;line-height:1.4;letter-spacing:0.02em}
+.t-label{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-text-tertiary)}
+.t-secondary{color:var(--color-text-secondary)}
+.app{display:flex;min-height:100vh}
+.sidebar{width:260px;min-width:260px;background:var(--color-text);color:#fff;padding:var(--space-lg);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform var(--transition-slow);overflow-y:auto}
+.main-content{flex:1;margin-left:260px;min-height:100vh}
+.content-area{max-width:800px;margin:0 auto;padding:var(--space-2xl) var(--space-lg)}
+.mobile-header{display:none;position:sticky;top:0;z-index:90;background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:var(--space-md) var(--space-lg);align-items:center;gap:var(--space-md)}
+.hamburger{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm)}
+.hamburger:hover{background:var(--color-surface-alt)}
+.hamburger span{display:block;width:18px;height:2px;background:var(--color-text);position:relative}
+.hamburger span::before,.hamburger span::after{content:'';position:absolute;width:18px;height:2px;background:var(--color-text);left:0}
+.hamburger span::before{top:-6px}
+.hamburger span::after{top:6px}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:99}
+@media(max-width:900px){.sidebar{transform:translateX(-260px)}.sidebar.open{transform:translateX(0)}.sidebar-overlay.show{display:block}.main-content{margin-left:0!important}.mobile-header{display:flex}.content-area{padding:var(--space-lg) var(--space-md)}}
+.sidebar-brand{margin-bottom:var(--space-xl)}
+.sidebar-brand-label{font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:var(--space-xs)}
+.sidebar-brand-title{font-family:var(--font-display);font-size:18px;font-weight:700;color:#fff;line-height:1.3}
+.sidebar-progress{margin-bottom:var(--space-xl);padding:var(--space-md);background:rgba(255,255,255,0.06);border-radius:var(--radius-md)}
+.sidebar-progress-label{font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:var(--space-sm)}
+.sidebar-progress-bar{height:4px;background:rgba(255,255,255,0.12);border-radius:2px;overflow:hidden}
+.sidebar-progress-fill{height:100%;background:var(--color-accent);border-radius:2px;transition:width var(--transition-slow)}
+.sidebar-progress-text{font-size:12px;color:rgba(255,255,255,0.5);margin-top:var(--space-sm);text-align:right}
+.sidebar-nav{flex:1;display:flex;flex-direction:column;gap:2px}
+.nav-section-label{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);padding:var(--space-md) var(--space-sm) var(--space-xs)}
+.nav-item{display:flex;align-items:center;gap:var(--space-md);padding:10px 12px;border-radius:var(--radius-sm);color:rgba(255,255,255,0.6);font-size:14px;transition:all var(--transition-fast);cursor:pointer}
+.nav-item:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85)}
+.nav-item.active{background:rgba(255,255,255,0.1);color:#fff;font-weight:500}
+.nav-item.completed .nav-check{display:flex}
+.nav-item.locked{opacity:0.35;cursor:default}
+.nav-item.locked:hover{background:none;color:rgba(255,255,255,0.35)}
+.nav-icon{width:20px;text-align:center;flex-shrink:0;font-size:14px}
+.nav-check{display:none;width:16px;height:16px;background:var(--color-success);border-radius:50%;align-items:center;justify-content:center;margin-left:auto;flex-shrink:0}
+.nav-check svg{width:10px;height:10px;stroke:#fff;stroke-width:2.5;fill:none}
+.sidebar-score{margin-top:auto;padding-top:var(--space-lg);border-top:1px solid rgba(255,255,255,0.08)}
+.sidebar-score-label{font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:var(--space-sm)}
+.sidebar-score-value{font-family:var(--font-display);font-size:36px;font-weight:700;color:#fff;line-height:1}
+.sidebar-score-max{font-size:18px;color:rgba(255,255,255,0.3);font-weight:400}
+.sidebar-score-desc{font-size:12px;color:rgba(255,255,255,0.4);margin-top:var(--space-xs)}
+.sidebar-footer{margin-top:var(--space-lg);padding-top:var(--space-md);border-top:1px solid rgba(255,255,255,0.08);font-size:12px;color:rgba(255,255,255,0.3);display:flex;align-items:center;gap:6px}
+.sidebar-footer-dot{width:6px;height:6px;border-radius:50%;background:var(--color-success)}
+.card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-lg);transition:box-shadow var(--transition-normal);margin-bottom:var(--space-md)}
+.card:hover{box-shadow:var(--shadow-sm)}
+.callout{padding:var(--space-md) var(--space-lg);border-radius:var(--radius-md);border-left:3px solid;font-size:14px;line-height:1.6;margin-bottom:var(--space-md)}
+.callout-info{background:var(--color-primary-light);border-color:var(--color-primary);color:var(--color-primary)}
+.callout-warning{background:var(--color-warning-light);border-color:var(--color-warning);color:#7C5A10}
+.callout-danger{background:var(--color-danger-light);border-color:var(--color-danger);color:var(--color-danger)}
+.callout-accent{background:var(--color-accent-light);border-color:var(--color-accent);color:#8B5A20}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-sm);padding:10px 20px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;transition:all var(--transition-fast);white-space:nowrap}
+.btn-primary{background:var(--color-primary);color:#fff}
+.btn-primary:hover{background:var(--color-primary-hover);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+.btn-secondary{background:var(--color-surface);color:var(--color-text);border:1px solid var(--color-border)}
+.btn-secondary:hover{background:var(--color-surface-alt)}
+.btn-ghost{color:var(--color-text-secondary);padding:8px 12px}
+.btn-ghost:hover{background:var(--color-surface-alt);color:var(--color-text)}
+.btn-sm{padding:6px 14px;font-size:13px}
+.btn:disabled{opacity:0.4;cursor:not-allowed;transform:none!important}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:500}
+.badge-success{background:var(--color-success-light);color:var(--color-success)}
+.badge-warning{background:var(--color-warning-light);color:var(--color-warning)}
+.badge-danger{background:var(--color-danger-light);color:var(--color-danger)}
+.badge-primary{background:var(--color-primary-light);color:var(--color-primary)}
+.form-group{margin-bottom:var(--space-lg)}
+.form-label{display:block;font-size:14px;font-weight:500;margin-bottom:var(--space-sm)}
+.form-hint{font-size:13px;color:var(--color-text-tertiary);margin-top:var(--space-xs)}
+.form-input{width:100%;padding:10px 14px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:15px;background:var(--color-surface);transition:all var(--transition-fast);color:var(--color-text)}
+.form-input:focus{outline:none;border-color:var(--color-primary);box-shadow:0 0 0 3px var(--color-primary-light)}
+textarea.form-input{min-height:80px;resize:vertical;line-height:1.5}
+select.form-input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+.score-selector{display:flex;gap:var(--space-sm)}
+.score-option{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;border:2px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;transition:all var(--transition-fast);text-align:center}
+.score-option:hover{border-color:var(--color-text-tertiary);background:var(--color-surface-alt)}
+.score-option.selected{border-color:var(--color-primary);background:var(--color-primary-light)}
+.score-option input[type="radio"]{position:absolute;opacity:0;width:0;height:0}
+.score-number{font-size:22px;font-weight:700;line-height:1}
+.score-label-text{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.04em;color:var(--color-text-secondary);line-height:1.2}
+.score-option.s1 .score-number{color:var(--color-score-1)}.score-option.s2 .score-number{color:var(--color-score-2)}.score-option.s3 .score-number{color:var(--color-score-3)}.score-option.s4 .score-number{color:var(--color-score-4)}.score-option.s5 .score-number{color:var(--color-score-5)}
+.score-option.selected.s1{border-color:var(--color-score-1);background:#FFF5F5}.score-option.selected.s2{border-color:var(--color-score-2);background:#FFFBEB}.score-option.selected.s3{border-color:var(--color-score-3);background:#FFF8EB}.score-option.selected.s4{border-color:var(--color-score-4);background:#E8F8EE}.score-option.selected.s5{border-color:var(--color-score-5);background:#E0F5E8}
+@media(max-width:600px){.score-selector{gap:4px}.score-option{padding:10px 4px}.score-number{font-size:18px}.score-label-text{font-size:9px}}
+.checklist{display:flex;flex-direction:column;gap:2px}
+.check-item{display:flex;align-items:flex-start;gap:var(--space-md);padding:var(--space-md);border-radius:var(--radius-sm);cursor:pointer;transition:background var(--transition-fast)}
+.check-item:hover{background:var(--color-surface-alt)}
+.check-box{width:22px;height:22px;border:2px solid var(--color-border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all var(--transition-fast);margin-top:1px}
+.check-item.checked .check-box{background:var(--color-primary);border-color:var(--color-primary)}
+.check-item.checked .check-box svg{opacity:1}
+.check-box svg{width:14px;height:14px;stroke:#fff;stroke-width:2.5;fill:none;opacity:0}
+.check-text{font-size:14px;line-height:1.5}
+.check-item.checked .check-text{color:var(--color-text-tertiary);text-decoration:line-through}
+.page{display:none;animation:fadeIn 0.3s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.page-header{margin-bottom:var(--space-2xl)}
+.page-header .t-label{margin-bottom:var(--space-sm)}
+.page-header .t-display{margin-bottom:var(--space-md)}
+.page-header .t-body{color:var(--color-text-secondary);max-width:600px}
+.page-nav{display:flex;justify-content:space-between;align-items:center;margin-top:var(--space-2xl);padding-top:var(--space-xl);border-top:1px solid var(--color-border)}
+.welcome-hero{text-align:center;padding:var(--space-3xl) var(--space-lg);max-width:640px;margin:0 auto}
+.welcome-icon{width:72px;height:72px;background:var(--color-primary-light);border-radius:var(--radius-xl);display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-lg);font-size:32px}
+.welcome-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md);margin:var(--space-2xl) 0;text-align:center}
+.welcome-stat{padding:var(--space-lg);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md)}
+.welcome-stat-value{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--color-primary)}
+.welcome-stat-label{font-size:13px;color:var(--color-text-secondary);margin-top:4px}
+@media(max-width:600px){.welcome-stats{grid-template-columns:1fr}.welcome-hero{padding:var(--space-2xl) var(--space-md)}}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--space-md);margin-bottom:var(--space-lg)}
+.summary-item{padding:var(--space-lg);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);text-align:center}
+.summary-item-value{font-family:var(--font-display);font-size:28px;font-weight:700}
+.summary-item-label{font-size:12px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:0.04em;margin-top:var(--space-xs)}
+.bar-chart{display:flex;flex-direction:column;gap:var(--space-md)}
+.bar-row{display:flex;align-items:center;gap:var(--space-md)}
+.bar-label{width:140px;flex-shrink:0;font-size:13px;color:var(--color-text-secondary);text-align:right}
+.bar-track{flex:1;height:24px;background:var(--color-surface-alt);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width 0.8s cubic-bezier(0.16,1,0.3,1);display:flex;align-items:center;justify-content:flex-end;padding-right:8px}
+.bar-value{font-size:12px;font-weight:600;color:#fff}
+@media(max-width:600px){.bar-label{width:90px;font-size:11px}}
+.data-table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px;margin-bottom:var(--space-md)}
+.data-table th{text-align:left;padding:var(--space-sm) var(--space-md);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-text-tertiary);border-bottom:2px solid var(--color-border)}
+.data-table td{padding:var(--space-sm) var(--space-md);border-bottom:1px solid var(--color-border-light);vertical-align:top}
+.data-table tr:last-child td{border-bottom:none}
+.data-table input,.data-table select{width:100%;padding:6px 10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;background:var(--color-surface)}
+.data-table input:focus,.data-table select:focus{outline:none;border-color:var(--color-primary);box-shadow:0 0 0 2px var(--color-primary-light)}
+.gauge-wrap{display:flex;justify-content:center;margin:var(--space-lg) 0}
+.gauge-ring{position:relative;width:160px;height:160px}
+.gauge-ring svg{width:160px;height:160px;transform:rotate(-90deg)}
+.gauge-ring circle{fill:none;stroke-width:8;stroke-linecap:round}
+.gauge-bg{stroke:var(--color-border)}
+.gauge-fill{transition:stroke-dashoffset 1s ease}
+.gauge-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gauge-center-value{font-family:var(--font-display);font-size:36px;font-weight:700;line-height:1}
+.gauge-center-label{font-size:12px;color:var(--color-text-tertiary);margin-top:4px}
+.add-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border:2px dashed var(--color-border);border-radius:var(--radius-md);background:transparent;cursor:pointer;font-size:14px;color:var(--color-text-tertiary);font-weight:500;transition:all var(--transition-fast);font-family:inherit;margin-bottom:var(--space-md)}
+.add-btn:hover{border-color:var(--color-primary);color:var(--color-primary);background:var(--color-primary-light)}
+.stage-card{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-lg);margin-bottom:var(--space-md);border-left:4px solid}
+.energy-meter{display:flex;gap:2px;margin-top:var(--space-sm)}
+.energy-block{width:24px;height:24px;border-radius:4px;border:1px solid var(--color-border);cursor:pointer;transition:all var(--transition-fast)}
+.energy-block:hover{opacity:0.8}
+.energy-block.active{border-color:transparent}
+@media print{.sidebar,.mobile-header,.page-nav,.sidebar-overlay{display:none!important}.main-content{margin-left:0!important}.page{display:block!important;page-break-inside:avoid;margin-bottom:24px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
+:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px}
+</style>
+</head>
+<body>
+<a href="#contentArea" class="skip-link">Skip to content</a>
+<div class="app">
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #42</div>
+      <div class="sidebar-brand-title">Deal Fatigue Management</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Preparedness Score</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete sections to build your score</div>
+    </div>
+    <div class="sidebar-footer"><div class="sidebar-footer-dot"></div>Auto-saved locally</div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation"><span></span></button>
+      <div style="flex:1"><strong style="font-size:15px;">Deal Fatigue</strong></div>
+      <div class="badge badge-primary" id="mobileScore">--/100</div>
+    </div>
+    <main class="content-area" id="contentArea" role="main"></main>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+var SK='exitosx-pb42-deal-fatigue';
+
+var PAGES=[
+  {id:'welcome',title:'Welcome',phase:'START',icon:'1'},
+  {id:'anatomy',title:'Anatomy of Deal Fatigue',phase:'UNDERSTAND',icon:'2'},
+  {id:'deal-team',title:'Building Your Deal Team',phase:'PREPARE',icon:'3'},
+  {id:'business-performance',title:'Business Performance',phase:'PREPARE',icon:'4'},
+  {id:'stress-management',title:'Stress & Mental Health',phase:'PROTECT',icon:'5'},
+  {id:'milestones',title:'Milestone Management',phase:'EXECUTE',icon:'6'},
+  {id:'recovery',title:'Recovery Strategies',phase:'EXECUTE',icon:'7'},
+  {id:'leverage',title:'Maintaining Leverage',phase:'EXECUTE',icon:'8'},
+  {id:'relationships',title:'Protecting Relationships',phase:'PROTECT',icon:'9'},
+  {id:'early-warning',title:'Early Warning Checklist',phase:'PLAN',icon:'10'},
+  {id:'dashboard',title:'Dashboard',phase:'RESULTS',icon:'11'}
+];
+
+function defaultState(){return{currentPage:'welcome',completed:{},
+  currentStage:'', // euphoria, engagement, grind, despair, resolution
+  dealTeam:[
+    {role:'Deal Team Lead',name:'',contact:'',bonus:''},
+    {role:'M&A Advisor',name:'',contact:'',bonus:''},
+    {role:'Transaction Attorney',name:'',contact:'',bonus:''},
+    {role:'Tax Advisor / CPA',name:'',contact:'',bonus:''},
+    {role:'Wealth Advisor',name:'',contact:'',bonus:''}
+  ],
+  teamScores:{leadInPlace:0,commProtocol:0,delegation:0},
+  bizScores:{revenue:0,pipeline:0,operations:0,monitoring:0},
+  stressScores:{exercise:0,sleep:0,support:0,boundaries:0},
+  supportSystem:{confidant:'',peerMentor:'',therapist:'',dealFreeHours:''},
+  milestones:[
+    {name:'LOI Signed',target:'',actual:'',notes:''},
+    {name:'Data Room Populated',target:'',actual:'',notes:''},
+    {name:'Financial Diligence Complete',target:'',actual:'',notes:''},
+    {name:'Operational Diligence Complete',target:'',actual:'',notes:''},
+    {name:'Legal Diligence Complete',target:'',actual:'',notes:''},
+    {name:'Purchase Agreement First Draft',target:'',actual:'',notes:''},
+    {name:'Purchase Agreement Negotiated',target:'',actual:'',notes:''},
+    {name:'Financing Secured',target:'',actual:'',notes:''},
+    {name:'Closing Conditions Met',target:'',actual:'',notes:''},
+    {name:'Closing',target:'',actual:'',notes:''}
+  ],
+  leverageScores:{performance:0,alternatives:0,walkAway:0,information:0},
+  relationshipScores:{spouse:0,management:0,advisors:0,buyer:0},
+  earlyWarning:{},
+  weeklyEnergy:[],
+  walkAwayNumber:'',
+  notes:{}};}
+
+var state=loadState();
+function loadState(){try{var s=localStorage.getItem(SK);return s?Object.assign(defaultState(),JSON.parse(s)):defaultState();}catch(e){return defaultState();}}
+function saveState(){try{localStorage.setItem(SK,JSON.stringify(state));}catch(e){}updateProgress();updateScore();}
+
+function calcScore(){
+  var s=0;
+  // Team (0-15)
+  Object.values(state.teamScores).forEach(function(v){s+=v;});
+  // Business performance (0-20)
+  Object.values(state.bizScores).forEach(function(v){s+=v;});
+  // Stress management (0-20)
+  Object.values(state.stressScores).forEach(function(v){s+=v;});
+  // Support system (0-10)
+  if(state.supportSystem.confidant) s+=3;
+  if(state.supportSystem.peerMentor) s+=3;
+  if(state.supportSystem.dealFreeHours) s+=4;
+  // Leverage (0-20)
+  Object.values(state.leverageScores).forEach(function(v){s+=v;});
+  // Relationships (0-10)
+  var relTotal=Object.values(state.relationshipScores).reduce(function(a,v){return a+v;},0);
+  s+=Math.round(relTotal/2);
+  // Walk-away number defined (0-5)
+  if(state.walkAwayNumber) s+=5;
+  return Math.min(Math.round(s),100);
+}
+
+function getScoreColor(s){if(s>=81)return'var(--color-score-5)';if(s>=61)return'var(--color-score-4)';if(s>=41)return'var(--color-score-3)';if(s>=21)return'var(--color-score-2)';return'var(--color-score-1)';}
+function getScoreLabel(s){if(s>=81)return'Well prepared for the marathon';if(s>=61)return'Good foundation, strengthen weak spots';if(s>=41)return'Moderate -- address gaps before process';if(s>=21)return'Significant preparation needed';return'Complete sections to build your score';}
+function updateScore(){var s=calcScore();document.getElementById('sidebarScore').innerHTML=s+'<span class="sidebar-score-max">/100</span>';document.getElementById('mobileScore').textContent=s+'/100';document.getElementById('sidebarScoreDesc').textContent=getScoreLabel(s);}
+function updateProgress(){var t=PAGES.length-2,d=Object.keys(state.completed).length,p=Math.round((d/t)*100);document.getElementById('progressFill').style.width=p+'%';document.getElementById('progressText').textContent=p+'% complete';}
+function isUnlocked(id){var i=PAGES.findIndex(function(p){return p.id===id;});if(i<=0)return true;return state.completed[PAGES[i-1].id]===true;}
+
+function renderNav(){
+  var nav=document.getElementById('sidebarNav'),html='',lp='';
+  PAGES.forEach(function(p){if(p.phase!==lp){html+='<div class="nav-section-label">'+p.phase+'</div>';lp=p.phase;}
+    var a=state.currentPage===p.id,d=state.completed[p.id],l=!isUnlocked(p.id);
+    html+='<div class="nav-item'+(a?' active':'')+(d?' completed':'')+(l?' locked':'')+'" data-page="'+p.id+'" role="button" tabindex="'+(l?'-1':'0')+'" aria-current="'+(a?'step':'false')+'">';
+    html+='<span class="nav-icon">'+p.icon+'</span><span>'+p.title+'</span>';
+    if(d)html+='<span class="nav-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></span>';
+    html+='</div>';});
+  nav.innerHTML=html;
+  nav.querySelectorAll('.nav-item:not(.locked)').forEach(function(el){el.addEventListener('click',function(){goToPage(el.dataset.page);});el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();goToPage(el.dataset.page);}});});
+}
+
+function goToPage(id){if(!isUnlocked(id))return;state.currentPage=id;saveState();renderPage();renderNav();window.scrollTo({top:0,behavior:'smooth'});closeSidebar();}
+function completePage(id){state.completed[id]=true;var i=PAGES.findIndex(function(p){return p.id===id;});if(i<PAGES.length-1)state.currentPage=PAGES[i+1].id;saveState();renderPage();renderNav();window.scrollTo({top:0,behavior:'smooth'});}
+function prevPage(){var i=PAGES.findIndex(function(p){return p.id===state.currentPage;});if(i>0)goToPage(PAGES[i-1].id);}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('show');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('show');}
+document.getElementById('hamburgerBtn').addEventListener('click',toggleSidebar);
+document.getElementById('sidebarOverlay').addEventListener('click',closeSidebar);
+
+function esc(s){var d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+function pn(sp,nl,ci){var h='<div class="page-nav">';h+=sp?'<button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button>':'<div></div>';if(nl!==false)h+='<button class="btn btn-primary" onclick="PB.completePage(\''+ci+'\')">'+(nl||'Continue')+' &rarr;</button>';h+='</div>';return h;}
+function ss(key,obj,sk,labels){var c=obj[sk]||0;var h='<div class="score-selector" role="radiogroup" aria-label="Score for '+key+'">';for(var i=1;i<=5;i++){var sel=c===i?' selected':'';h+='<label class="score-option s'+i+sel+'" onclick="PB.setScore(\''+sk+'\',\''+key+'\','+i+')" tabindex="0" role="radio" aria-checked="'+(c===i)+'" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();PB.setScore(\''+sk+'\',\''+key+'\','+i+');}">';h+='<input type="radio" name="score-'+key+'" value="'+i+'"'+(c===i?' checked':'')+'>';h+='<span class="score-number">'+i+'</span><span class="score-label-text">'+(labels?labels[i-1]:['Poor','Below Avg','Average','Good','Excellent'][i-1])+'</span></label>';}h+='</div>';return h;}
+
+function renderPage(){
+  var area=document.getElementById('contentArea');
+  var r={'welcome':rWelcome,'anatomy':rAnatomy,'deal-team':rTeam,'business-performance':rBiz,'stress-management':rStress,'milestones':rMilestones,'recovery':rRecovery,'leverage':rLeverage,'relationships':rRelationships,'early-warning':rEarlyWarning,'dashboard':rDashboard};
+  area.innerHTML='<div class="page active">'+(r[state.currentPage]?r[state.currentPage]():'')+'</div>';
+  bindInputs();
+}
+
+function bindInputs(){
+  document.querySelectorAll('[data-bind]').forEach(function(el){
+    var keys=el.dataset.bind.split('.');
+    var handler=function(){var obj=state;for(var i=0;i<keys.length-1;i++){if(keys[i].match(/^\d+$/))obj=obj[parseInt(keys[i])];else obj=obj[keys[i]];}obj[keys[keys.length-1]]=el.value;saveState();};
+    el.addEventListener('input',handler);el.addEventListener('change',handler);
+  });
+  document.querySelectorAll('.check-item[data-check]').forEach(function(el){
+    var handler=function(){state.earlyWarning[el.dataset.check]=!state.earlyWarning[el.dataset.check];saveState();renderPage();};
+    el.addEventListener('click',handler);
+    el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();handler();}});
+  });
+}
+
+function rWelcome(){
+  return '<div class="welcome-hero"><div class="welcome-icon">&#128170;</div>' +
+    '<div class="t-display">Deal Fatigue Management</div>' +
+    '<p class="t-body t-secondary" style="margin-top:var(--space-md)">The deal will take longer than you think. This playbook prepares you mentally and operationally for a 6-12 month marathon that tests every fiber of your resolve.</p>' +
+    '<div class="welcome-stats">' +
+    '<div class="welcome-stat"><div class="welcome-stat-value">5-15%</div><div class="welcome-stat-label">Deal value lost to fatigue-driven concessions</div></div>' +
+    '<div class="welcome-stat"><div class="welcome-stat-value">6-12mo</div><div class="welcome-stat-label">Average time from LOI to close</div></div>' +
+    '<div class="welcome-stat"><div class="welcome-stat-value">50-70%</div><div class="welcome-stat-label">Burden reduction with proper preparation</div></div></div>' +
+    '<div class="callout callout-danger" style="text-align:left"><strong>The Core Principle:</strong> The buyer\'s greatest ally is your exhaustion. Every week the deal drags is another week the buyer hopes you will concede a point just to end the process. The most expensive decisions in M&A are made by tired sellers.</div></div>'+pn(false,'Begin Preparation','welcome');
+}
+
+function rAnatomy(){
+  var stages=[
+    {id:'euphoria',label:'Euphoria',timing:'Week 1-4',emotion:'Excitement, optimism',risk:'Premature celebration; relaxing on operations',antidote:'Nothing has closed. The LOI is a starting line.',color:'var(--color-score-4)'},
+    {id:'engagement',label:'Engagement',timing:'Month 2-3',emotion:'Busy, productive, in control',risk:'Underestimating the work ahead',antidote:'Front-load documents; delegate ruthlessly.',color:'var(--color-score-5)'},
+    {id:'grind',label:'The Grind',timing:'Month 3-5',emotion:'Overwhelmed, irritable',risk:'Snapping at advisors; neglecting business',antidote:'Lean on deal team; schedule mandatory breaks.',color:'var(--color-score-3)'},
+    {id:'despair',label:'Despair',timing:'Month 5-8',emotion:'Anger, temptation to capitulate',risk:'Concessions worth hundreds of thousands',antidote:'Return to walk-away number. If deal still works, keep going.',color:'var(--color-score-1)'},
+    {id:'resolution',label:'Resolution',timing:'Month 8-12',emotion:'Cautious optimism, deep fatigue',risk:'Rushing through final docs',antidote:'Let your attorney handle details. Focus on finish line.',color:'var(--color-score-2)'}
+  ];
+  var html='<div class="page-header"><div class="t-label">Understanding</div><div class="t-display">The Five Stages of Deal Fatigue</div><p class="t-body t-secondary">Deal fatigue builds in predictable stages. Understanding them lets you prepare before each phase hits.</p></div>';
+  stages.forEach(function(st){
+    var selected=state.currentStage===st.id;
+    html+='<div class="stage-card" style="border-left-color:'+st.color+(selected?';background:var(--color-surface-alt)':'')+'" onclick="PB.setStage(\''+st.id+'\')" role="button" tabindex="0">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">' +
+      '<div class="t-h3" style="color:'+st.color+'">'+st.label+'</div>' +
+      '<span class="badge badge-'+(selected?'warning':'primary')+'">'+st.timing+'</span></div>' +
+      '<p class="t-small" style="margin-top:var(--space-sm)"><strong>Emotional state:</strong> '+st.emotion+'</p>' +
+      '<p class="t-small" style="margin-top:var(--space-xs);color:var(--color-danger)"><strong>Risk:</strong> '+st.risk+'</p>' +
+      '<p class="t-small" style="margin-top:var(--space-xs);color:var(--color-success)"><strong>Antidote:</strong> '+st.antidote+'</p></div>';
+  });
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">The Financial Cost of Fatigue</div>' +
+    '<table class="data-table"><thead><tr><th>Fatigue Concession</th><th>Typical Cost</th></tr></thead><tbody>' +
+    '<tr><td>Accepting a retrade on price</td><td style="color:var(--color-danger);font-weight:600">$200K-$500K+</td></tr>' +
+    '<tr><td>Increasing escrow holdback</td><td style="color:var(--color-danger);font-weight:600">$100K-$300K</td></tr>' +
+    '<tr><td>Weakening earnout protections</td><td style="color:var(--color-danger);font-weight:600">$200K-$1M+</td></tr>' +
+    '<tr><td>Expanding indemnification basket</td><td style="color:var(--color-danger);font-weight:600">$100K-$500K</td></tr>' +
+    '<tr><td>Waiving non-compete payment</td><td style="color:var(--color-danger);font-weight:600">$100K-$500K</td></tr>' +
+    '</tbody></table></div>';
+  html+=pn(true,'Continue','anatomy');
+  return html;
+}
+
+function rTeam(){
+  var html='<div class="page-header"><div class="t-label">Prepare</div><div class="t-display">Building Your Deal Team</div><p class="t-body t-secondary">The single most important defense against deal fatigue is having a team that carries the operational burden while you focus on strategic decisions.</p></div>';
+  html+='<div class="callout callout-accent"><strong>Deal Team Lead Bonus:</strong> A transaction bonus of 0.5-2% of deal value (or $25K-$100K) is common and well worth it. This person will save you from countless errors and absorb enormous stress.</div>';
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Deal Team Roster</div>';
+  html+='<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Role</th><th>Name</th><th>Contact</th><th>Bonus/Fee</th></tr></thead><tbody>';
+  state.dealTeam.forEach(function(t,i){
+    html+='<tr><td><strong>'+esc(t.role)+'</strong></td>';
+    html+='<td><input class="form-input" type="text" value="'+esc(t.name)+'" data-bind="dealTeam.'+i+'.name" placeholder="Name"></td>';
+    html+='<td><input class="form-input" type="text" value="'+esc(t.contact)+'" data-bind="dealTeam.'+i+'.contact" placeholder="Phone/Email"></td>';
+    html+='<td><input class="form-input" type="text" value="'+esc(t.bonus)+'" data-bind="dealTeam.'+i+'.bonus" placeholder="$0"></td></tr>';
+  });
+  html+='</tbody></table></div></div>';
+  var dims=[
+    {key:'leadInPlace',label:'Deal Team Lead',hint:'Is a trusted, organized DTL identified and compensated?'},
+    {key:'commProtocol',label:'Communication Protocol',hint:'Clear rules on who talks to whom? Weekly status calls? Shared tracker?'},
+    {key:'delegation',label:'Delegation Readiness',hint:'Can you operate one level removed from logistics?'}
+  ];
+  dims.forEach(function(d){
+    html+='<div class="card"><div class="form-label">'+d.label+'</div><div class="form-hint" style="margin-bottom:var(--space-sm)">'+d.hint+'</div>'+ss(d.key,state.teamScores,d.key,['Not Started','Planning','Basic','Good','Excellent'])+'</div>';
+  });
+  html+=pn(true,'Continue','deal-team');
+  return html;
+}
+
+function rBiz(){
+  var dims=[
+    {key:'revenue',label:'Revenue Performance',hint:'Weekly revenue tracking? Actual vs budget visible?'},
+    {key:'pipeline',label:'Sales Pipeline Health',hint:'New sales keeping pace? Leader empowered?'},
+    {key:'operations',label:'Operational Continuity',hint:'Operations manager owns delivery? Strategic initiatives frozen?'},
+    {key:'monitoring',label:'Financial Monitoring',hint:'Flash financials by 5th of month? Cash flow forecasted?'}
+  ];
+  var html='<div class="page-header"><div class="t-label">Prepare</div><div class="t-display">Keeping the Business Performing</div><p class="t-body t-secondary">A dip in performance gives the buyer ammunition to retrade. Maintaining performance is both an operational imperative and a negotiating strategy.</p></div>';
+  html+='<div class="callout callout-danger"><strong>The Retrade Trap:</strong> If business performance dips during diligence, expect the buyer to request a price reduction. The best defense is prevention. The second-best is having data showing the dip is temporary.</div>';
+  html+='<div class="card"><table class="data-table"><thead><tr><th>Activity</th><th>Hours/Week (Unprepared)</th><th>Hours/Week (Prepared)</th></tr></thead><tbody>' +
+    '<tr><td>Financial diligence</td><td>10-15</td><td style="color:var(--color-success)">2-4</td></tr>' +
+    '<tr><td>Legal diligence</td><td>5-10</td><td style="color:var(--color-success)">1-3</td></tr>' +
+    '<tr><td>Operational meetings</td><td>5-8</td><td style="color:var(--color-success)">2-4</td></tr>' +
+    '<tr><td>Advisor coordination</td><td>3-5</td><td style="color:var(--color-success)">1-2</td></tr>' +
+    '<tr><td>Stress management</td><td>5-10</td><td style="color:var(--color-success)">2-5</td></tr>' +
+    '<tr style="font-weight:600"><td>TOTAL</td><td>31-53</td><td style="color:var(--color-success)">11-23</td></tr>' +
+    '</tbody></table></div>';
+  dims.forEach(function(d){
+    html+='<div class="card"><div class="form-label">'+d.label+'</div><div class="form-hint" style="margin-bottom:var(--space-sm)">'+d.hint+'</div>'+ss(d.key,state.bizScores,d.key,['At Risk','Weak','Adequate','Strong','Excellent'])+'</div>';
+  });
+  html+=pn(true,'Continue','business-performance');
+  return html;
+}
+
+function rStress(){
+  var dims=[
+    {key:'exercise',label:'Exercise & Physical Health',hint:'30+ minutes daily? Non-negotiable.'},
+    {key:'sleep',label:'Sleep Hygiene',hint:'7-8 hours minimum? The worst deal decisions happen sleep-deprived.'},
+    {key:'support',label:'Support System',hint:'Confidant? Peer mentor? Professional support?'},
+    {key:'boundaries',label:'Deal-Free Boundaries',hint:'No deal work after 7 PM? Full day off Sunday?'}
+  ];
+  var html='<div class="page-header"><div class="t-label">Protect</div><div class="t-display">Stress Management & Mental Health</div><p class="t-body t-secondary">Selling a business ranks alongside divorce and death of a loved one in psychological impact. Your mental health is a strategic asset.</p></div>';
+  dims.forEach(function(d){
+    html+='<div class="card"><div class="form-label">'+d.label+'</div><div class="form-hint" style="margin-bottom:var(--space-sm)">'+d.hint+'</div>'+ss(d.key,state.stressScores,d.key,['None','Minimal','Sometimes','Consistent','Daily Practice'])+'</div>';
+  });
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Your Support System</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">' +
+    '<div class="form-group"><label class="form-label">Confidant (not advisor)</label><input class="form-input" type="text" value="'+esc(state.supportSystem.confidant)+'" data-bind="supportSystem.confidant" placeholder="Name"></div>' +
+    '<div class="form-group"><label class="form-label">Peer Mentor (been through a sale)</label><input class="form-input" type="text" value="'+esc(state.supportSystem.peerMentor)+'" data-bind="supportSystem.peerMentor" placeholder="Name"></div>' +
+    '<div class="form-group"><label class="form-label">Therapist / Executive Coach</label><input class="form-input" type="text" value="'+esc(state.supportSystem.therapist)+'" data-bind="supportSystem.therapist" placeholder="Name"></div>' +
+    '<div class="form-group"><label class="form-label">Deal-Free Hours</label><input class="form-input" type="text" value="'+esc(state.supportSystem.dealFreeHours)+'" data-bind="supportSystem.dealFreeHours" placeholder="e.g., After 7 PM + Sundays"></div></div></div>';
+  html+='<div class="callout callout-info"><strong>Your advisor\'s role in mental health:</strong> A good M&A advisor is a buffer between you and the process. They absorb aggressive tactics so you do not have to. If your advisor adds stress rather than reducing it, you have the wrong advisor.</div>';
+  html+=pn(true,'Continue','stress-management');
+  return html;
+}
+
+function rMilestones(){
+  var html='<div class="page-header"><div class="t-label">Execute</div><div class="t-display">Milestone Management</div><p class="t-body t-secondary">A deal without milestones is a deal without end. Each completed milestone provides psychological momentum.</p></div>';
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Deal Milestone Tracker</div>';
+  html+='<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Milestone</th><th>Target Date</th><th>Actual Date</th><th>Notes</th></tr></thead><tbody>';
+  state.milestones.forEach(function(m,i){
+    html+='<tr><td><strong>'+esc(m.name)+'</strong></td>';
+    html+='<td><input class="form-input" type="date" value="'+esc(m.target)+'" data-bind="milestones.'+i+'.target"></td>';
+    html+='<td><input class="form-input" type="date" value="'+esc(m.actual)+'" data-bind="milestones.'+i+'.actual"></td>';
+    html+='<td><input class="form-input" type="text" value="'+esc(m.notes)+'" data-bind="milestones.'+i+'.notes" placeholder="Status/issues"></td></tr>';
+  });
+  html+='</tbody></table></div></div>';
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">The Weekly Rhythm</div>' +
+    '<ul style="margin-left:var(--space-lg);color:var(--color-text-secondary);font-size:14px;display:flex;flex-direction:column;gap:8px">' +
+    '<li><strong>Monday:</strong> 30-min call with DTL, advisor, and attorney. Review open items.</li>' +
+    '<li><strong>Tue-Thu:</strong> 2-3 hours blocked for diligence responses.</li>' +
+    '<li><strong>Friday:</strong> End-of-week status email from DTL to all parties.</li>' +
+    '<li><strong>Weekend:</strong> No deal work. Recharge.</li></ul></div>';
+  html+=pn(true,'Continue','milestones');
+  return html;
+}
+
+function rRecovery(){
+  var html='<div class="page-header"><div class="t-label">Execute</div><div class="t-display">When the Deal Drags: Recovery Strategies</div><p class="t-body t-secondary">Despite preparation, deals stall. Here is how to diagnose why and what to do about it.</p></div>';
+  html+='<div class="card"><table class="data-table"><thead><tr><th>Stall Reason</th><th>Warning Signs</th><th>Severity</th><th>Response</th></tr></thead><tbody>' +
+    '<tr><td><strong>Thorough diligence</strong></td><td class="t-small">Detailed, organized requests</td><td><span class="badge badge-success">Low</span></td><td class="t-small">Be patient. Respond promptly.</td></tr>' +
+    '<tr><td><strong>Buyer overwhelmed</strong></td><td class="t-small">Slow responses, missed deadlines</td><td><span class="badge badge-warning">Medium</span></td><td class="t-small">Help streamline. Proactively organize.</td></tr>' +
+    '<tr><td><strong>Second thoughts</strong></td><td class="t-small">Decreasing engagement, vague responses</td><td><span class="badge badge-danger">High</span></td><td class="t-small">Force direct conversation. Get clarity.</td></tr>' +
+    '<tr><td><strong>Retrading through delay</strong></td><td class="t-small">Delay + new price requests</td><td><span class="badge badge-danger">Critical</span></td><td class="t-small">Call it out. Restate walk-away terms.</td></tr>' +
+    '<tr><td><strong>Financing difficulties</strong></td><td class="t-small">Lender requests piling up</td><td><span class="badge badge-danger">High</span></td><td class="t-small">Request proof. Consider backup buyers.</td></tr>' +
+    '</tbody></table></div>';
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Your Walk-Away Number</div>' +
+    '<p class="t-small t-secondary" style="margin-bottom:var(--space-md)">The minimum net proceeds you will accept. Return to this number weekly. If the deal still works, keep going.</p>' +
+    '<div class="form-group"><label class="form-label">Walk-Away Net Proceeds ($)</label><input class="form-input" type="text" placeholder="$0" value="'+esc(state.walkAwayNumber)+'" data-bind="walkAwayNumber" style="font-size:20px;font-weight:600"></div></div>';
+  html+='<div class="callout callout-accent"><strong>The Walk-Away Paradox:</strong> The willingness to walk away is the single greatest source of negotiating leverage. The seller who is prepared to terminate is the seller who almost never has to.</div>';
+  html+=pn(true,'Continue','recovery');
+  return html;
+}
+
+function rLeverage(){
+  var dims=[
+    {key:'performance',label:'Strong Business Performance',hint:'Growing revenue and EBITDA support your valuation'},
+    {key:'alternatives',label:'Multiple Buyers / Alternatives',hint:'Competition among buyers keeps any single buyer honest'},
+    {key:'walkAway',label:'Willingness to Walk Away',hint:'A seller who can say "no deal" has ultimate leverage'},
+    {key:'information',label:'Information Discipline',hint:'All communications through advisor or DTL; no oversharing'}
+  ];
+  var html='<div class="page-header"><div class="t-label">Execute</div><div class="t-display">Maintaining Leverage When Fatigued</div><p class="t-body t-secondary">Leverage shifts throughout the process. Fatigue erodes it by making you appear eager to close.</p></div>';
+  dims.forEach(function(d){
+    html+='<div class="card"><div class="form-label">'+d.label+'</div><div class="form-hint" style="margin-bottom:var(--space-sm)">'+d.hint+'</div>'+ss(d.key,state.leverageScores,d.key,['Eroded','Weak','Adequate','Strong','Dominant'])+'</div>';
+  });
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Tactical Moves</div><ul style="margin-left:var(--space-lg);color:var(--color-text-secondary);font-size:14px;display:flex;flex-direction:column;gap:8px">' +
+    '<li><strong>Control the narrative:</strong> Never let the buyer see you sweat.</li>' +
+    '<li><strong>Feed good news:</strong> Share strong results and wins throughout the process.</li>' +
+    '<li><strong>Maintain optionality:</strong> Never confirm you have no alternatives.</li>' +
+    '<li><strong>Anchor to principles:</strong> Always have a principled reason. Never "because I want to close."</li>' +
+    '<li><strong>Let your advisor negotiate:</strong> Never negotiate directly when fatigued.</li></ul></div>';
+  html+=pn(true,'Continue','leverage');
+  return html;
+}
+
+function rRelationships(){
+  var dims=[
+    {key:'spouse',label:'Spouse / Partner',hint:'Weekly check-in (not about deal); shared decision framework'},
+    {key:'management',label:'Management Team',hint:'Transparent communication; retention bonuses; reassurance'},
+    {key:'advisors',label:'Advisory Team',hint:'Regular communication; trust their process; address concerns directly'},
+    {key:'buyer',label:'The Buyer',hint:'Separate negotiation from relationship; advisor handles hard conversations'}
+  ];
+  var html='<div class="page-header"><div class="t-label">Protect</div><div class="t-display">Protecting Relationships Under Pressure</div><p class="t-body t-secondary">Deal fatigue damages relationships. Awareness and proactive management are key.</p></div>';
+  dims.forEach(function(d){
+    html+='<div class="card"><div class="form-label">'+d.label+'</div><div class="form-hint" style="margin-bottom:var(--space-sm)">'+d.hint+'</div>'+ss(d.key,state.relationshipScores,d.key,['At Risk','Strained','Stable','Good','Strong'])+'</div>';
+  });
+  html+='<div class="callout callout-warning"><strong>Spousal Alignment:</strong> Include your spouse from the beginning. Share the financial picture. Discuss post-exit life. Set timeline expectations. Schedule regular non-deal time together. Deals have collapsed because of marital strain.</div>';
+  html+=pn(true,'Continue','relationships');
+  return html;
+}
+
+function rEarlyWarning(){
+  var items=[
+    'I am losing sleep over the deal more than twice per week',
+    'I have snapped at a family member or employee because of deal stress',
+    'I have considered accepting an unfavorable term just to move the process along',
+    'I have missed a business obligation because of the deal',
+    'I have skipped exercise or self-care for more than a week',
+    'I have lost confidence in my advisory team out of frustration',
+    'I have fantasized about pulling the deal entirely, even though terms are acceptable',
+    'I have stopped reading diligence responses carefully before they go out',
+    'My business performance has declined since the deal started',
+    'I cannot remember the last time I did something enjoyable unrelated to the deal'
+  ];
+  var html='<div class="page-header"><div class="t-label">Plan</div><div class="t-display">Deal Fatigue Early Warning Checklist</div><p class="t-body t-secondary">Be honest with yourself. Check each statement that is currently true.</p></div>';
+  html+='<div class="card"><div class="checklist">';
+  items.forEach(function(item,i){
+    var key='ew_'+i;var checked=state.earlyWarning[key];
+    html+='<div class="check-item'+(checked?' checked':'')+'" data-check="'+key+'" role="checkbox" aria-checked="'+!!checked+'" tabindex="0"><div class="check-box"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div><div class="check-text">'+item+'</div></div>';
+  });
+  html+='</div></div>';
+  var ewCount=Object.keys(state.earlyWarning).filter(function(k){return state.earlyWarning[k];}).length;
+  if(ewCount>=3){
+    html+='<div class="callout callout-danger"><strong>'+ewCount+' warning signs flagged -- you are in the danger zone.</strong> Immediately: (1) Take a 48-hour break from all deal activity, (2) Call your peer mentor or therapist, (3) Have your advisor take the lead on all buyer communications for the next two weeks, (4) Re-read the Stress Management section.</div>';
+  } else if(ewCount>=1){
+    html+='<div class="callout callout-warning"><strong>'+ewCount+' warning sign(s) flagged.</strong> Monitor closely. Address each flagged item proactively before they compound.</div>';
+  } else if(ewCount===0 && Object.keys(state.earlyWarning).length>0) {
+    html+='<div class="callout callout-info" style="background:var(--color-success-light);border-color:var(--color-success);color:var(--color-success)"><strong>No warning signs.</strong> You are managing deal fatigue well. Continue monitoring weekly.</div>';
+  }
+  html+=pn(true,'View Dashboard','early-warning');
+  return html;
+}
+
+function rDashboard(){
+  var score=calcScore(),sc=getScoreColor(score),r=60,circ=2*Math.PI*r,offset=circ-(score/100)*circ;
+  var html='<div class="page-header"><div class="t-label">Results</div><div class="t-display">Deal Fatigue Preparedness</div></div>';
+  html+='<div class="gauge-wrap"><div class="gauge-ring"><svg viewBox="0 0 160 160"><circle class="gauge-bg" cx="80" cy="80" r="'+r+'"/><circle class="gauge-fill" cx="80" cy="80" r="'+r+'" stroke="'+sc+'" stroke-dasharray="'+circ+'" stroke-dashoffset="'+offset+'"/></svg><div class="gauge-center"><div class="gauge-center-value" style="color:'+sc+'">'+score+'</div><div class="gauge-center-label">of 100</div></div></div></div>';
+
+  var teamTotal=Object.values(state.teamScores).reduce(function(a,v){return a+v;},0);
+  var bizTotal=Object.values(state.bizScores).reduce(function(a,v){return a+v;},0);
+  var stressTotal=Object.values(state.stressScores).reduce(function(a,v){return a+v;},0);
+  var levTotal=Object.values(state.leverageScores).reduce(function(a,v){return a+v;},0);
+  var ewCount=Object.keys(state.earlyWarning).filter(function(k){return state.earlyWarning[k];}).length;
+
+  html+='<div class="summary-grid">' +
+    '<div class="summary-item"><div class="summary-item-value">'+teamTotal+'/15</div><div class="summary-item-label">Deal Team</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value">'+bizTotal+'/20</div><div class="summary-item-label">Business Perf.</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value">'+stressTotal+'/20</div><div class="summary-item-label">Self-Care</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value">'+levTotal+'/20</div><div class="summary-item-label">Leverage</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:'+(ewCount>=3?'var(--color-danger)':ewCount>=1?'var(--color-warning)':'var(--color-success)')+'">'+ewCount+'</div><div class="summary-item-label">Warning Signs</div></div></div>';
+
+  var cats=[
+    {label:'Deal Team',score:Math.round(teamTotal*100/15)},
+    {label:'Business Perf.',score:bizTotal*5},
+    {label:'Stress Mgmt.',score:stressTotal*5},
+    {label:'Leverage',score:levTotal*5},
+    {label:'Relationships',score:Math.round(Object.values(state.relationshipScores).reduce(function(a,v){return a+v;},0)*100/20)},
+    {label:'Walk-Away Ready',score:state.walkAwayNumber?100:0}
+  ];
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Preparedness Breakdown</div><div class="bar-chart">';
+  cats.forEach(function(c){var color=c.score>=70?'var(--color-success)':c.score>=40?'var(--color-warning)':'var(--color-danger)';html+='<div class="bar-row"><div class="bar-label">'+c.label+'</div><div class="bar-track"><div class="bar-fill" style="width:'+c.score+'%;background:'+color+'"><span class="bar-value">'+c.score+'%</span></div></div></div>';});
+  html+='</div></div>';
+
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Recommendations</div>';
+  if(teamTotal<9) html+='<div class="callout callout-warning" style="margin-bottom:var(--space-sm)">Deal team not fully in place. Identify and compensate a Deal Team Lead before the process begins.</div>';
+  if(stressTotal<12) html+='<div class="callout callout-warning" style="margin-bottom:var(--space-sm)">Self-care practices below recommended levels. Establish exercise, sleep, and boundary routines now.</div>';
+  if(!state.walkAwayNumber) html+='<div class="callout callout-danger" style="margin-bottom:var(--space-sm)">Walk-away number not defined. Without this anchor, fatigue will erode your position on every negotiating point.</div>';
+  if(ewCount>=3) html+='<div class="callout callout-danger" style="margin-bottom:var(--space-sm)">'+ewCount+' warning signs active. Take immediate action: 48-hour break, peer mentor call, advisor takes lead on communications.</div>';
+  if(score>=70) html+='<div class="callout callout-info" style="background:var(--color-success-light);border-color:var(--color-success);color:var(--color-success)"><strong>Well prepared.</strong> You have the structure, support, and awareness to manage deal fatigue effectively. Stay disciplined.</div>';
+  html+='</div>';
+
+  html+='<div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-top:var(--space-lg)"><button class="btn btn-primary" onclick="PB.exportResults()">Export Summary</button><button class="btn btn-secondary" onclick="window.print()">Print</button><button class="btn btn-ghost" onclick="PB.resetAll()" style="color:var(--color-danger)">Reset All Data</button></div>';
+  html+='<div class="page-nav"><button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button><div></div></div>';
+  return html;
+}
+
+function exportResults(){
+  var score=calcScore();
+  var text='PLAYBOOK #42: DEAL FATIGUE MANAGEMENT\nGenerated: '+new Date().toLocaleDateString()+'\n'+'='.repeat(50)+'\n\n';
+  text+='PREPAREDNESS SCORE: '+score+'/100\n\n';
+  text+='DEAL TEAM: '+Object.values(state.teamScores).reduce(function(a,v){return a+v;},0)+'/15\n';
+  text+='BUSINESS PERFORMANCE: '+Object.values(state.bizScores).reduce(function(a,v){return a+v;},0)+'/20\n';
+  text+='STRESS MANAGEMENT: '+Object.values(state.stressScores).reduce(function(a,v){return a+v;},0)+'/20\n';
+  text+='LEVERAGE: '+Object.values(state.leverageScores).reduce(function(a,v){return a+v;},0)+'/20\n';
+  text+='WALK-AWAY NUMBER: '+(state.walkAwayNumber||'Not defined')+'\n';
+  text+='WARNING SIGNS: '+Object.keys(state.earlyWarning).filter(function(k){return state.earlyWarning[k];}).length+'/10\n\n';
+  text+='DEAL TEAM:\n';
+  state.dealTeam.forEach(function(t){text+='  '+t.role+': '+(t.name||'--')+'\n';});
+  var blob=new Blob([text],{type:'text/plain'});var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='playbook-42-deal-fatigue.txt';a.click();URL.revokeObjectURL(url);
+}
+
+function resetAll(){if(confirm('Erase all data?')){localStorage.removeItem(SK);state=defaultState();saveState();goToPage('welcome');}}
+
+window.PB={
+  prevPage:prevPage,completePage:completePage,exportResults:exportResults,resetAll:resetAll,
+  setStage:function(id){state.currentStage=id;saveState();renderPage();},
+  setScore:function(sk,dk,val){
+    if(state[sk]!==undefined&&typeof state[sk]==='object'&&!Array.isArray(state[sk]))state[sk][dk]=val;
+    else state[sk]=val;
+    saveState();renderPage();
+  }
+};
+
+renderNav();renderPage();updateProgress();updateScore();
+})();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

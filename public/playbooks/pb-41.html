@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Partner/Shareholder Alignment | Exit Planning Playbook #41</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.6; color: var(--color-text); background: var(--color-bg); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a { color: var(--color-primary); text-decoration: none; }
+
+.t-display { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; min-width: 260px; background: #FFFFFF; border-right: 1px solid var(--color-border); color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: transform var(--transition-slow); overflow-y: auto; }
+.sidebar.collapsed { transform: translateX(-260px); }
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; transition: margin-left var(--transition-slow); }
+.sidebar.collapsed + .main-content { margin-left: 0; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header { display: none; position: sticky; top: 0; z-index: 90; background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md); }
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item { display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px; border-radius: var(--radius-sm); color: var(--color-text-secondary); font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative; }
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+.nav-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 14px; }
+
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); transition: box-shadow var(--transition-normal); }
+.card:hover { box-shadow: var(--shadow-sm); }
+
+.callout { padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); border-left: 3px solid; font-size: 14px; line-height: 1.6; }
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm); padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; transition: all var(--transition-fast); white-space: nowrap; }
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.btn-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface); transition: all var(--transition-fast); color: var(--color-text); }
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+textarea.form-input { min-height: 80px; resize: vertical; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); text-align: center; }
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+
+@media (max-width: 600px) {
+  .score-selector { gap: 4px; }
+  .score-option { padding: 10px 4px; }
+  .score-number { font-size: 18px; }
+  .score-label-text { font-size: 9px; }
+}
+
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.section-divider { height: 1px; background: var(--color-border); margin: var(--space-2xl) 0; }
+
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-hero .t-display { margin-bottom: var(--space-md); }
+.welcome-hero .t-body { margin-bottom: var(--space-2xl); }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+.welcome-phases { display: flex; flex-direction: column; gap: var(--space-md); margin: var(--space-2xl) 0; text-align: left; }
+.welcome-phase { display: flex; gap: var(--space-lg); padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-phase-num { width: 36px; height: 36px; background: var(--color-primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--color-primary); flex-shrink: 0; }
+.welcome-phase-title { font-weight: 600; margin-bottom: 2px; }
+.welcome-phase-desc { font-size: 14px; color: var(--color-text-secondary); }
+@media (max-width: 600px) { .welcome-stats { grid-template-columns: 1fr; } }
+
+.partner-tabs { display: flex; gap: 2px; background: var(--color-surface-alt); border-radius: var(--radius-md); padding: 3px; margin-bottom: var(--space-lg); }
+.partner-tab { flex: 1; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; text-align: center; cursor: pointer; transition: all var(--transition-fast); color: var(--color-text-secondary); }
+.partner-tab.active { background: var(--color-surface); color: var(--color-text); box-shadow: var(--shadow-sm); }
+.partner-tab:hover:not(.active) { color: var(--color-text); }
+
+.comparison-grid { display: grid; gap: var(--space-md); margin: var(--space-lg) 0; }
+.comparison-row { display: grid; grid-template-columns: 160px 1fr 1fr 1fr; gap: var(--space-sm); align-items: center; padding: var(--space-md) 0; border-bottom: 1px solid var(--color-border-light); }
+.comparison-row:last-child { border-bottom: none; }
+.comparison-row.header { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); padding-bottom: var(--space-sm); }
+.comparison-label { font-size: 14px; font-weight: 500; }
+@media (max-width: 700px) { .comparison-row { grid-template-columns: 1fr; gap: var(--space-xs); } .comparison-row.header { display: none; } }
+
+.gap-indicator { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; }
+.gap-low { background: var(--color-success-light); color: var(--color-success); }
+.gap-med { background: var(--color-warning-light); color: var(--color-warning); }
+.gap-high { background: var(--color-danger-light); color: var(--color-danger); }
+
+.heatmap-container { overflow-x: auto; margin: var(--space-lg) 0; }
+.heatmap { display: grid; gap: 3px; min-width: 400px; }
+.heatmap-cell { aspect-ratio: 1.6; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #fff; transition: transform var(--transition-fast); cursor: default; min-height: 48px; }
+.heatmap-cell:hover { transform: scale(1.05); z-index: 1; }
+.heatmap-cell.hs0 { background: var(--color-border); color: var(--color-text-tertiary); }
+.heatmap-cell.hs1 { background: var(--color-score-1); }
+.heatmap-cell.hs2 { background: var(--color-score-2); }
+.heatmap-cell.hs3 { background: var(--color-score-3); }
+.heatmap-cell.hs4 { background: var(--color-score-4); }
+.heatmap-cell.hs5 { background: var(--color-score-5); }
+
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 28px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; min-width: 30px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+@media (max-width: 600px) { .bar-label { width: 90px; font-size: 11px; } }
+
+.checklist { display: flex; flex-direction: column; gap: 2px; }
+.check-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md); border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast); }
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box { width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); margin-top: 1px; }
+.check-item.checked .check-box { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+
+.progress-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.progress-ring-text { position: absolute; text-align: center; }
+.progress-ring-value { font-family: var(--font-display); font-weight: 700; line-height: 1; }
+
+.nav-footer { margin-top: var(--space-2xl); padding-top: var(--space-lg); border-top: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; }
+
+.info-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.info-table th { text-align: left; padding: var(--space-sm) var(--space-md); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); }
+.info-table td { padding: var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: top; font-size: 14px; }
+.info-table tr:last-child td { border-bottom: none; }
+
+.toggle-card { border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: var(--space-sm); background: var(--color-surface); }
+.toggle-card-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-md) var(--space-lg); cursor: pointer; gap: var(--space-md); }
+.toggle-card-header:hover { background: var(--color-surface-alt); }
+.toggle-card-title { font-weight: 600; font-size: 15px; }
+.toggle-card-chevron { color: var(--color-text-tertiary); transition: transform var(--transition-fast); }
+.toggle-card.expanded .toggle-card-chevron { transform: rotate(180deg); }
+.toggle-card-body { display: none; padding: 0 var(--space-lg) var(--space-lg); }
+.toggle-card.expanded .toggle-card-body { display: block; }
+
+.gauge-wrap { text-align: center; margin: var(--space-lg) 0; }
+.gauge-label { font-size: 13px; color: var(--color-text-secondary); margin-top: var(--space-sm); }
+.gauge-value { font-family: var(--font-display); font-size: 24px; font-weight: 700; }
+
+/* PRINT */
+@media print {
+  .sidebar, .mobile-header, .sidebar-overlay, .nav-footer, .toast-container, .btn-group, .skip-link { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; }
+  .content-area { max-width: 100%; padding: 0; }
+}
+
+/* ACCESSIBILITY */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; text-decoration: none; }
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+
+/* TOAST */
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast { padding: 12px 20px; border-radius: var(--radius-md); background: var(--color-text); color: #fff; font-size: 14px; font-weight: 500; box-shadow: var(--shadow-lg); animation: toastIn 0.3s ease; max-width: 360px; }
+.toast.out { animation: toastOut 0.3s ease forwards; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-8px); } }
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<div class="toast-container" id="toastContainer" aria-live="polite" role="status"></div>
+<div class="app">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #41</div>
+      <div class="sidebar-brand-title">Partner & Shareholder Alignment</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Overall Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Alignment Score</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete assessments to calculate</div>
+    </div>
+  </div>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="mobile-header">
+    <button class="hamburger" id="hamburger" aria-label="Open navigation"><span></span></button>
+    <div style="font-weight:600;font-size:15px;">Partner Alignment</div>
+    <div style="margin-left:auto" class="badge badge-neutral" id="mobileProgress">0%</div>
+  </div>
+  <div class="main-content" id="main-content">
+    <div class="content-area" id="contentArea"></div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'exitosx-pb41-partner-shareholder-alignment';
+const CHECK_SVG = '<svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10.5 11.5 3.5"/></svg>';
+const CHEVRON = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 7l4 4 4-4"/></svg>';
+
+const SECTIONS = [
+  { id:'welcome', title:'Welcome', icon:'&#9670;', phase:'Start' },
+  { id:'challenge', title:'The Multi-Owner Challenge', icon:'&#9888;', phase:'Understand' },
+  { id:'timing', title:'Timing & Readiness', icon:'&#9203;', phase:'Assess' },
+  { id:'valuation', title:'Valuation Alignment', icon:'&#36;', phase:'Assess' },
+  { id:'dealterms', title:'Deal Structure', icon:'&#9878;', phase:'Assess' },
+  { id:'agreements', title:'Agreements Review', icon:'&#9997;', phase:'Govern' },
+  { id:'buysell', title:'Buy-Sell Mechanisms', icon:'&#8644;', phase:'Govern' },
+  { id:'disputes', title:'Dispute Resolution', icon:'&#9878;', phase:'Govern' },
+  { id:'governance', title:'Voting & Drag/Tag', icon:'&#9745;', phase:'Govern' },
+  { id:'disagree', title:'When Partners Disagree', icon:'&#9888;', phase:'Resolve' },
+  { id:'workshop', title:'Alignment Workshop', icon:'&#9998;', phase:'Act' },
+  { id:'results', title:'Results & Action Plan', icon:'&#9733;', phase:'Act' }
+];
+
+let state = loadState();
+
+function loadState() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || getDefaultState(); }
+  catch(e) { return getDefaultState(); }
+}
+function getDefaultState() {
+  return {
+    currentSection: 'welcome',
+    completedSections: [],
+    partnerCount: 2,
+    partnerNames: ['Partner A','Partner B','Partner C'],
+    timingScores: {},
+    valuationScores: {},
+    dealScores: {},
+    agreementChecks: {},
+    buysellChoice: '',
+    disputeChoice: '',
+    governanceScores: {},
+    disagreeNotes: {},
+    workshopAnswers: {},
+    checklist: {},
+    actionItems: []
+  };
+}
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function buildSidebar() {
+  const nav = document.getElementById('sidebarNav');
+  let html = '';
+  let lastPhase = '';
+  SECTIONS.forEach(s => {
+    if (s.phase !== lastPhase) {
+      html += `<div class="nav-section-label">${s.phase}</div>`;
+      lastPhase = s.phase;
+    }
+    const active = state.currentSection === s.id ? ' active' : '';
+    const completed = state.completedSections.includes(s.id) ? ' completed' : '';
+    html += `<div class="nav-item${active}${completed}" data-section="${s.id}" role="button" tabindex="0" aria-label="${s.title}">
+      <span class="nav-icon">${s.icon}</span>${s.title}<span class="nav-check">${CHECK_SVG}</span></div>`;
+  });
+  nav.innerHTML = html;
+  nav.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => goTo(item.dataset.section));
+    item.addEventListener('keydown', e => { if (e.key==='Enter') goTo(item.dataset.section); });
+  });
+}
+
+function goTo(sectionId) {
+  state.currentSection = sectionId;
+  saveState();
+  buildSidebar();
+  renderPage();
+  updateProgress();
+  closeMobileSidebar();
+  window.scrollTo({top:0, behavior:'smooth'});
+  setTimeout(() => { const heading = document.querySelector('#contentArea .t-display, #contentArea h1, #contentArea h2'); if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); } }, 100);
+}
+
+function showToast(msg) { const c=document.getElementById('toastContainer'); const t=document.createElement('div'); t.className='toast'; t.textContent=msg; c.appendChild(t); setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),300);},3000); }
+
+function markComplete(sectionId) {
+  if (!state.completedSections.includes(sectionId)) state.completedSections.push(sectionId);
+  saveState();
+  updateProgress();
+  buildSidebar();
+}
+
+function updateProgress() {
+  const total = SECTIONS.length - 1;
+  const done = state.completedSections.filter(s => s !== 'welcome').length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+  document.getElementById('mobileProgress').textContent = pct + '%';
+  updateAlignmentScore();
+}
+
+function updateAlignmentScore() {
+  let scores = [];
+  Object.values(state.timingScores).forEach(p => Object.values(p).forEach(v => { if(v) scores.push(parseInt(v)); }));
+  Object.values(state.valuationScores).forEach(p => Object.values(p).forEach(v => { if(v) scores.push(parseInt(v)); }));
+  Object.values(state.dealScores).forEach(p => Object.values(p).forEach(v => { if(v) scores.push(parseInt(v)); }));
+  Object.values(state.governanceScores).forEach(p => Object.values(p).forEach(v => { if(v) scores.push(parseInt(v)); }));
+  const el = document.getElementById('sidebarScore');
+  const desc = document.getElementById('sidebarScoreDesc');
+  if (scores.length === 0) { el.innerHTML = '--<span class="sidebar-score-max">/100</span>'; desc.textContent = 'Complete assessments to calculate'; return; }
+  const avg = scores.reduce((a,b) => a+b, 0) / scores.length;
+  const score = Math.round(avg * 20);
+  el.innerHTML = score + '<span class="sidebar-score-max">/100</span>';
+  if (score >= 80) desc.textContent = 'Strong alignment';
+  else if (score >= 60) desc.textContent = 'Moderate alignment -- gaps to address';
+  else if (score >= 40) desc.textContent = 'Significant gaps -- action needed';
+  else desc.textContent = 'Critical misalignment -- urgent attention';
+}
+
+function nextSection() {
+  const idx = SECTIONS.findIndex(s => s.id === state.currentSection);
+  markComplete(state.currentSection);
+  if (idx < SECTIONS.length - 1) goTo(SECTIONS[idx + 1].id);
+}
+
+function prevSection() {
+  const idx = SECTIONS.findIndex(s => s.id === state.currentSection);
+  if (idx > 0) goTo(SECTIONS[idx - 1].id);
+}
+
+function closeMobileSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+document.getElementById('hamburger').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+});
+document.getElementById('sidebarOverlay').addEventListener('click', closeMobileSidebar);
+
+function scoreSelector(name, current, onChange) {
+  const labels = ['Critical Gap','Significant','Moderate','Good','Aligned'];
+  return `<div class="score-selector" role="radiogroup" aria-label="${name}">${[1,2,3,4,5].map(n =>
+    `<label class="score-option s${n}${current==n?' selected':''}" tabindex="0" role="radio" aria-checked="${current==n}" onclick="(${onChange})(${n})">
+      <input type="radio" name="${name}" value="${n}" ${current==n?'checked':''}>
+      <span class="score-number">${n}</span><span class="score-label-text">${labels[n-1]}</span></label>`
+  ).join('')}</div>`;
+}
+
+function navFooter(showPrev) {
+  return `<div class="nav-footer">
+    ${showPrev !== false ? '<button class="btn btn-secondary" onclick="prevSection()">Back</button>' : '<div></div>'}
+    <button class="btn btn-primary" onclick="nextSection()">Continue</button></div>`;
+}
+
+function getPartners() { return state.partnerNames.slice(0, state.partnerCount); }
+
+function renderPage() {
+  const area = document.getElementById('contentArea');
+  const renderers = { welcome:renderWelcome, challenge:renderChallenge, timing:renderTiming, valuation:renderValuation, dealterms:renderDealTerms, agreements:renderAgreements, buysell:renderBuySell, disputes:renderDisputes, governance:renderGovernance, disagree:renderDisagree, workshop:renderWorkshop, results:renderResults };
+  const fn = renderers[state.currentSection];
+  if (fn) area.innerHTML = fn();
+  bindPageEvents();
+}
+
+function renderWelcome() {
+  return `<div class="welcome-hero">
+    <div class="welcome-icon">&#9878;</div>
+    <div class="t-display">Partner & Shareholder Alignment</div>
+    <p class="t-body t-secondary">Exiting a business with multiple owners is exponentially more complex than a solo exit. This tool helps you surface differences, build a shared framework, and pre-agree on mechanisms for resolving disagreements -- before you go to market.</p>
+    <div class="welcome-stats">
+      <div class="welcome-stat"><div class="welcome-stat-value">#1</div><div class="welcome-stat-label">Value destroyer in multi-owner exits: misalignment</div></div>
+      <div class="welcome-stat"><div class="welcome-stat-value">15-25%</div><div class="welcome-stat-label">Typical range of final price vs. initial valuation</div></div>
+      <div class="welcome-stat"><div class="welcome-stat-value">30-50%</div><div class="welcome-stat-label">Value destroyed when disputes reach litigation</div></div>
+    </div>
+    <div class="card" style="text-align:left;margin-bottom:var(--space-xl)">
+      <div class="form-group"><label class="form-label">How many partners/shareholders?</label>
+        <select class="form-input" id="partnerCountSelect" style="max-width:200px">
+          <option value="2" ${state.partnerCount==2?'selected':''}>2 Partners</option>
+          <option value="3" ${state.partnerCount==3?'selected':''}>3 Partners</option>
+        </select></div>
+      <div id="partnerNamesArea"></div>
+    </div>
+    <div class="welcome-phases">
+      <div class="welcome-phase"><div class="welcome-phase-num">1</div><div><div class="welcome-phase-title">Understand</div><div class="welcome-phase-desc">The multi-owner exit challenge and why alignment matters</div></div></div>
+      <div class="welcome-phase"><div class="welcome-phase-num">2</div><div><div class="welcome-phase-title">Assess</div><div class="welcome-phase-desc">Score alignment on timing, valuation, and deal structure</div></div></div>
+      <div class="welcome-phase"><div class="welcome-phase-num">3</div><div><div class="welcome-phase-title">Govern</div><div class="welcome-phase-desc">Review agreements, buy-sell mechanisms, and dispute resolution</div></div></div>
+      <div class="welcome-phase"><div class="welcome-phase-num">4</div><div><div class="welcome-phase-title">Act</div><div class="welcome-phase-desc">Complete the alignment workshop and build your action plan</div></div></div>
+    </div>
+    <button class="btn btn-primary btn-lg" onclick="nextSection()">Begin Assessment</button>
+  </div>`;
+}
+
+function renderChallenge() {
+  return `<div class="page-header">
+    <div class="t-label">Section 1 of 11</div>
+    <div class="t-display">The Multi-Owner Exit Challenge</div>
+    <p class="t-body t-secondary">A successful multi-owner exit requires alignment -- not agreement on every detail, but a shared framework for decision-making and pre-agreed mechanisms for resolving differences.</p>
+  </div>
+  <div class="callout callout-danger" style="margin-bottom:var(--space-xl)">
+    <strong>The Alignment Imperative:</strong> A buyer who senses partner disagreement will lower their offer, extend the timeline, or walk away entirely. Alignment must be achieved before going to market.</div>
+  <div class="t-h2" style="margin-bottom:var(--space-lg)">The Five Most Common Value Destroyers</div>
+  ${[
+    {icon:'&#9203;', title:'Timing Misalignment', desc:'One partner wants to sell now; another wants to wait 5 years.'},
+    {icon:'&#36;', title:'Valuation Disputes', desc:'Owners disagree on what the business is worth, leading to impasse.'},
+    {icon:'&#9878;', title:'Deal Structure Conflicts', desc:'Differences in risk appetite regarding earnouts, seller financing, or equity rollovers.'},
+    {icon:'&#9745;', title:'Governance Deadlock', desc:'Majority owners override minority, or minority blocks action.'},
+    {icon:'&#10060;', title:'Relationship Breakdown', desc:'Unresolved personal grievances contaminate business decisions.'}
+  ].map(item => `<div class="card" style="margin-bottom:var(--space-md);display:flex;gap:var(--space-lg);align-items:flex-start;">
+    <div style="font-size:24px;flex-shrink:0;margin-top:2px">${item.icon}</div>
+    <div><div class="t-h3" style="margin-bottom:4px">${item.title}</div><p class="t-small t-secondary">${item.desc}</p></div></div>`).join('')}
+  <div class="callout callout-accent" style="margin-top:var(--space-xl)">
+    <strong>Practical Advice:</strong> Schedule a formal "exit alignment meeting" at least annually. Use a neutral facilitator -- an exit planning advisor or M&A attorney -- to lead the discussion. The goal is not to force agreement but to surface differences early.</div>
+  ${navFooter(false)}`;
+}
+
+function renderTiming() {
+  const partners = getPartners();
+  const factors = [
+    {id:'exitDate', label:'Target exit date alignment'},
+    {id:'financial', label:'Financial readiness (gap analysis)'},
+    {id:'emotional', label:'Emotional readiness (identity beyond business)'},
+    {id:'postExit', label:'Post-exit plan clarity'},
+    {id:'minPrice', label:'Acceptable minimum price alignment'},
+    {id:'stayPost', label:'Willingness to stay post-close'},
+    {id:'health', label:'Health / energy / motivation'},
+    {id:'family', label:'Family / personal considerations'}
+  ];
+  if (!state.timingScores._init) { state.timingScores = {_init:true}; partners.forEach(p => { state.timingScores[p] = {}; }); saveState(); }
+  partners.forEach(p => { if(!state.timingScores[p]) state.timingScores[p] = {}; });
+  return `<div class="page-header">
+    <div class="t-label">Section 2 of 11 -- Assess</div>
+    <div class="t-display">Timing & Exit Readiness</div>
+    <p class="t-body t-secondary">Timing is the most fundamental alignment issue. Rate each partner's readiness on each factor. This surfaces gaps early so they can be addressed proactively.</p>
+  </div>
+  <div class="partner-tabs" id="timingTabs">${partners.map((p,i) => `<div class="partner-tab${i===0?' active':''}" data-partner="${p}">${p}</div>`).join('')}</div>
+  <div id="timingContent">
+    ${partners.map((p,i) => `<div class="partner-panel" data-partner="${p}" style="${i>0?'display:none':''}">
+      ${factors.map(f => `<div class="form-group">
+        <label class="form-label">${f.label}</label>
+        ${scoreSelector(`timing_${p}_${f.id}`, state.timingScores[p][f.id] || '', `function(v){window.setTimingScore('${p}','${f.id}',v)}`)}
+      </div>`).join('')}
+    </div>`).join('')}
+  </div>
+  <div class="section-divider"></div>
+  <div class="t-h2" style="margin-bottom:var(--space-md)">Strategies for Timing Misalignment</div>
+  <div class="callout callout-info" style="margin-bottom:var(--space-md)"><strong>Staged buyouts:</strong> The company or remaining partners buy out the departing partner's interest over time.</div>
+  <div class="callout callout-info" style="margin-bottom:var(--space-md)"><strong>Phased retirement:</strong> One partner reduces involvement and compensation while retaining equity until all are ready.</div>
+  <div class="callout callout-info" style="margin-bottom:var(--space-md)"><strong>Recapitalization:</strong> A PE firm acquires a majority stake, giving one partner liquidity while the other rolls equity.</div>
+  <div class="callout callout-info"><strong>Drag-along rights:</strong> Majority owners force a sale using pre-agreed provisions.</div>
+  ${navFooter()}`;
+}
+
+function renderValuation() {
+  const partners = getPartners();
+  const factors = [
+    {id:'methodology', label:'Valuation methodology agreement', desc:'Revenue multiple vs. EBITDA multiple vs. DCF'},
+    {id:'addbacks', label:'Addbacks & adjustments', desc:'Aggressive normalization vs. conservative approach'},
+    {id:'growth', label:'Growth projections', desc:'Optimistic (pipeline) vs. conservative (historical)'},
+    {id:'marketTiming', label:'Market timing view', desc:'"Market is hot -- sell now" vs. "Wait for growth"'},
+    {id:'emotionalVal', label:'Emotional vs. financial value', desc:'"I built this; it is worth more" vs. "Worth what a buyer pays"'}
+  ];
+  if (!state.valuationScores._init) { state.valuationScores = {_init:true}; partners.forEach(p => { state.valuationScores[p] = {}; }); saveState(); }
+  partners.forEach(p => { if(!state.valuationScores[p]) state.valuationScores[p] = {}; });
+  return `<div class="page-header">
+    <div class="t-label">Section 3 of 11 -- Assess</div>
+    <div class="t-display">Valuation Alignment</div>
+    <p class="t-body t-secondary">Every owner has a number in their head. Misaligned price expectations create friction that can derail an otherwise executable deal. Partners more than 25% apart on price need to resolve the gap before going to market.</p>
+  </div>
+  <div class="callout callout-warning" style="margin-bottom:var(--space-xl)">
+    <strong>Valuation Reality:</strong> In most M&A transactions, the final price falls within a 15-25% range of the initial valuation. Partners who are more than 25% apart on price expectations need to resolve the gap before going to market.</div>
+  <div class="partner-tabs" id="valTabs">${partners.map((p,i) => `<div class="partner-tab${i===0?' active':''}" data-partner="${p}">${p}</div>`).join('')}</div>
+  <div id="valContent">
+    ${partners.map((p,i) => `<div class="partner-panel" data-partner="${p}" style="${i>0?'display:none':''}">
+      ${factors.map(f => `<div class="form-group">
+        <label class="form-label">${f.label}</label>
+        <div class="form-hint" style="margin-bottom:var(--space-sm)">${f.desc}</div>
+        ${scoreSelector(`val_${p}_${f.id}`, state.valuationScores[p][f.id] || '', `function(v){window.setValScore('${p}','${f.id}',v)}`)}
+      </div>`).join('')}
+    </div>`).join('')}
+  </div>
+  <div class="section-divider"></div>
+  <div class="t-h2" style="margin-bottom:var(--space-lg)">Steps to Achieve Valuation Alignment</div>
+  ${[
+    {n:'1', t:'Get a credible valuation', d:'Engage a qualified appraiser (ASA, ABV, or CVA credentialed) to establish a range all partners accept.'},
+    {n:'2', t:'Agree on financial projections', d:'Develop shared assumptions about revenue growth, margin improvement, and capital requirements.'},
+    {n:'3', t:'Use market comps', d:'Look at actual transactions in your industry -- not headlines -- for comparable multiples.'},
+    {n:'4', t:'Set a range, not a point', d:'Establish the floor, target, and ceiling price before engaging buyers.'},
+    {n:'5', t:'Quantify the cost of waiting', d:'Each year of delay has a cost (owner aging, market risk, lost opportunity).'}
+  ].map(s => `<div style="display:flex;gap:var(--space-md);margin-bottom:var(--space-md)">
+    <div style="width:32px;height:32px;background:var(--color-primary-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--color-primary);flex-shrink:0;font-size:14px">${s.n}</div>
+    <div><div class="t-h3">${s.t}</div><div class="t-small t-secondary">${s.d}</div></div></div>`).join('')}
+  ${navFooter()}`;
+}
+
+function renderDealTerms() {
+  const partners = getPartners();
+  const factors = [
+    {id:'cashClose', label:'Cash at close preference', desc:'100% cash vs. 70% cash + 30% earnout'},
+    {id:'sellerFinance', label:'Seller financing tolerance', desc:'No seller note vs. accepting note for higher price'},
+    {id:'equityRoll', label:'Equity rollover willingness', desc:'No rollover vs. rolling 20-30% for second bite'},
+    {id:'earnout', label:'Earnout acceptance', desc:'Avoid earnouts vs. performance-based earnout'},
+    {id:'employment', label:'Employment agreement', desc:'Clean break at close vs. 2-3 year transition role'},
+    {id:'noncompete', label:'Non-compete scope', desc:'Narrow scope/duration vs. broad acceptable'},
+    {id:'reps', label:'Reps & warranties exposure', desc:'Minimal reps with RWI insurance vs. standard with escrow'}
+  ];
+  if (!state.dealScores._init) { state.dealScores = {_init:true}; partners.forEach(p => { state.dealScores[p] = {}; }); saveState(); }
+  partners.forEach(p => { if(!state.dealScores[p]) state.dealScores[p] = {}; });
+  return `<div class="page-header">
+    <div class="t-label">Section 4 of 11 -- Assess</div>
+    <div class="t-display">Deal Terms & Structure</div>
+    <p class="t-body t-secondary">Price is only one dimension. Partners need not have identical structure preferences -- in fact, differences can create value. A PE recapitalization can satisfy one partner wanting cash and another willing to roll equity.</p>
+  </div>
+  <div class="callout callout-accent" style="margin-bottom:var(--space-xl)">
+    <strong>Structure Flexibility:</strong> The more flexible partners are on deal structure, the larger the buyer pool. Insisting on 100% cash at close eliminates most PE buyers and many strategic acquirers.</div>
+  <div class="partner-tabs" id="dealTabs">${partners.map((p,i) => `<div class="partner-tab${i===0?' active':''}" data-partner="${p}">${p}</div>`).join('')}</div>
+  <div id="dealContent">
+    ${partners.map((p,i) => `<div class="partner-panel" data-partner="${p}" style="${i>0?'display:none':''}">
+      ${factors.map(f => `<div class="form-group">
+        <label class="form-label">${f.label}</label>
+        <div class="form-hint" style="margin-bottom:var(--space-sm)">${f.desc}</div>
+        ${scoreSelector(`deal_${p}_${f.id}`, state.dealScores[p][f.id] || '', `function(v){window.setDealScore('${p}','${f.id}',v)}`)}
+      </div>`).join('')}
+    </div>`).join('')}
+  </div>
+  ${navFooter()}`;
+}
+
+function renderAgreements() {
+  const provisions = [
+    {id:'transfer', label:'Transfer restrictions', purpose:'Control who can become an owner'},
+    {id:'rofr', label:'Right of first refusal (ROFR)', purpose:'Existing owners can match outside offer'},
+    {id:'dragAlong', label:'Drag-along rights', purpose:'Majority can force minority to sell'},
+    {id:'tagAlong', label:'Tag-along rights', purpose:'Minority can join a majority sale'},
+    {id:'buySell', label:'Buy-sell / buyout provisions', purpose:'Pre-agreed mechanism for ownership transfer'},
+    {id:'valMethod', label:'Valuation methodology', purpose:'How ownership interests are valued'},
+    {id:'nonCompete', label:'Non-compete / non-solicit', purpose:'Restrictions on departing owners'},
+    {id:'distributions', label:'Distributions policy', purpose:'How profits are distributed'},
+    {id:'governance', label:'Governance / voting', purpose:'Decision-making authority'},
+    {id:'dispute', label:'Dispute resolution', purpose:'Mediation, arbitration, or litigation'}
+  ];
+  if (!state.agreementChecks._init) { state.agreementChecks = {_init:true}; provisions.forEach(p => { state.agreementChecks[p.id] = {status:'', adequate:'', action:''}; }); saveState(); }
+  return `<div class="page-header">
+    <div class="t-label">Section 5 of 11 -- Govern</div>
+    <div class="t-display">Shareholder & Operating Agreements</div>
+    <p class="t-body t-secondary">Your shareholder or operating agreement is the constitutional document of your multi-owner business. An inadequate or outdated agreement is the root cause of most partner alignment failures.</p>
+  </div>
+  <div class="callout callout-danger" style="margin-bottom:var(--space-xl)">
+    <strong>The Default Rules Trap:</strong> If your agreement is silent on a critical issue, state default rules apply -- and these defaults are almost never what the owners would have chosen.</div>
+  <div class="t-h2" style="margin-bottom:var(--space-lg)">Agreement Provision Audit</div>
+  ${provisions.map(p => {
+    const c = state.agreementChecks[p.id] || {status:'',adequate:'',action:''};
+    return `<div class="toggle-card" id="agree_${p.id}">
+      <div class="toggle-card-header" onclick="toggleCard('agree_${p.id}')">
+        <div><div class="toggle-card-title">${p.label}</div><div class="t-small t-secondary">${p.purpose}</div></div>
+        <div style="display:flex;align-items:center;gap:var(--space-sm)">
+          ${c.status ? `<span class="badge ${c.adequate==='yes'?'badge-success':c.adequate==='no'?'badge-danger':'badge-neutral'}">${c.adequate==='yes'?'Adequate':c.adequate==='no'?'Needs Work':'Review'}</span>` : ''}
+          <span class="toggle-card-chevron">${CHEVRON}</span>
+        </div>
+      </div>
+      <div class="toggle-card-body">
+        <div class="form-group"><label class="form-label">Current Status</label>
+          <select class="form-input" onchange="setAgreement('${p.id}','status',this.value)" value="${c.status}">
+            <option value="">Select...</option>
+            <option value="exists" ${c.status==='exists'?'selected':''}>Exists and documented</option>
+            <option value="outdated" ${c.status==='outdated'?'selected':''}>Exists but outdated</option>
+            <option value="missing" ${c.status==='missing'?'selected':''}>Missing / not addressed</option>
+            <option value="unknown" ${c.status==='unknown'?'selected':''}>Unknown / need to check</option>
+          </select></div>
+        <div class="form-group"><label class="form-label">Adequate for exit?</label>
+          <div style="display:flex;gap:var(--space-sm)">
+            ${['yes','no','unsure'].map(v => `<button class="btn btn-sm ${c.adequate===v?'btn-primary':'btn-secondary'}" onclick="setAgreement('${p.id}','adequate','${v}')">${v==='yes'?'Yes':v==='no'?'No':'Unsure'}</button>`).join('')}
+          </div></div>
+        <div class="form-group" style="margin-bottom:0"><label class="form-label">Action Required</label>
+          <textarea class="form-input" rows="2" placeholder="What needs to happen?" onchange="setAgreement('${p.id}','action',this.value)">${c.action}</textarea></div>
+      </div></div>`;
+  }).join('')}
+  <div class="callout callout-info" style="margin-top:var(--space-xl)">
+    <strong>Review Cadence:</strong> Operating and shareholder agreements should be reviewed every 2-3 years or upon any material change in business, ownership, or personal circumstances.</div>
+  ${navFooter()}`;
+}
+
+function renderBuySell() {
+  return `<div class="page-header">
+    <div class="t-label">Section 6 of 11 -- Govern</div>
+    <div class="t-display">Buy-Sell Mechanisms</div>
+    <p class="t-body t-secondary">Buy-sell mechanisms determine how ownership interests transfer between partners. The three primary structures each have distinct tax, legal, and practical implications.</p>
+  </div>
+  <div class="callout callout-warning" style="margin-bottom:var(--space-xl)">
+    <strong>Tax Planning Alert:</strong> The choice between cross-purchase and redemption has significant tax consequences depending on entity type, ownership percentages, and the triggering event. Decide with input from both a tax attorney and CPA.</div>
+  <div class="t-h2" style="margin-bottom:var(--space-lg)">Select Your Mechanism</div>
+  <div style="display:flex;flex-direction:column;gap:var(--space-md);margin-bottom:var(--space-xl)">
+    ${[
+      {id:'cross', title:'Cross-Purchase', desc:'Remaining owners purchase the departing owner\'s interest directly. Key advantage: stepped-up cost basis reduces future capital gains.', pros:'Tax basis step-up, no attribution issues', cons:'High admin complexity with 3+ owners (N x N-1 policies)'},
+      {id:'redemption', title:'Entity Redemption', desc:'The company buys back the departing owner\'s interest. Company owns insurance on each owner, simplifying administration.', pros:'Low admin complexity, only N policies needed', cons:'No basis step-up, potential C-Corp attribution issues under IRC 318'},
+      {id:'hybrid', title:'Hybrid (Wait-and-See)', desc:'Company gets first option to redeem. If it declines, remaining owners can cross-purchase the balance. Maximum flexibility.', pros:'Decision made at time of trigger, not locked in years earlier', cons:'Medium admin complexity, requires careful drafting'}
+    ].map(m => `<div class="card" style="cursor:pointer;border:2px solid ${state.buysellChoice===m.id?'var(--color-primary)':'var(--color-border)'};${state.buysellChoice===m.id?'background:var(--color-primary-light)':''}" onclick="setBuySell('${m.id}')">
+      <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-sm)">
+        <div style="width:24px;height:24px;border-radius:50%;border:2px solid ${state.buysellChoice===m.id?'var(--color-primary)':'var(--color-border)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          ${state.buysellChoice===m.id?'<div style="width:12px;height:12px;border-radius:50%;background:var(--color-primary)"></div>':''}
+        </div>
+        <div class="t-h2">${m.title}</div>
+      </div>
+      <p class="t-small t-secondary" style="margin-bottom:var(--space-md)">${m.desc}</p>
+      <div style="display:flex;gap:var(--space-lg);flex-wrap:wrap">
+        <div><span class="badge badge-success">Pros</span><div class="t-small" style="margin-top:4px">${m.pros}</div></div>
+        <div><span class="badge badge-danger">Cons</span><div class="t-small" style="margin-top:4px">${m.cons}</div></div>
+      </div></div>`).join('')}
+  </div>
+  <div class="t-h2" style="margin-bottom:var(--space-lg)">Comparison Matrix</div>
+  <div style="overflow-x:auto">
+    <table class="info-table">
+      <thead><tr><th>Factor</th><th>Cross-Purchase</th><th>Entity Redemption</th><th>Hybrid</th></tr></thead>
+      <tbody>
+        <tr><td>Who buys</td><td>Individual owners</td><td>The company</td><td>Company first, then owners</td></tr>
+        <tr><td>Tax basis step-up</td><td><span class="badge badge-success">Yes</span></td><td><span class="badge badge-danger">No</span></td><td><span class="badge badge-warning">Depends</span></td></tr>
+        <tr><td>Policies needed (N owners)</td><td>N x (N-1)</td><td>N</td><td>N or more</td></tr>
+        <tr><td>Best for</td><td>2-3 owners</td><td>4+ owners</td><td>Complex situations</td></tr>
+        <tr><td>Admin complexity</td><td>High</td><td>Low</td><td>Medium</td></tr>
+      </tbody>
+    </table></div>
+  ${navFooter()}`;
+}
+
+function renderDisputes() {
+  return `<div class="page-header">
+    <div class="t-label">Section 7 of 11 -- Govern</div>
+    <div class="t-display">Valuation Dispute Resolution</div>
+    <p class="t-body t-secondary">Despite the best planning, valuation disputes arise. The dispute resolution mechanism in your agreement determines whether disagreement resolves in weeks or years.</p>
+  </div>
+  <div class="callout callout-info" style="margin-bottom:var(--space-xl)">
+    <strong>Prevention > Resolution:</strong> Annual valuation updates, quarterly financial reviews, and transparent communication dramatically reduce the likelihood of disputes.</div>
+  <div class="t-h2" style="margin-bottom:var(--space-lg)">Choose Your Preferred Mechanism</div>
+  <div style="display:flex;flex-direction:column;gap:var(--space-sm);margin-bottom:var(--space-xl)">
+    ${[
+      {id:'agreed', title:'Agreed-Upon Value', cost:'None', speed:'Immediate', desc:'Partners set and update a value annually'},
+      {id:'formula', title:'Formula-Based', cost:'Minimal', speed:'Days', desc:'Pre-agreed formula (e.g., 5x trailing EBITDA)'},
+      {id:'single', title:'Single Appraiser', cost:'$10-30K', speed:'30-60 days', desc:'Both parties agree on one appraiser'},
+      {id:'baseball', title:'Baseball Arbitration', cost:'$10-30K', speed:'30-60 days', desc:'Each side submits a value; appraiser picks closest one. Recommended.'},
+      {id:'three', title:'Three-Appraiser', cost:'$30-100K', speed:'60-120 days', desc:'Each side picks one; the two pick a third'},
+      {id:'mediation', title:'Mediation', cost:'Moderate', speed:'30-90 days', desc:'Neutral mediator facilitates negotiation (non-binding)'},
+      {id:'arbitration', title:'Binding Arbitration', cost:'High', speed:'90-180 days', desc:'Neutral arbitrator makes a binding decision'}
+    ].map(m => `<div class="card" style="cursor:pointer;padding:var(--space-md) var(--space-lg);border:2px solid ${state.disputeChoice===m.id?'var(--color-primary)':'var(--color-border)'};${state.disputeChoice===m.id?'background:var(--color-primary-light)':''}" onclick="setDispute('${m.id}')">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-md);flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:var(--space-md)">
+          <div style="width:20px;height:20px;border-radius:50%;border:2px solid ${state.disputeChoice===m.id?'var(--color-primary)':'var(--color-border)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            ${state.disputeChoice===m.id?'<div style="width:10px;height:10px;border-radius:50%;background:var(--color-primary)"></div>':''}
+          </div>
+          <div><div class="t-h3">${m.title}${m.id==='baseball'?' <span class="badge badge-primary">Recommended</span>':''}</div><div class="t-small t-secondary">${m.desc}</div></div>
+        </div>
+        <div style="display:flex;gap:var(--space-lg)">
+          <div class="t-caption">Cost: ${m.cost}</div>
+          <div class="t-caption">Speed: ${m.speed}</div>
+        </div>
+      </div></div>`).join('')}
+  </div>
+  ${state.disputeChoice==='baseball'?`<div class="card" style="background:var(--color-primary-light);border-color:var(--color-primary)">
+    <div class="t-h3" style="margin-bottom:var(--space-sm)">Why Baseball Arbitration?</div>
+    <p class="t-small">Each partner submits a sealed valuation to a neutral appraiser. The appraiser selects the value closest to their own independent assessment. Because they must pick one (no splitting the difference), both sides are motivated to submit realistic valuations. This incentivizes reasonableness and typically resolves disputes in 30-60 days.</p></div>`:''}
+  ${navFooter()}`;
+}
+
+function renderGovernance() {
+  const partners = getPartners();
+  const factors = [
+    {id:'dayToDay', label:'Day-to-day operations voting clarity', desc:'Simple majority (>50%) -- efficient management'},
+    {id:'majorContracts', label:'Major contracts / CapEx threshold', desc:'Supermajority (66-75%) -- significant commitments'},
+    {id:'saleAssets', label:'Sale of substantially all assets', desc:'Supermajority (75-80%) -- exit-level decision'},
+    {id:'merger', label:'Merger or acquisition', desc:'Supermajority (75-80%) -- fundamental ownership change'},
+    {id:'newPartner', label:'Admission of new partner', desc:'Supermajority or unanimous'},
+    {id:'amendment', label:'Amendment of operating agreement', desc:'Supermajority (75-80%) -- changes governing rules'},
+    {id:'dragAlong', label:'Drag-along rights clarity', desc:'Prevents minority holdout that kills a deal'},
+    {id:'tagAlong', label:'Tag-along rights protection', desc:'Prevents majority from leaving minority behind'}
+  ];
+  if (!state.governanceScores._init) { state.governanceScores = {_init:true}; partners.forEach(p => { state.governanceScores[p] = {}; }); saveState(); }
+  partners.forEach(p => { if(!state.governanceScores[p]) state.governanceScores[p] = {}; });
+  return `<div class="page-header">
+    <div class="t-label">Section 8 of 11 -- Govern</div>
+    <div class="t-display">Voting Rights & Drag/Tag Provisions</div>
+    <p class="t-body t-secondary">These governance mechanisms determine who has power to initiate, approve, or block an exit. They must balance majority and minority interests while enabling efficient decisions.</p>
+  </div>
+  <div class="callout callout-accent" style="margin-bottom:var(--space-xl)">
+    <strong>Drafting Balance:</strong> Drag-along without tag-along allows majority abuse. Tag-along without drag-along gives minority a free ride. Well-drafted agreements include both, with appropriate thresholds.</div>
+  <div class="partner-tabs" id="govTabs">${partners.map((p,i) => `<div class="partner-tab${i===0?' active':''}" data-partner="${p}">${p}</div>`).join('')}</div>
+  <div id="govContent">
+    ${partners.map((p,i) => `<div class="partner-panel" data-partner="${p}" style="${i>0?'display:none':''}">
+      ${factors.map(f => `<div class="form-group">
+        <label class="form-label">${f.label}</label>
+        <div class="form-hint" style="margin-bottom:var(--space-sm)">${f.desc}</div>
+        ${scoreSelector(`gov_${p}_${f.id}`, state.governanceScores[p][f.id] || '', `function(v){window.setGovScore('${p}','${f.id}',v)}`)}
+      </div>`).join('')}
+    </div>`).join('')}
+  </div>
+  ${navFooter()}`;
+}
+
+function renderDisagree() {
+  const mechanisms = [
+    {id:'shotgun', title:'Shotgun Clause (Russian Roulette)', desc:'One partner names a price; the other must buy or sell at that price. Best for 50/50 partnerships. Forces fair pricing because the namer does not know which side they will be on.', warn:'Favors the wealthier partner who can access financing. Safeguards include financing windows (30-90 days) and minimum valuation floors.'},
+    {id:'texas', title:'Texas Shootout (Sealed Bid)', desc:'Both partners submit sealed bids; highest bidder buys the other out. Best when both want to keep the business.', warn:''},
+    {id:'putcall', title:'Put/Call Options', desc:'One partner has the right to "put" (sell) or "call" (buy) at a formula price. Pre-agreed exit at predetermined terms.', warn:''},
+    {id:'mediation', title:'Forced Mediation', desc:'Neutral third party facilitates negotiation. Best for disagreements that may still be resolvable.', warn:''},
+    {id:'dissolution', title:'Dissolution', desc:'Wind down the business and distribute assets. Last resort when no other option works.', warn:''}
+  ];
+  return `<div class="page-header">
+    <div class="t-label">Section 9 of 11 -- Resolve</div>
+    <div class="t-display">When Partners Disagree</div>
+    <p class="t-body t-secondary">Despite the best agreements, partners sometimes reach an impasse. When continuing together is no longer viable, the available options depend on what was pre-agreed in your operating or shareholder agreement.</p>
+  </div>
+  <div class="callout callout-danger" style="margin-bottom:var(--space-xl)">
+    <strong>Hard Truth:</strong> Most partner disputes that reach litigation destroy 30-50% of business value in legal fees, management distraction, and customer/employee attrition. The earlier you activate a pre-agreed mechanism, the more value you preserve.</div>
+  <div class="t-h2" style="margin-bottom:var(--space-lg)">Deadlock Resolution Mechanisms</div>
+  ${mechanisms.map(m => `<div class="toggle-card" id="mech_${m.id}">
+    <div class="toggle-card-header" onclick="toggleCard('mech_${m.id}')">
+      <div class="toggle-card-title">${m.title}</div>
+      <span class="toggle-card-chevron">${CHEVRON}</span>
+    </div>
+    <div class="toggle-card-body">
+      <p class="t-small" style="margin-bottom:var(--space-md)">${m.desc}</p>
+      ${m.warn?`<div class="callout callout-warning">${m.warn}</div>`:''}
+      <div class="form-group" style="margin-top:var(--space-md);margin-bottom:0">
+        <label class="form-label">Your notes on this mechanism</label>
+        <textarea class="form-input" rows="2" placeholder="Is this relevant to your situation?" onchange="setDisagreeNote('${m.id}',this.value)">${state.disagreeNotes[m.id]||''}</textarea>
+      </div>
+    </div></div>`).join('')}
+  <div class="section-divider"></div>
+  <div class="t-h2" style="margin-bottom:var(--space-md)">When to Walk Away</div>
+  <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Sometimes the right decision is to end the partnership as quickly and cleanly as possible, even at a lower price. The cost of prolonged conflict is not just financial.</p>
+  <div class="callout callout-accent">
+    <strong>The Walk-Away Paradox:</strong> The willingness to walk away is the single greatest source of negotiating leverage. The seller who is prepared to terminate is the seller who almost never has to. Buyers sense desperation, and they sense resolve.</div>
+  ${navFooter()}`;
+}
+
+function renderWorkshop() {
+  const partners = getPartners();
+  const questions = [
+    {id:'idealDate', label:'When is your ideal exit date?'},
+    {id:'minPrice', label:'What is your minimum acceptable price?'},
+    {id:'dealStructure', label:'What deal structure do you prefer?'},
+    {id:'stayPost', label:'Are you willing to stay post-close? For how long?'},
+    {id:'biggestConcern', label:'What is your biggest concern about the exit process?'},
+    {id:'successLooks', label:'What does "success" look like for you?'},
+    {id:'fallback', label:'What is your fallback if partners cannot align?'},
+    {id:'riskTolerance', label:'How much risk are you willing to accept in deal structure?'},
+    {id:'postExitPlan', label:'What are your post-exit plans?'},
+    {id:'unwillingToSell', label:'Is there anything that would make you unwilling to sell?'}
+  ];
+  if (!state.workshopAnswers._init) { state.workshopAnswers = {_init:true}; partners.forEach(p => { state.workshopAnswers[p] = {}; }); saveState(); }
+  partners.forEach(p => { if(!state.workshopAnswers[p]) state.workshopAnswers[p] = {}; });
+  return `<div class="page-header">
+    <div class="t-label">Section 10 of 11 -- Act</div>
+    <div class="t-display">Alignment Workshop</div>
+    <p class="t-body t-secondary">Complete these worksheets individually first, then discuss collectively with a neutral facilitator present. These questions surface the differences that matter most.</p>
+  </div>
+  <div class="callout callout-info" style="margin-bottom:var(--space-xl)">
+    <strong>Facilitation tip:</strong> Each partner should complete this independently before comparing answers. The goal is honest self-assessment, not consensus-seeking.</div>
+  <div class="partner-tabs" id="workshopTabs">${partners.map((p,i) => `<div class="partner-tab${i===0?' active':''}" data-partner="${p}">${p}</div>`).join('')}</div>
+  <div id="workshopContent">
+    ${partners.map((p,i) => `<div class="partner-panel" data-partner="${p}" style="${i>0?'display:none':''}">
+      ${questions.map((q,qi) => `<div class="form-group">
+        <label class="form-label"><span class="t-caption" style="color:var(--color-accent);margin-right:var(--space-sm)">Q${qi+1}</span>${q.label}</label>
+        <textarea class="form-input" rows="2" placeholder="Enter response..." onchange="setWorkshop('${p}','${q.id}',this.value)">${state.workshopAnswers[p]?.[q.id]||''}</textarea>
+      </div>`).join('')}
+    </div>`).join('')}
+  </div>
+  <div class="section-divider"></div>
+  <div class="t-h2" style="margin-bottom:var(--space-lg)">Partner Alignment Checklist</div>
+  <div class="card">
+    <div class="checklist" id="alignmentChecklist">
+      ${[
+        'All partners have completed the Exit Vision Worksheet independently',
+        'Facilitated alignment discussion has been held',
+        'Target exit timeline has been agreed (or staged approach defined)',
+        'Independent business valuation has been obtained',
+        'All partners accept the valuation range (or dispute mechanism agreed)',
+        'Deal structure preferences have been discussed and documented',
+        'Operating/shareholder agreement reviewed within last 2 years',
+        'Buy-sell mechanism is in place and funded',
+        'Drag-along and tag-along rights are documented',
+        'Dispute resolution mechanism is pre-agreed',
+        'All partners have personal financial plans and know their minimum exit number',
+        'Next alignment review meeting is scheduled'
+      ].map((text, i) => `<div class="check-item${state.checklist['cl_'+i]?' checked':''}" onclick="toggleCheck('cl_${i}',this)" role="checkbox" aria-checked="${!!state.checklist['cl_'+i]}" tabindex="0">
+        <div class="check-box">${CHECK_SVG}</div>
+        <div class="check-text">${text}</div></div>`).join('')}
+    </div>
+  </div>
+  ${navFooter()}`;
+}
+
+function renderResults() {
+  const partners = getPartners();
+  const allScoresByCategory = {};
+  const categories = [
+    {key:'timing', label:'Timing & Readiness', data:state.timingScores},
+    {key:'valuation', label:'Valuation Alignment', data:state.valuationScores},
+    {key:'deal', label:'Deal Structure', data:state.dealScores},
+    {key:'governance', label:'Governance & Voting', data:state.governanceScores}
+  ];
+  let totalScores = [];
+  categories.forEach(cat => {
+    let catScores = [];
+    partners.forEach(p => {
+      if(cat.data[p]) Object.values(cat.data[p]).forEach(v => { if(v) catScores.push(parseInt(v)); });
+    });
+    allScoresByCategory[cat.key] = catScores.length ? Math.round((catScores.reduce((a,b)=>a+b,0)/catScores.length)*20) : 0;
+    totalScores = totalScores.concat(catScores);
+  });
+  const overallScore = totalScores.length ? Math.round((totalScores.reduce((a,b)=>a+b,0)/totalScores.length)*20) : 0;
+
+  const agreementIssues = Object.entries(state.agreementChecks).filter(([k,v]) => k!=='_init' && v.adequate==='no').length;
+  const checklistDone = Object.values(state.checklist).filter(Boolean).length;
+  const checklistTotal = 12;
+
+  function scoreColor(s) { return s >= 80 ? 'var(--color-success)' : s >= 60 ? 'var(--color-warning)' : 'var(--color-danger)'; }
+  function scoreLabel(s) { return s >= 80 ? 'Strong' : s >= 60 ? 'Moderate' : s >= 40 ? 'Weak' : 'Critical'; }
+
+  return `<div class="page-header">
+    <div class="t-label">Results</div>
+    <div class="t-display">Your Alignment Report</div>
+    <p class="t-body t-secondary">Here is a summary of your partner alignment assessment. Use this to identify the highest-priority gaps and build your action plan.</p>
+  </div>
+  <div class="card" style="text-align:center;margin-bottom:var(--space-xl);padding:var(--space-2xl)">
+    <div class="t-label" style="margin-bottom:var(--space-md)">Overall Alignment Score</div>
+    <div style="position:relative;display:inline-block">
+      <svg width="160" height="160" viewBox="0 0 160 160">
+        <circle cx="80" cy="80" r="70" fill="none" stroke="var(--color-border)" stroke-width="10"/>
+        <circle cx="80" cy="80" r="70" fill="none" stroke="${scoreColor(overallScore)}" stroke-width="10" stroke-dasharray="${overallScore/100*440} 440" stroke-dashoffset="0" transform="rotate(-90 80 80)" stroke-linecap="round"/>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="font-family:var(--font-display);font-size:42px;font-weight:700;color:${scoreColor(overallScore)}">${overallScore || '--'}</div>
+        <div class="t-caption">${overallScore ? scoreLabel(overallScore) : 'No data'}</div>
+      </div>
+    </div>
+  </div>
+  <div class="t-h2" style="margin-bottom:var(--space-lg)">Category Breakdown</div>
+  <div class="bar-chart" style="margin-bottom:var(--space-xl)">
+    ${categories.map(cat => {
+      const s = allScoresByCategory[cat.key];
+      return `<div class="bar-row">
+        <div class="bar-label">${cat.label}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${s}%;background:${scoreColor(s)}"><span class="bar-value">${s}</span></div></div>
+      </div>`;
+    }).join('')}
+  </div>
+  ${partners.length > 1 ? `<div class="t-h2" style="margin-bottom:var(--space-lg)">Partner Gap Heatmap</div>
+  <div class="heatmap-container"><div class="heatmap" style="grid-template-columns:140px repeat(${categories.length},1fr)">
+    <div></div>${categories.map(c=>`<div style="font-size:11px;text-align:center;color:var(--color-text-tertiary);text-transform:uppercase;padding-bottom:4px">${c.label.split(' ')[0]}</div>`).join('')}
+    ${partners.map(p => `<div style="font-size:13px;color:var(--color-text-secondary);display:flex;align-items:center">${p}</div>
+      ${categories.map(cat => {
+        let pScores = [];
+        if(cat.data[p]) Object.values(cat.data[p]).forEach(v => { if(v) pScores.push(parseInt(v)); });
+        const avg = pScores.length ? Math.round(pScores.reduce((a,b)=>a+b,0)/pScores.length) : 0;
+        const cls = avg===0?'hs0':avg<=1?'hs1':avg<=2?'hs2':avg<=3?'hs3':avg<=4?'hs4':'hs5';
+        return `<div class="heatmap-cell ${cls}">${avg||'-'}</div>`;
+      }).join('')}`).join('')}
+  </div></div>` : ''}
+  <div class="section-divider"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-xl)">
+    <div class="card" style="text-align:center"><div class="t-label" style="margin-bottom:var(--space-sm)">Agreement Issues</div><div style="font-family:var(--font-display);font-size:28px;font-weight:700;color:${agreementIssues>0?'var(--color-danger)':'var(--color-success)'}">${agreementIssues}</div><div class="t-caption t-secondary">provisions need work</div></div>
+    <div class="card" style="text-align:center"><div class="t-label" style="margin-bottom:var(--space-sm)">Buy-Sell</div><div style="font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--color-primary);text-transform:capitalize">${state.buysellChoice || 'Not selected'}</div><div class="t-caption t-secondary">mechanism chosen</div></div>
+    <div class="card" style="text-align:center"><div class="t-label" style="margin-bottom:var(--space-sm)">Checklist</div><div style="font-family:var(--font-display);font-size:28px;font-weight:700;color:${checklistDone===checklistTotal?'var(--color-success)':'var(--color-warning)'}">${checklistDone}/${checklistTotal}</div><div class="t-caption t-secondary">items completed</div></div>
+  </div>
+  <div class="t-h2" style="margin-bottom:var(--space-lg)">Priority Actions</div>
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    ${categories.filter(c => allScoresByCategory[c.key] < 60).map(c => `<div style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md) 0;border-bottom:1px solid var(--color-border-light)">
+      <span class="badge badge-danger">Priority</span><span class="t-small"><strong>${c.label}</strong> scored ${allScoresByCategory[c.key]}/100 -- needs immediate attention</span></div>`).join('') || '<div class="t-small t-secondary" style="padding:var(--space-md) 0">All categories are above the concern threshold. Continue refining alignment.</div>'}
+    ${agreementIssues > 0 ? `<div style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md) 0;border-bottom:1px solid var(--color-border-light)">
+      <span class="badge badge-warning">Review</span><span class="t-small"><strong>${agreementIssues} agreement provision(s)</strong> flagged as inadequate for exit</span></div>` : ''}
+    ${!state.buysellChoice ? `<div style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md) 0">
+      <span class="badge badge-warning">Missing</span><span class="t-small">No buy-sell mechanism selected</span></div>` : ''}
+  </div>
+  <div class="callout callout-accent" style="margin-bottom:var(--space-xl)">
+    <strong>Final Thought:</strong> "The goal is not for all partners to want the same thing -- it is for all partners to have agreed in advance on how to handle the fact that they do not."</div>
+  <div style="display:flex;gap:var(--space-md);flex-wrap:wrap">
+    <button class="btn btn-secondary" onclick="prevSection()">Back</button>
+    <button class="btn btn-primary" onclick="exportReport()">Export Report</button>
+    <button class="btn btn-secondary" onclick="window.print()">Print Report</button>
+    <button class="btn btn-accent" onclick="if(confirm('This will clear all data and start fresh. Continue?')){localStorage.removeItem('${STORAGE_KEY}');location.reload();}">Reset Assessment</button>
+  </div>`;
+}
+
+// Global handlers
+window.setTimingScore = (p, f, v) => { if(!state.timingScores[p]) state.timingScores[p]={}; state.timingScores[p][f]=v; saveState(); renderPage(); updateAlignmentScore(); };
+window.setValScore = (p, f, v) => { if(!state.valuationScores[p]) state.valuationScores[p]={}; state.valuationScores[p][f]=v; saveState(); renderPage(); updateAlignmentScore(); };
+window.setDealScore = (p, f, v) => { if(!state.dealScores[p]) state.dealScores[p]={}; state.dealScores[p][f]=v; saveState(); renderPage(); updateAlignmentScore(); };
+window.setGovScore = (p, f, v) => { if(!state.governanceScores[p]) state.governanceScores[p]={}; state.governanceScores[p][f]=v; saveState(); renderPage(); updateAlignmentScore(); };
+window.setAgreement = (id, field, val) => { if(!state.agreementChecks[id]) state.agreementChecks[id]={status:'',adequate:'',action:''}; state.agreementChecks[id][field]=val; saveState(); renderPage(); };
+window.setBuySell = (id) => { state.buysellChoice = id; saveState(); renderPage(); };
+window.setDispute = (id) => { state.disputeChoice = id; saveState(); renderPage(); };
+window.setDisagreeNote = (id, val) => { state.disagreeNotes[id] = val; saveState(); };
+window.setWorkshop = (p, q, val) => { if(!state.workshopAnswers[p]) state.workshopAnswers[p]={}; state.workshopAnswers[p][q]=val; saveState(); };
+window.toggleCheck = (id, el) => { state.checklist[id] = !state.checklist[id]; saveState(); el.classList.toggle('checked'); el.setAttribute('aria-checked', state.checklist[id]); updateProgress(); };
+window.toggleCard = (id) => { document.getElementById(id).classList.toggle('expanded'); };
+
+function bindPageEvents() {
+  document.querySelectorAll('.partner-tabs').forEach(tabs => {
+    tabs.querySelectorAll('.partner-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const partner = tab.dataset.partner;
+        tabs.querySelectorAll('.partner-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const container = tabs.nextElementSibling;
+        if (container) {
+          container.querySelectorAll('.partner-panel').forEach(p => {
+            p.style.display = p.dataset.partner === partner ? '' : 'none';
+          });
+        }
+      });
+    });
+  });
+  // Update partner count
+  const pcSelect = document.getElementById('partnerCountSelect');
+  if (pcSelect) {
+    pcSelect.addEventListener('change', () => {
+      state.partnerCount = parseInt(pcSelect.value);
+      saveState();
+      renderPartnerNames();
+    });
+    renderPartnerNames();
+  }
+}
+
+function renderPartnerNames() {
+  const area = document.getElementById('partnerNamesArea');
+  if (!area) return;
+  const count = state.partnerCount;
+  area.innerHTML = Array.from({length:count}, (_, i) => `<div class="form-group">
+    <label class="form-label">Partner ${i+1} Name</label>
+    <input class="form-input" type="text" value="${state.partnerNames[i]||'Partner '+(i===0?'A':i===1?'B':'C')}" data-idx="${i}" placeholder="Enter name" style="max-width:300px">
+  </div>`).join('');
+  area.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('change', () => {
+      state.partnerNames[parseInt(inp.dataset.idx)] = inp.value;
+      saveState();
+    });
+  });
+}
+
+/* LOCALSTORAGE MIGRATION */
+(function() {
+  const OLD_KEY = 'playbook41_partner_alignment';
+  const NEW_KEY = 'exitosx-pb41-partner-shareholder-alignment';
+  if (OLD_KEY === STORAGE_KEY) return;
+  try {
+    const old = localStorage.getItem(OLD_KEY);
+    if (old && !localStorage.getItem(NEW_KEY)) {
+      localStorage.setItem(NEW_KEY, old);
+      localStorage.removeItem(OLD_KEY);
+    }
+  } catch(e) {}
+})();
+
+/* EXPORT */
+function exportReport() {
+  let text = 'PARTNER & SHAREHOLDER ALIGNMENT - Summary Report\n';
+  text += 'Generated: ' + new Date().toLocaleDateString() + '\n';
+  text += '='.repeat(50) + '\n\n';
+  text += 'ALIGNMENT SCORE: ' + (document.getElementById('sidebarScore')?.textContent?.replace('/100','') || '--') + '/100\n';
+  text += 'Partners: ' + getPartners().join(', ') + '\n\n';
+  text += '--- TIMING & READINESS ---\n';
+  getPartners().forEach(p => {
+    const scores = state.timingScores[p] || {};
+    text += p + ': ' + Object.entries(scores).map(([k,v]) => k + '=' + v).join(', ') + '\n';
+  });
+  text += '\n--- VALUATION ALIGNMENT ---\n';
+  getPartners().forEach(p => {
+    const scores = state.valuationScores[p] || {};
+    text += p + ': ' + Object.entries(scores).map(([k,v]) => k + '=' + v).join(', ') + '\n';
+  });
+  text += '\n--- DEAL STRUCTURE ---\n';
+  getPartners().forEach(p => {
+    const scores = state.dealScores[p] || {};
+    text += p + ': ' + Object.entries(scores).map(([k,v]) => k + '=' + v).join(', ') + '\n';
+  });
+  text += '\n--- GOVERNANCE ---\n';
+  text += 'Buy-sell mechanism: ' + (state.buysellChoice || '--') + '\n';
+  text += 'Dispute resolution: ' + (state.disputeChoice || '--') + '\n\n';
+  text += '--- SECTIONS COMPLETED ---\n';
+  text += state.completedSections.filter(s => s !== 'welcome').length + ' of ' + (SECTIONS.length - 1) + '\n';
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'playbook-41-partner-alignment-report.txt';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Report exported successfully');
+}
+
+// Init
+buildSidebar();
+renderPage();
+updateProgress();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

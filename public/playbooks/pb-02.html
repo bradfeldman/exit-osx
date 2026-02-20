@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post-Exit Identity &amp; Purpose Planning | Exit Planning Playbook #2</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #5B4FC4;
+  --color-primary-light: #EEECF9;
+  --color-primary-hover: #4A3FB3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.6; color: var(--color-text); background: var(--color-bg); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 1000; }
+a.skip-link:focus { position: fixed; top: 10px; left: 10px; width: auto; height: auto; padding: 12px 20px; background: var(--color-primary); color: #fff; border-radius: var(--radius-sm); font-weight: 600; z-index: 1000; }
+.t-display { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; min-width: 260px; background: #FFFFFF; border-right: 1px solid var(--color-border); color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: transform var(--transition-slow); overflow-y: auto; }
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+.mobile-header { display: none; position: sticky; top: 0; z-index: 90; background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md); }
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+  .week-row { grid-template-columns: 1fr !important; }
+}
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item { display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px; border-radius: var(--radius-sm); color: var(--color-text-secondary); font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative; }
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--color-text-tertiary); }
+.nav-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+.sidebar-footer { margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--color-border); font-size: 12px; color: rgba(255,255,255,0.3); display: flex; align-items: center; gap: 6px; }
+.sidebar-footer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-success); }
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); transition: box-shadow var(--transition-normal); margin-bottom: var(--space-md); }
+.card:hover { box-shadow: var(--shadow-sm); }
+.callout { padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); border-left: 3px solid; font-size: 14px; line-height: 1.6; margin-bottom: var(--space-md); }
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+.callout-success { background: var(--color-success-light); border-color: var(--color-success); color: var(--color-success); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm); padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; transition: all var(--transition-fast); white-space: nowrap; }
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface); transition: all var(--transition-fast); color: var(--color-text); }
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); text-align: center; }
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+@media (max-width: 600px) { .score-selector { gap: 4px; } .score-option { padding: 10px 4px; } .score-number { font-size: 18px; } .score-label-text { font-size: 9px; } .summary-grid { grid-template-columns: 1fr 1fr; } }
+.check-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md); border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast); }
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box { width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); margin-top: 1px; }
+.check-item.checked .check-box { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--color-border); }
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-lg); }
+.summary-item { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-align: center; }
+.summary-item-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; }
+.summary-item-label { font-size: 12px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-top: var(--space-xs); }
+.gauge-wrap { display: flex; justify-content: center; margin: var(--space-lg) 0; }
+.gauge-ring { position: relative; width: 160px; height: 160px; }
+.gauge-ring svg { width: 160px; height: 160px; transform: rotate(-90deg); }
+.gauge-ring circle { fill: none; stroke-width: 8; stroke-linecap: round; }
+.gauge-bg { stroke: var(--color-border); }
+.gauge-fill { transition: stroke-dashoffset 1s ease; }
+.gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gauge-center-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; line-height: 1; }
+.gauge-center-label { font-size: 12px; color: var(--color-text-tertiary); margin-top: 4px; }
+/* Stat hero */
+.stat-hero { background: var(--color-primary); color: #fff; border-radius: var(--radius-xl); padding: 40px 32px; text-align: center; margin-bottom: var(--space-lg); }
+.stat-hero-number { font-family: var(--font-display); font-size: clamp(36px, 5vw, 48px); font-weight: 800; letter-spacing: -0.03em; }
+.stat-hero-sub { font-size: 14px; color: rgba(255,255,255,0.6); margin-top: var(--space-xs); }
+/* Path card */
+.path-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg); margin-bottom: var(--space-sm); cursor: pointer; transition: all var(--transition-fast); }
+.path-card:hover { box-shadow: var(--shadow-sm); }
+.path-card.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+/* Emotion timeline */
+.emotion-phase { display: flex; gap: var(--space-md); padding: var(--space-md) 0; border-bottom: 1px solid var(--color-border-light); }
+.emotion-phase:last-child { border-bottom: none; }
+.emotion-marker { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+/* Week row */
+.week-row { display: grid; grid-template-columns: 80px 1fr 120px; gap: var(--space-md); padding: var(--space-md) 0; border-bottom: 1px solid var(--color-border-light); align-items: start; }
+.week-row:last-child { border-bottom: none; }
+.pillar-tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 500; display: inline-block; margin: 2px; }
+/* Bar chart */
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 120px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 24px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; min-width: 2px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+@media print {
+  .sidebar, .mobile-header, .page-nav, .sidebar-overlay { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; margin-bottom: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<a href="#contentArea" class="skip-link">Skip to content</a>
+<div class="app">
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #2</div>
+      <div class="sidebar-brand-title">Post-Exit Identity &amp; Purpose</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Pillar Readiness</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/5</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete the five-pillar assessment</div>
+    </div>
+    <div class="sidebar-footer"><div class="sidebar-footer-dot"></div>Auto-saved locally</div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation"><span></span></button>
+      <div style="flex:1"><strong style="font-size:15px;">Identity &amp; Purpose</strong></div>
+      <div class="badge badge-primary" id="mobileScore">--/5</div>
+    </div>
+    <main class="content-area" id="contentArea" role="main"></main>
+  </div>
+</div>
+
+<script>
+(function() {
+'use strict';
+
+var STORAGE_KEY = 'exitosx-pb02-identity-purpose';
+var PILLAR_COLORS = { purpose: '#5B4FC4', structure: '#2563EB', community: '#0D9488', competence: '#D97706', identity: '#DC2626' };
+
+var PAGES = [
+  { id: 'welcome', title: 'Welcome', phase: 'START', icon: '1' },
+  { id: 'identity-crisis', title: 'The Identity Crisis', phase: 'UNDERSTAND', icon: '2' },
+  { id: 'what-you-lose', title: 'What You Lose', phase: 'UNDERSTAND', icon: '3' },
+  { id: 'sabotage', title: 'Self-Sabotage Check', phase: 'UNDERSTAND', icon: '4' },
+  { id: 'five-pillars', title: 'Five Pillars Assessment', phase: 'ASSESS', icon: '5' },
+  { id: 'pillar-planning', title: 'Pillar Planning', phase: 'ASSESS', icon: '6' },
+  { id: 'post-exit-paths', title: 'Post-Exit Paths', phase: 'DESIGN', icon: '7' },
+  { id: 'emotional-timeline', title: 'Emotional Timeline', phase: 'DESIGN', icon: '8' },
+  { id: 'exploration', title: 'Pre-Exit Exploration', phase: 'DESIGN', icon: '9' },
+  { id: 'ninety-day', title: '90-Day Plan', phase: 'PLAN', icon: '10' },
+  { id: 'professionals', title: 'Your Support Team', phase: 'PLAN', icon: '11' },
+  { id: 'mistakes', title: 'Common Mistakes', phase: 'PLAN', icon: '12' },
+  { id: 'timeline', title: 'Implementation', phase: 'EXECUTE', icon: '13' },
+  { id: 'identity-statement', title: 'Your New Identity', phase: 'EXECUTE', icon: '14' },
+  { id: 'dashboard', title: 'Your Summary', phase: 'RESULTS', icon: '15' }
+];
+
+var PILLARS = [
+  { key: 'purpose', icon: '&#9733;', name: 'Purpose', desc: 'Something that gets you out of bed with enthusiasm.', examples: 'Board service, philanthropy, mentoring, new venture, creative pursuit' },
+  { key: 'structure', icon: '&#9201;', name: 'Structure', desc: 'A daily and weekly rhythm that replaces what work provided.', examples: 'Morning routine, scheduled commitments, recurring engagements' },
+  { key: 'community', icon: '&#9829;', name: 'Community', desc: 'Relationships not dependent on your role as business owner.', examples: 'Peer groups, clubs, volunteer organizations, independent friendships' },
+  { key: 'competence', icon: '&#9889;', name: 'Competence', desc: 'Activities where you experience mastery and growth.', examples: 'New skills, challenging hobbies, teaching, writing, competition' },
+  { key: 'identity', icon: '&#9670;', name: 'Identity', desc: 'A clear answer to "who am I now?" that you feel good about.', examples: 'Author, mentor, investor, philanthropist, adventurer' }
+];
+
+function defaultState() {
+  return {
+    currentPage: 'welcome',
+    completed: {},
+    pillarScores: { purpose: 0, structure: 0, community: 0, competence: 0, identity: 0 },
+    pillarCurrentSource: { purpose: '', structure: '', community: '', competence: '', identity: '' },
+    pillarReplacement: { purpose: '', structure: '', community: '', competence: '', identity: '' },
+    lossAwareness: [],
+    selectedPaths: [],
+    ninetyDayPlan: {},
+    explorations: [],
+    emotionalPrep: [],
+    professionals: { coach: 'not-started', peerGroup: 'not-started', spouse: 'not-started' },
+    mistakeFlags: {},
+    milestones: [],
+    sabotagePatterns: { movingGoalpost: 0, perfectBuyer: 0, procrastination: 0, lastMinute: 0 },
+    identityStatement: ''
+  };
+}
+
+var state = loadState();
+
+function loadState() {
+  try {
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      var parsed = JSON.parse(saved);
+      var def = defaultState();
+      return {
+        currentPage: parsed.currentPage || def.currentPage,
+        completed: parsed.completed || def.completed,
+        pillarScores: Object.assign({}, def.pillarScores, parsed.pillarScores || {}),
+        pillarCurrentSource: Object.assign({}, def.pillarCurrentSource, parsed.pillarCurrentSource || {}),
+        pillarReplacement: Object.assign({}, def.pillarReplacement, parsed.pillarReplacement || {}),
+        lossAwareness: parsed.lossAwareness || def.lossAwareness,
+        selectedPaths: parsed.selectedPaths || def.selectedPaths,
+        ninetyDayPlan: parsed.ninetyDayPlan || def.ninetyDayPlan,
+        explorations: parsed.explorations || def.explorations,
+        emotionalPrep: parsed.emotionalPrep || def.emotionalPrep,
+        professionals: Object.assign({}, def.professionals, parsed.professionals || {}),
+        mistakeFlags: parsed.mistakeFlags || def.mistakeFlags,
+        milestones: parsed.milestones || def.milestones,
+        sabotagePatterns: Object.assign({}, def.sabotagePatterns, parsed.sabotagePatterns || {}),
+        identityStatement: parsed.identityStatement || def.identityStatement
+      };
+    }
+  } catch(e) {}
+  return defaultState();
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  updateProgress();
+  updateScore();
+}
+
+function pillarAvg() {
+  var vals = Object.values(state.pillarScores);
+  var filled = vals.filter(function(v) { return v > 0; });
+  return filled.length > 0 ? (filled.reduce(function(a, b) { return a + b; }, 0) / filled.length).toFixed(1) : '0.0';
+}
+
+function updateScore() {
+  var avg = pillarAvg();
+  document.getElementById('sidebarScore').innerHTML = avg + '<span class="sidebar-score-max">/5</span>';
+  document.getElementById('mobileScore').textContent = avg + '/5';
+  var label = parseFloat(avg) >= 4 ? 'Well Prepared' : parseFloat(avg) >= 3 ? 'Good Foundation' : parseFloat(avg) >= 2 ? 'Work Needed' : 'Complete assessment';
+  document.getElementById('sidebarScoreDesc').textContent = label;
+}
+
+function updateProgress() {
+  var total = PAGES.length - 2;
+  var done = Object.keys(state.completed).length;
+  var pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+}
+
+function isUnlocked(pageId) {
+  var idx = PAGES.findIndex(function(p) { return p.id === pageId; });
+  if (idx <= 0) return true;
+  return state.completed[PAGES[idx - 1].id] === true;
+}
+
+function renderNav() {
+  var nav = document.getElementById('sidebarNav');
+  var html = '';
+  var lastPhase = '';
+  PAGES.forEach(function(p) {
+    if (p.phase !== lastPhase) { html += '<div class="nav-section-label">' + p.phase + '</div>'; lastPhase = p.phase; }
+    var isActive = state.currentPage === p.id;
+    var isDone = state.completed[p.id];
+    var locked = !isUnlocked(p.id);
+    html += '<div class="nav-item' + (isActive ? ' active' : '') + (isDone ? ' completed' : '') + (locked ? ' locked' : '') + '" data-page="' + p.id + '" role="button" tabindex="' + (locked ? '-1' : '0') + '">';
+    html += '<span class="nav-icon">' + p.icon + '</span><span>' + p.title + '</span>';
+    if (isDone) html += '<span class="nav-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></span>';
+    html += '</div>';
+  });
+  nav.innerHTML = html;
+  nav.querySelectorAll('.nav-item:not(.locked)').forEach(function(el) {
+    el.addEventListener('click', function() { goToPage(el.dataset.page); });
+    el.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToPage(el.dataset.page); } });
+  });
+}
+
+function goToPage(pageId) {
+  if (!isUnlocked(pageId)) return;
+  state.currentPage = pageId;
+  saveState(); renderPage(); renderNav();
+  window.scrollTo({ top: 0, behavior: 'smooth' }); closeSidebar();
+}
+
+function completePage(pageId) {
+  state.completed[pageId] = true;
+  var idx = PAGES.findIndex(function(p) { return p.id === pageId; });
+  if (idx < PAGES.length - 1) state.currentPage = PAGES[idx + 1].id;
+  saveState(); renderPage(); renderNav();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function prevPage() {
+  var idx = PAGES.findIndex(function(p) { return p.id === state.currentPage; });
+  if (idx > 0) goToPage(PAGES[idx - 1].id);
+}
+
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('show'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('show'); }
+document.getElementById('hamburgerBtn').addEventListener('click', toggleSidebar);
+document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+function pageNav(showPrev, nextLabel, currentId) {
+  var html = '<div class="page-nav">';
+  html += showPrev ? '<button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button>' : '<div></div>';
+  if (nextLabel !== false) html += '<button class="btn btn-primary" onclick="PB.completePage(\'' + currentId + '\')">' + (nextLabel || 'Continue') + ' &rarr;</button>';
+  html += '</div>';
+  return html;
+}
+
+function scoreSelector(stateObj, stateKey, dimKey, labels) {
+  var current = stateObj[stateKey] || 0;
+  var html = '<div class="score-selector" role="radiogroup" aria-label="Score for ' + dimKey + '">';
+  for (var i = 1; i <= 5; i++) {
+    var sel = current === i ? ' selected' : '';
+    html += '<label class="score-option s' + i + sel + '" onclick="PB.setScore(\'' + stateKey + '\',\'' + dimKey + '\',' + i + ')" tabindex="0" role="radio" aria-checked="' + (current === i) + '"';
+    html += ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();PB.setScore(\'' + stateKey + '\',\'' + dimKey + '\',' + i + ');}">';
+    html += '<input type="radio" name="score-' + dimKey + '" value="' + i + '"' + (current === i ? ' checked' : '') + '>';
+    html += '<span class="score-number">' + i + '</span>';
+    html += '<span class="score-label-text">' + (labels ? labels[i-1] : ['Not at all','Slightly','Moderately','Strongly','Very strongly'][i-1]) + '</span>';
+    html += '</label>';
+  }
+  html += '</div>';
+  return html;
+}
+
+// ==================== PAGE RENDERERS ====================
+function renderPage() {
+  var area = document.getElementById('contentArea');
+  var renderers = {
+    'welcome': rWelcome, 'identity-crisis': rIdentityCrisis, 'what-you-lose': rWhatYouLose,
+    'sabotage': rSabotage, 'five-pillars': rFivePillars, 'pillar-planning': rPillarPlanning,
+    'post-exit-paths': rPostExitPaths, 'emotional-timeline': rEmotionalTimeline, 'exploration': rExploration,
+    'ninety-day': rNinetyDay, 'professionals': rProfessionals, 'mistakes': rMistakes,
+    'timeline': rTimeline, 'identity-statement': rIdentityStatement, 'dashboard': rDashboard
+  };
+  var fn = renderers[state.currentPage];
+  area.innerHTML = '<div class="page active">' + (fn ? fn() : '') + '</div>';
+  bindInputs();
+}
+
+function bindInputs() {
+  document.querySelectorAll('[data-bind]').forEach(function(el) {
+    var keys = el.dataset.bind.split('.');
+    var handler = function() {
+      var obj = state;
+      for (var i = 0; i < keys.length - 1; i++) obj = obj[keys[i]];
+      obj[keys[keys.length - 1]] = el.value;
+      saveState();
+    };
+    el.addEventListener('input', handler);
+    el.addEventListener('change', handler);
+  });
+}
+
+function rWelcome() {
+  return '<div class="welcome-hero">' +
+    '<div class="welcome-icon">&#128161;</div>' +
+    '<div class="t-display">Post-Exit Identity &amp; Purpose Planning</div>' +
+    '<p class="t-body t-secondary" style="margin-top:var(--space-md)">Address the psychological dimension of leaving. Build a life worth exiting into.</p>' +
+    '</div>' +
+    '<div class="stat-hero"><div class="stat-hero-number">75%</div><div class="stat-hero-sub">of business owners profoundly regret selling within 12 months of closing</div></div>' +
+    '<div class="card"><p class="t-body">Not because the deal was bad -- because they were not prepared for what came after.</p>' +
+    '<p class="t-small t-secondary" style="margin-top:var(--space-md)">This playbook addresses the psychological and purpose dimensions of exit planning that determine whether you <strong>thrive or struggle</strong> after the sale.</p></div>' +
+    '<div class="callout callout-info"><strong>The Core Principle:</strong> You are not just selling a business. You are leaving a role that defined your identity, structured your days, connected you to a community, and gave you purpose. If you do not build a replacement for all four of these before you exit, you will experience a crisis after.</div>' +
+    '<p class="t-small" style="color:var(--color-text-tertiary);margin-top:var(--space-md)">Your data is saved automatically. You can leave and return at any time.</p>' +
+    pageNav(false, 'Get Started', 'welcome');
+}
+
+function rIdentityCrisis() {
+  return '<div class="page-header"><div class="t-label">Understanding</div><div class="t-display">The Identity Crisis Nobody Warns You About</div><p class="t-body t-secondary">For 10, 20, or 30 years, you have been "the owner of [your business]." This identity permeates everything.</p></div>' +
+    '<div class="summary-grid"><div class="summary-item"><div class="summary-item-value" style="color:var(--color-danger)">75%</div><div class="summary-item-label">Regret within 12 months</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:var(--color-danger)">50%</div><div class="summary-item-label">Report depression or anxiety</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:var(--color-warning)">80%</div><div class="summary-item-label">Lose daily social interactions</div></div></div>' +
+    '<div class="card"><div class="t-h3">What Changes After Exit</div><p class="t-small t-secondary" style="margin-top:var(--space-sm)">Divorce rates spike in the 2 years following a sale. Many owners attempt to re-enter business within 18 months -- often making poor decisions driven by emotional need rather than opportunity.</p></div>' +
+    '<div class="callout callout-danger"><strong>This Is Not About Money:</strong> Wealthy and purposeless is not a recipe for happiness. Many post-exit owners report feeling worse than when they were working 60-hour weeks -- because at least then they had direction.</div>' +
+    pageNav(true, 'Continue', 'identity-crisis');
+}
+
+function rWhatYouLose() {
+  var losses = [
+    { icon: '&#128100;', title: 'Identity', what: '"I\'m the CEO of Acme Corp"', why: 'When asked "what do you do?" you have no answer' },
+    { icon: '&#127919;', title: 'Purpose', what: 'Building something meaningful every day', why: 'Days feel empty and directionless' },
+    { icon: '&#128197;', title: 'Structure', what: 'Meetings, deadlines, decisions, accountability', why: 'Freedom becomes paralysis without routine' },
+    { icon: '&#129309;', title: 'Community', what: 'Employees, customers, vendors, peers', why: 'Social network collapses when you leave' },
+    { icon: '&#128081;', title: 'Status', what: 'Being the decision-maker; being needed', why: 'Irrelevance is psychologically devastating' },
+    { icon: '&#128170;', title: 'Competence', what: 'Being great at what you do every day', why: 'Starting over at anything feels humbling' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Awareness</div><div class="t-display">What You Actually Lose</div><p class="t-body t-secondary">Acknowledge each dimension of loss. Recognition is the first step toward replacement.</p></div>';
+  losses.forEach(function(l, i) {
+    var checked = state.lossAwareness.indexOf(i) >= 0;
+    html += '<div class="card" style="cursor:pointer" data-loss="' + i + '"><div style="display:flex;gap:var(--space-md);align-items:flex-start"><div style="font-size:22px;margin-top:2px">' + l.icon + '</div><div style="flex:1"><div style="display:flex;justify-content:space-between;align-items:center"><div class="t-h3">' + l.title + '</div>';
+    html += '<div class="check-box' + (checked ? '" style="background:var(--color-primary);border-color:var(--color-primary)"' : '"') + '><svg viewBox="0 0 14 14" style="opacity:' + (checked ? '1' : '0') + '"><polyline points="2.5 7 5.5 10 11.5 4" stroke="#fff" stroke-width="2.5" fill="none"/></svg></div>';
+    html += '</div><p class="t-small t-secondary" style="margin-top:var(--space-xs)"><strong>What it looked like:</strong> ' + l.what + '</p><p class="t-small t-secondary" style="margin-top:2px"><strong>Why it hurts:</strong> ' + l.why + '</p></div></div></div>';
+  });
+  html += '<div class="summary-grid"><div class="summary-item"><div class="summary-item-value">' + state.lossAwareness.length + '/6</div><div class="summary-item-label">Losses Acknowledged</div></div></div>';
+  html += pageNav(true, 'Continue', 'what-you-lose');
+  return html;
+}
+
+function rSabotage() {
+  var patterns = [
+    { key: 'movingGoalpost', title: 'The Moving Goalpost', desc: 'Constantly increasing the asking price beyond market reality.' },
+    { key: 'perfectBuyer', title: 'The Perfect Buyer Fallacy', desc: 'Finding fault with every buyer to avoid making a decision.' },
+    { key: 'procrastination', title: 'Procrastination', desc: 'Letting LOIs expire, missing deadlines, losing momentum.' },
+    { key: 'lastMinute', title: 'The Last-Minute Blow-Up', desc: 'Walking away over a minor term because the real issue is fear.' }
+  ];
+  var total = Object.values(state.sabotagePatterns).reduce(function(a, b) { return a + b; }, 0);
+  var riskLevel, riskColor;
+  if (total <= 5) { riskLevel = 'Low Risk'; riskColor = 'var(--color-success)'; }
+  else if (total <= 10) { riskLevel = 'Moderate Risk'; riskColor = 'var(--color-warning)'; }
+  else { riskLevel = 'High Risk -- Prioritize Identity Work'; riskColor = 'var(--color-danger)'; }
+
+  var html = '<div class="page-header"><div class="t-label">Self-Assessment</div><div class="t-display">Self-Sabotage Check</div><p class="t-body t-secondary">These behaviors share a root cause: you have not built a compelling vision of life after exit. Rate your honest tendency for each.</p></div>';
+  patterns.forEach(function(p) {
+    html += '<div class="card"><div class="t-h3">' + p.title + '</div><p class="t-small t-secondary" style="margin-top:var(--space-xs)">' + p.desc + '</p>';
+    html += '<div class="form-hint" style="margin-top:var(--space-md);margin-bottom:var(--space-sm)">How much does this resonate? (1 = not at all, 5 = strongly)</div>';
+    html += scoreSelector(state.sabotagePatterns, p.key, p.key, ['Not at all', 'Slightly', 'Moderately', 'Strongly', 'Very strongly']);
+    html += '</div>';
+  });
+  html += '<div class="card" style="border-left:3px solid ' + riskColor + '"><div style="display:flex;justify-content:space-between;align-items:center"><div class="t-h3">Sabotage Risk Score</div><span style="font-weight:600;color:' + riskColor + '">' + total + '/20</span></div>';
+  html += '<p class="t-small t-secondary" style="margin-top:var(--space-sm)"><strong>' + riskLevel + '.</strong> ' + (total > 10 ? 'The solution is not more deal coaching -- it is identity work done months or years before the transaction.' : total > 5 ? 'Moderate risk. Begin exploring post-exit purpose alongside deal preparation.' : 'Good self-awareness. Continue building your post-exit vision.') + '</p></div>';
+  html += pageNav(true, 'Continue', 'sabotage');
+  return html;
+}
+
+function rFivePillars() {
+  var avg = pillarAvg();
+  var html = '<div class="page-header"><div class="t-label">Assessment</div><div class="t-display">Five Pillars of Post-Exit Identity</div><p class="t-body t-secondary">A fulfilling post-exit life rests on five pillars. Rate your current confidence (1-5) that you have a replacement for what your business provides in each area.</p></div>';
+  PILLARS.forEach(function(p) {
+    var score = state.pillarScores[p.key];
+    var c = PILLAR_COLORS[p.key];
+    html += '<div class="card" style="' + (score > 0 ? 'border-left:3px solid ' + c : '') + '">';
+    html += '<div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-sm)"><span style="font-size:20px">' + p.icon + '</span><div class="t-h3">' + p.name + '</div></div>';
+    html += '<p class="t-small t-secondary">' + p.desc + '</p>';
+    html += '<div class="form-hint" style="margin-top:var(--space-xs)">Examples: ' + p.examples + '</div>';
+    html += '<div style="margin-top:var(--space-md)">' + scoreSelector(state.pillarScores, p.key, p.key, ['No plan', 'Vague idea', 'Some plans', 'Solid plan', 'Already active']) + '</div></div>';
+  });
+  html += '<div class="summary-grid" style="margin-top:var(--space-md)"><div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + avg + '</div><div class="summary-item-label">Average Readiness</div></div>';
+  PILLARS.forEach(function(p) {
+    html += '<div class="summary-item"><div class="summary-item-value" style="color:' + PILLAR_COLORS[p.key] + '">' + (state.pillarScores[p.key] || '-') + '</div><div class="summary-item-label">' + p.name + '</div></div>';
+  });
+  html += '</div>';
+  html += pageNav(true, 'Continue', 'five-pillars');
+  return html;
+}
+
+function rPillarPlanning() {
+  var html = '<div class="page-header"><div class="t-label">Planning</div><div class="t-display">Build Your Replacement Plan</div><p class="t-body t-secondary">For each pillar, identify what your business currently provides and what will replace it.</p></div>';
+  PILLARS.forEach(function(p) {
+    var c = PILLAR_COLORS[p.key];
+    html += '<div class="card" style="border-left:3px solid ' + c + '"><div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-md)"><span style="font-size:18px">' + p.icon + '</span><div class="t-h3">' + p.name + '</div><span class="badge badge-primary" style="margin-left:auto">' + (state.pillarScores[p.key] || '-') + '/5</span></div>';
+    html += '<div class="form-group"><label class="form-label">What does your business currently provide for this?</label><textarea class="form-input" placeholder="Describe how your business fulfills this pillar today..." data-bind="pillarCurrentSource.' + p.key + '">' + esc(state.pillarCurrentSource[p.key]) + '</textarea></div>';
+    html += '<div class="form-group" style="margin-bottom:0"><label class="form-label">What will replace it post-exit?</label><textarea class="form-input" placeholder="Describe your planned replacement..." data-bind="pillarReplacement.' + p.key + '">' + esc(state.pillarReplacement[p.key]) + '</textarea></div></div>';
+  });
+  html += pageNav(true, 'Continue', 'pillar-planning');
+  return html;
+}
+
+function rPostExitPaths() {
+  var paths = [
+    { id: 'board', name: 'Board Service', desc: 'Join 1-3 corporate or nonprofit boards', satisfaction: 'High', risk: 'Low commitment may not feel enough', badge: 'badge-success' },
+    { id: 'angel', name: 'Angel Investing', desc: 'Invest in and advise early-stage companies', satisfaction: 'Moderate-High', risk: 'Financial loss; time drain', badge: 'badge-warning' },
+    { id: 'venture', name: 'New Venture', desc: 'Start a new business, usually different industry', satisfaction: 'Variable', risk: 'May recreate the same trap you just left', badge: 'badge-neutral' },
+    { id: 'philanthropy', name: 'Philanthropy', desc: 'Establish a foundation or fund causes', satisfaction: 'High', risk: 'Requires planning to be fulfilling vs. transactional', badge: 'badge-success' },
+    { id: 'consulting', name: 'Consulting / Advisory', desc: 'Advise companies in your industry', satisfaction: 'Moderate', risk: 'Can feel like "job lite" without the upside', badge: 'badge-warning' },
+    { id: 'creative', name: 'Creative Pursuits', desc: 'Writing, art, music, craftsmanship', satisfaction: 'High (if wired for it)', risk: 'Social isolation', badge: 'badge-success' },
+    { id: 'retirement', name: 'Full Retirement', desc: 'Travel, hobbies, relaxation', satisfaction: 'Low', risk: 'Boredom, depression, loss of identity', badge: 'badge-danger' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Design</div><div class="t-display">Post-Exit Paths</div><p class="t-body t-secondary">Select the paths that interest you. Most thriving post-exit owners pursue 2-3 simultaneously.</p></div>';
+  html += '<div class="callout callout-danger"><strong>Important:</strong> Full retirement is the lowest-satisfaction path for business owners. Driven, ambitious people do not thrive without challenge and purpose.</div>';
+  paths.forEach(function(p) {
+    var selected = state.selectedPaths.indexOf(p.id) >= 0;
+    html += '<div class="path-card' + (selected ? ' selected' : '') + '" data-path="' + p.id + '" role="checkbox" aria-checked="' + selected + '" tabindex="0">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center"><div class="t-h3">' + (selected ? '&#10003; ' : '') + p.name + '</div><span class="badge ' + p.badge + '">' + p.satisfaction + '</span></div>';
+    html += '<p class="t-small t-secondary" style="margin-top:var(--space-xs)">' + p.desc + '</p>';
+    html += '<p class="t-caption" style="margin-top:var(--space-xs);color:var(--color-text-tertiary);font-style:italic">Risk: ' + p.risk + '</p></div>';
+  });
+  html += '<div class="summary-grid"><div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + state.selectedPaths.length + '</div><div class="summary-item-label">Paths Selected</div></div></div>';
+  html += pageNav(true, 'Continue', 'post-exit-paths');
+  return html;
+}
+
+function rEmotionalTimeline() {
+  var phases = [
+    { emoji: '&#128170;', name: 'Anticipation', timing: '6-12 months pre-close', emotions: 'Excitement, anxiety, doubt, nostalgia', help: 'Honest conversations with spouse, advisor, therapist', bg: 'var(--color-primary-light)' },
+    { emoji: '&#127881;', name: 'Euphoria', timing: 'Close to 30 days post', emotions: 'Relief, pride, celebration', help: 'Enjoy it -- but know it fades', bg: 'var(--color-success-light)' },
+    { emoji: '&#127774;', name: 'Honeymoon', timing: '1-3 months post', emotions: 'Freedom, relaxation, optimism', help: 'Travel, decompress, explore interests', bg: '#E0F7FA' },
+    { emoji: '&#127751;', name: 'Letdown', timing: '3-9 months post', emotions: 'Boredom, purposelessness, regret', help: 'Activate your five-pillar plan; resist rash decisions', bg: 'var(--color-warning-light)' },
+    { emoji: '&#128295;', name: 'Reconstruction', timing: '9-18 months post', emotions: 'New identity forming, energy returning', help: 'Lean into what works; let go of what doesn\'t', bg: '#E8EAF6' },
+    { emoji: '&#127793;', name: 'New Normal', timing: '18+ months post', emotions: 'Stability, satisfaction (for those who planned)', help: 'Continue investing in purpose and community', bg: 'var(--color-success-light)' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Preparation</div><div class="t-display">The Emotional Timeline of Exiting</div><p class="t-body t-secondary">Understanding what you will feel -- and when -- is the best defense against making decisions you will regret.</p></div>';
+  html += '<div class="card">';
+  phases.forEach(function(p) {
+    html += '<div class="emotion-phase"><div class="emotion-marker" style="background:' + p.bg + '">' + p.emoji + '</div><div style="flex:1"><div class="t-h3">' + p.name + '</div><div class="t-caption" style="color:var(--color-primary);font-weight:500">' + p.timing + '</div><p class="t-small t-secondary" style="margin-top:var(--space-xs)"><strong>You will feel:</strong> ' + p.emotions + '</p><p class="t-small t-secondary" style="margin-top:2px"><strong>What helps:</strong> ' + p.help + '</p></div></div>';
+  });
+  html += '</div>';
+  html += '<div class="callout callout-info"><strong>The Critical Window:</strong> The "Letdown" phase (3-9 months post-close) is where most regret, depression, and impulsive decisions occur. Your 90-Day Plan and Five-Pillar work are designed specifically to carry you through this period.</div>';
+  html += pageNav(true, 'Continue', 'emotional-timeline');
+  return html;
+}
+
+function rExploration() {
+  var activities = [
+    { id: 'board', text: 'Join a nonprofit board to test interest in governance and philanthropy' },
+    { id: 'mentor', text: 'Take on a mentoring relationship to see if teaching energizes you' },
+    { id: 'invest', text: 'Invest a small amount in a friend\'s venture to test angel investing' },
+    { id: 'vacation', text: 'Take a 2-week vacation with zero business contact and observe how you feel' },
+    { id: 'peer', text: 'Attend a CEO peer group for post-exit owners' },
+    { id: 'hobby', text: 'Begin a new hobby or creative pursuit that has nothing to do with business' },
+    { id: 'therapy', text: 'Meet with a transition coach or therapist for an initial session' },
+    { id: 'spouse', text: 'Have an honest conversation with your spouse about post-exit life' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Exploration</div><div class="t-display">Pre-Exit Exploration</div><p class="t-body t-secondary">Start exploring 12-24 months before your planned exit. This is practical research into what will replace the fulfillment your business provides.</p></div>';
+  html += '<div class="card"><div class="t-h3">Exploration Activities</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Check off activities as you complete or commit to them</p>';
+  activities.forEach(function(a) {
+    var checked = state.explorations.indexOf(a.id) >= 0;
+    html += '<div class="check-item' + (checked ? ' checked' : '') + '" data-exploration="' + a.id + '" role="checkbox" aria-checked="' + checked + '" tabindex="0">';
+    html += '<div class="check-box"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div>';
+    html += '<div class="check-text">' + a.text + '</div></div>';
+  });
+  html += '</div>';
+  html += '<div class="summary-grid"><div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + state.explorations.length + '/' + activities.length + '</div><div class="summary-item-label">Explorations Completed</div></div></div>';
+  html += pageNav(true, 'Continue', 'exploration');
+  return html;
+}
+
+function rNinetyDay() {
+  var weeks = [
+    { label: 'Week 1-2', hint: 'Decompress. Sleep. Process emotions with spouse/coach.', tags: ['Structure', 'Identity'] },
+    { label: 'Week 3-4', hint: 'Begin daily routine: exercise, reading, reflection', tags: ['Structure', 'Competence'] },
+    { label: 'Week 5-6', hint: 'Start 2-3 scheduled weekly commitments', tags: ['Purpose', 'Community'] },
+    { label: 'Week 7-8', hint: 'Deepen commitments. Attend board meetings, mentoring sessions.', tags: ['Purpose', 'Community', 'Competence'] },
+    { label: 'Week 9-10', hint: 'Evaluate what energizes you; double down on those activities.', tags: ['Purpose', 'Identity'] },
+    { label: 'Week 11-12', hint: 'Make decisions about longer-term commitments. Drop what doesn\'t work.', tags: ['Identity', 'Purpose', 'Structure'] }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Planning</div><div class="t-display">Your 90-Day Post-Exit Plan</div><p class="t-body t-secondary">Draft a specific plan for your first 90 days after close. Not a vacation plan -- a life plan.</p></div>';
+  html += '<div class="card">';
+  weeks.forEach(function(w, i) {
+    html += '<div class="week-row"><div style="font-size:14px;font-weight:600;color:var(--color-primary);padding-top:2px">' + w.label + '</div>';
+    html += '<div><textarea class="form-input" style="min-height:60px;font-size:14px" placeholder="' + w.hint + '" data-bind="ninetyDayPlan.' + i + '">' + esc(state.ninetyDayPlan[i] || '') + '</textarea></div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
+    w.tags.forEach(function(t) { html += '<span class="pillar-tag" style="background:' + PILLAR_COLORS[t.toLowerCase()] + '15;color:' + PILLAR_COLORS[t.toLowerCase()] + '">' + t + '</span>'; });
+    html += '</div></div>';
+  });
+  html += '</div>';
+  html += '<div class="callout callout-info"><strong>Key Principle:</strong> The first 90 days set the trajectory. Owners who have a plan report significantly higher satisfaction than those who "figure it out as they go." Structure creates freedom -- not the other way around.</div>';
+  html += pageNav(true, 'Continue', 'ninety-day');
+  return html;
+}
+
+function rProfessionals() {
+  var pros = [
+    { key: 'coach', icon: '&#128172;', type: 'Transition Coach', desc: 'A therapist or coach who specializes in life transitions and high-achieving individuals.' },
+    { key: 'peerGroup', icon: '&#128101;', type: 'Peer Group', desc: 'CEO peer group composed of post-exit owners. YPO, Vistage, and EO all have alumni groups.' },
+    { key: 'spouse', icon: '&#128149;', type: 'Spouse / Partner', desc: 'Your partner must be part of this process. Their post-exit vision may be very different from yours.' }
+  ];
+  var statusLabels = { 'not-started': 'Not Started', 'in-progress': 'In Progress', 'complete': 'Engaged' };
+  var html = '<div class="page-header"><div class="t-label">Support</div><div class="t-display">Your Support Team</div><p class="t-body t-secondary">You do not have to navigate this transition alone. These three relationships are essential.</p></div>';
+  pros.forEach(function(p) {
+    html += '<div class="card" style="display:flex;align-items:center;gap:var(--space-md)"><div style="width:44px;height:44px;border-radius:var(--radius-md);background:var(--color-primary-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">' + p.icon + '</div>';
+    html += '<div style="flex:1"><div class="t-h3">' + p.type + '</div><div class="t-small t-secondary">' + p.desc + '</div></div>';
+    html += '<select class="form-input" style="width:130px;padding:6px 10px;font-size:13px" data-pro="' + p.key + '" onchange="PB.updatePro(this)" aria-label="Status for ' + p.type + '">';
+    ['not-started', 'in-progress', 'complete'].forEach(function(o) { html += '<option value="' + o + '"' + (state.professionals[p.key] === o ? ' selected' : '') + '>' + statusLabels[o] + '</option>'; });
+    html += '</select></div>';
+  });
+  html += pageNav(true, 'Continue', 'professionals');
+  return html;
+}
+
+function rMistakes() {
+  var mistakes = [
+    { key: 'm1', title: 'Thinking Money Solves the Identity Problem', desc: 'Wealthy and purposeless is not happiness.', fix: 'Start purpose planning 18+ months before exit.' },
+    { key: 'm2', title: 'Making Major Life Decisions in the First Year', desc: 'Do not buy a yacht, invest in your nephew\'s startup, move cities, or make any irreversible decision.', fix: 'Implement a 12-month "no major decisions" rule.' },
+    { key: 'm3', title: 'Isolating After Exit', desc: 'Owners lose 80% of daily social interactions when they leave.', fix: 'Pre-build community through boards, groups, and organizations.' },
+    { key: 'm4', title: 'Jumping Immediately into a New Business', desc: 'The urge to replicate the adrenaline is strong, but decisions from identity crisis end poorly.', fix: 'Wait at least 12 months before committing to a new venture.' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Awareness</div><div class="t-display">Common Mistakes to Avoid</div></div>';
+  mistakes.forEach(function(m) {
+    var checked = state.mistakeFlags[m.key];
+    html += '<div class="card"><div class="check-item' + (checked ? ' checked' : '') + '" data-mistake="' + m.key + '" role="checkbox" aria-checked="' + !!checked + '" tabindex="0" style="padding:0">';
+    html += '<div class="check-box"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div>';
+    html += '<div style="flex:1"><div class="t-h3">' + m.title + '</div><p class="t-small t-secondary" style="margin:var(--space-sm) 0">' + m.desc + '</p>';
+    html += '<div style="padding:var(--space-sm) var(--space-md);background:var(--color-success-light);border-radius:var(--radius-sm);font-size:13px;color:var(--color-success)"><strong>Solution:</strong> ' + m.fix + '</div></div></div></div>';
+  });
+  html += pageNav(true, 'Continue', 'mistakes');
+  return html;
+}
+
+function rTimeline() {
+  var items = [
+    { month: '24+ months', action: 'Begin honest self-reflection', deliverable: 'Journal entries; initial exploration list' },
+    { month: '18 months', action: 'Join 1-2 organizations; start a board role or mentoring', deliverable: 'Active outside commitments' },
+    { month: '12 months', action: 'Engage a transition coach; involve spouse in planning', deliverable: 'Coach engaged; spouse aligned' },
+    { month: '6 months', action: 'Draft your Five-Pillar Plan and 90-Day Post-Exit Plan', deliverable: 'Written plans' },
+    { month: 'At close', action: 'Execute 90-Day Plan', deliverable: 'Structured first 90 days' },
+    { month: '12 months post', action: 'Evaluate and adjust; commit to long-term path', deliverable: 'Stable new identity' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Execution</div><div class="t-display">Implementation Timeline</div></div><div class="card">';
+  items.forEach(function(item, i) {
+    var done = state.milestones.indexOf(i) >= 0;
+    html += '<div class="check-item' + (done ? ' checked' : '') + '" data-milestone="' + i + '" role="checkbox" aria-checked="' + done + '" tabindex="0" style="border-bottom:1px solid var(--color-border-light)">';
+    html += '<div class="check-box"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div>';
+    html += '<div><div class="t-h3"><span style="color:var(--color-primary);font-weight:500">' + item.month + ':</span> ' + item.action + '</div><p class="t-small t-secondary">Deliverable: ' + item.deliverable + '</p></div></div>';
+  });
+  html += '</div>';
+  html += pageNav(true, 'Write Identity Statement', 'timeline');
+  return html;
+}
+
+function rIdentityStatement() {
+  var html = '<div class="page-header"><div class="t-label">Your New Chapter</div><div class="t-display">Write Your New Identity Statement</div><p class="t-body t-secondary">When someone asks "What do you do?" -- what will you say? Write the answer you want to feel proud of.</p></div>';
+  html += '<div class="card"><div class="form-group"><label class="form-label">Your Identity Statement</label>';
+  html += '<div class="form-hint" style="margin-bottom:var(--space-sm)">Examples: "I mentor emerging entrepreneurs and serve on two nonprofit boards." / "I invest in climate tech startups and write about business transitions." / "I chair the local education foundation and am training for my first Ironman."</div>';
+  html += '<textarea class="form-input" style="min-height:120px;font-size:16px;line-height:1.7" placeholder="I..." data-bind="identityStatement">' + esc(state.identityStatement) + '</textarea></div></div>';
+  html += '<div class="callout callout-info"><strong>Why This Matters:</strong> This statement is not performative. It is a compass. When you feel lost in the "Letdown" phase, return to this statement and ask: "Am I living this?" If not, adjust your activities. If so, trust the process.</div>';
+  html += pageNav(true, 'View Summary', 'identity-statement');
+  return html;
+}
+
+function rDashboard() {
+  var avg = pillarAvg();
+  var sabotageTotal = Object.values(state.sabotagePatterns).reduce(function(a, b) { return a + b; }, 0);
+  var prosDone = Object.values(state.professionals).filter(function(v) { return v === 'complete'; }).length;
+  var planEntries = Object.keys(state.ninetyDayPlan).filter(function(k) { return (state.ninetyDayPlan[k] || '').trim().length > 0; }).length;
+
+  var readiness, readinessColor;
+  if (parseFloat(avg) >= 4) { readiness = 'Well Prepared'; readinessColor = 'var(--color-success)'; }
+  else if (parseFloat(avg) >= 3) { readiness = 'Good Foundation -- Keep Building'; readinessColor = 'var(--color-primary)'; }
+  else if (parseFloat(avg) >= 2) { readiness = 'Significant Work Needed'; readinessColor = 'var(--color-warning)'; }
+  else { readiness = 'Begin Immediately'; readinessColor = 'var(--color-danger)'; }
+
+  var r = 60, c = 2 * Math.PI * r;
+  var score20 = parseFloat(avg) * 20;
+  var offset = c - (score20 / 100) * c;
+
+  var html = '<div class="page-header"><div class="t-label">Results</div><div class="t-display">Your Identity &amp; Purpose Summary</div></div>';
+
+  html += '<div class="gauge-wrap"><div class="gauge-ring"><svg viewBox="0 0 160 160"><circle class="gauge-bg" cx="80" cy="80" r="' + r + '"/><circle class="gauge-fill" cx="80" cy="80" r="' + r + '" stroke="' + readinessColor + '" stroke-dasharray="' + c + '" stroke-dashoffset="' + offset + '"/></svg><div class="gauge-center"><div class="gauge-center-value" style="color:' + readinessColor + '">' + avg + '</div><div class="gauge-center-label">of 5</div></div></div></div>';
+  html += '<div style="text-align:center;margin-bottom:var(--space-lg);font-weight:600;color:' + readinessColor + '">' + readiness + '</div>';
+
+  html += '<div class="summary-grid">';
+  PILLARS.forEach(function(p) {
+    html += '<div class="summary-item"><div class="summary-item-value" style="color:' + PILLAR_COLORS[p.key] + '">' + (state.pillarScores[p.key] || '-') + '</div><div class="summary-item-label">' + p.name + '</div></div>';
+  });
+  html += '</div>';
+
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Pillar Scores</div><div class="bar-chart">';
+  PILLARS.forEach(function(p) {
+    var score = state.pillarScores[p.key] || 0;
+    var pct = score * 20;
+    html += '<div class="bar-row"><div class="bar-label">' + p.name + '</div><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;background:' + PILLAR_COLORS[p.key] + '"><span class="bar-value">' + score + '/5</span></div></div></div>';
+  });
+  html += '</div></div>';
+
+  html += '<div class="summary-grid"><div class="summary-item"><div class="summary-item-value">' + state.selectedPaths.length + '</div><div class="summary-item-label">Paths Selected</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value">' + state.explorations.length + '</div><div class="summary-item-label">Explorations Done</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value">' + planEntries + '/6</div><div class="summary-item-label">90-Day Plan Weeks</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value">' + prosDone + '/3</div><div class="summary-item-label">Support Team Engaged</div></div></div>';
+
+  html += '<div class="card"><div class="t-h3">Sabotage Risk</div><div style="display:flex;align-items:center;gap:var(--space-md);margin-top:var(--space-sm)"><div style="flex:1;height:8px;background:var(--color-surface-alt);border-radius:4px;overflow:hidden"><div style="height:100%;width:' + (sabotageTotal/20*100) + '%;background:' + (sabotageTotal > 10 ? 'var(--color-danger)' : sabotageTotal > 5 ? 'var(--color-warning)' : 'var(--color-success)') + ';border-radius:4px;transition:width 0.5s"></div></div><span style="font-weight:600;font-size:14px">' + sabotageTotal + '/20</span></div></div>';
+
+  if (state.identityStatement) {
+    html += '<div class="card" style="border-left:3px solid var(--color-primary)"><div class="t-h3">Your Identity Statement</div><p class="t-body" style="margin-top:var(--space-sm);font-style:italic;color:var(--color-text)">"' + esc(state.identityStatement) + '"</p></div>';
+  }
+
+  html += '<div class="callout callout-info"><strong>Final Thought:</strong> Build a life worth exiting into. The best exit is the one you never regret.</div>';
+
+  html += '<div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-top:var(--space-lg)">' +
+    '<button class="btn btn-primary" onclick="PB.exportResults()">Export Summary</button>' +
+    '<button class="btn btn-secondary" onclick="window.print()">Print</button>' +
+    '<button class="btn btn-ghost" onclick="PB.resetAll()" style="color:var(--color-danger)">Reset All Data</button></div>';
+  html += '<div class="page-nav"><button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button><div></div></div>';
+  return html;
+}
+
+// ==================== EXPORT ====================
+function exportResults() {
+  var avg = pillarAvg();
+  var text = 'PLAYBOOK #2: POST-EXIT IDENTITY & PURPOSE PLANNING\n';
+  text += 'Generated: ' + new Date().toLocaleDateString() + '\n';
+  text += '='.repeat(50) + '\n\n';
+  text += 'PILLAR READINESS AVERAGE: ' + avg + '/5\n\n';
+  text += 'PILLAR SCORES:\n';
+  PILLARS.forEach(function(p) { text += '  ' + p.name + ': ' + (state.pillarScores[p.key] || '-') + '/5\n'; });
+  text += '\nSABOTAGE RISK: ' + Object.values(state.sabotagePatterns).reduce(function(a,b){return a+b;},0) + '/20\n';
+  text += 'PATHS SELECTED: ' + state.selectedPaths.join(', ') + '\n';
+  text += 'EXPLORATIONS COMPLETED: ' + state.explorations.length + '/8\n';
+  text += 'SUPPORT TEAM: Coach=' + state.professionals.coach + ', Peer Group=' + state.professionals.peerGroup + ', Spouse=' + state.professionals.spouse + '\n';
+  if (state.identityStatement) text += '\nIDENTITY STATEMENT:\n"' + state.identityStatement + '"\n';
+
+  var blob = new Blob([text], { type: 'text/plain' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'playbook-02-identity-purpose.txt'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function resetAll() {
+  if (confirm('This will erase all your data in this playbook. Are you sure?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    state = defaultState();
+    saveState();
+    goToPage('welcome');
+  }
+}
+
+// ==================== EVENT DELEGATION ====================
+document.addEventListener('click', function(e) {
+  var lossEl = e.target.closest('[data-loss]');
+  if (lossEl) { var i = parseInt(lossEl.dataset.loss); var idx = state.lossAwareness.indexOf(i); if (idx >= 0) state.lossAwareness.splice(idx, 1); else state.lossAwareness.push(i); saveState(); renderPage(); return; }
+  var pathEl = e.target.closest('[data-path]');
+  if (pathEl) { var id = pathEl.dataset.path; var idx2 = state.selectedPaths.indexOf(id); if (idx2 >= 0) state.selectedPaths.splice(idx2, 1); else state.selectedPaths.push(id); saveState(); renderPage(); return; }
+  var expEl = e.target.closest('[data-exploration]');
+  if (expEl) { var eid = expEl.dataset.exploration; var idx3 = state.explorations.indexOf(eid); if (idx3 >= 0) state.explorations.splice(idx3, 1); else state.explorations.push(eid); saveState(); renderPage(); return; }
+  var mistakeEl = e.target.closest('[data-mistake]');
+  if (mistakeEl) { var mk = mistakeEl.dataset.mistake; state.mistakeFlags[mk] = !state.mistakeFlags[mk]; saveState(); renderPage(); return; }
+  var msEl = e.target.closest('[data-milestone]');
+  if (msEl) { var mi = parseInt(msEl.dataset.milestone); var idx4 = state.milestones.indexOf(mi); if (idx4 >= 0) state.milestones.splice(idx4, 1); else state.milestones.push(mi); saveState(); renderPage(); return; }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    var el = e.target.closest('[data-loss],[data-path],[data-exploration],[data-mistake],[data-milestone]');
+    if (el) { e.preventDefault(); el.click(); }
+  }
+});
+
+// ==================== PUBLIC API ====================
+window.PB = {
+  prevPage: prevPage,
+  completePage: completePage,
+  exportResults: exportResults,
+  resetAll: resetAll,
+  updatePro: function(el) { state.professionals[el.dataset.pro] = el.value; saveState(); },
+  setScore: function(stateKey, dimKey, val) {
+    state[stateKey][dimKey] = val;
+    saveState();
+    renderPage();
+  }
+};
+
+// ==================== INIT ====================
+renderNav();
+renderPage();
+updateProgress();
+updateScore();
+
+})();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

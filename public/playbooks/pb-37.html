@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Negotiation Preparation | Exit Planning Playbook #37</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+/* RESET */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  color: var(--color-text); background: var(--color-bg);
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+
+/* TYPOGRAPHY */
+.t-display { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+
+/* LAYOUT */
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 260px; min-width: 260px; background: var(--color-text); color: #fff;
+  padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow); overflow-y: auto;
+}
+.sidebar.collapsed { transform: translateX(-260px); }
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; transition: margin-left var(--transition-slow); }
+.sidebar.collapsed + .main-content { margin-left: 0; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+/* SIDEBAR */
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.6);
+  font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+/* CARDS */
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); transition: box-shadow var(--transition-normal); }
+.card:hover { box-shadow: var(--shadow-sm); }
+.callout { padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); border-left: 3px solid; font-size: 14px; line-height: 1.6; }
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+
+/* BUTTONS */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.btn-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+
+/* FORMS */
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+/* SCORE SELECTOR */
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center;
+}
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+@media (max-width: 600px) {
+  .score-selector { gap: 4px; }
+  .score-option { padding: 10px 4px; }
+  .score-number { font-size: 18px; }
+  .score-label-text { font-size: 9px; }
+}
+
+/* BADGES */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+
+/* PAGES */
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.section-divider { height: 1px; background: var(--color-border); margin: var(--space-2xl) 0; }
+
+/* WELCOME */
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-hero .t-display { margin-bottom: var(--space-md); }
+.welcome-hero .t-body { margin-bottom: var(--space-2xl); }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+.welcome-phases { display: flex; flex-direction: column; gap: var(--space-md); margin: var(--space-2xl) 0; text-align: left; }
+.welcome-phase { display: flex; gap: var(--space-lg); padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-phase-num { width: 36px; height: 36px; background: var(--color-primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--color-primary); flex-shrink: 0; }
+.welcome-phase-title { font-weight: 600; margin-bottom: 2px; }
+.welcome-phase-desc { font-size: 14px; color: var(--color-text-secondary); }
+@media (max-width: 600px) {
+  .welcome-stats { grid-template-columns: 1fr; }
+  .welcome-hero { padding: var(--space-2xl) var(--space-md); }
+}
+
+/* GAUGE */
+.gauge-wrap { display: flex; justify-content: center; margin: var(--space-lg) 0; }
+.gauge-svg { overflow: visible; }
+
+/* STRENGTH METER */
+.strength-meter { display: flex; gap: 3px; margin: var(--space-sm) 0; }
+.strength-seg { height: 6px; flex: 1; border-radius: 3px; background: var(--color-border); transition: background var(--transition-normal); }
+
+/* CHECKLIST */
+.checklist { display: flex; flex-direction: column; gap: 2px; }
+.check-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md); border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast); }
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box { width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); margin-top: 1px; }
+.check-item.checked .check-box { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+
+/* TACTIC CARDS */
+.tactic-card { border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: var(--space-sm); background: var(--color-surface); }
+.tactic-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-md) var(--space-lg); cursor: pointer; gap: var(--space-md); }
+.tactic-header:hover { background: var(--color-surface-alt); }
+.tactic-title { font-weight: 600; font-size: 15px; flex: 1; }
+.tactic-chevron { color: var(--color-text-tertiary); transition: transform var(--transition-fast); font-size: 18px; }
+.tactic-card.expanded .tactic-chevron { transform: rotate(180deg); }
+.tactic-body { display: none; padding: 0 var(--space-lg) var(--space-lg); }
+.tactic-card.expanded .tactic-body { display: block; }
+.tactic-counter { padding: var(--space-md); background: var(--color-primary-light); border-radius: var(--radius-md); font-size: 14px; color: var(--color-primary); }
+
+/* PHASE TIMELINE */
+.phase-timeline { position: relative; }
+.phase-item { display: flex; gap: var(--space-lg); padding: var(--space-md) 0; position: relative; }
+.phase-marker { width: 40px; height: 40px; border-radius: 50%; background: var(--color-surface-alt); border: 2px solid var(--color-border); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--color-text-secondary); flex-shrink: 0; position: relative; z-index: 1; }
+.phase-item.phase-active .phase-marker { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.phase-connector { position: absolute; left: 19px; top: 52px; bottom: -12px; width: 2px; background: var(--color-border); }
+.phase-item:last-child .phase-connector { display: none; }
+.phase-content { flex: 1; padding-top: 6px; }
+.phase-name { font-weight: 600; margin-bottom: 2px; }
+.phase-duration { font-size: 13px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.phase-desc { font-size: 14px; color: var(--color-text-secondary); line-height: 1.5; }
+.phase-risk { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; margin-top: var(--space-sm); padding: 3px 10px; border-radius: 999px; background: var(--color-danger-light); color: var(--color-danger); }
+
+/* CONCESSION LOG */
+.log-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.log-table th { text-align: left; padding: var(--space-sm) var(--space-md); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); }
+.log-table td { padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.log-table .form-input { padding: 6px 10px; font-size: 13px; }
+.log-entry-remove { color: var(--color-text-tertiary); cursor: pointer; font-size: 18px; padding: 4px; }
+.log-entry-remove:hover { color: var(--color-danger); }
+
+/* BAR CHART */
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 28px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+@media (max-width: 600px) { .bar-label { width: 90px; font-size: 11px; } }
+
+/* NAV FOOTER */
+.page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--color-border); }
+
+/* SUMMARY CARD */
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+.summary-item { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.summary-item-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.summary-item-value { font-family: var(--font-display); font-size: 24px; font-weight: 700; }
+@media (max-width: 600px) { .summary-grid { grid-template-columns: 1fr; } }
+
+/* DEAL POINT GRID */
+.deal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+.deal-card { padding: var(--space-md); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); }
+.deal-card-name { font-weight: 600; font-size: 14px; margin-bottom: var(--space-sm); }
+.deal-cat { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.deal-cat-must { background: var(--color-danger-light); color: var(--color-danger); }
+.deal-cat-important { background: var(--color-warning-light); color: var(--color-warning); }
+.deal-cat-nice { background: var(--color-primary-light); color: var(--color-primary); }
+.deal-cat-irrelevant { background: var(--color-surface-alt); color: var(--color-text-tertiary); }
+@media (max-width: 600px) { .deal-grid { grid-template-columns: 1fr; } }
+
+/* EMOTIONAL TRAP */
+.trap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+.trap-card { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.trap-icon { font-size: 24px; margin-bottom: var(--space-sm); }
+.trap-name { font-weight: 600; margin-bottom: var(--space-xs); }
+.trap-desc { font-size: 14px; color: var(--color-text-secondary); margin-bottom: var(--space-sm); }
+.trap-fix { font-size: 13px; color: var(--color-primary); font-weight: 500; }
+@media (max-width: 600px) { .trap-grid { grid-template-columns: 1fr; } }
+
+/* ADVISOR TABLE */
+.advisor-grid { display: flex; flex-direction: column; gap: var(--space-md); }
+.advisor-card { display: flex; gap: var(--space-lg); padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.advisor-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--color-primary-light); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.advisor-info { flex: 1; }
+.advisor-role { font-weight: 600; margin-bottom: 2px; }
+.advisor-desc { font-size: 14px; color: var(--color-text-secondary); margin-bottom: var(--space-sm); }
+@media (max-width: 600px) { .advisor-card { flex-direction: column; gap: var(--space-md); } }
+
+/* PRINT */
+@media print {
+  .sidebar, .mobile-header, .page-nav, .sidebar-overlay, .toast-container, .btn-group, .skip-link { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; }
+  .content-area { max-width: 100%; padding: 0; }
+}
+
+/* ACCESSIBILITY */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; text-decoration: none; }
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+
+/* TOAST */
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast { padding: 12px 20px; border-radius: var(--radius-md); background: var(--color-text); color: #fff; font-size: 14px; font-weight: 500; box-shadow: var(--shadow-lg); animation: toastIn 0.3s ease; max-width: 360px; }
+.toast.out { animation: toastOut 0.3s ease forwards; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-8px); } }
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<div class="toast-container" id="toastContainer" aria-live="polite" role="status"></div>
+<div class="app">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #37</div>
+      <div class="sidebar-brand-title">Negotiation Preparation</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav" role="navigation" aria-label="Playbook sections"></nav>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Readiness Score</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete sections to build your score</div>
+    </div>
+  </div>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <div class="main-content" id="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation"><span></span></button>
+      <div style="flex:1"><strong style="font-size:15px;">Negotiation Prep</strong></div>
+      <div class="badge badge-primary" id="mobileScore">--/100</div>
+    </div>
+    <div class="content-area" id="contentArea"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   APP STATE & CONFIG
+   ============================================================ */
+const STORAGE_KEY = 'exitosx-pb37-negotiation-preparation';
+const SECTIONS = [
+  { id: 'welcome', title: 'Welcome', icon: '&#9758;', group: 'START' },
+  { id: 'batna', title: 'BATNA Assessment', icon: '&#9878;', group: 'FOUNDATION' },
+  { id: 'walkaway', title: 'Walk-Away Terms', icon: '&#9888;', group: 'FOUNDATION' },
+  { id: 'dealpoints', title: 'Deal Point Classification', icon: '&#9881;', group: 'STRATEGY' },
+  { id: 'buyer', title: 'Buyer Analysis', icon: '&#128270;', group: 'STRATEGY' },
+  { id: 'tactics', title: 'Buyer Tactics & Counters', icon: '&#9876;', group: 'STRATEGY' },
+  { id: 'phases', title: 'Negotiation Phases', icon: '&#8634;', group: 'EXECUTION' },
+  { id: 'emotions', title: 'Emotional Dynamics', icon: '&#9829;', group: 'EXECUTION' },
+  { id: 'advisors', title: 'Advisory Team', icon: '&#128101;', group: 'EXECUTION' },
+  { id: 'postloi', title: 'Post-LOI Strategy', icon: '&#128274;', group: 'WORKSHEETS' },
+  { id: 'concessions', title: 'Concession Tracker', icon: '&#128221;', group: 'WORKSHEETS' },
+  { id: 'checklist', title: 'Pre-Negotiation Checklist', icon: '&#9745;', group: 'WORKSHEETS' },
+  { id: 'summary', title: 'Readiness Summary', icon: '&#9733;', group: 'RESULTS' }
+];
+
+let state = loadState();
+
+function defaultState() {
+  return {
+    currentPage: 'welcome',
+    batna: { strength: 0, alternatives: [{desc:'',feasibility:'',value:'',timeline:''}], notes: '' },
+    walkaway: { totalConsideration:'', cashAtClose:'', earnoutMax:'', escrowDuration:'', nonCompete:'', transitionPeriod:'', employeeProtection:'', closingTimeline:'', sundayNight: 0 },
+    dealpoints: [],
+    buyer: { type:'', motivation:'', pressurePoint:'', priorDeals:'', financing:'', timeline:'', alternatives:'', sellerConversations:'' },
+    tactics: { recognized: [] },
+    phases: { currentPhase: 1 },
+    emotions: { triggers: [], twentyFourHour: false },
+    advisors: { banker:'', attorney:'', cpa:'', wealth:'', coach:'', bufferPrinciple: false },
+    postloi: { exclusivityDays:'', dropDeadDate:'', diligenceSchedule:false, extensionDeposit:false, brokenDealFee:false },
+    concessions: [],
+    checklist: { items: {} },
+    completed: {}
+  };
+}
+
+function loadState() {
+  try { const s = localStorage.getItem(STORAGE_KEY); return s ? {...defaultState(), ...JSON.parse(s)} : defaultState(); }
+  catch(e) { return defaultState(); }
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  updateProgress();
+  updateScore();
+}
+
+/* ============================================================
+   SCORING ENGINE
+   ============================================================ */
+function calcScore() {
+  let score = 0, max = 100;
+  // BATNA strength (0-20)
+  score += Math.min(state.batna.strength * 4, 20);
+  // Walk-away completeness (0-15)
+  const waFields = ['totalConsideration','cashAtClose','earnoutMax','escrowDuration','nonCompete','transitionPeriod','employeeProtection','closingTimeline'];
+  const waFilled = waFields.filter(f => state.walkaway[f] && state.walkaway[f].toString().trim()).length;
+  score += Math.round((waFilled / waFields.length) * 15);
+  // Deal points (0-15)
+  const dpDefined = state.dealpoints.filter(d => d.category && d.category !== '').length;
+  score += Math.min(Math.round((dpDefined / Math.max(state.dealpoints.length, 1)) * 15), 15);
+  if(state.dealpoints.length === 0) score += 0;
+  // Buyer analysis (0-15)
+  const buyerFields = ['type','motivation','pressurePoint','priorDeals','financing'];
+  const buyerFilled = buyerFields.filter(f => state.buyer[f] && state.buyer[f].toString().trim()).length;
+  score += Math.round((buyerFilled / buyerFields.length) * 15);
+  // Tactics recognized (0-10)
+  score += Math.min(state.tactics.recognized.length * 2, 10);
+  // Advisor team (0-10)
+  const advFields = ['banker','attorney','cpa','wealth'];
+  const advFilled = advFields.filter(f => state.advisors[f] && state.advisors[f].toString().trim()).length;
+  score += Math.round((advFilled / advFields.length) * 10);
+  // Post-LOI protections (0-10)
+  let postScore = 0;
+  if(state.postloi.exclusivityDays) postScore += 2;
+  if(state.postloi.dropDeadDate) postScore += 2;
+  if(state.postloi.diligenceSchedule) postScore += 2;
+  if(state.postloi.extensionDeposit) postScore += 2;
+  if(state.postloi.brokenDealFee) postScore += 2;
+  score += postScore;
+  // Checklist (0-5)
+  const checkTotal = 7;
+  const checkDone = Object.values(state.checklist.items).filter(Boolean).length;
+  score += Math.round((checkDone / checkTotal) * 5);
+  return Math.min(Math.round(score), max);
+}
+
+function updateScore() {
+  const score = calcScore();
+  document.getElementById('sidebarScore').innerHTML = score + '<span class="sidebar-score-max">/100</span>';
+  document.getElementById('mobileScore').textContent = score + '/100';
+  let desc = 'Complete sections to build your score';
+  if(score >= 85) desc = 'Excellent preparation';
+  else if(score >= 65) desc = 'Strong foundation, keep going';
+  else if(score >= 40) desc = 'Good start, more work needed';
+  else if(score > 0) desc = 'Early stage preparation';
+  document.getElementById('sidebarScoreDesc').textContent = desc;
+}
+
+function updateProgress() {
+  const total = SECTIONS.length - 2; // exclude welcome and summary
+  const done = Object.keys(state.completed).length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function buildNav() {
+  const nav = document.getElementById('sidebarNav');
+  let currentGroup = '';
+  let html = '';
+  SECTIONS.forEach(s => {
+    if(s.group !== currentGroup) {
+      currentGroup = s.group;
+      html += `<div class="nav-section-label">${currentGroup}</div>`;
+    }
+    const isActive = state.currentPage === s.id ? ' active' : '';
+    const isCompleted = state.completed[s.id] ? ' completed' : '';
+    html += `<div class="nav-item${isActive}${isCompleted}" data-page="${s.id}" role="button" tabindex="0" aria-label="${s.title}">
+      <span class="nav-icon">${s.icon}</span>
+      <span>${s.title}</span>
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>`;
+  });
+  nav.innerHTML = html;
+  nav.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => goToPage(item.dataset.page));
+    item.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToPage(item.dataset.page); }});
+  });
+}
+
+function goToPage(id) {
+  state.currentPage = id;
+  saveState();
+  buildNav();
+  renderPage(id);
+  closeMobileNav();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+  setTimeout(() => { const heading = document.querySelector('#contentArea .t-display, #contentArea h1, #contentArea h2'); if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); } }, 100);
+}
+
+function showToast(msg) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => { toast.classList.add('out'); setTimeout(() => toast.remove(), 300); }, 3000);
+}
+
+function markComplete(id) {
+  state.completed[id] = true;
+  saveState();
+  buildNav();
+}
+
+function nextPage() {
+  const idx = SECTIONS.findIndex(s => s.id === state.currentPage);
+  if(idx < SECTIONS.length - 1) {
+    if(state.currentPage !== 'welcome' && state.currentPage !== 'summary') markComplete(state.currentPage);
+    goToPage(SECTIONS[idx + 1].id);
+  }
+}
+function prevPage() {
+  const idx = SECTIONS.findIndex(s => s.id === state.currentPage);
+  if(idx > 0) goToPage(SECTIONS[idx - 1].id);
+}
+
+/* MOBILE NAV */
+document.getElementById('hamburgerBtn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('show');
+});
+document.getElementById('sidebarOverlay').addEventListener('click', closeMobileNav);
+function closeMobileNav() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+/* ============================================================
+   PAGE RENDERERS
+   ============================================================ */
+function renderPage(id) {
+  const area = document.getElementById('contentArea');
+  const fn = pageRenderers[id];
+  if(fn) { area.innerHTML = ''; area.appendChild(fn()); }
+}
+
+function el(tag, cls, html) {
+  const e = document.createElement(tag);
+  if(cls) e.className = cls;
+  if(html !== undefined) e.innerHTML = html;
+  return e;
+}
+
+function pageNav(showPrev = true, showNext = true, nextLabel = 'Continue') {
+  const nav = el('div', 'page-nav');
+  if(showPrev) {
+    const b = el('button', 'btn btn-secondary', '&larr; Back');
+    b.addEventListener('click', prevPage);
+    nav.appendChild(b);
+  } else nav.appendChild(el('div'));
+  if(showNext) {
+    const b = el('button', 'btn btn-primary', nextLabel + ' &rarr;');
+    b.addEventListener('click', nextPage);
+    nav.appendChild(b);
+  }
+  return nav;
+}
+
+function scoreSelector(name, value, labels, onChange) {
+  const wrap = el('div', 'score-selector');
+  wrap.setAttribute('role', 'radiogroup');
+  wrap.setAttribute('aria-label', name);
+  labels.forEach((lbl, i) => {
+    const v = i + 1;
+    const opt = el('label', `score-option s${v}${value === v ? ' selected' : ''}`);
+    opt.innerHTML = `<input type="radio" name="${name}" value="${v}" ${value===v?'checked':''} aria-label="${lbl}"><span class="score-number">${v}</span><span class="score-label-text">${lbl}</span>`;
+    opt.addEventListener('click', () => {
+      wrap.querySelectorAll('.score-option').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      opt.querySelector('input').checked = true;
+      onChange(v);
+    });
+    wrap.appendChild(opt);
+  });
+  return wrap;
+}
+
+const pageRenderers = {};
+
+/* ---- WELCOME ---- */
+pageRenderers.welcome = () => {
+  const page = el('div', 'page active');
+  page.innerHTML = `
+    <div class="welcome-hero">
+      <div class="welcome-icon">&#9878;</div>
+      <div class="t-display">Negotiation Preparation</div>
+      <p class="t-body t-secondary">The best negotiators do not wing it. They prepare so thoroughly that every outcome feels inevitable. This interactive tool will guide you through building a comprehensive negotiation strategy.</p>
+      <div class="welcome-stats">
+        <div class="welcome-stat"><div class="welcome-stat-value">11</div><div class="welcome-stat-label">Sections</div></div>
+        <div class="welcome-stat"><div class="welcome-stat-value">~45</div><div class="welcome-stat-label">Minutes</div></div>
+        <div class="welcome-stat"><div class="welcome-stat-value">100</div><div class="welcome-stat-label">Readiness Score</div></div>
+      </div>
+      <div class="callout callout-accent" style="text-align:left;margin-bottom:var(--space-2xl)">
+        <strong>How this works:</strong> Work through each section at your own pace. Your progress is saved automatically. Return anytime to refine your strategy as your situation evolves.
+      </div>
+      <div class="welcome-phases">
+        <div class="welcome-phase"><div class="welcome-phase-num">1</div><div><div class="welcome-phase-title">Foundation</div><div class="welcome-phase-desc">Define your BATNA and walk-away terms -- your negotiation floor</div></div></div>
+        <div class="welcome-phase"><div class="welcome-phase-num">2</div><div><div class="welcome-phase-title">Strategy</div><div class="welcome-phase-desc">Classify deal points, analyze your buyer, and prepare for their tactics</div></div></div>
+        <div class="welcome-phase"><div class="welcome-phase-num">3</div><div><div class="welcome-phase-title">Execution</div><div class="welcome-phase-desc">Navigate phases, manage emotions, and deploy your advisory team</div></div></div>
+        <div class="welcome-phase"><div class="welcome-phase-num">4</div><div><div class="welcome-phase-title">Worksheets</div><div class="welcome-phase-desc">Track concessions, protect post-LOI, and finalize your readiness</div></div></div>
+      </div>
+      <button class="btn btn-primary btn-lg" onclick="goToPage('batna')">Begin Preparation &rarr;</button>
+      ${Object.keys(state.completed).length > 0 ? '<p style="margin-top:var(--space-md)"><button class="btn btn-ghost" onclick="if(confirm(\'Reset all progress? This cannot be undone.\')){localStorage.removeItem(STORAGE_KEY);location.reload();}">Reset All Progress</button></p>' : ''}
+    </div>`;
+  return page;
+};
+
+/* ---- BATNA ASSESSMENT ---- */
+pageRenderers.batna = () => {
+  const page = el('div', 'page active');
+  const b = state.batna;
+  page.innerHTML = `
+    <div class="page-header">
+      <div class="t-label">Foundation</div>
+      <div class="t-display">BATNA Assessment</div>
+      <p class="t-body t-secondary">Your Best Alternative to a Negotiated Agreement is the most important concept in negotiation theory. The stronger your BATNA, the more leverage you have.</p>
+    </div>
+    <div class="callout callout-info" style="margin-bottom:var(--space-2xl)">Your BATNA is only as strong as the buyer believes it to be. If you have competing offers, communicate this clearly. If your BATNA is weak, never reveal it.</div>
+    <div class="card" style="margin-bottom:var(--space-xl)">
+      <div class="t-h2" style="margin-bottom:var(--space-lg)">How strong is your BATNA right now?</div>
+      <div id="batnaStrength"></div>
+      <div class="strength-meter" id="batnaStrengthMeter" style="margin-top:var(--space-md)"></div>
+      <p class="form-hint" id="batnaStrengthDesc"></p>
+    </div>
+    <div class="card" style="margin-bottom:var(--space-xl)">
+      <div class="t-h2" style="margin-bottom:var(--space-md)">Your Alternatives</div>
+      <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Document every real, actionable alternative to this deal. Your BATNA must not be hypothetical.</p>
+      <div id="altList"></div>
+      <button class="btn btn-secondary btn-sm" id="addAltBtn" style="margin-top:var(--space-md)">+ Add Alternative</button>
+    </div>
+    <div class="card" style="margin-bottom:var(--space-xl)">
+      <div class="t-h2" style="margin-bottom:var(--space-md)">Strengthening Your BATNA</div>
+      <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Before entering negotiations, take concrete steps to improve your alternatives.</p>
+      <div class="checklist" id="batnaChecklist"></div>
+    </div>`;
+
+  const strengthDescs = ['','Very Weak -- buyer has maximum leverage; expect aggressive terms','Weak -- no alternatives; price pressure increases','Moderate -- no other offers but strong cash flow lets you wait','Strong -- one competing offer; you can walk away credibly','Very Strong -- multiple LOIs; buyers compete on your criteria'];
+  const strengthLabels = ['Very Weak','Weak','Moderate','Strong','Very Strong'];
+  const strengthWrap = page.querySelector('#batnaStrength');
+  strengthWrap.appendChild(scoreSelector('batnaStr', b.strength, strengthLabels, v => {
+    state.batna.strength = v;
+    renderStrengthMeter(v);
+    page.querySelector('#batnaStrengthDesc').textContent = strengthDescs[v];
+    saveState();
+  }));
+
+  function renderStrengthMeter(v) {
+    const meter = page.querySelector('#batnaStrengthMeter');
+    const colors = ['','var(--color-score-1)','var(--color-score-2)','var(--color-score-3)','var(--color-score-4)','var(--color-score-5)'];
+    meter.innerHTML = '';
+    for(let i = 1; i <= 5; i++) {
+      const seg = el('div','strength-seg');
+      if(i <= v) seg.style.background = colors[v];
+      meter.appendChild(seg);
+    }
+  }
+  renderStrengthMeter(b.strength);
+  if(b.strength) page.querySelector('#batnaStrengthDesc').textContent = strengthDescs[b.strength];
+
+  function renderAlts() {
+    const list = page.querySelector('#altList');
+    list.innerHTML = '';
+    state.batna.alternatives.forEach((alt, i) => {
+      const row = el('div','card', `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-md)">
+          <span class="t-h3">Alternative ${i+1}</span>
+          ${state.batna.alternatives.length > 1 ? `<button class="btn btn-ghost btn-sm" data-remove="${i}" style="color:var(--color-danger)">Remove</button>` : ''}
+        </div>
+        <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" data-field="desc" data-idx="${i}" placeholder="e.g., Continue running the business, sell to a different buyer...">${alt.desc||''}</textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md)">
+          <div class="form-group"><label class="form-label">Feasibility (1-10)</label><input type="number" min="1" max="10" class="form-input" data-field="feasibility" data-idx="${i}" value="${alt.feasibility||''}"></div>
+          <div class="form-group"><label class="form-label">Expected Value</label><input type="text" class="form-input" data-field="value" data-idx="${i}" placeholder="$" value="${alt.value||''}"></div>
+          <div class="form-group"><label class="form-label">Timeline</label><input type="text" class="form-input" data-field="timeline" data-idx="${i}" placeholder="e.g., 6-12 months" value="${alt.timeline||''}"></div>
+        </div>`);
+      row.style.marginBottom = 'var(--space-md)';
+      row.querySelectorAll('input, textarea').forEach(inp => {
+        inp.addEventListener('input', () => {
+          state.batna.alternatives[parseInt(inp.dataset.idx)][inp.dataset.field] = inp.value;
+          saveState();
+        });
+      });
+      const removeBtn = row.querySelector('[data-remove]');
+      if(removeBtn) removeBtn.addEventListener('click', () => {
+        state.batna.alternatives.splice(i, 1);
+        saveState(); renderAlts();
+      });
+      list.appendChild(row);
+    });
+  }
+  renderAlts();
+  page.querySelector('#addAltBtn').addEventListener('click', () => {
+    state.batna.alternatives.push({desc:'',feasibility:'',value:'',timeline:''});
+    saveState(); renderAlts();
+  });
+
+  const checkItems = [
+    'Run a competitive process with multiple potential buyers',
+    'Demonstrate the business performs well without you',
+    'Eliminate personal urgency signals',
+    'Build strong trailing 12-month performance',
+    'Maintain confidentiality about your motivation'
+  ];
+  const cl = page.querySelector('#batnaChecklist');
+  checkItems.forEach((text, i) => {
+    const key = 'batna_check_' + i;
+    const checked = state.checklist.items[key] ? ' checked' : '';
+    const item = el('div', `check-item${checked}`, `
+      <div class="check-box"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+      <span class="check-text">${text}</span>`);
+    item.addEventListener('click', () => {
+      state.checklist.items[key] = !state.checklist.items[key];
+      item.classList.toggle('checked');
+      saveState();
+    });
+    cl.appendChild(item);
+  });
+
+  page.appendChild(pageNav(true, true));
+  return page;
+};
+
+/* ---- WALK-AWAY TERMS ---- */
+pageRenderers.walkaway = () => {
+  const page = el('div', 'page active');
+  const w = state.walkaway;
+  const fields = [
+    {key:'totalConsideration', label:'Total Consideration (Risk-Adjusted)', placeholder:'Minimum after-tax proceeds to justify selling', hint:'What is the minimum after-tax proceeds to justify selling?'},
+    {key:'cashAtClose', label:'Cash at Closing (%)', placeholder:'e.g., 80%', hint:'What is the lowest acceptable % paid in cash at close?'},
+    {key:'earnoutMax', label:'Earnout Maximum', placeholder:'Maximum contingent payment you will accept', hint:'What is the most you will accept as contingent payment?'},
+    {key:'escrowDuration', label:'Escrow Duration (months)', placeholder:'e.g., 12', hint:'How long will you tolerate cash held in escrow?'},
+    {key:'nonCompete', label:'Non-Compete Scope', placeholder:'Geographic and time limitations', hint:'What restrictions will you accept on future activities?'},
+    {key:'transitionPeriod', label:'Transition Period (months)', placeholder:'e.g., 6', hint:'How long are you willing to work post-closing?'},
+    {key:'employeeProtection', label:'Employee Protection', placeholder:'Required commitments for key employees', hint:'What commitments do you need for key employees?'},
+    {key:'closingTimeline', label:'Closing Deadline', placeholder:'e.g., March 2026', hint:'When must this deal close to remain acceptable?'}
+  ];
+  let fieldsHtml = fields.map(f => `
+    <div class="form-group">
+      <label class="form-label">${f.label}</label>
+      <input type="text" class="form-input" data-key="${f.key}" value="${w[f.key]||''}" placeholder="${f.placeholder}">
+      <div class="form-hint">${f.hint}</div>
+    </div>`).join('');
+
+  page.innerHTML = `
+    <div class="page-header">
+      <div class="t-label">Foundation</div>
+      <div class="t-display">Walk-Away Terms</div>
+      <p class="t-body t-secondary">Define your absolute floor before any negotiation begins. This is not a number you share with anyone except your spouse and your advisor.</p>
+    </div>
+    <div class="callout callout-warning" style="margin-bottom:var(--space-2xl)">These terms are your internal benchmark. Never reveal them to the buyer. Every offer is measured against these.</div>
+    <div class="card" style="margin-bottom:var(--space-xl)">
+      <div class="t-h2" style="margin-bottom:var(--space-lg)">Your Walk-Away Analysis</div>
+      ${fieldsHtml}
+    </div>
+    <div class="card" style="margin-bottom:var(--space-xl)">
+      <div class="t-h2" style="margin-bottom:var(--space-md)">The Sunday Night Test</div>
+      <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">If you signed these terms on Friday, would you feel sick about it Sunday night? Rate your comfort level with the terms you defined above.</p>
+      <div id="sundayScore"></div>
+      <p class="form-hint" id="sundayDesc" style="margin-top:var(--space-md)"></p>
+    </div>`;
+
+  page.querySelectorAll('[data-key]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      state.walkaway[inp.dataset.key] = inp.value;
+      saveState();
+    });
+  });
+
+  const sundayLabels = ['Sick','Uneasy','Neutral','Acceptable','Confident'];
+  const sundayDescs = ['','These terms are below your true floor. Adjust upward.','You have concerns. Review which terms cause discomfort.','You could live with these, but would prefer better.','These are acceptable terms you can live with.','You feel confident these terms meet your needs.'];
+  page.querySelector('#sundayScore').appendChild(scoreSelector('sunday', w.sundayNight, sundayLabels, v => {
+    state.walkaway.sundayNight = v;
+    page.querySelector('#sundayDesc').textContent = sundayDescs[v];
+    saveState();
+  }));
+  if(w.sundayNight) page.querySelector('#sundayDesc').textContent = sundayDescs[w.sundayNight];
+
+  page.appendChild(pageNav());
+  return page;
+};
+
+/* ---- DEAL POINT CLASSIFICATION ---- */
+pageRenderers.dealpoints = () => {
+  const page = el('div', 'page active');
+  if(state.dealpoints.length === 0) {
+    state.dealpoints = [
+      {name:'Purchase Price',category:'',position:'',concessionPair:''},
+      {name:'Cash at Close',category:'',position:'',concessionPair:''},
+      {name:'Earnout Structure',category:'',position:'',concessionPair:''},
+      {name:'Escrow Terms',category:'',position:'',concessionPair:''},
+      {name:'Non-Compete',category:'',position:'',concessionPair:''},
+      {name:'Working Capital Target',category:'',position:'',concessionPair:''},
+      {name:'Employee Retention',category:'',position:'',concessionPair:''},
+      {name:'Reps & Warranties',category:'',position:'',concessionPair:''},
+      {name:'Indemnification Cap',category:'',position:'',concessionPair:''},
+      {name:'Transition Terms',category:'',position:'',concessionPair:''}
+    ];
+    saveState();
+  }
+  const cats = ['must','important','nice','irrelevant'];
+  const catLabels = {must:'Must-Have',important:'Important',nice:'Nice-to-Have',irrelevant:'Irrelevant'};
+  const catDescs = {must:'Non-negotiable walk-away triggers',important:'Push hard but can flex',nice:'Trade for concessions on must-haves',irrelevant:'Give freely to create goodwill'};
+
+  page.innerHTML = `
+    <div class="page-header">
+      <div class="t-label">Strategy</div>
+      <div class="t-display">Deal Point Classification</div>
+      <p class="t-body t-secondary">Categorize every deal point before negotiations begin. Know which terms are non-negotiable and which you can trade.</p>
+    </div>
+    <div class="callout callout-accent" style="margin-bottom:var(--space-lg)">
+      <strong>Concession Strategy:</strong> Never give something away without receiving something in return. Start high on every negotiable item. Make concessions slowly and in decreasing increments.
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-sm);margin-bottom:var(--space-xl)">
+      ${cats.map(c => `<div style="padding:var(--space-md);border-radius:var(--radius-md);text-align:center;background:var(--color-surface);border:1px solid var(--color-border)">
+        <span class="deal-cat deal-cat-${c}" style="margin-bottom:4px;display:inline-block">${catLabels[c]}</span>
+        <div class="t-caption" style="margin-top:4px">${catDescs[c]}</div>
+        <div class="t-h2" style="margin-top:var(--space-sm)" id="catCount_${c}">0</div>
+      </div>`).join('')}
+    </div>
+    <div id="dpList"></div>
+    <button class="btn btn-secondary btn-sm" id="addDpBtn" style="margin-top:var(--space-md)">+ Add Deal Point</button>`;
+
+  function renderDPs() {
+    const list = page.querySelector('#dpList');
+    list.innerHTML = '';
+    const counts = {must:0,important:0,nice:0,irrelevant:0};
+    state.dealpoints.forEach((dp, i) => {
+      if(dp.category) counts[dp.category] = (counts[dp.category]||0) + 1;
+      const card = el('div', 'card', `
+        <div style="display:flex;gap:var(--space-md);align-items:start;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <div class="form-group" style="margin-bottom:var(--space-sm)">
+              <input type="text" class="form-input" data-idx="${i}" data-field="name" value="${dp.name||''}" placeholder="Deal point name" style="font-weight:600">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <select class="form-input" data-idx="${i}" data-field="category" style="font-size:13px">
+                <option value="">-- Classify --</option>
+                ${cats.map(c => `<option value="${c}" ${dp.category===c?'selected':''}>${catLabels[c]}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div class="form-group" style="margin-bottom:var(--space-sm)">
+              <input type="text" class="form-input" data-idx="${i}" data-field="position" value="${dp.position||''}" placeholder="Your position" style="font-size:13px">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <input type="text" class="form-input" data-idx="${i}" data-field="concessionPair" value="${dp.concessionPair||''}" placeholder="Concession paired with..." style="font-size:13px">
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm" data-remove="${i}" style="color:var(--color-danger);padding:8px" title="Remove">&times;</button>
+        </div>`);
+      card.style.marginBottom = 'var(--space-sm)';
+      card.querySelectorAll('input, select').forEach(inp => {
+        inp.addEventListener('input', () => {
+          state.dealpoints[parseInt(inp.dataset.idx)][inp.dataset.field] = inp.value;
+          saveState(); updateCounts();
+        });
+        inp.addEventListener('change', () => {
+          state.dealpoints[parseInt(inp.dataset.idx)][inp.dataset.field] = inp.value;
+          saveState(); updateCounts();
+        });
+      });
+      const rb = card.querySelector('[data-remove]');
+      if(rb) rb.addEventListener('click', () => { state.dealpoints.splice(i, 1); saveState(); renderDPs(); });
+      list.appendChild(card);
+    });
+    updateCounts();
+    function updateCounts() {
+      const c = {must:0,important:0,nice:0,irrelevant:0};
+      state.dealpoints.forEach(dp => { if(dp.category && c[dp.category] !== undefined) c[dp.category]++; });
+      cats.forEach(cat => {
+        const el = page.querySelector('#catCount_'+cat);
+        if(el) el.textContent = c[cat];
+      });
+    }
+  }
+  renderDPs();
+  page.querySelector('#addDpBtn').addEventListener('click', () => {
+    state.dealpoints.push({name:'',category:'',position:'',concessionPair:''});
+    saveState(); renderDPs();
+  });
+
+  page.appendChild(pageNav());
+  return page;
+};
+
+/* ---- BUYER ANALYSIS ---- */
+pageRenderers.buyer = () => {
+  const page = el('div', 'page active');
+  const bk = state.buyer;
+  const buyerTypes = [
+    {value:'strategic_competitor',label:'Strategic (Competitor)',motivation:'Market share, eliminate competition',pressure:'Board approval timeline'},
+    {value:'strategic_adjacent',label:'Strategic (Adjacent)',motivation:'Enter new market, add capability',pressure:'Speed to market'},
+    {value:'pe_platform',label:'PE (Platform)',motivation:'Build platform for add-ons',pressure:'Fund deployment deadline'},
+    {value:'pe_addon',label:'PE (Add-On)',motivation:'Bolt-on to existing portfolio',pressure:'Synergy realization'},
+    {value:'individual',label:'Individual / Search Fund',motivation:'Buy a job; run a business',pressure:'SBA loan constraints'},
+    {value:'family_office',label:'Family Office',motivation:'Long-term cash flow',pressure:'Less time pressure'},
+    {value:'mbo',label:'Management Team (MBO)',motivation:'Buy the business they run',pressure:'Financing access'}
+  ];
+
+  page.innerHTML = `
+    <div class="page-header">
+      <div class="t-label">Strategy</div>
+      <div class="t-display">Buyer Analysis</div>
+      <p class="t-body t-secondary">The more you understand about why the buyer wants your business, the more leverage you have. Different buyer types have different motivations and pressure points.</p>
+    </div>
+    <div class="card" style="margin-bottom:var(--space-xl)">
+      <div class="t-h2" style="margin-bottom:var(--space-lg)">Buyer Profile</div>
+      <div class="form-group">
+        <label class="form-label">Buyer Type</label>
+        <select class="form-input" id="buyerType">
+          <option value="">-- Select buyer type --</option>
+          ${buyerTypes.map(t => `<option value="${t.value}" ${bk.type===t.value?'selected':''}>${t.label}</option>`).join('')}
+        </select>
+      </div>
+      <div id="buyerInsight" style="margin-bottom:var(--space-lg)"></div>
+      <div class="form-group">
+        <label class="form-label">Primary Motivation</label>
+        <textarea class="form-input" id="buyerMotivation" placeholder="Why does this buyer want your business specifically?">${bk.motivation||''}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Key Pressure Point</label>
+        <textarea class="form-input" id="buyerPressure" placeholder="What constraint or deadline is the buyer operating under?">${bk.pressurePoint||''}</textarea>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:var(--space-xl)">
+      <div class="t-h2" style="margin-bottom:var(--space-md)">Pre-Negotiation Research</div>
+      <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Before every negotiation session, research your counterpart thoroughly.</p>
+      <div class="form-group">
+        <label class="form-label">Prior Acquisitions</label>
+        <textarea class="form-input" id="buyerPriorDeals" placeholder="Deal sizes, structures, retention of sellers, integration outcomes">${bk.priorDeals||''}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Financing Structure</label>
+        <textarea class="form-input" id="buyerFinancing" placeholder="Leveraged buyout, all-equity, or combination?">${bk.financing||''}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Timeline Pressures</label>
+        <textarea class="form-input" id="buyerTimeline" placeholder="Fund deployment deadlines, board meetings, competing priorities">${bk.timeline||''}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Their Alternatives</label>
+        <textarea class="form-input" id="buyerAlternatives" placeholder="If they lose your deal, what other targets exist?">${bk.alternatives||''}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Conversations with Other Sellers</label>
+        <textarea class="form-input" id="buyerSellerConvos" placeholder="What did others who sold to this buyer experience?">${bk.sellerConversations||''}</textarea>
+      </div>
+    </div>`;
+
+  function showBuyerInsight() {
+    const insight = page.querySelector('#buyerInsight');
+    const sel = buyerTypes.find(t => t.value === state.buyer.type);
+    if(sel) {
+      insight.innerHTML = `<div class="callout callout-info"><strong>Typical motivation:</strong> ${sel.motivation}<br><strong>Key pressure point:</strong> ${sel.pressure}</div>`;
+    } else { insight.innerHTML = ''; }
+  }
+  showBuyerInsight();
+
+  page.querySelector('#buyerType').addEventListener('change', function() {
+    state.buyer.type = this.value;
+    saveState(); showBuyerInsight();
+  });
+  ['buyerMotivation:motivation','buyerPressure:pressurePoint','buyerPriorDeals:priorDeals','buyerFinancing:financing','buyerTimeline:timeline','buyerAlternatives:alternatives','buyerSellerConvos:sellerConversations'].forEach(pair => {
+    const [elId, key] = pair.split(':');
+    const inp = page.querySelector('#'+elId);
+    if(inp) inp.addEventListener('input', () => { state.buyer[key] = inp.value; saveState(); });
+  });
+
+  page.appendChild(pageNav());
+  return page;
+};
+
+/* ---- BUYER TACTICS ---- */
+pageRenderers.tactics = () => {
+  const page = el('div', 'page active');
+  const preLoi = [
+    {name:'Lowball Anchor',desc:'Initial offer is deliberately below fair value to reset expectations.',counter:'Counter with data: comps, quality of earnings, market multiples. Never negotiate against yourself.'},
+    {name:'Artificial Urgency',desc:'"We need an answer by Friday or we move on."',counter:'Respond calmly: "We are running a thorough process and will respond on our timeline."'},
+    {name:'Exclusivity Pressure',desc:'"We will only proceed if we have 60-day exclusivity."',counter:'Resist exclusivity pre-LOI. If you must, limit to 30 days with performance milestones.'},
+    {name:'Information Asymmetry',desc:'Requesting extensive data before committing to valuation.',counter:'Provide only what is necessary for valuation; reserve detailed data for post-LOI.'},
+    {name:'Flattery & Rapport',desc:'Making you feel like a "partner" rather than a counterparty.',counter:'Be friendly but remember: this is a transaction, not a friendship.'}
+  ];
+  const postLoi = [
+    {name:'Re-Trading',desc:'Reducing the price after LOI citing "diligence findings."',counter:'Pre-empt with clean data room. Push back hard: "This was disclosed pre-LOI."'},
+    {name:'Diligence Fatigue',desc:'Endless information requests designed to exhaust you.',counter:'Set a diligence schedule with deadlines. Limit requests to material items.'},
+    {name:'Scope Creep',desc:'Expanding reps, extending escrow, adding indemnities late.',counter:'Negotiate all terms in the LOI; resist "we will handle that in the definitive agreement."'},
+    {name:'Good Cop / Bad Cop',desc:'Deal lead is friendly; lawyers are aggressive.',counter:'Address both as one team: "If your attorney\'s position reflects your view, we have a problem."'},
+    {name:'The Nibble',desc:'Small, last-minute asks just before signing.',counter:'For every nibble, remove a concession: "If you need that, we need to revisit X."'},
+    {name:'Closing Delay',desc:'Dragging out timeline to create seller fatigue.',counter:'Include drop-dead date in LOI with walk-away rights and expense reimbursement.'}
+  ];
+
+  page.innerHTML = `
+    <div class="page-header">
+      <div class="t-label">Strategy</div>
+      <div class="t-display">Buyer Tactics & Counters</div>
+      <p class="t-body t-secondary">Experienced acquirers use a predictable set of negotiation tactics. Recognizing them in real time is the first step to neutralizing them.</p>
+    </div>
+    <div class="callout callout-info" style="margin-bottom:var(--space-xl)">
+      <strong>The Meta-Strategy:</strong> The single best counter to every buyer tactic is competitive tension. When a buyer knows you have alternatives, they cannot re-trade without risking losing the deal.
+    </div>
+    <div class="t-h2" style="margin-bottom:var(--space-md)">Pre-LOI Tactics</div>
+    <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Mark each tactic you have encountered or expect to encounter. Review the counter-strategy.</p>
+    <div id="preLoiTactics" style="margin-bottom:var(--space-xl)"></div>
+    <div class="t-h2" style="margin-bottom:var(--space-md)">Post-LOI Tactics</div>
+    <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">These are the most aggressive tactics. They emerge after you have granted exclusivity.</p>
+    <div id="postLoiTactics"></div>`;
+
+  function renderTactics(container, tactics, prefix) {
+    const wrap = page.querySelector('#'+container);
+    wrap.innerHTML = '';
+    tactics.forEach((t, i) => {
+      const key = prefix + '_' + i;
+      const recognized = state.tactics.recognized.includes(key);
+      const card = el('div', `tactic-card${recognized ? ' expanded' : ''}`);
+      card.innerHTML = `
+        <div class="tactic-header">
+          <div style="display:flex;align-items:center;gap:var(--space-md);flex:1">
+            <div class="check-box" style="cursor:pointer;${recognized?'background:var(--color-primary);border-color:var(--color-primary)':''}"><svg viewBox="0 0 12 12" style="${recognized?'opacity:1':'opacity:0'}"><polyline points="2 6 5 9 10 3"/></svg></div>
+            <span class="tactic-title">${t.name}</span>
+          </div>
+          <span class="tactic-chevron">&#9662;</span>
+        </div>
+        <div class="tactic-body">
+          <p class="t-small" style="margin-bottom:var(--space-md);color:var(--color-text-secondary)">${t.desc}</p>
+          <div class="tactic-counter"><strong>Counter-Strategy:</strong> ${t.counter}</div>
+        </div>`;
+      const header = card.querySelector('.tactic-header');
+      const checkbox = card.querySelector('.check-box');
+      header.addEventListener('click', (e) => {
+        if(e.target === checkbox || checkbox.contains(e.target)) {
+          const idx = state.tactics.recognized.indexOf(key);
+          if(idx >= 0) { state.tactics.recognized.splice(idx, 1); checkbox.style.background=''; checkbox.style.borderColor=''; checkbox.querySelector('svg').style.opacity='0'; }
+          else { state.tactics.recognized.push(key); checkbox.style.background='var(--color-primary)'; checkbox.style.borderColor='var(--color-primary)'; checkbox.querySelector('svg').style.opacity='1'; }
+          saveState();
+        } else {
+          card.classList.toggle('expanded');
+        }
+      });
+      wrap.appendChild(card);
+    });
+  }
+  renderTactics('preLoiTactics', preLoi, 'pre');
+  renderTactics('postLoiTactics', postLoi, 'post');
+
+  page.appendChild(pageNav());
+  return page;
+};
+
+/* ---- NEGOTIATION PHASES ---- */
+pageRenderers.phases = () => {
+  const page = el('div', 'page active');
+  const phases = [
+    {num:1,name:'Market Positioning',duration:'2-4 weeks',desc:'CIM distribution, management teasers, initial meetings.',risk:'Over-sharing information; revealing eagerness'},
+    {num:2,name:'IOI Collection',duration:'2-3 weeks',desc:'Receiving indications of interest; shortlisting buyers.',risk:'Accepting too few or too many to next round'},
+    {num:3,name:'Management Presentations',duration:'2-4 weeks',desc:'In-depth meetings with shortlisted buyers.',risk:'Falling in love with one buyer; losing objectivity'},
+    {num:4,name:'LOI Negotiation',duration:'2-4 weeks',desc:'Negotiating price, structure, and key terms.',risk:'Focusing on price alone; ignoring structure'},
+    {num:5,name:'Exclusivity & Diligence',duration:'45-90 days',desc:'Full confirmatory diligence under exclusivity.',risk:'Re-trading, scope creep, diligence fatigue'},
+    {num:6,name:'Definitive Agreement',duration:'2-4 weeks',desc:'Negotiating purchase agreement and ancillary documents.',risk:'Last-minute deal changes; legal cost escalation'},
+    {num:7,name:'Closing',duration:'1-2 weeks',desc:'Final conditions satisfied; funds transferred.',risk:'Financing failure; last-minute walk-away'}
+  ];
+
+  page.innerHTML = `
+    <div class="page-header">
+      <div class="t-label">Execution</div>
+      <div class="t-display">Negotiation Phases</div>
+      <p class="t-body t-secondary">M&A negotiation unfolds in 7 distinct phases. Each has different dynamics and requires different preparation. Select your current phase.</p>
+    </div>
+    <div class="form-group" style="margin-bottom:var(--space-xl)">
+      <label class="form-label">Where are you in the process?</label>
+      <select class="form-input" id="currentPhase" style="max-width:300px">
+        ${phases.map(p => `<option value="${p.num}" ${state.phases.currentPhase===p.num?'selected':''}>Phase ${p.num}: ${p.name}</option>`).join('')}
+      </select>
+    </div>
+    <div class="phase-timeline" id="phaseTimeline"></div>`;
+
+  function renderPhases() {
+    const tl = page.querySelector('#phaseTimeline');
+    tl.innerHTML = '';
+    phases.forEach(p => {
+      const isActive = p.num === state.phases.currentPhase;
+      const item = el('div', `phase-item${isActive ? ' phase-active' : ''}`);
+      item.innerHTML = `
+        <div class="phase-marker">${p.num}</div>
+        <div class="phase-connector"></div>
+        <div class="phase-content">
+          <div class="phase-name">${p.name}</div>
+          <div class="phase-duration">${p.duration}</div>
+          <div class="phase-desc">${p.desc}</div>
+          <div class="phase-risk">Risk: ${p.risk}</div>
+        </div>`;
+      tl.appendChild(item);
+    });
+  }
+  renderPhases();
+  page.querySelector('#currentPhase').addEventListener('change', function() {
+    state.phases.currentPhase = parseInt(this.value);
+    saveState(); renderPhases();
+  });
+
+  page.appendChild(pageNav());
+  return page;
+};
+
+/* ---- EMOTIONAL DYNAMICS ---- */
+pageRenderers.emotions = () => {
+  const page = el('div', 'page active');
+  const traps = [
+    {icon:'&#128547;',name:'Deal Fatigue',desc:'After months of negotiation, you accept bad terms to "just get it done."',fix:'Take breaks. Remind yourself this decision is irreversible.'},
+    {icon:'&#128548;',name:'Ego Attachment',desc:'You interpret buyer critique of the business as personal attacks.',fix:'Diligence is their job. Separate identity from business.'},
+    {icon:'&#128176;',name:'Sunk Cost Fallacy',desc:'"We have spent so much time, we cannot walk away now."',fix:'The time is spent regardless. Evaluate current terms on their merits.'},
+    {icon:'&#128552;',name:'Fear of Loss',desc:'Panic that the deal will fall apart leads to premature concessions.',fix:'A strong BATNA is the best antidote to fear. Know your alternatives.'},
+    {icon:'&#127942;',name:'Winner\'s Curse',desc:'The highest bidder won -- did I underprice?',fix:'Focus on your financial goal. If the deal meets your plan, it is a good deal.'},
+    {icon:'&#128532;',name:'Seller\'s Remorse',desc:'After signing, doubting whether you should have held on.',fix:'Pre-commit to your decision criteria. If the deal meets criteria, do not second-guess.'}
+  ];
+
+  page.innerHTML = `
+    <div class="page-header">
+      <div class="t-label">Execution</div>
+      <div class="t-display">Managing Emotional Dynamics</div>
+      <p class="t-body t-secondary">Selling your business is one of the most emotionally intense experiences you will ever go through. The emotional dimension is as important as the rational one -- and far more likely to lead to mistakes.</p>
+    </div>
+    <div class="callout callout-warning" style="margin-bottom:var(--space-xl)">
+      <strong>The 24-Hour Rule:</strong> Never respond to any material proposal or counteroffer within 24 hours. Sleep on it. Review it with your advisor. This single discipline prevents more negotiation mistakes than any other technique.
+    </div>
+    <div class="t-h2" style="margin-bottom:var(--space-lg)">Common Emotional Traps</div>
+    <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Review each trap. Mark the ones you are most susceptible to so you can prepare.</p>
+    <div class="trap-grid" style="margin-bottom:var(--space-xl)">
+      ${traps.map((t,i) => `<div class="trap-card" data-trap="${i}" style="cursor:pointer;border:2px solid ${state.emotions.triggers.includes(i)?'var(--color-warning)':'var(--color-border)'}">
+        <div class="trap-icon">${t.icon}</div>
+        <div class="trap-name">${t.name}</div>
+        <div class="trap-desc">${t.desc}</div>
+        <div class="trap-fix">Mitigation: ${t.fix}</div>
+        ${state.emotions.triggers.includes(i)?'<div class="badge badge-warning" style="margin-top:var(--space-sm)">You flagged this</div>':''}
+      </div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="t-h3" style="margin-bottom:var(--space-md)">Your Commitment</div>
+      <div class="check-item${state.emotions.twentyFourHour?' checked':''}" id="twentyFourCheck" style="cursor:pointer">
+        <div class="check-box"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+        <span class="check-text">I commit to following the 24-Hour Rule for every material proposal or counteroffer.</span>
+      </div>
+    </div>`;
+
+  page.querySelectorAll('[data-trap]').forEach(card => {
+    card.addEventListener('click', () => {
+      const idx = parseInt(card.dataset.trap);
+      const pos = state.emotions.triggers.indexOf(idx);
+      if(pos >= 0) { state.emotions.triggers.splice(pos, 1); card.style.borderColor='var(--color-border)'; card.querySelector('.badge')?.remove(); }
+      else { state.emotions.triggers.push(idx); card.style.borderColor='var(--color-warning)'; const b = el('div','badge badge-warning','You flagged this'); b.style.marginTop='var(--space-sm)'; card.appendChild(b); }
+      saveState();
+    });
+  });
+
+  page.querySelector('#twentyFourCheck').addEventListener('click', function() {
+    state.emotions.twentyFourHour = !state.emotions.twentyFourHour;
+    this.classList.toggle('checked');
+    saveState();
+  });
+
+  page.appendChild(pageNav());
+  return page;
+};
+
+/* ---- ADVISORY TEAM ---- */
+pageRenderers.advisors = () => {
+  const page = el('div', 'page active');
+  const a = state.advisors;
+  const roles = [
+    {key:'banker',icon:'&#128188;',role:'M&A Advisor / Investment Banker',desc:'Manages process; communicates with buyer; maintains competitive tension. Lean on them for all buyer communications, valuation discussions, and structure analysis.'},
+    {key:'attorney',icon:'&#9878;',role:'Transaction Attorney',desc:'Drafts and negotiates purchase agreement; protects legal interests. Lean on them for LOI review, definitive agreement, reps & warranties, indemnification.'},
+    {key:'cpa',icon:'&#128200;',role:'Transaction CPA',desc:'Analyzes tax implications; working capital; quality of earnings. Lean on them for deal structure tax impact, WC target, earnout metrics.'},
+    {key:'wealth',icon:'&#127968;',role:'Wealth Advisor',desc:'Models post-sale financial plan; ensures proceeds meet lifestyle needs. Lean on them for minimum proceeds calculation and estate planning.'},
+    {key:'coach',icon:'&#128172;',role:'Therapist / Coach',desc:'Manages emotional health through the process. Lean on them when stress affects decision-making, sleep, or relationships.'}
+  ];
+
+  page.innerHTML = `
+    <div class="page-header">
+      <div class="t-label">Execution</div>
+      <div class="t-display">Your Advisory Team</div>
+      <p class="t-body t-secondary">Effective negotiation is a team sport. Each member plays a specific role. Document your team and ensure everyone understands their lane.</p>
+    </div>
+    <div class="callout callout-info" style="margin-bottom:var(--space-xl)">
+      <strong>The Buffer Principle:</strong> Your M&A advisor should serve as a buffer between you and the buyer. Difficult conversations should go through your advisor, not directly to you. This preserves the personal relationship with the buyer while allowing tough negotiation at arm's length.
+    </div>
+    <div class="advisor-grid" id="advisorGrid"></div>
+    <div class="card" style="margin-top:var(--space-xl)">
+      <div class="check-item${a.bufferPrinciple?' checked':''}" id="bufferCheck" style="cursor:pointer">
+        <div class="check-box"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+        <span class="check-text">I will use my M&A advisor as a buffer for all difficult conversations with the buyer.</span>
+      </div>
+    </div>`;
+
+  const grid = page.querySelector('#advisorGrid');
+  roles.forEach(r => {
+    const card = el('div', 'advisor-card');
+    card.innerHTML = `
+      <div class="advisor-avatar">${r.icon}</div>
+      <div class="advisor-info">
+        <div class="advisor-role">${r.role}</div>
+        <div class="advisor-desc">${r.desc}</div>
+        <div class="form-group" style="margin-bottom:0">
+          <input type="text" class="form-input" data-key="${r.key}" value="${a[r.key]||''}" placeholder="Name / firm">
+        </div>
+      </div>`;
+    card.querySelector('input').addEventListener('input', function() {
+      state.advisors[this.dataset.key] = this.value;
+      saveState();
+    });
+    grid.appendChild(card);
+  });
+
+  page.querySelector('#bufferCheck').addEventListener('click', function() {
+    state.advisors.bufferPrinciple = !state.advisors.bufferPrinciple;
+    this.classList.toggle('checked');
+    saveState();
+  });
+
+  page.appendChild(pageNav());
+  return page;
+};
+
+/* ---- POST-LOI STRATEGY ---- */
+pageRenderers.postloi = () => {
+  const page = el('div', 'page active');
+  const p = state.postloi;
+  const retradeResponses = [
+    {size:'Under 3%',response:'Negotiate; may reflect legitimate finding',color:'var(--color-success)'},
+    {size:'3-7%',response:'Push back hard; demand specific justification',color:'var(--color-warning)'},
+    {size:'7-15%',response:'Reject and threaten to re-enter market',color:'var(--color-score-2)'},
+    {size:'Over 15%',response:'Walk away unless truly justified by new facts',color:'var(--color-danger)'}
+  ];
+
+  page.innerHTML = `
+    <div class="page-header">
+      <div class="t-label">Worksheets</div>
+      <div class="t-display">Post-LOI Strategy</div>
+      <p class="t-body t-secondary">The dynamics shift dramatically after signing an LOI with exclusivity. The seller loses competitive leverage, and the buyer gains information asymmetry. Prepare your protections now.</p>
+    </div>
+    <div class="card" style="margin-bottom:var(--space-xl)">
+      <div class="t-h2" style="margin-bottom:var(--space-lg)">LOI Protections</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+        <div class="form-group">
+          <label class="form-label">Exclusivity Period (days)</label>
+          <input type="number" class="form-input" id="excDays" value="${p.exclusivityDays||''}" placeholder="Recommend 45-60 days">
+          <div class="form-hint">Limit exclusivity with milestone requirements</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Drop-Dead Date</label>
+          <input type="date" class="form-input" id="dropDead" value="${p.dropDeadDate||''}">
+          <div class="form-hint">LOI expires and you can re-engage other buyers</div>
+        </div>
+      </div>
+      <div class="checklist" style="margin-top:var(--space-md)">
+        <div class="check-item${p.diligenceSchedule?' checked':''}" data-key="diligenceSchedule"><div class="check-box"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div><span class="check-text">Define a clear diligence calendar with agreed schedule of information requests</span></div>
+        <div class="check-item${p.extensionDeposit?' checked':''}" data-key="extensionDeposit"><div class="check-box"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div><span class="check-text">Require non-refundable deposit for material diligence extensions</span></div>
+        <div class="check-item${p.brokenDealFee?' checked':''}" data-key="brokenDealFee"><div class="check-box"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div><span class="check-text">Require expense reimbursement (broken deal fee) if buyer walks for uncovered reasons</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="t-h2" style="margin-bottom:var(--space-lg)">Re-Trade Response Framework</div>
+      <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Re-trading -- reducing the price after LOI -- is the most common and destructive post-LOI tactic. Your response depends on the size of the re-trade.</p>
+      <div style="display:flex;flex-direction:column;gap:var(--space-sm)">
+        ${retradeResponses.map(r => `<div style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md);border-left:4px solid ${r.color};background:var(--color-surface-alt);border-radius:0 var(--radius-sm) var(--radius-sm) 0">
+          <div style="font-weight:600;min-width:100px">${r.size}</div>
+          <div class="t-small">${r.response}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+
+  page.querySelector('#excDays').addEventListener('input', function() { state.postloi.exclusivityDays = this.value; saveState(); });
+  page.querySelector('#dropDead').addEventListener('change', function() { state.postloi.dropDeadDate = this.value; saveState(); });
+  page.querySelectorAll('.check-item[data-key]').forEach(item => {
+    item.addEventListener('click', () => {
+      const key = item.dataset.key;
+      state.postloi[key] = !state.postloi[key];
+      item.classList.toggle('checked');
+      saveState();
+    });
+  });
+
+  page.appendChild(pageNav());
+  return page;
+};
+
+/* ---- CONCESSION TRACKER ---- */
+pageRenderers.concessions = () => {
+  const page = el('div', 'page active');
+  if(state.concessions.length === 0) {
+    state.concessions.push({date:'',given:'',received:'',impact:''});
+    saveState();
+  }
+
+  page.innerHTML = `
+    <div class="page-header">
+      <div class="t-label">Worksheets</div>
+      <div class="t-display">Concession Tracker</div>
+      <p class="t-body t-secondary">Track every concession given and received throughout the negotiation. Review this log before each session to maintain awareness of the running balance.</p>
+    </div>
+    <div class="callout callout-accent" style="margin-bottom:var(--space-xl)">
+      <strong>Golden rule:</strong> Never give something away without receiving something in return. Always pair a concession with a request: "We can agree to that if you will..."
+    </div>
+    <div style="overflow-x:auto">
+      <table class="log-table" style="min-width:600px">
+        <thead><tr><th>Date</th><th>Concession Given</th><th>Concession Received</th><th>Net Impact</th><th></th></tr></thead>
+        <tbody id="concessionBody"></tbody>
+      </table>
+    </div>
+    <button class="btn btn-secondary btn-sm" id="addConcBtn" style="margin-top:var(--space-md)">+ Add Entry</button>
+    <div id="concSummary" style="margin-top:var(--space-xl)"></div>`;
+
+  function renderConcessions() {
+    const tbody = page.querySelector('#concessionBody');
+    tbody.innerHTML = '';
+    state.concessions.forEach((c, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="date" class="form-input" data-idx="${i}" data-field="date" value="${c.date||''}"></td>
+        <td><input type="text" class="form-input" data-idx="${i}" data-field="given" value="${c.given||''}" placeholder="What you gave"></td>
+        <td><input type="text" class="form-input" data-idx="${i}" data-field="received" value="${c.received||''}" placeholder="What you got"></td>
+        <td><input type="text" class="form-input" data-idx="${i}" data-field="impact" value="${c.impact||''}" placeholder="$ impact"></td>
+        <td><span class="log-entry-remove" data-remove="${i}">&times;</span></td>`;
+      tr.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('input', () => {
+          state.concessions[parseInt(inp.dataset.idx)][inp.dataset.field] = inp.value;
+          saveState(); updateSummary();
+        });
+      });
+      tr.querySelector('[data-remove]').addEventListener('click', () => {
+        if(state.concessions.length > 1) { state.concessions.splice(i, 1); saveState(); renderConcessions(); }
+      });
+      tbody.appendChild(tr);
+    });
+    updateSummary();
+  }
+
+  function updateSummary() {
+    const total = state.concessions.length;
+    const withGiven = state.concessions.filter(c => c.given && c.given.trim()).length;
+    const withReceived = state.concessions.filter(c => c.received && c.received.trim()).length;
+    const summ = page.querySelector('#concSummary');
+    if(withGiven > 0) {
+      const balance = withReceived >= withGiven ? 'balanced' : 'imbalanced (you are giving more than receiving)';
+      summ.innerHTML = `<div class="card"><div class="t-h3">Concession Balance</div><p class="t-small t-secondary" style="margin-top:var(--space-sm)">${total} entries logged. ${withGiven} concessions given, ${withReceived} received. Your concession balance appears <strong>${balance}</strong>.</p></div>`;
+    } else { summ.innerHTML = ''; }
+  }
+
+  renderConcessions();
+  page.querySelector('#addConcBtn').addEventListener('click', () => {
+    state.concessions.push({date:'',given:'',received:'',impact:''});
+    saveState(); renderConcessions();
+  });
+
+  page.appendChild(pageNav());
+  return page;
+};
+
+/* ---- PRE-NEGOTIATION CHECKLIST ---- */
+pageRenderers.checklist = () => {
+  const page = el('div', 'page active');
+  const items = [
+    {key:'cl_batna', text:'BATNA defined and documented'},
+    {key:'cl_walkaway', text:'Walk-away terms established for every key dimension'},
+    {key:'cl_dealpoints', text:'All deal points categorized: must-have, important, nice-to-have, irrelevant'},
+    {key:'cl_buyer', text:'Buyer research completed: prior deals, financing, motivations, timeline'},
+    {key:'cl_concession', text:'Concession strategy planned: what to give, what to get in return'},
+    {key:'cl_advisory', text:'Advisory team roles assigned: who speaks on what topics'},
+    {key:'cl_emotional', text:'Emotional triggers identified: what might cause you to react instead of respond'}
+  ];
+
+  page.innerHTML = `
+    <div class="page-header">
+      <div class="t-label">Worksheets</div>
+      <div class="t-display">Pre-Negotiation Checklist</div>
+      <p class="t-body t-secondary">Before entering any negotiation session, confirm every item on this checklist. If any item is incomplete, you are not ready.</p>
+    </div>
+    <div class="card">
+      <div class="t-h2" style="margin-bottom:var(--space-lg)">Are You Ready?</div>
+      <div class="checklist" id="finalChecklist"></div>
+      <div id="checklistResult" style="margin-top:var(--space-xl)"></div>
+    </div>`;
+
+  const cl = page.querySelector('#finalChecklist');
+  function renderChecklist() {
+    cl.innerHTML = '';
+    items.forEach(item => {
+      const checked = state.checklist.items[item.key];
+      const div = el('div', `check-item${checked ? ' checked' : ''}`, `
+        <div class="check-box"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+        <span class="check-text">${item.text}</span>`);
+      div.addEventListener('click', () => {
+        state.checklist.items[item.key] = !state.checklist.items[item.key];
+        div.classList.toggle('checked');
+        saveState(); updateResult();
+      });
+      cl.appendChild(div);
+    });
+    updateResult();
+  }
+
+  function updateResult() {
+    const done = items.filter(i => state.checklist.items[i.key]).length;
+    const total = items.length;
+    const pct = Math.round((done / total) * 100);
+    const result = page.querySelector('#checklistResult');
+    let color = 'var(--color-danger)';
+    let msg = 'Not ready -- complete the items above before entering negotiations.';
+    if(pct === 100) { color = 'var(--color-success)'; msg = 'You are prepared. Enter the negotiation with confidence.'; }
+    else if(pct >= 70) { color = 'var(--color-warning)'; msg = 'Almost there. Address the remaining items for full preparation.'; }
+    result.innerHTML = `
+      <div style="display:flex;align-items:center;gap:var(--space-lg)">
+        <div style="position:relative;width:80px;height:80px;flex-shrink:0">
+          <svg viewBox="0 0 80 80" style="transform:rotate(-90deg)">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="var(--color-border)" stroke-width="6"/>
+            <circle cx="40" cy="40" r="34" fill="none" stroke="${color}" stroke-width="6" stroke-dasharray="${2*Math.PI*34}" stroke-dashoffset="${2*Math.PI*34*(1-pct/100)}" stroke-linecap="round" style="transition:stroke-dashoffset 0.6s ease"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:${color}">${done}/${total}</div>
+        </div>
+        <div>
+          <div class="t-h3" style="color:${color}">${pct}% Complete</div>
+          <p class="t-small t-secondary" style="margin-top:4px">${msg}</p>
+        </div>
+      </div>`;
+  }
+
+  renderChecklist();
+  page.appendChild(pageNav());
+  return page;
+};
+
+/* ---- READINESS SUMMARY ---- */
+pageRenderers.summary = () => {
+  const page = el('div', 'page active');
+  const score = calcScore();
+  let scoreColor = 'var(--color-danger)';
+  let scoreLabel = 'Needs Work';
+  if(score >= 85) { scoreColor = 'var(--color-success)'; scoreLabel = 'Excellent'; }
+  else if(score >= 65) { scoreColor = 'var(--color-score-4)'; scoreLabel = 'Strong'; }
+  else if(score >= 40) { scoreColor = 'var(--color-warning)'; scoreLabel = 'Developing'; }
+
+  const strengthLabels = ['--','Very Weak','Weak','Moderate','Strong','Very Strong'];
+  const waFields = ['totalConsideration','cashAtClose','earnoutMax','escrowDuration','nonCompete','transitionPeriod','employeeProtection','closingTimeline'];
+  const waFilled = waFields.filter(f => state.walkaway[f] && state.walkaway[f].toString().trim()).length;
+  const dpDefined = state.dealpoints.filter(d => d.category).length;
+  const tacticCount = state.tactics.recognized.length;
+  const advFilled = ['banker','attorney','cpa','wealth'].filter(f => state.advisors[f] && state.advisors[f].trim()).length;
+  const checkDone = Object.values(state.checklist.items).filter(Boolean).length;
+
+  // Bar chart data
+  const barData = [
+    {label:'BATNA', value: Math.min(state.batna.strength * 20, 100), color:'var(--color-primary)'},
+    {label:'Walk-Away Terms', value: Math.round((waFilled / waFields.length) * 100), color:'var(--color-accent)'},
+    {label:'Deal Points', value: state.dealpoints.length > 0 ? Math.round((dpDefined / state.dealpoints.length) * 100) : 0, color:'var(--color-warning)'},
+    {label:'Buyer Research', value: Math.round((['type','motivation','pressurePoint','priorDeals','financing'].filter(f => state.buyer[f] && state.buyer[f].trim()).length / 5) * 100), color:'var(--color-score-4)'},
+    {label:'Tactics', value: Math.min(tacticCount * 20, 100), color:'var(--color-danger)'},
+    {label:'Advisory Team', value: Math.round((advFilled / 4) * 100), color:'var(--color-score-5)'}
+  ];
+
+  page.innerHTML = `
+    <div class="page-header">
+      <div class="t-label">Results</div>
+      <div class="t-display">Readiness Summary</div>
+      <p class="t-body t-secondary">Your comprehensive negotiation preparation assessment.</p>
+    </div>
+    <div class="card" style="text-align:center;padding:var(--space-2xl);margin-bottom:var(--space-xl)">
+      <div style="position:relative;width:160px;height:160px;margin:0 auto var(--space-lg)">
+        <svg viewBox="0 0 160 160" style="transform:rotate(-90deg)">
+          <circle cx="80" cy="80" r="68" fill="none" stroke="var(--color-border)" stroke-width="10"/>
+          <circle cx="80" cy="80" r="68" fill="none" stroke="${scoreColor}" stroke-width="10" stroke-dasharray="${2*Math.PI*68}" stroke-dashoffset="${2*Math.PI*68*(1-score/100)}" stroke-linecap="round" style="transition:stroke-dashoffset 1s ease"/>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div style="font-family:var(--font-display);font-size:42px;font-weight:700;color:${scoreColor}">${score}</div>
+          <div style="font-size:12px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:0.05em">out of 100</div>
+        </div>
+      </div>
+      <div class="t-h2" style="color:${scoreColor}">${scoreLabel}</div>
+      <p class="t-small t-secondary" style="margin-top:var(--space-sm)">Your negotiation readiness score based on all sections completed.</p>
+    </div>
+    <div class="card" style="margin-bottom:var(--space-xl)">
+      <div class="t-h2" style="margin-bottom:var(--space-lg)">Preparation Breakdown</div>
+      <div class="bar-chart" id="summaryBars"></div>
+    </div>
+    <div class="summary-grid" style="margin-bottom:var(--space-xl)">
+      <div class="summary-item"><div class="summary-item-label">BATNA Strength</div><div class="summary-item-value">${strengthLabels[state.batna.strength] || '--'}</div></div>
+      <div class="summary-item"><div class="summary-item-label">Walk-Away Terms</div><div class="summary-item-value">${waFilled}/${waFields.length} defined</div></div>
+      <div class="summary-item"><div class="summary-item-label">Deal Points Classified</div><div class="summary-item-value">${dpDefined}/${state.dealpoints.length}</div></div>
+      <div class="summary-item"><div class="summary-item-label">Tactics Recognized</div><div class="summary-item-value">${tacticCount}</div></div>
+      <div class="summary-item"><div class="summary-item-label">Advisors Named</div><div class="summary-item-value">${advFilled}/4</div></div>
+      <div class="summary-item"><div class="summary-item-label">Checklist Complete</div><div class="summary-item-value">${checkDone}/7</div></div>
+    </div>
+    <div class="callout callout-accent" style="margin-bottom:var(--space-xl)">
+      <strong>Remember:</strong> "Amateurs negotiate in the room. Professionals negotiate before they enter it. Prepare as if the outcome depends on it -- because it does."
+    </div>
+    <div class="btn-group" style="justify-content:center">
+      <button class="btn btn-primary" onclick="exportReport()">Export Report</button>
+      <button class="btn btn-secondary" onclick="window.print()">Print Summary</button>
+      <button class="btn btn-secondary" onclick="goToPage('welcome')">Return to Start</button>
+    </div>`;
+
+  // Render bars after DOM insert
+  setTimeout(() => {
+    const barsEl = page.querySelector('#summaryBars');
+    if(barsEl) {
+      barData.forEach(d => {
+        const row = el('div','bar-row',`
+          <div class="bar-label">${d.label}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:0%;background:${d.color}"><span class="bar-value">${d.value}%</span></div></div>`);
+        barsEl.appendChild(row);
+        setTimeout(() => { row.querySelector('.bar-fill').style.width = d.value + '%'; }, 100);
+      });
+    }
+  }, 50);
+
+  page.appendChild(pageNav(true, false));
+  return page;
+};
+
+/* ============================================================
+   LOCALSTORAGE MIGRATION
+   ============================================================ */
+(function migrateStorage() {
+  const OLD_KEY = 'playbook37_negotiation_v2';
+  const NEW_KEY = 'exitosx-pb37-negotiation-preparation';
+  if (STORAGE_KEY === OLD_KEY) return; // already on old key, handled below
+  if (localStorage.getItem(OLD_KEY) && !localStorage.getItem(NEW_KEY)) {
+    localStorage.setItem(NEW_KEY, localStorage.getItem(OLD_KEY));
+    localStorage.removeItem(OLD_KEY);
+  }
+})();
+
+/* ============================================================
+   EXPORT
+   ============================================================ */
+function exportReport() {
+  const s = loadState();
+  let text = 'NEGOTIATION PREPARATION - Summary Report\n';
+  text += 'Generated: ' + new Date().toLocaleDateString() + '\n';
+  text += '='.repeat(50) + '\n\n';
+  text += 'READINESS SCORE: ' + calcScore() + '/100\n\n';
+  text += '--- BATNA ---\n';
+  text += 'Strength: ' + (s.batna.strength || '--') + '/5\n';
+  text += 'Alternatives: ' + s.batna.alternatives.filter(a => a.desc).length + '\n\n';
+  text += '--- WALK-AWAY TERMS ---\n';
+  const waFields = ['totalConsideration','cashAtClose','earnoutMax','escrowDuration','nonCompete','transitionPeriod','employeeProtection','closingTimeline'];
+  waFields.forEach(f => { text += f + ': ' + (s.walkaway[f] || '--') + '\n'; });
+  text += 'Sunday Night Test: ' + (s.walkaway.sundayNight || '--') + '/5\n\n';
+  text += '--- DEAL POINTS ---\n';
+  s.dealpoints.forEach(dp => { text += (dp.name || 'Unnamed') + ' - ' + (dp.category || 'Unclassified') + '\n'; });
+  text += '\n--- BUYER ANALYSIS ---\n';
+  text += 'Type: ' + (s.buyer.type || '--') + '\n';
+  text += 'Motivation: ' + (s.buyer.motivation || '--') + '\n\n';
+  text += '--- TACTICS RECOGNIZED ---\n';
+  text += s.tactics.recognized.length + ' buyer tactics identified\n\n';
+  text += '--- ADVISORY TEAM ---\n';
+  ['banker','attorney','cpa','wealth','coach'].forEach(f => { text += f + ': ' + (s.advisors[f] || '--') + '\n'; });
+  text += '\n--- POST-LOI ---\n';
+  text += 'Exclusivity: ' + (s.postloi.exclusivityDays || '--') + ' days\n';
+  text += 'Drop-dead date: ' + (s.postloi.dropDeadDate || '--') + '\n';
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'playbook-37-negotiation-report.txt';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Report exported successfully');
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+buildNav();
+updateProgress();
+updateScore();
+renderPage(state.currentPage);
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Privacy & Cybersecurity Posture | Exit Planning Playbook #25</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.6; color: var(--color-text); background: var(--color-bg); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 1000; }
+a.skip-link:focus { position: fixed; top: 10px; left: 10px; width: auto; height: auto; padding: 12px 20px; background: var(--color-primary); color: #fff; border-radius: var(--radius-sm); font-weight: 600; z-index: 1000; }
+.t-display { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; min-width: 260px; background: #FFFFFF; border-right: 1px solid var(--color-border); color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: transform var(--transition-slow); overflow-y: auto; }
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+.mobile-header { display: none; position: sticky; top: 0; z-index: 90; background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md); }
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item { display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px; border-radius: var(--radius-sm); color: var(--color-text-secondary); font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative; }
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--color-text-tertiary); }
+.nav-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+.sidebar-footer { margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--color-border); font-size: 12px; color: rgba(255,255,255,0.3); display: flex; align-items: center; gap: 6px; }
+.sidebar-footer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-success); }
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); transition: box-shadow var(--transition-normal); margin-bottom: var(--space-md); }
+.card:hover { box-shadow: var(--shadow-sm); }
+.callout { padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); border-left: 3px solid; font-size: 14px; line-height: 1.6; margin-bottom: var(--space-md); }
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+.callout-success { background: var(--color-success-light); border-color: var(--color-success); color: var(--color-success); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm); padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; transition: all var(--transition-fast); white-space: nowrap; }
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface); transition: all var(--transition-fast); color: var(--color-text); }
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); text-align: center; }
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+.score-option.s0 .score-number { color: var(--color-text-tertiary); }
+.score-option.selected.s0 { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+@media (max-width: 600px) { .score-selector { gap: 4px; } .score-option { padding: 10px 4px; } .score-number { font-size: 18px; } .score-label-text { font-size: 9px; } }
+.checklist { display: flex; flex-direction: column; gap: 2px; }
+.check-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md); border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast); }
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box { width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); margin-top: 1px; }
+.check-item.checked .check-box { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--color-border); }
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+@media (max-width: 600px) { .welcome-stats { grid-template-columns: 1fr; } .welcome-hero { padding: var(--space-2xl) var(--space-md); } }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-lg); }
+.summary-item { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-align: center; }
+.summary-item-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; }
+.summary-item-label { font-size: 12px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-top: var(--space-xs); }
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 24px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+@media (max-width: 600px) { .bar-label { width: 90px; font-size: 11px; } .summary-grid { grid-template-columns: repeat(2, 1fr); } }
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; margin-bottom: var(--space-md); }
+.data-table th { text-align: left; padding: var(--space-sm) var(--space-md); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); }
+.data-table td { padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table input, .data-table select, .data-table textarea { width: 100%; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; background: var(--color-surface); color: var(--color-text); }
+.data-table input:focus, .data-table select:focus, .data-table textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-light); }
+.data-table textarea { min-height: 60px; resize: vertical; }
+.gauge-wrap { display: flex; justify-content: center; margin: var(--space-lg) 0; }
+.gauge-ring { position: relative; width: 160px; height: 160px; }
+.gauge-ring svg { width: 160px; height: 160px; transform: rotate(-90deg); }
+.gauge-ring circle { fill: none; stroke-width: 8; stroke-linecap: round; }
+.gauge-bg { stroke: var(--color-border); }
+.gauge-fill { transition: stroke-dashoffset 1s ease; }
+.gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gauge-center-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; line-height: 1; }
+.gauge-center-label { font-size: 12px; color: var(--color-text-tertiary); margin-top: 4px; }
+.add-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; border: 2px dashed var(--color-border); border-radius: var(--radius-md); background: transparent; cursor: pointer; font-size: 14px; color: var(--color-text-tertiary); font-weight: 500; transition: all var(--transition-fast); font-family: inherit; margin-bottom: var(--space-md); }
+.add-btn:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-light); }
+.remove-btn { background: none; border: none; color: var(--color-text-tertiary); cursor: pointer; font-size: 18px; padding: 4px; line-height: 1; transition: color var(--transition-fast); }
+.remove-btn:hover { color: var(--color-danger); }
+.heat-map { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-sm); margin-bottom: var(--space-md); }
+.heat-cell { padding: var(--space-md); border-radius: var(--radius-md); text-align: center; font-size: 12px; font-weight: 600; transition: transform var(--transition-fast); }
+.heat-cell:hover { transform: scale(1.03); }
+.heat-cell.score-1, .heat-cell.score-2 { background: #FEE2E2; color: #991B1B; }
+.heat-cell.score-3 { background: #FEF3C7; color: #92400E; }
+.heat-cell.score-4 { background: #D1FAE5; color: #065F46; }
+.heat-cell.score-5 { background: #A7F3D0; color: #064E3B; }
+.heat-cell .heat-score { font-size: 20px; display: block; margin-bottom: 4px; }
+.incident-card { background: var(--color-surface-alt); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-md); }
+.incident-card .incident-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm); }
+.incident-fields { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm); }
+.incident-fields label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-secondary); margin-bottom: var(--space-xs); display: block; }
+.incident-fields .field-full { grid-column: 1 / -1; }
+.incident-fields input, .incident-fields select, .incident-fields textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; background: var(--color-surface); color: var(--color-text); }
+.incident-fields input:focus, .incident-fields select:focus, .incident-fields textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-light); }
+.incident-fields textarea { min-height: 60px; resize: vertical; }
+@media (max-width: 600px) { .incident-fields { grid-template-columns: 1fr; } .heat-map { grid-template-columns: repeat(2, 1fr); } }
+.toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 200; }
+.toast { background: var(--color-text); color: #fff; padding: 12px 24px; border-radius: var(--radius-md); font-size: 14px; box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(20px); transition: all 0.3s ease; pointer-events: none; }
+.toast.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+@media print {
+  .sidebar, .mobile-header, .page-nav, .sidebar-overlay { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; margin-bottom: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<a href="#contentArea" class="skip-link">Skip to content</a>
+<div class="app">
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #25</div>
+      <div class="sidebar-brand-title">Data Privacy & Cybersecurity Posture</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Readiness Score</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete sections to build your score</div>
+    </div>
+    <div class="sidebar-footer"><div class="sidebar-footer-dot"></div>Auto-saved locally</div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation"><span></span></button>
+      <div style="flex:1"><strong style="font-size:15px;">Data Privacy & Cybersecurity</strong></div>
+      <div class="badge badge-primary" id="mobileScore">--/100</div>
+    </div>
+    <main class="content-area" id="contentArea" role="main"></main>
+  </div>
+</div>
+<div class="toast-container" aria-live="polite"><div class="toast" id="toast"></div></div>
+
+<script>
+(function() {
+'use strict';
+
+var STORAGE_KEY = 'exitosx-pb25-data-privacy-cyber';
+
+var PAGES = [
+  { id: 'welcome', title: 'Welcome', phase: 'START', icon: '1' },
+  { id: 'data-handling', title: 'Data Handling Audit', phase: 'ASSESSMENT', icon: '2' },
+  { id: 'regulatory', title: 'Regulatory Exposure', phase: 'ASSESSMENT', icon: '3' },
+  { id: 'cyber-hygiene', title: 'Cybersecurity Hygiene', phase: 'ASSESSMENT', icon: '4' },
+  { id: 'incident-response', title: 'Incident Response', phase: 'ASSESSMENT', icon: '5' },
+  { id: 'breach-risk', title: 'Breach Risk', phase: 'RISK', icon: '6' },
+  { id: 'vendor-dpa', title: 'Vendor Agreements', phase: 'RISK', icon: '7' },
+  { id: 'privacy-policy', title: 'Privacy Policy', phase: 'RISK', icon: '8' },
+  { id: 'dashboard', title: 'Dashboard', phase: 'RESULTS', icon: '9' }
+];
+
+var DATA_CATEGORIES = [
+  { key: 'pii', label: 'Personally Identifiable Information (PII)', sensitivity: 'High', examples: 'Name, email, phone, SSN, DOB' },
+  { key: 'phi', label: 'Protected Health Information (PHI)', sensitivity: 'Very High', examples: 'Medical records, insurance IDs' },
+  { key: 'financial', label: 'Financial Data', sensitivity: 'Very High', examples: 'Credit cards, bank accounts, tax returns' },
+  { key: 'employee', label: 'Employee Data', sensitivity: 'High', examples: 'HR records, payroll, benefits' },
+  { key: 'children', label: "Children's Data", sensitivity: 'Very High', examples: 'Data from users under 13/16' },
+  { key: 'biometric', label: 'Biometric Data', sensitivity: 'Very High', examples: 'Fingerprints, facial recognition' },
+  { key: 'geo', label: 'Geolocation Data', sensitivity: 'Moderate-High', examples: 'GPS, IP-derived location' },
+  { key: 'business', label: 'Business Contact Data', sensitivity: 'Low-Moderate', examples: 'Business emails, job titles' },
+  { key: 'behavioral', label: 'Behavioral/Analytics Data', sensitivity: 'Moderate', examples: 'Website activity, cookies' },
+  { key: 'ip', label: 'Trade Secrets & IP', sensitivity: 'High', examples: 'Source code, customer lists, pricing' }
+];
+
+var REGULATIONS = [
+  { key: 'ccpa', label: 'CCPA/CPRA', question: 'Do you collect PII from California residents with >$25M revenue or 100K+ consumers?', penalty: 'Up to $7,500/violation' },
+  { key: 'gdpr', label: 'GDPR', question: 'Do you offer goods/services to EU/EEA residents or monitor their behavior?', penalty: 'Up to 4% global revenue' },
+  { key: 'hipaa', label: 'HIPAA', question: 'Do you handle protected health information in any capacity?', penalty: '$100-$50K/violation' },
+  { key: 'pcidss', label: 'PCI-DSS', question: 'Do you process, store, or transmit credit card data?', penalty: 'Loss of processing ability' },
+  { key: 'coppa', label: 'COPPA', question: 'Do you collect data from users under 13?', penalty: 'Up to $50,120/violation' },
+  { key: 'bipa', label: 'BIPA', question: 'Do you collect biometric data from Illinois residents?', penalty: '$5,000/intentional violation' },
+  { key: 'glba', label: 'GLBA', question: 'Are you a financial institution (broadly defined)?', penalty: '$100K/violation' },
+  { key: 'breach', label: 'State Breach Laws', question: 'Do you possess PII of any U.S. resident?', penalty: '$100-$750/person' }
+];
+
+var CYBER_SECTIONS = [
+  { key: 'access', title: 'Access Controls & Identity Management', items: [
+    'MFA required for all accounts (email, VPN, admin)',
+    'Unique user accounts for every employee (no shared accounts)',
+    'Role-based access control (RBAC) with least privilege',
+    'Privileged access management (admin accounts separate)',
+    'Automated deprovisioning within 24hrs of departure',
+    'Password policy: 12+ chars, complexity, no reuse',
+    'SSO implemented for all major SaaS applications'
+  ]},
+  { key: 'network', title: 'Network & Infrastructure Security', items: [
+    'Firewall deployed and configured at all perimeters',
+    'Network segmentation (production, corporate, guest)',
+    'VPN required for all remote access',
+    'Endpoint Detection & Response (EDR) on all endpoints',
+    'DNS filtering and web proxy for malicious sites',
+    'Wi-Fi protected with WPA3 or WPA2-Enterprise',
+    'IDS/IPS deployed and monitored'
+  ]},
+  { key: 'dataprotection', title: 'Data Protection', items: [
+    'Encryption at rest (AES-256 or equivalent)',
+    'Encryption in transit (TLS 1.2+)',
+    'Data Loss Prevention (DLP) tools deployed',
+    'Backup strategy: 3-2-1 rule',
+    'Backup restore tested at least quarterly',
+    'No sensitive data in email, Slack, or personal devices',
+    'Data classification policy implemented'
+  ]},
+  { key: 'patch', title: 'Vulnerability & Patch Management', items: [
+    'OS patched within 30 days of critical release',
+    'Third-party apps patched on regular schedule',
+    'External vulnerability scans quarterly',
+    'Internal vulnerability scans quarterly',
+    'Annual penetration test by qualified third party',
+    'Remediation tracked with SLAs (critical: 7d, high: 30d)'
+  ]},
+  { key: 'training', title: 'Security Awareness & Training', items: [
+    'Security awareness training at hire and annually',
+    'Phishing simulation testing quarterly',
+    'Role-specific training (devs, finance, execs)',
+    'Acceptable use policy signed by all employees',
+    'Clear reporting process for suspected incidents'
+  ]}
+];
+
+var IRP_COMPONENTS = [
+  { key: 'scope', label: 'Scope & Definitions (severity levels)' },
+  { key: 'roles', label: 'Roles & Responsibilities (IRT members)' },
+  { key: 'detection', label: 'Detection & Analysis (triage process)' },
+  { key: 'containment', label: 'Containment Strategy (playbooks)' },
+  { key: 'eradication', label: 'Eradication & Recovery (restore plans)' },
+  { key: 'comms', label: 'Communication Plan (templates, spokesperson)' },
+  { key: 'legal', label: 'Legal & Regulatory (notification matrix)' },
+  { key: 'review', label: 'Post-Incident Review (root cause analysis)' }
+];
+
+var DILIGENCE_ITEMS = [
+  'Complete list of security incidents (past 5 years)',
+  'Most recent penetration test report',
+  'Most recent vulnerability scan results',
+  'SOC 2 Type II report (or equivalent)',
+  'Information security policy documentation',
+  'Incident response plan',
+  'Business continuity / disaster recovery plan',
+  'Data flow diagrams (PII/PHI movement)',
+  'Vendor risk assessment results',
+  'Cyber insurance policy with coverage details',
+  'Employee security training records',
+  'Access control documentation (admin access)'
+];
+
+var DPA_PROVISIONS = [
+  'Scope of Processing: Vendor processes data only as instructed',
+  'Security Obligations: Appropriate technical measures',
+  'Breach Notification: 24-72 hour notification requirement',
+  'Sub-Processing: Prior written consent required',
+  'Data Deletion: Delete/return all data on termination',
+  'Audit Rights: Allow audit or provide SOC 2/ISO report',
+  'Cross-Border Transfer: Appropriate transfer mechanisms',
+  'Liability: Adequate indemnification provisions'
+];
+
+var PRIVACY_ITEMS = [
+  'Privacy policy reviewed and updated within past 12 months',
+  'Policy accurately describes all data collected',
+  'Policy identifies all third-party data sharing categories',
+  'Policy describes data retention periods',
+  'Policy includes required regulatory disclosures (CCPA, GDPR)',
+  'Policy accessible from every page of website and apps',
+  'Cookie consent banner complies with applicable law',
+  'Consumer rights requests have documented process',
+  'Response to rights requests meets required timelines',
+  'Authorized agent requests accepted and verified',
+  'Privacy policy reviewed by legal counsel',
+  '"Do Not Sell" link prominently displayed (if CCPA applies)'
+];
+
+var CONSENT_TYPES = [
+  { key: 'optin', label: 'Opt-In (Express Consent)' },
+  { key: 'optout', label: 'Opt-Out Mechanisms' },
+  { key: 'implied', label: 'Implied Consent Documentation' },
+  { key: 'contractual', label: 'Contractual Necessity' },
+  { key: 'legitimate', label: 'Legitimate Interest Assessments' }
+];
+
+var BREACH_SCENARIOS = [
+  { key: 'none', label: 'No breach history; strong security controls', risk: 'Low', badge: 'badge-success' },
+  { key: 'minor', label: 'Minor incident; no data exfiltration; fully remediated', risk: 'Low', badge: 'badge-success' },
+  { key: 'limited', label: 'Breach with limited exposure; properly notified', risk: 'Moderate', badge: 'badge-warning' },
+  { key: 'significant', label: 'Significant breach; class action or investigation open', risk: 'High', badge: 'badge-danger' },
+  { key: 'active', label: 'Active or recent breach, not fully remediated', risk: 'Critical', badge: 'badge-danger' }
+];
+
+function defaultState() {
+  return {
+    currentPage: 'welcome',
+    completed: {},
+    dataInventory: {},
+    dataMap: {},
+    regulations: {},
+    complianceTracker: {},
+    cyberChecks: {},
+    irpScores: {},
+    incidents: [],
+    noIncidents: false,
+    breachPosture: null,
+    diligenceChecks: {},
+    vendors: [
+      { name: '', category: 'cloud', data: '', dpa: '', coc: '' },
+      { name: '', category: 'saas', data: '', dpa: '', coc: '' },
+      { name: '', category: 'payment', data: '', dpa: '', coc: '' }
+    ],
+    dpaChecks: {},
+    privacyChecks: {},
+    consentScores: {}
+  };
+}
+
+var state = loadState();
+
+function loadState() {
+  try {
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return mergeDeep(defaultState(), JSON.parse(saved));
+  } catch(e) {}
+  return defaultState();
+}
+
+function mergeDeep(target, source) {
+  var result = {};
+  for (var k in target) { result[k] = target[k]; }
+  for (var k in source) {
+    if (source[k] !== null && typeof source[k] === 'object' && !Array.isArray(source[k]) && typeof target[k] === 'object' && !Array.isArray(target[k])) {
+      result[k] = mergeDeep(target[k], source[k]);
+    } else {
+      result[k] = source[k];
+    }
+  }
+  return result;
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  updateProgress();
+  updateScore();
+}
+
+function calcScore() {
+  var score = 0;
+  // Cyber controls (0-35)
+  var totalCyber = 0, doneCyber = 0;
+  CYBER_SECTIONS.forEach(function(s) {
+    totalCyber += s.items.length;
+    s.items.forEach(function(_, i) { if (state.cyberChecks[s.key + '_' + i]) doneCyber++; });
+  });
+  if (totalCyber > 0) score += Math.round((doneCyber / totalCyber) * 35);
+
+  // IRP maturity (0-20)
+  var irpVals = [];
+  IRP_COMPONENTS.forEach(function(c) { if (state.irpScores[c.key]) irpVals.push(state.irpScores[c.key]); });
+  if (irpVals.length > 0) {
+    var irpAvg = irpVals.reduce(function(a, b) { return a + b; }, 0) / irpVals.length;
+    score += Math.round((irpAvg / 5) * 20);
+  }
+
+  // Privacy policy (0-20)
+  var privDone = 0;
+  PRIVACY_ITEMS.forEach(function(_, i) { if (state.privacyChecks[i]) privDone++; });
+  score += Math.round((privDone / PRIVACY_ITEMS.length) * 20);
+
+  // Diligence readiness (0-15)
+  var dilDone = 0;
+  DILIGENCE_ITEMS.forEach(function(_, i) { if (state.diligenceChecks[i]) dilDone++; });
+  score += Math.round((dilDone / DILIGENCE_ITEMS.length) * 15);
+
+  // Vendor DPAs (0-10)
+  var dpaDone = 0;
+  DPA_PROVISIONS.forEach(function(_, i) { if (state.dpaChecks[i]) dpaDone++; });
+  score += Math.round((dpaDone / DPA_PROVISIONS.length) * 10);
+
+  return Math.min(Math.round(score), 100);
+}
+
+function getScoreColor(s) {
+  if (s >= 81) return 'var(--color-score-5)';
+  if (s >= 61) return 'var(--color-score-4)';
+  if (s >= 41) return 'var(--color-score-3)';
+  if (s >= 21) return 'var(--color-score-2)';
+  return 'var(--color-score-1)';
+}
+
+function getScoreLabel(s) {
+  if (s >= 81) return 'Strong readiness posture';
+  if (s >= 61) return 'Good foundation, address gaps';
+  if (s >= 41) return 'Moderate -- key areas need work';
+  if (s >= 21) return 'Significant improvement needed';
+  return 'Complete sections to build your score';
+}
+
+function updateScore() {
+  var s = calcScore();
+  document.getElementById('sidebarScore').innerHTML = s + '<span class="sidebar-score-max">/100</span>';
+  document.getElementById('mobileScore').textContent = s + '/100';
+  document.getElementById('sidebarScoreDesc').textContent = getScoreLabel(s);
+}
+
+function updateProgress() {
+  var total = PAGES.length - 2;
+  var done = Object.keys(state.completed).length;
+  var pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+}
+
+function isUnlocked(pageId) {
+  var idx = PAGES.findIndex(function(p) { return p.id === pageId; });
+  if (idx <= 0) return true;
+  return state.completed[PAGES[idx - 1].id] === true;
+}
+
+function renderNav() {
+  var nav = document.getElementById('sidebarNav');
+  var html = '';
+  var lastPhase = '';
+  PAGES.forEach(function(p) {
+    if (p.phase !== lastPhase) {
+      html += '<div class="nav-section-label">' + p.phase + '</div>';
+      lastPhase = p.phase;
+    }
+    var isActive = state.currentPage === p.id;
+    var isDone = state.completed[p.id];
+    var locked = !isUnlocked(p.id);
+    html += '<div class="nav-item' + (isActive ? ' active' : '') + (isDone ? ' completed' : '') + (locked ? ' locked' : '') + '" data-page="' + p.id + '" role="button" tabindex="' + (locked ? '-1' : '0') + '" aria-current="' + (isActive ? 'step' : 'false') + '">';
+    html += '<span class="nav-icon">' + p.icon + '</span>';
+    html += '<span>' + p.title + '</span>';
+    if (isDone) html += '<span class="nav-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></span>';
+    html += '</div>';
+  });
+  nav.innerHTML = html;
+  nav.querySelectorAll('.nav-item:not(.locked)').forEach(function(el) {
+    el.addEventListener('click', function() { goToPage(el.dataset.page); });
+    el.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToPage(el.dataset.page); } });
+  });
+}
+
+function goToPage(pageId) {
+  if (!isUnlocked(pageId)) return;
+  state.currentPage = pageId;
+  saveState();
+  renderPage();
+  renderNav();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  closeSidebar();
+  setTimeout(function() { document.getElementById('contentArea').focus(); }, 100);
+}
+
+function completePage(pageId) {
+  state.completed[pageId] = true;
+  var idx = PAGES.findIndex(function(p) { return p.id === pageId; });
+  if (idx < PAGES.length - 1) {
+    state.currentPage = PAGES[idx + 1].id;
+  }
+  saveState();
+  renderPage();
+  renderNav();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function prevPage() {
+  var idx = PAGES.findIndex(function(p) { return p.id === state.currentPage; });
+  if (idx > 0) goToPage(PAGES[idx - 1].id);
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+document.getElementById('hamburgerBtn').addEventListener('click', toggleSidebar);
+document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(function() { t.classList.remove('visible'); }, 2500);
+}
+
+function pageNav(showPrev, nextLabel, currentId) {
+  var html = '<div class="page-nav">';
+  html += showPrev ? '<button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button>' : '<div></div>';
+  if (nextLabel !== false) {
+    html += '<button class="btn btn-primary" onclick="PB.completePage(\'' + currentId + '\')">' + (nextLabel || 'Continue') + ' &rarr;</button>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function scoreSelector5(stateObj, stateKey, dimKey, labels) {
+  var current = stateObj[dimKey] || 0;
+  var lbls = labels || ['Poor','Below Avg','Average','Good','Excellent'];
+  var html = '<div class="score-selector" role="radiogroup" aria-label="Score for ' + dimKey + '">';
+  for (var i = 1; i <= 5; i++) {
+    var sel = current === i ? ' selected' : '';
+    html += '<label class="score-option s' + i + sel + '" onclick="PB.setScore(\'' + stateKey + '\',\'' + dimKey + '\',' + i + ')" tabindex="0" role="radio" aria-checked="' + (current === i) + '"';
+    html += ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();PB.setScore(\'' + stateKey + '\',\'' + dimKey + '\',' + i + ');}">';
+    html += '<input type="radio" name="score-' + dimKey + '" value="' + i + '"' + (current === i ? ' checked' : '') + '>';
+    html += '<span class="score-number">' + i + '</span>';
+    html += '<span class="score-label-text">' + lbls[i - 1] + '</span>';
+    html += '</label>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function dataScoreSelector(catKey) {
+  var current = state.dataInventory[catKey] || 0;
+  var opts = [
+    { val: 0, label: 'N/A', cls: 's0' },
+    { val: 1, label: '1', cls: 's1' },
+    { val: 2, label: '2', cls: 's2' },
+    { val: 3, label: '3', cls: 's3' },
+    { val: 4, label: '4', cls: 's4' },
+    { val: 5, label: '5', cls: 's5' }
+  ];
+  var html = '<div class="score-selector" role="radiogroup" aria-label="Maturity for ' + catKey + '" style="max-width:280px">';
+  opts.forEach(function(o) {
+    var sel = current === o.val ? ' selected' : '';
+    html += '<label class="score-option ' + o.cls + sel + '" onclick="PB.setDataScore(\'' + catKey + '\',' + o.val + ')" tabindex="0" role="radio" aria-checked="' + (current === o.val) + '"';
+    html += ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();PB.setDataScore(\'' + catKey + '\',' + o.val + ');}">';
+    html += '<input type="radio" name="data-' + catKey + '" value="' + o.val + '"' + (current === o.val ? ' checked' : '') + '>';
+    html += '<span class="score-number">' + o.label + '</span>';
+    html += '</label>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function checkItem(key, checked, label) {
+  return '<div class="check-item' + (checked ? ' checked' : '') + '" data-check="' + key + '" role="checkbox" aria-checked="' + !!checked + '" tabindex="0">' +
+    '<div class="check-box"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div>' +
+    '<div class="check-text">' + label + '</div></div>';
+}
+
+// ============================================================
+// PAGE RENDERERS
+// ============================================================
+function renderPage() {
+  var area = document.getElementById('contentArea');
+  var renderers = {
+    'welcome': renderWelcome,
+    'data-handling': renderDataHandling,
+    'regulatory': renderRegulatory,
+    'cyber-hygiene': renderCyberHygiene,
+    'incident-response': renderIncidentResponse,
+    'breach-risk': renderBreachRisk,
+    'vendor-dpa': renderVendorDPA,
+    'privacy-policy': renderPrivacyPolicy,
+    'dashboard': renderDashboard
+  };
+  var fn = renderers[state.currentPage];
+  area.innerHTML = '<div class="page active">' + (fn ? fn() : '') + '</div>';
+  bindInteractions();
+}
+
+function bindInteractions() {
+  document.querySelectorAll('.check-item[data-check]').forEach(function(el) {
+    var handler = function() {
+      var key = el.dataset.check;
+      var parts = key.split(':');
+      if (parts[0] === 'cyber') {
+        state.cyberChecks[parts[1]] = !state.cyberChecks[parts[1]];
+      } else if (parts[0] === 'reg') {
+        state.regulations[parts[1]] = !state.regulations[parts[1]];
+      } else if (parts[0] === 'diligence') {
+        state.diligenceChecks[parts[1]] = !state.diligenceChecks[parts[1]];
+      } else if (parts[0] === 'dpa') {
+        state.dpaChecks[parts[1]] = !state.dpaChecks[parts[1]];
+      } else if (parts[0] === 'privacy') {
+        state.privacyChecks[parts[1]] = !state.privacyChecks[parts[1]];
+      }
+      saveState();
+      renderPage();
+    };
+    el.addEventListener('click', handler);
+    el.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); } });
+  });
+}
+
+function renderWelcome() {
+  return '<div class="welcome-hero">' +
+    '<div class="welcome-icon">&#128274;</div>' +
+    '<div class="t-display">Data Privacy & Cybersecurity Posture</div>' +
+    '<p class="t-body t-secondary" style="margin-top:var(--space-md)">This guided assessment will help you audit your data practices, evaluate regulatory exposure, and build a diligence-ready cybersecurity posture. Work at your own pace -- your progress is saved automatically.</p>' +
+    '<div class="welcome-stats">' +
+    '<div class="welcome-stat"><div class="welcome-stat-value">$350M</div><div class="welcome-stat-label">Verizon/Yahoo price reduction</div></div>' +
+    '<div class="welcome-stat"><div class="welcome-stat-value">$124M</div><div class="welcome-stat-label">Marriott GDPR fine</div></div>' +
+    '<div class="welcome-stat"><div class="welcome-stat-value">20yr</div><div class="welcome-stat-label">Drizly CEO compliance order</div></div>' +
+    '</div>' +
+    '<div class="callout callout-accent" style="text-align:left"><strong>Why this matters for your exit.</strong> A buyer is not just acquiring your data -- they are acquiring your data practices, compliance posture, breach history, and vendor ecosystem. Every gap is a liability that will either be discovered in diligence (price pressure) or post-close (legal exposure).</div>' +
+    '<div class="card" style="text-align:left">' +
+    '<div class="t-h3" style="margin-bottom:var(--space-md)">What You Will Cover</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">' +
+    '<div style="padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)">' +
+    '<div class="t-small" style="font-weight:600;margin-bottom:4px">Data Handling Audit</div>' +
+    '<div class="t-caption t-secondary">Map what data you collect, store, and share</div></div>' +
+    '<div style="padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)">' +
+    '<div class="t-small" style="font-weight:600;margin-bottom:4px">Regulatory Exposure</div>' +
+    '<div class="t-caption t-secondary">Identify which regulations apply to you</div></div>' +
+    '<div style="padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)">' +
+    '<div class="t-small" style="font-weight:600;margin-bottom:4px">Cybersecurity Checklist</div>' +
+    '<div class="t-caption t-secondary">Assess controls across 5 critical domains</div></div>' +
+    '<div style="padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)">' +
+    '<div class="t-small" style="font-weight:600;margin-bottom:4px">Incident Response</div>' +
+    '<div class="t-caption t-secondary">Plan preparation and history documentation</div></div>' +
+    '<div style="padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)">' +
+    '<div class="t-small" style="font-weight:600;margin-bottom:4px">Vendor Agreements</div>' +
+    '<div class="t-caption t-secondary">Track DPAs across your vendor ecosystem</div></div>' +
+    '<div style="padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)">' +
+    '<div class="t-small" style="font-weight:600;margin-bottom:4px">Privacy Policy Review</div>' +
+    '<div class="t-caption t-secondary">Ensure policy matches actual practices</div></div>' +
+    '</div></div>' +
+    '</div>' +
+    pageNav(false, 'Begin Assessment', 'welcome');
+}
+
+function renderDataHandling() {
+  var html = '<div class="page-header"><div class="t-label">Assessment</div><div class="t-display">Data Handling Audit</div><p class="t-body t-secondary">Before assessing compliance or security, you need a complete picture of what data your business touches. For each category, indicate whether you collect this data and rate its management maturity.</p></div>';
+  html += '<div class="callout callout-info"><strong>Tip:</strong> Map the complete lifecycle for each data type: Collection, Purpose, Storage, Access, Sharing, Retention, Security, and Disposal.</div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Data Inventory</div><div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Select each data category your business handles and rate its management maturity (1-5). Use N/A if not collected.</div>';
+  DATA_CATEGORIES.forEach(function(cat) {
+    var sensClass = cat.sensitivity.indexOf('Very') >= 0 ? 'badge-danger' : cat.sensitivity.indexOf('High') >= 0 ? 'badge-warning' : 'badge-neutral';
+    html += '<div style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md);margin-bottom:var(--space-sm);flex-wrap:wrap">';
+    html += '<div style="flex:1;min-width:200px"><div class="t-small" style="font-weight:500">' + cat.label + '</div>';
+    html += '<div class="t-caption t-secondary">' + cat.examples + '</div></div>';
+    html += '<span class="badge ' + sensClass + '" style="margin-right:var(--space-sm)">' + cat.sensitivity + '</span>';
+    html += dataScoreSelector(cat.key);
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // Data Map (shows for categories with score > 0)
+  var activeCats = DATA_CATEGORIES.filter(function(c) { return (state.dataInventory[c.key] || 0) > 0; });
+  if (activeCats.length > 0) {
+    html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Data Mapping Details</div>';
+    html += '<div class="t-small t-secondary" style="margin-bottom:var(--space-md)">For your highest-sensitivity data, document the lifecycle. This is a key diligence deliverable.</div>';
+    html += '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Data Category</th><th>Storage Location</th><th>Who Has Access</th><th>Retention Period</th><th>Encrypted?</th></tr></thead><tbody>';
+    activeCats.forEach(function(cat) {
+      var d = state.dataMap[cat.key] || {};
+      html += '<tr><td style="font-weight:500;min-width:140px">' + cat.label + '</td>';
+      html += '<td><input type="text" value="' + esc(d.storage || '') + '" placeholder="e.g., AWS S3" onchange="PB.updateDataMap(\'' + cat.key + '\',\'storage\',this.value)"></td>';
+      html += '<td><input type="text" value="' + esc(d.access || '') + '" placeholder="e.g., Admin, Eng" onchange="PB.updateDataMap(\'' + cat.key + '\',\'access\',this.value)"></td>';
+      html += '<td><input type="text" value="' + esc(d.retention || '') + '" placeholder="e.g., 7 years" onchange="PB.updateDataMap(\'' + cat.key + '\',\'retention\',this.value)"></td>';
+      html += '<td><select onchange="PB.updateDataMap(\'' + cat.key + '\',\'encrypted\',this.value)">';
+      html += '<option value="">--</option>';
+      html += '<option value="yes"' + (d.encrypted === 'yes' ? ' selected' : '') + '>Yes</option>';
+      html += '<option value="partial"' + (d.encrypted === 'partial' ? ' selected' : '') + '>Partial</option>';
+      html += '<option value="no"' + (d.encrypted === 'no' ? ' selected' : '') + '>No</option>';
+      html += '</select></td></tr>';
+    });
+    html += '</tbody></table></div></div>';
+  }
+  html += pageNav(true, 'Continue', 'data-handling');
+  return html;
+}
+
+function renderRegulatory() {
+  var html = '<div class="page-header"><div class="t-label">Assessment</div><div class="t-display">Regulatory Applicability Assessment</div><p class="t-body t-secondary">Determine which data privacy and cybersecurity regulations apply to your business. Getting this wrong creates material liability.</p></div>';
+
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Does This Regulation Apply to You?</div>';
+  html += '<div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Answer each question honestly. A "yes" triggers compliance obligations.</div>';
+  html += '<div class="checklist">';
+  REGULATIONS.forEach(function(reg) {
+    var checked = state.regulations[reg.key] || false;
+    html += '<div class="check-item' + (checked ? ' checked' : '') + '" data-check="reg:' + reg.key + '" role="checkbox" aria-checked="' + !!checked + '" tabindex="0">';
+    html += '<div class="check-box"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div>';
+    html += '<div><div class="check-text" style="text-decoration:none;color:var(--color-text);font-weight:500">' + reg.question + '</div>';
+    html += '<div class="t-caption t-secondary" style="margin-top:2px"><strong>' + reg.label + '</strong> -- Penalty: ' + reg.penalty + '</div></div>';
+    html += '</div>';
+  });
+  html += '</div></div>';
+
+  // Applicable regulations summary
+  var applicable = REGULATIONS.filter(function(r) { return state.regulations[r.key]; });
+  if (applicable.length > 0) {
+    html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Your Regulatory Exposure</div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:var(--space-sm)">';
+    applicable.forEach(function(r) {
+      html += '<span class="badge badge-danger">' + r.label + '</span>';
+    });
+    html += '</div></div>';
+  }
+
+  // Compliance tracker
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Compliance Status Tracker</div>';
+  html += '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Regulation</th><th>Applicable?</th><th>Status</th><th>Gaps</th><th>Remediation</th></tr></thead><tbody>';
+  REGULATIONS.forEach(function(reg) {
+    var d = state.complianceTracker[reg.key] || {};
+    html += '<tr><td style="font-weight:500;white-space:nowrap">' + reg.label + '</td>';
+    html += '<td><select onchange="PB.updateCompliance(\'' + reg.key + '\',\'applicable\',this.value)">';
+    html += '<option value="">--</option><option value="yes"' + (d.applicable === 'yes' ? ' selected' : '') + '>Yes</option><option value="no"' + (d.applicable === 'no' ? ' selected' : '') + '>No</option><option value="unsure"' + (d.applicable === 'unsure' ? ' selected' : '') + '>Unsure</option></select></td>';
+    html += '<td><select onchange="PB.updateCompliance(\'' + reg.key + '\',\'status\',this.value)">';
+    html += '<option value="">--</option><option value="compliant"' + (d.status === 'compliant' ? ' selected' : '') + '>Compliant</option><option value="partial"' + (d.status === 'partial' ? ' selected' : '') + '>Partial</option><option value="noncompliant"' + (d.status === 'noncompliant' ? ' selected' : '') + '>Non-Compliant</option><option value="na"' + (d.status === 'na' ? ' selected' : '') + '>N/A</option></select></td>';
+    html += '<td><input type="text" value="' + esc(d.gaps || '') + '" placeholder="Gaps..." onchange="PB.updateCompliance(\'' + reg.key + '\',\'gaps\',this.value)"></td>';
+    html += '<td><input type="text" value="' + esc(d.plan || '') + '" placeholder="Remediation..." onchange="PB.updateCompliance(\'' + reg.key + '\',\'plan\',this.value)"></td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table></div></div>';
+  html += pageNav(true, 'Continue', 'regulatory');
+  return html;
+}
+
+function renderCyberHygiene() {
+  var html = '<div class="page-header"><div class="t-label">Assessment</div><div class="t-display">Cybersecurity Hygiene Checklist</div><p class="t-body t-secondary">These are the baseline controls that buyers expect. Gaps here will be flagged in every competent technology diligence review. Check each control you have in place.</p></div>';
+
+  // Summary cards
+  html += '<div class="summary-grid">';
+  CYBER_SECTIONS.forEach(function(section) {
+    var total = section.items.length;
+    var done = section.items.filter(function(_, i) { return state.cyberChecks[section.key + '_' + i]; }).length;
+    var pct = Math.round((done / total) * 100);
+    var color = pct === 100 ? 'var(--color-success)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-danger)';
+    html += '<div class="summary-item"><div class="summary-item-value" style="color:' + color + '">' + pct + '%</div><div class="summary-item-label">' + section.title.split(' ')[0] + '</div></div>';
+  });
+  html += '</div>';
+
+  // Per-section checklists
+  CYBER_SECTIONS.forEach(function(section) {
+    var total = section.items.length;
+    var done = section.items.filter(function(_, i) { return state.cyberChecks[section.key + '_' + i]; }).length;
+    var pct = Math.round((done / total) * 100);
+    var color = pct === 100 ? 'var(--color-success)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-danger)';
+    html += '<div class="card">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-sm)">';
+    html += '<div class="t-h3">' + section.title + '</div>';
+    html += '<span class="t-small" style="font-weight:600;color:' + color + '">' + done + '/' + total + '</span></div>';
+    html += '<div style="height:4px;background:var(--color-surface-alt);border-radius:2px;margin-bottom:var(--space-md);overflow:hidden">';
+    html += '<div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:2px;transition:width 0.3s"></div></div>';
+    html += '<div class="checklist">';
+    section.items.forEach(function(item, i) {
+      var key = section.key + '_' + i;
+      var checked = state.cyberChecks[key] || false;
+      html += checkItem('cyber:' + key, checked, item);
+    });
+    html += '</div></div>';
+  });
+  html += pageNav(true, 'Continue', 'cyber-hygiene');
+  return html;
+}
+
+function renderIncidentResponse() {
+  var html = '<div class="page-header"><div class="t-label">Assessment</div><div class="t-display">Incident Response Planning & History</div><p class="t-body t-secondary">An IRP is both a regulatory requirement and a diligence item. Document your plan components and incident history.</p></div>';
+
+  // IRP Components
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Incident Response Plan Components</div>';
+  html += '<div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Rate your maturity on each IRP component (1 = No plan, 5 = Tested and current).</div>';
+  IRP_COMPONENTS.forEach(function(comp) {
+    html += '<div style="margin-bottom:var(--space-md)"><div class="form-label">' + comp.label + '</div>';
+    html += scoreSelector5(state.irpScores, 'irpScores', comp.key, ['No Plan','Basic','Documented','Trained','Tested']);
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // Incident History
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Incident History Log</div>';
+  html += '<div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Document all security incidents from the past 5 years. Buyers will ask for this. Well-documented incidents handled professionally are far less damaging than concealed ones.</div>';
+
+  if (state.incidents.length === 0) {
+    html += '<div style="padding:var(--space-lg);text-align:center;color:var(--color-text-tertiary);font-size:13px">No incidents recorded. Add one below, or check the box if none occurred.</div>';
+  } else {
+    state.incidents.forEach(function(inc, idx) {
+      html += '<div class="incident-card">';
+      html += '<div class="incident-header"><span class="t-h3">Incident #' + (idx + 1) + '</span>';
+      html += '<button class="remove-btn" onclick="PB.removeIncident(' + idx + ')" aria-label="Remove incident">&times;</button></div>';
+      html += '<div class="incident-fields">';
+      html += '<div><label>Date</label><input type="date" value="' + esc(inc.date || '') + '" onchange="PB.updateIncident(' + idx + ',\'date\',this.value)"></div>';
+      html += '<div><label>Severity</label><select onchange="PB.updateIncident(' + idx + ',\'severity\',this.value)">';
+      html += '<option value="">--</option><option value="P1"' + (inc.severity === 'P1' ? ' selected' : '') + '>P1 - Critical</option><option value="P2"' + (inc.severity === 'P2' ? ' selected' : '') + '>P2 - High</option><option value="P3"' + (inc.severity === 'P3' ? ' selected' : '') + '>P3 - Medium</option><option value="P4"' + (inc.severity === 'P4' ? ' selected' : '') + '>P4 - Low</option></select></div>';
+      html += '<div class="field-full"><label>Type</label><input type="text" value="' + esc(inc.type || '') + '" placeholder="e.g., Phishing, Ransomware, Data Exfiltration" onchange="PB.updateIncident(' + idx + ',\'type\',this.value)"></div>';
+      html += '<div class="field-full"><label>Data Involved</label><input type="text" value="' + esc(inc.data || '') + '" placeholder="What data was affected?" onchange="PB.updateIncident(' + idx + ',\'data\',this.value)"></div>';
+      html += '<div class="field-full"><label>Root Cause & Remediation</label><textarea onchange="PB.updateIncident(' + idx + ',\'remediation\',this.value)" placeholder="What caused it and how was it resolved?">' + esc(inc.remediation || '') + '</textarea></div>';
+      html += '<div class="field-full"><label>Notifications Made</label><input type="text" value="' + esc(inc.notifications || '') + '" placeholder="Regulators, customers, law enforcement..." onchange="PB.updateIncident(' + idx + ',\'notifications\',this.value)"></div>';
+      html += '</div></div>';
+    });
+  }
+  html += '<button class="add-btn" onclick="PB.addIncident()">+ Add Incident Record</button>';
+  html += '<div style="margin-top:var(--space-sm)"><label style="display:flex;align-items:center;gap:var(--space-sm);font-size:13px;color:var(--color-text-secondary);cursor:pointer">';
+  html += '<input type="checkbox" id="noIncidents" onchange="PB.toggleNoIncidents()" style="width:16px;height:16px;accent-color:var(--color-primary)"' + (state.noIncidents ? ' checked' : '') + '>';
+  html += 'No security incidents in the past 5 years</label></div>';
+  html += '</div>';
+
+  html += '<div class="callout callout-warning"><strong>Privilege Considerations.</strong> Incident response investigations should be conducted under attorney-client privilege whenever possible. Engage outside counsel to direct investigations. In diligence, disclose existence and outcome without waiving privilege over investigation details.</div>';
+  html += pageNav(true, 'Continue', 'incident-response');
+  return html;
+}
+
+function renderBreachRisk() {
+  var html = '<div class="page-header"><div class="t-label">Risk</div><div class="t-display">Data Breach Risk Assessment</div><p class="t-body t-secondary">Understand how buyers evaluate breach risk and position your history to protect enterprise value.</p></div>';
+
+  // Risk matrix table
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Breach Risk Assessment Matrix</div>';
+  html += '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Scenario</th><th>Risk Level</th><th>Buyer Response</th></tr></thead><tbody>';
+  html += '<tr><td>No breach history; strong controls</td><td><span class="badge badge-success">Low</span></td><td>Standard reps & warranties</td></tr>';
+  html += '<tr><td>Minor incident; fully remediated</td><td><span class="badge badge-success">Low-Mod</span></td><td>Increased scrutiny; verify remediation</td></tr>';
+  html += '<tr><td>Breach with limited exposure; properly notified</td><td><span class="badge badge-warning">Moderate</span></td><td>Price adjustment possible</td></tr>';
+  html += '<tr><td>Significant breach; class action or investigation</td><td><span class="badge badge-danger">High</span></td><td>Material price reduction; possible termination</td></tr>';
+  html += '<tr><td>Active breach discovered in diligence</td><td><span class="badge badge-danger">Critical</span></td><td>Deal suspension or termination</td></tr>';
+  html += '<tr><td>Unknown breach discovered by buyer</td><td><span class="badge badge-danger">Critical</span></td><td>Trust destroyed; deal likely terminated</td></tr>';
+  html += '</tbody></table></div></div>';
+
+  // Breach posture selector
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Where Do You Stand?</div>';
+  html += '<div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Select the scenario that best describes your current breach posture.</div>';
+  BREACH_SCENARIOS.forEach(function(s) {
+    var isSelected = state.breachPosture === s.key;
+    html += '<div style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md);margin-bottom:var(--space-sm);background:' + (isSelected ? 'var(--color-primary-light)' : 'var(--color-surface-alt)') + ';border:2px solid ' + (isSelected ? 'var(--color-primary)' : 'transparent') + ';border-radius:var(--radius-md);cursor:pointer;transition:all var(--transition-fast)" onclick="PB.setBreachPosture(\'' + s.key + '\')" role="radio" aria-checked="' + isSelected + '" tabindex="0" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();PB.setBreachPosture(\'' + s.key + '\');}">';
+    html += '<div style="width:18px;height:18px;border-radius:50%;border:2px solid ' + (isSelected ? 'var(--color-primary)' : 'var(--color-border)') + ';display:flex;align-items:center;justify-content:center;flex-shrink:0">';
+    if (isSelected) html += '<div style="width:10px;height:10px;border-radius:50%;background:var(--color-primary)"></div>';
+    html += '</div>';
+    html += '<span style="flex:1;font-size:14px">' + s.label + '</span>';
+    html += '<span class="badge ' + s.badge + '">' + s.risk + '</span></div>';
+  });
+  html += '</div>';
+
+  // Diligence readiness checklist
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Cyber Diligence Readiness</div>';
+  html += '<div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Check each item you can produce today if a buyer requested it.</div>';
+  html += '<div class="checklist">';
+  DILIGENCE_ITEMS.forEach(function(item, i) {
+    var checked = state.diligenceChecks[i] || false;
+    html += checkItem('diligence:' + i, checked, item);
+  });
+  html += '</div></div>';
+  html += pageNav(true, 'Continue', 'breach-risk');
+  return html;
+}
+
+function renderVendorDPA() {
+  var html = '<div class="page-header"><div class="t-label">Risk</div><div class="t-display">Vendor Data Processing Agreements</div><p class="t-body t-secondary">Data rarely stays within a single organization. Track DPAs across your vendor ecosystem. Buyers will verify these in diligence.</p></div>';
+
+  html += '<div class="callout callout-warning"><strong>Change of Control.</strong> Review every vendor agreement for change-of-control provisions. If a critical vendor can terminate upon your sale, the buyer needs to know.</div>';
+
+  // Vendor tracker table
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Vendor DPA Tracker</div>';
+  html += '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Vendor Name</th><th>Category</th><th>Data Processed</th><th>DPA In Place?</th><th>CoC Clause?</th><th style="width:40px"></th></tr></thead><tbody>';
+  state.vendors.forEach(function(v, i) {
+    html += '<tr>';
+    html += '<td><input type="text" value="' + esc(v.name) + '" placeholder="Vendor name" onchange="PB.updateVendor(' + i + ',\'name\',this.value)"></td>';
+    html += '<td><select onchange="PB.updateVendor(' + i + ',\'category\',this.value)">';
+    html += '<option value="">--</option>';
+    var cats = ['cloud:Cloud Infra','saas:SaaS App','payment:Payment','hr:HR/Payroll','email:Email/Marketing','analytics:Analytics/Ads','it:IT/MSP','accounting:Accounting','other:Other'];
+    cats.forEach(function(c) { var p = c.split(':'); html += '<option value="' + p[0] + '"' + (v.category === p[0] ? ' selected' : '') + '>' + p[1] + '</option>'; });
+    html += '</select></td>';
+    html += '<td><input type="text" value="' + esc(v.data) + '" placeholder="Data types" onchange="PB.updateVendor(' + i + ',\'data\',this.value)"></td>';
+    html += '<td><select onchange="PB.updateVendor(' + i + ',\'dpa\',this.value)"><option value="">--</option><option value="yes"' + (v.dpa === 'yes' ? ' selected' : '') + '>Yes</option><option value="no"' + (v.dpa === 'no' ? ' selected' : '') + '>No</option><option value="pending"' + (v.dpa === 'pending' ? ' selected' : '') + '>Pending</option></select></td>';
+    html += '<td><select onchange="PB.updateVendor(' + i + ',\'coc\',this.value)"><option value="">--</option><option value="yes"' + (v.coc === 'yes' ? ' selected' : '') + '>Yes</option><option value="no"' + (v.coc === 'no' ? ' selected' : '') + '>No</option><option value="unknown"' + (v.coc === 'unknown' ? ' selected' : '') + '>Unknown</option></select></td>';
+    html += '<td><button class="remove-btn" onclick="PB.removeVendor(' + i + ')" aria-label="Remove vendor">&times;</button></td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  html += '<button class="add-btn" onclick="PB.addVendor()">+ Add Vendor</button></div>';
+
+  // DPA Provisions checklist
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Essential DPA Provisions Checklist</div>';
+  html += '<div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Verify these provisions exist in each vendor DPA.</div>';
+  html += '<div class="checklist">';
+  DPA_PROVISIONS.forEach(function(item, i) {
+    var checked = state.dpaChecks[i] || false;
+    html += checkItem('dpa:' + i, checked, item);
+  });
+  html += '</div></div>';
+  html += pageNav(true, 'Continue', 'vendor-dpa');
+  return html;
+}
+
+function renderPrivacyPolicy() {
+  var html = '<div class="page-header"><div class="t-label">Risk</div><div class="t-display">Privacy Policy & Consent Review</div><p class="t-body t-secondary">Your privacy policy is a public, legally binding document. If your practices differ from what it promises, you are in violation of FTC Act Section 5 and potentially other regulations.</p></div>';
+
+  // Privacy audit checklist
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Privacy Policy Audit</div>';
+  html += '<div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Check each item that is currently true for your business.</div>';
+  html += '<div class="checklist">';
+  PRIVACY_ITEMS.forEach(function(item, i) {
+    var checked = state.privacyChecks[i] || false;
+    html += checkItem('privacy:' + i, checked, item);
+  });
+  html += '</div></div>';
+
+  // Consent management
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Consent Management Readiness</div>';
+  html += '<div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Rate your maturity on each consent type (1 = Not addressed, 5 = Fully implemented).</div>';
+  CONSENT_TYPES.forEach(function(ct) {
+    html += '<div style="margin-bottom:var(--space-md)"><div class="form-label">' + ct.label + '</div>';
+    html += scoreSelector5(state.consentScores, 'consentScores', ct.key, ['Not Addressed','Basic','Developing','Implemented','Fully Mature']);
+    html += '</div>';
+  });
+  html += '</div>';
+  html += pageNav(true, 'View Dashboard', 'privacy-policy');
+  return html;
+}
+
+function renderDashboard() {
+  var score = calcScore();
+  var sc = getScoreColor(score);
+  var r = 60, c = 2 * Math.PI * r;
+  var offset = c - (score / 100) * c;
+
+  var html = '<div class="page-header"><div class="t-label">Results</div><div class="t-display">Cybersecurity & Privacy Dashboard</div></div>';
+
+  // Gauge
+  html += '<div class="gauge-wrap"><div class="gauge-ring"><svg viewBox="0 0 160 160"><circle class="gauge-bg" cx="80" cy="80" r="' + r + '"/><circle class="gauge-fill" cx="80" cy="80" r="' + r + '" stroke="' + sc + '" stroke-dasharray="' + c + '" stroke-dashoffset="' + offset + '"/></svg><div class="gauge-center"><div class="gauge-center-value" style="color:' + sc + '">' + score + '</div><div class="gauge-center-label">of 100</div></div></div></div>';
+
+  // KPI cards
+  var totalCyber = 0, doneCyber = 0;
+  CYBER_SECTIONS.forEach(function(s) { totalCyber += s.items.length; s.items.forEach(function(_, i) { if (state.cyberChecks[s.key + '_' + i]) doneCyber++; }); });
+  var cyberPct = totalCyber > 0 ? Math.round((doneCyber / totalCyber) * 100) : 0;
+  var irpVals = [];
+  IRP_COMPONENTS.forEach(function(c) { if (state.irpScores[c.key]) irpVals.push(state.irpScores[c.key]); });
+  var irpAvg = irpVals.length > 0 ? (irpVals.reduce(function(a, b) { return a + b; }, 0) / irpVals.length).toFixed(1) : '0';
+  var privDone = 0;
+  PRIVACY_ITEMS.forEach(function(_, i) { if (state.privacyChecks[i]) privDone++; });
+  var privPct = Math.round((privDone / PRIVACY_ITEMS.length) * 100);
+  var dilDone = 0;
+  DILIGENCE_ITEMS.forEach(function(_, i) { if (state.diligenceChecks[i]) dilDone++; });
+  var dilPct = Math.round((dilDone / DILIGENCE_ITEMS.length) * 100);
+  var regsApplicable = REGULATIONS.filter(function(r) { return state.regulations[r.key]; }).length;
+
+  html += '<div class="summary-grid">';
+  html += '<div class="summary-item"><div class="summary-item-value" style="color:' + (cyberPct >= 70 ? 'var(--color-success)' : cyberPct >= 40 ? 'var(--color-warning)' : 'var(--color-danger)') + '">' + cyberPct + '%</div><div class="summary-item-label">Cyber Controls</div></div>';
+  html += '<div class="summary-item"><div class="summary-item-value">' + irpAvg + '</div><div class="summary-item-label">IRP Maturity (1-5)</div></div>';
+  html += '<div class="summary-item"><div class="summary-item-value" style="color:' + (privPct >= 70 ? 'var(--color-success)' : privPct >= 40 ? 'var(--color-warning)' : 'var(--color-danger)') + '">' + privPct + '%</div><div class="summary-item-label">Privacy Policy</div></div>';
+  html += '<div class="summary-item"><div class="summary-item-value" style="color:' + (regsApplicable > 4 ? 'var(--color-danger)' : regsApplicable > 2 ? 'var(--color-warning)' : 'var(--color-success)') + '">' + regsApplicable + '</div><div class="summary-item-label">Regulations</div></div>';
+  html += '</div>';
+
+  // Heat map
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Maturity Heat Map</div>';
+  html += '<div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Visual overview of your cybersecurity maturity across all control areas.</div>';
+  html += '<div class="heat-map">';
+  CYBER_SECTIONS.forEach(function(s) {
+    var total = s.items.length;
+    var done = s.items.filter(function(_, i) { return state.cyberChecks[s.key + '_' + i]; }).length;
+    var pct = total > 0 ? done / total : 0;
+    var level = pct >= 0.9 ? 5 : pct >= 0.7 ? 4 : pct >= 0.4 ? 3 : pct >= 0.15 ? 2 : 1;
+    html += '<div class="heat-cell score-' + level + '"><span class="heat-score">' + level + '/5</span>' + s.title.split('&')[0].trim() + '</div>';
+  });
+  IRP_COMPONENTS.forEach(function(c) {
+    var level = state.irpScores[c.key] || 1;
+    html += '<div class="heat-cell score-' + level + '"><span class="heat-score">' + level + '/5</span>' + c.label.split('(')[0].trim() + '</div>';
+  });
+  html += '</div></div>';
+
+  // Bar chart
+  var barData = [
+    { label: 'Cyber Controls', score: cyberPct },
+    { label: 'IRP Maturity', score: Math.round((parseFloat(irpAvg) / 5) * 100) },
+    { label: 'Privacy Policy', score: privPct },
+    { label: 'Diligence Ready', score: dilPct }
+  ];
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Score Breakdown</div><div class="bar-chart">';
+  barData.forEach(function(cat) {
+    var color = cat.score >= 70 ? 'var(--color-success)' : cat.score >= 40 ? 'var(--color-warning)' : 'var(--color-danger)';
+    html += '<div class="bar-row"><div class="bar-label">' + cat.label + '</div><div class="bar-track"><div class="bar-fill" style="width:' + cat.score + '%;background:' + color + '"><span class="bar-value">' + cat.score + '%</span></div></div></div>';
+  });
+  html += '</div></div>';
+
+  // Priority action items
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Priority Action Items</div>';
+  var actions = [];
+  if (cyberPct < 50) actions.push({ priority: 'Critical', text: 'Cybersecurity controls are below 50%. Focus on access controls and data protection first.', type: 'danger' });
+  if (parseFloat(irpAvg) < 3) actions.push({ priority: 'Critical', text: 'Incident Response Plan maturity is below baseline. Build or update your IRP.', type: 'danger' });
+  var nonCompliant = Object.keys(state.complianceTracker).filter(function(k) { return state.complianceTracker[k] && state.complianceTracker[k].status === 'noncompliant'; });
+  if (regsApplicable > 0 && nonCompliant.length > 0) actions.push({ priority: 'Critical', text: 'Non-compliant regulations detected. Address regulatory gaps immediately.', type: 'danger' });
+  if (privPct < 60) actions.push({ priority: 'Important', text: 'Privacy policy audit is incomplete. Update policy and consent mechanisms.', type: 'warning' });
+  var vendorsMissingDPA = state.vendors.filter(function(v) { return v.name && v.dpa !== 'yes'; }).length;
+  if (vendorsMissingDPA > 0) actions.push({ priority: 'Important', text: vendorsMissingDPA + ' vendor(s) missing DPAs. Secure agreements before diligence.', type: 'warning' });
+  if (dilPct < 70) actions.push({ priority: 'Important', text: 'Diligence readiness is below 70%. Prepare missing documentation.', type: 'warning' });
+  if (state.breachPosture === 'active' || state.breachPosture === 'significant') actions.push({ priority: 'Critical', text: 'Breach posture is high risk. Engage incident response counsel immediately.', type: 'danger' });
+  if (actions.length === 0) actions.push({ priority: 'Good', text: 'No critical gaps identified. Continue strengthening your posture.', type: 'success' });
+  actions.forEach(function(a) {
+    var cls = a.type === 'danger' ? 'callout-danger' : a.type === 'warning' ? 'callout-warning' : 'callout-success';
+    html += '<div class="callout ' + cls + '" style="margin-bottom:var(--space-sm)"><strong>' + a.priority + ':</strong> ' + a.text + '</div>';
+  });
+  html += '</div>';
+
+  // Diligence readiness gauge
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Diligence Readiness</div>';
+  html += '<div style="display:flex;align-items:center;gap:var(--space-xl);flex-wrap:wrap">';
+  var dr = 50, dc = 2 * Math.PI * dr, doff = dc - (dilPct / 100) * dc;
+  var dcolor = dilPct >= 70 ? 'var(--color-success)' : dilPct >= 40 ? 'var(--color-warning)' : 'var(--color-danger)';
+  html += '<div style="position:relative;width:120px;height:120px"><svg width="120" height="120" style="transform:rotate(-90deg)"><circle cx="60" cy="60" r="' + dr + '" fill="none" stroke="var(--color-border)" stroke-width="8"/><circle cx="60" cy="60" r="' + dr + '" fill="none" stroke="' + dcolor + '" stroke-width="8" stroke-dasharray="' + dc + '" stroke-dashoffset="' + doff + '" stroke-linecap="round" style="transition:stroke-dashoffset 1s ease"/></svg>';
+  html += '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:28px;font-weight:700;color:' + dcolor + '">' + dilPct + '%</div></div>';
+  html += '<div style="flex:1;min-width:200px">';
+  if (dilPct >= 80) html += '<strong style="color:var(--color-success)">Strong Readiness.</strong> You can produce most items buyers will request. Focus on filling remaining gaps.';
+  else if (dilPct >= 50) html += '<strong style="color:var(--color-warning)">Moderate Readiness.</strong> Several diligence items are missing. Begin assembling these documents now.';
+  else html += '<strong style="color:var(--color-danger)">Low Readiness.</strong> Critical documentation is missing. Address this before going to market.';
+  html += '</div></div></div>';
+
+  // Final callout
+  html += '<div class="callout callout-success"><strong>Final thought.</strong> "In the age of data, privacy is not a feature -- it is a fiduciary obligation. Protect the data, and you protect the value."</div>';
+
+  // Actions
+  html += '<div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-top:var(--space-lg)">';
+  html += '<button class="btn btn-primary" onclick="PB.exportResults()">Export Summary</button>';
+  html += '<button class="btn btn-secondary" onclick="window.print()">Print</button>';
+  html += '<button class="btn btn-ghost" onclick="PB.resetAll()" style="color:var(--color-danger)">Reset All Data</button>';
+  html += '</div>';
+  html += '<div class="page-nav"><button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button><div></div></div>';
+  return html;
+}
+
+// ============================================================
+// EXPORT
+// ============================================================
+function exportResults() {
+  var totalCyber = 0, doneCyber = 0;
+  CYBER_SECTIONS.forEach(function(s) { totalCyber += s.items.length; s.items.forEach(function(_, i) { if (state.cyberChecks[s.key + '_' + i]) doneCyber++; }); });
+  var irpVals = [];
+  IRP_COMPONENTS.forEach(function(c) { if (state.irpScores[c.key]) irpVals.push(state.irpScores[c.key]); });
+  var irpAvg = irpVals.length > 0 ? (irpVals.reduce(function(a, b) { return a + b; }, 0) / irpVals.length).toFixed(1) : '0';
+  var privDone = 0;
+  PRIVACY_ITEMS.forEach(function(_, i) { if (state.privacyChecks[i]) privDone++; });
+  var dilDone = 0;
+  DILIGENCE_ITEMS.forEach(function(_, i) { if (state.diligenceChecks[i]) dilDone++; });
+  var regsApplicable = REGULATIONS.filter(function(r) { return state.regulations[r.key]; }).map(function(r) { return r.label; });
+
+  var text = 'PLAYBOOK #25: DATA PRIVACY & CYBERSECURITY POSTURE\n';
+  text += 'Generated: ' + new Date().toLocaleDateString() + '\n';
+  text += '='.repeat(50) + '\n\n';
+  text += 'READINESS SCORE: ' + calcScore() + '/100\n\n';
+  text += 'CYBERSECURITY CONTROLS: ' + doneCyber + '/' + totalCyber + ' (' + Math.round(doneCyber / totalCyber * 100) + '%)\n';
+  text += 'IRP MATURITY: ' + irpAvg + '/5.0\n';
+  text += 'PRIVACY POLICY: ' + privDone + '/' + PRIVACY_ITEMS.length + ' (' + Math.round(privDone / PRIVACY_ITEMS.length * 100) + '%)\n';
+  text += 'DILIGENCE READINESS: ' + dilDone + '/' + DILIGENCE_ITEMS.length + ' (' + Math.round(dilDone / DILIGENCE_ITEMS.length * 100) + '%)\n';
+  text += 'APPLICABLE REGULATIONS: ' + (regsApplicable.length > 0 ? regsApplicable.join(', ') : 'None identified') + '\n';
+  text += 'BREACH POSTURE: ' + (state.breachPosture || 'Not assessed') + '\n';
+  text += 'INCIDENTS RECORDED: ' + (state.noIncidents ? 'None in past 5 years' : state.incidents.length) + '\n';
+  text += 'VENDORS TRACKED: ' + state.vendors.filter(function(v) { return v.name; }).length + '\n\n';
+
+  text += 'CYBERSECURITY CONTROLS BREAKDOWN\n' + '-'.repeat(40) + '\n';
+  CYBER_SECTIONS.forEach(function(s) {
+    var total = s.items.length;
+    var done = s.items.filter(function(_, i) { return state.cyberChecks[s.key + '_' + i]; }).length;
+    text += s.title + ': ' + done + '/' + total + '\n';
+    s.items.forEach(function(item, i) {
+      text += '  [' + (state.cyberChecks[s.key + '_' + i] ? 'X' : ' ') + '] ' + item + '\n';
+    });
+    text += '\n';
+  });
+
+  var blob = new Blob([text], { type: 'text/plain' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'playbook-25-data-privacy-cyber.txt'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('Report downloaded successfully.');
+}
+
+function resetAll() {
+  if (confirm('This will erase all your data in this playbook. Are you sure?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    state = defaultState();
+    saveState();
+    goToPage('welcome');
+  }
+}
+
+// ============================================================
+// PUBLIC API
+// ============================================================
+window.PB = {
+  prevPage: prevPage,
+  completePage: completePage,
+  exportResults: exportResults,
+  resetAll: resetAll,
+  setScore: function(stateKey, dimKey, val) {
+    state[stateKey][dimKey] = val;
+    saveState();
+    renderPage();
+  },
+  setDataScore: function(key, val) {
+    state.dataInventory[key] = val;
+    saveState();
+    renderPage();
+  },
+  updateDataMap: function(key, field, val) {
+    if (!state.dataMap[key]) state.dataMap[key] = {};
+    state.dataMap[key][field] = val;
+    saveState();
+  },
+  updateCompliance: function(key, field, val) {
+    if (!state.complianceTracker[key]) state.complianceTracker[key] = {};
+    state.complianceTracker[key][field] = val;
+    saveState();
+  },
+  setBreachPosture: function(key) {
+    state.breachPosture = key;
+    saveState();
+    renderPage();
+  },
+  addIncident: function() {
+    state.incidents.push({ date: '', severity: '', type: '', data: '', remediation: '', notifications: '' });
+    saveState();
+    renderPage();
+  },
+  removeIncident: function(idx) {
+    state.incidents.splice(idx, 1);
+    saveState();
+    renderPage();
+  },
+  updateIncident: function(idx, field, val) {
+    state.incidents[idx][field] = val;
+    saveState();
+  },
+  toggleNoIncidents: function() {
+    state.noIncidents = document.getElementById('noIncidents') ? document.getElementById('noIncidents').checked : false;
+    saveState();
+  },
+  addVendor: function() {
+    state.vendors.push({ name: '', category: '', data: '', dpa: '', coc: '' });
+    saveState();
+    renderPage();
+  },
+  removeVendor: function(idx) {
+    state.vendors.splice(idx, 1);
+    saveState();
+    renderPage();
+  },
+  updateVendor: function(idx, field, val) {
+    state.vendors[idx][field] = val;
+    saveState();
+  }
+};
+
+// ============================================================
+// INIT
+// ============================================================
+renderNav();
+renderPage();
+updateProgress();
+updateScore();
+
+})();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

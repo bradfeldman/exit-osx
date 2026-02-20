@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pricing Strategy Optimization | Exit Planning Playbook #29</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.6; color: var(--color-text); background: var(--color-bg); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a { color: var(--color-primary); text-decoration: none; }
+
+.t-display { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 272px; min-width: 272px; background: var(--color-text); color: #fff;
+  padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow); overflow-y: auto;
+}
+.sidebar.collapsed { transform: translateX(-272px); }
+.main-content { flex: 1; margin-left: 272px; min-height: 100vh; transition: margin-left var(--transition-slow); }
+.sidebar.collapsed + .main-content { margin-left: 0; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-272px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.6);
+  font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); transition: box-shadow var(--transition-normal); }
+.card:hover { box-shadow: var(--shadow-sm); }
+.callout { padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); border-left: 3px solid; font-size: 14px; line-height: 1.6; }
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.btn-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+textarea.form-input { min-height: 80px; resize: vertical; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center;
+}
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+@media (max-width: 600px) {
+  .score-selector { gap: 4px; }
+  .score-option { padding: 10px 4px; }
+  .score-number { font-size: 18px; }
+  .score-label-text { font-size: 9px; }
+}
+
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+
+.progress-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.progress-ring-text { position: absolute; text-align: center; }
+.progress-ring-value { font-family: var(--font-display); font-weight: 700; line-height: 1; }
+.progress-ring-label { font-size: 10px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 28px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; min-width: 30px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+@media (max-width: 600px) { .bar-label { width: 90px; font-size: 11px; } }
+
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.section-divider { height: 1px; background: var(--color-border); margin: var(--space-2xl) 0; }
+
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-hero .t-display { margin-bottom: var(--space-md); }
+.welcome-hero .t-body { margin-bottom: var(--space-2xl); }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+.welcome-phases { display: flex; flex-direction: column; gap: var(--space-md); margin: var(--space-2xl) 0; text-align: left; }
+.welcome-phase { display: flex; gap: var(--space-lg); padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-phase-num { width: 36px; height: 36px; background: var(--color-primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--color-primary); flex-shrink: 0; }
+.welcome-phase-title { font-weight: 600; margin-bottom: 2px; }
+.welcome-phase-desc { font-size: 14px; color: var(--color-text-secondary); }
+@media (max-width: 600px) { .welcome-stats { grid-template-columns: 1fr; } .welcome-hero { padding: var(--space-2xl) var(--space-md); } }
+
+.impact-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-md); margin: var(--space-lg) 0; }
+.impact-card { padding: var(--space-lg); border-radius: var(--radius-md); text-align: center; }
+.impact-card-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1.1; }
+.impact-card-label { font-size: 13px; margin-top: 4px; }
+.impact-card.ic-price { background: #EBF5FF; }
+.impact-card.ic-price .impact-card-value { color: var(--color-primary); }
+.impact-card.ic-volume { background: #FFF8EB; }
+.impact-card.ic-volume .impact-card-value { color: var(--color-warning); }
+.impact-card.ic-variable { background: #F0F4FF; }
+.impact-card.ic-variable .impact-card-value { color: #4B6CB7; }
+.impact-card.ic-fixed { background: var(--color-surface-alt); }
+.impact-card.ic-fixed .impact-card-value { color: var(--color-text-secondary); }
+@media (max-width: 600px) { .impact-grid { grid-template-columns: 1fr; } }
+
+.paradigm-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-lg) 0; }
+.paradigm-card { border: 2px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); cursor: pointer; transition: all var(--transition-fast); position: relative; }
+.paradigm-card:hover { border-color: var(--color-text-tertiary); }
+.paradigm-card.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.paradigm-card-icon { font-size: 28px; margin-bottom: var(--space-md); }
+.paradigm-card-title { font-weight: 600; margin-bottom: var(--space-sm); }
+.paradigm-card-desc { font-size: 13px; color: var(--color-text-secondary); line-height: 1.5; }
+.paradigm-badge { position: absolute; top: var(--space-md); right: var(--space-md); }
+@media (max-width: 700px) { .paradigm-cards { grid-template-columns: 1fr; } }
+
+.value-stack { display: flex; flex-direction: column; gap: 2px; margin: var(--space-lg) 0; }
+.value-layer { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md) var(--space-lg); border-radius: var(--radius-sm); }
+.value-layer-label { font-size: 13px; font-weight: 600; width: 180px; flex-shrink: 0; }
+.value-layer-input { flex: 1; }
+@media (max-width: 600px) { .value-layer { flex-direction: column; align-items: flex-start; } .value-layer-label { width: auto; } }
+
+.discount-gauge { display: flex; flex-direction: column; align-items: center; margin: var(--space-lg) 0; }
+.gauge-wrap { position: relative; width: 200px; height: 110px; overflow: hidden; }
+.gauge-bg { width: 200px; height: 200px; border-radius: 50%; border: 20px solid var(--color-surface-alt); border-bottom-color: transparent; border-left-color: transparent; transform: rotate(225deg); position: absolute; top: 0; }
+.gauge-fill { width: 200px; height: 200px; border-radius: 50%; border: 20px solid transparent; position: absolute; top: 0; transform: rotate(225deg); transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); }
+.gauge-center { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); text-align: center; }
+.gauge-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; }
+.gauge-label { font-size: 12px; color: var(--color-text-tertiary); }
+
+.tier-builder { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-lg) 0; }
+.tier-col { border: 2px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; transition: all var(--transition-fast); }
+.tier-col.best { border-color: var(--color-accent); }
+.tier-header { padding: var(--space-lg); text-align: center; }
+.tier-col.best .tier-header { background: var(--color-accent-light); }
+.tier-header-name { font-weight: 700; font-size: 18px; margin-bottom: 4px; }
+.tier-header-desc { font-size: 13px; color: var(--color-text-secondary); }
+.tier-body { padding: var(--space-lg); display: flex; flex-direction: column; gap: var(--space-md); }
+@media (max-width: 700px) { .tier-builder { grid-template-columns: 1fr; } }
+
+.metric-row { display: grid; grid-template-columns: 1fr 100px 100px; gap: var(--space-sm); align-items: center; padding: var(--space-md) 0; border-bottom: 1px solid var(--color-border-light); }
+.metric-row:last-child { border-bottom: none; }
+.metric-name { font-size: 14px; }
+.metric-input { padding: 8px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 14px; width: 100%; text-align: center; background: var(--color-surface); }
+.metric-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+
+.timeline { position: relative; padding-left: 28px; }
+.timeline::before { content: ''; position: absolute; left: 9px; top: 4px; bottom: 4px; width: 2px; background: var(--color-border); }
+.timeline-item { position: relative; padding-bottom: var(--space-xl); }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-dot { position: absolute; left: -28px; top: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--color-surface); border: 2px solid var(--color-border); display: flex; align-items: center; justify-content: center; }
+.timeline-item.tl-active .timeline-dot { border-color: var(--color-primary); background: var(--color-primary-light); }
+.timeline-item.tl-done .timeline-dot { border-color: var(--color-success); background: var(--color-success); }
+.tl-title { font-weight: 600; margin-bottom: 2px; }
+.tl-desc { font-size: 14px; color: var(--color-text-secondary); }
+.tl-months { font-size: 12px; color: var(--color-text-tertiary); margin-top: 4px; }
+
+.checklist { display: flex; flex-direction: column; gap: 2px; }
+.check-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md); border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast); }
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box { width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); margin-top: 1px; }
+.check-item.checked .check-box { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+
+.nav-footer { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+
+.ebitda-sim { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-xl); margin: var(--space-lg) 0; }
+.ebitda-row { display: flex; justify-content: space-between; align-items: center; padding: var(--space-sm) 0; }
+.ebitda-label { font-size: 14px; }
+.ebitda-value { font-family: var(--font-display); font-size: 20px; font-weight: 700; }
+.ebitda-divider { height: 1px; background: var(--color-border); margin: var(--space-sm) 0; }
+.ebitda-highlight { background: var(--color-primary-light); margin: 0 calc(-1 * var(--space-xl)); padding: var(--space-md) var(--space-xl); border-radius: 0; }
+.ebitda-highlight .ebitda-value { color: var(--color-primary); }
+
+.tracker-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.tracker-table th { text-align: left; padding: var(--space-sm) var(--space-md); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); }
+.tracker-table td { padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: middle; }
+.tracker-table .form-input, .tracker-table input, .tracker-table select { padding: 6px 10px; font-size: 13px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-surface); width: 100%; }
+.tracker-table input:focus, .tracker-table select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+
+.mistake-card { border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: var(--space-md); }
+.mistake-header { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-lg); cursor: pointer; transition: background var(--transition-fast); }
+.mistake-header:hover { background: var(--color-surface-alt); }
+.mistake-num { width: 32px; height: 32px; border-radius: 50%; background: var(--color-danger-light); color: var(--color-danger); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+.mistake-title { font-weight: 600; flex: 1; }
+.mistake-chevron { color: var(--color-text-tertiary); transition: transform var(--transition-fast); }
+.mistake-card.open .mistake-chevron { transform: rotate(180deg); }
+.mistake-body { display: none; padding: 0 var(--space-lg) var(--space-lg); padding-left: calc(var(--space-lg) + 32px + var(--space-md)); }
+.mistake-card.open .mistake-body { display: block; }
+
+.pos-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-lg) 0; }
+.pos-option { border: 2px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); cursor: pointer; transition: all var(--transition-fast); text-align: center; }
+.pos-option:hover { border-color: var(--color-text-tertiary); }
+.pos-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.pos-option-icon { font-size: 24px; margin-bottom: var(--space-sm); }
+.pos-option-label { font-weight: 600; font-size: 14px; }
+.pos-option-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: 4px; }
+@media (max-width: 600px) { .pos-selector { grid-template-columns: 1fr; } }
+
+.increase-phase { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); margin-bottom: var(--space-md); overflow: hidden; }
+.increase-phase-header { padding: var(--space-lg); display: flex; align-items: center; gap: var(--space-md); cursor: pointer; }
+.increase-phase-header:hover { background: var(--color-surface-alt); }
+.increase-phase-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.increase-phase-title { font-weight: 600; }
+.increase-phase-timing { font-size: 13px; color: var(--color-text-tertiary); }
+.increase-phase-chevron { margin-left: auto; color: var(--color-text-tertiary); transition: transform var(--transition-fast); }
+.increase-phase.open .increase-phase-chevron { transform: rotate(180deg); }
+.increase-phase-body { display: none; padding: 0 var(--space-lg) var(--space-lg); }
+.increase-phase.open .increase-phase-body { display: block; }
+
+.summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-md); margin: var(--space-lg) 0; }
+.summary-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); }
+.summary-card-label { font-size: 12px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-sm); }
+.summary-card-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.summary-card-sub { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+@media (max-width: 600px) { .summary-grid { grid-template-columns: 1fr; } }
+
+/* Toast */
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--color-text); color: #fff; padding: 12px 20px; border-radius: var(--radius-md); font-size: 14px; box-shadow: var(--shadow-lg); transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 200; max-width: 360px; }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* Accessibility */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; }
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+
+/* Print */
+@media print { .sidebar, .mobile-header, .toast, .btn-group, .skip-link, .sidebar-overlay { display: none !important; } .main-content { margin-left: 0 !important; } .page { display: block !important; page-break-inside: avoid; } .content-area { max-width: 100%; padding: 0; } }
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<div class="app">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #29</div>
+      <div class="sidebar-brand-title">Pricing Strategy Optimization</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav" role="navigation" aria-label="Playbook sections"></nav>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Pricing Power Score</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/50</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete assessments to see score</div>
+    </div>
+  </div>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <div class="main-content" id="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Open navigation"><span></span></button>
+      <div style="font-weight:600;font-size:15px;">Pricing Strategy</div>
+    </div>
+    <div class="content-area" id="contentArea"></div>
+  </div>
+</div>
+<div class="toast" id="toast" aria-live="polite" role="status"></div>
+
+<script>
+(function(){
+const STORAGE_KEY = 'exitosx-pb29-pricing-strategy';
+// Migrate from old key
+(function() { try { const old = localStorage.getItem('playbook29_pricing_v2'); if (old && !localStorage.getItem('exitosx-pb29-pricing-strategy')) { localStorage.setItem('exitosx-pb29-pricing-strategy', old); localStorage.removeItem('playbook29_pricing_v2'); } } catch(e) {} })();
+const CHECK_SVG = '<svg viewBox="0 0 14 14"><polyline points="2.5 7.5 5.5 10.5 11.5 3.5"/></svg>';
+const CHEVRON = '<span style="font-size:18px;">&#9662;</span>';
+
+const SECTIONS = [
+  { id:'welcome', icon:'&#9733;', title:'Welcome', phase:'Start' },
+  { id:'why', icon:'&#9650;', title:'Why Pricing Matters', phase:'Learn' },
+  { id:'paradigms', icon:'&#9881;', title:'Pricing Paradigms', phase:'Learn' },
+  { id:'value', icon:'&#9830;', title:'Value-Based Pricing', phase:'Assess' },
+  { id:'discounts', icon:'&#9888;', title:'Discount Recovery', phase:'Assess' },
+  { id:'tiers', icon:'&#9670;', title:'Premium Tier Design', phase:'Build' },
+  { id:'analytics', icon:'&#9783;', title:'Pricing Analytics', phase:'Build' },
+  { id:'positioning', icon:'&#9733;', title:'Competitive Position', phase:'Build' },
+  { id:'execution', icon:'&#9654;', title:'Price Increase Plan', phase:'Execute' },
+  { id:'mistakes', icon:'&#9888;', title:'Common Mistakes', phase:'Execute' },
+  { id:'timeline', icon:'&#9201;', title:'Implementation Timeline', phase:'Execute' },
+  { id:'summary', icon:'&#9745;', title:'Summary & Export', phase:'Review' },
+];
+
+let state = loadState();
+
+function loadState(){
+  try { const s = JSON.parse(localStorage.getItem(STORAGE_KEY)); if(s && s.version===2) return s; } catch(e){}
+  return defaultState();
+}
+function defaultState(){
+  return {
+    version: 2, currentPage: 'welcome', visited: ['welcome'],
+    paradigm: '', positionCurrent: '', positionTarget: '',
+    valueSegments: [{segment:'',problem:'',altCost:'',diffValue:'',evc:'',currentPrice:'',opportunity:''},{segment:'',problem:'',altCost:'',diffValue:'',evc:'',currentPrice:'',opportunity:''},{segment:'',problem:'',altCost:'',diffValue:'',evc:'',currentPrice:'',opportunity:''}],
+    discountAudit: { totalRevenue:'', avgDiscount:'', revenueGap:'', recoveryTarget:'' },
+    discountScores: {},
+    tiers: { good:{target:'',features:'',support:'',price:'',margin:''}, better:{target:'',features:'',support:'',price:'',margin:''}, best:{target:'',features:'',support:'',price:'',margin:''} },
+    metrics: { asp:'', aspTarget:'', priceReal:'', priceRealTarget:'', avgDiscount:'', avgDiscountTarget:'', premiumRev:'', premiumRevTarget:'', attrition:'', attritionTarget:'', ebitda:'', ebitdaTarget:'' },
+    auditScores: {},
+    increaseTracker: [{customer:'',current:'',newPrice:'',pct:'',risk:'',notifyDate:'',result:''},{customer:'',current:'',newPrice:'',pct:'',risk:'',notifyDate:'',result:''},{customer:'',current:'',newPrice:'',pct:'',risk:'',notifyDate:'',result:''},{customer:'',current:'',newPrice:'',pct:'',risk:'',notifyDate:'',result:''},{customer:'',current:'',newPrice:'',pct:'',risk:'',notifyDate:'',result:''}],
+    ebitdaSim: { revenue:'10000000', margin:'15' },
+    checks: {},
+    mistakeNotes: {},
+    positionNotes: '',
+  };
+}
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function buildNav(){
+  const nav = document.getElementById('sidebarNav');
+  let html = ''; let lastPhase = '';
+  SECTIONS.forEach(s => {
+    if(s.phase !== lastPhase){ html += `<div class="nav-section-label">${s.phase}</div>`; lastPhase = s.phase; }
+    const active = s.id === state.currentPage ? ' active' : '';
+    const completed = state.visited.includes(s.id) && s.id !== state.currentPage ? ' completed' : '';
+    html += `<div class="nav-item${active}${completed}" data-page="${s.id}" role="button" tabindex="0" aria-label="${s.title}">
+      <span class="nav-icon">${s.icon}</span><span>${s.title}</span>
+      <span class="nav-check">${CHECK_SVG}</span></div>`;
+  });
+  nav.innerHTML = html;
+  nav.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => goToPage(item.dataset.page));
+    item.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); goToPage(item.dataset.page); } });
+  });
+}
+
+function goToPage(id){
+  state.currentPage = id;
+  if(!state.visited.includes(id)) state.visited.push(id);
+  saveState();
+  buildNav();
+  renderPage();
+  updateProgress();
+  closeMobileNav();
+  window.scrollTo({top:0,behavior:'smooth'});
+  // Focus management
+  setTimeout(() => { const area = document.getElementById('contentArea'); if (area) { const heading = area.querySelector('h1, h2, .t-display'); if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); } } }, 100);
+}
+
+function updateProgress(){
+  const pct = Math.round((state.visited.length / SECTIONS.length) * 100);
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('progressText').textContent = pct+'% complete';
+  updateScore();
+}
+
+function updateScore(){
+  let score = 0; let count = 0;
+  Object.values(state.auditScores).forEach(v => { if(v>0){ score+=v; count++; } });
+  Object.values(state.discountScores).forEach(v => { if(v>0){ score+=v; count++; } });
+  const el = document.getElementById('sidebarScore');
+  const desc = document.getElementById('sidebarScoreDesc');
+  if(count > 0){
+    el.innerHTML = score + '<span class="sidebar-score-max">/50</span>';
+    if(score <= 15) desc.textContent = 'Significant pricing opportunity';
+    else if(score <= 30) desc.textContent = 'Moderate pricing maturity';
+    else if(score <= 40) desc.textContent = 'Good pricing discipline';
+    else desc.textContent = 'Strong pricing power';
+  } else {
+    el.innerHTML = '--<span class="sidebar-score-max">/50</span>';
+    desc.textContent = 'Complete assessments to see score';
+  }
+}
+
+function renderPage(){
+  const area = document.getElementById('contentArea');
+  const id = state.currentPage;
+  area.innerHTML = `<div class="page active">${getPageContent(id)}</div>`;
+  attachPageHandlers(id);
+}
+
+function navFooter(prevId, nextId){
+  const prevBtn = prevId ? `<button class="btn btn-secondary" onclick="window._goTo('${prevId}')">&#8592; Back</button>` : '<span></span>';
+  const nextBtn = nextId ? `<button class="btn btn-primary" onclick="window._goTo('${nextId}')">Continue &#8594;</button>` : '<span></span>';
+  return `<div class="nav-footer">${prevBtn}${nextBtn}</div>`;
+}
+window._goTo = function(id){ goToPage(id); };
+
+function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+
+function scoreSelector(name, labels, selectedVal){
+  return `<div class="score-selector" role="radiogroup" aria-label="${name}">${labels.map((l,i) => {
+    const v = i+1; const sel = selectedVal==v?' selected':'';
+    return `<label class="score-option s${v}${sel}" data-score-name="${name}" data-score-val="${v}" role="radio" aria-checked="${selectedVal==v}">
+      <input type="radio" name="${name}" value="${v}" ${selectedVal==v?'checked':''}>
+      <span class="score-number">${v}</span><span class="score-label-text">${l}</span></label>`;
+  }).join('')}</div>`;
+}
+
+function checkItem(key, text){
+  const checked = state.checks[key] ? ' checked' : '';
+  return `<div class="check-item${checked}" data-check-key="${key}" role="checkbox" aria-checked="${!!state.checks[key]}" tabindex="0">
+    <div class="check-box">${CHECK_SVG}</div><div class="check-text">${text}</div></div>`;
+}
+
+function getPageContent(id){
+  switch(id){
+    case 'welcome': return pageWelcome();
+    case 'why': return pageWhy();
+    case 'paradigms': return pageParadigms();
+    case 'value': return pageValue();
+    case 'discounts': return pageDiscounts();
+    case 'tiers': return pageTiers();
+    case 'analytics': return pageAnalytics();
+    case 'positioning': return pagePositioning();
+    case 'execution': return pageExecution();
+    case 'mistakes': return pageMistakes();
+    case 'timeline': return pageTimeline();
+    case 'summary': return pageSummary();
+    default: return '<p>Page not found.</p>';
+  }
+}
+
+function pageWelcome(){
+  return `<div class="welcome-hero">
+    <div class="welcome-icon">&#36;</div>
+    <div class="t-display">Pricing Strategy Optimization</div>
+    <p class="t-body" style="color:var(--color-text-secondary)">Price is the most powerful lever in your business. A 1% price increase drops 8-12% to EBITDA. This playbook will guide you through optimizing your pricing strategy in the 12-24 months before exit.</p>
+    <div class="welcome-stats">
+      <div class="welcome-stat"><div class="welcome-stat-value">8-12%</div><div class="welcome-stat-label">EBITDA impact from 1% price increase</div></div>
+      <div class="welcome-stat"><div class="welcome-stat-value">5-15%</div><div class="welcome-stat-label">Revenue lost to unnecessary discounts</div></div>
+      <div class="welcome-stat"><div class="welcome-stat-value">10-30%</div><div class="welcome-stat-label">Margin gain from value-based pricing</div></div>
+    </div>
+    <div class="welcome-phases">
+      <div class="welcome-phase"><div class="welcome-phase-num">1</div><div><div class="welcome-phase-title">Learn</div><div class="welcome-phase-desc">Understand why pricing matters and the three paradigms</div></div></div>
+      <div class="welcome-phase"><div class="welcome-phase-num">2</div><div><div class="welcome-phase-title">Assess</div><div class="welcome-phase-desc">Audit your current pricing and quantify your value</div></div></div>
+      <div class="welcome-phase"><div class="welcome-phase-num">3</div><div><div class="welcome-phase-title">Build</div><div class="welcome-phase-desc">Design premium tiers, analytics, and competitive positioning</div></div></div>
+      <div class="welcome-phase"><div class="welcome-phase-num">4</div><div><div class="welcome-phase-title">Execute</div><div class="welcome-phase-desc">Implement price increases with a proven step-by-step plan</div></div></div>
+    </div>
+    <button class="btn btn-primary btn-lg" onclick="window._goTo('why')">Begin Assessment &#8594;</button>
+  </div>`;
+}
+
+function pageWhy(){
+  const rev = state.ebitdaSim.revenue || '10000000';
+  const margin = state.ebitdaSim.margin || '15';
+  const revNum = parseFloat(rev) || 10000000;
+  const marginNum = parseFloat(margin) || 15;
+  const ebitda = revNum * (marginNum/100);
+  const priceImpact = ebitda * 0.10;
+  return `<div class="page-header">
+    <div class="t-label">Section 1 of 12</div>
+    <div class="t-display">Why Pricing Is the Highest-Leverage Exit Lever</div>
+    <p class="t-body">Buyers pay premium multiples for businesses with pricing power -- the ability to raise prices without losing customers.</p>
+  </div>
+  <div class="callout callout-accent" style="margin-bottom:var(--space-xl)">
+    <strong>The Core Principle:</strong> Demonstrating pricing power is as valuable as the margin improvement itself. It signals competitive moat, customer loyalty, and a defensible market position.
+  </div>
+  <h3 class="t-h2" style="margin-bottom:var(--space-lg)">EBITDA Impact Simulator</h3>
+  <p class="t-small" style="color:var(--color-text-secondary);margin-bottom:var(--space-md)">Enter your revenue and margin to see the impact of a 1% improvement in each lever.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-lg)">
+    <div class="form-group" style="margin:0"><label class="form-label">Annual Revenue ($)</label>
+      <input type="text" class="form-input" id="simRevenue" value="${rev}" placeholder="10,000,000"></div>
+    <div class="form-group" style="margin:0"><label class="form-label">Current EBITDA Margin (%)</label>
+      <input type="text" class="form-input" id="simMargin" value="${margin}" placeholder="15"></div>
+  </div>
+  <div class="impact-grid" id="impactGrid">
+    <div class="impact-card ic-price"><div class="impact-card-value">+${formatPct(10)}%</div><div class="impact-card-label">EBITDA from 1% Price Increase</div><div style="font-size:13px;color:var(--color-text-secondary);margin-top:4px">+${formatDollar(priceImpact)}</div></div>
+    <div class="impact-card ic-volume"><div class="impact-card-value">+${formatPct(3.5)}%</div><div class="impact-card-label">EBITDA from 1% Volume Increase</div><div style="font-size:13px;color:var(--color-text-secondary);margin-top:4px">+${formatDollar(ebitda*0.035)}</div></div>
+    <div class="impact-card ic-variable"><div class="impact-card-value">+${formatPct(2.5)}%</div><div class="impact-card-label">EBITDA from 1% Variable Cost Cut</div><div style="font-size:13px;color:var(--color-text-secondary);margin-top:4px">+${formatDollar(ebitda*0.025)}</div></div>
+    <div class="impact-card ic-fixed"><div class="impact-card-value">+${formatPct(1.5)}%</div><div class="impact-card-label">EBITDA from 1% Fixed Cost Cut</div><div style="font-size:13px;color:var(--color-text-secondary);margin-top:4px">+${formatDollar(ebitda*0.015)}</div></div>
+  </div>
+  <div class="callout callout-info" style="margin-top:var(--space-lg)">
+    <strong>Buyer Insight:</strong> A buyer who sees you have successfully implemented a 5% price increase with less than 2% customer attrition will model additional price increases into their projections -- increasing their willingness to pay for your business.
+  </div>
+  <div class="section-divider"></div>
+  <h3 class="t-h2" style="margin-bottom:var(--space-md)">What Buyers Look For in Pricing</h3>
+  <div style="display:flex;flex-direction:column;gap:var(--space-md)">
+    <div class="card"><strong>Pricing Power</strong><p class="t-small" style="color:var(--color-text-secondary);margin-top:4px">Can you raise prices without significant customer loss? Have you done it successfully?</p></div>
+    <div class="card"><strong>Pricing Discipline</strong><p class="t-small" style="color:var(--color-text-secondary);margin-top:4px">Are your prices consistent, documented, and enforced? Or is it ad-hoc?</p></div>
+    <div class="card"><strong>Price Position</strong><p class="t-small" style="color:var(--color-text-secondary);margin-top:4px">Are you priced at, above, or below market? Each tells a story.</p></div>
+  </div>
+  ${navFooter('welcome','paradigms')}`;
+}
+
+function pageParadigms(){
+  return `<div class="page-header">
+    <div class="t-label">Section 2 of 12</div>
+    <div class="t-display">The Three Pricing Paradigms</div>
+    <p class="t-body">Moving from cost-plus to value-based pricing is often worth 10-30% in margin improvement.</p>
+  </div>
+  <p class="t-small" style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">Select the paradigm that best describes your current pricing approach.</p>
+  <div class="paradigm-cards" id="paradigmCards">
+    <div class="paradigm-card${state.paradigm==='costplus'?' selected':''}" data-paradigm="costplus">
+      <div class="paradigm-card-icon">&#9874;</div>
+      <div class="paradigm-card-title">Cost-Plus Pricing</div>
+      <div class="paradigm-card-desc">Calculate your cost and add a margin. Common in mid-market businesses but leaves money on the table.</div>
+      <div style="margin-top:var(--space-md)">
+        <span class="badge badge-success">Easy to calculate</span>
+        <span class="badge badge-danger" style="margin-top:4px">Ignores customer value</span>
+      </div>
+    </div>
+    <div class="paradigm-card${state.paradigm==='competitive'?' selected':''}" data-paradigm="competitive">
+      <div class="paradigm-card-icon">&#9878;</div>
+      <div class="paradigm-card-title">Competitive Pricing</div>
+      <div class="paradigm-card-desc">Set prices based on what competitors charge. Better than cost-plus, but still reactive.</div>
+      <div style="margin-top:var(--space-md)">
+        <span class="badge badge-success">Easy to benchmark</span>
+        <span class="badge badge-warning" style="margin-top:4px">Race to the bottom risk</span>
+      </div>
+    </div>
+    <div class="paradigm-card${state.paradigm==='valuebased'?' selected':''}" data-paradigm="valuebased">
+      <div class="paradigm-badge"><span class="badge badge-primary">Gold Standard</span></div>
+      <div class="paradigm-card-icon">&#9830;</div>
+      <div class="paradigm-card-title">Value-Based Pricing</div>
+      <div class="paradigm-card-desc">Set prices based on economic value delivered to customers. Maximizes margin and signals pricing power.</div>
+      <div style="margin-top:var(--space-md)">
+        <span class="badge badge-success">Maximum margin capture</span>
+        <span class="badge badge-warning" style="margin-top:4px">Requires deep customer insight</span>
+      </div>
+    </div>
+  </div>
+  ${state.paradigm ? `<div class="callout callout-info" style="margin-top:var(--space-lg)">
+    <strong>Your Selection: ${state.paradigm==='costplus'?'Cost-Plus':state.paradigm==='competitive'?'Competitive':'Value-Based'}</strong>
+    <br>${state.paradigm==='costplus'?'This is a starting point, but there is significant upside in moving toward value-based pricing.':state.paradigm==='competitive'?'You have a benchmark foundation. The next step is quantifying your unique value to justify premium pricing.':'You are on the right track. This playbook will help you sharpen and document your value-based approach.'}
+  </div>` : ''}
+  ${navFooter('why','value')}`;
+}
+
+function pageValue(){
+  const segs = state.valueSegments;
+  let rows = '';
+  for(let i=0; i<3; i++){
+    rows += `<tr>
+      <td><input class="form-input" data-vs="${i}" data-field="segment" value="${esc(segs[i].segment)}" placeholder="e.g. Mid-market SaaS"></td>
+      <td><input class="form-input" data-vs="${i}" data-field="problem" value="${esc(segs[i].problem)}" placeholder="Problem solved"></td>
+      <td><input class="form-input" data-vs="${i}" data-field="altCost" value="${esc(segs[i].altCost)}" placeholder="$"></td>
+      <td><input class="form-input" data-vs="${i}" data-field="diffValue" value="${esc(segs[i].diffValue)}" placeholder="$"></td>
+      <td><input class="form-input" data-vs="${i}" data-field="currentPrice" value="${esc(segs[i].currentPrice)}" placeholder="$"></td>
+    </tr>`;
+  }
+  return `<div class="page-header">
+    <div class="t-label">Section 3 of 12</div>
+    <div class="t-display">Value-Based Pricing Framework</div>
+    <p class="t-body">Quantify the economic value your product or service delivers to each customer segment.</p>
+  </div>
+  <h3 class="t-h2" style="margin-bottom:var(--space-md)">The Value Stack</h3>
+  <div class="value-stack">
+    <div class="value-layer" style="background:#EBF5FF"><div class="value-layer-label">Economic Value (EVC)</div><div style="font-size:13px;color:var(--color-text-secondary)">Reference value + differentiation value = your pricing ceiling</div></div>
+    <div class="value-layer" style="background:#F0F4FF"><div class="value-layer-label">Differentiation Value</div><div style="font-size:13px;color:var(--color-text-secondary)">Additional value beyond the next best alternative</div></div>
+    <div class="value-layer" style="background:#FFF8EB"><div class="value-layer-label">Reference Value</div><div style="font-size:13px;color:var(--color-text-secondary)">Price of the next best alternative</div></div>
+    <div class="value-layer" style="background:var(--color-surface-alt)"><div class="value-layer-label">Your Price</div><div style="font-size:13px;color:var(--color-text-secondary)">Target: capture 30-50% of differentiation value</div></div>
+  </div>
+  <div class="section-divider"></div>
+  <h3 class="t-h2" style="margin-bottom:var(--space-md)">Value Quantification Worksheet</h3>
+  <p class="t-small" style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">Complete this for your top 3 customer segments to identify pricing opportunity.</p>
+  <div style="overflow-x:auto">
+    <table class="tracker-table">
+      <thead><tr><th>Customer Segment</th><th>Problem Solved</th><th>Cost of Alternative</th><th>Your Diff. Value</th><th>Your Current Price</th></tr></thead>
+      <tbody id="valueSegTable">${rows}</tbody>
+    </table>
+  </div>
+  <div class="section-divider"></div>
+  <h3 class="t-h2" style="margin-bottom:var(--space-md)">Pricing Power Assessment</h3>
+  <p class="t-small" style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">Rate your business on these dimensions of pricing maturity.</p>
+  <div style="display:flex;flex-direction:column;gap:var(--space-xl)">
+    <div class="form-group"><label class="form-label">Do you have documented list prices for all products/services?</label>
+      ${scoreSelector('audit_documented',['No docs','Partial','Most items','Documented','Fully managed'], state.auditScores.audit_documented||0)}</div>
+    <div class="form-group"><label class="form-label">How well do you understand customer willingness to pay?</label>
+      ${scoreSelector('audit_willingness',['No idea','Guessing','Some data','Good data','Deep insight'], state.auditScores.audit_willingness||0)}</div>
+    <div class="form-group"><label class="form-label">Have you successfully raised prices in the last 24 months?</label>
+      ${scoreSelector('audit_raised',['Never','Tried once','One increase','Regular','Annual 3-5%'], state.auditScores.audit_raised||0)}</div>
+    <div class="form-group"><label class="form-label">Is your pricing based on the value you deliver?</label>
+      ${scoreSelector('audit_valuebased',['Pure cost+','Mostly cost+','Mix','Mostly value','Full value'], state.auditScores.audit_valuebased||0)}</div>
+    <div class="form-group"><label class="form-label">How consistent is your pricing across deals?</label>
+      ${scoreSelector('audit_consistent',['Wild west','Varied','Somewhat','Consistent','Very tight'], state.auditScores.audit_consistent||0)}</div>
+  </div>
+  ${navFooter('paradigms','discounts')}`;
+}
+
+function pageDiscounts(){
+  const da = state.discountAudit;
+  const rev = parseFloat(da.totalRevenue) || 0;
+  const disc = parseFloat(da.avgDiscount) || 0;
+  const gap = rev > 0 && disc > 0 ? rev * (disc/100) : 0;
+  return `<div class="page-header">
+    <div class="t-label">Section 4 of 12</div>
+    <div class="t-display">Discount Reduction & Recovery</div>
+    <p class="t-body">Most mid-market businesses give away 5-15% of potential revenue through unnecessary discounts. Let's find yours.</p>
+  </div>
+  <div class="callout callout-danger" style="margin-bottom:var(--space-xl)">
+    <strong>Discounting is the silent killer of margins.</strong> Untracked, unmanaged discounts are the single fastest way to erode the value you have built.
+  </div>
+  <h3 class="t-h2" style="margin-bottom:var(--space-md)">Discount Audit</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-lg)">
+    <div class="form-group" style="margin:0"><label class="form-label">Total Annual Revenue ($)</label>
+      <input type="text" class="form-input" id="daTotalRev" value="${esc(da.totalRevenue)}" placeholder="10,000,000"></div>
+    <div class="form-group" style="margin:0"><label class="form-label">Average Discount Given (%)</label>
+      <input type="text" class="form-input" id="daAvgDisc" value="${esc(da.avgDiscount)}" placeholder="12"></div>
+  </div>
+  ${gap > 0 ? `<div class="ebitda-sim" style="text-align:center">
+    <div style="font-size:13px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-sm)">Annual Revenue Lost to Discounting</div>
+    <div style="font-family:var(--font-display);font-size:36px;font-weight:700;color:var(--color-danger)">${formatDollar(gap)}</div>
+    <div style="font-size:14px;color:var(--color-text-secondary);margin-top:var(--space-sm)">That is ${formatDollar(gap * 5)} in exit value at a 5x multiple</div>
+  </div>` : ''}
+  <div class="section-divider"></div>
+  <h3 class="t-h2" style="margin-bottom:var(--space-md)">Discount Discipline Assessment</h3>
+  <p class="t-small" style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">Rate your current discount management practices.</p>
+  <div style="display:flex;flex-direction:column;gap:var(--space-xl)">
+    <div class="form-group"><label class="form-label">Do you have formal discount approval tiers?</label>
+      ${scoreSelector('disc_approval',['None','Informal','Basic','Tiered','Strict + tracked'], state.discountScores.disc_approval||0)}</div>
+    <div class="form-group"><label class="form-label">Is sales comp aligned to margin (not just revenue)?</label>
+      ${scoreSelector('disc_comp',['Revenue only','Mostly rev','Mixed','Mostly margin','Full margin'], state.discountScores.disc_comp||0)}</div>
+    <div class="form-group"><label class="form-label">Do discounts expire automatically?</label>
+      ${scoreSelector('disc_expiry',['Forever discounts','Mostly forever','Some expire','Most expire','All expire'], state.discountScores.disc_expiry||0)}</div>
+    <div class="form-group"><label class="form-label">Is your team trained in value selling?</label>
+      ${scoreSelector('disc_training',['No training','Minimal','Some','Good program','Ongoing training'], state.discountScores.disc_training||0)}</div>
+    <div class="form-group"><label class="form-label">Do you have minimum deal size rules for discounting?</label>
+      ${scoreSelector('disc_minsize',['No rules','Informal','Guidelines','Policy','Enforced system'], state.discountScores.disc_minsize||0)}</div>
+  </div>
+  <div class="section-divider"></div>
+  <h3 class="t-h2" style="margin-bottom:var(--space-md)">Recovery Tactics Checklist</h3>
+  <div class="checklist" id="discountChecklist">
+    ${checkItem('disc_ck_1','Implement management approval for discounts above 5%')}
+    ${checkItem('disc_ck_2','Align sales compensation to margin, not revenue')}
+    ${checkItem('disc_ck_3','Set minimum deal size below which no discounts apply')}
+    ${checkItem('disc_ck_4','Train all reps on value selling with ROI tools')}
+    ${checkItem('disc_ck_5','Set automatic expiration on all promotional discounts')}
+    ${checkItem('disc_ck_6','Pull 12 months of invoices to measure actual discounting')}
+    ${checkItem('disc_ck_7','Identify which reps discount the most and retrain')}
+  </div>
+  ${navFooter('value','tiers')}`;
+}
+
+function pageTiers(){
+  const t = state.tiers;
+  return `<div class="page-header">
+    <div class="t-label">Section 5 of 12</div>
+    <div class="t-display">Premium Tier Design</div>
+    <p class="t-body">Adding a premium tier captures additional value from customers willing to pay more -- without raising prices on the base offering.</p>
+  </div>
+  <div class="callout callout-accent" style="margin-bottom:var(--space-xl)">
+    <strong>Design Principle:</strong> Most customers should land in "Better." Good is the anchor, Best is the aspiration. This is by design.
+  </div>
+  <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Good-Better-Best Builder</h3>
+  <div class="tier-builder" id="tierBuilder">
+    <div class="tier-col">
+      <div class="tier-header"><div class="tier-header-name">Good</div><div class="tier-header-desc">Entry point / anchor</div></div>
+      <div class="tier-body">
+        <div class="form-group" style="margin:0"><label class="form-label">Target Customer</label><input class="form-input" data-tier="good" data-field="target" value="${esc(t.good.target)}" placeholder="Price-sensitive segment"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Core Features</label><textarea class="form-input" data-tier="good" data-field="features" placeholder="List core features">${esc(t.good.features)}</textarea></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Support Level</label><input class="form-input" data-tier="good" data-field="support" value="${esc(t.good.support)}" placeholder="e.g. Email support"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Price ($)</label><input class="form-input" data-tier="good" data-field="price" value="${esc(t.good.price)}" placeholder="Monthly or annual"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Gross Margin %</label><input class="form-input" data-tier="good" data-field="margin" value="${esc(t.good.margin)}" placeholder="e.g. 60%"></div>
+      </div>
+    </div>
+    <div class="tier-col" style="border-color:var(--color-primary)">
+      <div class="tier-header" style="background:var(--color-primary-light)"><div class="tier-header-name">Better <span class="badge badge-primary" style="margin-left:4px">Most Popular</span></div><div class="tier-header-desc">Core offering / revenue driver</div></div>
+      <div class="tier-body">
+        <div class="form-group" style="margin:0"><label class="form-label">Target Customer</label><input class="form-input" data-tier="better" data-field="target" value="${esc(t.better.target)}" placeholder="Core customer segment"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Core + Premium Features</label><textarea class="form-input" data-tier="better" data-field="features" placeholder="All Good features plus...">${esc(t.better.features)}</textarea></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Support Level</label><input class="form-input" data-tier="better" data-field="support" value="${esc(t.better.support)}" placeholder="e.g. Phone + email"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Price ($)</label><input class="form-input" data-tier="better" data-field="price" value="${esc(t.better.price)}" placeholder="Monthly or annual"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Gross Margin %</label><input class="form-input" data-tier="better" data-field="margin" value="${esc(t.better.margin)}" placeholder="e.g. 70%"></div>
+      </div>
+    </div>
+    <div class="tier-col best">
+      <div class="tier-header" style="background:var(--color-accent-light)"><div class="tier-header-name">Best</div><div class="tier-header-desc">Premium / aspirational</div></div>
+      <div class="tier-body">
+        <div class="form-group" style="margin:0"><label class="form-label">Target Customer</label><input class="form-input" data-tier="best" data-field="target" value="${esc(t.best.target)}" placeholder="High-value segment"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Full Feature Set</label><textarea class="form-input" data-tier="best" data-field="features" placeholder="All Better features plus exclusive...">${esc(t.best.features)}</textarea></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Support Level</label><input class="form-input" data-tier="best" data-field="support" value="${esc(t.best.support)}" placeholder="e.g. Dedicated account mgr"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Price ($)</label><input class="form-input" data-tier="best" data-field="price" value="${esc(t.best.price)}" placeholder="2-3x base price"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Gross Margin %</label><input class="form-input" data-tier="best" data-field="margin" value="${esc(t.best.margin)}" placeholder="e.g. 80%"></div>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-info" style="margin-top:var(--space-lg)">
+    <strong>Key Differentiators for Premium Tiers:</strong> Priority support, dedicated account management, early access to new features, enhanced SLAs, and custom integrations. These are high-value to customers but often low-cost to deliver.
+  </div>
+  ${navFooter('discounts','analytics')}`;
+}
+
+function pageAnalytics(){
+  const m = state.metrics;
+  return `<div class="page-header">
+    <div class="t-label">Section 6 of 12</div>
+    <div class="t-display">Pricing Analytics & Intelligence</div>
+    <p class="t-body">Data-driven pricing decisions require analytics infrastructure. Track these essential metrics.</p>
+  </div>
+  <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Pricing Audit Summary</h3>
+  <p class="t-small" style="color:var(--color-text-secondary);margin-bottom:var(--space-md)">Enter your current metrics and 12-month targets to measure improvement.</p>
+  <div style="overflow-x:auto">
+    <table class="tracker-table">
+      <thead><tr><th>Metric</th><th>Current</th><th>12-Month Target</th></tr></thead>
+      <tbody>
+        <tr><td>Average Selling Price (ASP)</td><td><input class="form-input" data-metric="asp" value="${esc(m.asp)}" placeholder="$"></td><td><input class="form-input" data-metric="aspTarget" value="${esc(m.aspTarget)}" placeholder="$"></td></tr>
+        <tr><td>Price Realization (Actual vs List)</td><td><input class="form-input" data-metric="priceReal" value="${esc(m.priceReal)}" placeholder="%"></td><td><input class="form-input" data-metric="priceRealTarget" value="${esc(m.priceRealTarget)}" placeholder="Above 90%"></td></tr>
+        <tr><td>Average Discount %</td><td><input class="form-input" data-metric="avgDiscount" value="${esc(m.avgDiscount)}" placeholder="%"></td><td><input class="form-input" data-metric="avgDiscountTarget" value="${esc(m.avgDiscountTarget)}" placeholder="%"></td></tr>
+        <tr><td>Revenue from Premium Tier</td><td><input class="form-input" data-metric="premiumRev" value="${esc(m.premiumRev)}" placeholder="$"></td><td><input class="form-input" data-metric="premiumRevTarget" value="${esc(m.premiumRevTarget)}" placeholder="$"></td></tr>
+        <tr><td>Customer Attrition Rate</td><td><input class="form-input" data-metric="attrition" value="${esc(m.attrition)}" placeholder="%"></td><td><input class="form-input" data-metric="attritionTarget" value="${esc(m.attritionTarget)}" placeholder="%"></td></tr>
+        <tr><td>EBITDA Margin</td><td><input class="form-input" data-metric="ebitda" value="${esc(m.ebitda)}" placeholder="%"></td><td><input class="form-input" data-metric="ebitdaTarget" value="${esc(m.ebitdaTarget)}" placeholder="%"></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="section-divider"></div>
+  <h3 class="t-h2" style="margin-bottom:var(--space-md)">Essential Pricing Metrics Reference</h3>
+  <div style="display:flex;flex-direction:column;gap:var(--space-md)">
+    <div class="card"><div class="t-h3">Average Selling Price (ASP)</div><div class="t-small" style="color:var(--color-text-secondary);margin-top:4px">Total revenue / units sold. Should be rising over time.</div></div>
+    <div class="card"><div class="t-h3">Price Realization</div><div class="t-small" style="color:var(--color-text-secondary);margin-top:4px">Actual price / list price. Target: above 90%. Shows how much you give away.</div></div>
+    <div class="card"><div class="t-h3">Price Variance</div><div class="t-small" style="color:var(--color-text-secondary);margin-top:4px">Standard deviation of prices for same product. Should decrease over time.</div></div>
+    <div class="card"><div class="t-h3">Win Rate by Price Point</div><div class="t-small" style="color:var(--color-text-secondary);margin-top:4px">Deals won / deals quoted at each tier. Target: 30-40%+.</div></div>
+    <div class="card"><div class="t-h3">Price Elasticity</div><div class="t-small" style="color:var(--color-text-secondary);margin-top:4px">% change in volume / % change in price. Below 1.0 means low sensitivity.</div></div>
+    <div class="card"><div class="t-h3">Revenue Per Customer</div><div class="t-small" style="color:var(--color-text-secondary);margin-top:4px">Total revenue / customer count. Should rise via upsell and expansion.</div></div>
+  </div>
+  <div class="section-divider"></div>
+  <h3 class="t-h2" style="margin-bottom:var(--space-md)">Intelligence Building Checklist</h3>
+  <div class="checklist">
+    ${checkItem('intel_1','Capture list price, actual price, discount %, and reason for every deal')}
+    ${checkItem('intel_2','Mystery shop competitors quarterly to track their pricing changes')}
+    ${checkItem('intel_3','Survey customers annually on perceived value and price sensitivity')}
+    ${checkItem('intel_4','A/B test new pricing with a subset before major changes')}
+  </div>
+  ${navFooter('tiers','positioning')}`;
+}
+
+function pagePositioning(){
+  return `<div class="page-header">
+    <div class="t-label">Section 7 of 12</div>
+    <div class="t-display">Competitive Pricing Position</div>
+    <p class="t-body">A clear, defensible position directly supports premium pricing and customer loyalty.</p>
+  </div>
+  <h3 class="t-h2" style="margin-bottom:var(--space-md)">Where Are You Today?</h3>
+  <div class="pos-selector" id="posCurrentSel">
+    <div class="pos-option${state.positionCurrent==='low'?' selected':''}" data-pos="low">
+      <div class="pos-option-icon">&#9660;</div>
+      <div class="pos-option-label">Price Leader</div>
+      <div class="pos-option-desc">10-30% below market. Volume-dependent.</div>
+    </div>
+    <div class="pos-option${state.positionCurrent==='market'?' selected':''}" data-pos="market">
+      <div class="pos-option-icon">&#9644;</div>
+      <div class="pos-option-label">Market Rate</div>
+      <div class="pos-option-desc">Within 5% of market. Competing on service.</div>
+    </div>
+    <div class="pos-option${state.positionCurrent==='premium'?' selected':''}" data-pos="premium">
+      <div class="pos-option-icon">&#9650;</div>
+      <div class="pos-option-label">Premium</div>
+      <div class="pos-option-desc">10-40% above market. Strong brand.</div>
+    </div>
+  </div>
+  <h3 class="t-h2" style="margin-bottom:var(--space-md);margin-top:var(--space-xl)">Where Do You Want to Be at Exit?</h3>
+  <div class="pos-selector" id="posTargetSel">
+    <div class="pos-option${state.positionTarget==='low'?' selected':''}" data-pos="low">
+      <div class="pos-option-icon">&#9660;</div>
+      <div class="pos-option-label">Price Leader</div>
+      <div class="pos-option-desc">Lower multiples. Commodity signal.</div>
+    </div>
+    <div class="pos-option${state.positionTarget==='market'?' selected':''}" data-pos="market">
+      <div class="pos-option-icon">&#9644;</div>
+      <div class="pos-option-label">Market Rate</div>
+      <div class="pos-option-desc">Neutral signal. Value depends on other factors.</div>
+    </div>
+    <div class="pos-option${state.positionTarget==='premium'?' selected':''}" data-pos="premium">
+      <div class="pos-option-icon">&#9650;</div>
+      <div class="pos-option-label">Premium</div>
+      <div class="pos-option-desc">Premium multiples. Signals pricing power.</div>
+    </div>
+  </div>
+  ${state.positionCurrent && state.positionTarget ? `<div class="callout ${state.positionCurrent!==state.positionTarget?'callout-accent':'callout-info'}" style="margin-top:var(--space-xl)">
+    ${state.positionCurrent===state.positionTarget ? '<strong>You plan to maintain your current position.</strong> Focus on strengthening evidence of that position for buyers.' : '<strong>You are planning to move upmarket.</strong> This requires investment in value evidence, customer experience, and consistent annual price increases of 3-5%.'}
+  </div>` : ''}
+  <div class="section-divider"></div>
+  <h3 class="t-h2" style="margin-bottom:var(--space-md)">Premium Positioning Checklist</h3>
+  <div class="checklist">
+    ${checkItem('pos_1','Build case studies and ROI calculators proving premium value')}
+    ${checkItem('pos_2','Improve customer experience and support responsiveness')}
+    ${checkItem('pos_3','Enter higher-value market segments with greater willingness to pay')}
+    ${checkItem('pos_4','Implement annual 3-5% price increases framed as investments')}
+    ${checkItem('pos_5','Collect and publish customer testimonials and success stories')}
+  </div>
+  <div class="section-divider"></div>
+  <div class="form-group"><label class="form-label">Notes on your positioning strategy</label>
+    <textarea class="form-input" id="posNotes" placeholder="What specific steps will you take to strengthen your competitive position?">${esc(state.positionNotes)}</textarea>
+  </div>
+  ${navFooter('analytics','execution')}`;
+}
+
+function pageExecution(){
+  let trackerRows = '';
+  state.increaseTracker.forEach((r,i) => {
+    trackerRows += `<tr>
+      <td><input data-track="${i}" data-field="customer" value="${esc(r.customer)}" placeholder="Customer name"></td>
+      <td><input data-track="${i}" data-field="current" value="${esc(r.current)}" placeholder="$"></td>
+      <td><input data-track="${i}" data-field="newPrice" value="${esc(r.newPrice)}" placeholder="$"></td>
+      <td><input data-track="${i}" data-field="pct" value="${esc(r.pct)}" placeholder="%"></td>
+      <td><select data-track="${i}" data-field="risk"><option value="">--</option><option value="H"${r.risk==='H'?' selected':''}>High</option><option value="M"${r.risk==='M'?' selected':''}>Medium</option><option value="L"${r.risk==='L'?' selected':''}>Low</option></select></td>
+      <td><input data-track="${i}" data-field="notifyDate" value="${esc(r.notifyDate)}" placeholder="MM/DD"></td>
+      <td><select data-track="${i}" data-field="result"><option value="">--</option><option value="Accepted"${r.result==='Accepted'?' selected':''}>Accepted</option><option value="Negotiated"${r.result==='Negotiated'?' selected':''}>Negotiated</option><option value="Churned"${r.result==='Churned'?' selected':''}>Churned</option><option value="Pending"${r.result==='Pending'?' selected':''}>Pending</option></select></td>
+    </tr>`;
+  });
+  return `<div class="page-header">
+    <div class="t-label">Section 8 of 12</div>
+    <div class="t-display">Price Increase Execution Plan</div>
+    <p class="t-body">A well-executed 5-7% increase typically results in 1-3% attrition -- a net revenue increase of 2-6%.</p>
+  </div>
+  <div class="callout callout-info" style="margin-bottom:var(--space-xl)">
+    <strong>Benchmarks:</strong> On a $10M business, a well-executed price increase yields $200K-$600K in mostly margin revenue, worth $1M-$3M at exit multiples.
+  </div>
+  <div class="increase-phase open" id="phase1">
+    <div class="increase-phase-header" onclick="togglePhase('phase1')">
+      <div class="increase-phase-icon" style="background:#EBF5FF;color:var(--color-primary)">1</div>
+      <div><div class="increase-phase-title">Pre-Increase Preparation</div><div class="increase-phase-timing">8-12 weeks before increase</div></div>
+      <div class="increase-phase-chevron">${CHEVRON}</div>
+    </div>
+    <div class="increase-phase-body">
+      <div class="checklist">
+        ${checkItem('exec_prep_1','Analyze customer-level impact: which customers are most affected?')}
+        ${checkItem('exec_prep_2','Prepare value justification materials: what has improved?')}
+        ${checkItem('exec_prep_3','Train sales and account management on messaging and objection handling')}
+        ${checkItem('exec_prep_4','Identify 10-20 accounts requiring personal senior leadership outreach')}
+        ${checkItem('exec_prep_5','Model revenue impact assuming 2-5% customer attrition')}
+      </div>
+    </div>
+  </div>
+  <div class="increase-phase" id="phase2">
+    <div class="increase-phase-header" onclick="togglePhase('phase2')">
+      <div class="increase-phase-icon" style="background:#FFF8EB;color:var(--color-warning)">2</div>
+      <div><div class="increase-phase-title">Customer Communication</div><div class="increase-phase-timing">4-8 weeks before increase</div></div>
+      <div class="increase-phase-chevron">${CHEVRON}</div>
+    </div>
+    <div class="increase-phase-body">
+      <div class="checklist">
+        ${checkItem('exec_comm_1','Notify customers in writing with 30-60 days notice')}
+        ${checkItem('exec_comm_2','Lead with value, not cost in all messaging')}
+        ${checkItem('exec_comm_3','Be transparent about increase amount and effective date')}
+        ${checkItem('exec_comm_4','Deliver the message to key accounts in person or via video')}
+      </div>
+    </div>
+  </div>
+  <div class="increase-phase" id="phase3">
+    <div class="increase-phase-header" onclick="togglePhase('phase3')">
+      <div class="increase-phase-icon" style="background:var(--color-primary-light);color:var(--color-primary)">3</div>
+      <div><div class="increase-phase-title">Execution & Follow-Up</div><div class="increase-phase-timing">Implementation and 30 days after</div></div>
+      <div class="increase-phase-chevron">${CHEVRON}</div>
+    </div>
+    <div class="increase-phase-body">
+      <div class="checklist">
+        ${checkItem('exec_follow_1','Implement on the stated date -- no exceptions unless pre-approved')}
+        ${checkItem('exec_follow_2','Track attrition in real-time. Pause and reassess if above 5%')}
+        ${checkItem('exec_follow_3','Follow up with all customers 30 days post-increase')}
+        ${checkItem('exec_follow_4','Document results: increase amount, attrition, net revenue impact')}
+      </div>
+    </div>
+  </div>
+  <div class="section-divider"></div>
+  <h3 class="t-h2" style="margin-bottom:var(--space-md)">Price Increase Tracker</h3>
+  <p class="t-small" style="color:var(--color-text-secondary);margin-bottom:var(--space-md)">Track each customer through the price increase process.</p>
+  <div style="overflow-x:auto">
+    <table class="tracker-table" id="trackerTable">
+      <thead><tr><th>Customer</th><th>Current $</th><th>New $</th><th>Increase %</th><th>Risk</th><th>Notify Date</th><th>Result</th></tr></thead>
+      <tbody>${trackerRows}</tbody>
+    </table>
+  </div>
+  <button class="btn btn-secondary btn-sm" style="margin-top:var(--space-md)" onclick="addTrackerRow()">+ Add Row</button>
+  ${navFooter('positioning','mistakes')}`;
+}
+
+function pageMistakes(){
+  const mistakes = [
+    {num:1, title:'Raising Prices Without a Value Story', desc:'Customers tolerate price increases when they understand the value they receive. A bare "prices are going up 8%" email guarantees pushback.', solution:'Always frame increases in terms of value delivered, investments made, and outcomes provided.'},
+    {num:2, title:'Uniform Increases Across All Customers', desc:'Not all customers have the same price sensitivity. A blanket increase treats your best customer the same as your most price-sensitive one.', solution:'Segment customers by value sensitivity, contract status, and relationship strength. Apply differentiated increases.'},
+    {num:3, title:'Not Training the Sales Team', desc:'If your sales team cannot confidently explain and defend the price increase, they will undermine it with exceptions and apologies.', solution:'Run a mandatory sales training session before any price increase. Provide scripts, FAQs, and objection handling tools.'},
+    {num:4, title:'Increasing Price Without Increasing Value', desc:'Regular price increases without visible improvements erode customer trust over time.', solution:'Pair every price increase with at least one tangible improvement: new feature, better support, expanded service.'},
+    {num:5, title:'Waiting Until You Desperately Need the Revenue', desc:'Pricing from a position of desperation leads to aggressive increases that damage relationships.', solution:'Make pricing optimization a proactive, annual process. Small regular increases beat large infrequent ones.'},
+  ];
+  return `<div class="page-header">
+    <div class="t-label">Section 9 of 12</div>
+    <div class="t-display">Common Mistakes to Avoid</div>
+    <p class="t-body">Learn from the most frequent pricing errors made by mid-market businesses before exit.</p>
+  </div>
+  ${mistakes.map(m => `<div class="mistake-card" id="mistake${m.num}">
+    <div class="mistake-header" onclick="toggleMistake(${m.num})">
+      <div class="mistake-num">${m.num}</div>
+      <div class="mistake-title">${m.title}</div>
+      <div class="mistake-chevron">${CHEVRON}</div>
+    </div>
+    <div class="mistake-body">
+      <p class="t-small" style="color:var(--color-text-secondary);margin-bottom:var(--space-md)">${m.desc}</p>
+      <div class="callout callout-info"><strong>Solution:</strong> ${m.solution}</div>
+      <div class="form-group" style="margin-top:var(--space-md);margin-bottom:0">
+        <label class="form-label">Your notes on this risk</label>
+        <textarea class="form-input" data-mistake="${m.num}" placeholder="How does this apply to your business?">${esc(state.mistakeNotes[m.num]||'')}</textarea>
+      </div>
+    </div>
+  </div>`).join('')}
+  ${navFooter('execution','timeline')}`;
+}
+
+function pageTimeline(){
+  const items = [
+    {months:'Months 1-2', title:'Conduct Pricing Audit', desc:'ASP, discounting patterns, competitive position analysis', deliverable:'Pricing audit report with key findings'},
+    {months:'Months 2-3', title:'Define Target Pricing Paradigm', desc:'Quantify customer value for top 3-5 segments', deliverable:'Value quantification by segment'},
+    {months:'Months 3-4', title:'Design Premium Tier', desc:'Good-Better-Best framework with pricing', deliverable:'New tier structure with features'},
+    {months:'Months 4-5', title:'Implement Discount Controls', desc:'Approval matrix and tracking systems', deliverable:'Discount policy in effect'},
+    {months:'Months 5-7', title:'Sales Team Training', desc:'Value selling and price increase messaging', deliverable:'Training completed and materials distributed'},
+    {months:'Months 7-9', title:'Execute First Price Increase', desc:'3-5% increase with monitoring', deliverable:'Price increase implemented; attrition tracked'},
+    {months:'Months 9-12', title:'Launch Premium Tier', desc:'Begin legacy price corrections', deliverable:'Premium tier live; legacy corrections phased in'},
+    {months:'Months 12-18', title:'Document Results', desc:'Build pricing power narrative', deliverable:'Pricing power evidence for CIM'},
+  ];
+  return `<div class="page-header">
+    <div class="t-label">Section 10 of 12</div>
+    <div class="t-display">Implementation Timeline</div>
+    <p class="t-body">An 18-month roadmap for transforming your pricing strategy before exit.</p>
+  </div>
+  <div class="timeline">
+    ${items.map((item,i) => `<div class="timeline-item${i===0?' tl-active':''}">
+      <div class="timeline-dot"></div>
+      <div class="tl-months" style="margin-bottom:2px">${item.months}</div>
+      <div class="tl-title">${item.title}</div>
+      <div class="tl-desc">${item.desc}</div>
+      <div style="margin-top:var(--space-sm)"><span class="badge badge-neutral">Deliverable: ${item.deliverable}</span></div>
+    </div>`).join('')}
+  </div>
+  <div class="section-divider"></div>
+  <h3 class="t-h2" style="margin-bottom:var(--space-md)">Implementation Readiness</h3>
+  <div class="checklist">
+    ${checkItem('tl_1','Pricing audit initiated or completed')}
+    ${checkItem('tl_2','Value quantification underway for top segments')}
+    ${checkItem('tl_3','Good-Better-Best tier structure designed')}
+    ${checkItem('tl_4','Discount controls and approval matrix defined')}
+    ${checkItem('tl_5','Sales training plan scheduled')}
+    ${checkItem('tl_6','Price increase date selected and communicated internally')}
+    ${checkItem('tl_7','Key account outreach plan prepared')}
+    ${checkItem('tl_8','Attrition monitoring system ready')}
+  </div>
+  ${navFooter('mistakes','summary')}`;
+}
+
+function pageSummary(){
+  let totalScore = 0; let scoreCount = 0;
+  Object.values(state.auditScores).forEach(v => { if(v>0){ totalScore+=v; scoreCount++; } });
+  Object.values(state.discountScores).forEach(v => { if(v>0){ totalScore+=v; scoreCount++; } });
+  let checksDone = Object.values(state.checks).filter(Boolean).length;
+  let totalChecks = Object.keys(state.checks).length || 1;
+  let segmentsFilled = state.valueSegments.filter(s => s.segment).length;
+  let trackerFilled = state.increaseTracker.filter(r => r.customer).length;
+  const maxScore = 50;
+  const scorePct = scoreCount > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
+  let scoreColor = totalScore <= 15 ? 'var(--color-danger)' : totalScore <= 30 ? 'var(--color-warning)' : 'var(--color-success)';
+  let scoreLabel = totalScore <= 15 ? 'Significant Opportunity' : totalScore <= 30 ? 'Developing' : totalScore <= 40 ? 'Good Discipline' : 'Strong Pricing Power';
+
+  return `<div class="page-header">
+    <div class="t-label">Summary</div>
+    <div class="t-display">Your Pricing Strategy Summary</div>
+    <p class="t-body">Here is an overview of your pricing assessment and action items.</p>
+  </div>
+  <div class="summary-grid">
+    <div class="summary-card" style="text-align:center">
+      <div class="summary-card-label">Pricing Power Score</div>
+      <div class="summary-card-value" style="color:${scoreColor};font-size:48px">${scoreCount>0?totalScore:'--'}</div>
+      <div class="summary-card-sub">${scoreCount>0?scoreLabel+' (out of '+maxScore+')':'Complete assessments to see your score'}</div>
+    </div>
+    <div class="summary-card" style="text-align:center">
+      <div class="summary-card-label">Action Items Completed</div>
+      <div class="summary-card-value" style="font-size:48px">${checksDone}</div>
+      <div class="summary-card-sub">of ${totalChecks} checklist items</div>
+    </div>
+    <div class="summary-card" style="text-align:center">
+      <div class="summary-card-label">Current Paradigm</div>
+      <div class="summary-card-value" style="font-size:24px">${state.paradigm==='costplus'?'Cost-Plus':state.paradigm==='competitive'?'Competitive':state.paradigm==='valuebased'?'Value-Based':'Not Selected'}</div>
+      <div class="summary-card-sub">${state.paradigm==='valuebased'?'Gold standard -- well positioned':'Opportunity to move toward value-based'}</div>
+    </div>
+    <div class="summary-card" style="text-align:center">
+      <div class="summary-card-label">Competitive Position</div>
+      <div class="summary-card-value" style="font-size:24px">${state.positionCurrent==='low'?'Price Leader':state.positionCurrent==='market'?'Market Rate':state.positionCurrent==='premium'?'Premium':'Not Set'}</div>
+      <div class="summary-card-sub">${state.positionTarget?'Target: '+(state.positionTarget==='low'?'Price Leader':state.positionTarget==='market'?'Market Rate':'Premium'):'Set your target position'}</div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+  <h3 class="t-h2" style="margin-bottom:var(--space-md)">Worksheets Completed</h3>
+  <div style="display:flex;flex-direction:column;gap:var(--space-sm)">
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg)">
+      <span>Value Quantification (${segmentsFilled}/3 segments)</span>
+      ${segmentsFilled>0?'<span class="badge badge-success">Started</span>':'<span class="badge badge-neutral">Not started</span>'}
+    </div>
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg)">
+      <span>Good-Better-Best Tier Design</span>
+      ${state.tiers.better.price?'<span class="badge badge-success">In Progress</span>':'<span class="badge badge-neutral">Not started</span>'}
+    </div>
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg)">
+      <span>Pricing Metrics Audit</span>
+      ${state.metrics.asp?'<span class="badge badge-success">In Progress</span>':'<span class="badge badge-neutral">Not started</span>'}
+    </div>
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg)">
+      <span>Price Increase Tracker (${trackerFilled}/5 customers)</span>
+      ${trackerFilled>0?'<span class="badge badge-success">Started</span>':'<span class="badge badge-neutral">Not started</span>'}
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+  <div class="callout callout-accent">
+    <strong>Final Thought:</strong> Price is not what you charge. It is what you communicate about your value. Get pricing right, and everything else follows.
+  </div>
+
+  <div style="display:flex;gap:var(--space-md);margin-top:var(--space-xl);flex-wrap:wrap">
+    <button class="btn btn-primary" onclick="exportSummary()">Export Summary as Text</button>
+    <button class="btn btn-secondary" onclick="if(confirm('This will erase all your data and start fresh. Are you sure?')){localStorage.removeItem('${STORAGE_KEY}');location.reload();}">Reset All Data</button>
+  </div>
+  ${navFooter('timeline',null)}`;
+}
+
+// ---- Handlers ----
+function attachPageHandlers(id){
+  // Score selectors
+  document.querySelectorAll('.score-option').forEach(opt => {
+    opt.addEventListener('click', function(){
+      const name = this.dataset.scoreName;
+      const val = parseInt(this.dataset.scoreVal);
+      this.closest('.score-selector').querySelectorAll('.score-option').forEach(o => { o.classList.remove('selected'); o.setAttribute('aria-checked', 'false'); });
+      this.classList.add('selected');
+      this.setAttribute('aria-checked', 'true');
+      if(name.startsWith('audit_')) state.auditScores[name] = val;
+      else if(name.startsWith('disc_')) state.discountScores[name] = val;
+      saveState(); updateScore();
+    });
+  });
+  // Checklist items
+  document.querySelectorAll('.check-item').forEach(item => {
+    item.addEventListener('click', function(){
+      const key = this.dataset.checkKey;
+      state.checks[key] = !state.checks[key];
+      this.classList.toggle('checked');
+      this.setAttribute('aria-checked', state.checks[key]);
+      saveState();
+    });
+    item.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); this.click(); } });
+  });
+  // Paradigm cards
+  if(id==='paradigms'){
+    document.querySelectorAll('.paradigm-card').forEach(card => {
+      card.addEventListener('click', function(){
+        document.querySelectorAll('.paradigm-card').forEach(c => c.classList.remove('selected'));
+        this.classList.add('selected');
+        state.paradigm = this.dataset.paradigm;
+        saveState(); renderPage();
+      });
+    });
+  }
+  // Position selectors
+  if(id==='positioning'){
+    document.querySelectorAll('#posCurrentSel .pos-option').forEach(opt => {
+      opt.addEventListener('click', function(){
+        document.querySelectorAll('#posCurrentSel .pos-option').forEach(o => o.classList.remove('selected'));
+        this.classList.add('selected');
+        state.positionCurrent = this.dataset.pos;
+        saveState(); renderPage();
+      });
+    });
+    document.querySelectorAll('#posTargetSel .pos-option').forEach(opt => {
+      opt.addEventListener('click', function(){
+        document.querySelectorAll('#posTargetSel .pos-option').forEach(o => o.classList.remove('selected'));
+        this.classList.add('selected');
+        state.positionTarget = this.dataset.pos;
+        saveState(); renderPage();
+      });
+    });
+    const posNotes = document.getElementById('posNotes');
+    if(posNotes) posNotes.addEventListener('input', function(){ state.positionNotes = this.value; saveState(); });
+  }
+  // EBITDA Simulator
+  if(id==='why'){
+    const simR = document.getElementById('simRevenue');
+    const simM = document.getElementById('simMargin');
+    if(simR) simR.addEventListener('input', function(){ state.ebitdaSim.revenue = this.value; saveState(); renderPage(); });
+    if(simM) simM.addEventListener('input', function(){ state.ebitdaSim.margin = this.value; saveState(); renderPage(); });
+  }
+  // Discount Audit
+  if(id==='discounts'){
+    const dR = document.getElementById('daTotalRev');
+    const dD = document.getElementById('daAvgDisc');
+    if(dR) dR.addEventListener('input', function(){ state.discountAudit.totalRevenue = this.value; saveState(); renderPage(); });
+    if(dD) dD.addEventListener('input', function(){ state.discountAudit.avgDiscount = this.value; saveState(); renderPage(); });
+  }
+  // Value segments
+  if(id==='value'){
+    document.querySelectorAll('[data-vs]').forEach(input => {
+      input.addEventListener('input', function(){
+        const i = parseInt(this.dataset.vs);
+        const field = this.dataset.field;
+        state.valueSegments[i][field] = this.value;
+        saveState();
+      });
+    });
+  }
+  // Tier builder
+  if(id==='tiers'){
+    document.querySelectorAll('[data-tier]').forEach(input => {
+      input.addEventListener('input', function(){
+        const tier = this.dataset.tier;
+        const field = this.dataset.field;
+        state.tiers[tier][field] = this.value;
+        saveState();
+      });
+    });
+  }
+  // Metrics
+  if(id==='analytics'){
+    document.querySelectorAll('[data-metric]').forEach(input => {
+      input.addEventListener('input', function(){
+        state.metrics[this.dataset.metric] = this.value;
+        saveState();
+      });
+    });
+  }
+  // Tracker
+  if(id==='execution'){
+    attachTrackerHandlers();
+  }
+  // Mistakes
+  if(id==='mistakes'){
+    document.querySelectorAll('[data-mistake]').forEach(ta => {
+      ta.addEventListener('input', function(){
+        state.mistakeNotes[this.dataset.mistake] = this.value;
+        saveState();
+      });
+    });
+  }
+}
+
+function attachTrackerHandlers(){
+  document.querySelectorAll('#trackerTable [data-track]').forEach(input => {
+    input.addEventListener('input', function(){
+      const i = parseInt(this.dataset.track);
+      const field = this.dataset.field;
+      state.increaseTracker[i][field] = this.value;
+      saveState();
+    });
+    input.addEventListener('change', function(){
+      const i = parseInt(this.dataset.track);
+      const field = this.dataset.field;
+      state.increaseTracker[i][field] = this.value;
+      saveState();
+    });
+  });
+}
+
+window.togglePhase = function(id){
+  document.getElementById(id).classList.toggle('open');
+};
+window.toggleMistake = function(num){
+  document.getElementById('mistake'+num).classList.toggle('open');
+};
+window.addTrackerRow = function(){
+  state.increaseTracker.push({customer:'',current:'',newPrice:'',pct:'',risk:'',notifyDate:'',result:''});
+  saveState(); renderPage();
+};
+window.exportSummary = function(){
+  let text = 'PRICING STRATEGY OPTIMIZATION - SUMMARY\n';
+  text += '========================================\n\n';
+  let total = 0, cnt = 0;
+  Object.entries(state.auditScores).forEach(([k,v]) => { if(v>0){total+=v;cnt++;} });
+  Object.entries(state.discountScores).forEach(([k,v]) => { if(v>0){total+=v;cnt++;} });
+  text += 'Pricing Power Score: ' + (cnt>0?total:'N/A') + '/50\n';
+  text += 'Current Paradigm: ' + (state.paradigm||'Not selected') + '\n';
+  text += 'Current Position: ' + (state.positionCurrent||'Not set') + '\n';
+  text += 'Target Position: ' + (state.positionTarget||'Not set') + '\n\n';
+  text += 'VALUE SEGMENTS:\n';
+  state.valueSegments.forEach((s,i) => { if(s.segment) text += `  ${i+1}. ${s.segment}: Problem="${s.problem}", Alt Cost=$${s.altCost}, Diff Value=$${s.diffValue}, Current=$${s.currentPrice}\n`; });
+  text += '\nTIER DESIGN:\n';
+  ['good','better','best'].forEach(t => { const d=state.tiers[t]; if(d.target) text += `  ${t.toUpperCase()}: Target="${d.target}", Price=$${d.price}, Margin=${d.margin}%\n`; });
+  text += '\nCHECKLIST ITEMS:\n';
+  Object.entries(state.checks).forEach(([k,v]) => { text += `  [${v?'X':' '}] ${k}\n`; });
+  const blob = new Blob([text], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'pricing-strategy-summary.txt';
+  a.click();
+};
+
+function formatDollar(n){
+  if(n >= 1000000) return '$'+( n/1000000).toFixed(1)+'M';
+  if(n >= 1000) return '$'+(n/1000).toFixed(0)+'K';
+  return '$'+n.toFixed(0);
+}
+function formatPct(n){ return n.toFixed(1); }
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function closeMobileNav(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+// Mobile nav
+document.getElementById('hamburgerBtn').addEventListener('click', function(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+});
+document.getElementById('sidebarOverlay').addEventListener('click', closeMobileNav);
+
+// Init
+buildNav();
+renderPage();
+updateProgress();
+})();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

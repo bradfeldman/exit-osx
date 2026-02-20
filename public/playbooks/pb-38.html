@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transition & Integration Planning | Exit Planning Playbook #38</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  color: var(--color-text); background: var(--color-bg);
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+
+.t-display { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 260px; min-width: 260px; background: var(--color-text); color: #fff;
+  padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow); overflow-y: auto;
+}
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; transition: margin-left var(--transition-slow); }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.6);
+  font-size: 14px; transition: all var(--transition-fast); cursor: pointer;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); transition: box-shadow var(--transition-normal); }
+.card:hover { box-shadow: var(--shadow-sm); }
+.callout { padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); border-left: 3px solid; font-size: 14px; line-height: 1.6; }
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.btn-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); }
+
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center;
+}
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+@media (max-width: 600px) {
+  .score-selector { gap: 4px; }
+  .score-option { padding: 10px 4px; }
+  .score-number { font-size: 18px; }
+  .score-label-text { font-size: 9px; }
+}
+
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.section-divider { height: 1px; background: var(--color-border); margin: var(--space-2xl) 0; }
+
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+.welcome-phases { display: flex; flex-direction: column; gap: var(--space-md); margin: var(--space-2xl) 0; text-align: left; }
+.welcome-phase { display: flex; gap: var(--space-lg); padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-phase-num { width: 36px; height: 36px; background: var(--color-primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--color-primary); flex-shrink: 0; }
+.welcome-phase-title { font-weight: 600; margin-bottom: 2px; }
+.welcome-phase-desc { font-size: 14px; color: var(--color-text-secondary); }
+@media (max-width: 600px) {
+  .welcome-stats { grid-template-columns: 1fr; }
+  .welcome-hero { padding: var(--space-2xl) var(--space-md); }
+}
+
+.checklist { display: flex; flex-direction: column; gap: 2px; }
+.check-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md); border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast); }
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box { width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); margin-top: 1px; }
+.check-item.checked .check-box { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+
+/* PHASE CARDS */
+.phase-card { border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: var(--space-md); background: var(--color-surface); }
+.phase-card-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-lg); cursor: pointer; gap: var(--space-md); }
+.phase-card-header:hover { background: var(--color-surface-alt); }
+.phase-card-active { border-color: var(--color-primary); border-width: 2px; }
+.phase-card-title { font-weight: 600; font-size: 16px; }
+.phase-card-badge { padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.phase-card-chevron { color: var(--color-text-tertiary); transition: transform var(--transition-fast); font-size: 18px; }
+.phase-card.expanded .phase-card-chevron { transform: rotate(180deg); }
+.phase-card-body { display: none; padding: 0 var(--space-lg) var(--space-lg); }
+.phase-card.expanded .phase-card-body { display: block; }
+
+/* MILESTONE TRACKER */
+.milestone-row { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md) 0; border-bottom: 1px solid var(--color-border-light); }
+.milestone-row:last-child { border-bottom: none; }
+.milestone-status { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; transition: all var(--transition-fast); cursor: pointer; }
+.milestone-status.pending { background: var(--color-surface-alt); border: 2px solid var(--color-border); }
+.milestone-status.done { background: var(--color-success); border: 2px solid var(--color-success); color: #fff; }
+.milestone-info { flex: 1; }
+.milestone-name { font-weight: 500; font-size: 14px; }
+.milestone-target { font-size: 12px; color: var(--color-text-tertiary); }
+
+/* RISK MATRIX */
+.risk-grid { display: flex; flex-direction: column; gap: var(--space-md); }
+.risk-row { display: flex; gap: var(--space-md); padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.risk-indicator { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.risk-high { background: var(--color-danger-light); }
+.risk-medium { background: var(--color-warning-light); }
+.risk-low { background: var(--color-success-light); }
+.risk-content { flex: 1; }
+.risk-name { font-weight: 600; margin-bottom: 2px; }
+.risk-desc { font-size: 14px; color: var(--color-text-secondary); margin-bottom: var(--space-sm); }
+.risk-mitigation { font-size: 13px; color: var(--color-primary); padding: var(--space-sm) var(--space-md); background: var(--color-primary-light); border-radius: var(--radius-sm); }
+@media (max-width: 600px) { .risk-row { flex-direction: column; } }
+
+/* COMMUNICATION TIER */
+.tier-card { margin-bottom: var(--space-md); border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; }
+.tier-header { padding: var(--space-md) var(--space-lg); font-weight: 600; display: flex; align-items: center; justify-content: space-between; }
+.tier-body { padding: var(--space-md) var(--space-lg); border-top: 1px solid var(--color-border-light); }
+
+/* TABLE */
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.data-table th { text-align: left; padding: var(--space-sm) var(--space-md); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); }
+.data-table td { padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.data-table .form-input { padding: 6px 10px; font-size: 13px; }
+
+/* BAR CHART */
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 28px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+@media (max-width: 600px) { .bar-label { width: 90px; font-size: 11px; } }
+
+/* KNOWLEDGE GRID */
+.kt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+.kt-card { padding: var(--space-lg); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); }
+.kt-icon { font-size: 24px; margin-bottom: var(--space-sm); }
+.kt-name { font-weight: 600; margin-bottom: var(--space-xs); }
+.kt-desc { font-size: 13px; color: var(--color-text-secondary); margin-bottom: var(--space-sm); }
+.kt-method { font-size: 12px; color: var(--color-primary); font-weight: 500; }
+@media (max-width: 600px) { .kt-grid { grid-template-columns: 1fr; } }
+
+/* SUMMARY */
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+.summary-item { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.summary-item-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.summary-item-value { font-family: var(--font-display); font-size: 24px; font-weight: 700; }
+@media (max-width: 600px) { .summary-grid { grid-template-columns: 1fr; } }
+
+.page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--color-border); }
+
+/* INVOLVEMENT CARDS */
+.involve-grid { display: flex; flex-direction: column; gap: var(--space-sm); }
+.involve-option { padding: var(--space-lg); border: 2px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); }
+.involve-option:hover { border-color: var(--color-text-tertiary); }
+.involve-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.involve-title { font-weight: 600; margin-bottom: 2px; }
+.involve-meta { font-size: 13px; color: var(--color-text-secondary); }
+
+/* MISTAKE CARDS */
+.mistake-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+.mistake-card { padding: var(--space-lg); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); }
+.mistake-icon { font-size: 20px; margin-bottom: var(--space-sm); }
+.mistake-name { font-weight: 600; margin-bottom: var(--space-xs); font-size: 14px; }
+.mistake-desc { font-size: 13px; color: var(--color-text-secondary); margin-bottom: var(--space-sm); }
+.mistake-fix { font-size: 13px; color: var(--color-primary); font-weight: 500; }
+@media (max-width: 600px) { .mistake-grid { grid-template-columns: 1fr; } }
+
+@media print {
+  .sidebar, .mobile-header, .page-nav, .sidebar-overlay, .toast-container, .btn-group, .skip-link { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; }
+  .content-area { max-width: 100%; padding: 0; }
+}
+
+/* ACCESSIBILITY */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; text-decoration: none; }
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+
+/* TOAST */
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast { padding: 12px 20px; border-radius: var(--radius-md); background: var(--color-text); color: #fff; font-size: 14px; font-weight: 500; box-shadow: var(--shadow-lg); animation: toastIn 0.3s ease; max-width: 360px; }
+.toast.out { animation: toastOut 0.3s ease forwards; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-8px); } }
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<div class="toast-container" id="toastContainer" aria-live="polite" role="status"></div>
+<div class="app">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #38</div>
+      <div class="sidebar-brand-title">Transition & Integration</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav" role="navigation" aria-label="Playbook sections"></nav>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Readiness Score</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete sections to build your score</div>
+    </div>
+  </div>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <div class="main-content" id="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation"><span></span></button>
+      <div style="flex:1"><strong style="font-size:15px;">Transition Planning</strong></div>
+      <div class="badge badge-primary" id="mobileScore">--/100</div>
+    </div>
+    <div class="content-area" id="contentArea"></div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'exitosx-pb38-transition-integration';
+const SECTIONS = [
+  { id: 'welcome', title: 'Welcome', icon: '&#9758;', group: 'START' },
+  { id: 'preclosing', title: 'Pre-Close Planning', icon: '&#128197;', group: 'PLANNING' },
+  { id: 'framework', title: 'Transition Framework', icon: '&#128736;', group: 'PLANNING' },
+  { id: 'employees', title: 'Employee Communication', icon: '&#128101;', group: 'COMMUNICATION' },
+  { id: 'customers', title: 'Customer Notification', icon: '&#128176;', group: 'COMMUNICATION' },
+  { id: 'vendors', title: 'Vendor & Partner Transition', icon: '&#128279;', group: 'COMMUNICATION' },
+  { id: 'milestones', title: 'Operational Milestones', icon: '&#9745;', group: 'EXECUTION' },
+  { id: 'knowledge', title: 'Knowledge Transfer', icon: '&#128218;', group: 'EXECUTION' },
+  { id: 'involvement', title: 'Seller Involvement', icon: '&#128100;', group: 'PROTECTION' },
+  { id: 'risks', title: 'Integration Risks', icon: '&#9888;', group: 'PROTECTION' },
+  { id: 'mistakes', title: 'Common Mistakes', icon: '&#128683;', group: 'PROTECTION' },
+  { id: 'worksheets', title: 'KT Schedule', icon: '&#128221;', group: 'WORKSHEETS' },
+  { id: 'summary', title: 'Readiness Summary', icon: '&#9733;', group: 'RESULTS' }
+];
+
+let state = loadState();
+
+function defaultState() {
+  return {
+    currentPage: 'welcome',
+    preclosing: { timeline: {}, transitionPlan: false, closingCondition: false },
+    framework: { duration: '', currentPhase: 1 },
+    employees: { tiers: [], communicationPrinciples: {}, retentionTools: [] },
+    customers: { tiers: [], templateDone: false },
+    vendors: { items: [], contractReview: false },
+    milestones: [],
+    knowledge: { categories: {}, brainDump: false, sessions: [] },
+    involvement: { level: '', earnoutProtections: {} },
+    risks: { assessed: {} },
+    mistakes: { acknowledged: [] },
+    worksheets: [],
+    completed: {}
+  };
+}
+
+function loadState() {
+  try { const s = localStorage.getItem(STORAGE_KEY); return s ? {...defaultState(), ...JSON.parse(s)} : defaultState(); }
+  catch(e) { return defaultState(); }
+}
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  updateProgress(); updateScore();
+}
+
+function calcScore() {
+  let score = 0;
+  // Pre-closing checklist (0-15)
+  const preItems = ['doc_processes','reduce_dependency','id_key_employees','retention_strategy','transition_terms','day1_plan','comms_plan'];
+  const preDone = preItems.filter(k => state.preclosing.timeline[k]).length;
+  score += Math.round((preDone / preItems.length) * 15);
+  // Framework (0-10)
+  if(state.framework.duration) score += 5;
+  if(state.framework.currentPhase) score += 5;
+  // Employees (0-15)
+  const empPrinciples = ['fromYou','within48','tiered','prepared','transparent'];
+  const empDone = empPrinciples.filter(k => state.employees.communicationPrinciples[k]).length;
+  score += Math.round((empDone / empPrinciples.length) * 10);
+  score += Math.min(state.employees.retentionTools.length * 2, 5);
+  // Customers (0-10)
+  if(state.customers.templateDone) score += 5;
+  score += Math.min(state.customers.tiers.filter(t => t.name).length * 2, 5);
+  // Vendors (0-5)
+  if(state.vendors.contractReview) score += 3;
+  score += Math.min(state.vendors.items.filter(v => v.name).length, 2);
+  // Milestones (0-15)
+  const mileDone = state.milestones.filter(m => m.done).length;
+  const mileTotal = Math.max(state.milestones.length, 1);
+  score += Math.round((mileDone / mileTotal) * 15);
+  // Knowledge (0-10)
+  const ktCats = ['relationship','operational','strategic','cultural','crisis','financial'];
+  const ktDone = ktCats.filter(k => state.knowledge.categories[k]).length;
+  score += Math.round((ktDone / ktCats.length) * 7);
+  if(state.knowledge.brainDump) score += 3;
+  // Involvement (0-10)
+  if(state.involvement.level) score += 4;
+  const earnFields = ['ordinaryCourse','budgetApproval','reportingRights','antiManipulation','acceleration','disputeResolution'];
+  const earnDone = earnFields.filter(k => state.involvement.earnoutProtections[k]).length;
+  score += Math.round((earnDone / earnFields.length) * 6);
+  // Risks (0-10)
+  const riskCats = ['employee_flight','customer_attrition','cultural_clash','operational_disruption','vendor_disruption','knowledge_loss'];
+  const riskDone = riskCats.filter(k => state.risks.assessed[k]).length;
+  score += Math.round((riskDone / riskCats.length) * 10);
+  return Math.min(Math.round(score), 100);
+}
+
+function updateScore() {
+  const score = calcScore();
+  document.getElementById('sidebarScore').innerHTML = score + '<span class="sidebar-score-max">/100</span>';
+  document.getElementById('mobileScore').textContent = score + '/100';
+  let desc = 'Complete sections to build your score';
+  if(score >= 85) desc = 'Excellent preparation';
+  else if(score >= 65) desc = 'Strong foundation, keep going';
+  else if(score >= 40) desc = 'Good start, more work needed';
+  else if(score > 0) desc = 'Early stage preparation';
+  document.getElementById('sidebarScoreDesc').textContent = desc;
+}
+
+function updateProgress() {
+  const total = SECTIONS.length - 2;
+  const done = Object.keys(state.completed).length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+}
+
+function buildNav() {
+  const nav = document.getElementById('sidebarNav');
+  let currentGroup = '';
+  let html = '';
+  SECTIONS.forEach(s => {
+    if(s.group !== currentGroup) { currentGroup = s.group; html += `<div class="nav-section-label">${currentGroup}</div>`; }
+    const isActive = state.currentPage === s.id ? ' active' : '';
+    const isCompleted = state.completed[s.id] ? ' completed' : '';
+    html += `<div class="nav-item${isActive}${isCompleted}" data-page="${s.id}" role="button" tabindex="0"><span class="nav-icon">${s.icon}</span><span>${s.title}</span><span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span></div>`;
+  });
+  nav.innerHTML = html;
+  nav.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => goToPage(item.dataset.page));
+    item.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();goToPage(item.dataset.page);} });
+  });
+}
+
+function goToPage(id) { state.currentPage=id; saveState(); buildNav(); renderPage(id); closeMobileNav(); window.scrollTo({top:0,behavior:'smooth'}); setTimeout(() => { const heading = document.querySelector('#contentArea .t-display, #contentArea h1, #contentArea h2'); if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); } }, 100); }
+function showToast(msg) { const c=document.getElementById('toastContainer'); const t=document.createElement('div'); t.className='toast'; t.textContent=msg; c.appendChild(t); setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),300);},3000); }
+function markComplete(id) { state.completed[id]=true; saveState(); buildNav(); }
+function nextPage() { const i=SECTIONS.findIndex(s=>s.id===state.currentPage); if(i<SECTIONS.length-1){if(state.currentPage!=='welcome'&&state.currentPage!=='summary')markComplete(state.currentPage);goToPage(SECTIONS[i+1].id);} }
+function prevPage() { const i=SECTIONS.findIndex(s=>s.id===state.currentPage); if(i>0)goToPage(SECTIONS[i-1].id); }
+
+document.getElementById('hamburgerBtn').addEventListener('click', () => { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarOverlay').classList.add('show'); });
+document.getElementById('sidebarOverlay').addEventListener('click', closeMobileNav);
+function closeMobileNav() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('show'); }
+
+function renderPage(id) { const area=document.getElementById('contentArea'); const fn=pageRenderers[id]; if(fn){area.innerHTML='';area.appendChild(fn());} }
+function el(tag,cls,html) { const e=document.createElement(tag); if(cls)e.className=cls; if(html!==undefined)e.innerHTML=html; return e; }
+function pageNav(showPrev=true,showNext=true,nextLabel='Continue') {
+  const nav=el('div','page-nav');
+  if(showPrev){const b=el('button','btn btn-secondary','&larr; Back');b.addEventListener('click',prevPage);nav.appendChild(b);}else nav.appendChild(el('div'));
+  if(showNext){const b=el('button','btn btn-primary',nextLabel+' &rarr;');b.addEventListener('click',nextPage);nav.appendChild(b);}
+  return nav;
+}
+function scoreSelector(name,value,labels,onChange) {
+  const wrap=el('div','score-selector'); wrap.setAttribute('role','radiogroup'); wrap.setAttribute('aria-label',name);
+  labels.forEach((lbl,i)=>{const v=i+1;const opt=el('label',`score-option s${v}${value===v?' selected':''}`);opt.innerHTML=`<input type="radio" name="${name}" value="${v}" ${value===v?'checked':''}><span class="score-number">${v}</span><span class="score-label-text">${lbl}</span>`;opt.addEventListener('click',()=>{wrap.querySelectorAll('.score-option').forEach(o=>o.classList.remove('selected'));opt.classList.add('selected');onChange(v);});wrap.appendChild(opt);});
+  return wrap;
+}
+function makeCheckItem(text, checked, onClick) {
+  const item = el('div', `check-item${checked?' checked':''}`, `<div class="check-box"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div><span class="check-text">${text}</span>`);
+  item.addEventListener('click', () => { item.classList.toggle('checked'); onClick(!item.classList.contains('checked') ? false : true); });
+  return item;
+}
+
+const P = {};
+
+/* ---- WELCOME ---- */
+P.welcome = () => {
+  const p = el('div','page active');
+  p.innerHTML = `<div class="welcome-hero">
+    <div class="welcome-icon">&#128736;</div>
+    <div class="t-display">Transition & Integration Planning</div>
+    <p class="t-body t-secondary" style="margin-bottom:var(--space-2xl)">The deal closes, but the work is not done. A well-planned transition protects your legacy and your earnout. This tool guides you through building a comprehensive transition strategy.</p>
+    <div class="welcome-stats">
+      <div class="welcome-stat"><div class="welcome-stat-value">11</div><div class="welcome-stat-label">Sections</div></div>
+      <div class="welcome-stat"><div class="welcome-stat-value">~50</div><div class="welcome-stat-label">Minutes</div></div>
+      <div class="welcome-stat"><div class="welcome-stat-value">100</div><div class="welcome-stat-label">Readiness Score</div></div>
+    </div>
+    <div class="callout callout-accent" style="text-align:left;margin-bottom:var(--space-2xl)"><strong>Core principle:</strong> Transition planning is not an afterthought -- it is a value-protection strategy. A botched transition can destroy 20-40% of the enterprise value that was carefully built.</div>
+    <div class="welcome-phases">
+      <div class="welcome-phase"><div class="welcome-phase-num">1</div><div><div class="welcome-phase-title">Planning</div><div class="welcome-phase-desc">Pre-close timeline and transition framework (6-24 months)</div></div></div>
+      <div class="welcome-phase"><div class="welcome-phase-num">2</div><div><div class="welcome-phase-title">Communication</div><div class="welcome-phase-desc">Employee, customer, and vendor notification strategies</div></div></div>
+      <div class="welcome-phase"><div class="welcome-phase-num">3</div><div><div class="welcome-phase-title">Execution</div><div class="welcome-phase-desc">Operational milestones and knowledge transfer protocol</div></div></div>
+      <div class="welcome-phase"><div class="welcome-phase-num">4</div><div><div class="welcome-phase-title">Protection</div><div class="welcome-phase-desc">Seller involvement, integration risks, and earnout defense</div></div></div>
+    </div>
+    <button class="btn btn-primary btn-lg" onclick="goToPage('preclosing')">Begin Planning &rarr;</button>
+    ${Object.keys(state.completed).length > 0 ? '<p style="margin-top:var(--space-md)"><button class="btn btn-ghost" onclick="if(confirm(\'Reset all progress?\')){localStorage.removeItem(STORAGE_KEY);location.reload();}">Reset All Progress</button></p>' : ''}
+  </div>`;
+  return p;
+};
+
+/* ---- PRE-CLOSE PLANNING ---- */
+P.preclosing = () => {
+  const p = el('div','page active');
+  const items = [
+    {key:'doc_processes', text:'Reduce owner dependency; document key processes', timing:'6+ months pre-close'},
+    {key:'reduce_dependency', text:'Demonstrate business operates without you', timing:'6+ months pre-close'},
+    {key:'id_key_employees', text:'Identify key employees; develop retention strategy', timing:'3-6 months pre-close'},
+    {key:'retention_strategy', text:'Negotiate transition period terms in the LOI', timing:'At LOI signing'},
+    {key:'transition_terms', text:'Collaborate with buyer on Day 1 transition plan', timing:'During diligence'},
+    {key:'day1_plan', text:'Draft employee and customer communication plans', timing:'2-4 weeks pre-close'},
+    {key:'comms_plan', text:'Finalize operational handoff binder and system access', timing:'1 week pre-close'}
+  ];
+  p.innerHTML = `<div class="page-header"><div class="t-label">Planning</div><div class="t-display">Pre-Close Planning Timeline</div><p class="t-body t-secondary">The biggest transition mistake is waiting until closing day. By then, decisions are reactive and you have lost leverage to shape outcomes.</p></div>
+    <div class="callout callout-warning" style="margin-bottom:var(--space-xl)">Consider making a written transition plan a condition of closing. This forces agreement on roles, responsibilities, and milestones while you still have leverage.</div>
+    <div class="card" style="margin-bottom:var(--space-xl)"><div class="t-h2" style="margin-bottom:var(--space-lg)">Pre-Close Checklist</div><div class="checklist" id="preCloseList"></div></div>
+    <div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Transition Plan Elements</div><p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Key elements to include in the written transition plan.</p>
+    <div class="checklist" id="planElements"></div></div>`;
+
+  const cl = p.querySelector('#preCloseList');
+  items.forEach(item => {
+    const row = el('div', `check-item${state.preclosing.timeline[item.key]?' checked':''}`, `<div class="check-box"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div><div style="flex:1"><span class="check-text">${item.text}</span><div class="form-hint" style="text-decoration:none;color:var(--color-text-tertiary)">${item.timing}</div></div>`);
+    row.addEventListener('click', () => { state.preclosing.timeline[item.key] = !state.preclosing.timeline[item.key]; row.classList.toggle('checked'); saveState(); });
+    cl.appendChild(row);
+  });
+
+  const planItems = [
+    {key:'role_title', text:'Seller\'s specific role, title, and reporting structure during transition'},
+    {key:'decision_auth', text:'Decision authority -- what decisions seller can still make vs. requires buyer approval'},
+    {key:'comm_plan', text:'Communication plan -- who tells employees, customers, vendors, and when'},
+    {key:'kt_schedule', text:'Knowledge transfer schedule -- specific topics, dates, and delivery format'},
+    {key:'milestone_checklist', text:'Milestone checklist -- measurable events that mark transition progress'},
+    {key:'exit_triggers', text:'Exit triggers -- conditions that allow seller to reduce involvement or depart'}
+  ];
+  const pe = p.querySelector('#planElements');
+  planItems.forEach(item => {
+    const row = makeCheckItem(item.text, state.preclosing.timeline[item.key], (v) => { state.preclosing.timeline[item.key] = v; saveState(); });
+    pe.appendChild(row);
+  });
+
+  p.appendChild(pageNav(true,true));
+  return p;
+};
+
+/* ---- TRANSITION FRAMEWORK ---- */
+P.framework = () => {
+  const p = el('div','page active');
+  const phases = [
+    {num:1, name:'Intensive', duration:'Months 1-3', badge:'badge-danger', desc:'Full-time; day-to-day operations. Maintain stability, introduce buyer to key relationships, transfer daily operations.', tasks:['Maintain your normal schedule and presence','Introduce the buyer to every key relationship personally','Walk buyer through every recurring process','Transfer system access, passwords, vendor logins','Document every decision and why','Hold daily or weekly sync meetings with buyer']},
+    {num:2, name:'Graduated Handoff', duration:'Months 4-9', badge:'badge-warning', desc:'Part-time; advisory and oversight. Hand off customer relationships, transfer vendor management, train buyer\'s team.', tasks:['Reduce presence to 3-4 days/week, then 2-3, then 1-2','Let buyer handle customer issues with you in support','Stop attending routine meetings','Transfer last direct reports to buyer\'s management','Complete remaining knowledge transfer sessions']},
+    {num:3, name:'Advisory', duration:'Months 10-24', badge:'badge-success', desc:'As-needed; strategic guidance only. Available for questions, attend key meetings, final knowledge transfer items.', tasks:['Available by phone or email for questions','Attend quarterly business reviews if requested','Provide introductions for new opportunities','Remain available for earnout-related questions']}
+  ];
+
+  p.innerHTML = `<div class="page-header"><div class="t-label">Planning</div><div class="t-display">Transition Framework</div><p class="t-body t-secondary">Most transitions follow a three-phase arc: intensive involvement, graduated handoff, and advisory-only. Duration depends on business complexity and owner dependency.</p></div>
+    <div class="form-group" style="margin-bottom:var(--space-xl)"><label class="form-label">Planned Transition Duration</label><select class="form-input" id="transDuration" style="max-width:300px"><option value="">-- Select duration --</option><option value="6" ${state.framework.duration==='6'?'selected':''}>6 months</option><option value="12" ${state.framework.duration==='12'?'selected':''}>12 months</option><option value="18" ${state.framework.duration==='18'?'selected':''}>18 months</option><option value="24" ${state.framework.duration==='24'?'selected':''}>24 months</option></select></div>
+    <div class="form-group" style="margin-bottom:var(--space-xl)"><label class="form-label">Current Phase</label>
+    <div class="score-selector" id="phaseSelector"></div></div>
+    <div id="phaseCards"></div>`;
+
+  const ps = p.querySelector('#phaseSelector');
+  ps.appendChild(scoreSelector('phase', state.framework.currentPhase, ['Intensive','Handoff','Advisory'], v => { state.framework.currentPhase = v; saveState(); renderPhaseCards(); }));
+
+  p.querySelector('#transDuration').addEventListener('change', function() { state.framework.duration = this.value; saveState(); });
+
+  function renderPhaseCards() {
+    const wrap = p.querySelector('#phaseCards');
+    wrap.innerHTML = '';
+    phases.forEach(ph => {
+      const isActive = ph.num === state.framework.currentPhase;
+      const card = el('div', `phase-card${isActive?' phase-card-active expanded':''}`);
+      card.innerHTML = `<div class="phase-card-header">
+        <div style="display:flex;align-items:center;gap:var(--space-md)"><span style="font-weight:700;color:var(--color-primary)">Phase ${ph.num}</span><span class="phase-card-title">${ph.name}</span></div>
+        <div style="display:flex;align-items:center;gap:var(--space-sm)"><span class="badge ${ph.badge}">${ph.duration}</span><span class="phase-card-chevron">&#9662;</span></div>
+      </div>
+      <div class="phase-card-body"><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">${ph.desc}</p>
+        <div class="t-h3" style="margin-bottom:var(--space-sm)">Key Activities</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:4px">${ph.tasks.map(t => `<li style="display:flex;gap:var(--space-sm);font-size:14px;color:var(--color-text-secondary)"><span style="color:var(--color-primary)">&#10003;</span>${t}</li>`).join('')}</ul>
+      </div>`;
+      card.querySelector('.phase-card-header').addEventListener('click', () => card.classList.toggle('expanded'));
+      wrap.appendChild(card);
+    });
+  }
+  renderPhaseCards();
+  p.appendChild(pageNav());
+  return p;
+};
+
+/* ---- EMPLOYEE COMMUNICATION ---- */
+P.employees = () => {
+  const p = el('div','page active');
+  const principles = [
+    {key:'fromYou',text:'From you first: employees hear from you personally, not rumors or the buyer'},
+    {key:'within48',text:'Within 24-48 hours of closing -- never before closing (deal may not close)'},
+    {key:'tiered',text:'Tiered approach: key employees (top 5-10) get individual meetings before all-hands'},
+    {key:'prepared',text:'Prepared: have answers for questions employees will ask'},
+    {key:'transparent',text:'Transparent: honest about what you know and what is still being determined'}
+  ];
+  const questions = [
+    {q:'Am I going to lose my job?', meaning:'Am I safe?', answer:'Be honest about what you know. If buyer committed to retention, say so.'},
+    {q:'Will my benefits change?', meaning:'Will I be worse off?', answer:'Explain timeline for benefits review; acknowledge uncertainty honestly.'},
+    {q:'Why did you sell?', meaning:'Did you abandon us?', answer:'Share genuine reasons. Frame as growth opportunity, not abandonment.'},
+    {q:'Who is the new owner?', meaning:'Can I trust them?', answer:'Share what you know. Highlight their strengths.'},
+    {q:'Are you staying?', meaning:'Is this going to be OK?', answer:'Explain your transition role. Your presence signals stability.'},
+    {q:'Will my day-to-day change?', meaning:'Do I need to worry?', answer:'Operations continue normally. Changes will be communicated.'}
+  ];
+  const retTools = [
+    {key:'stay_bonus',label:'Stay Bonus (25-100% salary, paid at 6-12 months)',eff:'High'},
+    {key:'retention_agreement',label:'Retention Agreement (50-100% salary, vests 1-2 years)',eff:'High'},
+    {key:'equity',label:'Equity / Phantom Equity (1-5%, vests 3-5 years)',eff:'Very High'},
+    {key:'promotion',label:'Title / Role Promotion',eff:'Moderate'},
+    {key:'personal',label:'Personal Assurance from Seller',eff:'Moderate'}
+  ];
+
+  p.innerHTML = `<div class="page-header"><div class="t-label">Communication</div><div class="t-display">Employee Communication Strategy</div><p class="t-body t-secondary">How you communicate the ownership change is one of the most consequential decisions of the entire transaction. Get it wrong, and you lose key people.</p></div>
+    <div class="callout callout-danger" style="margin-bottom:var(--space-xl)"><strong>Critical Timing:</strong> Negotiate key employee retention packages as part of the deal -- not after closing. If the buyer will not fund retention, consider funding it yourself from proceeds.</div>
+    <div class="card" style="margin-bottom:var(--space-xl)"><div class="t-h2" style="margin-bottom:var(--space-lg)">Communication Principles</div><div class="checklist" id="empPrinciples"></div></div>
+    <div class="card" style="margin-bottom:var(--space-xl)"><div class="t-h2" style="margin-bottom:var(--space-lg)">Questions Employees Will Ask</div><p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Prepare answers for each of these before the announcement.</p>
+      <div style="display:flex;flex-direction:column;gap:var(--space-sm)">${questions.map(q => `<div style="padding:var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface)"><div style="font-weight:600;margin-bottom:2px">"${q.q}"</div><div style="font-size:13px;color:var(--color-text-tertiary);margin-bottom:var(--space-sm)">What they really mean: ${q.meaning}</div><div style="font-size:14px;color:var(--color-primary)">${q.answer}</div></div>`).join('')}</div>
+    </div>
+    <div class="card"><div class="t-h2" style="margin-bottom:var(--space-lg)">Retention Tools</div><p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Select which retention tools you plan to use for key employees.</p><div class="checklist" id="retTools"></div></div>`;
+
+  const ep = p.querySelector('#empPrinciples');
+  principles.forEach(pr => {
+    ep.appendChild(makeCheckItem(pr.text, state.employees.communicationPrinciples[pr.key], v => { state.employees.communicationPrinciples[pr.key]=v; saveState(); }));
+  });
+  const rt = p.querySelector('#retTools');
+  retTools.forEach(tool => {
+    const checked = state.employees.retentionTools.includes(tool.key);
+    const item = el('div', `check-item${checked?' checked':''}`, `<div class="check-box"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div><div style="flex:1"><span class="check-text">${tool.label}</span><div class="form-hint" style="text-decoration:none;color:var(--color-text-tertiary)">Effectiveness: ${tool.eff}</div></div>`);
+    item.addEventListener('click', () => {
+      const idx = state.employees.retentionTools.indexOf(tool.key);
+      if(idx>=0) state.employees.retentionTools.splice(idx,1); else state.employees.retentionTools.push(tool.key);
+      item.classList.toggle('checked'); saveState();
+    });
+    rt.appendChild(item);
+  });
+  p.appendChild(pageNav());
+  return p;
+};
+
+/* ---- CUSTOMER NOTIFICATION ---- */
+P.customers = () => {
+  const p = el('div','page active');
+  const tiers = [
+    {tier:1,type:'Top 5-10 customers (>5% revenue each)',method:'In-person meeting',timing:'Day 1-3',who:'Seller + buyer together'},
+    {tier:2,type:'Key accounts (top 20-30)',method:'Personal phone call',timing:'Week 1',who:'Seller with buyer intro'},
+    {tier:3,type:'Active customers (remaining base)',method:'Personalized email or letter',timing:'Week 1-2',who:'Seller-signed communication'},
+    {tier:4,type:'Inactive or small accounts',method:'General announcement',timing:'Week 2-4',who:'Company communication'}
+  ];
+  const templateItems = ['The news -- use positive language ("strategic partnership," "growth investment")','Continuity assurance -- same team, same service, same quality','Introduction of new ownership -- who they are, their vision','Seller involvement -- your transition role and continued availability','Invitation to connect -- encourage them to reach out'];
+
+  p.innerHTML = `<div class="page-header"><div class="t-label">Communication</div><div class="t-display">Customer Notification</div><p class="t-body t-secondary">Customer notification is the second most sensitive communication after employees. The goal is to maintain every relationship without losing revenue.</p></div>
+    <div class="callout callout-info" style="margin-bottom:var(--space-xl)"><strong>The Relationship Handoff:</strong> For Tier 1 customers: 1st meeting seller-led with buyer introduced, 2nd co-led, 3rd buyer-led with seller present, 4th buyer only. This builds trust without leaving a vacuum.</div>
+    <div class="t-h2" style="margin-bottom:var(--space-lg)">Notification Tiers</div>
+    ${tiers.map(t => `<div class="tier-card"><div class="tier-header" style="background:var(--color-surface-alt)"><span>Tier ${t.tier}: ${t.type}</span><span class="badge badge-neutral">${t.timing}</span></div><div class="tier-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);font-size:14px"><div><span class="t-label" style="font-size:10px">Method</span><div>${t.method}</div></div><div><span class="t-label" style="font-size:10px">Delivered By</span><div>${t.who}</div></div></div></div></div>`).join('')}
+    <div class="section-divider"></div>
+    <div class="card" style="margin-bottom:var(--space-xl)"><div class="t-h2" style="margin-bottom:var(--space-lg)">Communication Template Checklist</div><p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Every customer communication should include these five elements.</p><div class="checklist" id="templateChecklist"></div></div>
+    <div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Customer Notification Tracker</div><p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Track your key customer notifications.</p><div id="custTracker"></div><button class="btn btn-secondary btn-sm" id="addCust" style="margin-top:var(--space-md)">+ Add Customer</button></div>`;
+
+  const tc = p.querySelector('#templateChecklist');
+  templateItems.forEach((text,i) => {
+    const key = 'template_'+i;
+    tc.appendChild(makeCheckItem(text, state.customers.templateDone && state.preclosing.timeline[key], v => {
+      if(!state.preclosing.timeline) state.preclosing.timeline = {};
+      state.preclosing.timeline[key] = v;
+      const allDone = templateItems.every((_,j) => state.preclosing.timeline['template_'+j]);
+      state.customers.templateDone = allDone;
+      saveState();
+    }));
+  });
+
+  if(state.customers.tiers.length === 0) { state.customers.tiers = [{name:'',tier:'1',revenue:'',method:'',date:'',response:''}]; saveState(); }
+  function renderCustTracker() {
+    const wrap = p.querySelector('#custTracker');
+    wrap.innerHTML = '';
+    state.customers.tiers.forEach((c,i) => {
+      const row = el('div','card',`<div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:var(--space-sm);margin-bottom:var(--space-sm)">
+        <input class="form-input" data-i="${i}" data-f="name" value="${c.name||''}" placeholder="Customer name" style="font-size:13px">
+        <select class="form-input" data-i="${i}" data-f="tier" style="font-size:13px"><option value="1" ${c.tier==='1'?'selected':''}>Tier 1</option><option value="2" ${c.tier==='2'?'selected':''}>Tier 2</option><option value="3" ${c.tier==='3'?'selected':''}>Tier 3</option><option value="4" ${c.tier==='4'?'selected':''}>Tier 4</option></select>
+        <input class="form-input" data-i="${i}" data-f="date" type="date" value="${c.date||''}" style="font-size:13px">
+      </div><div style="display:flex;gap:var(--space-sm)"><input class="form-input" data-i="${i}" data-f="response" value="${c.response||''}" placeholder="Response / notes" style="font-size:13px;flex:1"><button class="btn btn-ghost btn-sm" data-rm="${i}" style="color:var(--color-danger)">&times;</button></div>`);
+      row.style.marginBottom='var(--space-sm)';
+      row.querySelectorAll('input,select').forEach(inp => {
+        const handler = () => { state.customers.tiers[parseInt(inp.dataset.i)][inp.dataset.f]=inp.value; saveState(); };
+        inp.addEventListener('input', handler); inp.addEventListener('change', handler);
+      });
+      const rm = row.querySelector('[data-rm]');
+      if(rm) rm.addEventListener('click', () => { if(state.customers.tiers.length>1){state.customers.tiers.splice(i,1);saveState();renderCustTracker();} });
+      wrap.appendChild(row);
+    });
+  }
+  renderCustTracker();
+  p.querySelector('#addCust').addEventListener('click', () => { state.customers.tiers.push({name:'',tier:'1',revenue:'',method:'',date:'',response:''}); saveState(); renderCustTracker(); });
+
+  p.appendChild(pageNav());
+  return p;
+};
+
+/* ---- VENDOR TRANSITION ---- */
+P.vendors = () => {
+  const p = el('div','page active');
+  const priorities = [
+    {level:'Critical',desc:'Sole-source suppliers, landlords, key technology providers',action:'Personal notification; review assignment clauses; get consent in writing',color:'var(--color-danger)'},
+    {level:'High',desc:'Insurance providers, banking relationships, professional services',action:'Formal notification; introduce new ownership; update authorized signers',color:'var(--color-warning)'},
+    {level:'Medium',desc:'Regular vendors, service providers, utilities',action:'Written notification; update billing and contact information',color:'var(--color-score-4)'},
+    {level:'Low',desc:'Occasional vendors, subscriptions',action:'Update as needed; batch notification acceptable',color:'var(--color-text-tertiary)'}
+  ];
+
+  p.innerHTML = `<div class="page-header"><div class="t-label">Communication</div><div class="t-display">Vendor & Partner Transition</div><p class="t-body t-secondary">Vendor relationships are often overlooked in transition planning but can cause significant operational disruption if not managed properly.</p></div>
+    <div class="t-h2" style="margin-bottom:var(--space-lg)">Priority Framework</div>
+    <div style="display:flex;flex-direction:column;gap:var(--space-sm);margin-bottom:var(--space-xl)">${priorities.map(pr => `<div style="display:flex;gap:var(--space-md);padding:var(--space-md);border-left:4px solid ${pr.color};background:var(--color-surface);border-radius:0 var(--radius-sm) var(--radius-sm) 0;border:1px solid var(--color-border);border-left:4px solid ${pr.color}"><div style="min-width:80px"><span class="badge" style="background:${pr.color}15;color:${pr.color}">${pr.level}</span></div><div style="flex:1"><div class="t-small" style="margin-bottom:2px">${pr.desc}</div><div style="font-size:13px;color:var(--color-primary)">${pr.action}</div></div></div>`).join('')}</div>
+    <div class="card" style="margin-bottom:var(--space-xl)"><div class="t-h2" style="margin-bottom:var(--space-md)">Contract Assignment Review</div><p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Many contracts contain change-of-control provisions. Failing to obtain consent can trigger termination, renegotiation, or damages.</p>
+      <div class="checklist"><div class="check-item${state.vendors.contractReview?' checked':''}" id="contractReviewCheck"><div class="check-box"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div><span class="check-text">I have reviewed every material contract for assignment provisions and identified consents needed before or after closing.</span></div></div>
+    </div>
+    <div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Vendor Notification Tracker</div><div id="vendorTracker"></div><button class="btn btn-secondary btn-sm" id="addVendor" style="margin-top:var(--space-md)">+ Add Vendor</button></div>`;
+
+  p.querySelector('#contractReviewCheck').addEventListener('click', function() { state.vendors.contractReview = !state.vendors.contractReview; this.classList.toggle('checked'); saveState(); });
+
+  if(state.vendors.items.length===0) { state.vendors.items = [{name:'',priority:'critical',concern:'',action:''}]; saveState(); }
+  function renderVendors() {
+    const wrap = p.querySelector('#vendorTracker');
+    wrap.innerHTML = '';
+    state.vendors.items.forEach((v,i) => {
+      const row = el('div','', `<div style="display:grid;grid-template-columns:2fr 1fr 2fr;gap:var(--space-sm);padding:var(--space-sm) 0;border-bottom:1px solid var(--color-border-light)">
+        <input class="form-input" data-i="${i}" data-f="name" value="${v.name||''}" placeholder="Vendor name" style="font-size:13px">
+        <select class="form-input" data-i="${i}" data-f="priority" style="font-size:13px"><option value="critical" ${v.priority==='critical'?'selected':''}>Critical</option><option value="high" ${v.priority==='high'?'selected':''}>High</option><option value="medium" ${v.priority==='medium'?'selected':''}>Medium</option><option value="low" ${v.priority==='low'?'selected':''}>Low</option></select>
+        <div style="display:flex;gap:var(--space-sm)"><input class="form-input" data-i="${i}" data-f="action" value="${v.action||''}" placeholder="Action / status" style="font-size:13px;flex:1"><button class="btn btn-ghost btn-sm" data-rm="${i}" style="color:var(--color-danger)">&times;</button></div>
+      </div>`);
+      row.querySelectorAll('input,select').forEach(inp => {
+        const handler = () => { state.vendors.items[parseInt(inp.dataset.i)][inp.dataset.f]=inp.value; saveState(); };
+        inp.addEventListener('input',handler); inp.addEventListener('change',handler);
+      });
+      const rm = row.querySelector('[data-rm]');
+      if(rm) rm.addEventListener('click', () => { if(state.vendors.items.length>1){state.vendors.items.splice(i,1);saveState();renderVendors();} });
+      wrap.appendChild(row);
+    });
+  }
+  renderVendors();
+  p.querySelector('#addVendor').addEventListener('click', () => { state.vendors.items.push({name:'',priority:'medium',concern:'',action:''}); saveState(); renderVendors(); });
+
+  p.appendChild(pageNav());
+  return p;
+};
+
+/* ---- MILESTONES ---- */
+P.milestones = () => {
+  const p = el('div','page active');
+  const defaults = [
+    {name:'All system access transferred',target:'Day 1',owner:'Seller IT / Admin'},
+    {name:'Employee announcement complete',target:'Day 1-2',owner:'Seller + Buyer'},
+    {name:'Tier 1 customer notifications',target:'Week 1',owner:'Seller + Buyer'},
+    {name:'Bank account and signing authority transitioned',target:'Week 2',owner:'CFO / Buyer'},
+    {name:'Monthly close completed by buyer',target:'Month 2',owner:'Controller / CFO'},
+    {name:'All vendor relationships introduced',target:'Month 3',owner:'Seller + Ops'},
+    {name:'Sales pipeline managed by buyer',target:'Month 3',owner:'Seller + Sales'},
+    {name:'Seller reduces to part-time',target:'Month 4',owner:'Seller + Buyer'},
+    {name:'All knowledge transfer sessions complete',target:'Month 6',owner:'Seller'},
+    {name:'Seller transitions to advisory only',target:'Month 9-12',owner:'Seller + Buyer'}
+  ];
+
+  if(state.milestones.length===0) { state.milestones = defaults.map(d => ({...d, done:false, notes:''})); saveState(); }
+
+  p.innerHTML = `<div class="page-header"><div class="t-label">Execution</div><div class="t-display">Operational Milestones</div><p class="t-body t-secondary">Define specific, measurable milestones that mark the progress of the operational handoff. These serve as checkpoints for both seller and buyer.</p></div>
+    <div class="card" style="margin-bottom:var(--space-xl)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg)"><div class="t-h2">Milestone Tracker</div><div id="milestoneProgress"></div></div>
+      <div id="milestoneList"></div>
+    </div>`;
+
+  function renderMilestones() {
+    const list = p.querySelector('#milestoneList');
+    list.innerHTML = '';
+    const doneCount = state.milestones.filter(m=>m.done).length;
+    const total = state.milestones.length;
+    p.querySelector('#milestoneProgress').innerHTML = `<span class="badge ${doneCount===total?'badge-success':doneCount>0?'badge-warning':'badge-neutral'}">${doneCount}/${total} complete</span>`;
+
+    state.milestones.forEach((m,i) => {
+      const row = el('div','milestone-row');
+      row.innerHTML = `<div class="milestone-status ${m.done?'done':'pending'}" data-i="${i}" title="Toggle complete">${m.done?'&#10003;':''}</div>
+        <div class="milestone-info"><div class="milestone-name" style="${m.done?'text-decoration:line-through;color:var(--color-text-tertiary)':''}">${m.name}</div><div class="milestone-target">${m.target} -- ${m.owner}</div></div>`;
+      row.querySelector('.milestone-status').addEventListener('click', () => {
+        state.milestones[i].done = !state.milestones[i].done;
+        saveState(); renderMilestones();
+      });
+      list.appendChild(row);
+    });
+  }
+  renderMilestones();
+  p.appendChild(pageNav());
+  return p;
+};
+
+/* ---- KNOWLEDGE TRANSFER ---- */
+P.knowledge = () => {
+  const p = el('div','page active');
+  const categories = [
+    {key:'relationship',icon:'&#129309;',name:'Relationship Knowledge',desc:'Customer preferences, vendor negotiation history, partner dynamics',method:'Joint meetings; introduction memos; CRM notes'},
+    {key:'operational',icon:'&#9881;',name:'Operational Knowledge',desc:'How things actually work vs. documented processes',method:'Process walkthroughs; shadowing; recorded training'},
+    {key:'strategic',icon:'&#127919;',name:'Strategic Knowledge',desc:'Market insights, competitive intelligence, growth opportunities',method:'Strategy sessions; written briefing documents'},
+    {key:'cultural',icon:'&#128101;',name:'Cultural Knowledge',desc:'Unwritten norms, team dynamics, what motivates each employee',method:'One-on-one conversations; culture guide document'},
+    {key:'crisis',icon:'&#128680;',name:'Crisis Knowledge',desc:'How to handle emergencies, common failure modes, workarounds',method:'Scenario-based training; "what if" sessions'},
+    {key:'financial',icon:'&#128200;',name:'Financial Knowledge',desc:'Seasonality patterns, pricing strategy, cost optimization tips',method:'Financial review sessions; margin analysis walk-through'}
+  ];
+
+  p.innerHTML = `<div class="page-header"><div class="t-label">Execution</div><div class="t-display">Knowledge Transfer Protocol</div><p class="t-body t-secondary">Knowledge transfer is the systematic process of extracting institutional knowledge from your head and embedding it in the organization. This is especially critical when you have been the primary decision-maker.</p></div>
+    <div class="callout callout-accent" style="margin-bottom:var(--space-xl)"><strong>The Brain Dump Method:</strong> Schedule recorded "brain dump" sessions -- stream of consciousness organized by topic. Record on video, transcribe, and index them. This captures tacit knowledge no written manual ever captures.</div>
+    <div class="t-h2" style="margin-bottom:var(--space-lg)">Knowledge Categories</div>
+    <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Mark each category as you prepare its transfer plan.</p>
+    <div class="kt-grid" style="margin-bottom:var(--space-xl)">${categories.map(c => `<div class="kt-card" data-cat="${c.key}" style="cursor:pointer;border:2px solid ${state.knowledge.categories[c.key]?'var(--color-primary)':'var(--color-border)'}"><div class="kt-icon">${c.icon}</div><div class="kt-name">${c.name} ${state.knowledge.categories[c.key]?'<span class="badge badge-success" style="font-size:10px">Planned</span>':''}</div><div class="kt-desc">${c.desc}</div><div class="kt-method">Method: ${c.method}</div></div>`).join('')}</div>
+    <div class="card"><div class="check-item${state.knowledge.brainDump?' checked':''}" id="brainDumpCheck" style="cursor:pointer"><div class="check-box"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div><span class="check-text">I will schedule and complete recorded "brain dump" sessions for each knowledge category.</span></div></div>`;
+
+  p.querySelectorAll('[data-cat]').forEach(card => {
+    card.addEventListener('click', () => {
+      const key = card.dataset.cat;
+      state.knowledge.categories[key] = !state.knowledge.categories[key];
+      card.style.borderColor = state.knowledge.categories[key] ? 'var(--color-primary)' : 'var(--color-border)';
+      const nameEl = card.querySelector('.kt-name');
+      const cat = categories.find(c => c.key === key);
+      nameEl.innerHTML = cat.name + (state.knowledge.categories[key] ? ' <span class="badge badge-success" style="font-size:10px">Planned</span>' : '');
+      saveState();
+    });
+  });
+  p.querySelector('#brainDumpCheck').addEventListener('click', function() { state.knowledge.brainDump = !state.knowledge.brainDump; this.classList.toggle('checked'); saveState(); });
+
+  p.appendChild(pageNav());
+  return p;
+};
+
+/* ---- SELLER INVOLVEMENT ---- */
+P.involvement = () => {
+  const p = el('div','page active');
+  const levels = [
+    {key:'fulltime',title:'Full-Time Employee',meta:'40-50 hrs/week | Salary + benefits | Best for earnout-driven deals'},
+    {key:'parttime',title:'Part-Time Consultant',meta:'10-20 hrs/week | $200-500/hr | Best for knowledge transfer'},
+    {key:'advisory',title:'Advisory Board Member',meta:'2-5 hrs/month | $2K-5K/month retainer | Best for strategic guidance'},
+    {key:'oncall',title:'On-Call Availability',meta:'As-needed | Per-hour fee | Best for occasional questions'},
+    {key:'clean',title:'Clean Break',meta:'Zero commitment | All value in purchase price | Best for all-cash deal'}
+  ];
+  const earnout = [
+    {key:'ordinaryCourse',text:'Ordinary course covenant -- buyer operates consistently with pre-close practices'},
+    {key:'budgetApproval',text:'Budget approval -- earnout-relevant spending requires mutual agreement'},
+    {key:'reportingRights',text:'Reporting rights -- monthly financial reports showing earnout metric progress'},
+    {key:'antiManipulation',text:'Anti-manipulation clause -- buyer cannot allocate overhead to impair earnout'},
+    {key:'acceleration',text:'Acceleration on termination -- if buyer terminates seller, earnout accelerates at target'},
+    {key:'disputeResolution',text:'Dispute resolution -- independent accounting firm resolves calculation disputes'}
+  ];
+
+  p.innerHTML = `<div class="page-header"><div class="t-label">Protection</div><div class="t-display">Post-Close Seller Involvement</div><p class="t-body t-secondary">Your post-close involvement is an economic and emotional decision. Getting the balance right is critical for your financial outcome and personal well-being.</p></div>
+    <div class="t-h2" style="margin-bottom:var(--space-lg)">Planned Involvement Level</div>
+    <div class="involve-grid" style="margin-bottom:var(--space-xl)" id="involveGrid"></div>
+    <div class="card"><div class="t-h2" style="margin-bottom:var(--space-md)">Earnout Protections</div><p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">If your deal includes an earnout, negotiate these protections. Your transition involvement directly affects your payout.</p><div class="checklist" id="earnoutList"></div></div>`;
+
+  const ig = p.querySelector('#involveGrid');
+  levels.forEach(lv => {
+    const opt = el('div', `involve-option${state.involvement.level===lv.key?' selected':''}`, `<div class="involve-title">${lv.title}</div><div class="involve-meta">${lv.meta}</div>`);
+    opt.addEventListener('click', () => {
+      ig.querySelectorAll('.involve-option').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      state.involvement.level = lv.key;
+      saveState();
+    });
+    ig.appendChild(opt);
+  });
+
+  const el2 = p.querySelector('#earnoutList');
+  earnout.forEach(e => {
+    el2.appendChild(makeCheckItem(e.text, state.involvement.earnoutProtections[e.key], v => { state.involvement.earnoutProtections[e.key]=v; saveState(); }));
+  });
+
+  p.appendChild(pageNav());
+  return p;
+};
+
+/* ---- INTEGRATION RISKS ---- */
+P.risks = () => {
+  const p = el('div','page active');
+  const risks = [
+    {key:'employee_flight',icon:'&#128694;',name:'Employee Flight',desc:'Key employees leave within 6 months of close.',prob:'Medium-High',impact:'Very High',mitigation:'Retention packages; early communication; seller endorsement',indicator:'risk-high'},
+    {key:'customer_attrition',icon:'&#128178;',name:'Customer Attrition',desc:'Major customers leave due to ownership change.',prob:'Medium',impact:'Very High',mitigation:'Tiered notification; relationship handoff; service guarantees',indicator:'risk-high'},
+    {key:'cultural_clash',icon:'&#128148;',name:'Cultural Clash',desc:'Buyer\'s management style conflicts with existing team.',prob:'Medium-High',impact:'High',mitigation:'Culture assessment pre-close; integration playbook; seller as bridge',indicator:'risk-medium'},
+    {key:'operational_disruption',icon:'&#9888;',name:'Operational Disruption',desc:'System changes, process modifications create chaos.',prob:'Medium',impact:'High',mitigation:'Freeze major changes for 90 days; phase changes gradually',indicator:'risk-medium'},
+    {key:'vendor_disruption',icon:'&#128279;',name:'Vendor Disruption',desc:'Key vendors refuse assignment or renegotiate unfavorably.',prob:'Low-Medium',impact:'Medium',mitigation:'Pre-close consent; alternative vendor identification',indicator:'risk-low'},
+    {key:'knowledge_loss',icon:'&#129504;',name:'Knowledge Loss',desc:'Critical know-how walks out the door with seller.',prob:'Medium',impact:'High',mitigation:'Structured KT protocol; recorded sessions; documentation',indicator:'risk-medium'}
+  ];
+
+  p.innerHTML = `<div class="page-header"><div class="t-label">Protection</div><div class="t-display">Integration Risk Assessment</div><p class="t-body t-secondary">Integration risks are the most common cause of post-closing value destruction. Understanding them allows you to plan mitigations in advance.</p></div>
+    <div class="callout callout-warning" style="margin-bottom:var(--space-xl)"><strong>The 90-Day Stability Rule:</strong> Recommend a 90-day period after closing with no restructuring, no terminations (except for cause), no system migrations, no pricing changes, and no compensation changes. Stacking ownership change with operational changes is the most common cause of integration failure.</div>
+    <div class="t-h2" style="margin-bottom:var(--space-lg)">Risk Assessment</div>
+    <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Review each risk and mark the ones you have addressed or are planning to mitigate.</p>
+    <div class="risk-grid" id="riskGrid"></div>`;
+
+  const rg = p.querySelector('#riskGrid');
+  risks.forEach(r => {
+    const assessed = state.risks.assessed[r.key];
+    const row = el('div','risk-row');
+    row.style.cursor = 'pointer';
+    row.style.borderColor = assessed ? 'var(--color-primary)' : 'var(--color-border)';
+    row.innerHTML = `<div class="risk-indicator ${r.indicator}">${r.icon}</div>
+      <div class="risk-content"><div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:2px"><div class="risk-name">${r.name}</div>${assessed?'<span class="badge badge-success">Addressed</span>':''}</div><div class="risk-desc">${r.desc}</div>
+        <div style="display:flex;gap:var(--space-lg);font-size:12px;color:var(--color-text-tertiary);margin-bottom:var(--space-sm)"><span>Probability: ${r.prob}</span><span>Impact: ${r.impact}</span></div>
+        <div class="risk-mitigation">${r.mitigation}</div></div>`;
+    row.addEventListener('click', () => {
+      state.risks.assessed[r.key] = !state.risks.assessed[r.key];
+      row.style.borderColor = state.risks.assessed[r.key] ? 'var(--color-primary)' : 'var(--color-border)';
+      const nameDiv = row.querySelector('.risk-name').parentElement;
+      const existingBadge = nameDiv.querySelector('.badge');
+      if(existingBadge) existingBadge.remove();
+      if(state.risks.assessed[r.key]) { const b = el('span','badge badge-success','Addressed'); nameDiv.appendChild(b); }
+      saveState();
+    });
+    rg.appendChild(row);
+  });
+
+  p.appendChild(pageNav());
+  return p;
+};
+
+/* ---- COMMON MISTAKES ---- */
+P.mistakes = () => {
+  const p = el('div','page active');
+  const mistakes = [
+    {icon:'&#128226;',name:'Announcing before closing',desc:'Excitement or concern about rumors leads to premature disclosure.',fix:'Wait until close is certain. Prepare communications in advance.'},
+    {icon:'&#128694;',name:'Disappearing after closing',desc:'Burnout and desire to "be done" causes early departure.',fix:'Honor your transition commitment. Your legacy depends on it.'},
+    {icon:'&#129309;',name:'Letting buyer handle all comms',desc:'Deferring to new ownership during the critical first days.',fix:'Employees and customers need to hear from YOU first.'},
+    {icon:'&#128196;',name:'No written transition plan',desc:'Assuming good intentions will suffice without documentation.',fix:'Document everything. If it is not written, it will not happen.'},
+    {icon:'&#128683;',name:'Resisting buyer changes',desc:'Emotional attachment to "how we always did it."',fix:'Advise when asked. Accept that they now own the decisions.'},
+    {icon:'&#128101;',name:'Not protecting key employees',desc:'Assuming the buyer will "do the right thing."',fix:'Negotiate retention packages as deal terms, not promises.'},
+    {icon:'&#128546;',name:'Ignoring your emotional transition',desc:'Focus on business while neglecting personal identity shift.',fix:'Plan your post-close life. Identity loss is real. Seek support.'},
+    {icon:'&#128197;',name:'No defined end date',desc:'Open-ended consulting creates ambiguity for both parties.',fix:'Set a clear end date. Both parties need a finish line.'}
+  ];
+
+  p.innerHTML = `<div class="page-header"><div class="t-label">Protection</div><div class="t-display">Common Transition Mistakes</div><p class="t-body t-secondary">Learn from the mistakes others have made. Review each one and acknowledge the ones you need to guard against.</p></div>
+    <div class="mistake-grid">${mistakes.map((m,i) => `<div class="mistake-card" data-mistake="${i}" style="cursor:pointer;border:2px solid ${state.mistakes.acknowledged.includes(i)?'var(--color-warning)':'var(--color-border)'}"><div class="mistake-icon">${m.icon}</div><div class="mistake-name">${m.name}</div><div class="mistake-desc">${m.desc}</div><div class="mistake-fix">${m.fix}</div>${state.mistakes.acknowledged.includes(i)?'<div class="badge badge-warning" style="margin-top:var(--space-sm)">Flagged</div>':''}</div>`).join('')}</div>`;
+
+  p.querySelectorAll('[data-mistake]').forEach(card => {
+    card.addEventListener('click', () => {
+      const idx = parseInt(card.dataset.mistake);
+      const pos = state.mistakes.acknowledged.indexOf(idx);
+      if(pos>=0) { state.mistakes.acknowledged.splice(pos,1); card.style.borderColor='var(--color-border)'; const b=card.querySelector('.badge'); if(b)b.remove(); }
+      else { state.mistakes.acknowledged.push(idx); card.style.borderColor='var(--color-warning)'; const b=el('div','badge badge-warning','Flagged'); b.style.marginTop='var(--space-sm)'; card.appendChild(b); }
+      saveState();
+    });
+  });
+
+  p.appendChild(pageNav());
+  return p;
+};
+
+/* ---- KT SCHEDULE ---- */
+P.worksheets = () => {
+  const p = el('div','page active');
+  if(state.worksheets.length===0) {
+    state.worksheets = [
+      {week:'1',topic:'Financial processes: monthly close, AR/AP, payroll',attendees:'CFO, Controller',format:'Walk-through + shadowing',deliverable:'Process documentation',complete:false},
+      {week:'2',topic:'Customer relationships: top 10 accounts deep dive',attendees:'Sales lead, Buyer',format:'Joint meetings',deliverable:'CRM notes + intro memos',complete:false},
+      {week:'3',topic:'Vendor management: key suppliers and contracts',attendees:'Ops lead, Buyer',format:'Vendor introductions',deliverable:'Vendor contact list',complete:false},
+      {week:'4',topic:'Technology systems: admin access, integrations, backups',attendees:'IT admin, Buyer tech',format:'System walkthrough',deliverable:'Admin credentials doc',complete:false},
+      {week:'5-6',topic:'Strategic planning: market insights, competitive landscape, growth ops',attendees:'Buyer leadership',format:'Strategy sessions',deliverable:'Strategic briefing doc',complete:false},
+      {week:'7-8',topic:'Culture and team: individual employee strengths, dynamics, motivations',attendees:'Buyer HR / leadership',format:'One-on-ones',deliverable:'Culture guide',complete:false}
+    ];
+    saveState();
+  }
+
+  p.innerHTML = `<div class="page-header"><div class="t-label">Worksheets</div><div class="t-display">Knowledge Transfer Schedule</div><p class="t-body t-secondary">Create a written schedule with specific topics, dates, attendees, and deliverables. This ensures nothing falls through the cracks.</p></div>
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg)"><div class="t-h2">KT Session Schedule</div><div id="ktProgress"></div></div><div id="ktList"></div>
+    <button class="btn btn-secondary btn-sm" id="addKt" style="margin-top:var(--space-md)">+ Add Session</button></div>`;
+
+  function renderKT() {
+    const list = p.querySelector('#ktList');
+    list.innerHTML = '';
+    const done = state.worksheets.filter(w=>w.complete).length;
+    p.querySelector('#ktProgress').innerHTML = `<span class="badge ${done===state.worksheets.length?'badge-success':'badge-neutral'}">${done}/${state.worksheets.length} complete</span>`;
+
+    state.worksheets.forEach((w,i) => {
+      const row = el('div','',`<div style="display:grid;grid-template-columns:60px 1fr 1fr 1fr 40px;gap:var(--space-sm);padding:var(--space-md) 0;border-bottom:1px solid var(--color-border-light);align-items:start">
+        <div style="text-align:center"><div class="milestone-status ${w.complete?'done':'pending'}" data-toggle="${i}" style="margin:0 auto;cursor:pointer">${w.complete?'&#10003;':''}</div><div style="font-size:11px;color:var(--color-text-tertiary);margin-top:2px">Wk ${w.week}</div></div>
+        <div><input class="form-input" data-i="${i}" data-f="topic" value="${w.topic||''}" placeholder="Topic" style="font-size:13px;${w.complete?'text-decoration:line-through;color:var(--color-text-tertiary)':''}"></div>
+        <div><input class="form-input" data-i="${i}" data-f="attendees" value="${w.attendees||''}" placeholder="Attendees" style="font-size:13px"></div>
+        <div><input class="form-input" data-i="${i}" data-f="deliverable" value="${w.deliverable||''}" placeholder="Deliverable" style="font-size:13px"></div>
+        <div><button class="btn btn-ghost btn-sm" data-rm="${i}" style="color:var(--color-danger)">&times;</button></div>
+      </div>`);
+      row.querySelector(`[data-toggle="${i}"]`).addEventListener('click', () => { state.worksheets[i].complete = !state.worksheets[i].complete; saveState(); renderKT(); });
+      row.querySelectorAll('input').forEach(inp => { inp.addEventListener('input', () => { state.worksheets[parseInt(inp.dataset.i)][inp.dataset.f]=inp.value; saveState(); }); });
+      const rm = row.querySelector('[data-rm]'); if(rm) rm.addEventListener('click', () => { if(state.worksheets.length>1){state.worksheets.splice(i,1);saveState();renderKT();} });
+      list.appendChild(row);
+    });
+  }
+  renderKT();
+  p.querySelector('#addKt').addEventListener('click', () => { const next = state.worksheets.length+1; state.worksheets.push({week:String(next),topic:'',attendees:'',format:'',deliverable:'',complete:false}); saveState(); renderKT(); });
+
+  p.appendChild(pageNav());
+  return p;
+};
+
+/* ---- SUMMARY ---- */
+P.summary = () => {
+  const p = el('div','page active');
+  const score = calcScore();
+  let scoreColor = 'var(--color-danger)', scoreLabel = 'Needs Work';
+  if(score>=85){scoreColor='var(--color-success)';scoreLabel='Excellent';}
+  else if(score>=65){scoreColor='var(--color-score-4)';scoreLabel='Strong';}
+  else if(score>=40){scoreColor='var(--color-warning)';scoreLabel='Developing';}
+
+  const preItems = ['doc_processes','reduce_dependency','id_key_employees','retention_strategy','transition_terms','day1_plan','comms_plan'];
+  const preDone = preItems.filter(k => state.preclosing.timeline[k]).length;
+  const empDone = ['fromYou','within48','tiered','prepared','transparent'].filter(k=>state.employees.communicationPrinciples[k]).length;
+  const mileDone = state.milestones.filter(m=>m.done).length;
+  const ktDone = ['relationship','operational','strategic','cultural','crisis','financial'].filter(k=>state.knowledge.categories[k]).length;
+  const earnDone = ['ordinaryCourse','budgetApproval','reportingRights','antiManipulation','acceleration','disputeResolution'].filter(k=>state.involvement.earnoutProtections[k]).length;
+  const riskDone = ['employee_flight','customer_attrition','cultural_clash','operational_disruption','vendor_disruption','knowledge_loss'].filter(k=>state.risks.assessed[k]).length;
+
+  const barData = [
+    {label:'Pre-Close Plan',value:Math.round((preDone/preItems.length)*100),color:'var(--color-primary)'},
+    {label:'Employee Comms',value:Math.round((empDone/5)*100),color:'var(--color-accent)'},
+    {label:'Customer Plan',value:state.customers.templateDone?100:Math.min(state.customers.tiers.filter(t=>t.name).length*25,75),color:'var(--color-warning)'},
+    {label:'Milestones',value:state.milestones.length?Math.round((mileDone/state.milestones.length)*100):0,color:'var(--color-score-4)'},
+    {label:'Knowledge Transfer',value:Math.round((ktDone/6)*100),color:'var(--color-score-5)'},
+    {label:'Risk Assessment',value:Math.round((riskDone/6)*100),color:'var(--color-danger)'},
+    {label:'Earnout Protection',value:Math.round((earnDone/6)*100),color:'var(--color-score-2)'}
+  ];
+
+  const durationLabel = state.framework.duration ? state.framework.duration + ' months' : 'Not set';
+  const phaseLabels = ['','Intensive','Graduated Handoff','Advisory'];
+  const involvementLabels = {fulltime:'Full-Time',parttime:'Part-Time Consultant',advisory:'Advisory Board',oncall:'On-Call',clean:'Clean Break'};
+
+  p.innerHTML = `<div class="page-header"><div class="t-label">Results</div><div class="t-display">Transition Readiness Summary</div><p class="t-body t-secondary">Your comprehensive transition and integration planning assessment.</p></div>
+    <div class="card" style="text-align:center;padding:var(--space-2xl);margin-bottom:var(--space-xl)">
+      <div style="position:relative;width:160px;height:160px;margin:0 auto var(--space-lg)">
+        <svg viewBox="0 0 160 160" style="transform:rotate(-90deg)"><circle cx="80" cy="80" r="68" fill="none" stroke="var(--color-border)" stroke-width="10"/><circle cx="80" cy="80" r="68" fill="none" stroke="${scoreColor}" stroke-width="10" stroke-dasharray="${2*Math.PI*68}" stroke-dashoffset="${2*Math.PI*68*(1-score/100)}" stroke-linecap="round" style="transition:stroke-dashoffset 1s ease"/></svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-family:var(--font-display);font-size:42px;font-weight:700;color:${scoreColor}">${score}</div><div style="font-size:12px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:0.05em">out of 100</div></div>
+      </div>
+      <div class="t-h2" style="color:${scoreColor}">${scoreLabel}</div>
+      <p class="t-small t-secondary" style="margin-top:var(--space-sm)">Your transition readiness score based on all sections completed.</p>
+    </div>
+    <div class="card" style="margin-bottom:var(--space-xl)"><div class="t-h2" style="margin-bottom:var(--space-lg)">Preparation Breakdown</div><div class="bar-chart" id="summaryBars"></div></div>
+    <div class="summary-grid" style="margin-bottom:var(--space-xl)">
+      <div class="summary-item"><div class="summary-item-label">Transition Duration</div><div class="summary-item-value">${durationLabel}</div></div>
+      <div class="summary-item"><div class="summary-item-label">Current Phase</div><div class="summary-item-value">${phaseLabels[state.framework.currentPhase]||'--'}</div></div>
+      <div class="summary-item"><div class="summary-item-label">Involvement Level</div><div class="summary-item-value">${involvementLabels[state.involvement.level]||'--'}</div></div>
+      <div class="summary-item"><div class="summary-item-label">Milestones Complete</div><div class="summary-item-value">${mileDone}/${state.milestones.length}</div></div>
+      <div class="summary-item"><div class="summary-item-label">KT Categories Planned</div><div class="summary-item-value">${ktDone}/6</div></div>
+      <div class="summary-item"><div class="summary-item-label">Risks Addressed</div><div class="summary-item-value">${riskDone}/6</div></div>
+    </div>
+    <div class="callout callout-accent" style="margin-bottom:var(--space-xl)"><strong>Remember:</strong> "You spent years building this business. Spend a few months ensuring it thrives without you. That is the final act of great ownership."</div>
+    <div class="btn-group" style="justify-content:center"><button class="btn btn-primary" onclick="exportReport()">Export Report</button><button class="btn btn-secondary" onclick="window.print()">Print Summary</button><button class="btn btn-secondary" onclick="goToPage('welcome')">Return to Start</button></div>`;
+
+  setTimeout(() => {
+    const barsEl = p.querySelector('#summaryBars');
+    if(barsEl) {
+      barData.forEach(d => {
+        const row = el('div','bar-row',`<div class="bar-label">${d.label}</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:${d.color}"><span class="bar-value">${d.value}%</span></div></div>`);
+        barsEl.appendChild(row);
+        setTimeout(() => { row.querySelector('.bar-fill').style.width = d.value+'%'; }, 100);
+      });
+    }
+  }, 50);
+
+  p.appendChild(pageNav(true,false));
+  return p;
+};
+
+const pageRenderers = P;
+
+/* LOCALSTORAGE MIGRATION */
+(function() {
+  const OLD_KEY = 'playbook38_transition_v2';
+  const NEW_KEY = 'exitosx-pb38-transition-integration';
+  if (OLD_KEY === STORAGE_KEY) return;
+  try {
+    const old = localStorage.getItem(OLD_KEY);
+    if (old && !localStorage.getItem(NEW_KEY)) {
+      localStorage.setItem(NEW_KEY, old);
+      localStorage.removeItem(OLD_KEY);
+    }
+  } catch(e) {}
+})();
+
+/* EXPORT */
+function exportReport() {
+  const s = loadState();
+  let text = 'TRANSITION & INTEGRATION PLANNING - Summary Report\n';
+  text += 'Generated: ' + new Date().toLocaleDateString() + '\n';
+  text += '='.repeat(50) + '\n\n';
+  text += 'READINESS SCORE: ' + calcScore() + '/100\n\n';
+  text += '--- PRE-CLOSE PLANNING ---\n';
+  const preItems = ['doc_processes','reduce_dependency','id_key_employees','retention_strategy','transition_terms','day1_plan','comms_plan'];
+  const preDone = preItems.filter(k => s.preclosing.timeline[k]).length;
+  text += 'Checklist: ' + preDone + '/' + preItems.length + ' complete\n\n';
+  text += '--- TRANSITION FRAMEWORK ---\n';
+  text += 'Duration: ' + (s.framework.duration || '--') + ' months\n';
+  text += 'Current Phase: ' + (s.framework.currentPhase || '--') + '\n\n';
+  text += '--- EMPLOYEE COMMUNICATION ---\n';
+  const empPrinciples = ['fromYou','within48','tiered','prepared','transparent'];
+  text += 'Principles: ' + empPrinciples.filter(k => s.employees.communicationPrinciples[k]).length + '/5\n';
+  text += 'Retention Tools: ' + s.employees.retentionTools.length + '\n\n';
+  text += '--- MILESTONES ---\n';
+  const mileDone = s.milestones.filter(m => m.done).length;
+  text += mileDone + '/' + s.milestones.length + ' complete\n\n';
+  text += '--- KNOWLEDGE TRANSFER ---\n';
+  const ktCats = ['relationship','operational','strategic','cultural','crisis','financial'];
+  text += 'Categories planned: ' + ktCats.filter(k => s.knowledge.categories[k]).length + '/6\n';
+  text += 'Brain dump committed: ' + (s.knowledge.brainDump ? 'Yes' : 'No') + '\n\n';
+  text += '--- INVOLVEMENT LEVEL ---\n';
+  text += 'Level: ' + (s.involvement.level || '--') + '\n\n';
+  text += '--- INTEGRATION RISKS ---\n';
+  const riskCats = ['employee_flight','customer_attrition','cultural_clash','operational_disruption','vendor_disruption','knowledge_loss'];
+  text += 'Addressed: ' + riskCats.filter(k => s.risks.assessed[k]).length + '/6\n';
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'playbook-38-transition-report.txt';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Report exported successfully');
+}
+
+buildNav(); updateProgress(); updateScore(); renderPage(state.currentPage);
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

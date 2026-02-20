@@ -15,6 +15,7 @@ import { DiagnosisError } from './DiagnosisError'
 import { DiagnosisActionBanner } from './DiagnosisActionBanner'
 import { LowestConfidencePrompt } from './LowestConfidencePrompt'
 import { UpgradeModal } from '@/components/subscription/UpgradeModal'
+import { PostAssessmentPlaybooks } from '@/components/playbook/PostAssessmentPlaybooks'
 
 interface CategoryData {
   category: string
@@ -96,6 +97,30 @@ export function DiagnosisPage() {
   const [sharpenActive, setSharpenActive] = useState(false)
   const sharpenConsumedRef = useRef(false)
   const [cadenceNextDates, setCadenceNextDates] = useState<Record<string, string | null>>({})
+  const [topPlaybooks, setTopPlaybooks] = useState<Array<{
+    playbook: import('../../../prisma/seed-data/playbook-definitions').PlaybookDefinition
+    relevanceScore: number
+    estimatedImpactLow: number
+    estimatedImpactHigh: number
+  }>>([])
+  const [showPlaybooks, setShowPlaybooks] = useState(true)
+
+  // Fetch playbook recommendations when assessment exists
+  useEffect(() => {
+    if (!selectedCompanyId || !hasFullAssessment) return
+    fetch(`/api/companies/${selectedCompanyId}/playbook-recommendations`)
+      .then(res => res.ok ? res.json() : null)
+      .then(result => {
+        if (result?.recommendations) {
+          setTopPlaybooks(
+            result.recommendations
+              .filter((r: { isRecommended: boolean }) => r.isRecommended)
+              .slice(0, 3)
+          )
+        }
+      })
+      .catch(() => {})
+  }, [selectedCompanyId, hasFullAssessment])
 
   const fetchData = useCallback(async () => {
     if (!selectedCompanyId) return
@@ -289,6 +314,7 @@ export function DiagnosisPage() {
                     onCollapse={() => setExpandedCategory(null)}
                     nextPromptDate={cadenceNextDates[cat.category] ?? null}
                     financialContext={cat.financialContext}
+                    planTier={planTier}
                   />
                 </div>
               )
@@ -307,6 +333,17 @@ export function DiagnosisPage() {
             onExpandCategory={handleExpandCategory}
           />
         </AnimatedItem>
+
+        {/* Top Playbook Recommendations — shown after assessment completion */}
+        {showPlaybooks && topPlaybooks.length > 0 && (
+          <AnimatedItem>
+            <PostAssessmentPlaybooks
+              playbooks={topPlaybooks}
+              planTier={planTier}
+              onDismiss={() => setShowPlaybooks(false)}
+            />
+          </AnimatedItem>
+        )}
 
         {/* Lowest Confidence Prompt — shown at bottom when one category needs more answers */}
         <AnimatedItem>

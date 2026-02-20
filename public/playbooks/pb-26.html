@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Value Driver Acceleration | Exit Planning Playbook #26</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.6; color: var(--color-text); background: var(--color-bg); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 1000; }
+a.skip-link:focus { position: fixed; top: 10px; left: 10px; width: auto; height: auto; padding: 12px 20px; background: var(--color-primary); color: #fff; border-radius: var(--radius-sm); font-weight: 600; z-index: 1000; }
+.t-display { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; min-width: 260px; background: #FFFFFF; border-right: 1px solid var(--color-border); color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: transform var(--transition-slow); overflow-y: auto; }
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+.mobile-header { display: none; position: sticky; top: 0; z-index: 90; background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md); }
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item { display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px; border-radius: var(--radius-sm); color: var(--color-text-secondary); font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative; }
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--color-text-tertiary); }
+.nav-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+.sidebar-footer { margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--color-border); font-size: 12px; color: rgba(255,255,255,0.3); display: flex; align-items: center; gap: 6px; }
+.sidebar-footer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-success); }
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); transition: box-shadow var(--transition-normal); margin-bottom: var(--space-md); }
+.card:hover { box-shadow: var(--shadow-sm); }
+.callout { padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); border-left: 3px solid; font-size: 14px; line-height: 1.6; margin-bottom: var(--space-md); }
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+.callout-success { background: var(--color-success-light); border-color: var(--color-success); color: var(--color-success); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm); padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; transition: all var(--transition-fast); white-space: nowrap; }
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); }
+.form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface); transition: all var(--transition-fast); color: var(--color-text); }
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; }
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); text-align: center; }
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+@media (max-width: 600px) { .score-selector { gap: 4px; } .score-option { padding: 10px 4px; } .score-number { font-size: 18px; } .score-label-text { font-size: 9px; } }
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--color-border); }
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+@media (max-width: 600px) { .welcome-stats { grid-template-columns: 1fr; } .welcome-hero { padding: var(--space-2xl) var(--space-md); } }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-lg); }
+.summary-item { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-align: center; }
+.summary-item-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; }
+.summary-item-label { font-size: 12px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-top: var(--space-xs); }
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 24px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+@media (max-width: 600px) { .bar-label { width: 90px; font-size: 11px; } .summary-grid { grid-template-columns: repeat(2, 1fr); } }
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; margin-bottom: var(--space-md); }
+.data-table th { text-align: left; padding: var(--space-sm) var(--space-md); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); }
+.data-table td { padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table input, .data-table select, .data-table textarea { width: 100%; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; background: var(--color-surface); color: var(--color-text); }
+.data-table input:focus, .data-table select:focus, .data-table textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-light); }
+.data-table textarea { min-height: 60px; resize: vertical; }
+.gauge-wrap { display: flex; justify-content: center; margin: var(--space-lg) 0; }
+.gauge-ring { position: relative; width: 160px; height: 160px; }
+.gauge-ring svg { width: 160px; height: 160px; transform: rotate(-90deg); }
+.gauge-ring circle { fill: none; stroke-width: 8; stroke-linecap: round; }
+.gauge-bg { stroke: var(--color-border); }
+.gauge-fill { transition: stroke-dashoffset 1s ease; }
+.gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gauge-center-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; line-height: 1; }
+.gauge-center-label { font-size: 12px; color: var(--color-text-tertiary); margin-top: 4px; }
+.add-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; border: 2px dashed var(--color-border); border-radius: var(--radius-md); background: transparent; cursor: pointer; font-size: 14px; color: var(--color-text-tertiary); font-weight: 500; transition: all var(--transition-fast); font-family: inherit; margin-bottom: var(--space-md); }
+.add-btn:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-light); }
+.remove-btn { background: none; border: none; color: var(--color-text-tertiary); cursor: pointer; font-size: 18px; padding: 4px; line-height: 1; transition: color var(--transition-fast); }
+.remove-btn:hover { color: var(--color-danger); }
+.calc-row { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); margin-bottom: var(--space-sm); }
+.calc-label { flex: 1; font-size: 14px; font-weight: 500; }
+.calc-input { width: 140px; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; font-family: inherit; text-align: right; background: var(--color-surface); color: var(--color-text); transition: border-color var(--transition-fast); }
+.calc-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.calc-result { padding: var(--space-lg); text-align: center; background: var(--color-text); border-radius: var(--radius-md); color: #fff; margin-top: var(--space-md); }
+.calc-result .result-label { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+.calc-result .result-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; color: var(--color-accent); }
+.calc-result .result-sub { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+.matrix-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm); margin-bottom: var(--space-md); }
+.matrix-cell { padding: var(--space-lg); border-radius: var(--radius-md); border: 1px solid var(--color-border); min-height: 100px; }
+.matrix-cell .cell-header { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: var(--space-sm); }
+.matrix-cell.q1 { background: var(--color-success-light); } .matrix-cell.q1 .cell-header { color: var(--color-success); }
+.matrix-cell.q2 { background: var(--color-primary-light); } .matrix-cell.q2 .cell-header { color: var(--color-primary); }
+.matrix-cell.q3 { background: var(--color-warning-light); } .matrix-cell.q3 .cell-header { color: var(--color-warning); }
+.matrix-cell.q4 { background: var(--color-surface-alt); } .matrix-cell.q4 .cell-header { color: var(--color-text-tertiary); }
+.timeline { position: relative; padding-left: 28px; }
+.timeline::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: var(--color-border); }
+.timeline-item { position: relative; margin-bottom: var(--space-lg); }
+.timeline-item::before { content: ''; position: absolute; left: -24px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--color-border); border: 2px solid var(--color-surface); z-index: 1; }
+.timeline-item.active::before { background: var(--color-accent); }
+.timeline-item .tl-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.timeline-item .tl-desc { font-size: 13px; color: var(--color-text-secondary); }
+.timeline-item .tl-badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-top: 4px; }
+.retention-card { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); margin-bottom: var(--space-sm); cursor: pointer; transition: all var(--transition-fast); }
+.retention-card:hover { box-shadow: var(--shadow-sm); }
+.retention-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+@media (max-width: 600px) { .matrix-grid { grid-template-columns: 1fr; } .calc-row { flex-direction: column; align-items: stretch; gap: var(--space-sm); } .calc-input { width: 100%; } }
+.toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 200; }
+.toast { background: var(--color-text); color: #fff; padding: 12px 24px; border-radius: var(--radius-md); font-size: 14px; box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(20px); transition: all 0.3s ease; pointer-events: none; }
+.toast.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+@media print {
+  .sidebar, .mobile-header, .page-nav, .sidebar-overlay { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; margin-bottom: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<a href="#contentArea" class="skip-link">Skip to content</a>
+<div class="app">
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #26</div>
+      <div class="sidebar-brand-title">Value Driver Acceleration</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Avg Driver Score</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/10</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete diagnostic to see score</div>
+    </div>
+    <div class="sidebar-footer"><div class="sidebar-footer-dot"></div>Auto-saved locally</div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation"><span></span></button>
+      <div style="flex:1"><strong style="font-size:15px;">Value Driver Acceleration</strong></div>
+      <div class="badge badge-primary" id="mobileScore">--/10</div>
+    </div>
+    <main class="content-area" id="contentArea" role="main"></main>
+  </div>
+</div>
+<div class="toast-container" aria-live="polite"><div class="toast" id="toast"></div></div>
+
+<script>
+(function() {
+'use strict';
+
+var STORAGE_KEY = 'exitosx-pb26-value-driver-accel';
+
+var PAGES = [
+  { id: 'welcome', title: 'Welcome', phase: 'START', icon: '1' },
+  { id: 'diagnostic', title: 'Value Driver Diagnostic', phase: 'DIAGNOSE', icon: '2' },
+  { id: 'recurring', title: 'Recurring Revenue', phase: 'DEEP DIVES', icon: '3' },
+  { id: 'margins', title: 'Margins', phase: 'DEEP DIVES', icon: '4' },
+  { id: 'management', title: 'Management Depth', phase: 'DEEP DIVES', icon: '5' },
+  { id: 'concentration', title: 'Customer Diversification', phase: 'DEEP DIVES', icon: '6' },
+  { id: 'priority', title: 'Priority Matrix', phase: 'PLAN', icon: '7' },
+  { id: 'calculator', title: 'Value Calculator', phase: 'PLAN', icon: '8' },
+  { id: 'acceleration', title: 'Acceleration Plan', phase: 'PLAN', icon: '9' },
+  { id: 'dashboard', title: 'Dashboard', phase: 'RESULTS', icon: '10' }
+];
+
+var VALUE_DRIVERS = [
+  { key: 'recurring', label: 'Recurring Revenue %', benchmark: '40-70%', benchNum: 6 },
+  { key: 'gross_margin', label: 'Gross Margin', benchmark: 'Service: 50-70%', benchNum: 6 },
+  { key: 'ebitda_margin', label: 'EBITDA Margin', benchmark: 'Service: 15-25%', benchNum: 5 },
+  { key: 'mgmt_depth', label: 'Management Depth', benchmark: '3+ non-owner leaders', benchNum: 5 },
+  { key: 'cust_divers', label: 'Customer Diversification', benchmark: 'Top client <15%', benchNum: 6 },
+  { key: 'rev_growth', label: 'Revenue Growth Rate', benchmark: '10-20% YoY', benchNum: 6 },
+  { key: 'scalable', label: 'Scalable Systems', benchmark: 'SOPs + tech-enabled', benchNum: 5 },
+  { key: 'owner_dep', label: 'Owner Independence', benchmark: 'Owner works ON not IN', benchNum: 5 }
+];
+
+var MGMT_FUNCTIONS = [
+  { key: 'sales', label: 'Sales Leadership' },
+  { key: 'ops', label: 'Operations Management' },
+  { key: 'finance', label: 'Finance / Controlling' },
+  { key: 'cs', label: 'Customer Success / Account Mgmt' },
+  { key: 'tech', label: 'Technology / IT' },
+  { key: 'hr', label: 'Human Resources / People' }
+];
+
+var RETENTION_STRATEGIES = [
+  { key: 'stay_bonus', label: 'Stay Bonuses', desc: 'Transaction bonuses (1-2x salary) triggered at close', icon: '$', color: 'var(--color-success-light)' },
+  { key: 'equity', label: 'Equity / Phantom Equity', desc: 'Profit-sharing tied to EBITDA performance', icon: '%', color: 'var(--color-primary-light)' },
+  { key: 'employment', label: 'Employment Agreements', desc: '2-3 year agreements with non-compete/non-solicit', icon: '#', color: 'var(--color-warning-light)' },
+  { key: 'culture', label: 'Cultural Investment', desc: 'Key managers involved in strategic planning', icon: '*', color: 'var(--color-accent-light)' }
+];
+
+var CONC_METRICS = [
+  { key: 'top1', label: 'Top Customer % of Revenue', target: '<10%' },
+  { key: 'top5', label: 'Top 5 Customers % of Revenue', target: '<25%' },
+  { key: 'top10', label: 'Top 10 Customers % of Revenue', target: '<40%' },
+  { key: 'above5pct', label: 'Customers Above 5% of Revenue', target: '0-2' }
+];
+
+var REVENUE_TYPES = [
+  { key: 'multi_year', label: 'Multi-Year Contracts', color: 'var(--color-score-5)' },
+  { key: 'annual', label: 'Annual Recurring', color: 'var(--color-score-4)' },
+  { key: 'repeat', label: 'Repeat/Habitual', color: 'var(--color-score-3)' },
+  { key: 'project', label: 'Project-Based', color: 'var(--color-score-2)' },
+  { key: 'one_time', label: 'One-Time', color: 'var(--color-score-1)' }
+];
+
+var BUSINESS_TYPES = [
+  { key: 'services', label: 'Professional Services', strategy: 'Convert hourly billing to retainer agreements with monthly minimums. Timeline: 3-6 months for existing clients.' },
+  { key: 'product', label: 'Product Company', strategy: 'Introduce subscription model, refill programs, or maintenance plans. Timeline: 6-12 months to design and launch.' },
+  { key: 'contractor', label: 'Contractor / Trades', strategy: 'Offer annual service contracts and preventive maintenance. Timeline: 3-6 months for existing customers.' },
+  { key: 'distribution', label: 'Distribution', strategy: 'Launch auto-replenishment programs and blanket purchase orders. Timeline: 6-9 months with key accounts.' },
+  { key: 'software', label: 'Software (Perpetual License)', strategy: 'Convert to SaaS with annual/monthly billing. Timeline: 12-18 months (complex but highest impact).' }
+];
+
+var MISTAKES = [
+  { title: 'Trying to Fix Everything at Once', desc: 'Owners who improve all value drivers simultaneously dilute focus and achieve nothing.', solution: 'Pick 3-5 drivers maximum. Execute with intensity on those. Ignore the rest until these are solid.' },
+  { title: 'Improving EBITDA Through One-Time Cost Cuts', desc: 'Slashing costs to inflate one year of EBITDA is transparent to experienced buyers.', solution: 'Focus on sustainable improvements: recurring revenue, pricing discipline, structural cost reductions that persist.' },
+  { title: 'Hiring Senior Leaders Too Late', desc: 'A VP hired 6 months before market does not help. Buyers want 12-18 months of performance.', solution: 'Make key hires 18-24 months before your target exit date.' },
+  { title: 'Ignoring the Narrative', desc: 'Value drivers are not just metrics -- they are a story. Improving recurring from 20% to 55% is powerful.', solution: 'Document the before-and-after story for each value driver. Include it in your CIM.' },
+  { title: 'Confusing Revenue Growth with Value Creation', desc: 'Growth with declining margins or increased concentration does not improve multiples.', solution: 'Ensure growth is profitable, diversified, and sustainable. Quality of revenue > quantity.' }
+];
+
+function defaultState() {
+  return {
+    currentPage: 'welcome',
+    completed: {},
+    diagnosticScores: {},
+    revenueMix: {},
+    rrMetrics: {},
+    businessType: null,
+    margins: { gross: { y1:'', y2:'', y3:'' }, ebitda: { y1:'', y2:'', y3:'' } },
+    mgmtScores: {},
+    retentionChecks: {},
+    concentration: {},
+    concTargets: {},
+    priorities: {},
+    calcValues: { currentEBITDA:'', currentMultiple:'', projectedEBITDA:'', projectedMultiple:'' },
+    accelPlan: [
+      { initiative:'', driver:'', start:'', target:'', investment:'', status:'' },
+      { initiative:'', driver:'', start:'', target:'', investment:'', status:'' },
+      { initiative:'', driver:'', start:'', target:'', investment:'', status:'' }
+    ],
+    dashboardData: {}
+  };
+}
+
+var state = loadState();
+
+function loadState() {
+  try { var s = localStorage.getItem(STORAGE_KEY); return s ? mergeDeep(defaultState(), JSON.parse(s)) : defaultState(); }
+  catch(e) { return defaultState(); }
+}
+function mergeDeep(t, s) {
+  var r = {};
+  for (var k in t) r[k] = t[k];
+  for (var k in s) {
+    if (s[k] !== null && typeof s[k] === 'object' && !Array.isArray(s[k]) && typeof t[k] === 'object' && !Array.isArray(t[k])) r[k] = mergeDeep(t[k], s[k]);
+    else r[k] = s[k];
+  }
+  return r;
+}
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  updateProgress();
+  updateScore();
+}
+function updateScore() {
+  var vals = []; VALUE_DRIVERS.forEach(function(d) { if (state.diagnosticScores[d.key]) vals.push(state.diagnosticScores[d.key]); });
+  var avg = vals.length > 0 ? (vals.reduce(function(a,b){return a+b;},0)/vals.length).toFixed(1) : '--';
+  document.getElementById('sidebarScore').innerHTML = avg + '<span class="sidebar-score-max">/10</span>';
+  document.getElementById('mobileScore').textContent = avg + '/10';
+  var n = parseFloat(avg);
+  document.getElementById('sidebarScoreDesc').textContent = isNaN(n) ? 'Complete diagnostic to see score' : n >= 7 ? 'Strong value driver profile' : n >= 5 ? 'Room for improvement' : 'Significant gaps to address';
+}
+function updateProgress() {
+  var total = PAGES.length - 2; var done = Object.keys(state.completed).length;
+  var pct = total > 0 ? Math.round((done/total)*100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+}
+function isUnlocked(pageId) {
+  var idx = PAGES.findIndex(function(p){return p.id===pageId;}); if (idx<=0) return true;
+  return state.completed[PAGES[idx-1].id]===true;
+}
+function renderNav() {
+  var nav = document.getElementById('sidebarNav'); var html = ''; var lastPhase = '';
+  PAGES.forEach(function(p) {
+    if (p.phase!==lastPhase) { html+='<div class="nav-section-label">'+p.phase+'</div>'; lastPhase=p.phase; }
+    var isActive=state.currentPage===p.id, isDone=state.completed[p.id], locked=!isUnlocked(p.id);
+    html+='<div class="nav-item'+(isActive?' active':'')+(isDone?' completed':'')+(locked?' locked':'')+'" data-page="'+p.id+'" role="button" tabindex="'+(locked?'-1':'0')+'" aria-current="'+(isActive?'step':'false')+'">';
+    html+='<span class="nav-icon">'+p.icon+'</span><span>'+p.title+'</span>';
+    if(isDone) html+='<span class="nav-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></span>';
+    html+='</div>';
+  });
+  nav.innerHTML=html;
+  nav.querySelectorAll('.nav-item:not(.locked)').forEach(function(el){
+    el.addEventListener('click',function(){goToPage(el.dataset.page);});
+    el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();goToPage(el.dataset.page);}});
+  });
+}
+function goToPage(pageId) { if(!isUnlocked(pageId))return; state.currentPage=pageId; saveState(); renderPage(); renderNav(); window.scrollTo({top:0,behavior:'smooth'}); closeSidebar(); }
+function completePage(pageId) { state.completed[pageId]=true; var idx=PAGES.findIndex(function(p){return p.id===pageId;}); if(idx<PAGES.length-1) state.currentPage=PAGES[idx+1].id; saveState(); renderPage(); renderNav(); window.scrollTo({top:0,behavior:'smooth'}); }
+function prevPage() { var idx=PAGES.findIndex(function(p){return p.id===state.currentPage;}); if(idx>0) goToPage(PAGES[idx-1].id); }
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('show');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('show');}
+document.getElementById('hamburgerBtn').addEventListener('click',toggleSidebar);
+document.getElementById('sidebarOverlay').addEventListener('click',closeSidebar);
+function esc(s){var d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('visible');setTimeout(function(){t.classList.remove('visible');},2500);}
+function pageNav(showPrev,nextLabel,currentId){var h='<div class="page-nav">';h+=showPrev?'<button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button>':'<div></div>';if(nextLabel!==false)h+='<button class="btn btn-primary" onclick="PB.completePage(\''+currentId+'\')">'+( nextLabel||'Continue')+' &rarr;</button>';h+='</div>';return h;}
+function formatCurrency(v){if(v>=1000000)return '$'+(v/1000000).toFixed(1)+'M';if(v>=1000)return '$'+(v/1000).toFixed(0)+'K';return '$'+v.toFixed(0);}
+
+function scoreSelector10(stateObj,dimKey){
+  var current=stateObj[dimKey]||0;
+  var html='<div class="score-selector" role="radiogroup" aria-label="Score for '+dimKey+'" style="gap:3px">';
+  for(var i=1;i<=10;i++){var sel=current===i?' selected':'';var cls=i<=3?'s1':i<=5?'s2':i<=7?'s3':i<=9?'s4':'s5';
+    html+='<label class="score-option '+cls+sel+'" style="padding:8px 4px;min-width:0" onclick="PB.setDiagnostic(\''+dimKey+'\','+i+')" tabindex="0" role="radio" aria-checked="'+(current===i)+'" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();PB.setDiagnostic(\''+dimKey+'\','+i+');}">';
+    html+='<input type="radio" name="diag-'+dimKey+'" value="'+i+'"'+(current===i?' checked':'')+'>';
+    html+='<span class="score-number" style="font-size:16px">'+i+'</span></label>';
+  }
+  html+='</div>';return html;
+}
+function scoreSelector5(stateObj,stateKey,dimKey,labels){
+  var current=stateObj[dimKey]||0;var lbls=labels||['Poor','Below Avg','Average','Good','Excellent'];
+  var html='<div class="score-selector" role="radiogroup" aria-label="Score for '+dimKey+'">';
+  for(var i=1;i<=5;i++){var sel=current===i?' selected':'';
+    html+='<label class="score-option s'+i+sel+'" onclick="PB.setScore(\''+stateKey+'\',\''+dimKey+'\','+i+')" tabindex="0" role="radio" aria-checked="'+(current===i)+'" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();PB.setScore(\''+stateKey+'\',\''+dimKey+'\','+i+');}">';
+    html+='<input type="radio" name="score-'+dimKey+'" value="'+i+'"'+(current===i?' checked':'')+'>';
+    html+='<span class="score-number">'+i+'</span><span class="score-label-text">'+lbls[i-1]+'</span></label>';
+  }
+  html+='</div>';return html;
+}
+
+// ============================================================
+// PAGE RENDERERS
+// ============================================================
+function renderPage(){
+  var area=document.getElementById('contentArea');
+  var r={'welcome':renderWelcome,'diagnostic':renderDiagnostic,'recurring':renderRecurring,'margins':renderMargins,'management':renderManagement,'concentration':renderConcentration,'priority':renderPriority,'calculator':renderCalculator,'acceleration':renderAcceleration,'dashboard':renderDashboard};
+  var fn=r[state.currentPage];
+  area.innerHTML='<div class="page active">'+(fn?fn():'')+'</div>';
+}
+
+function renderWelcome(){
+  return '<div class="welcome-hero">'+
+    '<div class="welcome-icon">&#128200;</div>'+
+    '<div class="t-display">Value Driver Acceleration</div>'+
+    '<p class="t-body t-secondary" style="margin-top:var(--space-md)">Identify the 3-5 levers that move your multiple, prioritize by ROI and timeline, and build a structured plan that maximizes enterprise value before you go to market.</p>'+
+    '<div class="welcome-stats">'+
+    '<div class="welcome-stat"><div class="welcome-stat-value">4x</div><div class="welcome-stat-label">$8M on $2M EBITDA</div></div>'+
+    '<div class="welcome-stat"><div class="welcome-stat-value" style="color:var(--color-accent)">7x</div><div class="welcome-stat-label">$14M on $2M EBITDA</div></div>'+
+    '<div class="welcome-stat"><div class="welcome-stat-value">8</div><div class="welcome-stat-label">Value drivers assessed</div></div>'+
+    '</div>'+
+    '<div class="callout callout-info" style="text-align:left"><strong>How multiples work.</strong> Buyers start with a baseline multiple for your industry and size, then adjust based on risk factors and growth indicators. Every value driver you strengthen reduces perceived risk and increases perceived upside.</div>'+
+    '<div class="card" style="text-align:left"><div class="t-h3" style="margin-bottom:var(--space-md)">What You Will Build</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">'+
+    '<div style="padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)"><div class="t-small" style="font-weight:600;margin-bottom:4px">Value Driver Diagnostic</div><div class="t-caption t-secondary">Score your 8 core value drivers</div></div>'+
+    '<div style="padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)"><div class="t-small" style="font-weight:600;margin-bottom:4px">Priority Matrix</div><div class="t-caption t-secondary">ROI vs. timeline prioritization</div></div>'+
+    '<div style="padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)"><div class="t-small" style="font-weight:600;margin-bottom:4px">Value Calculator</div><div class="t-caption t-secondary">Model the impact of improvements</div></div>'+
+    '<div style="padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)"><div class="t-small" style="font-weight:600;margin-bottom:4px">Acceleration Plan</div><div class="t-caption t-secondary">12-24 month execution roadmap</div></div>'+
+    '</div></div></div>'+pageNav(false,'Begin Assessment','welcome');
+}
+
+function renderDiagnostic(){
+  var html='<div class="page-header"><div class="t-label">Diagnose</div><div class="t-display">Value Driver Diagnostic</div><p class="t-body t-secondary">Rate each value driver on a 1-10 scale. Be honest -- this is your starting point, not your report card.</p></div>';
+  html+='<div class="callout callout-warning"><strong>Diagnostic tip.</strong> Have your CFO/controller and an outside advisor also complete this. The gaps between scores reveal blind spots that could surprise you in diligence.</div>';
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Score Your Value Drivers</div>';
+  VALUE_DRIVERS.forEach(function(d){
+    html+='<div style="margin-bottom:var(--space-lg)"><div class="form-label">'+d.label+'</div><div style="font-size:12px;color:var(--color-text-tertiary);margin-bottom:var(--space-sm)">Benchmark: '+d.benchmark+'</div>'+scoreSelector10(state.diagnosticScores,d.key)+'</div>';
+  });
+  html+='</div>';
+  // Bar chart
+  var hasScores=false; VALUE_DRIVERS.forEach(function(d){if(state.diagnosticScores[d.key])hasScores=true;});
+  if(hasScores){
+    html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Your Value Driver Profile</div><div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Bars below benchmark are your biggest opportunities for multiple improvement.</div><div class="bar-chart">';
+    VALUE_DRIVERS.forEach(function(d){
+      var score=state.diagnosticScores[d.key]||0;var pct=score*10;
+      var color=score>=d.benchNum?'var(--color-success)':score>=d.benchNum-2?'var(--color-warning)':'var(--color-danger)';
+      html+='<div class="bar-row"><div class="bar-label">'+d.label.split('(')[0].trim()+'</div><div class="bar-track"><div class="bar-fill" style="width:'+pct+'%;background:'+color+'"><span class="bar-value">'+score+'</span></div><div style="position:absolute;left:'+(d.benchNum*10)+'%;top:0;bottom:0;width:2px;background:var(--color-text);opacity:0.2"></div></div></div>';
+    });
+    html+='</div><div class="t-caption t-secondary" style="text-align:right;margin-top:var(--space-xs)">Dark line = industry benchmark</div></div>';
+  }
+  html+=pageNav(true,'Continue','diagnostic');return html;
+}
+
+function renderRecurring(){
+  var html='<div class="page-header"><div class="t-label">Deep Dive</div><div class="t-display">Recurring Revenue</div><p class="t-body t-secondary">The single most powerful value driver. Subscriptions, contracts, and retainers provide predictability, reduce acquisition pressure, and support leveraged buyout financing.</p></div>';
+  // Revenue quality table
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Revenue Quality Spectrum</div><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Revenue Type</th><th>Quality</th><th>Buyer Premium</th></tr></thead><tbody>';
+  html+='<tr><td>Contractual recurring (multi-year)</td><td><span class="badge badge-success">10/10</span></td><td>+1.5x to +2.0x</td></tr>';
+  html+='<tr><td>Contractual recurring (annual)</td><td><span class="badge badge-success">8/10</span></td><td>+1.0x to +1.5x</td></tr>';
+  html+='<tr><td>Repeat revenue (habitual)</td><td><span class="badge badge-warning">6/10</span></td><td>+0.5x to +1.0x</td></tr>';
+  html+='<tr><td>Project-based (repeat clients)</td><td><span class="badge badge-warning">4/10</span></td><td>+0.0x to +0.5x</td></tr>';
+  html+='<tr><td>One-time transactional</td><td><span class="badge badge-danger">2/10</span></td><td>Baseline</td></tr>';
+  html+='</tbody></table></div></div>';
+  // Revenue mix inputs
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Your Revenue Mix</div><div class="t-small t-secondary" style="margin-bottom:var(--space-md)">What percentage of your revenue falls into each category?</div>';
+  REVENUE_TYPES.forEach(function(rt){var val=state.revenueMix[rt.key]||'';
+    html+='<div class="calc-row"><div style="display:flex;align-items:center;gap:var(--space-sm);flex:1"><div style="width:12px;height:12px;border-radius:3px;background:'+rt.color+';flex-shrink:0"></div><div class="calc-label">'+rt.label+'</div></div><input type="number" class="calc-input" style="width:100px" value="'+esc(val)+'" placeholder="%" min="0" max="100" onchange="PB.setRevenueMix(\''+rt.key+'\',this.value)"></div>';
+  });
+  // Mix bar
+  var total=0;REVENUE_TYPES.forEach(function(rt){total+=parseInt(state.revenueMix[rt.key])||0;});
+  if(total>0){
+    html+='<div style="display:flex;height:24px;border-radius:var(--radius-sm);overflow:hidden;margin-top:var(--space-md)">';
+    REVENUE_TYPES.forEach(function(rt){var v=parseInt(state.revenueMix[rt.key])||0;if(v>0){var p=(v/total)*100;html+='<div style="width:'+p+'%;background:'+rt.color+';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;min-width:20px" title="'+rt.label+': '+v+'%">'+v+'%</div>';}});
+    html+='</div>';
+    if(total!==100)html+='<div class="t-caption" style="color:var(--color-warning);margin-top:var(--space-xs)">Total: '+total+'% (should equal 100%)</div>';
+  }
+  html+='</div>';
+  // RR Metrics
+  var rrFields=[{key:'rr_ratio',label:'Recurring Revenue Ratio (%)',target:'Target: over 50%'},{key:'retention_rate',label:'Customer Retention Rate (%)',target:'Target: over 90%'},{key:'nrr',label:'Net Revenue Retention (%)',target:'Target: over 110%'},{key:'backlog',label:'Contracted Backlog (months)',target:'12-month visibility'}];
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Recurring Revenue Metrics</div>';
+  rrFields.forEach(function(f){var val=state.rrMetrics[f.key]||'';
+    html+='<div class="calc-row"><div style="flex:1"><div class="calc-label">'+f.label+'</div><div class="t-caption t-secondary" style="margin-top:2px">'+f.target+'</div></div><input type="number" class="calc-input" style="width:120px" value="'+esc(val)+'" placeholder="--" onchange="PB.setRRMetric(\''+f.key+'\',this.value)"></div>';
+  });
+  html+='</div>';
+  // Business type conversion
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Conversion Strategy</div><div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Select your business type for a tailored conversion playbook.</div>';
+  BUSINESS_TYPES.forEach(function(bt){var isSel=state.businessType===bt.key;
+    html+='<div style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md);margin-bottom:var(--space-sm);background:'+(isSel?'var(--color-primary-light)':'var(--color-surface-alt)')+';border:2px solid '+(isSel?'var(--color-primary)':'transparent')+';border-radius:var(--radius-md);cursor:pointer;transition:all var(--transition-fast)" onclick="PB.setBusinessType(\''+bt.key+'\')" role="radio" aria-checked="'+isSel+'" tabindex="0" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();PB.setBusinessType(\''+bt.key+'\');}">';
+    html+='<div style="width:18px;height:18px;border-radius:50%;border:2px solid '+(isSel?'var(--color-primary)':'var(--color-border)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0">';
+    if(isSel)html+='<div style="width:10px;height:10px;border-radius:50%;background:var(--color-primary)"></div>';
+    html+='</div><div style="flex:1"><span class="t-small" style="font-weight:600">'+bt.label+'</span>';
+    if(isSel)html+='<div class="t-small t-secondary" style="margin-top:var(--space-xs)">'+bt.strategy+'</div>';
+    html+='</div></div>';
+  });
+  html+='</div>';
+  html+=pageNav(true,'Continue','recurring');return html;
+}
+
+function renderMargins(){
+  var m=state.margins;
+  var html='<div class="page-header"><div class="t-label">Deep Dive</div><div class="t-display">Gross & EBITDA Margins</div><p class="t-body t-secondary">Margins signal pricing power, operational efficiency, and competitive moat. Three consecutive years of margin expansion is the strongest signal to buyers.</p></div>';
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Margin History</div><div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Enter your margins for the past 3 years to show the trend.</div>';
+  html+='<div style="overflow-x:auto"><table class="data-table"><thead><tr><th></th><th>Year 1 (oldest)</th><th>Year 2</th><th>Year 3 (current)</th><th>Trend</th></tr></thead><tbody>';
+  // Gross margin row
+  var gTrend='--';var g1=parseFloat(m.gross.y1),g3=parseFloat(m.gross.y3);
+  if(!isNaN(g1)&&!isNaN(g3))gTrend=g3>g1?'<span class="badge badge-success">Expanding</span>':'<span class="badge badge-danger">Declining</span>';
+  html+='<tr><td style="font-weight:600">Gross Margin (%)</td>';
+  html+='<td><input type="number" value="'+esc(m.gross.y1)+'" placeholder="%" onchange="PB.setMargin(\'gross\',\'y1\',this.value)"></td>';
+  html+='<td><input type="number" value="'+esc(m.gross.y2)+'" placeholder="%" onchange="PB.setMargin(\'gross\',\'y2\',this.value)"></td>';
+  html+='<td><input type="number" value="'+esc(m.gross.y3)+'" placeholder="%" onchange="PB.setMargin(\'gross\',\'y3\',this.value)"></td>';
+  html+='<td>'+gTrend+'</td></tr>';
+  // EBITDA margin row
+  var eTrend='--';var e1=parseFloat(m.ebitda.y1),e3=parseFloat(m.ebitda.y3);
+  if(!isNaN(e1)&&!isNaN(e3))eTrend=e3>e1?'<span class="badge badge-success">Expanding</span>':'<span class="badge badge-danger">Declining</span>';
+  html+='<tr><td style="font-weight:600">EBITDA Margin (%)</td>';
+  html+='<td><input type="number" value="'+esc(m.ebitda.y1)+'" placeholder="%" onchange="PB.setMargin(\'ebitda\',\'y1\',this.value)"></td>';
+  html+='<td><input type="number" value="'+esc(m.ebitda.y2)+'" placeholder="%" onchange="PB.setMargin(\'ebitda\',\'y2\',this.value)"></td>';
+  html+='<td><input type="number" value="'+esc(m.ebitda.y3)+'" placeholder="%" onchange="PB.setMargin(\'ebitda\',\'y3\',this.value)"></td>';
+  html+='<td>'+eTrend+'</td></tr>';
+  html+='</tbody></table></div></div>';
+  // Margin chart
+  var hasData=[m.gross.y1,m.gross.y2,m.gross.y3,m.ebitda.y1,m.ebitda.y2,m.ebitda.y3].some(function(v){return v!==''&&v!==undefined;});
+  if(hasData){
+    var maxVal=Math.max(parseFloat(m.gross.y1)||0,parseFloat(m.gross.y2)||0,parseFloat(m.gross.y3)||0,parseFloat(m.ebitda.y1)||0,parseFloat(m.ebitda.y2)||0,parseFloat(m.ebitda.y3)||0,50);
+    html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Margin Visualization</div>';
+    html+='<div style="display:flex;align-items:flex-end;gap:var(--space-lg);justify-content:center;padding:var(--space-lg)">';
+    ['y1','y2','y3'].forEach(function(y,i){var gv=parseFloat(m.gross[y])||0;var ev=parseFloat(m.ebitda[y])||0;var gP=(gv/maxVal)*120;var eP=(ev/maxVal)*120;
+      html+='<div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div style="display:flex;align-items:flex-end;gap:6px;height:130px"><div style="width:28px;background:var(--color-primary);border-radius:4px 4px 0 0;height:'+gP+'px;display:flex;align-items:flex-start;justify-content:center;font-size:10px;font-weight:600;color:#fff;padding-top:4px">'+(gv||'')+'</div><div style="width:28px;background:var(--color-accent);border-radius:4px 4px 0 0;height:'+eP+'px;display:flex;align-items:flex-start;justify-content:center;font-size:10px;font-weight:600;color:#fff;padding-top:4px">'+(ev||'')+'</div></div><div class="t-caption t-secondary" style="font-weight:500">Year '+(i+1)+'</div></div>';
+    });
+    html+='</div><div style="display:flex;gap:var(--space-md);justify-content:center;font-size:12px"><span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:var(--color-primary);border-radius:2px"></span> Gross</span><span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:var(--color-accent);border-radius:2px"></span> EBITDA</span></div></div>';
+  }
+  html+='<div class="callout callout-info"><strong>Benchmarks.</strong> Gross margins above industry median signal pricing power. EBITDA margins above 15-20% for service businesses or 10-15% for product businesses attract premium buyers.</div>';
+  html+=pageNav(true,'Continue','margins');return html;
+}
+
+function renderManagement(){
+  var html='<div class="page-header"><div class="t-label">Deep Dive</div><div class="t-display">Management Depth & Succession</div><p class="t-body t-secondary">A deep management team signals the business runs without you. Building this bench is a 12-18 month process requiring deliberate investment.</p></div>';
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Management Depth Assessment</div><div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Rate bench strength for each function (1 = Owner does everything, 5 = Independent leader with backup).</div>';
+  MGMT_FUNCTIONS.forEach(function(f){html+='<div style="margin-bottom:var(--space-md)"><div class="form-label">'+f.label+'</div>'+scoreSelector5(state.mgmtScores,'mgmtScores',f.key,['Owner Only','Shared','Supervised','Independent','Leader + Backup'])+'</div>';});
+  html+='</div>';
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Retention Strategies</div><div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Which retention mechanisms do you have in place?</div>';
+  RETENTION_STRATEGIES.forEach(function(rs){var checked=state.retentionChecks[rs.key]||false;
+    html+='<div class="retention-card" style="border:2px solid '+(checked?'var(--color-success)':'transparent')+'" onclick="PB.toggleRetention(\''+rs.key+'\')" role="checkbox" aria-checked="'+!!checked+'" tabindex="0" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();PB.toggleRetention(\''+rs.key+'\');}">';
+    html+='<div class="retention-icon" style="background:'+rs.color+'">'+rs.icon+'</div>';
+    html+='<div style="flex:1"><div style="font-size:14px;font-weight:600">'+rs.label+'</div><div class="t-caption t-secondary" style="margin-top:2px">'+rs.desc+'</div></div>';
+    html+='<div style="width:22px;height:22px;border-radius:4px;border:2px solid '+(checked?'var(--color-success)':'var(--color-border)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0;background:'+(checked?'var(--color-success)':'var(--color-surface)')+'">'; if(checked)html+='<svg viewBox="0 0 14 14" style="width:14px;height:14px;stroke:#fff;stroke-width:2.5;fill:none"><polyline points="2.5 7 5.5 10 11.5 4"/></svg>';
+    html+='</div></div>';
+  });
+  html+='</div>';html+=pageNav(true,'Continue','management');return html;
+}
+
+function renderConcentration(){
+  var html='<div class="page-header"><div class="t-label">Deep Dive</div><div class="t-display">Customer Diversification</div><p class="t-body t-secondary">Customer concentration is one of the fastest ways to destroy a multiple. If your top customer exceeds 15-20% of revenue, buyers will discount aggressively.</p></div>';
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Concentration Analysis</div>';
+  CONC_METRICS.forEach(function(m){var val=state.concentration[m.key]||'';
+    html+='<div class="calc-row"><div style="flex:1"><div class="calc-label">'+m.label+'</div><div class="t-caption t-secondary" style="margin-top:2px">Target: '+m.target+'</div></div><input type="number" class="calc-input" style="width:100px" value="'+esc(val)+'" placeholder="%" min="0" max="100" onchange="PB.setConc(\''+m.key+'\',this.value)"></div>';
+  });
+  // Gauge
+  var top1=parseFloat(state.concentration['top1'])||0;
+  if(top1>0){var color=top1<10?'var(--color-success)':top1<25?'var(--color-warning)':'var(--color-danger)';var label=top1<10?'Well Diversified':top1<15?'Acceptable':top1<25?'Needs Attention':top1<40?'Major Concern':'Deal Breaker';
+    html+='<div style="text-align:center;padding:var(--space-lg)"><div style="font-family:var(--font-display);font-size:36px;font-weight:700;color:'+color+'">'+top1+'%</div><div class="t-small t-secondary">'+label+'</div></div>';
+  }
+  html+='</div>';
+  // Impact table
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Concentration Impact on Multiple</div><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Top Customer %</th><th>Buyer Reaction</th><th>Multiple Impact</th></tr></thead><tbody>';
+  html+='<tr><td>Under 10%</td><td>No concern</td><td><span class="badge badge-success">No discount</span></td></tr>';
+  html+='<tr><td>10-15%</td><td>Noted but manageable</td><td><span class="badge badge-success">-0.1x to -0.3x</span></td></tr>';
+  html+='<tr><td>15-25%</td><td>Requires due diligence</td><td><span class="badge badge-warning">-0.3x to -0.7x</span></td></tr>';
+  html+='<tr><td>25-40%</td><td>Major concern</td><td><span class="badge badge-danger">-0.7x to -1.5x</span></td></tr>';
+  html+='<tr><td>Over 40%</td><td>Deal-breaker for most</td><td><span class="badge badge-danger">Extreme risk</span></td></tr>';
+  html+='</tbody></table></div></div>';
+  // Targets
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Target Concentration Profile</div><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Metric</th><th>Current</th><th>Target</th><th>Timeline</th></tr></thead><tbody>';
+  CONC_METRICS.forEach(function(m){var d=state.concTargets[m.key]||{};
+    html+='<tr><td style="font-weight:500">'+m.label+'</td><td><input type="text" value="'+esc(state.concentration[m.key]||'')+'" disabled style="background:var(--color-surface-alt)"></td><td><input type="text" value="'+esc(d.target||'')+'" placeholder="'+m.target+'" onchange="PB.setConcTarget(\''+m.key+'\',\'target\',this.value)"></td><td><input type="text" value="'+esc(d.timeline||'')+'" placeholder="e.g., 12 months" onchange="PB.setConcTarget(\''+m.key+'\',\'timeline\',this.value)"></td></tr>';
+  });
+  html+='</tbody></table></div></div>';
+  html+=pageNav(true,'Continue','concentration');return html;
+}
+
+function renderPriority(){
+  var html='<div class="page-header"><div class="t-label">Plan</div><div class="t-display">Prioritization Matrix</div><p class="t-body t-secondary">You cannot fix everything at once. Assign each value driver to a quadrant based on expected ROI and implementation timeline.</p></div>';
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Assign Priorities</div>';
+  VALUE_DRIVERS.forEach(function(d){var pri=state.priorities[d.key]||'';
+    html+='<div style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md);margin-bottom:var(--space-sm)"><div style="flex:1;font-size:14px;font-weight:500">'+d.label+'</div><select class="form-input" style="width:220px;font-size:13px;padding:8px 12px" onchange="PB.setPriority(\''+d.key+'\',this.value)"><option value="">-- Select --</option><option value="q1"'+(pri==='q1'?' selected':'')+'>Quick Win (High ROI, Fast)</option><option value="q2"'+(pri==='q2'?' selected':'')+'>Strategic Bet (High ROI, Slow)</option><option value="q3"'+(pri==='q3'?' selected':'')+'>Easy Add (Mod ROI, Fast)</option><option value="q4"'+(pri==='q4'?' selected':'')+'>Long-Term (Mod ROI, Slow)</option><option value="skip"'+(pri==='skip'?' selected':'')+'>Skip / Defer</option></select></div>';
+  });
+  html+='</div>';
+  // Matrix
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Your Priority Matrix</div>';
+  html+='<div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:0;margin-bottom:var(--space-sm)"><div style="width:40px"></div><div class="t-label" style="text-align:center;padding:var(--space-xs)">0-6 Months</div><div class="t-label" style="text-align:center;padding:var(--space-xs)">12-24 Months</div></div>';
+  html+='<div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:var(--space-sm)">';
+  html+='<div style="writing-mode:vertical-lr;transform:rotate(180deg);text-align:center;padding:var(--space-xs)" class="t-label">High ROI</div>';
+  var qItems={q1:[],q2:[],q3:[],q4:[]};VALUE_DRIVERS.forEach(function(d){var p=state.priorities[d.key];if(p&&qItems[p])qItems[p].push(d.label);});
+  html+='<div class="matrix-cell q1"><div class="cell-header">Quick Wins</div>'+(qItems.q1.length?qItems.q1.map(function(l){return '<div class="t-small" style="padding:2px 0">'+l+'</div>';}).join(''):'<div class="t-caption t-secondary" style="font-style:italic">No items assigned</div>')+'</div>';
+  html+='<div class="matrix-cell q2"><div class="cell-header">Strategic Bets</div>'+(qItems.q2.length?qItems.q2.map(function(l){return '<div class="t-small" style="padding:2px 0">'+l+'</div>';}).join(''):'<div class="t-caption t-secondary" style="font-style:italic">No items assigned</div>')+'</div>';
+  html+='<div style="writing-mode:vertical-lr;transform:rotate(180deg);text-align:center;padding:var(--space-xs)" class="t-label">Moderate ROI</div>';
+  html+='<div class="matrix-cell q3"><div class="cell-header">Easy Adds</div>'+(qItems.q3.length?qItems.q3.map(function(l){return '<div class="t-small" style="padding:2px 0">'+l+'</div>';}).join(''):'<div class="t-caption t-secondary" style="font-style:italic">No items assigned</div>')+'</div>';
+  html+='<div class="matrix-cell q4"><div class="cell-header">Long-Term</div>'+(qItems.q4.length?qItems.q4.map(function(l){return '<div class="t-small" style="padding:2px 0">'+l+'</div>';}).join(''):'<div class="t-caption t-secondary" style="font-style:italic">No items assigned</div>')+'</div>';
+  html+='</div></div>';
+  // ROI table
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Typical ROI by Value Driver</div><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Initiative</th><th>Cost</th><th>Multiple Impact</th><th>Value Add ($2M EBITDA)</th></tr></thead><tbody>';
+  html+='<tr><td>Convert 30% to recurring</td><td>$50K-$150K</td><td>+1.0x to +1.5x</td><td style="font-weight:600;color:var(--color-success)">$2M-$3M</td></tr>';
+  html+='<tr><td>Hire VP Sales + VP Ops</td><td>$300K-$500K/yr</td><td>+0.5x to +1.0x</td><td style="font-weight:600;color:var(--color-success)">$1M-$2M</td></tr>';
+  html+='<tr><td>Reduce top customer &lt;15%</td><td>$0-$100K</td><td>+0.3x to +0.7x</td><td style="font-weight:600;color:var(--color-success)">$600K-$1.4M</td></tr>';
+  html+='<tr><td>Improve EBITDA margin 3-5pts</td><td>Varies</td><td>EBITDA + multiple</td><td style="font-weight:600;color:var(--color-success)">$500K-$1.5M+</td></tr>';
+  html+='<tr><td>Document all SOPs</td><td>$20K-$50K</td><td>+0.2x to +0.5x</td><td style="font-weight:600;color:var(--color-success)">$400K-$1M</td></tr>';
+  html+='</tbody></table></div></div>';
+  html+=pageNav(true,'Continue','priority');return html;
+}
+
+function renderCalculator(){
+  var c=state.calcValues;var ce=parseFloat((c.currentEBITDA||'').replace(/,/g,''))||0;var cm=parseFloat(c.currentMultiple)||0;var pe=parseFloat((c.projectedEBITDA||'').replace(/,/g,''))||0;var pm=parseFloat(c.projectedMultiple)||0;
+  var currentEV=ce*cm;var projectedEV=pe*pm;
+  var html='<div class="page-header"><div class="t-label">Plan</div><div class="t-display">Enterprise Value Calculator</div><p class="t-body t-secondary">Model the compounding effect of improving both EBITDA and your multiple. See the difference focused execution can make.</p></div>';
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Current State</div>';
+  html+='<div class="calc-row"><div class="calc-label">Current EBITDA ($)</div><input type="text" class="calc-input" value="'+esc(c.currentEBITDA)+'" placeholder="2,000,000" oninput="PB.calcValue(this,\'currentEBITDA\')"></div>';
+  html+='<div class="calc-row"><div class="calc-label">Current Multiple (x)</div><input type="text" class="calc-input" value="'+esc(c.currentMultiple)+'" placeholder="4.5" oninput="PB.calcValue(this,\'currentMultiple\')"></div>';
+  html+='<div class="calc-result"><div class="result-label">Current Enterprise Value</div><div class="result-value">'+(currentEV>0?formatCurrency(currentEV):'--')+'</div></div></div>';
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">After Acceleration</div><div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Model your projected improvements.</div>';
+  html+='<div class="calc-row"><div class="calc-label">Projected EBITDA ($)</div><input type="text" class="calc-input" value="'+esc(c.projectedEBITDA)+'" placeholder="2,500,000" oninput="PB.calcValue(this,\'projectedEBITDA\')"></div>';
+  html+='<div class="calc-row"><div class="calc-label">Projected Multiple (x)</div><input type="text" class="calc-input" value="'+esc(c.projectedMultiple)+'" placeholder="6.0" oninput="PB.calcValue(this,\'projectedMultiple\')"></div>';
+  html+='<div class="calc-result" style="'+(projectedEV>currentEV&&projectedEV>0?'background:linear-gradient(135deg,#065F46 0%,#2D8A4E 100%)':'')+'"><div class="result-label">Projected Enterprise Value</div><div class="result-value" style="color:#fff">'+(projectedEV>0?formatCurrency(projectedEV):'--')+'</div>';
+  if(currentEV>0&&projectedEV>0){var delta=projectedEV-currentEV;var pctC=((delta/currentEV)*100).toFixed(0);html+='<div class="result-sub">'+(delta>=0?'+':'')+formatCurrency(delta)+' ('+pctC+'% '+(delta>=0?'increase':'decrease')+')</div>';}
+  html+='</div></div>';
+  html+='<div class="callout callout-success"><strong>The compounding effect.</strong> Improving EBITDA from $2M to $2.5M while simultaneously improving the multiple from 4.5x to 6.0x yields $15M -- a 67% increase from relatively modest improvements.</div>';
+  html+=pageNav(true,'Continue','calculator');return html;
+}
+
+function renderAcceleration(){
+  var html='<div class="page-header"><div class="t-label">Plan</div><div class="t-display">Build Your Acceleration Plan</div><p class="t-body t-secondary">A structured 12-24 month roadmap that sequences value driver improvements for maximum impact.</p></div>';
+  // Timeline
+  var phases=[
+    {title:'Month 1-3: Diagnose & Prioritize',desc:'Complete value driver diagnostic, score all 8 drivers, prioritize top 3-5',badge:'Phase 1',bg:'var(--color-primary-light)',color:'var(--color-primary)'},
+    {title:'Month 3-6: Quick Wins & Launches',desc:'Execute pricing, cost cuts, SOP documentation. Begin key hires',badge:'Phase 2',bg:'var(--color-success-light)',color:'var(--color-success)'},
+    {title:'Month 6-12: Build Momentum',desc:'Execute strategic bets. Track recurring revenue, margins, management',badge:'Phase 3',bg:'var(--color-warning-light)',color:'var(--color-warning)'},
+    {title:'Month 12-18: Demonstrate Results',desc:'Refine and optimize. Document 12+ months of improved metrics',badge:'Phase 4',bg:'var(--color-accent-light)',color:'var(--color-accent)'},
+    {title:'Month 18-24: Prepare for Market',desc:'Package the story. Prepare CIM highlighting before/after improvements',badge:'Phase 5',bg:'var(--color-text)',color:'#fff'}
+  ];
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Implementation Timeline</div><div class="timeline">';
+  phases.forEach(function(p,i){html+='<div class="timeline-item'+(i===0?' active':'')+'"><div class="tl-title">'+p.title+'</div><div class="tl-desc">'+p.desc+'</div><span class="tl-badge" style="background:'+p.bg+';color:'+p.color+'">'+p.badge+'</span></div>';});
+  html+='</div></div>';
+  // Plan tracker
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Acceleration Plan Tracker</div><div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Define specific initiatives for your top value drivers.</div>';
+  html+='<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Initiative</th><th>Value Driver</th><th>Start</th><th>Target</th><th>Investment</th><th>Status</th><th style="width:40px"></th></tr></thead><tbody>';
+  state.accelPlan.forEach(function(row,i){
+    html+='<tr><td><input type="text" value="'+esc(row.initiative)+'" placeholder="Initiative name" onchange="PB.updateAccel('+i+',\'initiative\',this.value)"></td>';
+    html+='<td><select onchange="PB.updateAccel('+i+',\'driver\',this.value)"><option value="">--</option>';
+    VALUE_DRIVERS.forEach(function(d){html+='<option value="'+d.key+'"'+(row.driver===d.key?' selected':'')+'>'+d.label+'</option>';});
+    html+='</select></td>';
+    html+='<td><input type="text" value="'+esc(row.start)+'" placeholder="Month" onchange="PB.updateAccel('+i+',\'start\',this.value)" style="width:70px"></td>';
+    html+='<td><input type="text" value="'+esc(row.target)+'" placeholder="Month" onchange="PB.updateAccel('+i+',\'target\',this.value)" style="width:70px"></td>';
+    html+='<td><input type="text" value="'+esc(row.investment)+'" placeholder="$" onchange="PB.updateAccel('+i+',\'investment\',this.value)" style="width:90px"></td>';
+    html+='<td><select onchange="PB.updateAccel('+i+',\'status\',this.value)"><option value="">--</option><option value="planned"'+(row.status==='planned'?' selected':'')+'>Planned</option><option value="active"'+(row.status==='active'?' selected':'')+'>Active</option><option value="complete"'+(row.status==='complete'?' selected':'')+'>Complete</option><option value="paused"'+(row.status==='paused'?' selected':'')+'>Paused</option></select></td>';
+    html+='<td><button class="remove-btn" onclick="PB.removeAccel('+i+')" aria-label="Remove">&times;</button></td></tr>';
+  });
+  html+='</tbody></table></div><button class="add-btn" onclick="PB.addAccel()">+ Add Initiative</button></div>';
+  // Mistakes
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Common Mistakes to Avoid</div>';
+  MISTAKES.forEach(function(m){
+    html+='<div class="card" style="border-left:3px solid var(--color-danger);margin-bottom:var(--space-sm)"><div class="t-h3" style="color:var(--color-danger);margin-bottom:var(--space-xs)">'+m.title+'</div><p class="t-small t-secondary" style="margin-bottom:var(--space-sm)">'+m.desc+'</p><div style="padding:var(--space-sm) var(--space-md);background:var(--color-success-light);border-radius:var(--radius-sm);font-size:13px;color:var(--color-success)"><strong>Solution:</strong> '+m.solution+'</div></div>';
+  });
+  html+='</div>';
+  html+=pageNav(true,'View Dashboard','acceleration');return html;
+}
+
+function renderDashboard(){
+  var scores=[];VALUE_DRIVERS.forEach(function(d){if(state.diagnosticScores[d.key])scores.push(state.diagnosticScores[d.key]);});
+  var avgScore=scores.length>0?(scores.reduce(function(a,b){return a+b;},0)/scores.length).toFixed(1):'0';
+  var topDrivers=VALUE_DRIVERS.filter(function(d){return state.priorities[d.key]==='q1'||state.priorities[d.key]==='q2';}).length;
+  var mgmtVals=[];MGMT_FUNCTIONS.forEach(function(f){if(state.mgmtScores[f.key])mgmtVals.push(state.mgmtScores[f.key]);});
+  var mgmtAvg=mgmtVals.length>0?(mgmtVals.reduce(function(a,b){return a+b;},0)/mgmtVals.length).toFixed(1):'0';
+  var retCount=0;RETENTION_STRATEGIES.forEach(function(rs){if(state.retentionChecks[rs.key])retCount++;});
+  var c=state.calcValues;var ce=parseFloat((c.currentEBITDA||'').replace(/,/g,''))||0;var cm=parseFloat(c.currentMultiple)||0;var pe=parseFloat((c.projectedEBITDA||'').replace(/,/g,''))||0;var pm=parseFloat(c.projectedMultiple)||0;
+  var currentEV=ce*cm;var projectedEV=pe*pm;
+
+  var html='<div class="page-header"><div class="t-label">Results</div><div class="t-display">Value Driver Acceleration Dashboard</div></div>';
+  // KPIs
+  html+='<div class="summary-grid">';
+  html+='<div class="summary-item"><div class="summary-item-value">'+avgScore+'</div><div class="summary-item-label">Avg Driver Score (1-10)</div></div>';
+  html+='<div class="summary-item"><div class="summary-item-value">'+topDrivers+'</div><div class="summary-item-label">Priority Drivers</div></div>';
+  html+='<div class="summary-item"><div class="summary-item-value">'+mgmtAvg+'</div><div class="summary-item-label">Mgmt Depth (1-5)</div></div>';
+  html+='<div class="summary-item"><div class="summary-item-value">'+retCount+'/4</div><div class="summary-item-label">Retention Mechanisms</div></div>';
+  html+='</div>';
+  // Bar chart
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Value Driver Profile</div><div class="bar-chart">';
+  VALUE_DRIVERS.forEach(function(d){var s=state.diagnosticScores[d.key]||0;var p=s*10;var color=s>=d.benchNum?'var(--color-success)':s>=d.benchNum-2?'var(--color-warning)':'var(--color-danger)';
+    html+='<div class="bar-row"><div class="bar-label">'+d.label.split('(')[0].trim()+'</div><div class="bar-track"><div class="bar-fill" style="width:'+p+'%;background:'+color+'"><span class="bar-value">'+(s||'')+'</span></div></div></div>';
+  });
+  html+='</div></div>';
+  // Value projection
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Value Creation Projection</div>';
+  html+='<div style="display:flex;align-items:center;gap:var(--space-xl);flex-wrap:wrap;justify-content:center">';
+  html+='<div class="calc-result" style="flex:1;min-width:200px"><div class="result-label">Current Value</div><div class="result-value" style="font-size:24px">'+(currentEV>0?formatCurrency(currentEV):'--')+'</div></div>';
+  html+='<div style="font-size:28px;color:var(--color-accent)">&rarr;</div>';
+  html+='<div class="calc-result" style="flex:1;min-width:200px;background:linear-gradient(135deg,#065F46 0%,#2D8A4E 100%)"><div class="result-label">Projected Value</div><div class="result-value" style="font-size:24px;color:#fff">'+(projectedEV>0?formatCurrency(projectedEV):'--')+'</div>';
+  if(currentEV>0&&projectedEV>0)html+='<div class="result-sub" style="color:rgba(255,255,255,0.7)">+'+formatCurrency(projectedEV-currentEV)+' value creation</div>';
+  html+='</div></div></div>';
+  // Priority actions
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Priority Actions</div>';
+  var weakDrivers=VALUE_DRIVERS.filter(function(d){return(state.diagnosticScores[d.key]||0)<d.benchNum;}).sort(function(a,b){return(state.diagnosticScores[a.key]||0)-(state.diagnosticScores[b.key]||0);});
+  if(weakDrivers.length>0){weakDrivers.slice(0,3).forEach(function(d){html+='<div class="callout callout-warning" style="margin-bottom:var(--space-sm)"><strong>Focus Area:</strong> '+d.label+' is below benchmark ('+(state.diagnosticScores[d.key]||0)+'/10 vs '+d.benchNum+'/10). This is a top opportunity for multiple improvement.</div>';});}
+  var top1=parseFloat(state.concentration['top1'])||0;
+  if(top1>15)html+='<div class="callout callout-danger" style="margin-bottom:var(--space-sm)"><strong>Critical:</strong> Top customer at '+top1+'% of revenue. Reduce below 15% before going to market.</div>';
+  if(parseFloat(mgmtAvg)<3)html+='<div class="callout callout-warning" style="margin-bottom:var(--space-sm)"><strong>Important:</strong> Management bench is thin ('+mgmtAvg+'/5). Begin key hires 18-24 months before exit.</div>';
+  if(weakDrivers.length===0&&top1<=15)html+='<div class="callout callout-success"><strong>On Track.</strong> Your value drivers are generally solid. Focus on your top 3 for maximum impact.</div>';
+  html+='</div>';
+  // Monthly dashboard
+  var dashMetrics=['Recurring Revenue %','Gross Margin %','EBITDA Margin %','Top Customer %','Revenue Growth YoY %','Management Bench (1-5)'];
+  html+='<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Monthly Dashboard Template</div><div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Track these metrics monthly once your plan is in motion.</div>';
+  html+='<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Metric</th><th>Baseline</th><th>Month 3</th><th>Month 6</th><th>Month 9</th><th>Month 12</th><th>Target</th></tr></thead><tbody>';
+  dashMetrics.forEach(function(m,i){var d=state.dashboardData[i]||{};
+    html+='<tr><td style="font-weight:500">'+m+'</td>';
+    ['baseline','m3','m6','m9','m12','target'].forEach(function(f){html+='<td><input type="text" value="'+esc(d[f]||'')+'" placeholder="--" onchange="PB.setDashData('+i+',\''+f+'\',this.value)" style="width:70px"></td>';});
+    html+='</tr>';
+  });
+  html+='</tbody></table></div></div>';
+  // Final
+  html+='<div class="callout callout-success"><strong>Final thought.</strong> "Value is not found. It is built. Every month of focused acceleration is worth multiples at closing."</div>';
+  html+='<div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-top:var(--space-lg)">';
+  html+='<button class="btn btn-primary" onclick="PB.exportResults()">Export Summary</button>';
+  html+='<button class="btn btn-secondary" onclick="window.print()">Print</button>';
+  html+='<button class="btn btn-ghost" onclick="PB.resetAll()" style="color:var(--color-danger)">Reset All Data</button></div>';
+  html+='<div class="page-nav"><button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button><div></div></div>';
+  return html;
+}
+
+function exportResults(){
+  var scores=[];VALUE_DRIVERS.forEach(function(d){if(state.diagnosticScores[d.key])scores.push(state.diagnosticScores[d.key]);});
+  var avgScore=scores.length>0?(scores.reduce(function(a,b){return a+b;},0)/scores.length).toFixed(1):'0';
+  var text='PLAYBOOK #26: VALUE DRIVER ACCELERATION\nGenerated: '+new Date().toLocaleDateString()+'\n'+'='.repeat(50)+'\n\n';
+  text+='VALUE DRIVER DIAGNOSTIC\n'+'-'.repeat(40)+'\n';
+  VALUE_DRIVERS.forEach(function(d){var s=state.diagnosticScores[d.key]||0;var gap=d.benchNum-s;text+=d.label+': '+s+'/10 (benchmark: '+d.benchNum+'/10, gap: '+(gap>0?gap:'none')+')\n';});
+  text+='\nAverage Score: '+avgScore+'/10\n\n';
+  text+='PRIORITY ASSIGNMENTS\n'+'-'.repeat(40)+'\n';
+  var qL={q1:'Quick Win',q2:'Strategic Bet',q3:'Easy Add',q4:'Long-Term',skip:'Skip'};
+  VALUE_DRIVERS.forEach(function(d){text+=d.label+': '+(qL[state.priorities[d.key]]||'Not assigned')+'\n';});
+  text+='\n';
+  var c=state.calcValues;var ce=parseFloat((c.currentEBITDA||'').replace(/,/g,''))||0;var cm=parseFloat(c.currentMultiple)||0;var pe=parseFloat((c.projectedEBITDA||'').replace(/,/g,''))||0;var pm=parseFloat(c.projectedMultiple)||0;
+  if(ce>0){text+='VALUE CALCULATION\n'+'-'.repeat(40)+'\n';text+='Current: '+formatCurrency(ce)+' EBITDA x '+cm+'x = '+formatCurrency(ce*cm)+'\n';if(pe>0)text+='Projected: '+formatCurrency(pe)+' EBITDA x '+pm+'x = '+formatCurrency(pe*pm)+'\n';if(pe>0&&ce>0)text+='Value Creation: '+formatCurrency(pe*pm-ce*cm)+'\n';text+='\n';}
+  text+='ACCELERATION PLAN\n'+'-'.repeat(40)+'\n';
+  state.accelPlan.filter(function(r){return r.initiative;}).forEach(function(r){text+='- '+r.initiative+' | Driver: '+(r.driver||'--')+' | Start: '+(r.start||'--')+' | Target: '+(r.target||'--')+' | Investment: '+(r.investment||'--')+' | Status: '+(r.status||'--')+'\n';});
+  var blob=new Blob([text],{type:'text/plain'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='playbook-26-value-driver-acceleration.txt';a.click();URL.revokeObjectURL(url);showToast('Report downloaded successfully.');
+}
+function resetAll(){if(confirm('This will erase all your data in this playbook. Are you sure?')){localStorage.removeItem(STORAGE_KEY);state=defaultState();saveState();goToPage('welcome');}}
+
+window.PB={
+  prevPage:prevPage,completePage:completePage,exportResults:exportResults,resetAll:resetAll,
+  setDiagnostic:function(k,v){state.diagnosticScores[k]=v;saveState();renderPage();},
+  setScore:function(sk,dk,v){state[sk][dk]=v;saveState();renderPage();},
+  setRevenueMix:function(k,v){state.revenueMix[k]=v?parseInt(v):'';saveState();renderPage();},
+  setRRMetric:function(k,v){state.rrMetrics[k]=v;saveState();},
+  setBusinessType:function(k){state.businessType=k;saveState();renderPage();},
+  setMargin:function(t,y,v){state.margins[t][y]=v;saveState();renderPage();},
+  toggleRetention:function(k){state.retentionChecks[k]=!state.retentionChecks[k];saveState();renderPage();},
+  setConc:function(k,v){state.concentration[k]=v;saveState();renderPage();},
+  setConcTarget:function(k,f,v){if(!state.concTargets[k])state.concTargets[k]={};state.concTargets[k][f]=v;saveState();},
+  setPriority:function(k,v){state.priorities[k]=v;saveState();renderPage();},
+  calcValue:function(el,k){state.calcValues[k]=el.value;saveState();renderPage();},
+  addAccel:function(){state.accelPlan.push({initiative:'',driver:'',start:'',target:'',investment:'',status:''});saveState();renderPage();},
+  removeAccel:function(i){state.accelPlan.splice(i,1);saveState();renderPage();},
+  updateAccel:function(i,f,v){state.accelPlan[i][f]=v;saveState();},
+  setDashData:function(i,f,v){if(!state.dashboardData[i])state.dashboardData[i]={};state.dashboardData[i][f]=v;saveState();}
+};
+
+renderNav();renderPage();updateProgress();updateScore();
+})();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

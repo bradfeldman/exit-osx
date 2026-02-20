@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vendor & Supply Chain Resilience | Exit Planning Playbook #17</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body);
+  font-size: 16px; line-height: 1.6;
+  color: var(--color-text); background: var(--color-bg);
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a { color: var(--color-primary); text-decoration: none; }
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.t-display { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 260px; min-width: 260px; background: var(--color-text);
+  color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow); overflow-y: auto;
+}
+.sidebar.collapsed { transform: translateX(-260px); }
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; transition: margin-left var(--transition-slow); }
+.sidebar.collapsed + .main-content { margin-left: 0; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+/* ============================================================
+   SIDEBAR COMPONENTS
+   ============================================================ */
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.6);
+  font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+/* ============================================================
+   CARDS & SURFACES
+   ============================================================ */
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-lg);
+  transition: box-shadow var(--transition-normal);
+}
+.card:hover { box-shadow: var(--shadow-sm); }
+.card + .card { margin-top: var(--space-md); }
+
+.callout {
+  padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md);
+  border-left: 3px solid; font-size: 14px; line-height: 1.6;
+}
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); border-color: var(--color-text-tertiary); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.btn-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+
+/* ============================================================
+   FORM ELEMENTS
+   ============================================================ */
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); color: var(--color-text); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.form-input::placeholder { color: var(--color-text-tertiary); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+/* ============================================================
+   SCORE SELECTOR
+   ============================================================ */
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center; min-width: 0;
+}
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+
+@media (max-width: 600px) {
+  .score-selector { gap: 4px; }
+  .score-option { padding: 10px 4px; }
+  .score-number { font-size: 18px; }
+  .score-label-text { font-size: 9px; }
+}
+
+/* ============================================================
+   RISK SELECTOR
+   ============================================================ */
+.risk-selector { display: flex; gap: var(--space-sm); }
+.risk-option {
+  flex: 1; padding: 12px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center; font-size: 14px; font-weight: 500;
+}
+.risk-option:hover { border-color: var(--color-text-tertiary); }
+.risk-option.selected.risk-low { border-color: var(--color-success); background: var(--color-success-light); color: var(--color-success); }
+.risk-option.selected.risk-med { border-color: var(--color-warning); background: var(--color-warning-light); color: var(--color-warning); }
+.risk-option.selected.risk-high { border-color: var(--color-danger); background: var(--color-danger-light); color: var(--color-danger); }
+
+/* ============================================================
+   BADGES
+   ============================================================ */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+  border-radius: 999px; font-size: 12px; font-weight: 500;
+}
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+
+/* ============================================================
+   PROGRESS RING
+   ============================================================ */
+.progress-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.progress-ring-text { position: absolute; text-align: center; }
+.progress-ring-value { font-family: var(--font-display); font-weight: 700; line-height: 1; }
+.progress-ring-label { font-size: 10px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ============================================================
+   HEAT MAP
+   ============================================================ */
+.heatmap-container { margin: var(--space-lg) 0; }
+.heatmap { display: grid; gap: 2px; }
+.heatmap-cell {
+  aspect-ratio: 1; border-radius: var(--radius-sm); display: flex; align-items: center;
+  justify-content: center; font-size: 13px; font-weight: 600; color: #fff;
+  transition: transform var(--transition-fast); cursor: default;
+}
+.heatmap-cell:hover { transform: scale(1.08); z-index: 1; }
+.heatmap-cell.hs1 { background: var(--color-score-1); }
+.heatmap-cell.hs2 { background: var(--color-score-2); }
+.heatmap-cell.hs3 { background: var(--color-score-3); }
+.heatmap-cell.hs4 { background: var(--color-score-4); }
+.heatmap-cell.hs5 { background: var(--color-score-5); }
+.heatmap-cell.hs0 { background: var(--color-border); color: var(--color-text-tertiary); }
+.heatmap-row-label { font-size: 12px; color: var(--color-text-secondary); display: flex; align-items: center; padding-right: var(--space-sm); }
+.heatmap-col-label { font-size: 10px; color: var(--color-text-tertiary); text-align: center; text-transform: uppercase; letter-spacing: 0.03em; padding-bottom: 4px; }
+
+/* ============================================================
+   BAR CHART
+   ============================================================ */
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 28px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; min-width: 0; }
+.bar-fill.animated { min-width: 30px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; }
+
+@media (max-width: 600px) {
+  .bar-label { width: 90px; font-size: 11px; }
+}
+
+/* ============================================================
+   PAGES & SECTIONS
+   ============================================================ */
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+
+.section-divider { height: 1px; background: var(--color-border); margin: var(--space-2xl) 0; }
+
+/* ============================================================
+   WELCOME PAGE
+   ============================================================ */
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon {
+  width: 72px; height: 72px; background: var(--color-primary-light);
+  border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center;
+  margin: 0 auto var(--space-lg); font-size: 32px;
+}
+.welcome-subtitle { color: var(--color-text-secondary); margin: var(--space-md) 0 var(--space-xl); font-size: 17px; line-height: 1.6; }
+.welcome-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md); margin: var(--space-xl) 0; text-align: left; }
+.welcome-feature {
+  padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); transition: box-shadow var(--transition-normal);
+}
+.welcome-feature:hover { box-shadow: var(--shadow-sm); }
+.welcome-feature-icon { font-size: 24px; margin-bottom: var(--space-sm); }
+.welcome-feature h3 { font-size: 15px; font-weight: 600; margin-bottom: var(--space-xs); }
+.welcome-feature p { font-size: 13px; color: var(--color-text-secondary); line-height: 1.5; }
+
+/* ============================================================
+   DYNAMIC TABLE
+   ============================================================ */
+.dynamic-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.dynamic-table th {
+  text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary);
+  border-bottom: 2px solid var(--color-border); background: var(--color-surface-alt);
+}
+.dynamic-table td { padding: 10px 12px; border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.dynamic-table tr:last-child td { border-bottom: none; }
+.dynamic-table .form-input { font-size: 13px; padding: 6px 10px; }
+.table-actions { display: flex; gap: var(--space-xs); }
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 calc(-1 * var(--space-lg)); padding: 0 var(--space-lg); }
+
+/* ============================================================
+   GAUGE / METER
+   ============================================================ */
+.gauge-wrap { text-align: center; padding: var(--space-lg) 0; }
+.gauge-svg { width: 180px; height: 100px; }
+.gauge-label { font-size: 13px; color: var(--color-text-secondary); margin-top: var(--space-sm); }
+.gauge-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; }
+
+/* ============================================================
+   CRITICALITY MATRIX VISUAL
+   ============================================================ */
+.matrix-grid {
+  display: grid; grid-template-columns: 40px repeat(5, 1fr); grid-template-rows: repeat(5, 48px) 30px;
+  gap: 3px; margin: var(--space-lg) 0;
+}
+.matrix-cell {
+  border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: #fff; transition: all var(--transition-fast);
+  cursor: pointer; position: relative;
+}
+.matrix-cell:hover { transform: scale(1.05); z-index: 2; }
+.matrix-cell.zone-green { background: #4ade80; }
+.matrix-cell.zone-yellow { background: #fbbf24; }
+.matrix-cell.zone-orange { background: #fb923c; }
+.matrix-cell.zone-red { background: #f87171; }
+.matrix-cell.has-vendor { outline: 3px solid var(--color-text); outline-offset: -1px; }
+.matrix-cell .vendor-dot { width: 8px; height: 8px; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+.matrix-axis-label { font-size: 10px; color: var(--color-text-tertiary); display: flex; align-items: center; justify-content: center; text-transform: uppercase; letter-spacing: 0.05em; }
+.matrix-axis-y { writing-mode: vertical-lr; transform: rotate(180deg); }
+.matrix-legend { display: flex; gap: var(--space-lg); justify-content: center; margin-top: var(--space-md); flex-wrap: wrap; }
+.matrix-legend-item { display: flex; align-items: center; gap: var(--space-xs); font-size: 12px; color: var(--color-text-secondary); }
+.matrix-legend-swatch { width: 14px; height: 14px; border-radius: 3px; }
+
+/* ============================================================
+   VENDOR CARD
+   ============================================================ */
+.vendor-card {
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+  padding: var(--space-lg); margin-bottom: var(--space-md); transition: all var(--transition-normal);
+}
+.vendor-card:hover { box-shadow: var(--shadow-sm); }
+.vendor-card-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-md); }
+.vendor-card-title { font-weight: 600; font-size: 16px; }
+.vendor-card-meta { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; }
+.vendor-card-scores { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-md); }
+.vendor-card-delete { color: var(--color-text-tertiary); padding: 4px; border-radius: var(--radius-sm); transition: all var(--transition-fast); }
+.vendor-card-delete:hover { color: var(--color-danger); background: var(--color-danger-light); }
+
+/* ============================================================
+   ACTION ITEM CHECKLIST
+   ============================================================ */
+.checklist { display: flex; flex-direction: column; gap: var(--space-sm); }
+.checklist-item {
+  display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md);
+  border: 1px solid var(--color-border-light); border-radius: var(--radius-md);
+  transition: all var(--transition-fast); cursor: pointer;
+}
+.checklist-item:hover { background: var(--color-surface-alt); }
+.checklist-item.checked { background: var(--color-success-light); border-color: var(--color-success); }
+.checklist-item.checked .checklist-text { text-decoration: line-through; color: var(--color-text-tertiary); }
+.checklist-box {
+  width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+  transition: all var(--transition-fast);
+}
+.checklist-item.checked .checklist-box { background: var(--color-success); border-color: var(--color-success); }
+.checklist-text { font-size: 14px; line-height: 1.5; }
+
+/* ============================================================
+   STAT CARDS ROW
+   ============================================================ */
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-md); margin: var(--space-lg) 0; }
+.stat-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg); text-align: center; }
+.stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; line-height: 1.2; }
+.stat-label { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+.stat-card.stat-danger .stat-value { color: var(--color-danger); }
+.stat-card.stat-warning .stat-value { color: var(--color-warning); }
+.stat-card.stat-success .stat-value { color: var(--color-success); }
+.stat-card.stat-primary .stat-value { color: var(--color-primary); }
+
+/* ============================================================
+   NAV FOOTER
+   ============================================================ */
+.page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.page-nav-info { font-size: 13px; color: var(--color-text-tertiary); }
+
+/* ============================================================
+   SUMMARY DASHBOARD
+   ============================================================ */
+.summary-section { margin-bottom: var(--space-2xl); }
+.summary-section-title { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); margin-bottom: var(--space-md); padding-bottom: var(--space-sm); border-bottom: 1px solid var(--color-border); }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+@media (max-width: 600px) { .summary-grid { grid-template-columns: 1fr; } }
+.summary-item { padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.summary-item-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: 2px; }
+.summary-item-value { font-size: 16px; font-weight: 600; }
+
+/* ============================================================
+   EXPORT BUTTON
+   ============================================================ */
+.export-actions { display: flex; gap: var(--space-md); margin-top: var(--space-lg); flex-wrap: wrap; }
+
+/* ============================================================
+   TOOLTIP
+   ============================================================ */
+[data-tooltip] { position: relative; }
+[data-tooltip]:hover::after {
+  content: attr(data-tooltip); position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  background: var(--color-text); color: #fff; padding: 6px 12px; border-radius: var(--radius-sm);
+  font-size: 12px; white-space: nowrap; z-index: 10; pointer-events: none;
+  animation: fadeIn 0.15s ease;
+}
+
+/* ============================================================
+   PRINT STYLES
+   ============================================================ */
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; background: var(--color-text);
+  color: #fff; padding: 12px 20px; border-radius: var(--radius-md);
+  font-size: 14px; z-index: 1000; opacity: 0; transform: translateY(10px);
+  transition: all var(--transition-normal); max-width: 360px;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* ACCESSIBILITY */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; }
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+
+/* REDUCED MOTION */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* PRINT */
+@media print {
+  .sidebar, .mobile-header, .toast, .btn-group, .skip-link, .page-nav { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; }
+  .content-area { max-width: 100%; padding: 0; }
+  .card { break-inside: avoid; box-shadow: none !important; border: 1px solid #ddd; }
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<div class="app">
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Playbook sections">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #17</div>
+      <div class="sidebar-brand-title">Vendor & Supply Chain Resilience</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <div class="sidebar-nav" id="sidebarNav"></div>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Resilience Score</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max"> / 100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete assessments to see your score</div>
+    </div>
+  </nav>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- MAIN -->
+  <div class="main-content" id="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" id="menuToggle" aria-label="Toggle navigation"><span></span></button>
+      <div style="font-weight:600;font-size:15px;">Playbook #17</div>
+    </div>
+    <div class="content-area" id="contentArea">
+      <!-- Pages injected by JS -->
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" aria-live="polite" role="status"></div>
+
+<script>
+/* ============================================================
+   APP STATE & CONFIG
+   ============================================================ */
+const STORAGE_KEY = 'exitosx-pb17-vendor-supply-chain';
+// Migrate from old key
+(function() { const old = localStorage.getItem('pb17_supply_chain_v1'); if (old && !localStorage.getItem(STORAGE_KEY)) { localStorage.setItem(STORAGE_KEY, old); localStorage.removeItem('pb17_supply_chain_v1'); } })();
+const PAGES = [
+  { id: 'welcome', title: 'Welcome', icon: '\u2693', group: 'start' },
+  { id: 'concentration', title: 'Supplier Concentration', icon: '\uD83D\uDCCA', group: 'assess' },
+  { id: 'criticality', title: 'Vendor Criticality Matrix', icon: '\u26A0\uFE0F', group: 'assess' },
+  { id: 'contracts', title: 'Contract Terms', icon: '\uD83D\uDCDD', group: 'assess' },
+  { id: 'alternatives', title: 'Alternative Sourcing', icon: '\uD83D\uDD04', group: 'assess' },
+  { id: 'agreements', title: 'Multi-Year Agreements', icon: '\uD83E\uDD1D', group: 'plan' },
+  { id: 'riskregister', title: 'Risk Register', icon: '\uD83D\uDEE1\uFE0F', group: 'plan' },
+  { id: 'relationships', title: 'Vendor Relationships', icon: '\uD83D\uDC65', group: 'plan' },
+  { id: 'costmargin', title: 'Cost & Margin Protection', icon: '\uD83D\uDCB0', group: 'plan' },
+  { id: 'logistics', title: 'Logistics & Fulfillment', icon: '\uD83D\uDE9A', group: 'plan' },
+  { id: 'mistakes', title: 'Common Mistakes', icon: '\u26D4', group: 'review' },
+  { id: 'summary', title: 'Summary & Export', icon: '\uD83C\uDFC1', group: 'review' },
+];
+
+const GROUP_LABELS = { start: 'Start', assess: 'Assess', plan: 'Plan', review: 'Review' };
+
+let state = loadState();
+
+function defaultState() {
+  return {
+    currentPage: 'welcome',
+    completedPages: [],
+    vendors: [],
+    concentrationMetrics: { topVendorPct: '', top3Pct: '', singleSourceCount: '', totalVendors: '', geoConcentration: '' },
+    contractAssessments: [],
+    alternativeSources: [],
+    agreements: { priceProtection: 0, supplyGuarantee: 0, volumeTiers: 0, assignability: 0, serviceLevels: 0, notes: '' },
+    risks: [],
+    relationships: { documented: 0, transitioned: 0, escalation: 0, notes: '' },
+    costStrategies: [],
+    logistics: { shipping: 0, warehousing: 0, fleet: 0, thirdParty: 0, international: 0, notes: '' },
+    mistakeChecklist: [false, false, false, false],
+  };
+}
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return { ...defaultState(), ...JSON.parse(saved) };
+  } catch(e) {}
+  return defaultState();
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function buildNav() {
+  const nav = document.getElementById('sidebarNav');
+  let html = '';
+  let lastGroup = '';
+  PAGES.forEach(p => {
+    if (p.group !== lastGroup) {
+      html += `<div class="nav-section-label">${GROUP_LABELS[p.group]}</div>`;
+      lastGroup = p.group;
+    }
+    const active = state.currentPage === p.id ? 'active' : '';
+    const completed = state.completedPages.includes(p.id) ? 'completed' : '';
+    html += `<div class="nav-item ${active} ${completed}" data-page="${p.id}" role="button" tabindex="0" aria-label="${p.title}">
+      <span class="nav-icon">${p.icon}</span>
+      <span>${p.title}</span>
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>
+    </div>`;
+  });
+  nav.innerHTML = html;
+  nav.querySelectorAll('.nav-item').forEach(el => {
+    el.addEventListener('click', () => goToPage(el.dataset.page));
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToPage(el.dataset.page); }});
+  });
+}
+
+function goToPage(id) {
+  state.currentPage = id;
+  saveState();
+  renderCurrentPage();
+  buildNav();
+  updateProgress();
+  closeMobileMenu();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setTimeout(() => {
+    const heading = document.querySelector('#contentArea .t-display, #contentArea .t-h1, #contentArea h1, #contentArea h2');
+    if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); }
+  }, 100);
+}
+
+function markComplete(id) {
+  if (!state.completedPages.includes(id)) {
+    state.completedPages.push(id);
+    saveState();
+    buildNav();
+    updateProgress();
+  }
+}
+
+function updateProgress() {
+  const total = PAGES.length - 1; // exclude welcome
+  const done = state.completedPages.filter(p => p !== 'welcome').length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+  updateScore();
+}
+
+function updateScore() {
+  const score = calculateScore();
+  document.getElementById('sidebarScore').innerHTML = score + '<span class="sidebar-score-max"> / 100</span>';
+  let desc = 'Critical vulnerabilities';
+  if (score >= 80) desc = 'Strong resilience';
+  else if (score >= 60) desc = 'Moderate resilience';
+  else if (score >= 40) desc = 'Needs improvement';
+  document.getElementById('sidebarScoreDesc').textContent = desc;
+}
+
+function calculateScore() {
+  let score = 0;
+  // Concentration metrics (up to 15)
+  const cm = state.concentrationMetrics;
+  if (cm.topVendorPct !== '') {
+    const v = parseFloat(cm.topVendorPct);
+    if (v <= 15) score += 15; else if (v <= 25) score += 10; else if (v <= 40) score += 5;
+  }
+  // Vendors with contracts (up to 15)
+  if (state.vendors.length > 0) {
+    const withContract = state.contractAssessments.filter(c => c.hasContract).length;
+    score += Math.round((withContract / Math.max(state.vendors.length, 1)) * 15);
+  }
+  // Alternative sources (up to 15)
+  if (state.alternativeSources.length > 0) {
+    const qualified = state.alternativeSources.filter(a => a.status === 'qualified' || a.status === 'active').length;
+    score += Math.min(15, qualified * 5);
+  }
+  // Agreements (up to 15)
+  const agr = state.agreements;
+  const agrScore = (agr.priceProtection + agr.supplyGuarantee + agr.volumeTiers + agr.assignability + agr.serviceLevels) / 5;
+  score += Math.round(agrScore * 3);
+  // Risk register (up to 10)
+  if (state.risks.length > 0) {
+    const mitigated = state.risks.filter(r => r.mitigation && r.mitigation.trim() !== '').length;
+    score += Math.round((mitigated / state.risks.length) * 10);
+  }
+  // Relationships (up to 10)
+  const rel = state.relationships;
+  score += Math.round(((rel.documented + rel.transitioned + rel.escalation) / 3) * 2);
+  // Cost strategies (up to 10)
+  if (state.costStrategies.length > 0) {
+    score += Math.min(10, state.costStrategies.length * 2);
+  }
+  // Logistics (up to 10)
+  const log = state.logistics;
+  const logScore = (log.shipping + log.warehousing + log.fleet + log.thirdParty + log.international) / 5;
+  score += Math.round(logScore * 2);
+  return Math.min(100, score);
+}
+
+/* ============================================================
+   MOBILE MENU
+   ============================================================ */
+document.getElementById('menuToggle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+});
+document.getElementById('sidebarOverlay').addEventListener('click', closeMobileMenu);
+function closeMobileMenu() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+/* ============================================================
+   PAGE RENDERERS
+   ============================================================ */
+function renderCurrentPage() {
+  const area = document.getElementById('contentArea');
+  const renderer = pageRenderers[state.currentPage];
+  if (renderer) {
+    area.innerHTML = `<div class="page active" id="page-${state.currentPage}">${renderer()}</div>`;
+    const init = pageInitializers[state.currentPage];
+    if (init) init();
+  }
+}
+
+function navButtons(prevId, nextId) {
+  const prevBtn = prevId ? `<button class="btn btn-secondary" onclick="goToPage('${prevId}')">\u2190 Back</button>` : '<div></div>';
+  const nextLabel = nextId === 'summary' ? 'View Summary \u2192' : 'Continue \u2192';
+  const nextBtn = nextId ? `<button class="btn btn-primary" onclick="markComplete('${state.currentPage}'); goToPage('${nextId}')">${nextLabel}</button>` : `<button class="btn btn-accent" onclick="markComplete('${state.currentPage}'); updateProgress();">Mark Complete</button>`;
+  const idx = PAGES.findIndex(p => p.id === state.currentPage);
+  return `<div class="page-nav"><div>${prevBtn}</div><div class="page-nav-info">Step ${idx + 1} of ${PAGES.length}</div><div>${nextBtn}</div></div>`;
+}
+
+function scoreSelector(name, value, labels) {
+  return `<div class="score-selector" role="radiogroup" aria-label="${name}">${labels.map((l, i) => {
+    const v = i + 1;
+    const sel = value === v ? 'selected' : '';
+    return `<label class="score-option s${v} ${sel}" tabindex="0" role="radio" aria-checked="${value === v}">
+      <input type="radio" name="${name}" value="${v}" ${value === v ? 'checked' : ''}>
+      <span class="score-number">${v}</span>
+      <span class="score-label-text">${l}</span>
+    </label>`;
+  }).join('')}</div>`;
+}
+
+const pageRenderers = {};
+const pageInitializers = {};
+
+/* ----- WELCOME ----- */
+pageRenderers.welcome = () => `
+  <div class="welcome-hero">
+    <div class="welcome-icon">\u26D3\uFE0F</div>
+    <div class="t-display">Vendor & Supply Chain Resilience</div>
+    <p class="welcome-subtitle">Your supply chain is only as strong as its weakest link. Buyers stress-test it -- make sure you do first. This guided assessment helps you identify vulnerabilities, build resilience, and present a supply chain story that withstands buyer diligence.</p>
+    <div class="welcome-features">
+      <div class="welcome-feature">
+        <div class="welcome-feature-icon">\uD83D\uDCCA</div>
+        <h3>Concentration Analysis</h3>
+        <p>Measure vendor dependency and identify single points of failure</p>
+      </div>
+      <div class="welcome-feature">
+        <div class="welcome-feature-icon">\u26A0\uFE0F</div>
+        <h3>Criticality Matrix</h3>
+        <p>Map vendors by business impact and replaceability</p>
+      </div>
+      <div class="welcome-feature">
+        <div class="welcome-feature-icon">\uD83D\uDEE1\uFE0F</div>
+        <h3>Risk Register</h3>
+        <p>Formal risk assessment with mitigation strategies</p>
+      </div>
+      <div class="welcome-feature">
+        <div class="welcome-feature-icon">\uD83C\uDFC1</div>
+        <h3>Action Dashboard</h3>
+        <p>Prioritized action plan with resilience scoring</p>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-lg" onclick="markComplete('welcome'); goToPage('concentration');">Begin Assessment \u2192</button>
+    ${state.completedPages.length > 1 ? '<div style="margin-top:var(--space-md)"><button class="btn btn-ghost" onclick="goToPage(\'summary\')">Jump to Summary</button></div>' : ''}
+  </div>
+`;
+
+/* ----- CONCENTRATION ----- */
+pageRenderers.concentration = () => {
+  const m = state.concentrationMetrics;
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 1 of 11</div>
+    <div class="t-display">Supplier Concentration Analysis</div>
+    <p class="t-body">Apply the same concentration analysis to vendors that buyers apply to your customers. High concentration means high risk.</p>
+  </div>
+  <div class="callout callout-accent" style="margin-bottom:var(--space-xl);">
+    Vendor concentration is the supply-side mirror of customer concentration. If one supplier controls a critical input and you have no alternative, you have given that supplier the power to destroy your margins, disrupt your operations, or hold your deal hostage.
+  </div>
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <div class="t-h3" style="margin-bottom:var(--space-lg)">Concentration Metrics</div>
+    <div class="form-group">
+      <label class="form-label">Top vendor as % of COGS</label>
+      <input type="number" class="form-input" id="topVendorPct" value="${m.topVendorPct}" placeholder="e.g. 35" min="0" max="100" style="max-width:200px">
+      <div class="form-hint">>25% is elevated; >40% is critical</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Top 3 vendors as % of COGS</label>
+      <input type="number" class="form-input" id="top3Pct" value="${m.top3Pct}" placeholder="e.g. 65" min="0" max="100" style="max-width:200px">
+      <div class="form-hint">>60% signals concentration risk</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Single-source critical items</label>
+      <input type="number" class="form-input" id="singleSourceCount" value="${m.singleSourceCount}" placeholder="e.g. 3" min="0" style="max-width:200px">
+      <div class="form-hint">Any single-source critical input is a risk</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Total active vendors</label>
+      <input type="number" class="form-input" id="totalVendors" value="${m.totalVendors}" placeholder="e.g. 24" min="0" style="max-width:200px">
+      <div class="form-hint">Fewer than 10 significant vendors warrants review</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Geographic concentration level</label>
+      ${scoreSelector('geoConc', parseInt(m.geoConcentration) || 0, ['Severe', 'High', 'Moderate', 'Low', 'Diverse'])}
+      <div class="form-hint">How diversified are your vendor geographies?</div>
+    </div>
+  </div>
+  <div id="concStats" class="stats-row"></div>
+  ${navButtons('welcome', 'criticality')}`;
+};
+
+pageInitializers.concentration = () => {
+  const fields = ['topVendorPct', 'top3Pct', 'singleSourceCount', 'totalVendors'];
+  fields.forEach(f => {
+    const el = document.getElementById(f);
+    if (el) el.addEventListener('input', () => {
+      state.concentrationMetrics[f] = el.value;
+      saveState(); updateScore(); renderConcentrationStats();
+    });
+  });
+  document.querySelectorAll('[name="geoConc"]').forEach(r => {
+    r.addEventListener('change', () => {
+      state.concentrationMetrics.geoConcentration = r.value;
+      saveState(); updateScore(); renderCurrentPage();
+    });
+  });
+  document.querySelectorAll('.score-option').forEach(el => {
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.querySelector('input').click(); }});
+  });
+  renderConcentrationStats();
+};
+
+function renderConcentrationStats() {
+  const m = state.concentrationMetrics;
+  const el = document.getElementById('concStats');
+  if (!el) return;
+  const top = parseFloat(m.topVendorPct) || 0;
+  const top3 = parseFloat(m.top3Pct) || 0;
+  const ss = parseInt(m.singleSourceCount) || 0;
+  const topClass = top > 40 ? 'stat-danger' : top > 25 ? 'stat-warning' : top > 0 ? 'stat-success' : '';
+  const top3Class = top3 > 60 ? 'stat-danger' : top3 > 40 ? 'stat-warning' : top3 > 0 ? 'stat-success' : '';
+  const ssClass = ss > 2 ? 'stat-danger' : ss > 0 ? 'stat-warning' : 'stat-success';
+  el.innerHTML = (top || top3 || ss) ? `
+    <div class="stat-card ${topClass}"><div class="stat-value">${top}%</div><div class="stat-label">Top Vendor Dependency</div></div>
+    <div class="stat-card ${top3Class}"><div class="stat-value">${top3}%</div><div class="stat-label">Top 3 Concentration</div></div>
+    <div class="stat-card ${ssClass}"><div class="stat-value">${ss}</div><div class="stat-label">Single-Source Items</div></div>
+  ` : '';
+}
+
+/* ----- CRITICALITY MATRIX ----- */
+pageRenderers.criticality = () => {
+  const vendorCards = state.vendors.map((v, i) => `
+    <div class="vendor-card" id="vendor-${i}">
+      <div class="vendor-card-header">
+        <div>
+          <div class="vendor-card-title">${v.name || 'Vendor ' + (i+1)}</div>
+          <div class="vendor-card-meta">${v.spend ? '$' + Number(v.spend).toLocaleString() + '/yr' : 'No spend entered'} ${v.critical ? '  \u2022  Critical' : ''}</div>
+        </div>
+        <button class="vendor-card-delete" onclick="removeVendor(${i})" aria-label="Remove vendor">\u2715</button>
+      </div>
+      <div class="vendor-card-scores">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Business Impact</label>
+          ${scoreSelector('impact_'+i, v.impact || 0, ['Minimal', 'Low', 'Moderate', 'High', 'Critical'])}
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Replaceability</label>
+          ${scoreSelector('replace_'+i, v.replaceability || 0, ['Easy', 'Simple', 'Moderate', 'Difficult', 'Impossible'])}
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 2 of 11</div>
+    <div class="t-display">Vendor Criticality Matrix</div>
+    <p class="t-body">Score each significant vendor on business impact and replaceability. Vendors scoring 8+ need contracts, backup sources, and contingency plans.</p>
+  </div>
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <div class="t-h3" style="margin-bottom:var(--space-md)">Add Your Vendors</div>
+    <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-bottom:var(--space-lg)">
+      <input type="text" class="form-input" id="newVendorName" placeholder="Vendor name" style="flex:1;min-width:180px">
+      <input type="number" class="form-input" id="newVendorSpend" placeholder="Annual spend ($)" style="width:160px">
+      <label style="display:flex;align-items:center;gap:var(--space-xs);font-size:14px;white-space:nowrap"><input type="checkbox" id="newVendorCritical"> Critical</label>
+      <button class="btn btn-primary" onclick="addVendor()">Add Vendor</button>
+    </div>
+    <div id="vendorList">${vendorCards}</div>
+  </div>
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <div class="t-h3" style="margin-bottom:var(--space-sm)">Criticality Matrix</div>
+    <p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Vendors are plotted based on their impact and replaceability scores. Higher combined scores indicate greater risk.</p>
+    <div id="matrixVis"></div>
+    <div class="matrix-legend">
+      <div class="matrix-legend-item"><div class="matrix-legend-swatch" style="background:#4ade80"></div> Standard (2-4)</div>
+      <div class="matrix-legend-item"><div class="matrix-legend-swatch" style="background:#fbbf24"></div> Moderate (5-6)</div>
+      <div class="matrix-legend-item"><div class="matrix-legend-swatch" style="background:#fb923c"></div> Important (7)</div>
+      <div class="matrix-legend-item"><div class="matrix-legend-swatch" style="background:#f87171"></div> Critical (8-10)</div>
+    </div>
+  </div>
+  <div id="critStats" class="stats-row"></div>
+  ${navButtons('concentration', 'contracts')}`;
+};
+
+pageInitializers.criticality = () => {
+  state.vendors.forEach((v, i) => {
+    document.querySelectorAll(`[name="impact_${i}"]`).forEach(r => {
+      r.addEventListener('change', () => { state.vendors[i].impact = parseInt(r.value); saveState(); updateMatrix(); updateScore(); });
+    });
+    document.querySelectorAll(`[name="replace_${i}"]`).forEach(r => {
+      r.addEventListener('change', () => { state.vendors[i].replaceability = parseInt(r.value); saveState(); updateMatrix(); updateScore(); });
+    });
+  });
+  document.querySelectorAll('.score-option').forEach(el => {
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.querySelector('input').click(); }});
+  });
+  document.getElementById('newVendorName')?.addEventListener('keydown', e => { if (e.key === 'Enter') addVendor(); });
+  updateMatrix();
+};
+
+function addVendor() {
+  const name = document.getElementById('newVendorName').value.trim();
+  if (!name) return;
+  const spend = document.getElementById('newVendorSpend').value;
+  const critical = document.getElementById('newVendorCritical').checked;
+  state.vendors.push({ name, spend, critical, impact: 0, replaceability: 0 });
+  state.contractAssessments.push({ hasContract: false, duration: '', pricing: '', assignable: '', notes: '' });
+  state.alternativeSources.push({ input: name, alt1: '', alt2: '', status: 'none', notes: '' });
+  saveState();
+  renderCurrentPage();
+}
+
+function removeVendor(i) {
+  state.vendors.splice(i, 1);
+  state.contractAssessments.splice(i, 1);
+  state.alternativeSources.splice(i, 1);
+  saveState();
+  renderCurrentPage();
+}
+
+function updateMatrix() {
+  const vis = document.getElementById('matrixVis');
+  const stats = document.getElementById('critStats');
+  if (!vis) return;
+
+  function zoneClass(imp, rep) {
+    const sum = imp + rep;
+    if (sum >= 8) return 'zone-red';
+    if (sum >= 7) return 'zone-orange';
+    if (sum >= 5) return 'zone-yellow';
+    return 'zone-green';
+  }
+
+  let grid = '<div class="matrix-grid" style="grid-template-columns:40px repeat(5,1fr);grid-template-rows:repeat(5,48px) 30px;">';
+  for (let imp = 5; imp >= 1; imp--) {
+    grid += `<div class="matrix-axis-label">${imp}</div>`;
+    for (let rep = 1; rep <= 5; rep++) {
+      const vendors = state.vendors.filter(v => v.impact === imp && v.replaceability === rep);
+      const hasV = vendors.length > 0 ? 'has-vendor' : '';
+      const title = vendors.map(v => v.name).join(', ');
+      grid += `<div class="matrix-cell ${zoneClass(imp, rep)} ${hasV}" title="${title}">${vendors.length > 0 ? vendors.length : ''}</div>`;
+    }
+  }
+  grid += '<div></div>';
+  for (let rep = 1; rep <= 5; rep++) grid += `<div class="matrix-axis-label">${rep}</div>`;
+  grid += '</div>';
+  grid += '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--color-text-tertiary);margin-top:4px;"><span></span><span>REPLACEABILITY (1 = Easy, 5 = Impossible) \u2192</span></div>';
+  grid += '<div style="position:absolute;left:8px;top:50%;transform:rotate(-90deg) translateX(-50%);font-size:11px;color:var(--color-text-tertiary);white-space:nowrap;">BUSINESS IMPACT \u2191</div>';
+  vis.innerHTML = `<div style="position:relative;padding-left:8px;">${grid}</div>`;
+
+  if (stats && state.vendors.length > 0) {
+    const critical = state.vendors.filter(v => (v.impact || 0) + (v.replaceability || 0) >= 8).length;
+    const important = state.vendors.filter(v => { const s = (v.impact||0) + (v.replaceability||0); return s >= 5 && s < 8; }).length;
+    const standard = state.vendors.filter(v => (v.impact||0) + (v.replaceability||0) < 5 && (v.impact||0) + (v.replaceability||0) > 0).length;
+    stats.innerHTML = `
+      <div class="stat-card stat-danger"><div class="stat-value">${critical}</div><div class="stat-label">Critical Vendors</div></div>
+      <div class="stat-card stat-warning"><div class="stat-value">${important}</div><div class="stat-label">Important Vendors</div></div>
+      <div class="stat-card stat-success"><div class="stat-value">${standard}</div><div class="stat-label">Standard Vendors</div></div>
+      <div class="stat-card stat-primary"><div class="stat-value">${state.vendors.length}</div><div class="stat-label">Total Vendors</div></div>
+    `;
+  }
+}
+
+/* ----- CONTRACTS ----- */
+pageRenderers.contracts = () => {
+  if (state.vendors.length === 0) {
+    return `
+    <div class="page-header">
+      <div class="t-label">Step 3 of 11</div>
+      <div class="t-display">Contract Terms Assessment</div>
+    </div>
+    <div class="callout callout-warning" style="margin-bottom:var(--space-lg)">You need to add vendors in the Criticality Matrix step before assessing contracts. <button class="btn btn-sm btn-secondary" style="margin-left:var(--space-sm)" onclick="goToPage('criticality')">Go to Criticality Matrix</button></div>
+    ${navButtons('criticality', 'alternatives')}`;
+  }
+  while (state.contractAssessments.length < state.vendors.length) {
+    state.contractAssessments.push({ hasContract: false, duration: '', pricing: '', assignable: '', notes: '' });
+  }
+  const cards = state.vendors.map((v, i) => {
+    const c = state.contractAssessments[i];
+    return `
+    <div class="card" style="margin-bottom:var(--space-md)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-md)">
+        <div class="t-h3">${v.name}</div>
+        <span class="badge ${c.hasContract ? 'badge-success' : 'badge-danger'}">${c.hasContract ? 'Has Contract' : 'No Contract'}</span>
+      </div>
+      <div style="display:flex;gap:var(--space-md);flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:var(--space-xs);font-size:14px;cursor:pointer">
+          <input type="checkbox" data-contract="${i}" ${c.hasContract ? 'checked' : ''}> Written contract in place
+        </label>
+      </div>
+      ${c.hasContract ? `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-top:var(--space-md)">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Duration</label>
+          <select class="form-input" data-field="duration" data-idx="${i}">
+            <option value="">Select...</option>
+            <option value="expired" ${c.duration==='expired'?'selected':''}>Expired</option>
+            <option value="lt12" ${c.duration==='lt12'?'selected':''}>< 12 months</option>
+            <option value="12-24" ${c.duration==='12-24'?'selected':''}>12-24 months</option>
+            <option value="multi" ${c.duration==='multi'?'selected':''}>Multi-year</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Pricing Protection</label>
+          <select class="form-input" data-field="pricing" data-idx="${i}">
+            <option value="">Select...</option>
+            <option value="none" ${c.pricing==='none'?'selected':''}>None</option>
+            <option value="cap" ${c.pricing==='cap'?'selected':''}>Escalation cap</option>
+            <option value="fixed" ${c.pricing==='fixed'?'selected':''}>Fixed pricing</option>
+            <option value="formula" ${c.pricing==='formula'?'selected':''}>Formula-based</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Assignable to Buyer?</label>
+          <select class="form-input" data-field="assignable" data-idx="${i}">
+            <option value="">Select...</option>
+            <option value="yes" ${c.assignable==='yes'?'selected':''}>Yes, freely</option>
+            <option value="consent" ${c.assignable==='consent'?'selected':''}>With consent</option>
+            <option value="no" ${c.assignable==='no'?'selected':''}>Not assignable</option>
+            <option value="unknown" ${c.assignable==='unknown'?'selected':''}>Unknown</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Notes</label>
+          <input type="text" class="form-input" data-field="notes" data-idx="${i}" value="${c.notes || ''}" placeholder="Key terms, red flags...">
+        </div>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 3 of 11</div>
+    <div class="t-display">Contract Terms Assessment</div>
+    <p class="t-body">Review every significant vendor contract. Written contracts provide legal protection and give the buyer assurance of continuity.</p>
+  </div>
+  <div class="callout callout-danger" style="margin-bottom:var(--space-xl)">Verbal agreements, historical relationships, and "we have always worked together" provide zero legal protection. Get written contracts with every vendor representing >5% of your spend.</div>
+  ${cards}
+  <div id="contractStats" class="stats-row"></div>
+  ${navButtons('criticality', 'alternatives')}`;
+};
+
+pageInitializers.contracts = () => {
+  document.querySelectorAll('[data-contract]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const i = parseInt(cb.dataset.contract);
+      state.contractAssessments[i].hasContract = cb.checked;
+      saveState(); updateScore(); renderCurrentPage();
+    });
+  });
+  document.querySelectorAll('[data-field][data-idx]').forEach(el => {
+    el.addEventListener('change', () => {
+      const i = parseInt(el.dataset.idx);
+      state.contractAssessments[i][el.dataset.field] = el.value;
+      saveState(); updateScore();
+    });
+    el.addEventListener('input', () => {
+      const i = parseInt(el.dataset.idx);
+      state.contractAssessments[i][el.dataset.field] = el.value;
+      saveState();
+    });
+  });
+  renderContractStats();
+};
+
+function renderContractStats() {
+  const el = document.getElementById('contractStats');
+  if (!el || state.vendors.length === 0) return;
+  const withC = state.contractAssessments.filter(c => c.hasContract).length;
+  const assignable = state.contractAssessments.filter(c => c.assignable === 'yes').length;
+  const multiYear = state.contractAssessments.filter(c => c.duration === 'multi').length;
+  el.innerHTML = `
+    <div class="stat-card ${withC === state.vendors.length ? 'stat-success' : 'stat-warning'}"><div class="stat-value">${withC}/${state.vendors.length}</div><div class="stat-label">Have Contracts</div></div>
+    <div class="stat-card ${assignable > 0 ? 'stat-success' : 'stat-danger'}"><div class="stat-value">${assignable}</div><div class="stat-label">Freely Assignable</div></div>
+    <div class="stat-card stat-primary"><div class="stat-value">${multiYear}</div><div class="stat-label">Multi-Year Terms</div></div>
+  `;
+}
+
+/* ----- ALTERNATIVES ----- */
+pageRenderers.alternatives = () => {
+  if (state.vendors.length === 0) {
+    return `
+    <div class="page-header">
+      <div class="t-label">Step 4 of 11</div>
+      <div class="t-display">Alternative Sourcing Strategy</div>
+    </div>
+    <div class="callout callout-warning">Add vendors first in the Criticality Matrix step. <button class="btn btn-sm btn-secondary" style="margin-left:var(--space-sm)" onclick="goToPage('criticality')">Go Back</button></div>
+    ${navButtons('contracts', 'agreements')}`;
+  }
+  while (state.alternativeSources.length < state.vendors.length) {
+    state.alternativeSources.push({ input: '', alt1: '', alt2: '', status: 'none', notes: '' });
+  }
+  const statusLabels = { none: 'Not Started', identified: 'Identified', qualified: 'Qualified', active: 'Active Relationship' };
+  const statusBadge = s => {
+    const cls = s === 'active' ? 'badge-success' : s === 'qualified' ? 'badge-primary' : s === 'identified' ? 'badge-warning' : 'badge-neutral';
+    return `<span class="badge ${cls}">${statusLabels[s] || 'Not Started'}</span>`;
+  };
+  const rows = state.vendors.map((v, i) => {
+    const a = state.alternativeSources[i];
+    return `
+    <div class="card" style="margin-bottom:var(--space-md)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-md)">
+        <div class="t-h3">${v.name}</div>
+        ${statusBadge(a.status)}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Alternative Vendor 1</label>
+          <input type="text" class="form-input" data-alt="alt1" data-aidx="${i}" value="${a.alt1||''}" placeholder="Vendor name">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Alternative Vendor 2</label>
+          <input type="text" class="form-input" data-alt="alt2" data-aidx="${i}" value="${a.alt2||''}" placeholder="Vendor name">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Qualification Status</label>
+          <select class="form-input" data-alt="status" data-aidx="${i}">
+            <option value="none" ${a.status==='none'?'selected':''}>Not Started</option>
+            <option value="identified" ${a.status==='identified'?'selected':''}>Identified</option>
+            <option value="qualified" ${a.status==='qualified'?'selected':''}>Qualified (tested)</option>
+            <option value="active" ${a.status==='active'?'selected':''}>Active Relationship</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Notes</label>
+          <input type="text" class="form-input" data-alt="notes" data-aidx="${i}" value="${a.notes||''}" placeholder="Capacity, lead time...">
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 4 of 11</div>
+    <div class="t-display">Alternative Sourcing Strategy</div>
+    <p class="t-body">For every critical input, you should have at least one qualified alternative. "Qualified" means tested product, verified capacity, and established terms -- not just Googled their website.</p>
+  </div>
+  <div class="callout callout-info" style="margin-bottom:var(--space-xl)">
+    <strong>The 5-step qualification process:</strong> Identify \u2192 Request samples \u2192 Trial order \u2192 Commercial agreement \u2192 Periodic orders to keep the relationship active.
+  </div>
+  ${rows}
+  ${navButtons('contracts', 'agreements')}`;
+};
+
+pageInitializers.alternatives = () => {
+  document.querySelectorAll('[data-alt][data-aidx]').forEach(el => {
+    const handler = () => {
+      const i = parseInt(el.dataset.aidx);
+      state.alternativeSources[i][el.dataset.alt] = el.value;
+      saveState(); updateScore();
+    };
+    el.addEventListener('change', handler);
+    el.addEventListener('input', handler);
+  });
+};
+
+/* ----- AGREEMENTS ----- */
+pageRenderers.agreements = () => {
+  const a = state.agreements;
+  const items = [
+    { key: 'priceProtection', label: 'Price Protection', desc: '2-3 year terms with pricing caps (e.g., not to exceed CPI + 2% annually)' },
+    { key: 'supplyGuarantee', label: 'Supply Guarantee', desc: 'Vendor commits to maintain capacity and inventory for your needs' },
+    { key: 'volumeTiers', label: 'Volume Tiers', desc: 'Volume discounts that improve margins as you grow' },
+    { key: 'assignability', label: 'Assignability', desc: 'Agreement transfers to new owner without renegotiation' },
+    { key: 'serviceLevels', label: 'Service Levels', desc: 'Defined SLAs for delivery, quality, and response time' },
+  ];
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 5 of 11</div>
+    <div class="t-display">Multi-Year Agreements</div>
+    <p class="t-body">Long-term vendor agreements provide price stability, supply certainty, and demonstrate operational maturity to buyers.</p>
+  </div>
+  <div class="callout callout-warning" style="margin-bottom:var(--space-xl)">
+    Negotiate multi-year agreements 12-18 months before going to market. Agreements signed during diligence look opportunistic and may not be given full credit.
+  </div>
+  ${items.map(item => `
+  <div class="card" style="margin-bottom:var(--space-md)">
+    <div class="form-group" style="margin-bottom:0">
+      <label class="form-label">${item.label}</label>
+      <p class="form-hint" style="margin-bottom:var(--space-sm)">${item.desc}</p>
+      ${scoreSelector('agr_'+item.key, a[item.key] || 0, ['None', 'Starting', 'Partial', 'Good', 'Excellent'])}
+    </div>
+  </div>`).join('')}
+  <div class="card" style="margin-top:var(--space-md)">
+    <div class="form-group" style="margin-bottom:0">
+      <label class="form-label">Additional Notes</label>
+      <textarea class="form-input" id="agrNotes" placeholder="Key agreements in progress, negotiation strategy...">${a.notes||''}</textarea>
+    </div>
+  </div>
+  ${navButtons('alternatives', 'riskregister')}`;
+};
+
+pageInitializers.agreements = () => {
+  const items = ['priceProtection', 'supplyGuarantee', 'volumeTiers', 'assignability', 'serviceLevels'];
+  items.forEach(key => {
+    document.querySelectorAll(`[name="agr_${key}"]`).forEach(r => {
+      r.addEventListener('change', () => { state.agreements[key] = parseInt(r.value); saveState(); updateScore(); renderCurrentPage(); });
+    });
+  });
+  document.querySelectorAll('.score-option').forEach(el => {
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.querySelector('input').click(); }});
+  });
+  const notes = document.getElementById('agrNotes');
+  if (notes) notes.addEventListener('input', () => { state.agreements.notes = notes.value; saveState(); });
+};
+
+/* ----- RISK REGISTER ----- */
+pageRenderers.riskregister = () => {
+  const categories = ['Financial', 'Operational', 'Geographic', 'Regulatory', 'Concentration', 'Technology', 'Reputation'];
+  const riskRows = state.risks.map((r, i) => `
+    <div class="card" style="margin-bottom:var(--space-md)">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:var(--space-md)">
+        <div>
+          <div class="t-h3">${r.description || 'Risk ' + (i+1)}</div>
+          <span class="badge ${r.category ? 'badge-primary' : 'badge-neutral'}">${r.category || 'Uncategorized'}</span>
+        </div>
+        <button class="vendor-card-delete" onclick="removeRisk(${i})" aria-label="Remove risk">\u2715</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Probability</label>
+          <div class="risk-selector">
+            <div class="risk-option risk-low ${r.probability==='low'?'selected':''}" data-rfield="probability" data-ridx="${i}" data-rval="low">Low</div>
+            <div class="risk-option risk-med ${r.probability==='medium'?'selected':''}" data-rfield="probability" data-ridx="${i}" data-rval="medium">Medium</div>
+            <div class="risk-option risk-high ${r.probability==='high'?'selected':''}" data-rfield="probability" data-ridx="${i}" data-rval="high">High</div>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Impact</label>
+          <div class="risk-selector">
+            <div class="risk-option risk-low ${r.impact==='low'?'selected':''}" data-rfield="impact" data-ridx="${i}" data-rval="low">Low</div>
+            <div class="risk-option risk-med ${r.impact==='medium'?'selected':''}" data-rfield="impact" data-ridx="${i}" data-rval="medium">Medium</div>
+            <div class="risk-option risk-high ${r.impact==='high'?'selected':''}" data-rfield="impact" data-ridx="${i}" data-rval="high">High</div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:var(--space-md);margin-bottom:0">
+        <label class="form-label">Mitigation Strategy</label>
+        <textarea class="form-input" data-rmit="${i}" placeholder="What are you doing to address this risk?">${r.mitigation||''}</textarea>
+      </div>
+    </div>
+  `).join('');
+
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 6 of 11</div>
+    <div class="t-display">Supply Chain Risk Register</div>
+    <p class="t-body">Conduct a formal risk assessment across your supply chain. Document each risk with probability, impact, and a specific mitigation strategy.</p>
+  </div>
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <div class="t-h3" style="margin-bottom:var(--space-md)">Add a Risk</div>
+    <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap">
+      <input type="text" class="form-input" id="newRiskDesc" placeholder="Describe the risk..." style="flex:1;min-width:200px">
+      <select class="form-input" id="newRiskCat" style="width:160px">
+        <option value="">Category...</option>
+        ${categories.map(c => `<option value="${c}">${c}</option>`).join('')}
+      </select>
+      <button class="btn btn-primary" onclick="addRisk()">Add Risk</button>
+    </div>
+  </div>
+  ${riskRows}
+  ${state.risks.length > 0 ? '<div id="riskHeatmap"></div>' : ''}
+  ${navButtons('agreements', 'relationships')}`;
+};
+
+pageInitializers.riskregister = () => {
+  document.querySelectorAll('.risk-option').forEach(el => {
+    el.addEventListener('click', () => {
+      const i = parseInt(el.dataset.ridx);
+      const field = el.dataset.rfield;
+      state.risks[i][field] = el.dataset.rval;
+      saveState(); updateScore(); renderCurrentPage();
+    });
+  });
+  document.querySelectorAll('[data-rmit]').forEach(el => {
+    el.addEventListener('input', () => {
+      state.risks[parseInt(el.dataset.rmit)].mitigation = el.value;
+      saveState(); updateScore();
+    });
+  });
+  document.getElementById('newRiskDesc')?.addEventListener('keydown', e => { if (e.key === 'Enter') addRisk(); });
+  renderRiskHeatmap();
+};
+
+function addRisk() {
+  const desc = document.getElementById('newRiskDesc').value.trim();
+  if (!desc) return;
+  const cat = document.getElementById('newRiskCat').value;
+  state.risks.push({ description: desc, category: cat, probability: '', impact: '', mitigation: '', owner: '', status: 'open' });
+  saveState(); renderCurrentPage();
+}
+
+function removeRisk(i) { state.risks.splice(i, 1); saveState(); renderCurrentPage(); }
+
+function renderRiskHeatmap() {
+  const el = document.getElementById('riskHeatmap');
+  if (!el || state.risks.length === 0) return;
+  const levels = ['low', 'medium', 'high'];
+  const colors = { 'low-low': '#4ade80', 'low-medium': '#86efac', 'low-high': '#fbbf24', 'medium-low': '#86efac', 'medium-medium': '#fbbf24', 'medium-high': '#fb923c', 'high-low': '#fbbf24', 'high-medium': '#fb923c', 'high-high': '#f87171' };
+  let html = '<div class="card" style="margin-top:var(--space-lg)"><div class="t-h3" style="margin-bottom:var(--space-md)">Risk Heat Map</div>';
+  html += '<div style="display:grid;grid-template-columns:80px repeat(3,1fr);gap:3px;">';
+  html += '<div></div><div class="heatmap-col-label">Low Impact</div><div class="heatmap-col-label">Med Impact</div><div class="heatmap-col-label">High Impact</div>';
+  for (let p = 2; p >= 0; p--) {
+    html += `<div class="heatmap-row-label">${levels[p].charAt(0).toUpperCase() + levels[p].slice(1)}</div>`;
+    for (let im = 0; im < 3; im++) {
+      const count = state.risks.filter(r => r.probability === levels[p] && r.impact === levels[im]).length;
+      const bg = colors[levels[p]+'-'+levels[im]];
+      html += `<div style="background:${bg};padding:12px;border-radius:var(--radius-sm);text-align:center;font-weight:600;color:#fff;font-size:18px;">${count || ''}</div>`;
+    }
+  }
+  html += '</div><div style="text-align:center;font-size:11px;color:var(--color-text-tertiary);margin-top:var(--space-sm)">Probability (rows) vs Impact (columns)</div></div>';
+  el.innerHTML = html;
+}
+
+/* ----- RELATIONSHIPS ----- */
+pageRenderers.relationships = () => {
+  const r = state.relationships;
+  const items = [
+    { key: 'documented', label: 'Relationship Documentation', desc: 'Primary/secondary contacts, history, negotiated terms, escalation procedures documented for each key vendor' },
+    { key: 'transitioned', label: 'Relationship Transition', desc: 'Vendor relationships transitioning from owner to procurement manager or operations lead' },
+    { key: 'escalation', label: 'Escalation Procedures', desc: 'Written escalation procedures for quality or delivery issues at each key vendor' },
+  ];
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 7 of 11</div>
+    <div class="t-display">Vendor Relationship Management</div>
+    <p class="t-body">Strong vendor relationships are an asset that transfers with the business -- but only if they are documented and not solely dependent on the owner's personal relationships.</p>
+  </div>
+  <div class="callout callout-accent" style="margin-bottom:var(--space-xl)">
+    If the owner is the primary vendor contact, begin transitioning relationships to a procurement manager or operations lead 12-18 months before exit.
+  </div>
+  ${items.map(item => `
+  <div class="card" style="margin-bottom:var(--space-md)">
+    <div class="form-group" style="margin-bottom:0">
+      <label class="form-label">${item.label}</label>
+      <p class="form-hint" style="margin-bottom:var(--space-sm)">${item.desc}</p>
+      ${scoreSelector('rel_'+item.key, r[item.key] || 0, ['None', 'Starting', 'Partial', 'Good', 'Complete'])}
+    </div>
+  </div>`).join('')}
+  <div class="card">
+    <div class="form-group" style="margin-bottom:0">
+      <label class="form-label">Transition Plan Notes</label>
+      <textarea class="form-input" id="relNotes" placeholder="Who is the current primary contact? Who will take over?">${r.notes||''}</textarea>
+    </div>
+  </div>
+  ${navButtons('riskregister', 'costmargin')}`;
+};
+
+pageInitializers.relationships = () => {
+  ['documented', 'transitioned', 'escalation'].forEach(key => {
+    document.querySelectorAll(`[name="rel_${key}"]`).forEach(r => {
+      r.addEventListener('change', () => { state.relationships[key] = parseInt(r.value); saveState(); updateScore(); renderCurrentPage(); });
+    });
+  });
+  document.querySelectorAll('.score-option').forEach(el => {
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.querySelector('input').click(); }});
+  });
+  const notes = document.getElementById('relNotes');
+  if (notes) notes.addEventListener('input', () => { state.relationships.notes = notes.value; saveState(); });
+};
+
+/* ----- COST & MARGIN ----- */
+pageRenderers.costmargin = () => {
+  const strategies = [
+    { id: 'fixed', label: 'Fixed-Price Contracts', desc: 'Lock in pricing for 12-36 months', eff: 'High' },
+    { id: 'costplus', label: 'Cost-Plus Agreements', desc: 'Price = verified cost + fixed margin', eff: 'Moderate' },
+    { id: 'escalation', label: 'Price Escalation Caps', desc: 'Annual increases capped at CPI or fixed %', eff: 'High' },
+    { id: 'hedging', label: 'Commodity Hedging', desc: 'Futures contracts or fixed-price forward buys', eff: 'High' },
+    { id: 'inventory', label: 'Inventory Buffers', desc: 'Buy ahead at favorable prices', eff: 'Moderate' },
+    { id: 'passthrough', label: 'Pass-Through Clauses', desc: 'Customer contracts include raw material adjusters', eff: 'High' },
+  ];
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 8 of 11</div>
+    <div class="t-display">Cost Structure & Margin Protection</div>
+    <p class="t-body">A stable, predictable cost structure is far more valuable than one that swings with commodity prices or vendor mood. Select the strategies you employ.</p>
+  </div>
+  <div class="checklist">
+    ${strategies.map(s => {
+      const checked = state.costStrategies.includes(s.id);
+      return `
+      <div class="checklist-item ${checked ? 'checked' : ''}" data-strategy="${s.id}">
+        <div class="checklist-box">${checked ? '<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" fill="none"/></svg>' : ''}</div>
+        <div>
+          <div class="checklist-text"><strong>${s.label}</strong> <span class="badge badge-${s.eff === 'High' ? 'success' : 'warning'}" style="margin-left:var(--space-sm)">${s.eff} effectiveness</span></div>
+          <div class="form-hint">${s.desc}</div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>
+  <div id="costStats" class="stats-row" style="margin-top:var(--space-lg)"></div>
+  ${navButtons('relationships', 'logistics')}`;
+};
+
+pageInitializers.costmargin = () => {
+  document.querySelectorAll('.checklist-item[data-strategy]').forEach(el => {
+    el.addEventListener('click', () => {
+      const id = el.dataset.strategy;
+      const idx = state.costStrategies.indexOf(id);
+      if (idx >= 0) state.costStrategies.splice(idx, 1);
+      else state.costStrategies.push(id);
+      saveState(); updateScore(); renderCurrentPage();
+    });
+  });
+  const el = document.getElementById('costStats');
+  if (el) {
+    const count = state.costStrategies.length;
+    const cls = count >= 4 ? 'stat-success' : count >= 2 ? 'stat-warning' : 'stat-danger';
+    el.innerHTML = `<div class="stat-card ${cls}"><div class="stat-value">${count}/6</div><div class="stat-label">Strategies Active</div></div>`;
+  }
+};
+
+/* ----- LOGISTICS ----- */
+pageRenderers.logistics = () => {
+  const l = state.logistics;
+  const items = [
+    { key: 'shipping', label: 'Shipping & Freight', desc: 'All shipping providers, freight terms (FOB, CIF), and average delivery times documented' },
+    { key: 'warehousing', label: 'Warehousing', desc: 'Warehouse leases, capacity utilization, and condition reviewed' },
+    { key: 'fleet', label: 'Fleet & Equipment', desc: 'Age, condition, maintenance records, and replacement schedule documented' },
+    { key: 'thirdParty', label: 'Third-Party Logistics', desc: '3PL contracts are assignable and service levels documented' },
+    { key: 'international', label: 'International Logistics', desc: 'Customs, import/export licenses, trade compliance current' },
+  ];
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 9 of 11</div>
+    <div class="t-display">Logistics & Fulfillment Review</div>
+    <p class="t-body">Your logistics and fulfillment infrastructure is part of operational due diligence. Document everything a buyer would ask about.</p>
+  </div>
+  ${items.map(item => `
+  <div class="card" style="margin-bottom:var(--space-md)">
+    <div class="form-group" style="margin-bottom:0">
+      <label class="form-label">${item.label}</label>
+      <p class="form-hint" style="margin-bottom:var(--space-sm)">${item.desc}</p>
+      ${scoreSelector('log_'+item.key, l[item.key] || 0, ['None', 'Starting', 'Partial', 'Good', 'Complete'])}
+    </div>
+  </div>`).join('')}
+  <div class="card">
+    <div class="form-group" style="margin-bottom:0">
+      <label class="form-label">Logistics Notes</label>
+      <textarea class="form-input" id="logNotes" placeholder="Key logistics issues, carrier relationships, lead times...">${l.notes||''}</textarea>
+    </div>
+  </div>
+  ${navButtons('costmargin', 'mistakes')}`;
+};
+
+pageInitializers.logistics = () => {
+  ['shipping', 'warehousing', 'fleet', 'thirdParty', 'international'].forEach(key => {
+    document.querySelectorAll(`[name="log_${key}"]`).forEach(r => {
+      r.addEventListener('change', () => { state.logistics[key] = parseInt(r.value); saveState(); updateScore(); renderCurrentPage(); });
+    });
+  });
+  document.querySelectorAll('.score-option').forEach(el => {
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.querySelector('input').click(); }});
+  });
+  const notes = document.getElementById('logNotes');
+  if (notes) notes.addEventListener('input', () => { state.logistics.notes = notes.value; saveState(); });
+};
+
+/* ----- MISTAKES ----- */
+pageRenderers.mistakes = () => {
+  const mistakes = [
+    { title: 'Operating on Handshake Agreements', desc: 'Verbal agreements provide zero legal protection and give the buyer no assurance of continuity.', fix: 'Get written contracts with every vendor representing >5% of your spend. Do it now.' },
+    { title: 'Ignoring Vendor Financial Health', desc: 'Your critical supplier could be three months from bankruptcy. If they fail during diligence or post-close, it becomes your problem.', fix: 'Run a basic financial check (D&B report, trade references) on your top 10 vendors annually.' },
+    { title: 'Not Disclosing Related-Party Vendor Relationships', desc: 'If your brother-in-law supplies your raw materials, the buyer will discover it. Non-disclosure is a trust-killer.', fix: 'Disclose all related-party relationships proactively. Demonstrate pricing is at or near market rate.' },
+    { title: 'Underestimating Lead Time Risk', desc: 'Long lead times with no safety stock mean a single disruption can halt operations for weeks. Buyers model this scenario.', fix: 'Maintain safety stock for critical items equal to 2-4 weeks of usage. Document reorder points and lead times.' },
+  ];
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 10 of 11</div>
+    <div class="t-display">Common Mistakes</div>
+    <p class="t-body">Review these frequent pitfalls and confirm you have addressed each one.</p>
+  </div>
+  <div class="checklist">
+    ${mistakes.map((m, i) => {
+      const checked = state.mistakeChecklist[i];
+      return `
+      <div class="checklist-item ${checked ? 'checked' : ''}" data-mistake="${i}">
+        <div class="checklist-box">${checked ? '<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" fill="none"/></svg>' : ''}</div>
+        <div>
+          <div class="checklist-text"><strong>${m.title}</strong></div>
+          <div class="form-hint" style="margin:var(--space-xs) 0">${m.desc}</div>
+          <div class="callout callout-info" style="margin-top:var(--space-sm);padding:var(--space-sm) var(--space-md)">${m.fix}</div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>
+  ${navButtons('logistics', 'summary')}`;
+};
+
+pageInitializers.mistakes = () => {
+  document.querySelectorAll('.checklist-item[data-mistake]').forEach(el => {
+    el.addEventListener('click', () => {
+      const i = parseInt(el.dataset.mistake);
+      state.mistakeChecklist[i] = !state.mistakeChecklist[i];
+      saveState(); renderCurrentPage();
+    });
+  });
+};
+
+/* ----- SUMMARY ----- */
+pageRenderers.summary = () => {
+  const score = calculateScore();
+  const scoreColor = score >= 80 ? 'var(--color-success)' : score >= 60 ? 'var(--color-warning)' : score >= 40 ? '#D97706' : 'var(--color-danger)';
+  const scoreLabel = score >= 80 ? 'Strong Resilience' : score >= 60 ? 'Moderate -- Needs Work' : score >= 40 ? 'Significant Gaps' : 'Critical Vulnerabilities';
+
+  const cm = state.concentrationMetrics;
+  const withContract = state.contractAssessments.filter(c => c.hasContract).length;
+  const qualified = state.alternativeSources.filter(a => a.status === 'qualified' || a.status === 'active').length;
+  const mitigated = state.risks.filter(r => r.mitigation && r.mitigation.trim() !== '').length;
+  const criticalVendors = state.vendors.filter(v => (v.impact||0) + (v.replaceability||0) >= 8).length;
+
+  // Bar chart data
+  const barData = [
+    { label: 'Concentration', value: cm.topVendorPct ? (parseFloat(cm.topVendorPct) <= 15 ? 100 : parseFloat(cm.topVendorPct) <= 25 ? 66 : parseFloat(cm.topVendorPct) <= 40 ? 33 : 10) : 0, color: 'var(--color-primary)' },
+    { label: 'Contracts', value: state.vendors.length > 0 ? Math.round((withContract / state.vendors.length) * 100) : 0, color: 'var(--color-accent)' },
+    { label: 'Alt Sources', value: state.vendors.length > 0 ? Math.round((qualified / state.vendors.length) * 100) : 0, color: '#6366f1' },
+    { label: 'Agreements', value: Math.round(((state.agreements.priceProtection + state.agreements.supplyGuarantee + state.agreements.volumeTiers + state.agreements.assignability + state.agreements.serviceLevels) / 25) * 100), color: '#0891b2' },
+    { label: 'Risk Mgmt', value: state.risks.length > 0 ? Math.round((mitigated / state.risks.length) * 100) : 0, color: '#c026d3' },
+    { label: 'Relationships', value: Math.round(((state.relationships.documented + state.relationships.transitioned + state.relationships.escalation) / 15) * 100), color: '#ea580c' },
+    { label: 'Cost Protection', value: Math.round((state.costStrategies.length / 6) * 100), color: '#059669' },
+    { label: 'Logistics', value: Math.round(((state.logistics.shipping + state.logistics.warehousing + state.logistics.fleet + state.logistics.thirdParty + state.logistics.international) / 25) * 100), color: '#7c3aed' },
+  ];
+
+  return `
+  <div class="page-header">
+    <div class="t-label">Summary Dashboard</div>
+    <div class="t-display">Supply Chain Resilience Report</div>
+  </div>
+
+  <div style="text-align:center;margin-bottom:var(--space-2xl)">
+    <svg width="200" height="120" viewBox="0 0 200 120">
+      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="var(--color-border)" stroke-width="16" stroke-linecap="round"/>
+      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="${scoreColor}" stroke-width="16" stroke-linecap="round"
+        stroke-dasharray="${score * 2.51} 251" style="transition: stroke-dasharray 1s ease;"/>
+      <text x="100" y="85" text-anchor="middle" font-family="Georgia" font-size="36" font-weight="700" fill="${scoreColor}">${score}</text>
+      <text x="100" y="110" text-anchor="middle" font-size="12" fill="var(--color-text-secondary)">${scoreLabel}</text>
+    </svg>
+  </div>
+
+  <div class="stats-row" style="margin-bottom:var(--space-2xl)">
+    <div class="stat-card stat-primary"><div class="stat-value">${state.vendors.length}</div><div class="stat-label">Vendors Tracked</div></div>
+    <div class="stat-card ${criticalVendors > 0 ? 'stat-danger' : 'stat-success'}"><div class="stat-value">${criticalVendors}</div><div class="stat-label">Critical Vendors</div></div>
+    <div class="stat-card ${withContract < state.vendors.length ? 'stat-warning' : 'stat-success'}"><div class="stat-value">${withContract}/${state.vendors.length || 0}</div><div class="stat-label">With Contracts</div></div>
+    <div class="stat-card ${state.risks.length > 0 ? 'stat-primary' : 'stat-danger'}"><div class="stat-value">${mitigated}/${state.risks.length}</div><div class="stat-label">Risks Mitigated</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <div class="t-h2" style="margin-bottom:var(--space-lg)">Category Scores</div>
+    <div class="bar-chart">
+      ${barData.map(b => `
+      <div class="bar-row">
+        <div class="bar-label">${b.label}</div>
+        <div class="bar-track">
+          <div class="bar-fill animated" style="width:${b.value}%;background:${b.color}">
+            <span class="bar-value">${b.value}%</span>
+          </div>
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  ${state.vendors.length > 0 ? `
+  <div class="summary-section">
+    <div class="summary-section-title">Vendor Inventory</div>
+    <div class="table-scroll">
+      <table class="dynamic-table">
+        <thead>
+          <tr><th>Vendor</th><th>Annual Spend</th><th>Criticality</th><th>Contract</th><th>Alt Source</th></tr>
+        </thead>
+        <tbody>
+          ${state.vendors.map((v, i) => {
+            const c = state.contractAssessments[i] || {};
+            const a = state.alternativeSources[i] || {};
+            const crit = (v.impact||0) + (v.replaceability||0);
+            const critBadge = crit >= 8 ? 'badge-danger' : crit >= 5 ? 'badge-warning' : 'badge-success';
+            const critLabel = crit >= 8 ? 'Critical' : crit >= 5 ? 'Important' : 'Standard';
+            return `<tr>
+              <td><strong>${v.name}</strong></td>
+              <td>${v.spend ? '$' + Number(v.spend).toLocaleString() : '--'}</td>
+              <td><span class="badge ${critBadge}">${critLabel} (${crit})</span></td>
+              <td><span class="badge ${c.hasContract ? 'badge-success' : 'badge-danger'}">${c.hasContract ? 'Yes' : 'No'}</span></td>
+              <td><span class="badge ${a.status === 'active' || a.status === 'qualified' ? 'badge-success' : a.status === 'identified' ? 'badge-warning' : 'badge-neutral'}">${a.status || 'None'}</span></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>` : ''}
+
+  ${state.risks.length > 0 ? `
+  <div class="summary-section">
+    <div class="summary-section-title">Risk Register Summary</div>
+    ${state.risks.map(r => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-sm) 0;border-bottom:1px solid var(--color-border-light)">
+      <div>
+        <div style="font-weight:500">${r.description}</div>
+        <div style="font-size:12px;color:var(--color-text-tertiary)">${r.category || 'Uncategorized'} | Probability: ${r.probability || '--'} | Impact: ${r.impact || '--'}</div>
+      </div>
+      <span class="badge ${r.mitigation ? 'badge-success' : 'badge-danger'}">${r.mitigation ? 'Mitigated' : 'Open'}</span>
+    </div>`).join('')}
+  </div>` : ''}
+
+  <div class="callout callout-accent" style="margin:var(--space-xl) 0">
+    <strong>Final Thought:</strong> A resilient supply chain is a competitive advantage. A fragile one is a liability that buyers will make you pay for.
+  </div>
+
+  <div class="export-actions">
+    <button class="btn btn-primary" onclick="exportSummary()">Export as Text</button>
+    <button class="btn btn-secondary" onclick="window.print()">Print Summary</button>
+    <button class="btn btn-ghost" onclick="if(confirm('This will clear all your data. Are you sure?')){localStorage.removeItem('${STORAGE_KEY}');state=defaultState();saveState();goToPage('welcome');}">Reset All Data</button>
+  </div>
+  ${navButtons('mistakes', null)}`;
+};
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function exportSummary() {
+  const score = calculateScore();
+  let text = `VENDOR & SUPPLY CHAIN RESILIENCE REPORT\n${'='.repeat(45)}\nResilience Score: ${score}/100\nDate: ${new Date().toLocaleDateString()}\n\n`;
+  text += `CONCENTRATION METRICS\n`;
+  const cm = state.concentrationMetrics;
+  text += `Top Vendor % of COGS: ${cm.topVendorPct || '--'}%\nTop 3 % of COGS: ${cm.top3Pct || '--'}%\nSingle-Source Items: ${cm.singleSourceCount || '--'}\nTotal Vendors: ${cm.totalVendors || '--'}\n\n`;
+  text += `VENDORS (${state.vendors.length})\n`;
+  state.vendors.forEach((v, i) => {
+    const c = state.contractAssessments[i] || {};
+    const crit = (v.impact||0) + (v.replaceability||0);
+    text += `- ${v.name} | Spend: $${v.spend || '?'} | Criticality: ${crit} | Contract: ${c.hasContract ? 'Yes' : 'No'}\n`;
+  });
+  text += `\nRISKS (${state.risks.length})\n`;
+  state.risks.forEach(r => {
+    text += `- ${r.description} (${r.category}) | P:${r.probability} I:${r.impact} | ${r.mitigation ? 'Mitigated' : 'OPEN'}\n`;
+  });
+  text += `\nCOST STRATEGIES: ${state.costStrategies.join(', ') || 'None selected'}\n`;
+
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'supply-chain-resilience-report.txt';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+buildNav();
+renderCurrentPage();
+updateProgress();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

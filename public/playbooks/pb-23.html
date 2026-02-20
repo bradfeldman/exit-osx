@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regulatory & Licensing Compliance | Exit Planning Playbook #23</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  color: var(--color-text); background: var(--color-bg);
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+
+.t-display { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 260px; min-width: 260px; background: var(--color-text);
+  color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow); overflow-y: auto;
+}
+.sidebar.collapsed { transform: translateX(-260px); }
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; transition: margin-left var(--transition-slow); }
+.sidebar.collapsed + .main-content { margin-left: 0; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.6);
+  font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-lg);
+  transition: box-shadow var(--transition-normal); margin-bottom: var(--space-lg);
+}
+.card:hover { box-shadow: var(--shadow-sm); }
+.callout {
+  padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md);
+  border-left: 3px solid; font-size: 14px; line-height: 1.6; margin-bottom: var(--space-lg);
+}
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.btn-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); color: var(--color-text); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; }
+
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center;
+}
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+@media (max-width: 600px) {
+  .score-selector { gap: 4px; }
+  .score-option { padding: 10px 4px; }
+  .score-number { font-size: 18px; }
+  .score-label-text { font-size: 9px; }
+}
+
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+
+.progress-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.progress-ring-text { position: absolute; text-align: center; }
+.progress-ring-value { font-family: var(--font-display); font-weight: 700; line-height: 1; }
+.progress-ring-label { font-size: 10px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.heatmap { display: grid; gap: 2px; }
+.heatmap-cell {
+  aspect-ratio: 1; border-radius: var(--radius-sm); display: flex; align-items: center;
+  justify-content: center; font-size: 13px; font-weight: 600; color: #fff;
+  transition: transform var(--transition-fast); cursor: pointer;
+}
+.heatmap-cell:hover { transform: scale(1.08); z-index: 1; }
+
+.section-page { display: none; animation: fadeIn 0.3s ease; }
+.section-page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.section-header { margin-bottom: var(--space-2xl); }
+.section-number { font-size: 13px; font-weight: 600; color: var(--color-accent); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: var(--space-sm); }
+.section-title { font-family: var(--font-display); font-size: clamp(24px, 3vw, 32px); font-weight: 700; line-height: 1.2; margin-bottom: var(--space-md); }
+.section-desc { font-size: 16px; color: var(--color-text-secondary); line-height: 1.6; max-width: 600px; }
+
+.nav-footer { display: flex; justify-content: space-between; align-items: center; padding-top: var(--space-2xl); margin-top: var(--space-2xl); border-top: 1px solid var(--color-border); }
+
+.data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.data-table th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); padding: var(--space-sm) var(--space-md); border-bottom: 2px solid var(--color-border); }
+.data-table td { padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.data-table tr:last-child td { border-bottom: none; }
+
+.checklist-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md) 0; border-bottom: 1px solid var(--color-border-light); cursor: pointer; }
+.checklist-item:last-child { border-bottom: none; }
+.checklist-box {
+  width: 22px; height: 22px; min-width: 22px; border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition-fast); margin-top: 1px;
+}
+.checklist-item.checked .checklist-box { background: var(--color-primary); border-color: var(--color-primary); }
+.checklist-box svg { width: 12px; height: 12px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; transition: opacity var(--transition-fast); }
+.checklist-item.checked .checklist-box svg { opacity: 1; }
+.checklist-text { font-size: 14px; line-height: 1.5; }
+.checklist-item.checked .checklist-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+
+.inv-row { display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr; gap: var(--space-sm); padding: var(--space-md) 0; border-bottom: 1px solid var(--color-border-light); align-items: start; }
+.inv-row:last-child { border-bottom: none; }
+.inv-header { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); padding-bottom: var(--space-md); border-bottom: 2px solid var(--color-border); }
+.inv-row .form-input { padding: 8px 10px; font-size: 13px; }
+.inv-row select.form-input { font-size: 13px; }
+@media (max-width: 768px) {
+  .inv-row { grid-template-columns: 1fr; gap: var(--space-xs); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); margin-bottom: var(--space-sm); border-bottom: none; }
+  .inv-header { display: none; }
+}
+
+.gap-row { display: grid; grid-template-columns: 2fr 1fr 1fr 2fr 1fr 1fr; gap: var(--space-sm); padding: var(--space-md) 0; border-bottom: 1px solid var(--color-border-light); align-items: start; }
+.gap-row:last-child { border-bottom: none; }
+.gap-header { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); padding-bottom: var(--space-md); border-bottom: 2px solid var(--color-border); }
+.gap-row .form-input { padding: 8px 10px; font-size: 13px; }
+@media (max-width: 768px) {
+  .gap-row { grid-template-columns: 1fr 1fr; gap: var(--space-xs); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); margin-bottom: var(--space-sm); border-bottom: none; }
+  .gap-header { display: none; }
+}
+
+.notif-row { display: grid; grid-template-columns: 1.5fr 1.5fr 2fr 1fr 1fr; gap: var(--space-sm); padding: var(--space-md) 0; border-bottom: 1px solid var(--color-border-light); align-items: start; }
+@media (max-width: 768px) {
+  .notif-row { grid-template-columns: 1fr; gap: var(--space-xs); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); margin-bottom: var(--space-sm); border-bottom: none; }
+}
+
+.gauge-wrap { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); }
+.gauge-bar { width: 100%; height: 12px; background: var(--color-surface-alt); border-radius: 6px; overflow: hidden; position: relative; }
+.gauge-fill { height: 100%; border-radius: 6px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+.gauge-labels { display: flex; justify-content: space-between; width: 100%; font-size: 11px; color: var(--color-text-tertiary); }
+
+.risk-matrix { display: grid; grid-template-columns: auto 1fr 1fr; gap: 2px; }
+.matrix-cell { padding: var(--space-md); text-align: center; font-size: 13px; font-weight: 500; border-radius: var(--radius-sm); }
+.matrix-header { background: var(--color-surface-alt); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-secondary); }
+.matrix-label { background: var(--color-surface-alt); font-weight: 600; font-size: 12px; display: flex; align-items: center; }
+.matrix-critical { background: #FEE2E2; color: var(--color-danger); }
+.matrix-remediate { background: #FEF3C7; color: #92400E; }
+.matrix-monitor { background: #EBF5FF; color: var(--color-primary); }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-xl); }
+.kpi-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); text-align: center; }
+.kpi-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1; }
+.kpi-label { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+.timeline { position: relative; padding-left: var(--space-xl); }
+.timeline::before { content: ''; position: absolute; left: 8px; top: 4px; bottom: 4px; width: 2px; background: var(--color-border); }
+.timeline-item { position: relative; margin-bottom: var(--space-xl); }
+.timeline-dot { position: absolute; left: calc(-1 * var(--space-xl) + 2px); top: 4px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--color-border); background: var(--color-surface); }
+.timeline-item.tl-active .timeline-dot { border-color: var(--color-primary); background: var(--color-primary); }
+.timeline-label { font-size: 12px; font-weight: 600; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.04em; }
+.timeline-title { font-size: 15px; font-weight: 600; margin-top: 2px; }
+.timeline-desc { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; }
+
+.industry-tabs { display: flex; gap: 4px; margin-bottom: var(--space-lg); flex-wrap: wrap; }
+.industry-tab {
+  padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 500;
+  background: var(--color-surface-alt); color: var(--color-text-secondary);
+  transition: all var(--transition-fast); cursor: pointer; border: 1px solid transparent;
+}
+.industry-tab:hover { background: var(--color-surface); border-color: var(--color-border); }
+.industry-tab.active { background: var(--color-primary); color: #fff; }
+
+.industry-content { display: none; animation: fadeIn 0.3s ease; }
+.industry-content.active { display: block; }
+
+.collapsible-header {
+  display: flex; align-items: center; justify-content: space-between; padding: var(--space-md) var(--space-lg);
+  cursor: pointer; border-radius: var(--radius-md); transition: background var(--transition-fast);
+}
+.collapsible-header:hover { background: var(--color-surface-alt); }
+.collapsible-arrow { transition: transform var(--transition-fast); font-size: 12px; color: var(--color-text-tertiary); }
+.collapsible-header.open .collapsible-arrow { transform: rotate(180deg); }
+.collapsible-body { display: none; padding: 0 var(--space-lg) var(--space-lg); }
+.collapsible-body.open { display: block; }
+
+.deal-cards { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-bottom: var(--space-lg); }
+@media (max-width: 600px) { .deal-cards { grid-template-columns: 1fr; } }
+.deal-card { padding: var(--space-lg); border-radius: var(--radius-md); border: 1px solid var(--color-border); cursor: pointer; transition: all var(--transition-fast); }
+.deal-card:hover { box-shadow: var(--shadow-sm); }
+.deal-card.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.deal-card-title { font-weight: 600; font-size: 15px; margin-bottom: var(--space-xs); }
+.deal-card-desc { font-size: 13px; color: var(--color-text-secondary); }
+
+/* Toast */
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--color-text); color: #fff; padding: 12px 20px; border-radius: var(--radius-md); font-size: 14px; box-shadow: var(--shadow-lg); transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 200; max-width: 360px; }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* Accessibility */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; }
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+
+/* Print */
+@media print { .sidebar, .mobile-header, .toast, .btn-group, .skip-link, .sidebar-overlay { display: none !important; } .main-content { margin-left: 0 !important; } .page { display: block !important; page-break-inside: avoid; } .content-area { max-width: 100%; padding: 0; } }
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<div class="app">
+  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #23</div>
+      <div class="sidebar-brand-title">Regulatory & Licensing Compliance</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <div class="sidebar-nav" id="sidebarNav"></div>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Compliance Readiness</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete assessments to see score</div>
+    </div>
+  </nav>
+
+  <div class="main-content" id="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="Open navigation"><span></span></button>
+      <div style="font-weight:600;font-size:15px;">Playbook #23</div>
+    </div>
+    <div class="content-area" id="contentArea"></div>
+  </div>
+</div>
+<div class="toast" id="toast" aria-live="polite" role="status"></div>
+
+<script>
+const STORAGE_KEY = 'exitosx-pb23-regulatory-compliance';
+// Migrate from old key
+(function() { try { const old = localStorage.getItem('playbook23_regulatory_v1'); if (old && !localStorage.getItem('exitosx-pb23-regulatory-compliance')) { localStorage.setItem('exitosx-pb23-regulatory-compliance', old); localStorage.removeItem('playbook23_regulatory_v1'); } } catch(e) {} })();
+const CHECK_SVG = '<svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>';
+
+const SECTIONS = [
+  { id:'welcome', icon:'&#9670;', title:'Welcome', group:'START' },
+  { id:'deal_impact', icon:'&#9878;', title:'Transaction Impact', group:'UNDERSTAND' },
+  { id:'inventory', icon:'&#9776;', title:'License Inventory', group:'ASSESS' },
+  { id:'transferability', icon:'&#8644;', title:'Transferability', group:'ASSESS' },
+  { id:'industry', icon:'&#9881;', title:'Industry Deep Dive', group:'ASSESS' },
+  { id:'gaps', icon:'&#9888;', title:'Gap Analysis', group:'REMEDIATE' },
+  { id:'remediation', icon:'&#9874;', title:'Remediation Plan', group:'REMEDIATE' },
+  { id:'dataroom', icon:'&#9745;', title:'Data Room Prep', group:'PREPARE' },
+  { id:'comms', icon:'&#9993;', title:'Agency Communications', group:'PREPARE' },
+  { id:'mistakes', icon:'&#9888;', title:'Deal Killers', group:'PROTECT' },
+  { id:'summary', icon:'&#9733;', title:'Summary & Scores', group:'COMPLETE' }
+];
+
+let state = loadState();
+
+function loadState() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultState(); }
+  catch { return defaultState(); }
+}
+function defaultState() {
+  return {
+    currentSection: 'welcome',
+    completed: {},
+    dealStructure: '',
+    licenses: [{name:'',authority:'',expiration:'',transferable:'',action:''},{name:'',authority:'',expiration:'',transferable:'',action:''},{name:'',authority:'',expiration:'',transferable:'',action:''}],
+    transferScores: {},
+    industryTab: 'healthcare',
+    industryScores: {},
+    gaps: [{desc:'',severity:'',discovery:'',steps:'',owner:'',target:''},{desc:'',severity:'',discovery:'',steps:'',owner:'',target:''}],
+    dataRoomChecks: {},
+    commTimings: {},
+    notifications: [{agency:'',license:'',requirement:'',deadline:'',status:''},{agency:'',license:'',requirement:'',deadline:'',status:''}],
+    mistakeAcks: {},
+    notes: {}
+  };
+}
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); updateProgress(); }
+
+function updateProgress() {
+  const total = SECTIONS.length - 1;
+  const done = Object.keys(state.completed).length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+  renderNav();
+  updateScoreSidebar();
+}
+
+function updateScoreSidebar() {
+  const s = calcScore();
+  const el = document.getElementById('sidebarScore');
+  const desc = document.getElementById('sidebarScoreDesc');
+  if (s === null) { el.innerHTML = '--<span class="sidebar-score-max">/100</span>'; desc.textContent = 'Complete assessments to see score'; return; }
+  el.innerHTML = s + '<span class="sidebar-score-max">/100</span>';
+  if (s >= 80) desc.textContent = 'Strong compliance posture';
+  else if (s >= 60) desc.textContent = 'Moderate gaps to address';
+  else if (s >= 40) desc.textContent = 'Significant remediation needed';
+  else desc.textContent = 'Critical compliance risks';
+}
+
+function calcScore() {
+  const ts = Object.values(state.transferScores);
+  if (ts.length === 0) return null;
+  const avgTransfer = ts.reduce((a,b)=>a+b,0) / ts.length;
+  let gapPenalty = 0;
+  state.gaps.forEach(g => { if (g.severity === 'high') gapPenalty += 8; else if (g.severity === 'medium') gapPenalty += 4; });
+  const drChecks = Object.values(state.dataRoomChecks).filter(Boolean).length;
+  const drBonus = Math.min(drChecks * 2, 20);
+  return Math.max(0, Math.min(100, Math.round(avgTransfer * 12 + drBonus - gapPenalty)));
+}
+
+function renderNav() {
+  const nav = document.getElementById('sidebarNav');
+  let html = '';
+  let lastGroup = '';
+  SECTIONS.forEach(s => {
+    if (s.group !== lastGroup) { html += `<div class="nav-section-label">${s.group}</div>`; lastGroup = s.group; }
+    const active = state.currentSection === s.id ? ' active' : '';
+    const completed = state.completed[s.id] ? ' completed' : '';
+    html += `<div class="nav-item${active}${completed}" onclick="goTo('${s.id}')" role="button" tabindex="0" aria-current="${state.currentSection===s.id?'page':'false'}">
+      <span class="nav-icon">${s.icon}</span>${s.title}
+      <span class="nav-check">${CHECK_SVG}</span></div>`;
+  });
+  nav.innerHTML = html;
+}
+
+function goTo(id) {
+  state.currentSection = id;
+  saveState();
+  renderSection(id);
+  renderNav();
+  closeSidebar();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Focus management
+  setTimeout(() => { const area = document.getElementById('contentArea'); if (area) { const heading = area.querySelector('h1, h2, .t-display'); if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); } } }, 100);
+}
+function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+function markComplete(id) { state.completed[id] = true; saveState(); }
+
+function nextSection() {
+  const idx = SECTIONS.findIndex(s => s.id === state.currentSection);
+  if (idx < SECTIONS.length - 1) { markComplete(SECTIONS[idx].id); goTo(SECTIONS[idx+1].id); }
+}
+function prevSection() {
+  const idx = SECTIONS.findIndex(s => s.id === state.currentSection);
+  if (idx > 0) goTo(SECTIONS[idx-1].id);
+}
+
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebarOverlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+function renderSection(id) {
+  const area = document.getElementById('contentArea');
+  const renderers = {
+    welcome: renderWelcome, deal_impact: renderDealImpact, inventory: renderInventory,
+    transferability: renderTransferability, industry: renderIndustry, gaps: renderGaps,
+    remediation: renderRemediation, dataroom: renderDataRoom, comms: renderComms,
+    mistakes: renderMistakes, summary: renderSummary
+  };
+  area.innerHTML = '';
+  if (renderers[id]) renderers[id](area);
+}
+
+function sectionHeader(num, title, desc) {
+  return `<div class="section-header"><div class="section-number">Section ${num}</div><h1 class="section-title">${title}</h1><p class="section-desc">${desc}</p></div>`;
+}
+function navFooter(showPrev=true) {
+  return `<div class="nav-footer">${showPrev?'<button class="btn btn-secondary" onclick="prevSection()">Back</button>':'<div></div>'}<button class="btn btn-primary" onclick="nextSection()">Continue</button></div>`;
+}
+
+/* ===== SECTION RENDERERS ===== */
+
+function renderWelcome(el) {
+  el.innerHTML = `
+    ${sectionHeader('', 'Regulatory & Licensing Compliance', 'Every license, permit, and regulatory approval your business holds is a transferable asset -- or a ticking time bomb. This tool helps you know the difference before a buyer does.')}
+    <div class="callout callout-accent" style="margin-bottom:var(--space-xl)">
+      <strong>The Core Principle:</strong> A license that cannot be transferred is not an asset -- it is a liability. If your business requires 15 permits to operate and 3 must be re-applied for by the buyer post-close, you have a 3-to-12 month gap where the business legally cannot perform those functions.
+    </div>
+    <div class="card" style="margin-bottom:var(--space-xl)">
+      <h2 class="t-h2" style="margin-bottom:var(--space-lg)">What You Will Build</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+        <div style="padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)">
+          <div style="font-weight:600;margin-bottom:4px">License Inventory</div>
+          <div class="t-small t-secondary">Complete catalog of every regulatory obligation</div>
+        </div>
+        <div style="padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)">
+          <div style="font-weight:600;margin-bottom:4px">Transferability Map</div>
+          <div class="t-small t-secondary">Classification of each license by transfer complexity</div>
+        </div>
+        <div style="padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)">
+          <div style="font-weight:600;margin-bottom:4px">Gap Analysis</div>
+          <div class="t-small t-secondary">Identify and prioritize compliance gaps</div>
+        </div>
+        <div style="padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)">
+          <div style="font-weight:600;margin-bottom:4px">Data Room Package</div>
+          <div class="t-small t-secondary">Complete regulatory diligence preparation</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout callout-info" style="margin-bottom:var(--space-xl)">
+      <strong>Time Investment:</strong> Plan for 45-60 minutes to complete this assessment. Your progress is saved automatically -- you can leave and return at any time.
+    </div>
+    <div style="text-align:center;padding:var(--space-xl) 0">
+      <button class="btn btn-primary btn-lg" onclick="nextSection()">Begin Assessment</button>
+    </div>`;
+}
+
+function renderDealImpact(el) {
+  el.innerHTML = `
+    ${sectionHeader('2', 'Transaction Impact', 'Understand how regulatory risk directly affects your deal structure, timeline, and valuation.')}
+    <div class="card" style="margin-bottom:var(--space-xl)">
+      <h3 class="t-h2" style="margin-bottom:var(--space-lg)">How Buyers Evaluate Regulatory Risk</h3>
+      <table class="data-table">
+        <thead><tr><th>Scenario</th><th>Buyer Impact</th><th>Valuation Effect</th></tr></thead>
+        <tbody>
+          <tr><td>All licenses fully transferable</td><td><span class="badge badge-success">Clean closing</span></td><td>No discount</td></tr>
+          <tr><td>Key licenses need notification only</td><td><span class="badge badge-primary">Minor delay (30-60 days)</span></td><td>Minimal</td></tr>
+          <tr><td>Key licenses need new application</td><td><span class="badge badge-warning">3-12 month gap</span></td><td>0.5x-1.5x EBITDA discount</td></tr>
+          <tr><td>Unresolved regulatory violations</td><td><span class="badge badge-danger">Inherited liability</span></td><td>1.0x-2.0x discount + escrow</td></tr>
+          <tr><td>Operating without required permits</td><td><span class="badge badge-danger">Deal may terminate</span></td><td>Deal killer</td></tr>
+          <tr><td>Licenses held personally by owner</td><td><span class="badge badge-warning">Non-transferable</span></td><td>Consulting + delayed closing</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card" style="margin-bottom:var(--space-xl)">
+      <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Your Likely Deal Structure</h3>
+      <p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Your deal structure has profound implications for license transfer. Select the most likely scenario.</p>
+      <div class="deal-cards">
+        <div class="deal-card${state.dealStructure==='stock'?' selected':''}" onclick="selectDeal('stock')">
+          <div class="deal-card-title">Stock Sale</div>
+          <div class="deal-card-desc">Entity persists. Most licenses remain in force, though change-of-control provisions may still trigger.</div>
+        </div>
+        <div class="deal-card${state.dealStructure==='asset'?' selected':''}" onclick="selectDeal('asset')">
+          <div class="deal-card-title">Asset Sale</div>
+          <div class="deal-card-desc">Nearly every license must be re-applied for by the buyer, often creating a gap in legal authority to operate.</div>
+        </div>
+        <div class="deal-card${state.dealStructure==='merger'?' selected':''}" onclick="selectDeal('merger')">
+          <div class="deal-card-title">Merger</div>
+          <div class="deal-card-desc">Surviving entity generally retains licenses, but agency-specific rules vary significantly.</div>
+        </div>
+        <div class="deal-card${state.dealStructure==='unsure'?' selected':''}" onclick="selectDeal('unsure')">
+          <div class="deal-card-title">Not Yet Determined</div>
+          <div class="deal-card-desc">That is fine. This assessment will help you understand how structure impacts your regulatory position.</div>
+        </div>
+      </div>
+    </div>
+    ${state.dealStructure==='asset'?'<div class="callout callout-warning">Asset sales create the most regulatory complexity. Virtually every license and permit must be re-applied for by the acquiring entity. Consider whether a stock sale might preserve more value.</div>':''}
+    ${navFooter()}`;
+}
+function selectDeal(d) { state.dealStructure = d; saveState(); renderSection('deal_impact'); }
+
+function renderInventory(el) {
+  const cats = [
+    { name: 'Federal Licenses', ex: 'FCC, FDA, DEA, EPA, USDA, ATF' },
+    { name: 'State Licenses', ex: 'Professional, insurance, contractor, liquor' },
+    { name: 'Local Permits', ex: 'Business license, building, fire, health, zoning' },
+    { name: 'Industry Certifications', ex: 'ISO 9001, SOC 2, CMMC, PCI-DSS' },
+    { name: 'Employee Credentials', ex: 'PE stamps, medical, CPA, Series 7/63' },
+    { name: 'Government Contracts', ex: 'GSA Schedule, IDIQ, set-aside certs' },
+    { name: 'Environmental Permits', ex: 'Air quality, wastewater, hazmat IDs' },
+    { name: 'Trade & Export', ex: 'BIS export, ITAR, OFAC, customs broker' }
+  ];
+  let licRows = '';
+  state.licenses.forEach((l, i) => {
+    licRows += `<div class="inv-row">
+      <input class="form-input" placeholder="License/permit name" value="${esc(l.name)}" onchange="updateLicense(${i},'name',this.value)">
+      <input class="form-input" placeholder="Issuing authority" value="${esc(l.authority)}" onchange="updateLicense(${i},'authority',this.value)">
+      <input class="form-input" type="date" value="${esc(l.expiration)}" onchange="updateLicense(${i},'expiration',this.value)">
+      <select class="form-input" onchange="updateLicense(${i},'transferable',this.value)">
+        <option value="">Transfer?</option>
+        <option value="auto"${l.transferable==='auto'?' selected':''}>Automatic</option>
+        <option value="notice"${l.transferable==='notice'?' selected':''}>Notice Required</option>
+        <option value="approval"${l.transferable==='approval'?' selected':''}>Approval Required</option>
+        <option value="reapply"${l.transferable==='reapply'?' selected':''}>Re-Application</option>
+        <option value="nontransfer"${l.transferable==='nontransfer'?' selected':''}>Non-Transferable</option>
+      </select>
+      <input class="form-input" placeholder="Action needed" value="${esc(l.action)}" onchange="updateLicense(${i},'action',this.value)">
+    </div>`;
+  });
+
+  el.innerHTML = `
+    ${sectionHeader('3', 'License & Permit Inventory', 'Build a complete inventory of every regulatory obligation. Most businesses undercount by 30-50%.')}
+    <div class="callout callout-info" style="margin-bottom:var(--space-xl)">
+      <strong>Inventory Process:</strong> Pull business filings from Secretary of State, request compliance reports from your attorney, review insurance policies, check employee HR files, and search federal databases (SAM.gov, FDA FURLS, FCC ULS).
+    </div>
+    <div class="card" style="margin-bottom:var(--space-xl)">
+      <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Categories to Review</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm)">
+        ${cats.map(c => `<div style="padding:var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-md)">
+          <div style="font-weight:600;font-size:14px">${c.name}</div>
+          <div class="t-caption t-secondary">${c.ex}</div></div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg)">
+        <h3 class="t-h2">Your License Inventory</h3>
+        <button class="btn btn-sm btn-secondary" onclick="addLicense()">+ Add Row</button>
+      </div>
+      <div class="inv-row inv-header">
+        <div>License/Permit</div><div>Issuing Authority</div><div>Expiration</div><div>Transferable?</div><div>Action Needed</div>
+      </div>
+      ${licRows}
+    </div>
+    <div class="callout callout-accent" style="margin-top:var(--space-lg)">
+      <strong>Tip:</strong> Do not forget local permits for every municipality where you have a physical location. Also check customer contracts -- many large customers require specific certifications as a condition of doing business.
+    </div>
+    ${navFooter()}`;
+}
+function addLicense() { state.licenses.push({name:'',authority:'',expiration:'',transferable:'',action:''}); saveState(); renderSection('inventory'); }
+function updateLicense(i,f,v) { state.licenses[i][f] = v; saveState(); }
+
+function renderTransferability(el) {
+  const dims = [
+    { id:'auto_pct', label:'Automatic Transfer', desc:'What percentage of your licenses transfer automatically with the entity?' },
+    { id:'notice_pct', label:'Notice Required', desc:'What percentage require only notification to the issuing authority?' },
+    { id:'approval_pct', label:'Approval Required', desc:'What percentage require the issuing authority to approve the new owner?' },
+    { id:'reapply_pct', label:'Re-Application Required', desc:'What percentage require the buyer to apply as a new applicant?' },
+    { id:'personal_pct', label:'Non-Transferable (Personal)', desc:'What percentage are held by individuals and cannot be transferred?' }
+  ];
+  let assessHtml = dims.map(d => {
+    const val = state.transferScores[d.id] || 0;
+    return `<div class="card">
+      <div class="form-label">${d.label}</div>
+      <div class="form-hint" style="margin-bottom:var(--space-md)">${d.desc}</div>
+      <div class="score-selector" role="radiogroup" aria-label="${d.label}">
+        ${[1,2,3,4,5].map(n => {
+          const labels = ['Critical','Concerning','Moderate','Good','Excellent'];
+          return `<div class="score-option s${n}${val===n?' selected':''}" onclick="setTransferScore('${d.id}',${n})" role="radio" tabindex="0" aria-checked="${val===n}">
+            <input type="radio" name="${d.id}" value="${n}"><span class="score-number">${n}</span><span class="score-label-text">${labels[n-1]}</span></div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  const autoCount = state.licenses.filter(l=>l.transferable==='auto').length;
+  const noticeCount = state.licenses.filter(l=>l.transferable==='notice').length;
+  const approvalCount = state.licenses.filter(l=>l.transferable==='approval').length;
+  const reapplyCount = state.licenses.filter(l=>l.transferable==='reapply').length;
+  const nonCount = state.licenses.filter(l=>l.transferable==='nontransfer').length;
+  const totalCat = autoCount+noticeCount+approvalCount+reapplyCount+nonCount;
+
+  el.innerHTML = `
+    ${sectionHeader('4', 'Transferability Assessment', 'Not all licenses transfer equally. This assessment determines how your regulatory portfolio will survive a transaction.')}
+    ${totalCat > 0 ? `<div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-value" style="color:var(--color-success)">${autoCount}</div><div class="kpi-label">Automatic</div></div>
+      <div class="kpi-card"><div class="kpi-value" style="color:var(--color-primary)">${noticeCount}</div><div class="kpi-label">Notice</div></div>
+      <div class="kpi-card"><div class="kpi-value" style="color:var(--color-warning)">${approvalCount}</div><div class="kpi-label">Approval</div></div>
+      <div class="kpi-card"><div class="kpi-value" style="color:var(--color-danger)">${reapplyCount}</div><div class="kpi-label">Re-Apply</div></div>
+      <div class="kpi-card"><div class="kpi-value" style="color:var(--color-score-1)">${nonCount}</div><div class="kpi-label">Non-Transfer</div></div>
+    </div>` : ''}
+    <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Rate Your Transferability Posture</h3>
+    <p class="t-small t-secondary" style="margin-bottom:var(--space-xl)">For each dimension, rate your current readiness. 1 = critical risk, 5 = fully prepared.</p>
+    ${assessHtml}
+    <div class="callout callout-warning" style="margin-top:var(--space-lg)">
+      <strong>Deal Structure Matters:</strong> In a stock sale, the entity persists and most licenses continue. In an asset sale, virtually every license requires re-application. ${state.dealStructure==='asset'?'You indicated an asset sale -- expect the most complex transfer requirements.':''}
+    </div>
+    ${navFooter()}`;
+}
+function setTransferScore(id, val) { state.transferScores[id] = val; saveState(); renderSection('transferability'); }
+
+function renderIndustry(el) {
+  const tabs = [
+    { id:'healthcare', label:'Healthcare' },
+    { id:'financial', label:'Financial Services' },
+    { id:'govcon', label:'Gov Contracting' },
+    { id:'food', label:'Food & Beverage' },
+    { id:'transport', label:'Transportation' }
+  ];
+  const active = state.industryTab || 'healthcare';
+  const content = {
+    healthcare: `<table class="data-table"><thead><tr><th>Area</th><th>Requirements</th><th>Transfer Impact</th></tr></thead><tbody>
+      <tr><td>Medicare/Medicaid</td><td>CMS Form 855A/B enrollment</td><td><span class="badge badge-warning">CHOW application; 60-day processing</span></td></tr>
+      <tr><td>State Licensure</td><td>Facility, pharmacy, lab (CLIA)</td><td><span class="badge badge-warning">New license or amendment by state</span></td></tr>
+      <tr><td>HIPAA</td><td>Privacy, Security, Breach Rules</td><td><span class="badge badge-primary">BAAs must be assigned/re-executed</span></td></tr>
+      <tr><td>Stark / Anti-Kickback</td><td>Self-referral / kickback prohibitions</td><td><span class="badge badge-danger">Historical violations = successor liability</span></td></tr>
+      <tr><td>Certificate of Need</td><td>Required in 35+ states</td><td><span class="badge badge-danger">May not transfer; 6-18 month new CON</span></td></tr>
+      <tr><td>DEA Registration</td><td>Controlled substance prescribing</td><td><span class="badge badge-warning">New registration in asset sale</span></td></tr>
+      <tr><td>Accreditation</td><td>Joint Commission, AAAHC</td><td><span class="badge badge-primary">May continue in stock sale</span></td></tr></tbody></table>`,
+    financial: `<table class="data-table"><thead><tr><th>Area</th><th>Requirements</th><th>Transfer Impact</th></tr></thead><tbody>
+      <tr><td>SEC/State RIA</td><td>Form ADV registration</td><td><span class="badge badge-warning">ADV amendment; may need client consent</span></td></tr>
+      <tr><td>FINRA Broker-Dealer</td><td>Form BD, FINRA membership</td><td><span class="badge badge-danger">CMA review: 60-120 days</span></td></tr>
+      <tr><td>State Insurance</td><td>Producer/agency licenses</td><td><span class="badge badge-warning">Entity may transfer; individual does not</span></td></tr>
+      <tr><td>Banking Charter</td><td>OCC, FDIC, or state charter</td><td><span class="badge badge-danger">Prior approval required; 60-180 days</span></td></tr>
+      <tr><td>Mortgage (NMLS)</td><td>State licenses via NMLS</td><td><span class="badge badge-warning">New application in asset sale</span></td></tr>
+      <tr><td>Money Transmitter</td><td>State-by-state licensing</td><td><span class="badge badge-danger">Non-transferable; 3-12 months per state</span></td></tr></tbody></table>`,
+    govcon: `<table class="data-table"><thead><tr><th>Area</th><th>Key Detail</th><th>Timeline</th></tr></thead><tbody>
+      <tr><td>Novation (FAR 42.12)</td><td>Required for all assigned contracts</td><td><span class="badge badge-warning">60-120 days per CO</span></td></tr>
+      <tr><td>Set-Aside Status</td><td>8(a), HUBZone, SDVOSB, WOSB</td><td><span class="badge badge-danger">May be lost; SBA recertification</span></td></tr>
+      <tr><td>Security Clearance (FCL)</td><td>Must be sponsored by cleared contract</td><td><span class="badge badge-danger">DCSA must approve new ownership</span></td></tr>
+      <tr><td>DCAA Compliance</td><td>Audit history inherited by buyer</td><td><span class="badge badge-warning">Incurred cost submissions must be current</span></td></tr>
+      <tr><td>CMMC Certification</td><td>Required for DoD contracts</td><td><span class="badge badge-warning">May need re-assessment</span></td></tr>
+      <tr><td>OCI Analysis</td><td>Organizational conflicts of interest</td><td><span class="badge badge-primary">Proactive analysis required</span></td></tr></tbody></table>`,
+    food: `<table class="data-table"><thead><tr><th>Area</th><th>Requirements</th><th>Transfer Impact</th></tr></thead><tbody>
+      <tr><td>FDA Registration</td><td>Biennial registration (21 CFR Part 1)</td><td><span class="badge badge-primary">Update within 60 days of change</span></td></tr>
+      <tr><td>State Health Dept</td><td>Food service/processing permits</td><td><span class="badge badge-danger">Non-transferable; buyer must apply + inspect</span></td></tr>
+      <tr><td>Liquor License</td><td>State-specific application</td><td><span class="badge badge-danger">New application; 30-180 days</span></td></tr>
+      <tr><td>USDA Inspection</td><td>Meat, poultry, egg processing</td><td><span class="badge badge-warning">Notification + approval required</span></td></tr>
+      <tr><td>Organic/Non-GMO</td><td>USDA Organic, Non-GMO Project</td><td><span class="badge badge-primary">May continue if processes unchanged</span></td></tr>
+      <tr><td>HACCP Plan</td><td>Hazard Analysis Critical Control Points</td><td><span class="badge badge-primary">Must be current; buyer will audit</span></td></tr></tbody></table>`,
+    transport: `<table class="data-table"><thead><tr><th>Area</th><th>Requirements</th><th>Transfer Impact</th></tr></thead><tbody>
+      <tr><td>FMCSA Authority</td><td>MC/DOT Number</td><td><span class="badge badge-primary">Stock sale retains; asset sale = new</span></td></tr>
+      <tr><td>CDL Compliance</td><td>Driver files, drug testing</td><td><span class="badge badge-warning">Buyer inherits obligations</span></td></tr>
+      <tr><td>State DOT Permits</td><td>Oversize/overweight, hazmat</td><td><span class="badge badge-warning">Most require new application</span></td></tr>
+      <tr><td>TSA Security</td><td>TWIC cards, Known Shipper</td><td><span class="badge badge-primary">Individual cards stay; company re-verify</span></td></tr>
+      <tr><td>International</td><td>Customs broker, C-TPAT</td><td><span class="badge badge-warning">Broker license personal; C-TPAT update</span></td></tr>
+      <tr><td>EPA SmartWay</td><td>Fleet efficiency program</td><td><span class="badge badge-primary">New entity must re-enroll</span></td></tr></tbody></table>`
+  };
+
+  el.innerHTML = `
+    ${sectionHeader('5', 'Industry-Specific Deep Dive', 'Certain industries face regulatory complexity that can make or break a transaction. Select your industry for specific guidance.')}
+    <div class="industry-tabs">
+      ${tabs.map(t => `<button class="industry-tab${t.id===active?' active':''}" onclick="setIndustryTab('${t.id}')">${t.label}</button>`).join('')}
+    </div>
+    <div class="card">${content[active]}</div>
+    <div class="card" style="margin-top:var(--space-lg)">
+      <h3 class="t-h3" style="margin-bottom:var(--space-md)">Industry Readiness Self-Assessment</h3>
+      <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">How well does your business meet the regulatory requirements for your industry?</p>
+      <div class="score-selector" role="radiogroup" aria-label="Industry Readiness">
+        ${[1,2,3,4,5].map(n => {
+          const labels = ['Not Started','Early Stage','Partial','Mostly Ready','Fully Compliant'];
+          const val = state.industryScores[active] || 0;
+          return `<div class="score-option s${n}${val===n?' selected':''}" onclick="setIndustryScore('${active}',${n})" role="radio" tabindex="0" aria-checked="${val===n}">
+            <input type="radio" name="ind_${active}" value="${n}"><span class="score-number">${n}</span><span class="score-label-text">${labels[n-1]}</span></div>`;
+        }).join('')}
+      </div>
+    </div>
+    ${navFooter()}`;
+}
+function setIndustryTab(t) { state.industryTab = t; saveState(); renderSection('industry'); }
+function setIndustryScore(tab, val) { state.industryScores[tab] = val; saveState(); renderSection('industry'); }
+
+function renderGaps(el) {
+  let gapRows = state.gaps.map((g, i) => `<div class="gap-row">
+    <input class="form-input" placeholder="Gap description" value="${esc(g.desc)}" onchange="updateGap(${i},'desc',this.value)">
+    <select class="form-input" onchange="updateGap(${i},'severity',this.value)">
+      <option value="">Severity</option>
+      <option value="high"${g.severity==='high'?' selected':''}>High</option>
+      <option value="medium"${g.severity==='medium'?' selected':''}>Medium</option>
+      <option value="low"${g.severity==='low'?' selected':''}>Low</option>
+    </select>
+    <select class="form-input" onchange="updateGap(${i},'discovery',this.value)">
+      <option value="">Discovery Risk</option>
+      <option value="high"${g.discovery==='high'?' selected':''}>High</option>
+      <option value="low"${g.discovery==='low'?' selected':''}>Low</option>
+    </select>
+    <input class="form-input" placeholder="Remediation steps" value="${esc(g.steps)}" onchange="updateGap(${i},'steps',this.value)">
+    <input class="form-input" placeholder="Owner" value="${esc(g.owner)}" onchange="updateGap(${i},'owner',this.value)">
+    <input class="form-input" type="date" value="${esc(g.target)}" onchange="updateGap(${i},'target',this.value)">
+  </div>`).join('');
+
+  el.innerHTML = `
+    ${sectionHeader('6', 'Compliance Gap Analysis', 'A compliance gap is any instance where your business is required to hold a license but does not, holds an expired version, or holds it under a structure that will not survive the transaction.')}
+    <div class="card" style="margin-bottom:var(--space-xl)">
+      <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Remediation Priority Matrix</h3>
+      <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Prioritize gaps based on discovery probability and consequence severity.</p>
+      <div class="risk-matrix">
+        <div class="matrix-cell matrix-header"></div>
+        <div class="matrix-cell matrix-header">Low Discovery</div>
+        <div class="matrix-cell matrix-header">High Discovery</div>
+        <div class="matrix-cell matrix-label">High Severity</div>
+        <div class="matrix-cell matrix-remediate">REMEDIATE<br><span style="font-size:11px;font-weight:400">Fix before market</span></div>
+        <div class="matrix-cell matrix-critical">CRITICAL<br><span style="font-size:11px;font-weight:400">Fix immediately</span></div>
+        <div class="matrix-cell matrix-label">Low Severity</div>
+        <div class="matrix-cell matrix-monitor">MONITOR<br><span style="font-size:11px;font-weight:400">Fix opportunistically</span></div>
+        <div class="matrix-cell matrix-remediate">REMEDIATE<br><span style="font-size:11px;font-weight:400">Looks sloppy if found</span></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:var(--space-lg)">
+      <h3 class="t-h2" style="margin-bottom:var(--space-md)">Common Gap Types</h3>
+      <table class="data-table">
+        <thead><tr><th>Gap Type</th><th>Timeline</th></tr></thead>
+        <tbody>
+          <tr><td>Expired Permit</td><td>2-8 weeks</td></tr>
+          <tr><td>Wrong Entity Name</td><td>4-12 weeks</td></tr>
+          <tr><td>Personal vs. Entity License</td><td>4-16 weeks</td></tr>
+          <tr><td>Missing Certification (ISO/SOC 2)</td><td>6-12 months</td></tr>
+          <tr><td>Incomplete Compliance</td><td>2-12 weeks</td></tr>
+          <tr><td>Jurisdictional Gap</td><td>4-12 weeks</td></tr>
+          <tr><td>Regulatory Violation</td><td>3-18 months</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg)">
+        <h3 class="t-h2">Your Gap Tracker</h3>
+        <button class="btn btn-sm btn-secondary" onclick="addGap()">+ Add Row</button>
+      </div>
+      <div class="gap-row gap-header"><div>Gap Description</div><div>Severity</div><div>Discovery Risk</div><div>Remediation Steps</div><div>Owner</div><div>Target Date</div></div>
+      ${gapRows}
+    </div>
+    <div class="callout callout-warning" style="margin-top:var(--space-lg)">
+      <strong>Disclosure Strategy:</strong> Work with M&A counsel to determine what must be disclosed proactively. Historical violations that have been fully resolved are generally best disclosed with a remediation narrative, rather than waiting for the buyer to discover them.
+    </div>
+    ${navFooter()}`;
+}
+function addGap() { state.gaps.push({desc:'',severity:'',discovery:'',steps:'',owner:'',target:''}); saveState(); renderSection('gaps'); }
+function updateGap(i,f,v) { state.gaps[i][f] = v; saveState(); }
+
+function renderRemediation(el) {
+  const highGaps = state.gaps.filter(g=>g.severity==='high' && g.desc);
+  const medGaps = state.gaps.filter(g=>g.severity==='medium' && g.desc);
+  const lowGaps = state.gaps.filter(g=>g.severity==='low' && g.desc);
+
+  el.innerHTML = `
+    ${sectionHeader('6b', 'Remediation Plan', 'Transform your gap analysis into a prioritized action plan with timelines and ownership.')}
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-value" style="color:var(--color-danger)">${highGaps.length}</div><div class="kpi-label">High Severity</div></div>
+      <div class="kpi-card"><div class="kpi-value" style="color:var(--color-warning)">${medGaps.length}</div><div class="kpi-label">Medium Severity</div></div>
+      <div class="kpi-card"><div class="kpi-value" style="color:var(--color-success)">${lowGaps.length}</div><div class="kpi-label">Low Severity</div></div>
+    </div>
+    ${highGaps.length > 0 ? `<div class="card" style="border-left:3px solid var(--color-danger)">
+      <h3 class="t-h3" style="color:var(--color-danger);margin-bottom:var(--space-md)">Critical -- Fix Immediately</h3>
+      ${highGaps.map(g => `<div style="padding:var(--space-sm) 0;border-bottom:1px solid var(--color-border-light)">
+        <div style="font-weight:600;font-size:14px">${g.desc || 'Unnamed gap'}</div>
+        <div class="t-caption t-secondary">Owner: ${g.owner || 'Unassigned'} | Target: ${g.target || 'Not set'}</div>
+        ${g.steps ? `<div class="t-small t-secondary" style="margin-top:4px">${g.steps}</div>` : ''}
+      </div>`).join('')}
+    </div>` : ''}
+    ${medGaps.length > 0 ? `<div class="card" style="border-left:3px solid var(--color-warning)">
+      <h3 class="t-h3" style="color:var(--color-warning);margin-bottom:var(--space-md)">Important -- Fix Before Market</h3>
+      ${medGaps.map(g => `<div style="padding:var(--space-sm) 0;border-bottom:1px solid var(--color-border-light)">
+        <div style="font-weight:600;font-size:14px">${g.desc || 'Unnamed gap'}</div>
+        <div class="t-caption t-secondary">Owner: ${g.owner || 'Unassigned'} | Target: ${g.target || 'Not set'}</div>
+      </div>`).join('')}
+    </div>` : ''}
+    ${lowGaps.length > 0 ? `<div class="card" style="border-left:3px solid var(--color-success)">
+      <h3 class="t-h3" style="color:var(--color-success);margin-bottom:var(--space-md)">Low Priority -- Fix Opportunistically</h3>
+      ${lowGaps.map(g => `<div style="padding:var(--space-sm) 0"><div style="font-weight:600;font-size:14px">${g.desc || 'Unnamed gap'}</div></div>`).join('')}
+    </div>` : ''}
+    ${highGaps.length===0 && medGaps.length===0 && lowGaps.length===0 ? '<div class="callout callout-info">No gaps recorded yet. Go back to the Gap Analysis section to identify compliance gaps, then return here for your remediation plan.</div>' : ''}
+    <div class="card" style="margin-top:var(--space-lg)">
+      <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Recommended Timeline</h3>
+      <div class="timeline">
+        <div class="timeline-item tl-active"><div class="timeline-dot"></div><div class="timeline-label">12-18 Months Pre-Market</div><div class="timeline-title">Begin Remediation</div><div class="timeline-desc">Resolve outstanding violations; renew expiring licenses; correct entity-level issues</div></div>
+        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-label">6-12 Months Pre-Market</div><div class="timeline-title">Complete Major Fixes</div><div class="timeline-desc">Migrate personal licenses to entity; obtain missing certifications; file jurisdictional registrations</div></div>
+        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-label">3-6 Months Pre-Market</div><div class="timeline-title">Final Preparation</div><div class="timeline-desc">Build regulatory data room; verify all licenses current; prepare change-of-control documentation</div></div>
+        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-label">At Market</div><div class="timeline-title">Demonstrate Readiness</div><div class="timeline-desc">Present clean, unqualified representations backed by comprehensive documentation</div></div>
+      </div>
+    </div>
+    ${navFooter()}`;
+}
+
+function renderDataRoom(el) {
+  const items = [
+    'Master license and permit schedule (every license with authority, number, expiration, transferability)',
+    'Copies of all current licenses, permits, and certifications',
+    'Historical correspondence with regulatory agencies (past 5 years)',
+    'All inspection reports (past 5 years) with corrective action documentation',
+    'Outstanding violations, citations, or enforcement actions with status',
+    'Consent decrees, settlement agreements, or regulatory orders (past 10 years)',
+    'Change-of-control provisions from each license/permit',
+    'Renewal schedule for next 24 months',
+    'Employee-held professional licenses the business depends on',
+    'Government contract novation package (if applicable)',
+    'Industry certification audit reports (ISO, SOC 2, CMMC, etc.)',
+    'Compliance program documentation (policies, training records, audit results)'
+  ];
+
+  el.innerHTML = `
+    ${sectionHeader('7', 'Regulatory Data Room Preparation', 'Building a comprehensive diligence package before going to market demonstrates professionalism and accelerates the timeline.')}
+    <div class="card" style="margin-bottom:var(--space-xl)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg)">
+        <h3 class="t-h2">Data Room Checklist</h3>
+        <span class="badge ${Object.values(state.dataRoomChecks).filter(Boolean).length === items.length ? 'badge-success' : 'badge-neutral'}">${Object.values(state.dataRoomChecks).filter(Boolean).length}/${items.length}</span>
+      </div>
+      ${items.map((item, i) => {
+        const checked = state.dataRoomChecks[i];
+        return `<div class="checklist-item${checked?' checked':''}" onclick="toggleDRCheck(${i})">
+          <div class="checklist-box"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>
+          <div class="checklist-text">${item}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="card">
+      <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Representation Quality</h3>
+      <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">In the purchase agreement, you will represent that these statements are accurate. Every qualification weakens the rep and signals risk.</p>
+      <div style="display:flex;flex-direction:column;gap:var(--space-md)">
+        <div style="padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md);border-left:3px solid var(--color-primary)">
+          <div class="t-small" style="font-style:italic">"The Company holds all licenses, permits, and approvals necessary to conduct the business as currently conducted."</div>
+        </div>
+        <div style="padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md);border-left:3px solid var(--color-primary)">
+          <div class="t-small" style="font-style:italic">"All such licenses are valid, in full force and effect, and not subject to any pending or threatened revocation, suspension, or limitation."</div>
+        </div>
+        <div style="padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md);border-left:3px solid var(--color-primary)">
+          <div class="t-small" style="font-style:italic">"The Company is in compliance in all material respects with all applicable laws, regulations, and orders."</div>
+        </div>
+        <div style="padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md);border-left:3px solid var(--color-primary)">
+          <div class="t-small" style="font-style:italic">"No notice of violation, citation, or enforcement action has been received in the past [3/5] years."</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout callout-accent" style="margin-top:var(--space-lg)">
+      <strong>Goal:</strong> Build your regulatory package to support clean, unqualified representations. The more qualifications ("to the Company's knowledge"), the more risk the buyer perceives.
+    </div>
+    ${navFooter()}`;
+}
+function toggleDRCheck(i) { state.dataRoomChecks[i] = !state.dataRoomChecks[i]; saveState(); renderSection('dataroom'); }
+
+function renderComms(el) {
+  let notifRows = state.notifications.map((n, i) => `<div class="notif-row">
+    <input class="form-input" placeholder="Agency" value="${esc(n.agency)}" onchange="updateNotif(${i},'agency',this.value)">
+    <input class="form-input" placeholder="License/Permit" value="${esc(n.license)}" onchange="updateNotif(${i},'license',this.value)">
+    <input class="form-input" placeholder="Notification requirement" value="${esc(n.requirement)}" onchange="updateNotif(${i},'requirement',this.value)">
+    <input class="form-input" type="date" value="${esc(n.deadline)}" onchange="updateNotif(${i},'deadline',this.value)">
+    <select class="form-input" onchange="updateNotif(${i},'status',this.value)">
+      <option value="">Status</option>
+      <option value="pending"${n.status==='pending'?' selected':''}>Pending</option>
+      <option value="filed"${n.status==='filed'?' selected':''}>Filed</option>
+      <option value="approved"${n.status==='approved'?' selected':''}>Approved</option>
+    </select>
+  </div>`).join('');
+
+  el.innerHTML = `
+    ${sectionHeader('8', 'Agency Communication Strategy', 'Communicating with regulatory agencies requires precision. Premature disclosure can trigger scrutiny; late disclosure can violate requirements.')}
+    <div class="card" style="margin-bottom:var(--space-xl)">
+      <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Communication Timing</h3>
+      <div class="timeline">
+        <div class="timeline-item tl-active"><div class="timeline-dot"></div><div class="timeline-label">Pre-Market (6-12 months)</div><div class="timeline-title">Resolve issues quietly</div><div class="timeline-desc">Fix violations, renew licenses, correct entity issues. Do not mention the transaction.</div></div>
+        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-label">LOI Signed</div><div class="timeline-title">Identify notification requirements</div><div class="timeline-desc">Engage regulatory counsel. Internal preparation only -- no external filings yet.</div></div>
+        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-label">Diligence Phase</div><div class="timeline-title">Prepare applications</div><div class="timeline-desc">Begin assembling change-of-control documentation. May contact agencies for process guidance.</div></div>
+        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-label">Purchase Agreement</div><div class="timeline-title">File applications</div><div class="timeline-desc">Submit change-of-control applications and novation requests where required.</div></div>
+        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-label">Pre-Closing</div><div class="timeline-title">Obtain approvals</div><div class="timeline-desc">Follow up on pending applications. Obtain approvals required as closing conditions.</div></div>
+        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-label">Post-Closing</div><div class="timeline-title">Complete notifications</div><div class="timeline-desc">Update registrations, file amendments -- typically within 30-90 days of close.</div></div>
+      </div>
+    </div>
+    <div class="callout callout-warning" style="margin-bottom:var(--space-lg)">
+      <strong>Confidentiality:</strong> Many regulatory filings are public records. Before filing any change-of-control application, understand whether it becomes publicly accessible and plan accordingly.
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg)">
+        <h3 class="t-h2">Notification Schedule</h3>
+        <button class="btn btn-sm btn-secondary" onclick="addNotif()">+ Add Row</button>
+      </div>
+      <div class="notif-row" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-text-tertiary);padding-bottom:var(--space-md);border-bottom:2px solid var(--color-border)">
+        <div>Agency</div><div>License/Permit</div><div>Requirement</div><div>Deadline</div><div>Status</div>
+      </div>
+      ${notifRows}
+    </div>
+    <div class="callout callout-info" style="margin-top:var(--space-lg)">
+      <strong>HSR Act:</strong> If transaction value exceeds $119.5M (2024 threshold), an HSR filing with FTC/DOJ is required before closing. Most lower middle market transactions fall below this, but always verify with counsel.
+    </div>
+    ${navFooter()}`;
+}
+function addNotif() { state.notifications.push({agency:'',license:'',requirement:'',deadline:'',status:''}); saveState(); renderSection('comms'); }
+function updateNotif(i,f,v) { state.notifications[i][f] = v; saveState(); }
+
+function renderMistakes(el) {
+  const mistakes = [
+    { mistake: 'Discovering licenses are non-transferable during diligence', consequence: 'Deal delayed 3-12 months; price re-traded', prevention: 'Complete transferability assessment 12+ months pre-market' },
+    { mistake: 'Operating without required license', consequence: 'Potential criminal liability; deal termination', prevention: 'Annual compliance audit; engage regulatory counsel' },
+    { mistake: 'Licenses held in owner\'s personal name', consequence: 'Cannot transfer in stock or asset sale', prevention: 'Migrate to entity-held licenses well before transaction' },
+    { mistake: 'Failing to notify agencies of change of control', consequence: 'Post-closing enforcement action; license revocation', prevention: 'Maintain notification schedule; file within required windows' },
+    { mistake: 'Ignoring historical violations', consequence: 'Buyer discovers during diligence; trust destroyed', prevention: 'Disclose proactively with remediation narrative' },
+    { mistake: 'Not budgeting for re-licensing costs', consequence: 'Buyer demands seller bear costs; impacts proceeds', prevention: 'Estimate all costs and build into deal economics' },
+    { mistake: 'Assuming stock sale avoids all transfer issues', consequence: 'Change-of-control provisions still triggered', prevention: 'Review every license for CoC provisions regardless of structure' },
+    { mistake: 'Letting certifications lapse during extended diligence', consequence: 'Customer contracts require current certification; revenue at risk', prevention: 'Track renewal dates; renew on schedule regardless of deal status' }
+  ];
+
+  el.innerHTML = `
+    ${sectionHeader('9', 'Common Mistakes & Deal Killers', 'These mistakes appear in hundreds of transactions. Every one is entirely preventable with proper planning.')}
+    ${mistakes.map((m, i) => {
+      const acked = state.mistakeAcks[i];
+      return `<div class="card" style="border-left:3px solid ${acked?'var(--color-success)':'var(--color-danger)'}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-md)">
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:15px;margin-bottom:var(--space-xs)">${m.mistake}</div>
+            <div class="t-small" style="color:var(--color-danger);margin-bottom:var(--space-sm)">Consequence: ${m.consequence}</div>
+            <div class="t-small t-secondary">Prevention: ${m.prevention}</div>
+          </div>
+          <button class="btn btn-sm ${acked?'btn-secondary':'btn-primary'}" onclick="ackMistake(${i})" style="flex-shrink:0">
+            ${acked?'Reviewed':'Acknowledge'}
+          </button>
+        </div>
+      </div>`;
+    }).join('')}
+    <div style="text-align:center;margin-top:var(--space-xl)">
+      <span class="badge ${Object.values(state.mistakeAcks).filter(Boolean).length===mistakes.length?'badge-success':'badge-neutral'}">
+        ${Object.values(state.mistakeAcks).filter(Boolean).length}/${mistakes.length} acknowledged
+      </span>
+    </div>
+    ${navFooter()}`;
+}
+function ackMistake(i) { state.mistakeAcks[i] = true; saveState(); renderSection('mistakes'); }
+
+function renderSummary(el) {
+  const score = calcScore();
+  const filledLicenses = state.licenses.filter(l=>l.name).length;
+  const filledGaps = state.gaps.filter(g=>g.desc).length;
+  const drDone = Object.values(state.dataRoomChecks).filter(Boolean).length;
+  const mistakesAcked = Object.values(state.mistakeAcks).filter(Boolean).length;
+
+  let scoreColor = 'var(--color-text-tertiary)';
+  let scoreLabel = 'Not enough data';
+  if (score !== null) {
+    if (score >= 80) { scoreColor = 'var(--color-success)'; scoreLabel = 'Strong Compliance Posture'; }
+    else if (score >= 60) { scoreColor = 'var(--color-primary)'; scoreLabel = 'Moderate -- Address Gaps'; }
+    else if (score >= 40) { scoreColor = 'var(--color-warning)'; scoreLabel = 'Significant Remediation Needed'; }
+    else { scoreColor = 'var(--color-danger)'; scoreLabel = 'Critical Compliance Risks'; }
+  }
+
+  const ringSize = 140; const strokeWidth = 10; const radius = (ringSize - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const pct = score !== null ? score / 100 : 0;
+  const offset = circumference * (1 - pct);
+
+  el.innerHTML = `
+    ${sectionHeader('', 'Summary & Compliance Score', 'Your complete regulatory compliance readiness assessment at a glance.')}
+    <div class="card" style="text-align:center;padding:var(--space-2xl);margin-bottom:var(--space-xl)">
+      <div class="progress-ring-wrap" style="margin-bottom:var(--space-lg)">
+        <svg width="${ringSize}" height="${ringSize}" viewBox="0 0 ${ringSize} ${ringSize}">
+          <circle cx="${ringSize/2}" cy="${ringSize/2}" r="${radius}" fill="none" stroke="var(--color-surface-alt)" stroke-width="${strokeWidth}"/>
+          <circle cx="${ringSize/2}" cy="${ringSize/2}" r="${radius}" fill="none" stroke="${scoreColor}" stroke-width="${strokeWidth}"
+            stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round"
+            transform="rotate(-90 ${ringSize/2} ${ringSize/2})" style="transition:stroke-dashoffset 1s cubic-bezier(0.16,1,0.3,1)"/>
+        </svg>
+        <div class="progress-ring-text">
+          <div class="progress-ring-value" style="font-size:36px;color:${scoreColor}">${score !== null ? score : '--'}</div>
+          <div class="progress-ring-label">/ 100</div>
+        </div>
+      </div>
+      <div style="font-size:18px;font-weight:600;color:${scoreColor}">${scoreLabel}</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-value">${filledLicenses}</div><div class="kpi-label">Licenses Inventoried</div></div>
+      <div class="kpi-card"><div class="kpi-value">${filledGaps}</div><div class="kpi-label">Gaps Identified</div></div>
+      <div class="kpi-card"><div class="kpi-value">${drDone}/12</div><div class="kpi-label">Data Room Items</div></div>
+      <div class="kpi-card"><div class="kpi-value">${mistakesAcked}/8</div><div class="kpi-label">Risks Acknowledged</div></div>
+    </div>
+    <div class="card" style="margin-bottom:var(--space-xl)">
+      <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Next Steps</h3>
+      <div style="display:flex;flex-direction:column;gap:var(--space-md)">
+        ${filledLicenses < 3 ? '<div class="callout callout-danger">Complete your license inventory -- most businesses undercount by 30-50%.</div>' : ''}
+        ${filledGaps > 0 && state.gaps.some(g=>g.severity==='high'&&!g.steps) ? '<div class="callout callout-danger">Your high-severity gaps need remediation plans with owners and deadlines.</div>' : ''}
+        ${drDone < 6 ? '<div class="callout callout-warning">Continue building your regulatory data room. Aim for all 12 items before going to market.</div>' : ''}
+        ${drDone >= 10 && filledLicenses >= 3 ? '<div class="callout callout-info">Strong preparation. Review with your M&A counsel to finalize your regulatory diligence package.</div>' : ''}
+        <div class="callout callout-accent">
+          <strong>Remember:</strong> "Compliance is not the cost of doing business -- it is the cost of staying in business. And in a transaction, it is the cost of preserving the value you have built."
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3 class="t-h2" style="margin-bottom:var(--space-md)">Notes</h3>
+      <textarea class="form-input" rows="4" placeholder="Add any final notes, questions for counsel, or action items..." onchange="state.notes.summary=this.value;saveState()">${esc(state.notes.summary||'')}</textarea>
+    </div>
+    <div style="text-align:center;padding:var(--space-2xl) 0">
+      <button class="btn btn-accent btn-lg" onclick="markComplete('summary');showToast('Assessment complete! Your data is saved locally.')">Mark Complete</button>
+      <div style="margin-top:var(--space-md);display:flex;gap:var(--space-sm);justify-content:center">
+        <button class="btn btn-primary btn-sm" onclick="exportReport()">Export Report</button>
+        <button class="btn btn-secondary btn-sm" onclick="if(confirm('This will reset all your data. Are you sure?')){localStorage.removeItem(STORAGE_KEY);state=defaultState();saveState();goTo('welcome')}">Reset All Data</button>
+      </div>
+    </div>`;
+  setTimeout(() => markComplete('summary'), 100);
+}
+
+function exportReport() {
+  const score = calcScore();
+  let text = 'REGULATORY & LICENSING COMPLIANCE - Summary Report\n';
+  text += '='.repeat(50) + '\n';
+  text += 'Generated: ' + new Date().toLocaleDateString() + '\n\n';
+  text += 'COMPLIANCE READINESS SCORE: ' + (score !== null ? score + '/100' : 'Not yet calculated') + '\n\n';
+  text += 'LICENSE INVENTORY\n';
+  state.licenses.forEach((l, i) => { if (l.name) text += (i+1) + '. ' + l.name + ' - Authority: ' + (l.authority||'N/A') + ' - Transferable: ' + (l.transferable||'N/A') + '\n'; });
+  text += '\nTRANSFERABILITY SCORES\n';
+  Object.entries(state.transferScores).forEach(([k,v]) => { text += '  ' + k + ': ' + v + '/5\n'; });
+  text += '\nINDUSTRY SCORES\n';
+  Object.entries(state.industryScores).forEach(([k,v]) => { text += '  ' + k + ': ' + v + '/5\n'; });
+  text += '\nIDENTIFIED GAPS\n';
+  state.gaps.forEach((g, i) => { if (g.desc) text += (i+1) + '. ' + g.desc + ' - Severity: ' + (g.severity||'N/A') + '\n'; });
+  text += '\nDATA ROOM CHECKLIST\n';
+  const drDone = Object.values(state.dataRoomChecks).filter(Boolean).length;
+  text += drDone + '/12 items ready\n';
+  if (state.notes.summary) text += '\nNOTES\n' + state.notes.summary + '\n';
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'regulatory-compliance-report.txt';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Report exported successfully.');
+}
+
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// Initialize
+renderNav();
+updateProgress();
+renderSection(state.currentSection);
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); nextSection(); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prevSection(); }
+});
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

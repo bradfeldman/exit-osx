@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EBITDA Normalization & Add-Back Schedule | Exit Planning Playbook #7</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --font-mono: 'SF Mono', 'Consolas', 'Liberation Mono', monospace;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  color: var(--color-text); background: var(--color-bg);
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a { color: var(--color-primary); text-decoration: none; }
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.t-display { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.t-tertiary { color: var(--color-text-tertiary); }
+.t-money { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 272px; min-width: 272px; background: #003A70;
+  color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow); overflow-y: auto;
+}
+.main-content { flex: 1; margin-left: 272px; min-height: 100vh; transition: margin-left var(--transition-slow); }
+.content-area { max-width: 840px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-272px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+
+.sidebar-ebitda { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-ebitda-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+.sidebar-ebitda-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-accent); line-height: 1; }
+.sidebar-ebitda-sub { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 4px; }
+
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.25); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.55);
+  font-size: 14px; transition: all var(--transition-fast); cursor: pointer;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.3; cursor: default; }
+.nav-item.locked:hover { background: none; color: rgba(255,255,255,0.3); }
+.nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+.sidebar-saved { margin-top: auto; font-size: 11px; color: rgba(255,255,255,0.25); padding-top: var(--space-lg); display: none; }
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-lg);
+  transition: box-shadow var(--transition-normal);
+}
+.card:hover { box-shadow: var(--shadow-sm); }
+
+.callout { padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); border-left: 3px solid; font-size: 14px; line-height: 1.6; }
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+.callout-success { background: var(--color-success-light); border-color: var(--color-success); color: #1A5C30; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+/* ============================================================
+   FORMS
+   ============================================================ */
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.form-input::placeholder { color: var(--color-text-tertiary); }
+textarea.form-input { min-height: 80px; resize: vertical; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+.input-mini {
+  padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+  font-size: 14px; background: var(--color-surface); transition: all var(--transition-fast); color: var(--color-text);
+}
+.input-mini:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.input-currency { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   BRIDGE (Normalization waterfall)
+   ============================================================ */
+.bridge { border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; }
+.bridge-row {
+  display: grid; grid-template-columns: 1fr 140px; align-items: center;
+  padding: 12px var(--space-lg); border-bottom: 1px solid var(--color-border-light);
+  font-size: 14px; transition: background var(--transition-fast);
+}
+.bridge-row:last-child { border-bottom: none; }
+.bridge-row:hover { background: var(--color-surface-alt); }
+.bridge-row.bridge-header { background: var(--color-surface-alt); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-tertiary); }
+.bridge-row.bridge-subtotal { background: var(--color-primary-light); font-weight: 600; }
+.bridge-row.bridge-total { background: var(--color-primary); color: #fff; font-weight: 700; font-size: 16px; }
+.bridge-row.bridge-total .t-money { font-size: 18px; }
+.bridge-label { display: flex; align-items: center; gap: var(--space-sm); }
+.bridge-prefix { font-size: 12px; color: var(--color-text-tertiary); width: 16px; text-align: center; }
+.bridge-amount { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.bridge-input {
+  width: 130px; padding: 6px 10px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 14px;
+  text-align: right; background: var(--color-surface); transition: all var(--transition-fast);
+}
+.bridge-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+
+/* ============================================================
+   ADD-BACK CARDS
+   ============================================================ */
+.addback-card {
+  border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+  overflow: hidden; margin-bottom: var(--space-md); background: var(--color-surface);
+  transition: box-shadow var(--transition-normal);
+}
+.addback-card:hover { box-shadow: var(--shadow-sm); }
+.addback-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-md) var(--space-lg); cursor: pointer; gap: var(--space-md);
+}
+.addback-header:hover { background: var(--color-surface-alt); }
+.addback-title-area { display: flex; align-items: center; gap: var(--space-md); flex: 1; min-width: 0; }
+.addback-title { font-weight: 600; font-size: 15px; }
+.addback-subtitle { font-size: 13px; color: var(--color-text-tertiary); }
+.addback-amount { font-family: var(--font-mono); font-weight: 700; font-size: 18px; color: var(--color-primary); }
+.addback-chevron { color: var(--color-text-tertiary); transition: transform var(--transition-fast); font-size: 18px; }
+.addback-card.expanded .addback-chevron { transform: rotate(180deg); }
+.addback-body { display: none; padding: 0 var(--space-lg) var(--space-lg); }
+.addback-card.expanded .addback-body { display: block; }
+
+/* ============================================================
+   DEFENSIBILITY METER
+   ============================================================ */
+.defensibility-meter { display: flex; align-items: center; gap: var(--space-md); }
+.defensibility-bar { flex: 1; height: 8px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; }
+.defensibility-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+.defensibility-label { font-size: 12px; font-weight: 600; min-width: 60px; text-align: right; }
+
+/* ============================================================
+   EVIDENCE TRACKER
+   ============================================================ */
+.evidence-row {
+  display: grid; grid-template-columns: 2fr 100px 1fr 80px; gap: 8px;
+  padding: 8px 0; border-bottom: 1px solid var(--color-border-light); align-items: center;
+}
+.evidence-row:last-child { border-bottom: none; }
+@media (max-width: 700px) {
+  .evidence-row { grid-template-columns: 1fr 1fr; }
+}
+
+/* ============================================================
+   BADGES
+   ============================================================ */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+
+/* ============================================================
+   SCORE SELECTOR
+   ============================================================ */
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center;
+}
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+@media (max-width: 600px) { .score-selector { gap: 4px; } .score-option { padding: 10px 4px; } .score-number { font-size: 18px; } }
+
+/* ============================================================
+   BAR CHART
+   ============================================================ */
+.bar-row { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md); }
+.bar-label { width: 150px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 28px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; font-family: var(--font-mono); }
+@media (max-width: 600px) { .bar-label { width: 100px; font-size: 11px; } }
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+.dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+@media (max-width: 700px) { .dashboard-grid { grid-template-columns: 1fr; } }
+.metric-card { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+.metric-card-label { font-size: 12px; font-weight: 500; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: var(--space-sm); }
+.metric-card-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1; }
+.metric-card-sub { font-size: 13px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+/* Hero EBITDA card */
+.ebitda-hero { background: linear-gradient(135deg, #003A70 0%, #0071E3 100%); border-radius: var(--radius-lg); padding: var(--space-2xl); color: #fff; text-align: center; }
+.ebitda-hero-label { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.ebitda-hero-value { font-family: var(--font-display); font-size: clamp(36px, 6vw, 56px); font-weight: 700; line-height: 1; }
+.ebitda-hero-sub { font-size: 14px; color: var(--color-text-tertiary); margin-top: var(--space-sm); }
+
+/* ============================================================
+   PAGES
+   ============================================================ */
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.section-divider { height: 1px; background: var(--color-border); margin: var(--space-2xl) 0; }
+.page-footer { display: flex; align-items: center; justify-content: space-between; padding-top: var(--space-2xl); margin-top: var(--space-2xl); border-top: 1px solid var(--color-border); }
+
+/* Welcome */
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+.welcome-phases { display: flex; flex-direction: column; gap: var(--space-md); margin: var(--space-2xl) 0; text-align: left; }
+.welcome-phase { display: flex; gap: var(--space-lg); padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-phase-num { width: 36px; height: 36px; background: var(--color-primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--color-primary); flex-shrink: 0; }
+.welcome-phase-title { font-weight: 600; margin-bottom: 2px; }
+.welcome-phase-desc { font-size: 14px; color: var(--color-text-secondary); }
+@media (max-width: 600px) { .welcome-stats { grid-template-columns: 1fr; } .welcome-hero { padding: var(--space-2xl) var(--space-md); } }
+
+/* Checklist */
+.checklist { display: flex; flex-direction: column; gap: 2px; }
+.check-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md); border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast); }
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box { width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); margin-top: 1px; }
+.check-item.checked .check-box { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+
+/* Toast */
+.toast-container { position: fixed; bottom: var(--space-lg); right: var(--space-lg); z-index: 1000; display: flex; flex-direction: column; gap: var(--space-sm); }
+.toast { padding: var(--space-md) var(--space-lg); background: var(--color-text); color: #fff; border-radius: var(--radius-md); font-size: 14px; box-shadow: var(--shadow-lg); animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards; max-width: 400px; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(16px); } }
+@keyframes toastOut { to { opacity: 0; transform: translateY(-8px); } }
+
+/* Utility */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-sm { gap: var(--space-sm); }
+.gap-md { gap: var(--space-md); }
+.gap-lg { gap: var(--space-lg); }
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+.mb-xl { margin-bottom: var(--space-xl); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.mt-xl { margin-top: var(--space-xl); }
+.w-full { width: 100%; }
+.text-center { text-align: center; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+@media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+
+/* Print styles */
+@media print {
+  .sidebar, .mobile-header, .sidebar-overlay, .toast-container, .btn-group, .skip-link { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; }
+  .content-area { max-width: 100%; padding: 0; }
+  .btn { display: none; }
+}
+
+/* Accessibility */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; border-radius: 0 0 var(--radius-sm) 0; }
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+
+<div class="app">
+<nav class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-label">Exit Planning Playbook #7</div>
+    <div class="sidebar-brand-title">EBITDA Normalization<br>& Add-Back Schedule</div>
+  </div>
+
+  <div class="sidebar-ebitda" id="sidebarEbitda" style="display:none">
+    <div class="sidebar-ebitda-label">Normalized EBITDA</div>
+    <div class="sidebar-ebitda-value" id="sidebarEbitdaValue">$0</div>
+    <div class="sidebar-ebitda-sub" id="sidebarEbitdaSub">Total add-backs: $0</div>
+  </div>
+
+  <div class="sidebar-progress">
+    <div class="sidebar-progress-label">Overall Progress</div>
+    <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="globalProgressBar" style="width:0%"></div></div>
+    <div class="sidebar-progress-text" id="globalProgressText">0% complete</div>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="nav-section-label">Journey</div>
+    <div class="nav-item active" data-page="welcome" onclick="goToPage('welcome')" role="button" tabindex="0">
+      <span class="nav-icon">&#9673;</span> Welcome
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="bridge" onclick="goToPage('bridge')" role="button" tabindex="0">
+      <span class="nav-icon">&#9651;</span> EBITDA Bridge
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="addbacks" onclick="goToPage('addbacks')" role="button" tabindex="0">
+      <span class="nav-icon">&#9733;</span> Add-Back Schedule
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="aggressive" onclick="goToPage('aggressive')" role="button" tabindex="0">
+      <span class="nav-icon">&#9888;</span> Red Flags
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="evidence" onclick="goToPage('evidence')" role="button" tabindex="0">
+      <span class="nav-icon">&#9670;</span> Evidence Tracker
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="qoe" onclick="goToPage('qoe')" role="button" tabindex="0">
+      <span class="nav-icon">&#9878;</span> QoE Readiness
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+
+    <div class="nav-section-label" style="margin-top:var(--space-md)">Insights</div>
+    <div class="nav-item locked" data-page="dashboard" onclick="goToPage('dashboard')" role="button" tabindex="0">
+      <span class="nav-icon">&#9632;</span> Scorecard
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+  </div>
+
+  <div class="sidebar-saved" id="sidebarSaved">Auto-saved <span id="savedTime"></span></div>
+</nav>
+
+<main class="main-content" id="main-content">
+  <div class="mobile-header">
+    <button class="hamburger" onclick="toggleSidebar(true)" aria-label="Open navigation"><span></span></button>
+    <div style="font-weight:600;font-size:15px;">EBITDA Normalization</div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- ====== WELCOME ====== -->
+    <div class="page active" id="page-welcome">
+      <div class="welcome-hero">
+        <div class="welcome-icon">&#9650;</div>
+        <div class="t-display">The Single Most Impactful Document in Any Deal</div>
+        <p class="t-body t-secondary" style="margin-bottom:var(--space-2xl)">
+          Your normalized EBITDA defines what the buyer is paying a multiple on. Getting this right -- and making it defensible -- is the single highest-leverage activity in deal preparation.
+        </p>
+
+        <div class="welcome-stats">
+          <div class="welcome-stat">
+            <div class="welcome-stat-value">4-8x</div>
+            <div class="welcome-stat-label">Return on every defensible add-back dollar</div>
+          </div>
+          <div class="welcome-stat">
+            <div class="welcome-stat-value">$100K</div>
+            <div class="welcome-stat-label">add-back = $400K-$800K enterprise value</div>
+          </div>
+          <div class="welcome-stat">
+            <div class="welcome-stat-value">$30-100K</div>
+            <div class="welcome-stat-label">Cost of buyer's Quality of Earnings audit</div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent mb-xl" style="text-align:left">
+          <strong>The core principle:</strong> Every dollar of defensible EBITDA adjustment is worth 4-8x at the deal multiple. An add-back that survives quality-of-earnings scrutiny adds hundreds of thousands. An add-back that gets rejected adds nothing -- and damages your credibility.
+        </div>
+
+        <div class="welcome-phases">
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">1</div>
+            <div><div class="welcome-phase-title">EBITDA Bridge</div><div class="welcome-phase-desc">Build your normalization bridge from reported net income to adjusted EBITDA</div></div>
+          </div>
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">2</div>
+            <div><div class="welcome-phase-title">Add-Back Schedule</div><div class="welcome-phase-desc">Document each legitimate add-back with 3-year history and defensibility rating</div></div>
+          </div>
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">3</div>
+            <div><div class="welcome-phase-title">Red Flag Review</div><div class="welcome-phase-desc">Audit your schedule against aggressive add-backs that buyers reject</div></div>
+          </div>
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">4</div>
+            <div><div class="welcome-phase-title">Evidence Tracker</div><div class="welcome-phase-desc">Build your evidence binder with supporting documentation for every adjustment</div></div>
+          </div>
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">5</div>
+            <div><div class="welcome-phase-title">QoE Readiness</div><div class="welcome-phase-desc">Prepare for the buyer's Quality of Earnings audit -- the moment of truth</div></div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-lg" onclick="startJourney()" style="margin-top:var(--space-lg)">Begin Building Your Schedule &rarr;</button>
+        <p class="t-caption t-tertiary" style="margin-top:var(--space-md)">Takes about 30 minutes. Auto-saves as you work.</p>
+      </div>
+    </div>
+
+    <!-- ====== EBITDA BRIDGE ====== -->
+    <div class="page" id="page-bridge">
+      <div class="page-header">
+        <div class="t-label">Phase 1 of 5</div>
+        <div class="t-display">Build Your EBITDA Bridge</div>
+        <p class="t-body t-secondary">Start with your reported net income and build up to normalized EBITDA. Enter your most recent fiscal year numbers.</p>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">The Normalization Bridge</div>
+        <p class="t-small t-secondary mb-lg">This bridge shows the math a buyer will use. Enter actual numbers from your financials.</p>
+        <div class="bridge" id="bridgeContainer"></div>
+      </div>
+
+      <div class="callout callout-info mb-lg">
+        <strong>Why the bridge matters:</strong> Buyers think in bridges. Leading with the bridge -- reported EBITDA to normalized EBITDA -- frames the conversation on your terms and demonstrates financial sophistication.
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('welcome')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeBridge()">Continue to Add-Back Schedule &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ====== ADD-BACK SCHEDULE ====== -->
+    <div class="page" id="page-addbacks">
+      <div class="page-header">
+        <div class="t-label">Phase 2 of 5</div>
+        <div class="t-display">Add-Back Schedule</div>
+        <p class="t-body t-secondary">Document each add-back category with 3-year amounts and defensibility assessment. Present your normalization for the last 3 fiscal years.</p>
+      </div>
+
+      <div class="callout callout-accent mb-xl">
+        <strong>The evidence standard:</strong> For each add-back you need: (1) Documentation of what the expense is, (2) Rationale for why it is a legitimate adjustment, (3) Third-party evidence supporting the amount, and (4) Consistency across multiple years.
+      </div>
+
+      <div id="addbackCards"></div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Custom Add-Backs</div>
+        <p class="t-small t-secondary mb-lg">Add any additional normalization items specific to your business.</p>
+        <div id="customAddbacks"></div>
+        <button class="btn btn-secondary btn-sm mt-lg" onclick="addCustomAddback()">+ Add Custom Item</button>
+      </div>
+
+      <div class="card mb-xl" id="addbackSummaryCard">
+        <div class="t-h2 mb-lg">3-Year Add-Back Summary</div>
+        <div id="addbackSummary"></div>
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('bridge')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeAddbacks()">Continue to Red Flags &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ====== RED FLAGS ====== -->
+    <div class="page" id="page-aggressive">
+      <div class="page-header">
+        <div class="t-label">Phase 3 of 5</div>
+        <div class="t-display">Red Flag Review</div>
+        <p class="t-body t-secondary">These are the aggressive adjustments that damage credibility. Review each one honestly and confirm you have not included them in your schedule.</p>
+      </div>
+
+      <div class="callout callout-danger mb-xl">
+        <strong>Warning:</strong> Every inflated add-back gets caught in Quality of Earnings. Once caught, the buyer questions everything else. Credibility, once lost, is nearly impossible to regain.
+      </div>
+
+      <div id="redFlagsList"></div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Your Credibility Score</div>
+        <p class="t-small t-secondary mb-lg">Based on your red flag review. This score affects how a buyer will perceive your overall normalization schedule.</p>
+        <div id="credibilityMeter"></div>
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('addbacks')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeAggressive()">Continue to Evidence Tracker &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ====== EVIDENCE TRACKER ====== -->
+    <div class="page" id="page-evidence">
+      <div class="page-header">
+        <div class="t-label">Phase 4 of 5</div>
+        <div class="t-display">Evidence Tracker</div>
+        <p class="t-body t-secondary">Build your supporting documentation binder. Every add-back needs evidence that will survive professional scrutiny.</p>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Add-Back Evidence Status</div>
+        <p class="t-small t-secondary mb-lg">For each add-back, document your supporting evidence and its readiness for buyer review.</p>
+        <div id="evidenceTracker"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Evidence Readiness</div>
+        <div id="evidenceProgress"></div>
+      </div>
+
+      <div class="callout callout-info mb-lg">
+        <strong>Supporting documentation types:</strong> Owner compensation requires market salary surveys (Robert Half, Salary.com). Personal expenses need credit card statements and receipts. One-time items need invoices and contracts. Related-party transactions need lease agreements and market comparables.
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('aggressive')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeEvidence()">Continue to QoE Readiness &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ====== QoE READINESS ====== -->
+    <div class="page" id="page-qoe">
+      <div class="page-header">
+        <div class="t-label">Phase 5 of 5</div>
+        <div class="t-display">Quality of Earnings Readiness</div>
+        <p class="t-body t-secondary">Prepare for the moment of truth: the buyer's independent audit of your normalized EBITDA.</p>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">What to Expect</div>
+        <div class="callout callout-warning mb-lg">
+          <strong>The QoE report costs the buyer $30K-$100K</strong> and is performed by their own accounting firm. It will verify every add-back you claim, identify additional adjustments (often negative), analyze revenue quality and customer concentration, and normalize working capital.
+        </div>
+        <p class="t-body mb-md">If your add-back schedule survives QoE largely intact, your credibility soars and the deal accelerates. If QoE reveals inflated or unsupported adjustments, trust is damaged and the price gets re-traded.</p>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">QoE Preparedness Checklist</div>
+        <div class="checklist" id="qoeChecklist"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Presentation Principles</div>
+        <div id="presentationPrinciples"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Common Mistakes</div>
+        <div id="mistakesList"></div>
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('evidence')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeQoE()">View Your Scorecard &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ====== DASHBOARD ====== -->
+    <div class="page" id="page-dashboard">
+      <div class="page-header">
+        <div class="t-label">Your Results</div>
+        <div class="t-display">EBITDA Normalization Scorecard</div>
+        <p class="t-body t-secondary">Your comprehensive view of normalization strength. Share this with your advisor or transaction CPA.</p>
+      </div>
+
+      <div class="ebitda-hero mb-xl" id="dashHero">
+        <div class="ebitda-hero-label">Normalized EBITDA (Most Recent Year)</div>
+        <div class="ebitda-hero-value" id="dashHeroValue">$0</div>
+        <div class="ebitda-hero-sub" id="dashHeroSub">Reported + Add-Backs</div>
+      </div>
+
+      <div class="dashboard-grid mb-xl">
+        <div class="metric-card">
+          <div class="metric-card-label">Total Add-Backs</div>
+          <div class="metric-card-value t-money" id="dashAddbacks">$0</div>
+          <div class="metric-card-sub">across all categories</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">Implied Value Uplift</div>
+          <div class="metric-card-value t-money" id="dashUplift" style="color:var(--color-success)">$0</div>
+          <div class="metric-card-sub" id="dashUpliftSub">at estimated multiple</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">Defensibility Score</div>
+          <div class="metric-card-value" id="dashDefensibility">--</div>
+          <div class="metric-card-sub" id="dashDefDesc">Strength of your evidence</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">Evidence Readiness</div>
+          <div class="metric-card-value" id="dashEvidence">0%</div>
+          <div class="metric-card-sub">of add-backs documented</div>
+        </div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-lg">Add-Back Breakdown</div>
+        <div id="dashBarChart"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">3-Year Normalization Bridge</div>
+        <div id="dashBridge3Year"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Key Recommendations</div>
+        <div id="dashRecommendations"></div>
+      </div>
+
+      <div class="flex gap-md" style="flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="exportData()">Export as JSON</button>
+        <button class="btn btn-ghost" style="color:var(--color-danger)" onclick="if(confirm('Reset all data? This cannot be undone.')){localStorage.removeItem('ebitdaNormalization');location.reload();}">Reset All Data</button>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<div class="toast-container" id="toastContainer" aria-live="polite" role="status"></div>
+
+<script>
+/* ============================================================
+   DATA MODEL
+   ============================================================ */
+const BRIDGE_LINES = [
+  { id: 'netIncome', label: 'Reported Net Income', prefix: '', editable: true },
+  { id: 'interest', label: 'Interest Expense', prefix: '+', editable: true },
+  { id: 'taxes', label: 'Income Taxes', prefix: '+', editable: true },
+  { id: 'depreciation', label: 'Depreciation & Amortization', prefix: '+', editable: true },
+  { id: 'reportedEbitda', label: 'Reported EBITDA', prefix: '=', editable: false, subtotal: true },
+  { id: 'ownerComp', label: 'Owner Compensation Adjustment', prefix: '+', editable: true },
+  { id: 'personalExp', label: 'Personal Expenses (Add-Backs)', prefix: '+', editable: true },
+  { id: 'oneTime', label: 'One-Time / Non-Recurring Items', prefix: '+', editable: true },
+  { id: 'otherAdj', label: 'Other Normalizing Adjustments', prefix: '+/-', editable: true },
+  { id: 'normalizedEbitda', label: 'Normalized (Adjusted) EBITDA', prefix: '=', editable: false, total: true }
+];
+
+const ADDBACK_CATEGORIES = [
+  { id: 'ownerExcess', title: 'Owner Excess Compensation', desc: 'Difference between owner salary and market rate for equivalent role', defensibility: 'High', evidenceType: 'Market salary surveys (Robert Half, Salary.com, industry benchmarks)', example: 'Owner pays self $400K; market rate for a GM is $175K; add back $225K' },
+  { id: 'ownerPerks', title: 'Owner Perks & Personal Expenses', desc: 'Personal car, country club, family travel, personal insurance run through the business', defensibility: 'High', evidenceType: 'Credit card statements, receipts, categorization', example: 'Personal auto lease ($12K), country club ($8K), family vacation ($15K)' },
+  { id: 'familyPayroll', title: 'Family Member Compensation', desc: 'Family members on payroll who are not actively contributing', defensibility: 'Moderate', evidenceType: 'Job descriptions, time records, market comp data', example: 'Spouse on payroll at $65K but works 5 hours/week' },
+  { id: 'oneTimeLegal', title: 'One-Time Legal / Professional Fees', desc: 'Lawsuit settlements, M&A advisory fees, one-time consulting projects', defensibility: 'High', evidenceType: 'Invoices, contracts, settlement agreements', example: 'Litigation settlement $85K, consulting project $40K' },
+  { id: 'oneTimeFacility', title: 'One-Time Facility Costs', desc: 'Office move, renovation, weather damage repair, pandemic-related costs', defensibility: 'High', evidenceType: 'Invoices, insurance claims, contractor agreements', example: 'Office renovation $60K, flood damage repair $25K' },
+  { id: 'nonCash', title: 'Non-Cash Charges', desc: 'Stock compensation, asset write-downs, unrealized losses', defensibility: 'High', evidenceType: 'Accounting records, board resolutions', example: 'Stock compensation expense $30K, goodwill impairment $50K' },
+  { id: 'relatedParty', title: 'Related-Party Rent Adjustment', desc: 'Owner-owned building leased to company at above or below market rate', defensibility: 'Moderate', evidenceType: 'Lease agreements, market rent comparables, appraisals', example: 'Owner charges $8K/mo; market rate is $5K/mo; add back $36K' }
+];
+
+const RED_FLAGS = [
+  { id: 'revPipeline', title: 'Revenue "About to Close"', why: 'Large contract in pipeline that has not been executed', reject: 'Has not happened yet; speculative. Buyers discount promises.' },
+  { id: 'costSavings', title: 'Cost Savings "Easy to Implement"', why: 'Theoretical efficiency gains the business has not realized', reject: 'If it were easy, you would have done it. Buyers see this as puffery.' },
+  { id: 'badYear', title: 'Normalizing a Bad Year as "Anomaly"', why: 'One underperforming year in five presented as non-representative', reject: 'Buyers see patterns, not anomalies. One bad year in five is a 20% probability.' },
+  { id: 'allMarketing', title: 'Adding Back All Marketing Spend', why: 'Claiming the business runs entirely on referrals and reputation', reject: 'Someone will need to spend on marketing. Zero marketing is not sustainable.' },
+  { id: 'lowReplacement', title: 'Above-Market Owner Replacement', why: 'Setting the replacement salary unrealistically low to inflate the add-back', reject: 'Buyers will benchmark independently using the same salary surveys.' },
+  { id: 'covidAdj', title: 'COVID Adjustments (Stale)', why: 'Still normalizing for pandemic-era revenue dips or cost spikes', reject: 'The market has moved on. These are now historical operating results.' }
+];
+
+const QOE_CHECKLIST = [
+  'Every add-back has a written description and rationale',
+  'Supporting documentation is organized in a single binder or folder',
+  'Owner compensation adjustment supported by 2+ salary survey sources',
+  'Personal expenses have receipts, statements, and categorization',
+  'One-time items have invoices and are genuinely non-recurring',
+  'Related-party transactions have market comparables',
+  '3-year consistency -- same categories across all periods',
+  'Both positive and negative adjustments are included (honest normalization)',
+  'No speculative or future-looking adjustments included',
+  'Schedule has been reviewed by a transaction-experienced CPA',
+  'Bridge format is clean: Reported Net Income through Normalized EBITDA',
+  'Gray-area adjustments are acknowledged transparently'
+];
+
+const PRESENTATION_PRINCIPLES = [
+  { title: 'Lead with the Number', desc: 'Show the bridge clearly. Reported EBITDA to Normalized EBITDA in a simple waterfall. Do not bury the lede.' },
+  { title: 'Be Direct and Factual', desc: 'No puffery. "Owner compensation exceeds market by $225K based on Robert Half data." Not "we believe significant value exists in optimizing..."' },
+  { title: 'Link Every Adjustment to Evidence', desc: 'Every line item should reference a specific document in your evidence binder. "See Tab 3: Salary Survey Comparables."' },
+  { title: 'Acknowledge Gray Areas', desc: 'If there is a gray-area adjustment, say so. "We believe this is a legitimate add-back; reasonable minds may differ." This builds trust.' }
+];
+
+const MISTAKES = [
+  { title: 'Inflating Add-Backs to Maximize Price', desc: 'Every inflated add-back gets caught in QoE. Once caught, the buyer questions everything else.', fix: 'Be conservative. Under-promise and over-deliver on EBITDA.' },
+  { title: 'Not Having Evidence Ready', desc: 'Claiming $50K in personal travel add-backs without receipts, itineraries, or categorization.', fix: 'Build the evidence binder before going to market.' },
+  { title: 'Confusing Normalization with Pro Forma', desc: 'Normalization removes non-recurring items. Pro forma adds future projections. They are different exercises.', fix: 'Keep normalization backward-looking. Put projections in a separate document.' },
+  { title: 'Forgetting to Normalize Both Directions', desc: 'Sometimes the owner underpays themselves, or the business has below-market rent. These adjustments reduce EBITDA.', fix: 'Honest normalization adjusts both ways. This builds credibility.' }
+];
+
+let state = {
+  currentPage: 'welcome',
+  pagesUnlocked: ['welcome'],
+  pagesCompleted: [],
+  bridge: {},
+  addbacks: {},
+  customAddbacks: [],
+  redFlags: {},
+  evidence: {},
+  qoeChecklist: {},
+  multiple: 5,
+  timestamp: null
+};
+
+/* ============================================================
+   PERSISTENCE
+   ============================================================ */
+const STORAGE_KEY = 'exitosx-pb07-ebitda-normalization';
+// Migrate from old localStorage key
+(function() { try { const old = localStorage.getItem('ebitdaNormalization'); if (old && !localStorage.getItem(STORAGE_KEY)) { localStorage.setItem(STORAGE_KEY, old); localStorage.removeItem('ebitdaNormalization'); } } catch(e) {} })();
+
+function loadData() {
+  try { const s = localStorage.getItem(STORAGE_KEY); if (s) state = { ...state, ...JSON.parse(s) }; } catch(e) {}
+}
+
+function saveData() {
+  state.timestamp = new Date().toISOString();
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  updateProgress();
+  updateSidebarEbitda();
+  const el = document.getElementById('sidebarSaved');
+  const t = document.getElementById('savedTime');
+  if (el && t) { el.style.display = 'block'; t.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+}
+
+function gv(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+
+function num(v) { return parseFloat(v) || 0; }
+
+function fmt(n) {
+  if (n === 0) return '$0';
+  const neg = n < 0;
+  const abs = Math.abs(n);
+  if (abs >= 1000000) return (neg?'-':'') + '$' + (abs/1000000).toFixed(1) + 'M';
+  if (abs >= 1000) return (neg?'-':'') + '$' + (abs/1000).toFixed(0) + 'K';
+  return (neg?'-':'') + '$' + abs.toLocaleString();
+}
+
+function fmtFull(n) {
+  if (n === 0) return '$0';
+  const neg = n < 0;
+  return (neg?'-':'') + '$' + Math.abs(n).toLocaleString();
+}
+
+function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function goToPage(pageId) {
+  if (!state.pagesUnlocked.includes(pageId)) return;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.remove('active');
+    if (n.dataset.page === pageId) n.classList.add('active');
+  });
+  state.currentPage = pageId;
+  saveData();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  toggleSidebar(false);
+  // Focus management for accessibility
+  const page = document.getElementById('page-' + pageId);
+  setTimeout(() => { const heading = page.querySelector('h1, h2, .t-display'); if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); } }, 100);
+  // Render page content
+  const renderers = { bridge: renderBridge, addbacks: renderAddbacks, aggressive: renderRedFlags, evidence: renderEvidence, qoe: renderQoE, dashboard: renderDashboard };
+  if (renderers[pageId]) renderers[pageId]();
+}
+
+function unlockPage(id) {
+  if (!state.pagesUnlocked.includes(id)) state.pagesUnlocked.push(id);
+  document.querySelectorAll('.nav-item').forEach(n => { if (state.pagesUnlocked.includes(n.dataset.page)) n.classList.remove('locked'); });
+}
+
+function completePage(id) {
+  if (!state.pagesCompleted.includes(id)) state.pagesCompleted.push(id);
+  document.querySelectorAll('.nav-item').forEach(n => { if (state.pagesCompleted.includes(n.dataset.page)) n.classList.add('completed'); });
+  saveData();
+}
+
+function updateProgress() {
+  const total = 6;
+  const pct = Math.round((state.pagesCompleted.length / total) * 100);
+  const bar = document.getElementById('globalProgressBar');
+  const text = document.getElementById('globalProgressText');
+  if (bar) bar.style.width = pct + '%';
+  if (text) text.textContent = pct + '% complete';
+}
+
+function updateSidebarEbitda() {
+  const totals = calcTotals();
+  const el = document.getElementById('sidebarEbitda');
+  if (totals.normalizedEbitda !== 0 || totals.totalAddbacks !== 0) {
+    el.style.display = 'block';
+    document.getElementById('sidebarEbitdaValue').textContent = fmtFull(totals.normalizedEbitda);
+    document.getElementById('sidebarEbitdaSub').textContent = 'Add-backs: ' + fmtFull(totals.totalAddbacks);
+  }
+}
+
+function toggleSidebar(open) {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebarOverlay');
+  if (open) { sb.classList.add('open'); ov.classList.add('show'); }
+  else { sb.classList.remove('open'); ov.classList.remove('show'); }
+}
+
+function showToast(msg) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { if (t.parentNode) t.remove(); }, 3200);
+}
+
+/* ============================================================
+   CALCULATIONS
+   ============================================================ */
+function calcTotals() {
+  const b = state.bridge;
+  const reportedEbitda = num(b.netIncome) + num(b.interest) + num(b.taxes) + num(b.depreciation);
+  const totalAddbacks = num(b.ownerComp) + num(b.personalExp) + num(b.oneTime) + num(b.otherAdj);
+  const normalizedEbitda = reportedEbitda + totalAddbacks;
+  return { reportedEbitda, totalAddbacks, normalizedEbitda };
+}
+
+function calcAddbackTotal(catId) {
+  const d = state.addbacks[catId];
+  if (!d) return 0;
+  return Math.max(num(d.yr1), num(d.yr2), num(d.yr3));
+}
+
+function calcAllAddbacksTotal() {
+  let total = 0;
+  ADDBACK_CATEGORIES.forEach(c => { total += calcAddbackTotal(c.id); });
+  state.customAddbacks.forEach(c => { total += Math.max(num(c.yr1), num(c.yr2), num(c.yr3)); });
+  return total;
+}
+
+/* ============================================================
+   WELCOME
+   ============================================================ */
+function startJourney() {
+  completePage('welcome');
+  unlockPage('bridge');
+  goToPage('bridge');
+  showToast('Let\'s build your normalization bridge.');
+}
+
+/* ============================================================
+   BRIDGE PAGE
+   ============================================================ */
+function renderBridge() {
+  const totals = calcTotals();
+  const container = document.getElementById('bridgeContainer');
+  container.innerHTML = BRIDGE_LINES.map(line => {
+    let value;
+    if (line.id === 'reportedEbitda') value = totals.reportedEbitda;
+    else if (line.id === 'normalizedEbitda') value = totals.normalizedEbitda;
+    else value = num(state.bridge[line.id]);
+
+    const cls = line.total ? 'bridge-row bridge-total' : line.subtotal ? 'bridge-row bridge-subtotal' : 'bridge-row';
+    return `
+      <div class="${cls}">
+        <div class="bridge-label">
+          <span class="bridge-prefix">${line.prefix}</span>
+          ${line.label}
+        </div>
+        <div class="bridge-amount">
+          ${line.editable
+            ? `<input class="bridge-input" type="number" value="${state.bridge[line.id]||''}" placeholder="$0" oninput="state.bridge['${line.id}']=this.value;saveData();renderBridge()">`
+            : `<span class="t-money" style="font-weight:700">${fmtFull(value)}</span>`
+          }
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function completeBridge() {
+  completePage('bridge');
+  unlockPage('addbacks');
+  goToPage('addbacks');
+  showToast('Bridge built. Now document your add-backs.');
+}
+
+/* ============================================================
+   ADD-BACK SCHEDULE PAGE
+   ============================================================ */
+function renderAddbacks() {
+  document.getElementById('addbackCards').innerHTML = ADDBACK_CATEGORIES.map(cat => {
+    const d = state.addbacks[cat.id] || {};
+    const maxAmt = calcAddbackTotal(cat.id);
+    const expanded = d.yr1 || d.yr2 || d.yr3 || d.notes;
+
+    return `
+      <div class="addback-card ${expanded?'expanded':''}" id="ab-${cat.id}">
+        <div class="addback-header" onclick="document.getElementById('ab-${cat.id}').classList.toggle('expanded')">
+          <div class="addback-title-area">
+            <div>
+              <div class="addback-title">${cat.title}</div>
+              <div class="addback-subtitle">${cat.desc}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-md">
+            ${maxAmt > 0 ? `<div class="addback-amount">${fmt(maxAmt)}</div>` : ''}
+            <span class="badge ${cat.defensibility==='High'?'badge-success':'badge-warning'}">${cat.defensibility}</span>
+            <span class="addback-chevron">&#9662;</span>
+          </div>
+        </div>
+        <div class="addback-body">
+          <div class="callout callout-accent mb-lg" style="font-size:13px">
+            <strong>Example:</strong> ${cat.example}<br>
+            <strong>Evidence needed:</strong> ${cat.evidenceType}
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md)">
+            <div class="form-group">
+              <label class="form-label">Year 1 (Oldest)</label>
+              <input class="form-input input-currency" type="number" value="${d.yr1||''}" placeholder="$0" oninput="updateAddback('${cat.id}','yr1',this.value)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Year 2</label>
+              <input class="form-input input-currency" type="number" value="${d.yr2||''}" placeholder="$0" oninput="updateAddback('${cat.id}','yr2',this.value)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Year 3 (Most Recent)</label>
+              <input class="form-input input-currency" type="number" value="${d.yr3||''}" placeholder="$0" oninput="updateAddback('${cat.id}','yr3',this.value)">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notes & Rationale</label>
+            <textarea class="form-input" placeholder="Document exactly what this adjustment represents and why it is legitimate..." oninput="updateAddback('${cat.id}','notes',this.value)">${escHtml(d.notes||'')}</textarea>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Defensibility Self-Assessment</label>
+            <div class="score-selector" role="radiogroup" aria-label="${cat.title} defensibility">
+              ${[1,2,3,4,5].map(s => `
+                <label class="score-option s${s} ${(d.selfScore||0)===s?'selected':''}" onclick="updateAddback('${cat.id}','selfScore',${s})" role="radio" aria-checked="${(d.selfScore||0)===s}" tabindex="0">
+                  <input type="radio" name="def-${cat.id}" value="${s}" ${(d.selfScore||0)===s?'checked':''}>
+                  <span class="score-number">${s}</span>
+                  <span class="score-label-text">${['','Weak','Thin','OK','Strong','Bulletproof'][s]}</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  renderCustomAddbacks();
+  renderAddbackSummary();
+}
+
+function updateAddback(catId, field, value) {
+  if (!state.addbacks[catId]) state.addbacks[catId] = {};
+  state.addbacks[catId][field] = value;
+  saveData();
+  renderAddbackSummary();
+}
+
+function renderCustomAddbacks() {
+  if (state.customAddbacks.length === 0) return;
+  document.getElementById('customAddbacks').innerHTML = state.customAddbacks.map((c, i) => `
+    <div style="padding:var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:var(--space-md)">
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <input class="form-input" value="${escHtml(c.desc)}" placeholder="What is this adjustment?" oninput="state.customAddbacks[${i}].desc=this.value;saveData()">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md)">
+        <div class="form-group">
+          <label class="form-label">Year 1</label>
+          <input class="form-input input-currency" type="number" value="${c.yr1||''}" placeholder="$0" oninput="state.customAddbacks[${i}].yr1=this.value;saveData()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Year 2</label>
+          <input class="form-input input-currency" type="number" value="${c.yr2||''}" placeholder="$0" oninput="state.customAddbacks[${i}].yr2=this.value;saveData()">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Year 3</label>
+          <input class="form-input input-currency" type="number" value="${c.yr3||''}" placeholder="$0" oninput="state.customAddbacks[${i}].yr3=this.value;saveData()">
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addCustomAddback() {
+  state.customAddbacks.push({ desc: '', yr1: '', yr2: '', yr3: '' });
+  saveData();
+  renderAddbacks();
+}
+
+function renderAddbackSummary() {
+  const rows = ADDBACK_CATEGORIES.filter(c => {
+    const d = state.addbacks[c.id];
+    return d && (num(d.yr1) || num(d.yr2) || num(d.yr3));
+  }).map(c => {
+    const d = state.addbacks[c.id];
+    return { label: c.title, yr1: num(d.yr1), yr2: num(d.yr2), yr3: num(d.yr3) };
+  });
+
+  state.customAddbacks.forEach(c => {
+    if (c.desc && (num(c.yr1) || num(c.yr2) || num(c.yr3))) {
+      rows.push({ label: c.desc || 'Custom', yr1: num(c.yr1), yr2: num(c.yr2), yr3: num(c.yr3) });
+    }
+  });
+
+  if (rows.length === 0) {
+    document.getElementById('addbackSummary').innerHTML = '<p class="t-small t-tertiary">Enter add-back amounts above to see the summary.</p>';
+    return;
+  }
+
+  const totals = { yr1: 0, yr2: 0, yr3: 0 };
+  rows.forEach(r => { totals.yr1 += r.yr1; totals.yr2 += r.yr2; totals.yr3 += r.yr3; });
+
+  document.getElementById('addbackSummary').innerHTML = `
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:14px">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:8px 12px;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:var(--color-text-tertiary);border-bottom:2px solid var(--color-border)">Category</th>
+            <th style="text-align:right;padding:8px 12px;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:var(--color-text-tertiary);border-bottom:2px solid var(--color-border)">Year 1</th>
+            <th style="text-align:right;padding:8px 12px;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:var(--color-text-tertiary);border-bottom:2px solid var(--color-border)">Year 2</th>
+            <th style="text-align:right;padding:8px 12px;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:var(--color-text-tertiary);border-bottom:2px solid var(--color-border)">Year 3</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(r => `
+            <tr>
+              <td style="padding:8px 12px;border-bottom:1px solid var(--color-border-light)">${r.label}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid var(--color-border-light);text-align:right;font-family:var(--font-mono)">${r.yr1 ? fmtFull(r.yr1) : '-'}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid var(--color-border-light);text-align:right;font-family:var(--font-mono)">${r.yr2 ? fmtFull(r.yr2) : '-'}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid var(--color-border-light);text-align:right;font-family:var(--font-mono)">${r.yr3 ? fmtFull(r.yr3) : '-'}</td>
+            </tr>
+          `).join('')}
+          <tr style="font-weight:700;background:var(--color-primary-light)">
+            <td style="padding:10px 12px">Total Add-Backs</td>
+            <td style="padding:10px 12px;text-align:right;font-family:var(--font-mono)">${fmtFull(totals.yr1)}</td>
+            <td style="padding:10px 12px;text-align:right;font-family:var(--font-mono)">${fmtFull(totals.yr2)}</td>
+            <td style="padding:10px 12px;text-align:right;font-family:var(--font-mono)">${fmtFull(totals.yr3)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout callout-success mt-lg">
+      <strong>Implied value at ${state.multiple}x multiple:</strong> <span class="t-money" style="font-size:18px;font-weight:700">${fmtFull(totals.yr3 * state.multiple)}</span>
+      <div style="margin-top:6px;font-size:12px">
+        Adjust multiple: <input type="number" class="input-mini" style="width:60px;display:inline" value="${state.multiple}" min="1" max="20" step="0.5" oninput="state.multiple=parseFloat(this.value)||5;saveData();renderAddbackSummary()">x
+      </div>
+    </div>
+  `;
+}
+
+function completeAddbacks() {
+  completePage('addbacks');
+  unlockPage('aggressive');
+  goToPage('aggressive');
+  showToast('Add-backs documented. Let\'s check for red flags.');
+}
+
+/* ============================================================
+   RED FLAGS PAGE
+   ============================================================ */
+function renderRedFlags() {
+  document.getElementById('redFlagsList').innerHTML = RED_FLAGS.map(flag => {
+    const val = state.redFlags[flag.id] || '';
+    return `
+      <div class="card mb-md">
+        <div class="t-h3 mb-sm">${flag.title}</div>
+        <div class="grid-2 mb-md">
+          <div><span class="t-caption t-tertiary">WHY SELLERS TRY IT:</span><p class="t-small">${flag.why}</p></div>
+          <div><span class="t-caption t-tertiary">WHY BUYERS REJECT IT:</span><p class="t-small" style="color:var(--color-danger)">${flag.reject}</p></div>
+        </div>
+        <div class="form-label mb-sm">Is this in your schedule?</div>
+        <div class="flex gap-sm">
+          <label class="score-option ${val==='no'?'selected':''}" style="flex:1;border-color:${val==='no'?'var(--color-success)':'var(--color-border)'};background:${val==='no'?'var(--color-success-light)':'var(--color-surface)'};padding:10px" onclick="state.redFlags['${flag.id}']='no';saveData();renderRedFlags()">
+            <input type="radio" name="rf-${flag.id}" value="no" ${val==='no'?'checked':''}>
+            <span style="font-weight:600;color:var(--color-success);font-size:13px">No -- Clean</span>
+          </label>
+          <label class="score-option ${val==='maybe'?'selected':''}" style="flex:1;border-color:${val==='maybe'?'var(--color-warning)':'var(--color-border)'};background:${val==='maybe'?'var(--color-warning-light)':'var(--color-surface)'};padding:10px" onclick="state.redFlags['${flag.id}']='maybe';saveData();renderRedFlags()">
+            <input type="radio" name="rf-${flag.id}" value="maybe" ${val==='maybe'?'checked':''}>
+            <span style="font-weight:600;color:var(--color-warning);font-size:13px">Gray Area</span>
+          </label>
+          <label class="score-option ${val==='yes'?'selected':''}" style="flex:1;border-color:${val==='yes'?'var(--color-danger)':'var(--color-border)'};background:${val==='yes'?'var(--color-danger-light)':'var(--color-surface)'};padding:10px" onclick="state.redFlags['${flag.id}']='yes';saveData();renderRedFlags()">
+            <input type="radio" name="rf-${flag.id}" value="yes" ${val==='yes'?'checked':''}>
+            <span style="font-weight:600;color:var(--color-danger);font-size:13px">Yes -- Remove</span>
+          </label>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  renderCredibilityMeter();
+}
+
+function renderCredibilityMeter() {
+  const answered = Object.values(state.redFlags).filter(Boolean);
+  if (answered.length === 0) {
+    document.getElementById('credibilityMeter').innerHTML = '<p class="t-small t-tertiary">Answer the red flag questions above to see your credibility score.</p>';
+    return;
+  }
+  const clean = answered.filter(v => v === 'no').length;
+  const gray = answered.filter(v => v === 'maybe').length;
+  const flagged = answered.filter(v => v === 'yes').length;
+  const score = Math.round((clean * 100 + gray * 50) / answered.length);
+  const color = score >= 80 ? 'var(--color-success)' : score >= 50 ? 'var(--color-warning)' : 'var(--color-danger)';
+  const label = score >= 80 ? 'Strong Credibility' : score >= 50 ? 'Some Risk' : 'Credibility at Risk';
+
+  document.getElementById('credibilityMeter').innerHTML = `
+    <div style="text-align:center;padding:var(--space-lg)">
+      <div style="font-family:var(--font-display);font-size:48px;font-weight:700;color:${color};line-height:1">${score}%</div>
+      <div style="font-size:14px;color:var(--color-text-secondary);margin-top:4px">${label}</div>
+      <div style="height:12px;background:var(--color-surface-alt);border-radius:6px;overflow:hidden;margin-top:var(--space-lg)">
+        <div style="height:100%;width:${score}%;background:${color};border-radius:6px;transition:width 0.8s ease"></div>
+      </div>
+      <div class="flex justify-between mt-md" style="font-size:12px;color:var(--color-text-tertiary)">
+        <span>${clean} clean</span>
+        <span>${gray} gray area</span>
+        <span>${flagged} flagged</span>
+      </div>
+    </div>
+    ${flagged > 0 ? '<div class="callout callout-danger mt-lg"><strong>Action required:</strong> Remove flagged items from your add-back schedule before presenting to buyers. These will be caught in Quality of Earnings.</div>' : ''}
+    ${gray > 0 ? '<div class="callout callout-warning mt-md"><strong>Gray areas:</strong> Acknowledge these transparently in your presentation. "We believe this is a legitimate add-back; reasonable minds may differ."</div>' : ''}
+  `;
+}
+
+function completeAggressive() {
+  completePage('aggressive');
+  unlockPage('evidence');
+  goToPage('evidence');
+  showToast('Red flag review complete. Build your evidence binder.');
+}
+
+/* ============================================================
+   EVIDENCE TRACKER PAGE
+   ============================================================ */
+function renderEvidence() {
+  const activeCats = ADDBACK_CATEGORIES.filter(c => {
+    const d = state.addbacks[c.id];
+    return d && (num(d.yr1) || num(d.yr2) || num(d.yr3));
+  });
+
+  if (activeCats.length === 0) {
+    document.getElementById('evidenceTracker').innerHTML = '<p class="t-small t-tertiary">Enter add-back amounts in the Add-Back Schedule to see evidence tracking here.</p>';
+    document.getElementById('evidenceProgress').innerHTML = '';
+    return;
+  }
+
+  document.getElementById('evidenceTracker').innerHTML = `
+    <div class="evidence-row" style="font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:var(--color-text-tertiary);padding-bottom:12px;border-bottom:2px solid var(--color-border)">
+      <div>Add-Back Item</div>
+      <div>Amount</div>
+      <div>Supporting Document</div>
+      <div>Ready?</div>
+    </div>
+    ${activeCats.map(cat => {
+      const d = state.addbacks[cat.id] || {};
+      const ev = state.evidence[cat.id] || {};
+      const maxAmt = calcAddbackTotal(cat.id);
+      return `
+        <div class="evidence-row">
+          <div>
+            <div style="font-weight:500;font-size:14px">${cat.title}</div>
+            <div style="font-size:12px;color:var(--color-text-tertiary)">${cat.evidenceType}</div>
+          </div>
+          <div class="t-money" style="font-weight:600">${fmt(maxAmt)}</div>
+          <div>
+            <input class="input-mini w-full" value="${escHtml(ev.doc||'')}" placeholder="Document name / location" oninput="if(!state.evidence['${cat.id}'])state.evidence['${cat.id}']={};state.evidence['${cat.id}'].doc=this.value;saveData()">
+          </div>
+          <div>
+            <select class="input-mini w-full" onchange="if(!state.evidence['${cat.id}'])state.evidence['${cat.id}']={};state.evidence['${cat.id}'].ready=this.value;saveData();renderEvidence()">
+              <option value="">--</option>
+              <option value="yes" ${ev.ready==='yes'?'selected':''}>Yes</option>
+              <option value="partial" ${ev.ready==='partial'?'selected':''}>Partial</option>
+              <option value="no" ${ev.ready==='no'?'selected':''}>No</option>
+            </select>
+          </div>
+        </div>
+      `;
+    }).join('')}
+  `;
+
+  // Evidence progress
+  const total = activeCats.length;
+  const ready = activeCats.filter(c => state.evidence[c.id]?.ready === 'yes').length;
+  const partial = activeCats.filter(c => state.evidence[c.id]?.ready === 'partial').length;
+  const pct = Math.round(((ready + partial * 0.5) / total) * 100);
+  const color = pct >= 80 ? 'var(--color-success)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-danger)';
+
+  document.getElementById('evidenceProgress').innerHTML = `
+    <div style="text-align:center;padding:var(--space-md)">
+      <div style="font-family:var(--font-display);font-size:36px;font-weight:700;color:${color}">${pct}%</div>
+      <div style="font-size:13px;color:var(--color-text-secondary)">Evidence readiness</div>
+      <div style="height:10px;background:var(--color-surface-alt);border-radius:5px;overflow:hidden;margin-top:var(--space-md)">
+        <div style="height:100%;width:${pct}%;background:${color};border-radius:5px;transition:width 0.6s ease"></div>
+      </div>
+      <div class="flex justify-between mt-sm" style="font-size:12px;color:var(--color-text-tertiary)">
+        <span>${ready} ready</span><span>${partial} partial</span><span>${total - ready - partial} missing</span>
+      </div>
+    </div>
+  `;
+}
+
+function completeEvidence() {
+  completePage('evidence');
+  unlockPage('qoe');
+  goToPage('qoe');
+  showToast('Evidence tracked. Final step: QoE preparation.');
+}
+
+/* ============================================================
+   QoE READINESS PAGE
+   ============================================================ */
+function renderQoE() {
+  document.getElementById('qoeChecklist').innerHTML = QOE_CHECKLIST.map((item, i) => {
+    const checked = state.qoeChecklist['qoe-'+i] || false;
+    return `
+      <div class="check-item ${checked?'checked':''}" onclick="state.qoeChecklist['qoe-${i}']=!state.qoeChecklist['qoe-${i}'];saveData();renderQoE()" role="checkbox" aria-checked="${checked}" tabindex="0">
+        <div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+        <div class="check-text">${item}</div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('presentationPrinciples').innerHTML = PRESENTATION_PRINCIPLES.map(p => `
+    <div style="padding:var(--space-md) 0;border-bottom:1px solid var(--color-border-light)">
+      <div class="t-h3 mb-sm">${p.title}</div>
+      <p class="t-small t-secondary">${p.desc}</p>
+    </div>
+  `).join('');
+
+  document.getElementById('mistakesList').innerHTML = MISTAKES.map((m, i) => `
+    <div class="callout callout-warning mb-md">
+      <strong>Mistake #${i+1}: ${m.title}</strong>
+      <p style="margin:6px 0">${m.desc}</p>
+      <p><strong>Solution:</strong> ${m.fix}</p>
+    </div>
+  `).join('');
+}
+
+function completeQoE() {
+  completePage('qoe');
+  unlockPage('dashboard');
+  goToPage('dashboard');
+  showToast('Preparation complete. Here is your full scorecard.');
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+function renderDashboard() {
+  const totals = calcTotals();
+  const allAddbacks = calcAllAddbacksTotal();
+  const useAddbacks = allAddbacks > 0 ? allAddbacks : totals.totalAddbacks;
+  const normalizedEbitda = totals.normalizedEbitda || 0;
+
+  // Hero
+  document.getElementById('dashHeroValue').textContent = fmtFull(normalizedEbitda);
+  document.getElementById('dashHeroSub').textContent = `Reported ${fmtFull(totals.reportedEbitda)} + Add-backs ${fmtFull(totals.totalAddbacks)}`;
+
+  // Metrics
+  document.getElementById('dashAddbacks').textContent = fmtFull(useAddbacks);
+  const uplift = useAddbacks * state.multiple;
+  document.getElementById('dashUplift').textContent = fmtFull(uplift);
+  document.getElementById('dashUpliftSub').textContent = `at ${state.multiple}x multiple`;
+
+  // Defensibility
+  const defScores = ADDBACK_CATEGORIES.map(c => state.addbacks[c.id]?.selfScore || 0).filter(v => v > 0);
+  const avgDef = defScores.length > 0 ? defScores.reduce((a,b)=>a+b,0)/defScores.length : 0;
+  document.getElementById('dashDefensibility').textContent = avgDef > 0 ? avgDef.toFixed(1) + '/5' : '--';
+  document.getElementById('dashDefDesc').textContent = avgDef >= 4 ? 'Strong evidence base' : avgDef >= 3 ? 'Adequate documentation' : avgDef > 0 ? 'Needs more evidence' : 'Complete assessment to see';
+
+  // Evidence readiness
+  const activeCats = ADDBACK_CATEGORIES.filter(c => { const d = state.addbacks[c.id]; return d && (num(d.yr1)||num(d.yr2)||num(d.yr3)); });
+  const evReady = activeCats.filter(c => state.evidence[c.id]?.ready === 'yes').length;
+  const evPct = activeCats.length > 0 ? Math.round((evReady / activeCats.length) * 100) : 0;
+  document.getElementById('dashEvidence').textContent = evPct + '%';
+
+  // Bar chart of add-backs
+  const bars = ADDBACK_CATEGORIES.filter(c => calcAddbackTotal(c.id) > 0).map(c => ({
+    label: c.title.replace('Owner ', '').replace(' Compensation', ' Comp').replace(' Expenses', ' Exp'),
+    value: calcAddbackTotal(c.id)
+  })).sort((a,b) => b.value - a.value);
+
+  const maxBar = bars.length > 0 ? Math.max(...bars.map(b => b.value)) : 1;
+  document.getElementById('dashBarChart').innerHTML = bars.length > 0 ? bars.map((b, i) => {
+    const pct = (b.value / maxBar) * 100;
+    return `
+      <div class="bar-row">
+        <div class="bar-label">${b.label}</div>
+        <div class="bar-track">
+          <div class="bar-fill" data-width="${pct}" data-delay="${i*100}" style="width:0%;background:var(--color-primary)">
+            <span class="bar-value">${fmt(b.value)}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('') : '<p class="t-small t-tertiary">Enter add-back amounts to see the breakdown.</p>';
+
+  setTimeout(() => {
+    document.querySelectorAll('#dashBarChart .bar-fill').forEach(el => {
+      const w = el.dataset.width;
+      const d = parseInt(el.dataset.delay) || 0;
+      setTimeout(() => { el.style.width = w + '%'; }, d);
+    });
+  }, 100);
+
+  // 3-year bridge
+  renderDash3YearBridge();
+
+  // Recommendations
+  renderDashRecommendations();
+}
+
+function renderDash3YearBridge() {
+  const activeCats = ADDBACK_CATEGORIES.filter(c => {
+    const d = state.addbacks[c.id];
+    return d && (num(d.yr1) || num(d.yr2) || num(d.yr3));
+  });
+
+  if (activeCats.length === 0) {
+    document.getElementById('dashBridge3Year').innerHTML = '<p class="t-small t-tertiary">Complete the Add-Back Schedule to see the 3-year bridge.</p>';
+    return;
+  }
+
+  const totals = { yr1: 0, yr2: 0, yr3: 0 };
+  activeCats.forEach(c => {
+    const d = state.addbacks[c.id];
+    totals.yr1 += num(d.yr1); totals.yr2 += num(d.yr2); totals.yr3 += num(d.yr3);
+  });
+  state.customAddbacks.forEach(c => {
+    totals.yr1 += num(c.yr1); totals.yr2 += num(c.yr2); totals.yr3 += num(c.yr3);
+  });
+
+  const reportedEbitda = calcTotals().reportedEbitda;
+
+  document.getElementById('dashBridge3Year').innerHTML = `
+    <div class="bridge">
+      <div class="bridge-row bridge-header">
+        <div>Line Item</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:right">
+          <div>Year 1</div><div>Year 2</div><div>Year 3</div>
+        </div>
+      </div>
+      <div class="bridge-row bridge-subtotal">
+        <div>Reported EBITDA</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:right;font-family:var(--font-mono)">
+          <div>${fmtFull(reportedEbitda)}</div><div>${fmtFull(reportedEbitda)}</div><div>${fmtFull(reportedEbitda)}</div>
+        </div>
+      </div>
+      ${activeCats.map(c => {
+        const d = state.addbacks[c.id];
+        return `
+          <div class="bridge-row">
+            <div class="bridge-label"><span class="bridge-prefix">+</span> ${c.title}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:right;font-family:var(--font-mono);font-size:13px">
+              <div>${num(d.yr1)?fmtFull(num(d.yr1)):'-'}</div>
+              <div>${num(d.yr2)?fmtFull(num(d.yr2)):'-'}</div>
+              <div>${num(d.yr3)?fmtFull(num(d.yr3)):'-'}</div>
+            </div>
+          </div>
+        `;
+      }).join('')}
+      <div class="bridge-row bridge-total">
+        <div>Normalized EBITDA</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:right;font-family:var(--font-mono)">
+          <div>${fmtFull(reportedEbitda + totals.yr1)}</div>
+          <div>${fmtFull(reportedEbitda + totals.yr2)}</div>
+          <div>${fmtFull(reportedEbitda + totals.yr3)}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderDashRecommendations() {
+  const recs = [];
+  const totals = calcTotals();
+
+  if (totals.normalizedEbitda === 0 && totals.totalAddbacks === 0) {
+    recs.push({ priority: 'Start', text: 'Complete your EBITDA bridge to see personalized recommendations.' });
+  }
+
+  // Check evidence
+  const activeCats = ADDBACK_CATEGORIES.filter(c => { const d = state.addbacks[c.id]; return d && (num(d.yr1)||num(d.yr2)||num(d.yr3)); });
+  const missingEvidence = activeCats.filter(c => !state.evidence[c.id]?.ready || state.evidence[c.id]?.ready === 'no');
+  if (missingEvidence.length > 0) {
+    recs.push({ priority: 'Critical', text: `${missingEvidence.length} add-back${missingEvidence.length>1?'s':''} lack supporting documentation. Build your evidence binder before going to market.` });
+  }
+
+  // Check red flags
+  const flagged = Object.entries(state.redFlags).filter(([k,v]) => v === 'yes');
+  if (flagged.length > 0) {
+    recs.push({ priority: 'Critical', text: `${flagged.length} aggressive add-back${flagged.length>1?'s':''} flagged for removal. These will be caught in QoE and damage your credibility.` });
+  }
+
+  // Check defensibility
+  const weakDef = ADDBACK_CATEGORIES.filter(c => {
+    const d = state.addbacks[c.id];
+    return d && (num(d.yr1)||num(d.yr2)||num(d.yr3)) && (d.selfScore||0) <= 2;
+  });
+  if (weakDef.length > 0) {
+    recs.push({ priority: 'High', text: `${weakDef.length} add-back${weakDef.length>1?'s have':' has'} weak defensibility ratings. Strengthen evidence or consider removing.` });
+  }
+
+  // Check QoE checklist
+  const qoeTotal = QOE_CHECKLIST.length;
+  const qoeDone = Object.values(state.qoeChecklist).filter(Boolean).length;
+  if (qoeDone < qoeTotal && qoeDone > 0) {
+    recs.push({ priority: 'Medium', text: `QoE preparation checklist is ${Math.round((qoeDone/qoeTotal)*100)}% complete. Finish remaining items before engaging buyers.` });
+  }
+
+  // Check consistency
+  const inconsistent = ADDBACK_CATEGORIES.filter(c => {
+    const d = state.addbacks[c.id];
+    if (!d) return false;
+    const vals = [num(d.yr1), num(d.yr2), num(d.yr3)].filter(v => v > 0);
+    if (vals.length < 2) return false;
+    const max = Math.max(...vals), min = Math.min(...vals);
+    return max > 0 && (max - min) / max > 0.5;
+  });
+  if (inconsistent.length > 0) {
+    recs.push({ priority: 'Medium', text: `${inconsistent.length} add-back categor${inconsistent.length>1?'ies vary':'y varies'} significantly across years. Prepare explanations for the inconsistency.` });
+  }
+
+  if (recs.length === 0 && activeCats.length > 0) {
+    recs.push({ priority: 'Success', text: 'Your normalization schedule appears well-documented and defensible. Have it reviewed by a transaction-experienced CPA before going to market.' });
+  }
+
+  document.getElementById('dashRecommendations').innerHTML = recs.map(r => {
+    const cls = r.priority === 'Critical' ? 'callout-danger' : r.priority === 'High' ? 'callout-warning' : r.priority === 'Success' ? 'callout-success' : 'callout-accent';
+    return `<div class="callout ${cls} mb-md"><strong>${r.priority}:</strong> ${r.text}</div>`;
+  }).join('');
+}
+
+/* ============================================================
+   EXPORT
+   ============================================================ */
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'ebitda-normalization.json'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('Data exported successfully.');
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init() {
+  loadData();
+  state.pagesUnlocked.forEach(p => unlockPage(p));
+  state.pagesCompleted.forEach(p => {
+    document.querySelectorAll('.nav-item').forEach(n => { if (n.dataset.page === p) n.classList.add('completed'); });
+  });
+  goToPage(state.currentPage || 'welcome');
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+document.addEventListener('keydown', function(e) {
+  if ((e.target.classList.contains('nav-item') || e.target.classList.contains('check-item')) && (e.key === 'Enter' || e.key === ' ')) {
+    e.preventDefault(); e.target.click();
+  }
+});
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

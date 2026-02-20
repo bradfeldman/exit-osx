@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revenue Quality Analysis | Exit Planning Playbook #8</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.6; color: var(--color-text); background: var(--color-bg); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 1000; }
+a.skip-link:focus { position: fixed; top: 10px; left: 10px; width: auto; height: auto; padding: 12px 20px; background: var(--color-primary); color: #fff; border-radius: var(--radius-sm); font-weight: 600; z-index: 1000; }
+.t-display { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; min-width: 260px; background: #FFFFFF; border-right: 1px solid var(--color-border); color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: transform var(--transition-slow); overflow-y: auto; }
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+.mobile-header { display: none; position: sticky; top: 0; z-index: 90; background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md); }
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item { display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px; border-radius: var(--radius-sm); color: var(--color-text-secondary); font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative; }
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--color-text-tertiary); }
+.nav-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+.sidebar-footer { margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--color-border); font-size: 12px; color: rgba(255,255,255,0.3); display: flex; align-items: center; gap: 6px; }
+.sidebar-footer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-success); }
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); transition: box-shadow var(--transition-normal); margin-bottom: var(--space-md); }
+.card:hover { box-shadow: var(--shadow-sm); }
+.callout { padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); border-left: 3px solid; font-size: 14px; line-height: 1.6; margin-bottom: var(--space-md); }
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm); padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; transition: all var(--transition-fast); white-space: nowrap; }
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface); transition: all var(--transition-fast); color: var(--color-text); }
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); text-align: center; }
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+@media (max-width: 600px) { .score-selector { gap: 4px; } .score-option { padding: 10px 4px; } .score-number { font-size: 18px; } .score-label-text { font-size: 9px; } }
+.checklist { display: flex; flex-direction: column; gap: 2px; }
+.check-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md); border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast); }
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box { width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); margin-top: 1px; }
+.check-item.checked .check-box { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--color-border); }
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+@media (max-width: 600px) { .welcome-stats { grid-template-columns: 1fr; } .welcome-hero { padding: var(--space-2xl) var(--space-md); } }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-lg); }
+.summary-item { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-align: center; }
+.summary-item-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; }
+.summary-item-label { font-size: 12px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-top: var(--space-xs); }
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 24px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+@media (max-width: 600px) { .bar-label { width: 90px; font-size: 11px; } }
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; margin-bottom: var(--space-md); }
+.data-table th { text-align: left; padding: var(--space-sm) var(--space-md); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); }
+.data-table td { padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table input, .data-table select { width: 100%; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; background: var(--color-surface); }
+.data-table input:focus, .data-table select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-light); }
+.gauge-wrap { display: flex; justify-content: center; margin: var(--space-lg) 0; }
+.gauge-ring { position: relative; width: 160px; height: 160px; }
+.gauge-ring svg { width: 160px; height: 160px; transform: rotate(-90deg); }
+.gauge-ring circle { fill: none; stroke-width: 8; stroke-linecap: round; }
+.gauge-bg { stroke: var(--color-border); }
+.gauge-fill { transition: stroke-dashoffset 1s ease; }
+.gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gauge-center-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; line-height: 1; }
+.gauge-center-label { font-size: 12px; color: var(--color-text-tertiary); margin-top: 4px; }
+.add-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; border: 2px dashed var(--color-border); border-radius: var(--radius-md); background: transparent; cursor: pointer; font-size: 14px; color: var(--color-text-tertiary); font-weight: 500; transition: all var(--transition-fast); font-family: inherit; margin-bottom: var(--space-md); }
+.add-btn:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-light); }
+.tier-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-lg); }
+.tier-card { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); text-align: center; }
+.tier-num { font-family: var(--font-display); font-size: 24px; font-weight: 700; }
+.tier-label { font-size: 13px; font-weight: 600; margin-top: 4px; }
+.tier-desc { font-size: 12px; color: var(--color-text-tertiary); margin-top: 8px; line-height: 1.4; }
+@media print {
+  .sidebar, .mobile-header, .page-nav, .sidebar-overlay { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; margin-bottom: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<a href="#contentArea" class="skip-link">Skip to content</a>
+<div class="app">
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #8</div>
+      <div class="sidebar-brand-title">Revenue Quality Analysis</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Revenue Quality Score</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete sections to build your score</div>
+    </div>
+    <div class="sidebar-footer"><div class="sidebar-footer-dot"></div>Auto-saved locally</div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation"><span></span></button>
+      <div style="flex:1"><strong style="font-size:15px;">Revenue Quality</strong></div>
+      <div class="badge badge-primary" id="mobileScore">--/100</div>
+    </div>
+    <main class="content-area" id="contentArea" role="main"></main>
+  </div>
+</div>
+
+<script>
+(function() {
+'use strict';
+
+const STORAGE_KEY = 'exitosx-pb08-revenue-quality';
+
+const PAGES = [
+  { id: 'welcome', title: 'Welcome', phase: 'START', icon: '1' },
+  { id: 'why-it-matters', title: 'Why Revenue Quality Matters', phase: 'UNDERSTAND', icon: '2' },
+  { id: 'spectrum', title: 'Revenue Quality Spectrum', phase: 'ASSESS', icon: '3' },
+  { id: 'recurring', title: 'Recurring vs Non-Recurring', phase: 'ASSESS', icon: '4' },
+  { id: 'concentration', title: 'Customer Concentration', phase: 'ASSESS', icon: '5' },
+  { id: 'diversification', title: 'Revenue Diversification', phase: 'ASSESS', icon: '6' },
+  { id: 'contracts', title: 'Contract Quality', phase: 'ASSESS', icon: '7' },
+  { id: 'trends', title: 'Revenue Trend Analysis', phase: 'ANALYZE', icon: '8' },
+  { id: 'mistakes', title: 'Common Mistakes', phase: 'PLAN', icon: '9' },
+  { id: 'dashboard', title: 'Dashboard', phase: 'RESULTS', icon: '10' }
+];
+
+function defaultState() {
+  return {
+    currentPage: 'welcome',
+    completed: {},
+    // Spectrum scores per tier (1-5 how much of revenue is in each tier)
+    tierPcts: { tier1: '', tier2: '', tier3: '', tier4: '', tier5: '' },
+    // Recurring ratio
+    recurringRevenue: '', habitualRevenue: '', totalRevenue: '',
+    recurringStrategies: [],
+    // Concentration
+    topClientPct: '', top5Pct: '', totalCustomers: '',
+    concentrationLevel: '',
+    // Diversification scores (1-5)
+    divScores: { product: 0, geography: 0, industry: 0, channel: 0, seasonality: 0 },
+    // Contract quality
+    contractScores: { duration: 0, renewal: 0, escalation: 0, termination: 0, changeOfControl: 0 },
+    // Trend data
+    trendData: [
+      { year: 'Year 1', revenue: '', recurring: '', topClient: '', top5: '', customerCount: '', retention: '' },
+      { year: 'Year 2', revenue: '', recurring: '', topClient: '', top5: '', customerCount: '', retention: '' },
+      { year: 'Year 3', revenue: '', recurring: '', topClient: '', top5: '', customerCount: '', retention: '' }
+    ],
+    // Revenue streams
+    streams: [
+      { name: '', amount: '', tier: '', recurring: '', contracted: '' }
+    ],
+    // Mistakes
+    mistakeFlags: {},
+    notes: {}
+  };
+}
+
+let state = loadState();
+
+function loadState() {
+  try { const s = localStorage.getItem(STORAGE_KEY); return s ? {...defaultState(), ...JSON.parse(s)} : defaultState(); }
+  catch(e) { return defaultState(); }
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  updateProgress();
+  updateScore();
+}
+
+function calcScore() {
+  let score = 0;
+  // Recurring ratio (0-25)
+  const tr = parseFloat(state.totalRevenue) || 0;
+  const rr = parseFloat(state.recurringRevenue) || 0;
+  const hr = parseFloat(state.habitualRevenue) || 0;
+  if (tr > 0) {
+    const ratio = (rr + hr) / tr;
+    score += Math.min(Math.round(ratio * 25), 25);
+  }
+  // Concentration (0-20)
+  const topPct = parseFloat(state.topClientPct) || 0;
+  if (topPct > 0) {
+    if (topPct <= 10) score += 20;
+    else if (topPct <= 20) score += 15;
+    else if (topPct <= 35) score += 8;
+    else score += 3;
+  }
+  // Diversification (0-25, 5 dims at 5 each)
+  const divVals = Object.values(state.divScores);
+  divVals.forEach(function(v) { score += v; });
+  // Contract quality (0-25, 5 dims at 5 each)
+  const conVals = Object.values(state.contractScores);
+  conVals.forEach(function(v) { score += v; });
+  // Trend data completeness (0-5)
+  const filledCells = state.trendData.reduce(function(acc, row) {
+    return acc + (row.revenue ? 1 : 0) + (row.recurring ? 1 : 0) + (row.retention ? 1 : 0);
+  }, 0);
+  score += Math.min(Math.round((filledCells / 9) * 5), 5);
+  return Math.min(Math.round(score), 100);
+}
+
+function getScoreColor(score) {
+  if (score >= 81) return 'var(--color-score-5)';
+  if (score >= 61) return 'var(--color-score-4)';
+  if (score >= 41) return 'var(--color-score-3)';
+  if (score >= 21) return 'var(--color-score-2)';
+  return 'var(--color-score-1)';
+}
+
+function getScoreLabel(score) {
+  if (score >= 81) return 'Excellent revenue quality';
+  if (score >= 61) return 'Strong foundation, room to improve';
+  if (score >= 41) return 'Moderate -- address key gaps';
+  if (score >= 21) return 'Significant improvement needed';
+  return 'Complete sections to build your score';
+}
+
+function updateScore() {
+  const score = calcScore();
+  document.getElementById('sidebarScore').innerHTML = score + '<span class="sidebar-score-max">/100</span>';
+  document.getElementById('mobileScore').textContent = score + '/100';
+  document.getElementById('sidebarScoreDesc').textContent = getScoreLabel(score);
+}
+
+function updateProgress() {
+  const total = PAGES.length - 2;
+  const done = Object.keys(state.completed).length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+}
+
+function isUnlocked(pageId) {
+  var idx = PAGES.findIndex(function(p) { return p.id === pageId; });
+  if (idx <= 0) return true;
+  return state.completed[PAGES[idx - 1].id] === true;
+}
+
+function renderNav() {
+  var nav = document.getElementById('sidebarNav');
+  var html = '';
+  var lastPhase = '';
+  PAGES.forEach(function(p) {
+    if (p.phase !== lastPhase) {
+      html += '<div class="nav-section-label">' + p.phase + '</div>';
+      lastPhase = p.phase;
+    }
+    var isActive = state.currentPage === p.id;
+    var isDone = state.completed[p.id];
+    var locked = !isUnlocked(p.id);
+    html += '<div class="nav-item' + (isActive ? ' active' : '') + (isDone ? ' completed' : '') + (locked ? ' locked' : '') + '" data-page="' + p.id + '" role="button" tabindex="' + (locked ? '-1' : '0') + '" aria-current="' + (isActive ? 'step' : 'false') + '">';
+    html += '<span class="nav-icon">' + p.icon + '</span>';
+    html += '<span>' + p.title + '</span>';
+    if (isDone) html += '<span class="nav-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></span>';
+    html += '</div>';
+  });
+  nav.innerHTML = html;
+  nav.querySelectorAll('.nav-item:not(.locked)').forEach(function(el) {
+    el.addEventListener('click', function() { goToPage(el.dataset.page); });
+    el.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToPage(el.dataset.page); } });
+  });
+}
+
+function goToPage(pageId) {
+  if (!isUnlocked(pageId)) return;
+  state.currentPage = pageId;
+  saveState();
+  renderPage();
+  renderNav();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  closeSidebar();
+}
+
+function completePage(pageId) {
+  state.completed[pageId] = true;
+  var idx = PAGES.findIndex(function(p) { return p.id === pageId; });
+  if (idx < PAGES.length - 1) {
+    state.currentPage = PAGES[idx + 1].id;
+  }
+  saveState();
+  renderPage();
+  renderNav();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function prevPage() {
+  var idx = PAGES.findIndex(function(p) { return p.id === state.currentPage; });
+  if (idx > 0) goToPage(PAGES[idx - 1].id);
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+document.getElementById('hamburgerBtn').addEventListener('click', toggleSidebar);
+document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+function pageNav(showPrev, nextLabel, currentId) {
+  var html = '<div class="page-nav">';
+  html += showPrev ? '<button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button>' : '<div></div>';
+  if (nextLabel !== false) {
+    html += '<button class="btn btn-primary" onclick="PB.completePage(\'' + currentId + '\')">' + (nextLabel || 'Continue') + ' &rarr;</button>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function scoreSelector(key, stateObj, stateKey, labels) {
+  var current = stateObj[stateKey] || 0;
+  var html = '<div class="score-selector" role="radiogroup" aria-label="Score for ' + key + '">';
+  for (var i = 1; i <= 5; i++) {
+    var sel = current === i ? ' selected' : '';
+    html += '<label class="score-option s' + i + sel + '" onclick="PB.setScore(\'' + stateKey + '\',\'' + key + '\',' + i + ')" tabindex="0" role="radio" aria-checked="' + (current === i) + '"';
+    html += ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();PB.setScore(\'' + stateKey + '\',\'' + key + '\',' + i + ');}">';
+    html += '<input type="radio" name="score-' + key + '" value="' + i + '"' + (current === i ? ' checked' : '') + '>';
+    html += '<span class="score-number">' + i + '</span>';
+    html += '<span class="score-label-text">' + (labels ? labels[i-1] : ['Poor','Below Avg','Average','Good','Excellent'][i-1]) + '</span>';
+    html += '</label>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderPage() {
+  var area = document.getElementById('contentArea');
+  var renderers = {
+    'welcome': renderWelcome,
+    'why-it-matters': renderWhyItMatters,
+    'spectrum': renderSpectrum,
+    'recurring': renderRecurring,
+    'concentration': renderConcentration,
+    'diversification': renderDiversification,
+    'contracts': renderContracts,
+    'trends': renderTrends,
+    'mistakes': renderMistakes,
+    'dashboard': renderDashboard
+  };
+  var fn = renderers[state.currentPage];
+  area.innerHTML = '<div class="page active">' + (fn ? fn() : '') + '</div>';
+  bindInputs();
+}
+
+function bindInputs() {
+  document.querySelectorAll('[data-bind]').forEach(function(el) {
+    var keys = el.dataset.bind.split('.');
+    var handler = function() {
+      var obj = state;
+      for (var i = 0; i < keys.length - 1; i++) {
+        if (keys[i].match(/^\d+$/)) obj = obj[parseInt(keys[i])];
+        else obj = obj[keys[i]];
+      }
+      obj[keys[keys.length - 1]] = el.value;
+      saveState();
+    };
+    el.addEventListener('input', handler);
+    el.addEventListener('change', handler);
+  });
+  document.querySelectorAll('.check-item').forEach(function(el) {
+    var handler = function() {
+      var key = el.dataset.check;
+      state.mistakeFlags[key] = !state.mistakeFlags[key];
+      saveState();
+      renderPage();
+    };
+    el.addEventListener('click', handler);
+    el.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); } });
+  });
+}
+
+// PAGE RENDERERS
+function renderWelcome() {
+  return '<div class="welcome-hero">' +
+    '<div class="welcome-icon">&#128200;</div>' +
+    '<div class="t-display">Revenue Quality Analysis</div>' +
+    '<p class="t-body t-secondary" style="margin-top:var(--space-md)">Not all revenue is created equal. Buyers pay premiums for predictable, diversified, recurring revenue. This playbook helps you assess and improve the quality of your revenue before going to market.</p>' +
+    '<div class="welcome-stats">' +
+    '<div class="welcome-stat"><div class="welcome-stat-value">+3x</div><div class="welcome-stat-label">Multiple premium for 80%+ recurring revenue</div></div>' +
+    '<div class="welcome-stat"><div class="welcome-stat-value">-2x</div><div class="welcome-stat-label">Discount for 35%+ client concentration</div></div>' +
+    '<div class="welcome-stat"><div class="welcome-stat-value">8</div><div class="welcome-stat-label">Dimensions of revenue quality assessed</div></div>' +
+    '</div>' +
+    '<div class="callout callout-accent" style="text-align:left"><strong>The Core Principle:</strong> Revenue quality is the leading indicator of enterprise value. A $5M business with 80% recurring revenue and no customer over 10% is worth dramatically more than a $5M business with 100% project revenue and 40% from one client.</div>' +
+    '</div>' +
+    pageNav(false, 'Begin Assessment', 'welcome');
+}
+
+function renderWhyItMatters() {
+  return '<div class="page-header"><div class="t-label">Understanding</div><div class="t-display">Why Revenue Quality Matters</div><p class="t-body t-secondary">Two businesses with identical revenue and EBITDA can be worth vastly different amounts. The difference is revenue quality.</p></div>' +
+    '<div class="card"><table class="data-table"><thead><tr><th>Revenue Characteristic</th><th>Multiple Impact</th><th>Why</th></tr></thead><tbody>' +
+    '<tr><td><strong>Recurring / subscription</strong></td><td style="color:var(--color-success);font-weight:600">+1.0x to +3.0x</td><td>Predictable; low churn = compounding value</td></tr>' +
+    '<tr><td><strong>Long-term contracts (3+ years)</strong></td><td style="color:var(--color-success);font-weight:600">+0.5x to +1.5x</td><td>Revenue visibility; reduced risk</td></tr>' +
+    '<tr><td><strong>Diversified customer base</strong></td><td style="color:var(--color-success);font-weight:600">+0.5x to +1.0x</td><td>No single point of failure</td></tr>' +
+    '<tr><td><strong>Growing (&gt;10% YoY)</strong></td><td style="color:var(--color-success);font-weight:600">+0.5x to +1.0x</td><td>Momentum; larger future cash flows</td></tr>' +
+    '<tr><td><strong>Project-based / one-time</strong></td><td style="color:var(--color-danger);font-weight:600">-0.5x to -1.5x</td><td>No guarantee of future revenue</td></tr>' +
+    '<tr><td><strong>Concentrated (&gt;25% in one client)</strong></td><td style="color:var(--color-danger);font-weight:600">-1.0x to -2.0x</td><td>Key-client loss = catastrophic</td></tr>' +
+    '<tr><td><strong>Declining</strong></td><td style="color:var(--color-danger);font-weight:600">-1.0x to -2.0x</td><td>Buyers do not pay premiums for shrinkage</td></tr>' +
+    '</tbody></table></div>' +
+    '<div class="callout callout-info"><strong>Key Insight:</strong> For a business with $1M EBITDA at a 5x market multiple, the swing between high-quality and low-quality revenue can be $2M to $5M in enterprise value. No other factor except owner dependency has this much influence on price.</div>' +
+    pageNav(true, 'Continue', 'why-it-matters');
+}
+
+function renderSpectrum() {
+  var tiers = [
+    { num: 1, label: 'Contractual Recurring', examples: 'SaaS subscriptions, maintenance contracts, retainers', perception: 'Highest value; most predictable', color: 'var(--color-score-5)' },
+    { num: 2, label: 'Habitual Recurring', examples: 'Repeat orders without contracts, consumables, seasonal', perception: 'High value; behavioral predictability', color: 'var(--color-score-4)' },
+    { num: 3, label: 'Re-occurring Projects', examples: 'Annual engagements, repeat project clients', perception: 'Moderate; depends on relationship quality', color: 'var(--color-score-3)' },
+    { num: 4, label: 'One-time Projects', examples: 'Custom projects, installations, consulting', perception: 'Lower value; unpredictable', color: 'var(--color-score-2)' },
+    { num: 5, label: 'Non-recurring / Windfall', examples: 'One-off sales, grant income, legal settlements', perception: 'Excluded from valuation', color: 'var(--color-score-1)' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Assessment</div><div class="t-display">The Revenue Quality Spectrum</div><p class="t-body t-secondary">Classify your revenue into these five tiers. The higher the percentage in Tiers 1-2, the more your business is worth.</p></div>';
+  tiers.forEach(function(t) {
+    var val = state.tierPcts['tier' + t.num] || '';
+    html += '<div class="card" style="border-left:3px solid ' + t.color + '">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">' +
+      '<div style="flex:1;min-width:200px"><div class="t-h3" style="color:' + t.color + '">Tier ' + t.num + ': ' + t.label + '</div>' +
+      '<p class="t-small t-secondary" style="margin-top:4px">' + t.examples + '</p>' +
+      '<p class="t-caption" style="margin-top:4px;color:var(--color-text-tertiary)">Buyer perception: ' + t.perception + '</p></div>' +
+      '<div style="width:120px"><label class="form-label" style="font-size:12px">% of Revenue</label>' +
+      '<input class="form-input" type="number" min="0" max="100" placeholder="0%" value="' + esc(val) + '" data-bind="tierPcts.tier' + t.num + '" style="text-align:center"></div>' +
+      '</div></div>';
+  });
+  var total = Object.values(state.tierPcts).reduce(function(a, v) { return a + (parseFloat(v) || 0); }, 0);
+  if (total > 0) {
+    html += '<div class="callout ' + (total === 100 ? 'callout-info' : 'callout-warning') + '">' +
+      '<strong>Total: ' + total + '%</strong> ' + (total === 100 ? '-- your revenue is fully classified.' : '-- should equal 100%. Please adjust your percentages.') + '</div>';
+  }
+  html += pageNav(true, 'Continue', 'spectrum');
+  return html;
+}
+
+function renderRecurring() {
+  var rr = parseFloat(state.recurringRevenue) || 0;
+  var hr = parseFloat(state.habitualRevenue) || 0;
+  var tr = parseFloat(state.totalRevenue) || 0;
+  var ratio = tr > 0 ? Math.round(((rr + hr) / tr) * 100) : 0;
+  var ratioColor = ratio >= 80 ? 'var(--color-score-5)' : ratio >= 60 ? 'var(--color-score-4)' : ratio >= 40 ? 'var(--color-score-3)' : 'var(--color-score-1)';
+  var strategies = [
+    'Convert one-time services to retainer or subscription models',
+    'Bundle maintenance, support, or consumables into contracts',
+    'Offer multi-year agreements with pricing incentives',
+    'Create membership or loyalty programs',
+    'Package complementary services into ongoing engagements'
+  ];
+  var html = '<div class="page-header"><div class="t-label">Assessment</div><div class="t-display">Recurring vs Non-Recurring Revenue</div><p class="t-body t-secondary">Calculate your recurring revenue ratio. Target: >60% for a premium multiple. >80% puts you in elite territory.</p></div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Your Revenue Breakdown</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md)">' +
+    '<div class="form-group"><label class="form-label">Contractual Recurring</label><input class="form-input" type="number" min="0" placeholder="$0" value="' + esc(state.recurringRevenue) + '" data-bind="recurringRevenue"></div>' +
+    '<div class="form-group"><label class="form-label">Habitual Recurring</label><input class="form-input" type="number" min="0" placeholder="$0" value="' + esc(state.habitualRevenue) + '" data-bind="habitualRevenue"></div>' +
+    '<div class="form-group"><label class="form-label">Total Revenue</label><input class="form-input" type="number" min="0" placeholder="$0" value="' + esc(state.totalRevenue) + '" data-bind="totalRevenue"></div>' +
+    '</div></div>';
+  if (tr > 0) {
+    html += '<div class="summary-grid" style="margin-top:var(--space-md)">' +
+      '<div class="summary-item"><div class="summary-item-value" style="color:' + ratioColor + '">' + ratio + '%</div><div class="summary-item-label">Recurring Ratio</div></div>' +
+      '<div class="summary-item"><div class="summary-item-value">' + formatCurrency(rr + hr) + '</div><div class="summary-item-label">Recurring Revenue</div></div>' +
+      '<div class="summary-item"><div class="summary-item-value">' + formatCurrency(tr - rr - hr) + '</div><div class="summary-item-label">Non-Recurring</div></div>' +
+      '</div>';
+    if (ratio < 60) {
+      html += '<div class="callout callout-warning"><strong>Below target.</strong> Your recurring ratio of ' + ratio + '% is below the 60% threshold for a premium multiple. Consider implementing the strategies below.</div>';
+    } else if (ratio >= 80) {
+      html += '<div class="callout callout-info" style="background:var(--color-success-light);border-color:var(--color-success);color:var(--color-success)"><strong>Elite territory.</strong> Your ' + ratio + '% recurring ratio positions you for a significant multiple premium.</div>';
+    }
+  }
+  html += '<div class="card" style="margin-top:var(--space-lg)"><div class="t-h3">How to Increase Recurring Revenue</div><div class="checklist" style="margin-top:var(--space-md)">';
+  strategies.forEach(function(s, i) {
+    var checked = (state.recurringStrategies || []).indexOf(i) >= 0;
+    html += '<div class="check-item' + (checked ? ' checked' : '') + '" data-check="rs_' + i + '" role="checkbox" aria-checked="' + checked + '" tabindex="0">' +
+      '<div class="check-box"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div>' +
+      '<div class="check-text">' + s + '</div></div>';
+  });
+  html += '</div></div>';
+  html += pageNav(true, 'Continue', 'recurring');
+  return html;
+}
+
+function renderConcentration() {
+  var topPct = parseFloat(state.topClientPct) || 0;
+  var levels = [
+    { label: 'Low', range: '<10%', risk: 'Minimal', reaction: 'Positive; no concern', color: 'var(--color-score-5)' },
+    { label: 'Moderate', range: '10-20%', risk: 'Manageable', reaction: 'Questions asked; manageable', color: 'var(--color-score-4)' },
+    { label: 'High', range: '20-35%', risk: 'Significant', reaction: 'Protections demanded (earnout, escrow)', color: 'var(--color-score-2)' },
+    { label: 'Critical', range: '>35%', risk: 'Deal-threatening', reaction: 'Many buyers walk away', color: 'var(--color-score-1)' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Assessment</div><div class="t-display">Customer Concentration</div><p class="t-body t-secondary">Customer concentration is the most common deal-killer in the lower middle market. Assess your exposure.</p></div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Your Concentration Metrics</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md)">' +
+    '<div class="form-group"><label class="form-label">Top Client (% of revenue)</label><input class="form-input" type="number" min="0" max="100" placeholder="0%" value="' + esc(state.topClientPct) + '" data-bind="topClientPct"></div>' +
+    '<div class="form-group"><label class="form-label">Top 5 Clients (%)</label><input class="form-input" type="number" min="0" max="100" placeholder="0%" value="' + esc(state.top5Pct) + '" data-bind="top5Pct"></div>' +
+    '<div class="form-group"><label class="form-label">Total Customer Count</label><input class="form-input" type="number" min="0" placeholder="0" value="' + esc(state.totalCustomers) + '" data-bind="totalCustomers"></div>' +
+    '</div></div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Concentration Risk Levels</div><table class="data-table"><thead><tr><th>Level</th><th>Range</th><th>Risk</th><th>Buyer Reaction</th></tr></thead><tbody>';
+  levels.forEach(function(l) {
+    var isActive = false;
+    if (topPct > 0) {
+      if (l.label === 'Low' && topPct < 10) isActive = true;
+      if (l.label === 'Moderate' && topPct >= 10 && topPct <= 20) isActive = true;
+      if (l.label === 'High' && topPct > 20 && topPct <= 35) isActive = true;
+      if (l.label === 'Critical' && topPct > 35) isActive = true;
+    }
+    html += '<tr style="' + (isActive ? 'background:' + l.color + '10;font-weight:500' : '') + '">' +
+      '<td style="color:' + l.color + ';font-weight:600">' + l.label + '</td><td>' + l.range + '</td><td>' + l.risk + '</td><td>' + l.reaction + '</td></tr>';
+  });
+  html += '</tbody></table></div>';
+  if (topPct > 35) {
+    html += '<div class="callout callout-danger"><strong>Critical concentration.</strong> Your top client represents ' + topPct + '% of revenue. Most buyers will either walk away or demand heavy deal protections. Begin de-concentration immediately.</div>';
+  } else if (topPct > 20) {
+    html += '<div class="callout callout-warning"><strong>High concentration.</strong> Address this with long-term contracts and aggressive new customer acquisition before going to market.</div>';
+  }
+  html += '<div class="card" style="margin-top:var(--space-md)"><div class="t-h3">De-Concentration Strategies</div><ul style="margin:var(--space-md) 0 0 var(--space-lg);color:var(--color-text-secondary);font-size:14px">' +
+    '<li>Aggressively pursue new customers to dilute top-client share</li>' +
+    '<li>Expand wallet share with mid-tier clients</li>' +
+    '<li>Negotiate long-term contracts with concentrated clients</li>' +
+    '<li>Diversify into new markets or geographies</li></ul></div>';
+  html += pageNav(true, 'Continue', 'concentration');
+  return html;
+}
+
+function renderDiversification() {
+  var dims = [
+    { key: 'product', label: 'Product/Service Diversification', hint: 'What % of revenue comes from your top product? >50% from one offering is a risk.' },
+    { key: 'geography', label: 'Geographic Diversification', hint: 'Are you dependent on one region or market?' },
+    { key: 'industry', label: 'Industry Diversification', hint: 'Do your customers cluster in one vertical?' },
+    { key: 'channel', label: 'Channel Diversification', hint: 'Do you rely on one sales channel (direct, referral, online)?' },
+    { key: 'seasonality', label: 'Seasonality Management', hint: 'Is revenue heavily seasonal? Seasonal businesses get lower multiples.' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Assessment</div><div class="t-display">Revenue Diversification</div><p class="t-body t-secondary">Beyond customer concentration, assess diversification across five dimensions. Score each 1-5.</p></div>';
+  dims.forEach(function(d) {
+    html += '<div class="card"><div class="form-label">' + d.label + '</div>' +
+      '<div class="form-hint" style="margin-bottom:var(--space-sm)">' + d.hint + '</div>' +
+      scoreSelector(d.key, state.divScores, d.key, ['Highly Concentrated','Concentrated','Moderate','Diversified','Well Diversified']) +
+      '</div>';
+  });
+  var total = Object.values(state.divScores).reduce(function(a, v) { return a + v; }, 0);
+  if (total > 0) {
+    html += '<div class="summary-grid"><div class="summary-item"><div class="summary-item-value" style="color:' + getScoreColor(total * 4) + '">' + total + '/25</div><div class="summary-item-label">Diversification Score</div></div></div>';
+  }
+  html += pageNav(true, 'Continue', 'diversification');
+  return html;
+}
+
+function renderContracts() {
+  var dims = [
+    { key: 'duration', label: 'Contract Duration', hint: 'How long until contracts expire? <12 months = risk.' },
+    { key: 'renewal', label: 'Renewal Terms', hint: 'Do contracts auto-renew? What is historical renewal rate?' },
+    { key: 'escalation', label: 'Price Escalation', hint: 'Can you raise prices? Are there built-in escalators?' },
+    { key: 'termination', label: 'Termination Protection', hint: 'Can the customer exit early? What are the penalties?' },
+    { key: 'changeOfControl', label: 'Change of Control', hint: 'Does ownership change give clients the right to terminate?' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Assessment</div><div class="t-display">Contract Quality</div><p class="t-body t-secondary">For businesses with contracted revenue, the quality of those contracts matters as much as their existence. Score each dimension.</p></div>';
+  dims.forEach(function(d) {
+    html += '<div class="card"><div class="form-label">' + d.label + '</div>' +
+      '<div class="form-hint" style="margin-bottom:var(--space-sm)">' + d.hint + '</div>' +
+      scoreSelector(d.key, state.contractScores, d.key, ['Poor','Below Avg','Average','Good','Excellent']) +
+      '</div>';
+  });
+  var total = Object.values(state.contractScores).reduce(function(a, v) { return a + v; }, 0);
+  if (total > 0) {
+    html += '<div class="summary-grid"><div class="summary-item"><div class="summary-item-value" style="color:' + getScoreColor(total * 4) + '">' + total + '/25</div><div class="summary-item-label">Contract Quality Score</div></div></div>';
+  }
+  html += '<div class="callout callout-accent"><strong>Change-of-control clauses</strong> are the most dangerous contract provision in an exit context. If your key contracts allow termination upon change of ownership, this must be addressed before going to market -- either by renegotiating the clause or obtaining advance consent.</div>';
+  html += pageNav(true, 'Continue', 'contracts');
+  return html;
+}
+
+function renderTrends() {
+  var metrics = [
+    { key: 'revenue', label: 'Total Revenue ($)' },
+    { key: 'recurring', label: 'Recurring Revenue ($)' },
+    { key: 'topClient', label: 'Top Client (%)' },
+    { key: 'top5', label: 'Top 5 Clients (%)' },
+    { key: 'customerCount', label: 'Customer Count' },
+    { key: 'retention', label: 'Customer Retention Rate (%)' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Analyze</div><div class="t-display">Revenue Trend Analysis</div><p class="t-body t-secondary">Show buyers a 3-year trend that demonstrates growth and stability. Fill in your historical data below.</p></div>';
+  html += '<div class="card" style="overflow-x:auto"><table class="data-table"><thead><tr><th>Metric</th>';
+  state.trendData.forEach(function(row) { html += '<th>' + row.year + '</th>'; });
+  html += '<th>Trend</th></tr></thead><tbody>';
+  metrics.forEach(function(m) {
+    html += '<tr><td style="font-weight:500;white-space:nowrap">' + m.label + '</td>';
+    state.trendData.forEach(function(row, i) {
+      html += '<td><input class="form-input" style="padding:6px 10px;font-size:13px;min-width:80px" type="text" value="' + esc(row[m.key]) + '" data-bind="trendData.' + i + '.' + m.key + '"></td>';
+    });
+    // Trend indicator
+    var v1 = parseFloat(state.trendData[0][m.key]) || 0;
+    var v3 = parseFloat(state.trendData[2][m.key]) || 0;
+    var trend = '';
+    if (v1 > 0 && v3 > 0) {
+      if (m.key === 'topClient' || m.key === 'top5') {
+        trend = v3 < v1 ? '<span style="color:var(--color-success)">&#9650; Improving</span>' : v3 > v1 ? '<span style="color:var(--color-danger)">&#9660; Worsening</span>' : '<span style="color:var(--color-text-tertiary)">&#8212; Flat</span>';
+      } else {
+        trend = v3 > v1 ? '<span style="color:var(--color-success)">&#9650; Growing</span>' : v3 < v1 ? '<span style="color:var(--color-danger)">&#9660; Declining</span>' : '<span style="color:var(--color-text-tertiary)">&#8212; Flat</span>';
+      }
+    }
+    html += '<td>' + trend + '</td></tr>';
+  });
+  html += '</tbody></table></div>';
+  html += '<div class="callout callout-info"><strong>Buyer tip:</strong> The trend matters as much as the absolute numbers. A business with improving concentration (top client share declining) and growing recurring revenue tells a powerful story even if the absolute numbers are not yet perfect.</div>';
+  html += pageNav(true, 'Continue', 'trends');
+  return html;
+}
+
+function renderMistakes() {
+  var mistakes = [
+    { key: 'm1', title: 'Ignoring Revenue Quality Until the CIM', desc: 'Revenue quality problems discovered during marketing derail deals. By then it is too late to fix.', fix: 'Assess revenue quality 2+ years before exit; implement improvements.' },
+    { key: 'm2', title: 'Misclassifying Project Revenue as Recurring', desc: 'Calling repeat project clients "recurring" does not make it so. Buyers will reclassify aggressively.', fix: 'Be honest about revenue types. Tier your revenue accurately.' },
+    { key: 'm3', title: 'Not Addressing Concentration Head-On', desc: 'Hoping buyers will not notice that 40% of revenue comes from one client is naive.', fix: 'Disclose concentration proactively; present mitigation strategy; offer long-term contract as evidence.' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Plan</div><div class="t-display">Common Mistakes</div><p class="t-body t-secondary">These are the revenue quality mistakes that destroy deal value. Flag each one you have addressed.</p></div>';
+  mistakes.forEach(function(m) {
+    var checked = state.mistakeFlags[m.key];
+    html += '<div class="card"><div class="check-item' + (checked ? ' checked' : '') + '" data-check="' + m.key + '" role="checkbox" aria-checked="' + !!checked + '" tabindex="0" style="padding:0">' +
+      '<div class="check-box"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div>' +
+      '<div style="flex:1"><div class="t-h3">' + m.title + '</div>' +
+      '<p class="t-small t-secondary" style="margin:var(--space-sm) 0">' + m.desc + '</p>' +
+      '<div style="padding:var(--space-sm) var(--space-md);background:var(--color-success-light);border-radius:var(--radius-sm);font-size:13px;color:var(--color-success)"><strong>Solution:</strong> ' + m.fix + '</div></div></div></div>';
+  });
+  html += pageNav(true, 'View Dashboard', 'mistakes');
+  return html;
+}
+
+function renderDashboard() {
+  var score = calcScore();
+  var sc = getScoreColor(score);
+  var r = 60, c = 2 * Math.PI * r;
+  var offset = c - (score / 100) * c;
+
+  var html = '<div class="page-header"><div class="t-label">Results</div><div class="t-display">Revenue Quality Dashboard</div></div>';
+
+  // Gauge
+  html += '<div class="gauge-wrap"><div class="gauge-ring"><svg viewBox="0 0 160 160"><circle class="gauge-bg" cx="80" cy="80" r="' + r + '"/><circle class="gauge-fill" cx="80" cy="80" r="' + r + '" stroke="' + sc + '" stroke-dasharray="' + c + '" stroke-dashoffset="' + offset + '"/></svg><div class="gauge-center"><div class="gauge-center-value" style="color:' + sc + '">' + score + '</div><div class="gauge-center-label">of 100</div></div></div></div>';
+
+  // KPIs
+  var tr = parseFloat(state.totalRevenue) || 0;
+  var rr = parseFloat(state.recurringRevenue) || 0;
+  var hr = parseFloat(state.habitualRevenue) || 0;
+  var ratio = tr > 0 ? Math.round(((rr + hr) / tr) * 100) : 0;
+  var topPct = parseFloat(state.topClientPct) || 0;
+  var divTotal = Object.values(state.divScores).reduce(function(a, v) { return a + v; }, 0);
+  var conTotal = Object.values(state.contractScores).reduce(function(a, v) { return a + v; }, 0);
+
+  html += '<div class="summary-grid">' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:' + (ratio >= 60 ? 'var(--color-success)' : 'var(--color-warning)') + '">' + ratio + '%</div><div class="summary-item-label">Recurring Ratio</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:' + (topPct <= 20 ? 'var(--color-success)' : 'var(--color-danger)') + '">' + (topPct || '--') + '%</div><div class="summary-item-label">Top Client %</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value">' + divTotal + '/25</div><div class="summary-item-label">Diversification</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value">' + conTotal + '/25</div><div class="summary-item-label">Contract Quality</div></div>' +
+    '</div>';
+
+  // Bar chart
+  var categories = [
+    { label: 'Recurring Revenue', score: tr > 0 ? Math.round(((rr + hr) / tr) * 100) : 0, max: 100 },
+    { label: 'Concentration', score: topPct <= 10 ? 100 : topPct <= 20 ? 75 : topPct <= 35 ? 40 : 15, max: 100 },
+    { label: 'Diversification', score: divTotal * 4, max: 100 },
+    { label: 'Contract Quality', score: conTotal * 4, max: 100 }
+  ];
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Score Breakdown</div><div class="bar-chart">';
+  categories.forEach(function(cat) {
+    var color = cat.score >= 70 ? 'var(--color-success)' : cat.score >= 40 ? 'var(--color-warning)' : 'var(--color-danger)';
+    html += '<div class="bar-row"><div class="bar-label">' + cat.label + '</div><div class="bar-track"><div class="bar-fill" style="width:' + cat.score + '%;background:' + color + '"><span class="bar-value">' + cat.score + '%</span></div></div></div>';
+  });
+  html += '</div></div>';
+
+  // Recommendations
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Recommendations</div>';
+  if (ratio < 60) html += '<div class="callout callout-warning" style="margin-bottom:var(--space-sm)">Your recurring ratio of ' + ratio + '% is below the 60% premium threshold. Prioritize converting project revenue to subscriptions or retainers.</div>';
+  if (topPct > 20) html += '<div class="callout callout-danger" style="margin-bottom:var(--space-sm)">Your top client concentration of ' + topPct + '% creates deal risk. Aggressive new customer acquisition and long-term contracts with your top client are critical.</div>';
+  if (divTotal < 15) html += '<div class="callout callout-warning" style="margin-bottom:var(--space-sm)">Your diversification score is low. Consider expanding across products, geographies, or channels to reduce concentration risk.</div>';
+  if (conTotal < 15) html += '<div class="callout callout-warning" style="margin-bottom:var(--space-sm)">Contract quality needs attention. Focus on extending contract durations, adding auto-renewal clauses, and removing change-of-control termination rights.</div>';
+  if (score >= 70) html += '<div class="callout callout-info" style="background:var(--color-success-light);border-color:var(--color-success);color:var(--color-success)"><strong>Strong revenue quality.</strong> Your revenue profile positions you well for a premium multiple. Document these metrics prominently in your CIM.</div>';
+  html += '</div>';
+
+  // Actions
+  html += '<div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-top:var(--space-lg)">' +
+    '<button class="btn btn-primary" onclick="PB.exportResults()">Export Summary</button>' +
+    '<button class="btn btn-secondary" onclick="window.print()">Print</button>' +
+    '<button class="btn btn-ghost" onclick="PB.resetAll()" style="color:var(--color-danger)">Reset All Data</button>' +
+    '</div>';
+
+  html += '<div class="page-nav"><button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button><div></div></div>';
+  return html;
+}
+
+function formatCurrency(n) {
+  if (!n && n !== 0) return '--';
+  if (n >= 1000000) return '$' + (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000) return '$' + (n / 1000).toFixed(0) + 'K';
+  return '$' + n.toLocaleString();
+}
+
+function exportResults() {
+  var score = calcScore();
+  var tr = parseFloat(state.totalRevenue) || 0;
+  var rr = parseFloat(state.recurringRevenue) || 0;
+  var hr = parseFloat(state.habitualRevenue) || 0;
+  var ratio = tr > 0 ? Math.round(((rr + hr) / tr) * 100) : 0;
+  var text = 'PLAYBOOK #8: REVENUE QUALITY ANALYSIS\n';
+  text += 'Generated: ' + new Date().toLocaleDateString() + '\n';
+  text += '='.repeat(50) + '\n\n';
+  text += 'REVENUE QUALITY SCORE: ' + score + '/100\n\n';
+  text += 'RECURRING RATIO: ' + ratio + '%\n';
+  text += '  Contractual Recurring: $' + (rr || 0).toLocaleString() + '\n';
+  text += '  Habitual Recurring: $' + (hr || 0).toLocaleString() + '\n';
+  text += '  Total Revenue: $' + (tr || 0).toLocaleString() + '\n\n';
+  text += 'CUSTOMER CONCENTRATION:\n';
+  text += '  Top Client: ' + (state.topClientPct || '--') + '%\n';
+  text += '  Top 5 Clients: ' + (state.top5Pct || '--') + '%\n';
+  text += '  Total Customers: ' + (state.totalCustomers || '--') + '\n\n';
+  text += 'DIVERSIFICATION SCORE: ' + Object.values(state.divScores).reduce(function(a,v){return a+v;},0) + '/25\n';
+  text += 'CONTRACT QUALITY SCORE: ' + Object.values(state.contractScores).reduce(function(a,v){return a+v;},0) + '/25\n';
+
+  var blob = new Blob([text], { type: 'text/plain' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'playbook-08-revenue-quality.txt'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function resetAll() {
+  if (confirm('This will erase all your data in this playbook. Are you sure?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    state = defaultState();
+    saveState();
+    goToPage('welcome');
+  }
+}
+
+// Public API
+window.PB = {
+  prevPage: prevPage,
+  completePage: completePage,
+  exportResults: exportResults,
+  resetAll: resetAll,
+  setScore: function(stateKey, dimKey, val) {
+    if (stateKey === 'divScores' || stateKey === 'contractScores') {
+      // For nested score objects, dimKey is also the stateKey property name
+      state[stateKey][dimKey] = val;
+    } else {
+      state[stateKey] = val;
+    }
+    saveState();
+    renderPage();
+  }
+};
+
+// Override check-item binding for recurring strategies
+var origBind = bindInputs;
+bindInputs = function() {
+  origBind();
+  document.querySelectorAll('.check-item[data-check^="rs_"]').forEach(function(el) {
+    el.removeEventListener('click', el._handler);
+    var handler = function() {
+      var idx = parseInt(el.dataset.check.split('_')[1]);
+      if (!state.recurringStrategies) state.recurringStrategies = [];
+      var pos = state.recurringStrategies.indexOf(idx);
+      if (pos >= 0) state.recurringStrategies.splice(pos, 1);
+      else state.recurringStrategies.push(idx);
+      saveState();
+      renderPage();
+    };
+    el._handler = handler;
+    el.addEventListener('click', function(e) { e.stopPropagation(); handler(); });
+  });
+};
+
+// Init
+renderNav();
+renderPage();
+updateProgress();
+updateScore();
+
+})();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

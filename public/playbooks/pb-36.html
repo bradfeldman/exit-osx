@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deal Structure Literacy | Exit Planning Playbook #36</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-info: #2563EB;
+  --color-info-light: #DBEAFE;
+  --color-purple: #7C3AED;
+  --color-purple-light: #EDE9FE;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.6; color: var(--color-text); background: var(--color-bg); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+
+a.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 1000; }
+a.skip-link:focus { position: fixed; top: 10px; left: 10px; width: auto; height: auto; padding: 12px 20px; background: var(--color-primary); color: #fff; border-radius: var(--radius-sm); font-weight: 600; z-index: 1000; }
+
+.t-display { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+
+.app { display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar { width: 260px; min-width: 260px; background: #FFFFFF; border-right: 1px solid var(--color-border); color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: transform var(--transition-slow); overflow-y: auto; }
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item { display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px; border-radius: var(--radius-sm); color: var(--color-text-secondary); font-size: 14px; transition: all var(--transition-fast); cursor: pointer; }
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: rgba(255,255,255,0.1); color: #fff; font-weight: 600; }
+.nav-item.completed { color: rgba(255,255,255,0.8); }
+.nav-item.locked { opacity: 0.35; pointer-events: none; }
+.nav-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 11px; flex-shrink: 0; border: 1.5px solid rgba(255,255,255,0.2); }
+.nav-item.active .nav-icon { border-color: var(--color-accent); background: var(--color-accent); color: #fff; }
+.nav-item.completed .nav-icon { border-color: var(--color-success); background: var(--color-success); color: #fff; }
+.sidebar-footer { padding-top: var(--space-lg); margin-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.btn-reset { width: 100%; padding: var(--space-sm) var(--space-md); background: none; border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.4); font-size: 12px; border-radius: var(--radius-sm); cursor: pointer; transition: all var(--transition-fast); }
+.btn-reset:hover { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.7); }
+
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header { display: none; position: sticky; top: 0; z-index: 90; background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md); }
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+  .compare-grid { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+}
+
+.page { display: none; animation: pageIn var(--transition-slow) both; }
+.page.active { display: block; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .page, .sidebar-progress-fill, .gauge-fill, .wf-bar-fill, .ring-fill { animation: none !important; transition: none !important; }
+}
+
+/* Cards */
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); margin-bottom: var(--space-md); box-shadow: var(--shadow-sm); }
+.card-header { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md); }
+.card-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); font-size: 20px; flex-shrink: 0; }
+.card-icon.primary { background: var(--color-primary-light); }
+.card-icon.accent { background: var(--color-accent-light); }
+.card-icon.success { background: var(--color-success-light); }
+.card-icon.warning { background: var(--color-warning-light); }
+.card-icon.danger { background: var(--color-danger-light); }
+.card-icon.info { background: var(--color-info-light); }
+.card-icon.purple { background: var(--color-purple-light); }
+
+/* Callout */
+.callout { border-left: 4px solid var(--color-accent); background: var(--color-accent-light); border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: var(--space-md) var(--space-lg); margin: var(--space-lg) 0; }
+.callout-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-accent); margin-bottom: var(--space-xs); }
+.callout p { font-size: 14px; color: var(--color-text); margin: 0; }
+.callout-danger { border-left-color: var(--color-danger); background: var(--color-danger-light); }
+.callout-danger .callout-label { color: var(--color-danger); }
+.callout-info { border-left-color: var(--color-info); background: var(--color-info-light); }
+.callout-info .callout-label { color: var(--color-info); }
+.callout-success { border-left-color: var(--color-success); background: var(--color-success-light); }
+.callout-success .callout-label { color: var(--color-success); }
+
+/* Stats */
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-md); margin: var(--space-lg) 0; }
+.stat-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); text-align: center; }
+.stat-value { font-family: var(--font-display); font-size: 26px; font-weight: 700; }
+.stat-label { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+/* Tables */
+.table-wrap { overflow-x: auto; margin: var(--space-md) 0; border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { background: var(--color-surface-alt); padding: 10px 14px; text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); border-bottom: 1px solid var(--color-border); }
+td { padding: 10px 14px; border-bottom: 1px solid var(--color-border-light); color: var(--color-text); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:hover { background: var(--color-surface-alt); }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: var(--space-sm); padding: 10px 20px; font-size: 14px; font-weight: 600; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: all var(--transition-fast); }
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { border-color: var(--color-text-secondary); }
+.btn-ghost { background: none; color: var(--color-text-secondary); padding: 10px 12px; }
+.btn-ghost:hover { color: var(--color-text); }
+.btn-export { background: var(--color-primary); color: #fff; }
+.btn-export:hover { background: var(--color-primary-hover); }
+.nav-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+
+/* Forms */
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 13px; font-weight: 600; color: var(--color-text); margin-bottom: var(--space-xs); }
+.form-input, .form-select { width: 100%; padding: 10px 14px; font-size: 14px; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm); transition: border-color var(--transition-fast); font-family: inherit; }
+.form-input:focus, .form-select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(45,90,61,0.1); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+
+/* Currency input */
+.currency-wrap { position: relative; }
+.currency-wrap .prefix { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--color-text-tertiary); font-weight: 500; }
+.currency-wrap .form-input { padding-left: 28px; }
+
+/* Toggle group */
+.toggle-group { display: flex; background: var(--color-surface-alt); border-radius: var(--radius-sm); padding: 3px; gap: 2px; }
+.toggle-opt { flex: 1; padding: 8px 16px; font-size: 13px; font-weight: 500; text-align: center; border: none; background: none; border-radius: 4px; cursor: pointer; color: var(--color-text-secondary); transition: all var(--transition-fast); }
+.toggle-opt.active { background: var(--color-surface); color: var(--color-text); box-shadow: var(--shadow-sm); }
+
+/* Range slider */
+.range-group { margin: var(--space-md) 0; }
+.range-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
+.range-label .val { font-weight: 700; color: var(--color-accent); }
+input[type="range"] { width: 100%; height: 6px; -webkit-appearance: none; appearance: none; background: var(--color-border); border-radius: 3px; outline: none; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; background: var(--color-primary); border-radius: 50%; cursor: pointer; border: 3px solid var(--color-surface); box-shadow: var(--shadow-sm); }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; background: var(--color-primary); border-radius: 50%; cursor: pointer; border: 3px solid var(--color-surface); box-shadow: var(--shadow-sm); }
+
+/* Waterfall */
+.waterfall { margin: var(--space-lg) 0; }
+.wf-row { display: grid; grid-template-columns: 180px 1fr 100px; gap: var(--space-md); align-items: center; padding: 8px 0; border-bottom: 1px solid var(--color-border-light); }
+.wf-row:last-child { border-bottom: none; }
+.wf-label { font-size: 13px; font-weight: 500; }
+.wf-bar-track { height: 28px; background: var(--color-surface-alt); border-radius: 4px; position: relative; overflow: hidden; }
+.wf-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-size: 11px; font-weight: 600; color: #fff; }
+.wf-amount { font-size: 14px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.wf-row.total { border-top: 2px solid var(--color-text); padding-top: 12px; margin-top: 4px; }
+.wf-row.total .wf-label { font-weight: 700; font-size: 14px; }
+.wf-row.total .wf-amount { font-size: 16px; }
+
+/* Compare grid */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin: var(--space-lg) 0; }
+.compare-card { border: 2px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; transition: all var(--transition-fast); }
+.compare-card:hover { box-shadow: var(--shadow-md); }
+.compare-card.preferred { border-color: var(--color-success); }
+.compare-header { padding: var(--space-md) var(--space-lg); font-size: 16px; font-weight: 700; text-align: center; }
+.compare-card:first-child .compare-header { background: var(--color-surface-alt); }
+.compare-card:last-child .compare-header { background: var(--color-success-light); }
+.compare-body { padding: var(--space-md) var(--space-lg); }
+.compare-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; border-bottom: 1px solid var(--color-border-light); }
+.compare-row:last-child { border-bottom: none; }
+.compare-row .label { color: var(--color-text-secondary); }
+.compare-row .value { font-weight: 600; }
+
+/* Pills */
+.pill { display: inline-flex; align-items: center; padding: 3px 10px; font-size: 12px; font-weight: 600; border-radius: 20px; }
+.pill-success { background: var(--color-success-light); color: var(--color-success); }
+.pill-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.pill-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.pill-primary { background: var(--color-primary-light); color: var(--color-primary); }
+.pill-accent { background: var(--color-accent-light); color: var(--color-accent); }
+.pill-info { background: var(--color-info-light); color: var(--color-info); }
+
+/* Gauge */
+.gauge-row { display: flex; align-items: center; gap: var(--space-md); padding: 12px 0; border-bottom: 1px solid var(--color-border-light); }
+.gauge-row:last-child { border-bottom: none; }
+.gauge-name { flex: 1; font-size: 14px; font-weight: 500; min-width: 120px; }
+.gauge-track { flex: 2; height: 10px; background: var(--color-surface-alt); border-radius: 5px; overflow: hidden; }
+.gauge-fill { height: 100%; border-radius: 5px; transition: width 0.8s ease; }
+
+/* Checklist */
+.checklist-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: 10px 0; border-bottom: 1px solid var(--color-border-light); }
+.checklist-item:last-child { border-bottom: none; }
+.check-box { width: 22px; height: 22px; flex-shrink: 0; border: 2px solid var(--color-border); border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); margin-top: 1px; background: var(--color-surface); }
+.check-box:hover { border-color: var(--color-primary); }
+.check-box.checked { background: var(--color-success); border-color: var(--color-success); }
+.check-box.checked::after { content: "\2713"; color: #fff; font-size: 13px; font-weight: 700; }
+
+/* Ring */
+.ring-wrap { position: relative; width: 120px; height: 120px; margin: 0 auto var(--space-md); }
+.ring-wrap svg { transform: rotate(-90deg); }
+.ring-bg { stroke: var(--color-border); }
+.ring-fill { stroke: var(--color-accent); transition: stroke-dashoffset 1s ease; stroke-linecap: round; }
+.ring-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+.ring-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; display: block; }
+.ring-label-text { font-size: 11px; color: var(--color-text-secondary); display: block; }
+
+/* Focus */
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+/* Toast */
+.toast-container { position: fixed; bottom: var(--space-lg); right: var(--space-lg); z-index: 500; display: flex; flex-direction: column; gap: var(--space-sm); }
+.toast { padding: 12px var(--space-lg); background: var(--color-text); color: #fff; border-radius: var(--radius-md); font-size: 14px; box-shadow: var(--shadow-lg); animation: toastIn 0.3s ease; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Print */
+@media print {
+  .sidebar, .mobile-header, .sidebar-overlay, .nav-buttons, .btn-reset, .toast-container { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; margin-bottom: 24px; }
+  .card { break-inside: avoid; }
+}
+
+@media (max-width: 600px) {
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .wf-row { grid-template-columns: 120px 1fr 80px; }
+  .nav-buttons { flex-direction: column; gap: var(--space-md); }
+  .nav-buttons .btn { width: 100%; justify-content: center; }
+  .compare-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<div class="app">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #36</div>
+      <div class="sidebar-brand-title">Deal Structure Literacy</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Overall Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0%</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <button class="btn-reset" onclick="PB.reset()">Reset All Progress</button>
+    </div>
+  </aside>
+
+  <div class="mobile-header">
+    <button class="hamburger" onclick="PB.toggleSidebar()" aria-label="Toggle navigation"><span></span></button>
+    <span class="t-h3">Deal Structure Literacy</span>
+  </div>
+
+  <main class="main-content" id="main-content">
+    <div class="content-area" id="contentArea"></div>
+  </main>
+</div>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script>
+var STORAGE_KEY = 'exitosx-pb36-deal-structure';
+var OLD_KEY = 'pb36_deal_structure';
+
+var PAGES = [
+  { id: 'welcome', title: 'Welcome', phase: 'Start', icon: '1' },
+  { id: 'whystructure', title: 'Why Structure > Price', phase: 'Learn', icon: '2' },
+  { id: 'assetvstock', title: 'Asset vs. Stock Sale', phase: 'Learn', icon: '3' },
+  { id: 'earnouts', title: 'Earnouts', phase: 'Components', icon: '4' },
+  { id: 'sellernotes', title: 'Seller Notes', phase: 'Components', icon: '5' },
+  { id: 'escrows', title: 'Escrows & Holdbacks', phase: 'Components', icon: '6' },
+  { id: 'workingcap', title: 'Working Capital', phase: 'Components', icon: '7' },
+  { id: 'repswarranties', title: 'Reps & Warranties', phase: 'Components', icon: '8' },
+  { id: 'noncompete', title: 'Non-Competes', phase: 'Components', icon: '9' },
+  { id: 'waterfall', title: 'Proceeds Waterfall', phase: 'Analyze', icon: '10' },
+  { id: 'mistakes', title: 'Common Mistakes', phase: 'Analyze', icon: '11' },
+  { id: 'comparison', title: 'Offer Comparison', phase: 'Analyze', icon: '12' },
+  { id: 'dashboard', title: 'Dashboard', phase: 'Assess', icon: '13' },
+];
+
+var MISTAKES_DATA = [
+  { mistake: 'Accepting headline price without analyzing structure', consequence: 'Lower actual proceeds than alternative offers', prevention: 'Build proceeds waterfall for every offer' },
+  { mistake: 'Not negotiating working capital target', consequence: 'Post-closing adjustment reduces price by $200K+', prevention: 'Hire transaction CPA; define WC precisely' },
+  { mistake: 'Agreeing to EBITDA-based earnout', consequence: 'Buyer manipulates expenses to reduce payout', prevention: 'Insist on revenue-based metrics or fixed payments' },
+  { mistake: 'Signing broad non-compete without separate consideration', consequence: 'Lost tax benefit and future career flexibility', prevention: 'Allocate consideration separately; narrow scope' },
+  { mistake: 'Not requiring personal guarantees on seller note', consequence: 'Buyer defaults; no recourse beyond business assets', prevention: 'Always require PG from buyer principals' },
+  { mistake: 'Ignoring R&W insurance', consequence: 'Large escrow holdback tied up for 18+ months', prevention: 'Explore RWI to reduce or eliminate escrow' },
+];
+
+function defaultState() {
+  return {
+    currentPage: 'welcome',
+    completed: {},
+    headlinePrice: 20000000,
+    escrowPct: 10,
+    earnoutPct: 20,
+    earnoutProb: 60,
+    sellerNotePct: 10,
+    noteYears: 5,
+    noteRate: 5,
+    txnCostPct: 6,
+    taxRate: 25,
+    debtRepay: 1500000,
+    saleType: '',
+    entityType: '',
+    earnoutMetric: '',
+    earnoutPeriod: '',
+    offerA: { name: 'Offer A', headline: '', cashPct: 60, earnoutPct: 20, notePct: 10, escrowPct: 10, taxRate: 32, nonCompYears: 5 },
+    offerB: { name: 'Offer B', headline: '', cashPct: 90, earnoutPct: 0, notePct: 0, escrowPct: 10, taxRate: 23.8, nonCompYears: 3 },
+    mistakeChecks: {},
+  };
+}
+
+function migrateOldState() {
+  var old = localStorage.getItem(OLD_KEY);
+  if (!old) return null;
+  try {
+    var s = JSON.parse(old);
+    var m = defaultState();
+    // Copy all data fields
+    ['headlinePrice','escrowPct','earnoutPct','earnoutProb','sellerNotePct','noteYears','noteRate','txnCostPct','taxRate','debtRepay','saleType','entityType','earnoutMetric','earnoutPeriod','mistakeChecks'].forEach(function(k) {
+      if (s[k] !== undefined) m[k] = s[k];
+    });
+    if (s.offerA) m.offerA = s.offerA;
+    if (s.offerB) m.offerB = s.offerB;
+    // Convert phase index to page id
+    if (typeof s.currentPhase === 'number' && s.currentPhase < PAGES.length) {
+      m.currentPage = PAGES[s.currentPhase].id;
+    }
+    // Convert visited to completed
+    if (s.visited) {
+      Object.keys(s.visited).forEach(function(k) {
+        if (s.visited[k]) m.completed[k] = true;
+      });
+    }
+    localStorage.removeItem(OLD_KEY);
+    return m;
+  } catch(e) { return null; }
+}
+
+function loadState() {
+  try {
+    var stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (stored) return mergeState(defaultState(), stored);
+  } catch(e) {}
+  var migrated = migrateOldState();
+  if (migrated) return migrated;
+  return defaultState();
+}
+
+function mergeState(def, stored) {
+  var result = {};
+  for (var k in def) {
+    if (stored.hasOwnProperty(k)) {
+      result[k] = stored[k];
+    } else {
+      result[k] = def[k];
+    }
+  }
+  return result;
+}
+
+var state = loadState();
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  updateSidebar();
+}
+
+// Navigation
+function isCompleted(pageId) { return !!state.completed[pageId]; }
+
+function isUnlocked(pageId) {
+  var idx = PAGES.findIndex(function(p) { return p.id === pageId; });
+  if (idx <= 0) return true;
+  return isCompleted(PAGES[idx - 1].id);
+}
+
+function completePage(pageId) {
+  state.completed[pageId] = true;
+  save();
+}
+
+function goToPage(pageId) {
+  if (!isUnlocked(pageId)) return;
+  state.currentPage = pageId;
+  save();
+  renderPage();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  closeSidebar();
+}
+
+function nextPage() {
+  var idx = PAGES.findIndex(function(p) { return p.id === state.currentPage; });
+  if (idx < PAGES.length - 1) {
+    completePage(state.currentPage);
+    goToPage(PAGES[idx + 1].id);
+  }
+}
+
+function prevPage() {
+  var idx = PAGES.findIndex(function(p) { return p.id === state.currentPage; });
+  if (idx > 0) goToPage(PAGES[idx - 1].id);
+}
+
+function updateSidebar() {
+  var nav = document.getElementById('sidebarNav');
+  var html = '';
+  var currentPhase = '';
+  var completedCount = PAGES.filter(function(p) { return isCompleted(p.id); }).length;
+  var pct = Math.round((completedCount / PAGES.length) * 100);
+
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '%';
+
+  PAGES.forEach(function(p) {
+    if (p.phase !== currentPhase) {
+      currentPhase = p.phase;
+      html += '<div class="nav-section-label">' + currentPhase + '</div>';
+    }
+    var active = state.currentPage === p.id;
+    var completed = isCompleted(p.id);
+    var locked = !isUnlocked(p.id);
+    var cls = 'nav-item';
+    if (active) cls += ' active';
+    if (completed) cls += ' completed';
+    if (locked) cls += ' locked';
+
+    html += '<div class="' + cls + '" onclick="goToPage(\'' + p.id + '\')" tabindex="' + (locked ? -1 : 0) + '" role="button" aria-label="' + p.title + (completed ? ' (completed)' : '') + (locked ? ' (locked)' : '') + '">';
+    html += '<span class="nav-icon">' + (completed ? '\u2713' : p.icon) + '</span>';
+    html += '<span>' + p.title + '</span></div>';
+  });
+  nav.innerHTML = html;
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+// Formatting
+function fmt(n) {
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return '$' + (n/1000).toFixed(0) + 'K';
+  return '$' + n.toLocaleString();
+}
+function fmtFull(n) { return '$' + Math.round(n).toLocaleString(); }
+
+function showToast(msg) {
+  var container = document.getElementById('toastContainer');
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  container.appendChild(t);
+  setTimeout(function() { t.remove(); }, 3000);
+}
+
+// Render
+function renderPage() {
+  var container = document.getElementById('contentArea');
+  var page = PAGES.find(function(p) { return p.id === state.currentPage; });
+  if (!page) return;
+
+  var idx = PAGES.findIndex(function(p) { return p.id === state.currentPage; });
+  var prevP = idx > 0 ? PAGES[idx - 1] : null;
+  var nextP = idx < PAGES.length - 1 ? PAGES[idx + 1] : null;
+
+  var navBtns = '<div class="nav-buttons">' +
+    (prevP ? '<button class="btn btn-ghost" onclick="prevPage()">&larr; ' + prevP.title + '</button>' : '<div></div>') +
+    (nextP ? '<button class="btn btn-primary" onclick="nextPage()">' + nextP.title + ' &rarr;</button>' : '') +
+    '</div>';
+
+  var renderers = {
+    welcome: renderWelcome,
+    whystructure: renderWhyStructure,
+    assetvstock: renderAssetVsStock,
+    earnouts: renderEarnouts,
+    sellernotes: renderSellerNotes,
+    escrows: renderEscrows,
+    workingcap: renderWorkingCap,
+    repswarranties: renderRepsWarranties,
+    noncompete: renderNonCompete,
+    waterfall: renderWaterfall,
+    mistakes: renderMistakes,
+    comparison: renderComparison,
+    dashboard: renderDashboard,
+  };
+
+  var renderer = renderers[page.id];
+  container.innerHTML = '<div class="page active">' + (renderer ? renderer() : '') + navBtns + '</div>';
+  checkAutoComplete();
+  updateSidebar();
+}
+
+function checkAutoComplete() {
+  var id = state.currentPage;
+  switch(id) {
+    case 'waterfall': if (state.headlinePrice > 0 && state.headlinePrice !== 20000000) completePage(id); break;
+    case 'assetvstock': if (state.saleType) completePage(id); break;
+    case 'earnouts': if (state.earnoutMetric) completePage(id); break;
+    case 'comparison': if (state.offerA.headline && state.offerB.headline) completePage(id); break;
+    case 'mistakes': if (Object.values(state.mistakeChecks).filter(Boolean).length >= 3) completePage(id); break;
+    default: completePage(id); break;
+  }
+}
+
+function renderWelcome() {
+  return '' +
+    '<h2 class="t-display">Deal Structure Literacy</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">The purchase price is just the headline. The structure determines what you actually take home. This interactive guide teaches you every structural component of an M&A deal and helps you analyze real offers.</p>' +
+
+    '<div class="callout">' +
+      '<div class="callout-label">The Core Principle</div>' +
+      '<p>Price is what buyers offer. Structure is what sellers receive. Your job is to maximize certainty of proceeds -- the total amount of cash you will actually collect, adjusted for risk, timing, and tax treatment.</p>' +
+    '</div>' +
+
+    '<div class="stats-row" style="margin-top: var(--space-lg)">' +
+      '<div class="stat-card"><div class="stat-value" style="color: var(--color-danger)">53%</div><div class="stat-label">A $20M offer may net only 53% after structure</div></div>' +
+      '<div class="stat-card"><div class="stat-value" style="color: var(--color-warning)">$1.5M+</div><div class="stat-label">Tax difference: asset vs. stock sale on $15M deal</div></div>' +
+      '<div class="stat-card"><div class="stat-value" style="color: var(--color-success)">7</div><div class="stat-label">Key structural components to master</div></div>' +
+    '</div>' +
+
+    '<div class="card" style="margin-top: var(--space-lg)">' +
+      '<h3 class="t-h2" style="margin-bottom: var(--space-md)">What You Will Learn</h3>' +
+      buildNumberedList([
+        'Asset sale vs. stock sale tax implications',
+        'Earnout mechanics, risks, and negotiation tactics',
+        'Seller notes and deferred consideration',
+        'Escrows, holdbacks, and how to minimize them',
+        'Working capital adjustments and manipulation risks',
+        'Representations, warranties & indemnification',
+        'How to build a proceeds waterfall for any offer',
+      ]) +
+    '</div>';
+}
+
+function buildNumberedList(items) {
+  return items.map(function(item, i) {
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--color-border-light)">' +
+      '<span style="color:var(--color-accent);font-weight:700;font-size:14px;width:20px">' + (i+1) + '</span>' +
+      '<span class="t-small">' + item + '</span></div>';
+  }).join('');
+}
+
+function renderWhyStructure() {
+  return '' +
+    '<h2 class="t-display">Why Structure Matters More Than Price</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">Consider two offers for the same business. The headline price tells a very different story than the actual economics.</p>' +
+
+    '<div class="compare-grid">' +
+      '<div class="compare-card">' +
+        '<div class="compare-header">Offer A: $22M</div>' +
+        '<div class="compare-body">' +
+          '<div class="compare-row"><span class="label">Cash at closing</span><span class="value">$13.2M (60%)</span></div>' +
+          '<div class="compare-row"><span class="label">Earnout</span><span class="value">$4.4M (20%)</span></div>' +
+          '<div class="compare-row"><span class="label">Seller note</span><span class="value">$2.2M (10%)</span></div>' +
+          '<div class="compare-row"><span class="label">Escrow</span><span class="value">$2.2M (10%)</span></div>' +
+          '<div class="compare-row"><span class="label">Non-compete</span><span class="value">5 years, full</span></div>' +
+          '<div class="compare-row"><span class="label">Tax treatment</span><span class="value pill-danger" style="padding:2px 8px">Asset ~32%</span></div>' +
+          '<div class="compare-row" style="border-top:2px solid var(--color-border);padding-top:10px;margin-top:4px">' +
+            '<span class="label" style="font-weight:700">Est. net proceeds</span>' +
+            '<span class="value" style="color:var(--color-danger)">$12.5-15.8M</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="compare-card preferred">' +
+        '<div class="compare-header">Offer B: $19M</div>' +
+        '<div class="compare-body">' +
+          '<div class="compare-row"><span class="label">Cash at closing</span><span class="value">$17.1M (90%)</span></div>' +
+          '<div class="compare-row"><span class="label">Earnout</span><span class="value">None</span></div>' +
+          '<div class="compare-row"><span class="label">Seller note</span><span class="value">None</span></div>' +
+          '<div class="compare-row"><span class="label">Escrow</span><span class="value">$1.9M (10%)</span></div>' +
+          '<div class="compare-row"><span class="label">Non-compete</span><span class="value">3 years, 50mi</span></div>' +
+          '<div class="compare-row"><span class="label">Tax treatment</span><span class="value pill-success" style="padding:2px 8px">Stock ~23.8%</span></div>' +
+          '<div class="compare-row" style="border-top:2px solid var(--color-border);padding-top:10px;margin-top:4px">' +
+            '<span class="label" style="font-weight:700">Est. net proceeds</span>' +
+            '<span class="value" style="color:var(--color-success)">$14.1M (certain)</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="callout">' +
+      '<div class="callout-label">The Takeaway</div>' +
+      '<p>Offer B, despite a lower headline price, delivers more certain after-tax cash. This is why structure literacy is essential -- without it, you will optimize for the wrong number.</p>' +
+    '</div>';
+}
+
+function renderAssetVsStock() {
+  var entities = ['C-Corp','S-Corp','LLC','Partnership'];
+  var saleTypes = ['Asset Sale','Stock Sale','338(h)(10)','Not Sure'];
+
+  var html = '' +
+    '<h2 class="t-display">Asset Sale vs. Stock Sale</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">The most fundamental structural decision. This determines tax treatment and what liabilities transfer to the buyer.</p>' +
+
+    '<div class="card"><h3 class="t-h3" style="margin-bottom: var(--space-md)">What is your entity type?</h3>' +
+      '<div class="toggle-group" style="max-width:400px">';
+  entities.forEach(function(t) {
+    html += '<button class="toggle-opt' + (state.entityType === t ? ' active' : '') + '" onclick="state.entityType=\'' + t + '\';save();renderPage()">' + t + '</button>';
+  });
+  html += '</div></div>';
+
+  html += '<div class="table-wrap"><table><thead><tr><th>Factor</th><th>Asset Sale</th><th>Stock Sale</th></tr></thead><tbody>' +
+    '<tr><td style="font-weight:600">What transfers</td><td>Specific assets + assumed liabilities</td><td>Entire entity including all liabilities</td></tr>' +
+    '<tr><td style="font-weight:600">Buyer preference</td><td><span class="pill pill-success">Strongly preferred</span></td><td><span class="pill pill-danger">Disfavored</span></td></tr>' +
+    '<tr><td style="font-weight:600">Seller preference</td><td><span class="pill pill-danger">Disfavored</span></td><td><span class="pill pill-success">Strongly preferred</span></td></tr>' +
+    '<tr><td style="font-weight:600">Tax (C-corp)</td><td style="color:var(--color-danger);font-weight:600">40-50% (double tax)</td><td style="color:var(--color-success);font-weight:600">20-23.8% (LTCG)</td></tr>' +
+    '<tr><td style="font-weight:600">Tax (S-corp/LLC)</td><td>25-35% (blended)</td><td style="color:var(--color-success);font-weight:600">20-23.8% (LTCG)</td></tr>' +
+    '<tr><td style="font-weight:600">Successor liability</td><td>Generally does not transfer</td><td>All liabilities transfer</td></tr>' +
+    '<tr><td style="font-weight:600">Contract assignment</td><td>Each must be consented</td><td>Entity continues; no assignment</td></tr>' +
+    '<tr><td style="font-weight:600">Employee transition</td><td>Terminated and rehired</td><td>Continues uninterrupted</td></tr>' +
+    '</tbody></table></div>';
+
+  if (state.entityType) {
+    var advice = {
+      'C-Corp': 'C-Corps face the highest risk from asset sales due to double taxation (corporate level + shareholder level). Push hard for a stock sale or explore a Section 338(h)(10) election to get asset-sale economics with stock-sale mechanics.',
+      'S-Corp': 'S-Corps have a significant advantage: consider a Section 338(h)(10) election, which lets you do a stock transfer but treat it as an asset sale for tax purposes. This gives the buyer their step-up while you avoid double taxation.',
+      'LLC': 'LLCs taxed as partnerships can structure a membership interest sale (equivalent to stock sale) for capital gains treatment. Asset sales create blended ordinary income + capital gains.',
+      'Partnership': 'Partnerships can transfer interests for capital gains treatment. Asset sales create blended rates. Consider the specific allocation of purchase price across asset classes.',
+    };
+    html += '<div class="card" style="border-left:4px solid var(--color-accent)"><h3 class="t-h3" style="margin-bottom: var(--space-sm)">For ' + state.entityType + ' Entities</h3>' +
+      '<p class="t-small" style="margin:0">' + advice[state.entityType] + '</p></div>';
+  }
+
+  html += '<div class="card"><h3 class="t-h3" style="margin-bottom: var(--space-md)">Which structure are you leaning toward?</h3>' +
+    '<div class="toggle-group" style="max-width:400px">';
+  saleTypes.forEach(function(t) {
+    html += '<button class="toggle-opt' + (state.saleType === t ? ' active' : '') + '" onclick="state.saleType=\'' + t + '\';save();renderPage()">' + t + '</button>';
+  });
+  html += '</div></div>';
+
+  html += '<div class="callout callout-danger"><div class="callout-label">Tax Planning Alert</div>' +
+    '<p>The difference between asset sale and stock sale tax treatment on a $15M deal can exceed $1.5M in additional taxes. Engage a transaction-experienced CPA before you sign the LOI.</p></div>';
+
+  return html;
+}
+
+function renderEarnouts() {
+  var discounts = {
+    'Revenue|1yr': { low: 15, high: 25 },
+    'Revenue|2-3yr': { low: 25, high: 40 },
+    'EBITDA|1yr': { low: 30, high: 45 },
+    'EBITDA|2-3yr': { low: 40, high: 60 },
+    'Retention|1yr': { low: 20, high: 35 },
+  };
+  var key = state.earnoutMetric && state.earnoutPeriod ? state.earnoutMetric + '|' + state.earnoutPeriod : '';
+  var discount = discounts[key];
+  var metrics = ['Revenue','EBITDA','Retention'];
+  var periods = ['1yr','2-3yr'];
+
+  var html = '' +
+    '<h2 class="t-display">Earnouts: Structure, Risks & Negotiation</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">An earnout is a portion of the price contingent on post-closing performance. Buyers love them because they shift risk to you. Approach with extreme caution.</p>' +
+
+    '<div class="card"><h3 class="t-h3" style="margin-bottom: var(--space-md)">Assess Your Earnout Risk</h3>' +
+      '<p class="t-small t-secondary" style="margin-bottom: var(--space-md)">Select the earnout terms being proposed to see the risk-adjusted value.</p>' +
+      '<div class="form-group"><label class="form-label">Earnout metric</label><div class="toggle-group">';
+  metrics.forEach(function(m) {
+    html += '<button class="toggle-opt' + (state.earnoutMetric === m ? ' active' : '') + '" onclick="state.earnoutMetric=\'' + m + '\';save();renderPage()">' + m + '</button>';
+  });
+  html += '</div></div><div class="form-group"><label class="form-label">Measurement period</label><div class="toggle-group">';
+  periods.forEach(function(p) {
+    html += '<button class="toggle-opt' + (state.earnoutPeriod === p ? ' active' : '') + '" onclick="state.earnoutPeriod=\'' + p + '\';save();renderPage()">' + (p === '1yr' ? '1 Year' : '2-3 Years') + '</button>';
+  });
+  html += '</div></div></div>';
+
+  if (discount) {
+    var riskLevel = discount.low >= 30 ? 'High' : discount.low >= 20 ? 'Moderate' : 'Low';
+    var riskColor = discount.low >= 30 ? 'var(--color-danger)' : discount.low >= 20 ? 'var(--color-warning)' : 'var(--color-success)';
+    var metricAdvice = {
+      'EBITDA': 'EBITDA-based earnouts carry the highest risk because the buyer controls expenses that directly affect EBITDA. They can hire additional staff, increase marketing spend, or allocate corporate overhead -- all reducing your earnout.',
+      'Revenue': 'Revenue-based earnouts are preferred because revenue is harder for buyers to manipulate than profitability metrics. However, they can still redirect resources or neglect growth initiatives.',
+      'Retention': 'Retention-based earnouts are specific and measurable but depend on factors outside your direct control post-closing.',
+    };
+
+    html += '<div class="card" style="border-left:4px solid ' + riskColor + '">' +
+      '<h3 class="t-h3" style="color:' + riskColor + ';margin-bottom: var(--space-md)">Risk Assessment: ' + state.earnoutMetric + '-based, ' + (state.earnoutPeriod === '1yr' ? '1 Year' : '2-3 Years') + '</h3>' +
+      '<div class="stats-row">' +
+        '<div class="stat-card"><div class="stat-value" style="color:var(--color-danger)">' + discount.low + '-' + discount.high + '%</div><div class="stat-label">Recommended discount factor</div></div>' +
+        '<div class="stat-card"><div class="stat-value" style="color:' + riskColor + '">' + riskLevel + '</div><div class="stat-label">Risk level</div></div>' +
+      '</div>' +
+      '<p class="t-small" style="margin:0">' + metricAdvice[state.earnoutMetric] + '</p></div>';
+  }
+
+  html += '<h3 class="t-h2" style="margin-top: var(--space-xl); margin-bottom: var(--space-md)">Earnout Negotiation Checklist</h3><div class="card">';
+  ['Revenue-based metrics rather than EBITDA','Linear payout rather than all-or-nothing thresholds','Acceleration clause if buyer re-sells the business','Covenant to operate in ordinary course','Dispute resolution via independent accounting firm','Floor (minimum payout) regardless of performance','Clearly defined measurement methodology'].forEach(function(item) {
+    html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--color-border-light)"><span style="color:var(--color-accent);font-size:16px">\u279A</span><span class="t-small">' + item + '</span></div>';
+  });
+  html += '</div>';
+
+  html += '<div class="callout"><div class="callout-label">Negotiation Strategy</div>' +
+    '<p>If a buyer insists on an earnout, your leverage is strongest before signing the LOI. Every structural concession you make should come with a concession from the buyer -- a higher cap, a shorter period, or better protection terms.</p></div>';
+
+  return html;
+}
+
+function renderSellerNotes() {
+  return '' +
+    '<h2 class="t-display">Seller Notes & Deferred Consideration</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">A seller note is a loan from you to the buyer for a portion of the purchase price. The buyer pays over time with interest. Understand when this makes sense and when it does not.</p>' +
+
+    '<div class="table-wrap"><table><thead><tr><th>Term</th><th>Typical Range</th><th>Your Preference</th></tr></thead><tbody>' +
+      '<tr><td style="font-weight:600">Amount</td><td>10-30% of purchase price</td><td style="color:var(--color-success)">Minimize: 10-15% max</td></tr>' +
+      '<tr><td style="font-weight:600">Interest rate</td><td>4-8% per annum</td><td style="color:var(--color-success)">Market rate or higher (6%+)</td></tr>' +
+      '<tr><td style="font-weight:600">Term length</td><td>3-7 years</td><td style="color:var(--color-success)">Shorter: 3-5 years</td></tr>' +
+      '<tr><td style="font-weight:600">Amortization</td><td>Interest-only or fully amortizing</td><td style="color:var(--color-success)">Fully amortizing (regular cash flow)</td></tr>' +
+      '<tr><td style="font-weight:600">Security</td><td>Junior lien on business assets</td><td style="color:var(--color-success)">Always insist on security interest</td></tr>' +
+      '<tr><td style="font-weight:600">Acceleration</td><td>Triggered by default or sale</td><td style="color:var(--color-success)">Include change-of-control clause</td></tr>' +
+      '<tr><td style="font-weight:600">Personal guarantee</td><td>From buyer principal</td><td style="color:var(--color-success)">Require if possible</td></tr>' +
+    '</tbody></table></div>' +
+
+    '<h3 class="t-h2" style="margin-top: var(--space-xl); margin-bottom: var(--space-md)">When Seller Notes Make Sense</h3><div class="card">' +
+    ['Buyer is a strong operator with good credit history','Note earns meaningful interest rate (6%+) compensating for risk','Note is a small portion (<15%) of total consideration','Installment sale treatment provides tax deferral benefits','The alternative is an even larger earnout'].map(function(item) {
+      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--color-border-light)"><span style="color:var(--color-success);font-size:16px">\u2713</span><span class="t-small">' + item + '</span></div>';
+    }).join('') + '</div>' +
+
+    '<h3 class="t-h2" style="margin-top: var(--space-xl); margin-bottom: var(--space-md)">When to Push Back</h3><div class="card">' +
+    ['Note exceeds 20% of purchase price','No security interest offered','Buyer refuses personal guarantee','Subordination terms severely restrict your recovery rights','Term exceeds 5 years with no acceleration provisions'].map(function(item) {
+      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--color-border-light)"><span style="color:var(--color-danger);font-size:16px">\u2717</span><span class="t-small">' + item + '</span></div>';
+    }).join('') + '</div>';
+}
+
+function renderEscrows() {
+  return '' +
+    '<h2 class="t-display">Escrows & Holdbacks</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">A portion of the price held by a third party after closing to secure buyer indemnification claims. Your goal: minimize the amount and duration.</p>' +
+
+    '<div class="table-wrap"><table><thead><tr><th>Parameter</th><th>Market Range</th><th>Negotiation Target</th></tr></thead><tbody>' +
+      '<tr><td style="font-weight:600">Escrow amount</td><td>5-15% of purchase price</td><td style="color:var(--color-success)">Push for 5-7%</td></tr>' +
+      '<tr><td style="font-weight:600">Duration</td><td>12-24 months</td><td style="color:var(--color-success)">Push for 12 months</td></tr>' +
+      '<tr><td style="font-weight:600">Release</td><td>Lump sum at expiration</td><td style="color:var(--color-success)">Partial release at 6 months</td></tr>' +
+      '<tr><td style="font-weight:600">Basket (threshold)</td><td>0.5-1.5% of deal value</td><td style="color:var(--color-success)">Higher basket = fewer claims</td></tr>' +
+      '<tr><td style="font-weight:600">Cap</td><td>10-20% of deal value</td><td style="color:var(--color-success)">Cap = escrow amount (exclusive remedy)</td></tr>' +
+    '</tbody></table></div>' +
+
+    '<h3 class="t-h2" style="margin-top: var(--space-xl); margin-bottom: var(--space-md)">Negotiation Tactics</h3><div class="card">' +
+    [
+      { tactic: 'Argue clean diligence supports reduced holdback', impact: 'High' },
+      { tactic: 'Negotiate a mini-basket (de minimis) to exclude small claims', impact: 'Medium' },
+      { tactic: 'Insist on defined claims process with notice and response periods', impact: 'High' },
+      { tactic: 'Request escrow as exclusive remedy for indemnification', impact: 'High' },
+      { tactic: 'Explore R&W Insurance to eliminate or reduce escrow', impact: 'Very High' },
+      { tactic: 'Negotiate partial release at 6-month mark', impact: 'Medium' },
+    ].map(function(item) {
+      var pillCls = item.impact === 'Very High' ? 'pill-success' : item.impact === 'High' ? 'pill-info' : 'pill-warning';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--color-border-light)"><span class="t-small">' + item.tactic + '</span><span class="pill ' + pillCls + '">' + item.impact + ' impact</span></div>';
+    }).join('') + '</div>' +
+
+    '<div class="callout callout-info"><div class="callout-label">R&W Insurance</div>' +
+    '<p>Representations & Warranties Insurance (RWI) costs 2-4% of coverage but can eliminate or significantly reduce escrow holdbacks. On a $20M deal, a 2% RWI premium ($400K) could free up $2M in escrow that would otherwise be locked for 18 months. Increasingly standard in mid-market deals.</p></div>';
+}
+
+function renderWorkingCap() {
+  return '' +
+    '<h2 class="t-display">Working Capital Adjustments</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">Working capital is current assets minus current liabilities at closing. The purchase agreement will adjust the price based on whether actual WC hits the agreed target.</p>' +
+
+    '<div class="card"><h3 class="t-h3" style="margin-bottom: var(--space-md)">How the Adjustment Works</h3>' +
+      '<div style="display:flex;flex-direction:column;gap:var(--space-md);margin-top:var(--space-md)">' +
+        '<div style="display:flex;align-items:center;gap:var(--space-md);padding:12px var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)"><span style="font-size:24px;width:40px;text-align:center">1</span><span class="t-small"><strong>Set the target:</strong> Based on trailing 12-month average working capital (the "peg")</span></div>' +
+        '<div style="display:flex;align-items:center;gap:var(--space-md);padding:12px var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)"><span style="font-size:24px;width:40px;text-align:center">2</span><span class="t-small"><strong>Estimate at closing:</strong> Calculate estimated WC on the closing date</span></div>' +
+        '<div style="display:flex;align-items:center;gap:var(--space-md);padding:12px var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)"><span style="font-size:24px;width:40px;text-align:center">3</span><span class="t-small"><strong>True-up post-close:</strong> Within 60-90 days, actual WC is finalized and price is adjusted</span></div>' +
+        '<div style="display:flex;align-items:center;gap:var(--space-md);padding:12px var(--space-md);background:var(--color-success-light);border-radius:var(--radius-md)"><span style="font-size:24px;width:40px;text-align:center">\u2191</span><span class="t-small" style="color:var(--color-success)"><strong>Above target:</strong> Buyer pays seller the difference</span></div>' +
+        '<div style="display:flex;align-items:center;gap:var(--space-md);padding:12px var(--space-md);background:var(--color-danger-light);border-radius:var(--radius-md)"><span style="font-size:24px;width:40px;text-align:center">\u2193</span><span class="t-small" style="color:var(--color-danger)"><strong>Below target:</strong> Seller pays buyer the difference</span></div>' +
+      '</div>' +
+    '</div>' +
+
+    '<h3 class="t-h2" style="margin-top: var(--space-xl); margin-bottom: var(--space-md)">Manipulation Risks to Watch For</h3>' +
+    '<div class="table-wrap"><table><thead><tr><th>Tactic</th><th>How It Works</th><th>Your Protection</th></tr></thead><tbody>' +
+      '<tr><td style="font-weight:600;color:var(--color-danger)">Artificially low target</td><td>Buyer proposes a peg below your trailing average</td><td>Use 12-month average; exclude anomalous months</td></tr>' +
+      '<tr><td style="font-weight:600;color:var(--color-danger)">Aggressive close timing</td><td>Buyer picks date when WC is seasonally low</td><td>Specify normalized target, not point-in-time</td></tr>' +
+      '<tr><td style="font-weight:600;color:var(--color-danger)">Reclassifying items</td><td>Buyer disputes what counts as current</td><td>Define every line item in purchase agreement</td></tr>' +
+      '<tr><td style="font-weight:600;color:var(--color-danger)">Delaying collections</td><td>Buyer slows AR collection to inflate adjustment</td><td>Require ordinary course operations</td></tr>' +
+      '<tr><td style="font-weight:600;color:var(--color-danger)">Accelerating payables</td><td>Buyer pays invoices early to reduce current assets</td><td>Require consistent payment practices</td></tr>' +
+    '</tbody></table></div>' +
+
+    '<div class="callout callout-danger"><div class="callout-label">Key Negotiation Point</div>' +
+    '<p>The working capital target definition is one of the most contested provisions in any purchase agreement. Hire a transaction-experienced CPA to calculate your trailing average, identify seasonality, and define exactly which accounts are included. The difference can be $200K-$500K on a $15M deal.</p></div>';
+}
+
+function renderRepsWarranties() {
+  var reps = [
+    { rep: 'Financial statements', statement: 'Financials accurate, GAAP-compliant', risk: 'High' },
+    { rep: 'Tax compliance', statement: 'All returns filed; no outstanding liabilities', risk: 'High' },
+    { rep: 'Material contracts', statement: 'All disclosed; none in default', risk: 'Medium' },
+    { rep: 'Litigation', statement: 'No pending or threatened (or fully disclosed)', risk: 'Medium' },
+    { rep: 'Employee matters', statement: 'No disputes; employment law compliance', risk: 'Medium' },
+    { rep: 'Environmental', statement: 'No liabilities or contamination', risk: 'High' },
+    { rep: 'IP ownership', statement: 'Company owns or licenses all IP used', risk: 'High' },
+    { rep: 'No undisclosed liabilities', statement: 'No material off-balance-sheet liabilities', risk: 'Very High' },
+  ];
+
+  var html = '' +
+    '<h2 class="t-display">Representations, Warranties & Indemnification</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">Reps and warranties are statements of fact you make about the business. If any prove untrue, the buyer can seek indemnification -- financial recovery from you.</p>' +
+
+    '<h3 class="t-h2" style="margin-bottom: var(--space-md)">Key Seller Representations</h3>' +
+    '<div class="table-wrap"><table><thead><tr><th>Representation</th><th>What You Are Stating</th><th>Risk Level</th></tr></thead><tbody>';
+  reps.forEach(function(r) {
+    var pillCls = (r.risk === 'Very High' || r.risk === 'High') ? 'pill-danger' : 'pill-warning';
+    html += '<tr><td style="font-weight:600">' + r.rep + '</td><td>' + r.statement + '</td><td><span class="pill ' + pillCls + '">' + r.risk + '</span></td></tr>';
+  });
+  html += '</tbody></table></div>';
+
+  html += '<h3 class="t-h2" style="margin-top: var(--space-xl); margin-bottom: var(--space-md)">Indemnification Mechanics</h3><div class="card">';
+  [
+    { term: 'Survival period', desc: '12-24 months for general reps; longer for tax/environmental', icon: '\u23F3' },
+    { term: 'Basket', desc: 'Minimum aggregate claims before indemnification kicks in (0.5-1.5% of deal)', icon: '\u{1F37A}' },
+    { term: 'Cap', desc: 'Maximum indemnification exposure (10-20% of deal for general reps)', icon: '\u{1F6E1}' },
+    { term: 'Fundamental carve-outs', desc: 'Ownership, authority, and tax reps often have higher or no cap', icon: '\u26A0' },
+    { term: 'R&W Insurance', desc: 'Shifts indemnification risk to insurer for 2-4% of coverage', icon: '\u{1F4B1}' },
+  ].forEach(function(item) {
+    html += '<div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--color-border-light)">' +
+      '<span style="font-size:20px;flex-shrink:0;width:28px;text-align:center">' + item.icon + '</span>' +
+      '<div><div class="t-h3" style="margin-bottom:2px">' + item.term + '</div><div class="t-small t-secondary">' + item.desc + '</div></div></div>';
+  });
+  html += '</div>';
+
+  html += '<div class="callout"><div class="callout-label">Seller Protection Strategy</div>' +
+    '<p>Negotiate knowledge qualifiers ("to the Seller\'s knowledge") on representations where you cannot provide absolute certainty. Push for the escrow to be the exclusive remedy for indemnification. And always consider R&W insurance -- it is becoming standard in mid-market transactions.</p></div>';
+
+  return html;
+}
+
+function renderNonCompete() {
+  return '' +
+    '<h2 class="t-display">Non-Competes & Employment Agreements</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">Nearly every acquisition requires a non-compete. Many also require a post-closing employment agreement. Both are economic terms to negotiate alongside the price.</p>' +
+
+    '<h3 class="t-h2" style="margin-bottom: var(--space-md)">Non-Compete Parameters</h3>' +
+    '<div class="table-wrap"><table><thead><tr><th>Parameter</th><th>Buyer Wish List</th><th>Reasonable Position</th></tr></thead><tbody>' +
+      '<tr><td style="font-weight:600">Duration</td><td>5-7 years</td><td style="color:var(--color-success);font-weight:600">2-3 years</td></tr>' +
+      '<tr><td style="font-weight:600">Geographic scope</td><td>Worldwide</td><td style="color:var(--color-success);font-weight:600">States where business operates</td></tr>' +
+      '<tr><td style="font-weight:600">Activity scope</td><td>Entire industry</td><td style="color:var(--color-success);font-weight:600">Direct competition only</td></tr>' +
+      '<tr><td style="font-weight:600">Non-solicitation</td><td>Employees + customers, 5 years</td><td style="color:var(--color-success);font-weight:600">Employees 2yr, customers 1yr</td></tr>' +
+      '<tr><td style="font-weight:600">Consideration</td><td>Included in purchase price</td><td style="color:var(--color-success);font-weight:600">Allocated separately (tax benefit)</td></tr>' +
+    '</tbody></table></div>' +
+
+    '<h3 class="t-h2" style="margin-top: var(--space-xl); margin-bottom: var(--space-md)">Post-Closing Employment Terms</h3>' +
+    '<p class="t-small t-secondary" style="margin-bottom: var(--space-md)">If the buyer requires you to stay on (common for 6-24 months), negotiate these:</p><div class="card">' +
+    [
+      { term: 'Title & reporting', advice: 'Avoid being subordinated to someone you would not work for' },
+      { term: 'Compensation', advice: 'At least current total comp; consider premium for transition' },
+      { term: 'Severance', advice: 'If terminated without cause, guaranteed payout of remaining term' },
+      { term: 'Hours & flexibility', advice: 'Define expected time commitment; avoid open-ended obligations' },
+      { term: 'Termination triggers', advice: 'Define "cause" very narrowly to protect your payout' },
+      { term: 'Earnout interaction', advice: 'Termination should accelerate earnout payment' },
+    ].map(function(item) {
+      return '<div style="padding:10px 0;border-bottom:1px solid var(--color-border-light)"><div class="t-h3">' + item.term + '</div><div class="t-small t-secondary" style="margin-top:2px">' + item.advice + '</div></div>';
+    }).join('') + '</div>';
+}
+
+function renderWaterfall() {
+  var hp = state.headlinePrice;
+  var escrow = hp * (state.escrowPct / 100);
+  var earnout = hp * (state.earnoutPct / 100);
+  var earnoutAdj = earnout * (state.earnoutProb / 100);
+  var note = hp * (state.sellerNotePct / 100);
+  var notePV = note / Math.pow(1 + state.noteRate/100, state.noteYears);
+  var cashAtClose = hp - escrow - earnout - note;
+  var txnCosts = hp * (state.txnCostPct / 100);
+  var preTaxCash = cashAtClose - txnCosts;
+  var taxes = preTaxCash * (state.taxRate / 100);
+  var netCash = preTaxCash - taxes - state.debtRepay;
+  var futureReceipts = (escrow * 0.9) + earnoutAdj + notePV;
+  var totalExpected = Math.max(0, netCash) + futureReceipts;
+  var certaintyPct = hp > 0 ? ((totalExpected / hp) * 100).toFixed(1) : 0;
+
+  var html = '' +
+    '<h2 class="t-display">Proceeds Waterfall Calculator</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">Enter your deal terms to see what you actually take home. This converts a headline offer into risk-adjusted, after-tax cash.</p>' +
+
+    '<div class="card"><h3 class="t-h3" style="margin-bottom: var(--space-md)">Deal Parameters</h3>' +
+      '<div class="form-row">' +
+        '<div class="form-group"><label class="form-label">Headline purchase price</label><div class="currency-wrap"><span class="prefix">$</span><input class="form-input" type="number" value="' + state.headlinePrice + '" onchange="state.headlinePrice=parseFloat(this.value)||0;save();renderPage()"></div></div>' +
+        '<div class="form-group"><label class="form-label">Debt to repay at closing</label><div class="currency-wrap"><span class="prefix">$</span><input class="form-input" type="number" value="' + state.debtRepay + '" onchange="state.debtRepay=parseFloat(this.value)||0;save();renderPage()"></div></div>' +
+      '</div>' +
+      '<div class="range-group"><div class="range-label"><span>Escrow holdback</span><span class="val">' + state.escrowPct + '% (' + fmt(escrow) + ')</span></div><input type="range" min="0" max="25" step="1" value="' + state.escrowPct + '" oninput="state.escrowPct=parseInt(this.value);save();renderPage()"></div>' +
+      '<div class="range-group"><div class="range-label"><span>Earnout component</span><span class="val">' + state.earnoutPct + '% (' + fmt(earnout) + ')</span></div><input type="range" min="0" max="50" step="1" value="' + state.earnoutPct + '" oninput="state.earnoutPct=parseInt(this.value);save();renderPage()"></div>' +
+      '<div class="range-group"><div class="range-label"><span>Earnout probability of achievement</span><span class="val">' + state.earnoutProb + '%</span></div><input type="range" min="0" max="100" step="5" value="' + state.earnoutProb + '" oninput="state.earnoutProb=parseInt(this.value);save();renderPage()"></div>' +
+      '<div class="range-group"><div class="range-label"><span>Seller note</span><span class="val">' + state.sellerNotePct + '% (' + fmt(note) + ')</span></div><input type="range" min="0" max="30" step="1" value="' + state.sellerNotePct + '" oninput="state.sellerNotePct=parseInt(this.value);save();renderPage()"></div>' +
+      '<div class="form-row">' +
+        '<div class="range-group"><div class="range-label"><span>Blended tax rate</span><span class="val">' + state.taxRate + '%</span></div><input type="range" min="10" max="50" step="1" value="' + state.taxRate + '" oninput="state.taxRate=parseInt(this.value);save();renderPage()"></div>' +
+        '<div class="range-group"><div class="range-label"><span>Transaction costs</span><span class="val">' + state.txnCostPct + '%</span></div><input type="range" min="1" max="12" step="0.5" value="' + state.txnCostPct + '" oninput="state.txnCostPct=parseFloat(this.value);save();renderPage()"></div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="card"><h3 class="t-h3" style="margin-bottom: var(--space-md)">Your Proceeds Waterfall</h3><div class="waterfall">' +
+      wfRow('Headline price', hp, hp, 'var(--color-text-secondary)', false) +
+      wfRow('- Escrow (' + state.escrowPct + '%)', escrow, hp, 'var(--color-danger)', true) +
+      wfRow('- Earnout (' + state.earnoutPct + '%)', earnout, hp, 'var(--color-warning)', true) +
+      wfRow('- Seller note (' + state.sellerNotePct + '%)', note, hp, 'var(--color-purple)', true) +
+      '<div class="wf-row" style="border-top:2px solid var(--color-text);padding-top:10px"><div class="wf-label" style="font-weight:700">Cash at closing</div><div class="wf-bar-track"><div class="wf-bar-fill" style="width:' + (hp > 0 ? (cashAtClose/hp)*100 : 0) + '%;background:var(--color-info)"></div></div><div class="wf-amount" style="font-weight:700">' + fmtFull(cashAtClose) + '</div></div>' +
+      wfRow('- Transaction costs', txnCosts, hp, 'var(--color-text-tertiary)', true) +
+      wfRow('- Taxes (' + state.taxRate + '%)', taxes, hp, 'var(--color-danger)', true) +
+      wfRow('- Debt repayment', state.debtRepay, hp, 'var(--color-text-secondary)', true) +
+      '<div class="wf-row total"><div class="wf-label" style="color:var(--color-success)">Net cash at closing</div><div class="wf-bar-track"><div class="wf-bar-fill" style="width:' + (hp > 0 ? (Math.max(0,netCash)/hp)*100 : 0) + '%;background:var(--color-success)"></div></div><div class="wf-amount" style="color:var(--color-success)">' + fmtFull(Math.max(0, netCash)) + '</div></div>' +
+    '</div></div>' +
+
+    '<div class="stats-row">' +
+      '<div class="stat-card"><div class="stat-value" style="color:var(--color-success)">' + fmtFull(Math.max(0, netCash)) + '</div><div class="stat-label">Net cash at closing</div></div>' +
+      '<div class="stat-card"><div class="stat-value" style="color:var(--color-warning)">' + fmtFull(futureReceipts) + '</div><div class="stat-label">Risk-adjusted future receipts</div></div>' +
+      '<div class="stat-card"><div class="stat-value" style="color:var(--color-accent)">' + fmtFull(totalExpected) + '</div><div class="stat-label">Total expected proceeds</div></div>' +
+      '<div class="stat-card"><div class="stat-value" style="color:' + (certaintyPct >= 70 ? 'var(--color-success)' : certaintyPct >= 50 ? 'var(--color-warning)' : 'var(--color-danger)') + '">' + certaintyPct + '%</div><div class="stat-label">Certainty ratio</div></div>' +
+    '</div>' +
+
+    '<div class="callout"><div class="callout-label">The Reality Check</div>' +
+    '<p>A ' + fmt(hp) + ' headline offer delivers ' + fmtFull(totalExpected) + ' in risk-adjusted, after-tax expected proceeds -- ' + certaintyPct + '% of the headline number. This is why structure matters more than price.</p></div>';
+
+  return html;
+}
+
+function wfRow(label, amount, total, color, isNeg) {
+  var pct = total > 0 ? (amount / total) * 100 : 0;
+  return '<div class="wf-row"><div class="wf-label"' + (isNeg ? ' style="color:var(--color-danger)"' : '') + '>' + label + '</div><div class="wf-bar-track"><div class="wf-bar-fill" style="width:' + pct + '%;background:' + color + '"></div></div><div class="wf-amount"' + (isNeg ? ' style="color:var(--color-danger)"' : '') + '>' + (isNeg ? '-' : '') + fmtFull(amount) + '</div></div>';
+}
+
+function renderMistakes() {
+  var html = '' +
+    '<h2 class="t-display">Common Deal Structure Mistakes</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">Each of these mistakes has real financial consequences. Mark the ones you are aware of and have planned to address.</p>' +
+    '<div class="card">';
+
+  MISTAKES_DATA.forEach(function(m, i) {
+    var ck = state.mistakeChecks['m_' + i];
+    html += '<div class="checklist-item" style="align-items:flex-start">' +
+      '<div class="check-box' + (ck ? ' checked' : '') + '" tabindex="0" role="checkbox" aria-checked="' + (!!ck) + '" data-key="m_' + i + '" onclick="toggleMistake(this)" onkeydown="if(event.key===\' \'||event.key===\'Enter\'){event.preventDefault();toggleMistake(this)}"></div>' +
+      '<div style="flex:1">' +
+        '<div style="font-weight:600;font-size:14px;margin-bottom:4px;cursor:pointer" onclick="toggleMistake(this.closest(\'.checklist-item\').querySelector(\'.check-box\'))">' + m.mistake + '</div>' +
+        '<div class="t-caption" style="color:var(--color-danger);margin-bottom:2px"><strong>Consequence:</strong> ' + m.consequence + '</div>' +
+        '<div class="t-caption" style="color:var(--color-success)"><strong>Prevention:</strong> ' + m.prevention + '</div>' +
+      '</div></div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderComparison() {
+  var a = state.offerA;
+  var b = state.offerB;
+
+  function calcOffer(o) {
+    var hp = parseFloat(o.headline) || 0;
+    var cash = hp * (o.cashPct / 100);
+    var earnout = hp * (o.earnoutPct / 100);
+    var note = hp * (o.notePct / 100);
+    var escrow = hp * (o.escrowPct / 100);
+    var afterTax = cash * (1 - o.taxRate / 100);
+    var totalRiskAdj = afterTax + (escrow * 0.9 * (1 - o.taxRate/100)) + (earnout * 0.6 * (1 - o.taxRate/100)) + (note * 0.85 * (1 - o.taxRate/100));
+    return { hp: hp, cash: cash, earnout: earnout, note: note, escrow: escrow, afterTax: afterTax, totalRiskAdj: totalRiskAdj };
+  }
+
+  var calcA = calcOffer(a);
+  var calcB = calcOffer(b);
+  var hasData = calcA.hp > 0 && calcB.hp > 0;
+  var winner = calcA.totalRiskAdj > calcB.totalRiskAdj ? 'A' : calcB.totalRiskAdj > calcA.totalRiskAdj ? 'B' : 'tie';
+
+  var html = '' +
+    '<h2 class="t-display">Offer Comparison Tool</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">Enter two offers side by side to compare their risk-adjusted, after-tax proceeds. Structure often reveals a different winner than headline price.</p>' +
+
+    '<div class="compare-grid">' +
+      offerInputCard('A', a, 'offerA') +
+      offerInputCard('B', b, 'offerB') +
+    '</div>';
+
+  if (hasData) {
+    html += '<div class="card" style="margin-top: var(--space-sm)"><h3 class="t-h2" style="margin-bottom: var(--space-md)">Results Comparison</h3>' +
+      '<div class="table-wrap"><table><thead><tr><th>Metric</th><th>Offer A</th><th>Offer B</th></tr></thead><tbody>' +
+        '<tr><td style="font-weight:600">Headline price</td><td>' + fmtFull(calcA.hp) + '</td><td>' + fmtFull(calcB.hp) + '</td></tr>' +
+        '<tr><td style="font-weight:600">Cash at closing</td><td>' + fmtFull(calcA.cash) + '</td><td>' + fmtFull(calcB.cash) + '</td></tr>' +
+        '<tr><td style="font-weight:600">After-tax cash at closing</td><td>' + fmtFull(calcA.afterTax) + '</td><td>' + fmtFull(calcB.afterTax) + '</td></tr>' +
+        '<tr><td style="font-weight:600">Total risk-adj proceeds</td>' +
+          '<td style="color:' + (winner === 'A' ? 'var(--color-success)' : 'var(--color-text)') + ';font-weight:' + (winner === 'A' ? '700' : '400') + '">' + fmtFull(calcA.totalRiskAdj) + (winner === 'A' ? ' \u2605' : '') + '</td>' +
+          '<td style="color:' + (winner === 'B' ? 'var(--color-success)' : 'var(--color-text)') + ';font-weight:' + (winner === 'B' ? '700' : '400') + '">' + fmtFull(calcB.totalRiskAdj) + (winner === 'B' ? ' \u2605' : '') + '</td></tr>' +
+        '<tr><td style="font-weight:600">Certainty ratio</td><td>' + (calcA.totalRiskAdj/calcA.hp*100).toFixed(1) + '%</td><td>' + (calcB.totalRiskAdj/calcB.hp*100).toFixed(1) + '%</td></tr>' +
+        '<tr><td style="font-weight:600">Non-compete</td><td>' + a.nonCompYears + ' years</td><td>' + b.nonCompYears + ' years</td></tr>' +
+      '</tbody></table></div></div>';
+
+    var recColor = winner === 'A' ? 'var(--color-info)' : 'var(--color-success)';
+    var recBg = winner === 'A' ? 'var(--color-info-light)' : 'var(--color-success-light)';
+    var recMsg;
+    if (winner === 'tie') {
+      recMsg = 'Both offers deliver comparable risk-adjusted proceeds. Look at non-financial terms (non-compete scope, cultural fit, transition requirements) to make your decision.';
+    } else {
+      var winCalc = winner === 'A' ? calcA : calcB;
+      var loseCalc = winner === 'A' ? calcB : calcA;
+      recMsg = 'Offer ' + winner + ' delivers stronger risk-adjusted after-tax proceeds (' + fmtFull(winCalc.totalRiskAdj) + ' vs ' + fmtFull(loseCalc.totalRiskAdj) + '), ';
+      recMsg += winCalc.hp < loseCalc.hp ? 'despite a lower headline price. This is a clear example of why structure matters more than price.' : 'with a higher headline price that also delivers better structure.';
+    }
+    html += '<div class="callout" style="border-left-color:' + recColor + ';background:' + recBg + '"><div class="callout-label" style="color:' + recColor + '">Recommendation</div><p>' + recMsg + '</p></div>';
+  } else {
+    html += '<div class="card" style="text-align:center;padding:40px;color:var(--color-text-tertiary)"><p class="t-body" style="margin:0">Enter headline prices for both offers above to see the comparison analysis.</p></div>';
+  }
+
+  return html;
+}
+
+function offerInputCard(letter, offer, stateKey) {
+  return '<div class="card"><h3 class="t-h3" style="text-align:center;margin-bottom:var(--space-md)">Offer ' + letter + '</h3>' +
+    '<div class="form-group"><label class="form-label">Headline price</label><div class="currency-wrap"><span class="prefix">$</span>' +
+      '<input class="form-input" type="number" value="' + offer.headline + '" onchange="state.' + stateKey + '.headline=this.value;save();renderPage()"></div></div>' +
+    rangeInput(stateKey, 'cashPct', 'Cash at closing', 0, 100, offer.cashPct) +
+    rangeInput(stateKey, 'earnoutPct', 'Earnout', 0, 50, offer.earnoutPct) +
+    rangeInput(stateKey, 'notePct', 'Seller note', 0, 30, offer.notePct) +
+    rangeInput(stateKey, 'escrowPct', 'Escrow', 0, 20, offer.escrowPct) +
+    rangeInput(stateKey, 'taxRate', 'Blended tax rate', 10, 50, offer.taxRate) +
+    '<div class="range-group"><div class="range-label"><span>Non-compete years</span><span class="val">' + offer.nonCompYears + ' yr</span></div>' +
+      '<input type="range" min="1" max="7" value="' + offer.nonCompYears + '" oninput="state.' + stateKey + '.nonCompYears=parseInt(this.value);save();renderPage()"></div>' +
+  '</div>';
+}
+
+function rangeInput(stateKey, prop, label, min, max, value) {
+  return '<div class="range-group"><div class="range-label"><span>' + label + '</span><span class="val">' + value + '%</span></div>' +
+    '<input type="range" min="' + min + '" max="' + max + '" value="' + value + '" oninput="state.' + stateKey + '.' + prop + '=parseInt(this.value);save();renderPage()"></div>';
+}
+
+function renderDashboard() {
+  var hp = state.headlinePrice;
+  var escrow = hp * (state.escrowPct / 100);
+  var earnout = hp * (state.earnoutPct / 100);
+  var note = hp * (state.sellerNotePct / 100);
+  var cashAtClose = hp - escrow - earnout - note;
+  var cashPct = hp > 0 ? ((cashAtClose / hp) * 100).toFixed(0) : 0;
+  var mistakesAddr = Object.values(state.mistakeChecks).filter(Boolean).length;
+  var completedCount = PAGES.filter(function(p) { return isCompleted(p.id); }).length;
+  var circ = 2 * Math.PI * 52;
+
+  var html = '' +
+    '<h2 class="t-display">Your Deal Structure Action Plan</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">A summary of what you have learned and the critical actions to take before entering deal negotiations.</p>' +
+
+    '<div style="text-align:center;margin-bottom:var(--space-xl)">' +
+      '<div class="ring-wrap">' +
+        '<svg width="120" height="120" viewBox="0 0 120 120">' +
+          '<circle class="ring-bg" cx="60" cy="60" r="52" fill="none" stroke-width="8"/>' +
+          '<circle class="ring-fill" cx="60" cy="60" r="52" fill="none" stroke-width="8" stroke-dasharray="' + circ + '" stroke-dashoffset="' + (circ * (1 - completedCount/PAGES.length)) + '"/>' +
+        '</svg>' +
+        '<div class="ring-text"><span class="ring-value">' + Math.round((completedCount/PAGES.length)*100) + '%</span><span class="ring-label-text">Complete</span></div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="stats-row">' +
+      '<div class="stat-card"><div class="stat-value" style="color:var(--color-accent)">' + completedCount + '/' + PAGES.length + '</div><div class="stat-label">Sections Completed</div></div>' +
+      '<div class="stat-card"><div class="stat-value" style="font-size:18px">' + (state.saleType || '--') + '</div><div class="stat-label">Sale Type Preference</div></div>' +
+      '<div class="stat-card"><div class="stat-value" style="color:var(--color-success)">' + cashPct + '%</div><div class="stat-label">Cash at Closing Ratio</div></div>' +
+      '<div class="stat-card"><div class="stat-value">' + mistakesAddr + '/6</div><div class="stat-label">Mistakes Addressed</div></div>' +
+    '</div>' +
+
+    '<div class="card"><h3 class="t-h2" style="margin-bottom: var(--space-md)">Pre-Negotiation Checklist</h3>' +
+    buildNumberedList([
+      'Engage a transaction-experienced CPA for tax planning',
+      'Understand the tax impact of asset vs. stock sale for your entity',
+      'Know your minimum acceptable cash-at-closing percentage',
+      'Prepare your position on earnout metrics and protections',
+      'Research R&W insurance to minimize escrow',
+      'Calculate your trailing 12-month working capital average',
+      'Define your non-compete boundaries before negotiations begin',
+      'Build a proceeds waterfall template to evaluate every offer',
+      'Identify your walk-away terms on each structural component',
+      'Discuss installment sale tax treatment with your CPA',
+    ]) + '</div>' +
+
+    '<div class="card"><h3 class="t-h2" style="margin-bottom: var(--space-md)">Key Concepts Mastered</h3>';
+  [
+    { concept: 'Asset vs. Stock Sale', done: !!state.saleType },
+    { concept: 'Earnout Risk Assessment', done: !!state.earnoutMetric },
+    { concept: 'Proceeds Waterfall', done: state.headlinePrice !== 20000000 },
+    { concept: 'Offer Comparison', done: !!(state.offerA.headline && state.offerB.headline) },
+    { concept: 'Common Mistakes', done: mistakesAddr >= 3 },
+  ].forEach(function(item) {
+    html += '<div class="gauge-row"><div class="gauge-name">' + item.concept + '</div>' +
+      '<span class="pill ' + (item.done ? 'pill-success' : 'pill-warning') + '">' + (item.done ? 'Completed' : 'Review needed') + '</span></div>';
+  });
+  html += '</div>';
+
+  html += '<div class="callout"><div class="callout-label">Final Thought</div>' +
+    '<p>"The headline price is the story buyers want you to focus on. The structure is where the real economics live. Never confuse the two."</p></div>';
+
+  html += '<div style="text-align:center;margin-top:var(--space-xl)"><button class="btn btn-export" onclick="exportSummary()">Export Summary</button></div>';
+
+  return html;
+}
+
+// Event handlers
+function toggleMistake(el) {
+  var key = el.dataset.key;
+  state.mistakeChecks[key] = !state.mistakeChecks[key];
+  save();
+  renderPage();
+}
+
+function exportSummary() {
+  var hp = state.headlinePrice;
+  var escrow = hp * (state.escrowPct / 100);
+  var earnout = hp * (state.earnoutPct / 100);
+  var note = hp * (state.sellerNotePct / 100);
+  var cashAtClose = hp - escrow - earnout - note;
+  var txnCosts = hp * (state.txnCostPct / 100);
+  var taxes = (cashAtClose - txnCosts) * (state.taxRate / 100);
+  var netCash = cashAtClose - txnCosts - taxes - state.debtRepay;
+
+  var lines = ['DEAL STRUCTURE LITERACY -- SUMMARY', ''];
+  lines.push('Sale Type Preference: ' + (state.saleType || 'Not selected'));
+  lines.push('Entity Type: ' + (state.entityType || 'Not selected'));
+  lines.push('');
+  lines.push('PROCEEDS WATERFALL');
+  lines.push('  Headline Price: ' + fmtFull(hp));
+  lines.push('  Escrow (' + state.escrowPct + '%): ' + fmtFull(escrow));
+  lines.push('  Earnout (' + state.earnoutPct + '%): ' + fmtFull(earnout));
+  lines.push('  Seller Note (' + state.sellerNotePct + '%): ' + fmtFull(note));
+  lines.push('  Cash at Closing: ' + fmtFull(cashAtClose));
+  lines.push('  Transaction Costs (' + state.txnCostPct + '%): ' + fmtFull(txnCosts));
+  lines.push('  Taxes (' + state.taxRate + '%): ' + fmtFull(taxes));
+  lines.push('  Debt Repayment: ' + fmtFull(state.debtRepay));
+  lines.push('  Net Cash at Closing: ' + fmtFull(Math.max(0, netCash)));
+  lines.push('');
+  lines.push('MISTAKES ADDRESSED');
+  MISTAKES_DATA.forEach(function(m, i) {
+    lines.push('  [' + (state.mistakeChecks['m_' + i] ? 'X' : ' ') + '] ' + m.mistake);
+  });
+
+  var blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'deal-structure-literacy-summary.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('Summary exported');
+}
+
+// Public API
+var PB = {
+  reset: function() {
+    if (confirm('Reset all progress? This cannot be undone.')) {
+      state = defaultState();
+      save();
+      goToPage('welcome');
+      showToast('Progress reset');
+    }
+  },
+  toggleSidebar: toggleSidebar,
+};
+
+// Init
+updateSidebar();
+renderPage();
+
+document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && e.target.classList.contains('nav-item')) e.target.click();
+});
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

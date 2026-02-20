@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valuation Benchmarking | Exit Planning Playbook #31</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.6; color: var(--color-text); background: var(--color-bg); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 1000; }
+a.skip-link:focus { position: fixed; top: 10px; left: 10px; width: auto; height: auto; padding: 12px 20px; background: var(--color-primary); color: #fff; border-radius: var(--radius-sm); font-weight: 600; z-index: 1000; }
+.t-display { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; min-width: 260px; background: #FFFFFF; border-right: 1px solid var(--color-border); color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: transform var(--transition-slow); overflow-y: auto; }
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+.mobile-header { display: none; position: sticky; top: 0; z-index: 90; background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md); }
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item { display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px; border-radius: var(--radius-sm); color: var(--color-text-secondary); font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative; }
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--color-text-tertiary); }
+.nav-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+.sidebar-footer { margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--color-border); font-size: 12px; color: rgba(255,255,255,0.3); display: flex; align-items: center; gap: 6px; }
+.sidebar-footer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-success); }
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); transition: box-shadow var(--transition-normal); margin-bottom: var(--space-md); }
+.card:hover { box-shadow: var(--shadow-sm); }
+.callout { padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); border-left: 3px solid; font-size: 14px; line-height: 1.6; margin-bottom: var(--space-md); }
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+.callout-success { background: var(--color-success-light); border-color: var(--color-success); color: #1A5C30; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm); padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; transition: all var(--transition-fast); white-space: nowrap; }
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface); transition: all var(--transition-fast); color: var(--color-text); }
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+.input-prefix { position: relative; }
+.input-prefix::before { content: '$'; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--color-text-tertiary); font-size: 15px; pointer-events: none; }
+.input-prefix .form-input { padding-left: 28px; }
+.input-row { display: grid; gap: var(--space-md); }
+.input-row.cols-2 { grid-template-columns: 1fr 1fr; }
+.input-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); text-align: center; }
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+@media (max-width: 600px) { .score-selector { gap: 4px; } .score-option { padding: 10px 4px; } .score-number { font-size: 18px; } .score-label-text { font-size: 9px; } }
+.check-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md); border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast); }
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box { width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); margin-top: 1px; }
+.check-item.checked .check-box { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--color-border); }
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+@media (max-width: 600px) { .welcome-stats { grid-template-columns: 1fr; } .welcome-hero { padding: var(--space-2xl) var(--space-md); } .input-row.cols-2, .input-row.cols-3 { grid-template-columns: 1fr; } }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-lg); }
+.summary-item { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-align: center; }
+.summary-item-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; }
+.summary-item-label { font-size: 12px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-top: var(--space-xs); }
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 24px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+@media (max-width: 600px) { .bar-label { width: 90px; font-size: 11px; } }
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; margin-bottom: var(--space-md); }
+.data-table th { text-align: left; padding: var(--space-sm) var(--space-md); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); }
+.data-table td { padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table input, .data-table select { width: 100%; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; background: var(--color-surface); }
+.data-table input:focus, .data-table select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-light); }
+.gauge-wrap { display: flex; justify-content: center; margin: var(--space-lg) 0; }
+.gauge-ring { position: relative; width: 160px; height: 160px; }
+.gauge-ring svg { width: 160px; height: 160px; transform: rotate(-90deg); }
+.gauge-ring circle { fill: none; stroke-width: 8; stroke-linecap: round; }
+.gauge-bg { stroke: var(--color-border); }
+.gauge-fill { transition: stroke-dashoffset 1s ease; }
+.gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gauge-center-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; line-height: 1; }
+.gauge-center-label { font-size: 12px; color: var(--color-text-tertiary); margin-top: 4px; }
+.toggle-group { display: flex; background: var(--color-surface-alt); border-radius: var(--radius-sm); padding: 3px; margin-bottom: var(--space-lg); }
+.toggle-option { flex: 1; padding: 8px 14px; border-radius: 4px; font-size: 13px; font-weight: 500; text-align: center; cursor: pointer; transition: all var(--transition-fast); color: var(--color-text-secondary); }
+.toggle-option.active { background: var(--color-surface); color: var(--color-text); box-shadow: var(--shadow-sm); }
+.slider-group { margin-bottom: var(--space-lg); }
+.slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm); }
+.slider-value { font-size: 18px; font-weight: 700; color: var(--color-primary); font-variant-numeric: tabular-nums; }
+input[type="range"] { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 3px; background: var(--color-border); outline: none; margin: var(--space-sm) 0; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--color-primary); cursor: pointer; border: 3px solid var(--color-surface); box-shadow: var(--shadow-md); }
+.val-result { background: linear-gradient(135deg, var(--color-text), #2A2A28); border-radius: var(--radius-xl); padding: 36px; color: #fff; text-align: center; margin-bottom: var(--space-lg); }
+.val-result h3 { color: #fff; font-size: 16px; font-weight: 500; margin-bottom: 6px; opacity: 0.8; }
+.val-range-display { font-family: var(--font-display); font-size: 2rem; font-weight: 800; margin-bottom: 4px; letter-spacing: -0.02em; }
+.val-mid-display { font-size: 14px; color: var(--color-accent); }
+.val-bar { display: flex; align-items: center; gap: 10px; margin-top: var(--space-lg); }
+.val-bar .val-end { font-size: 12px; font-weight: 600; white-space: nowrap; }
+.val-bar .val-track { flex: 1; height: 10px; background: rgba(255,255,255,0.15); border-radius: 5px; position: relative; overflow: hidden; }
+.val-bar .val-range-fill { position: absolute; height: 100%; background: linear-gradient(90deg, var(--color-accent), #D4925A); border-radius: 5px; }
+.heat-row { display: flex; align-items: center; margin-bottom: 6px; gap: 10px; }
+.heat-label { width: 160px; font-size: 13px; color: var(--color-text-secondary); flex-shrink: 0; text-align: right; }
+.heat-bar-wrap { flex: 1; height: 28px; background: var(--color-surface-alt); border-radius: var(--radius-sm); overflow: hidden; position: relative; }
+.heat-bar { height: 100%; border-radius: var(--radius-sm); transition: width 0.6s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+.heat-bar .heat-val { font-size: 11px; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+@media (max-width: 600px) { .heat-label { width: 100px; font-size: 11px; } .val-range-display { font-size: 1.5rem; } }
+.toast-container { position: fixed; bottom: var(--space-lg); right: var(--space-lg); z-index: 200; display: flex; flex-direction: column; gap: var(--space-sm); }
+.toast { padding: 12px 20px; background: var(--color-text); color: #fff; border-radius: var(--radius-md); font-size: 14px; animation: toastIn 0.3s ease; box-shadow: var(--shadow-lg); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@media print {
+  .sidebar, .mobile-header, .page-nav, .sidebar-overlay, .toast-container { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; margin-bottom: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<a href="#contentArea" class="skip-link">Skip to content</a>
+<div class="app">
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #31</div>
+      <div class="sidebar-brand-title">Valuation Benchmarking</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Valuation Readiness</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete sections to build your score</div>
+    </div>
+    <div class="sidebar-footer"><div class="sidebar-footer-dot"></div>Auto-saved locally</div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation"><span></span></button>
+      <div style="flex:1"><strong style="font-size:15px;">Valuation Benchmarking</strong></div>
+      <div class="badge badge-primary" id="mobileScore">--/100</div>
+    </div>
+    <main class="content-area" id="contentArea" role="main"></main>
+  </div>
+</div>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script>
+(function() {
+'use strict';
+
+var STORAGE_KEY = 'exitosx-pb31-valuation-benchmarking';
+
+var PAGES = [
+  { id: 'welcome', title: 'Welcome', phase: 'START', icon: '1' },
+  { id: 'why', title: 'Why Benchmarking Matters', phase: 'LEARN', icon: '2' },
+  { id: 'methods', title: 'Three Core Methods', phase: 'LEARN', icon: '3' },
+  { id: 'multiples', title: 'Industry Multiples', phase: 'ASSESS', icon: '4' },
+  { id: 'premiums', title: 'Premium vs. Discount', phase: 'ASSESS', icon: '5' },
+  { id: 'ebitda', title: 'Normalize EBITDA', phase: 'CALCULATE', icon: '6' },
+  { id: 'range', title: 'Valuation Range Builder', phase: 'CALCULATE', icon: '7' },
+  { id: 'mistakes', title: 'Mistakes & Professionals', phase: 'PLAN', icon: '8' },
+  { id: 'dashboard', title: 'Summary & Next Steps', phase: 'RESULTS', icon: '9' }
+];
+
+var INDUSTRY_DATA = {
+  saas: { name: 'SaaS / Software', ev_low: 8, ev_high: 15, rev_low: 3, rev_high: 8, drivers: 'ARR growth, net retention, gross margin >75%' },
+  healthcare: { name: 'Healthcare Services', ev_low: 6, ev_high: 10, rev_low: 1, rev_high: 3, drivers: 'Payor mix, reimbursement stability, provider retention' },
+  it_msp: { name: 'IT Managed Services', ev_low: 5, ev_high: 8, rev_low: 1, rev_high: 2.5, drivers: 'Recurring contracts, MRR %, client retention >90%' },
+  gov_contracting: { name: 'Government Contracting', ev_low: 5, ev_high: 8, rev_low: 0.8, rev_high: 1.5, drivers: 'Contract backlog, clearances, recompete win rate' },
+  manufacturing: { name: 'Manufacturing', ev_low: 4, ev_high: 7, rev_low: 0.5, rev_high: 1.5, drivers: 'Proprietary products, customer diversity, equipment condition' },
+  prof_services: { name: 'Professional Services', ev_low: 4, ev_high: 7, rev_low: 0.8, rev_high: 1.5, drivers: 'Recurring clients, key-person risk, utilization rates' },
+  construction: { name: 'Construction / Trades', ev_low: 3, ev_high: 5, rev_low: 0.3, rev_high: 0.8, drivers: 'Backlog, bonding capacity, estimating accuracy' },
+  distribution: { name: 'Distribution / Wholesale', ev_low: 4, ev_high: 6, rev_low: 0.3, rev_high: 0.7, drivers: 'Exclusive territories, vendor relationships, margins' },
+  restaurants: { name: 'Restaurants / Food Service', ev_low: 3, ev_high: 5, rev_low: 0.3, rev_high: 0.8, drivers: 'Multi-unit, brand strength, same-store sales growth' },
+  retail: { name: 'Retail (Brick & Mortar)', ev_low: 3, ev_high: 5, rev_low: 0.3, rev_high: 0.6, drivers: 'E-commerce %, lease terms, brand loyalty' },
+  home_services: { name: 'Home Services', ev_low: 4, ev_high: 7, rev_low: 0.5, rev_high: 1.2, drivers: 'Service agreements, recurring revenue, technician depth' },
+  insurance: { name: 'Insurance Agencies', ev_low: 6, ev_high: 10, rev_low: 1.5, rev_high: 3, drivers: 'Retention rate, commission structure, carrier mix' }
+};
+
+var SIZE_DATA = [
+  { label: 'Under $500K', base: '2x-3.5x', pct: 30 },
+  { label: '$500K-$1M', base: '3x-4.5x', pct: 40 },
+  { label: '$1M-$3M', base: '4x-5.5x', pct: 55 },
+  { label: '$3M-$5M', base: '5x-7x', pct: 70 },
+  { label: '$5M-$10M', base: '6x-8x', pct: 80 },
+  { label: '$10M+', base: '7x-10x+', pct: 95 }
+];
+
+var SIZE_ADJ_MAP = { u500: 0, '500_1m': 0.75, '1_3m': 1.5, '3_5m': 2.25, '5_10m': 3, '10m_plus': 4 };
+
+var PREM_FIELDS = [
+  { key: 'prem_recurring', label: 'Recurring / contracted revenue', hint: 'Impact: +1.0x to +2.0x multiple' },
+  { key: 'prem_growth', label: 'Revenue growth (>15% YoY)', hint: 'Impact: +0.5x to +1.5x multiple' },
+  { key: 'prem_margins', label: 'EBITDA margins above industry median', hint: 'Impact: +0.5x to +1.0x multiple' },
+  { key: 'prem_diversification', label: 'Customer diversification (no customer >10%)', hint: 'Impact: +0.3x to +0.5x multiple' },
+  { key: 'prem_management', label: 'Strong management team stays post-close', hint: 'Impact: +0.5x to +1.5x multiple' },
+  { key: 'prem_ip', label: 'Proprietary technology or IP', hint: 'Impact: +0.5x to +2.0x multiple' },
+  { key: 'prem_financials', label: 'Clean financials (GAAP, audited or reviewed)', hint: 'Impact: +0.3x to +0.5x multiple' },
+  { key: 'prem_growth_levers', label: 'Multiple growth levers identified', hint: 'Impact: +0.3x to +1.0x multiple' }
+];
+
+var DISC_FIELDS = [
+  { key: 'disc_owner_dep', label: 'Owner dependency (owner IS the business)', hint: 'Impact: -1.0x to -2.0x multiple' },
+  { key: 'disc_cust_conc', label: 'Customer concentration (>25% in one customer)', hint: 'Impact: -0.5x to -2.0x multiple' },
+  { key: 'disc_revenue_trend', label: 'Declining or flat revenue trend', hint: 'Impact: -1.0x to -3.0x multiple' },
+  { key: 'disc_messy_fin', label: 'Messy or unreliable financials', hint: 'Impact: -0.5x to -1.5x multiple' },
+  { key: 'disc_deferred_capex', label: 'Deferred capital expenditure / tech debt', hint: 'Impact: -0.3x to -1.0x multiple' },
+  { key: 'disc_regulatory', label: 'Regulatory or litigation risk', hint: 'Impact: -0.5x to -2.0x multiple' },
+  { key: 'disc_emp_flight', label: 'Key employee flight risk', hint: 'Impact: -0.3x to -1.0x multiple' }
+];
+
+var EBITDA_ADD_FIELDS = [
+  { key: 'adj_owner_comp', label: 'Owner excess compensation above market-rate replacement' },
+  { key: 'adj_owner_perks', label: 'Owner perks & personal expenses (auto, travel, club dues, etc.)' },
+  { key: 'adj_onetime_legal', label: 'One-time legal or professional fees' },
+  { key: 'adj_rent', label: 'Related-party rent adjustment (above market)' },
+  { key: 'adj_other_add', label: 'Other add-backs (describe in notes)' }
+];
+
+var EBITDA_SUB_FIELDS = [
+  { key: 'adj_onetime_rev', label: 'One-time revenue gains (PPP, insurance proceeds, asset sales)' },
+  { key: 'adj_nonrecurring', label: 'Non-recurring revenue (discontinued products, one-time projects)' },
+  { key: 'adj_below_comp', label: 'Below-market key employee compensation adjustments' },
+  { key: 'adj_deferred', label: 'Deferred maintenance / required CapEx' }
+];
+
+var MISTAKES = [
+  { key: 'mistake_lifestyle', title: 'Anchoring to a Lifestyle Number', desc: 'Starting with "I need $X to retire" and working backward. The market does not care what you need.' },
+  { key: 'mistake_rev_mult', title: 'Using Revenue Multiples When EBITDA Applies', desc: 'Revenue multiples are for pre-profit businesses. Established businesses are priced off EBITDA.' },
+  { key: 'mistake_buyer_math', title: 'Ignoring the Buyer\'s Math', desc: 'PE firms need to grow and exit at their target returns. They will not pay a price that breaks their model.' },
+  { key: 'mistake_rev_ev', title: 'Confusing Gross Revenue with Enterprise Value', desc: 'A $10M revenue business is not a "$10M business." Value is a function of earnings.' },
+  { key: 'mistake_cherry', title: 'Cherry-Picking the Best Year', desc: 'Buyers look at trailing 3-year weighted averages, not your single best year.' }
+];
+
+function defaultState() {
+  return {
+    currentPage: 'welcome',
+    completed: {},
+    fields: {},
+    checks: {},
+    notes: {}
+  };
+}
+
+var state = loadState();
+
+function loadState() {
+  try { var s = localStorage.getItem(STORAGE_KEY); return s ? mergeState(defaultState(), JSON.parse(s)) : defaultState(); }
+  catch(e) { return defaultState(); }
+}
+
+function mergeState(def, saved) {
+  var merged = {};
+  for (var k in def) { merged[k] = def[k]; }
+  for (var k2 in saved) { merged[k2] = saved[k2]; }
+  return merged;
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  updateProgress();
+  updateScore();
+}
+
+function calcScore() {
+  var score = 0;
+  var f = state.fields;
+  // Premium driver scores (0-40): 8 fields at 5 each = 40, scaled to 40 pts
+  var premTotal = 0, premCount = 0;
+  PREM_FIELDS.forEach(function(p) { var v = parseInt(f[p.key]) || 0; if (v) { premTotal += v; premCount++; } });
+  if (premCount > 0) score += Math.round((premTotal / (premCount * 5)) * 40);
+  // Discount driver scores (0-30): lower is better, 7 fields at 5 each = 35
+  var discTotal = 0, discCount = 0;
+  DISC_FIELDS.forEach(function(d) { var v = parseInt(f[d.key]) || 0; if (v) { discTotal += v; discCount++; } });
+  if (discCount > 0) score += Math.round(((1 - discTotal / (discCount * 5)) * 30));
+  // EBITDA completeness (0-15)
+  if (parseFloat(f.reported_ebitda) > 0) score += 10;
+  if (f.ebitda_notes && f.ebitda_notes.length > 10) score += 5;
+  // Range builder (0-15)
+  var wMid = calcWeightedMid();
+  if (wMid > 0) score += 15;
+  return Math.min(Math.round(score), 100);
+}
+
+function getScoreColor(score) {
+  if (score >= 81) return 'var(--color-score-5)';
+  if (score >= 61) return 'var(--color-score-4)';
+  if (score >= 41) return 'var(--color-score-3)';
+  if (score >= 21) return 'var(--color-score-2)';
+  return 'var(--color-score-1)';
+}
+
+function getScoreLabel(score) {
+  if (score >= 81) return 'Well-prepared for valuation discussions';
+  if (score >= 61) return 'Strong foundation, some gaps to fill';
+  if (score >= 41) return 'Moderate readiness -- address key areas';
+  if (score >= 21) return 'Significant work needed before market';
+  return 'Complete sections to build your score';
+}
+
+function updateScore() {
+  var score = calcScore();
+  document.getElementById('sidebarScore').innerHTML = score + '<span class="sidebar-score-max">/100</span>';
+  document.getElementById('mobileScore').textContent = score + '/100';
+  document.getElementById('sidebarScoreDesc').textContent = getScoreLabel(score);
+}
+
+function updateProgress() {
+  var total = PAGES.length - 2;
+  var done = Object.keys(state.completed).length;
+  var pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+}
+
+function isUnlocked(pageId) {
+  var idx = PAGES.findIndex(function(p) { return p.id === pageId; });
+  if (idx <= 0) return true;
+  return state.completed[PAGES[idx - 1].id] === true;
+}
+
+function renderNav() {
+  var nav = document.getElementById('sidebarNav');
+  var html = '';
+  var lastPhase = '';
+  PAGES.forEach(function(p) {
+    if (p.phase !== lastPhase) {
+      html += '<div class="nav-section-label">' + p.phase + '</div>';
+      lastPhase = p.phase;
+    }
+    var isActive = state.currentPage === p.id;
+    var isDone = state.completed[p.id];
+    var locked = !isUnlocked(p.id);
+    html += '<div class="nav-item' + (isActive ? ' active' : '') + (isDone ? ' completed' : '') + (locked ? ' locked' : '') + '" data-page="' + p.id + '" role="button" tabindex="' + (locked ? '-1' : '0') + '" aria-current="' + (isActive ? 'step' : 'false') + '">';
+    html += '<span class="nav-icon">' + p.icon + '</span>';
+    html += '<span>' + p.title + '</span>';
+    if (isDone) html += '<span class="nav-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></span>';
+    html += '</div>';
+  });
+  nav.innerHTML = html;
+  nav.querySelectorAll('.nav-item:not(.locked)').forEach(function(el) {
+    el.addEventListener('click', function() { goToPage(el.dataset.page); });
+    el.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToPage(el.dataset.page); } });
+  });
+}
+
+function goToPage(pageId) {
+  if (!isUnlocked(pageId)) return;
+  state.currentPage = pageId;
+  saveState();
+  renderPage();
+  renderNav();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  closeSidebar();
+}
+
+function completePage(pageId) {
+  state.completed[pageId] = true;
+  var idx = PAGES.findIndex(function(p) { return p.id === pageId; });
+  if (idx < PAGES.length - 1) {
+    state.currentPage = PAGES[idx + 1].id;
+  }
+  saveState();
+  renderPage();
+  renderNav();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function prevPage() {
+  var idx = PAGES.findIndex(function(p) { return p.id === state.currentPage; });
+  if (idx > 0) goToPage(PAGES[idx - 1].id);
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+document.getElementById('hamburgerBtn').addEventListener('click', toggleSidebar);
+document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+function showToast(msg) {
+  var container = document.getElementById('toastContainer');
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  container.appendChild(t);
+  setTimeout(function() { t.remove(); }, 3000);
+}
+
+function pageNav(showPrev, nextLabel, currentId) {
+  var html = '<div class="page-nav">';
+  html += showPrev ? '<button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button>' : '<div></div>';
+  if (nextLabel !== false) {
+    html += '<button class="btn btn-primary" onclick="PB.completePage(\'' + currentId + '\')">' + (nextLabel || 'Continue') + ' &rarr;</button>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function scoreSelector(stateKey, fieldKey, labels) {
+  var current = parseInt(state.fields[fieldKey]) || 0;
+  var html = '<div class="score-selector" role="radiogroup" aria-label="Score for ' + fieldKey + '">';
+  for (var i = 1; i <= 5; i++) {
+    var sel = current === i ? ' selected' : '';
+    html += '<label class="score-option s' + i + sel + '" tabindex="0" role="radio" aria-checked="' + (current === i) + '"';
+    html += ' data-field="' + fieldKey + '" data-value="' + i + '">';
+    html += '<input type="radio" name="score-' + fieldKey + '" value="' + i + '"' + (current === i ? ' checked' : '') + '>';
+    html += '<span class="score-number">' + i + '</span>';
+    html += '<span class="score-label-text">' + (labels ? labels[i - 1] : ['Poor', 'Below Avg', 'Average', 'Good', 'Excellent'][i - 1]) + '</span>';
+    html += '</label>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function fieldVal(key) { return parseFloat(state.fields[key]) || 0; }
+
+function formatCurrency(n) {
+  if (!n || isNaN(n)) return '$0';
+  n = Math.round(n);
+  if (Math.abs(n) >= 1000000) return '$' + (n / 1000000).toFixed(1) + 'M';
+  if (Math.abs(n) >= 1000) return '$' + (n / 1000).toFixed(0) + 'K';
+  return '$' + n.toLocaleString();
+}
+
+function calcAdjustedEBITDA() {
+  var reported = fieldVal('reported_ebitda');
+  var addBacks = 0;
+  EBITDA_ADD_FIELDS.forEach(function(f) { addBacks += fieldVal(f.key); });
+  var subs = 0;
+  EBITDA_SUB_FIELDS.forEach(function(f) { subs += fieldVal(f.key); });
+  return { reported: reported, addBacks: addBacks, subs: subs, adjusted: reported + addBacks - subs };
+}
+
+function calcWeightedMid() {
+  var dcfW = (fieldVal('dcf_weight') || 40) / 100;
+  var compW = (fieldVal('comp_weight') || 40) / 100;
+  var assetW = (fieldVal('asset_weight') || 20) / 100;
+  return fieldVal('dcf_mid') * dcfW + fieldVal('comp_mid') * compW + fieldVal('asset_mid') * assetW;
+}
+
+function calcWeightedRange() {
+  var dcfW = (fieldVal('dcf_weight') || 40) / 100;
+  var compW = (fieldVal('comp_weight') || 40) / 100;
+  var assetW = (fieldVal('asset_weight') || 20) / 100;
+  return {
+    low: fieldVal('dcf_low') * dcfW + fieldVal('comp_low') * compW + fieldVal('asset_low') * assetW,
+    mid: fieldVal('dcf_mid') * dcfW + fieldVal('comp_mid') * compW + fieldVal('asset_mid') * assetW,
+    high: fieldVal('dcf_high') * dcfW + fieldVal('comp_high') * compW + fieldVal('asset_high') * assetW
+  };
+}
+
+// === RENDER PAGE ===
+function renderPage() {
+  var area = document.getElementById('contentArea');
+  var renderers = {
+    'welcome': renderWelcome,
+    'why': renderWhy,
+    'methods': renderMethods,
+    'multiples': renderMultiples,
+    'premiums': renderPremiums,
+    'ebitda': renderEbitda,
+    'range': renderRange,
+    'mistakes': renderMistakes,
+    'dashboard': renderDashboard
+  };
+  var fn = renderers[state.currentPage];
+  if (fn) area.innerHTML = '<div class="page active">' + fn() + '</div>';
+}
+
+function renderWelcome() {
+  return '<div class="welcome-hero">' +
+    '<div class="welcome-icon">&#9878;</div>' +
+    '<div class="t-display">Valuation Benchmarking</div>' +
+    '<p class="t-body t-secondary" style="margin-top:var(--space-md)">Understand what your business is worth before anyone else tells you. This guided assessment walks you through professional valuation methods, industry multiples, and premium drivers to build a defensible valuation range.</p>' +
+    '<div class="welcome-stats">' +
+      '<div class="welcome-stat"><div class="welcome-stat-value">8</div><div class="welcome-stat-label">Assessment Sections</div></div>' +
+      '<div class="welcome-stat"><div class="welcome-stat-value">25</div><div class="welcome-stat-label">Minutes to Complete</div></div>' +
+      '<div class="welcome-stat"><div class="welcome-stat-value">3</div><div class="welcome-stat-label">Valuation Methods</div></div>' +
+    '</div>' +
+    '<p class="t-small t-secondary">Your progress saves automatically.</p>' +
+    '<button class="btn btn-primary btn-lg" onclick="PB.completePage(\'welcome\')" style="margin-top:var(--space-lg)">Begin Your Valuation Work &rarr;</button>' +
+  '</div>';
+}
+
+function renderWhy() {
+  var timeline = state.fields.sale_timeline || '';
+  var timelineHints = {
+    '6': 'This is tight. Valuation work at this stage is informational, not strategic. Focus on getting a BOV from 2-3 brokers immediately.',
+    '12': 'You have time for one round of improvements. Get a BOV now, identify top 3 value drivers, and execute.',
+    '18': 'Good timing. You can benchmark, improve, and re-benchmark before going to market.',
+    '24': 'Ideal timing. This gives you a full strategic window to maximize value before sale.',
+    '36': 'Excellent. You have time for significant operational improvements that move the multiple.',
+    '48': 'Very early stage. Use this time to build the infrastructure (clean financials, reduced owner dependency) that commands premium multiples.'
+  };
+  var hintText = timelineHints[timeline] || '';
+  var hintColor = timeline === '6' ? 'var(--color-danger)' : timeline === '12' ? 'var(--color-warning)' : 'var(--color-success)';
+
+  return '<div class="page-header">' +
+    '<div class="t-label">Phase 1 of 8</div>' +
+    '<div class="t-display">Why Valuation Benchmarking Matters</div>' +
+    '<p class="t-body t-secondary">Sellers who go to market without a defensible valuation framework face three critical problems. Let\'s assess where you stand.</p>' +
+  '</div>' +
+  '<div class="callout callout-info"><strong>The Valuation Gap.</strong> Research consistently shows that business owners overestimate their company\'s value by 50-100% on average. Benchmarking closes the gap before you go to market.</div>' +
+  '<div class="card">' +
+    '<div class="t-h2" style="margin-bottom:var(--space-xs)">Self-Assessment: Common Seller Risks</div>' +
+    '<p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Rate your current exposure to each risk</p>' +
+    '<div class="form-group">' +
+      '<div class="form-label">Risk of Overpricing -- pricing too high and scaring away serious buyers</div>' +
+      scoreSelector('risk', 'risk_overpricing', ['1 - Low', '2', '3 - Med', '4', '5 - High']) +
+    '</div>' +
+    '<div class="form-group">' +
+      '<div class="form-label">Risk of Underpricing -- accepting the first offer without understanding true market value</div>' +
+      scoreSelector('risk', 'risk_underpricing', ['1 - Low', '2', '3 - Med', '4', '5 - High']) +
+    '</div>' +
+    '<div class="form-group">' +
+      '<div class="form-label">Weak Negotiation -- negotiating emotionally rather than analytically</div>' +
+      scoreSelector('risk', 'risk_negotiation', ['1 - Low', '2', '3 - Med', '4', '5 - High']) +
+    '</div>' +
+  '</div>' +
+  '<div class="card">' +
+    '<div class="t-h2" style="margin-bottom:var(--space-xs)">Timeline Planning</div>' +
+    '<p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Ideally, benchmark 18-24 months before your target sale date</p>' +
+    '<div class="form-group">' +
+      '<div class="form-label">How far out is your target sale date?</div>' +
+      '<select class="form-input" data-field="sale_timeline" onchange="PB.saveField(\'sale_timeline\',this.value);PB.refreshPage()">' +
+        '<option value="">Select timeline...</option>' +
+        '<option value="6"' + (timeline === '6' ? ' selected' : '') + '>Less than 6 months</option>' +
+        '<option value="12"' + (timeline === '12' ? ' selected' : '') + '>6-12 months</option>' +
+        '<option value="18"' + (timeline === '18' ? ' selected' : '') + '>12-18 months</option>' +
+        '<option value="24"' + (timeline === '24' ? ' selected' : '') + '>18-24 months</option>' +
+        '<option value="36"' + (timeline === '36' ? ' selected' : '') + '>2-3 years</option>' +
+        '<option value="48"' + (timeline === '48' ? ' selected' : '') + '>3+ years</option>' +
+      '</select>' +
+      (hintText ? '<div class="form-hint" style="color:' + hintColor + '">' + hintText + '</div>' : '') +
+    '</div>' +
+  '</div>' +
+  pageNav(true, 'Valuation Methods', 'why');
+}
+
+function renderMethods() {
+  var activeMethod = state.fields._activeMethod || 'dcf';
+  return '<div class="page-header">' +
+    '<div class="t-label">Phase 2 of 8</div>' +
+    '<div class="t-display">The Three Core Valuation Methods</div>' +
+    '<p class="t-body t-secondary">Professional valuators use three primary approaches, often triangulating all three to establish a defensible range.</p>' +
+  '</div>' +
+  '<div class="toggle-group">' +
+    '<div class="toggle-option' + (activeMethod === 'dcf' ? ' active' : '') + '" onclick="PB.showMethod(\'dcf\')">DCF / Income</div>' +
+    '<div class="toggle-option' + (activeMethod === 'market' ? ' active' : '') + '" onclick="PB.showMethod(\'market\')">Market Comps</div>' +
+    '<div class="toggle-option' + (activeMethod === 'asset' ? ' active' : '') + '" onclick="PB.showMethod(\'asset\')">Asset-Based</div>' +
+  '</div>' +
+  '<div id="method-dcf" style="' + (activeMethod !== 'dcf' ? 'display:none' : '') + '">' +
+    '<div class="card">' +
+      '<div class="t-h2" style="margin-bottom:var(--space-xs)">Discounted Cash Flow (DCF)</div>' +
+      '<p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Values your business based on projected future cash flows</p>' +
+      '<p class="t-small t-secondary">The most theoretically rigorous method. Primary approach used by sophisticated buyers, PE firms, and investment bankers.</p>' +
+      '<div class="callout callout-warning" style="margin-top:var(--space-md)"><strong>Sensitivity Warning.</strong> Changing the discount rate by 3 percentage points or the terminal growth rate by 1 point can swing the valuation by 30-50%. Always present a range, not a single number.</div>' +
+      '<div style="overflow-x:auto">' +
+        '<table class="data-table">' +
+          '<thead><tr><th>Component</th><th>Typical Range</th><th>Key Sensitivity</th></tr></thead>' +
+          '<tbody>' +
+            '<tr><td>Revenue growth rate</td><td>3-15% annually</td><td>Higher growth = higher value</td></tr>' +
+            '<tr><td>EBITDA margin</td><td>10-25%</td><td>Margin expansion adds disproportionate value</td></tr>' +
+            '<tr><td>Discount rate</td><td>15-30%</td><td>Lower risk = lower rate = higher value</td></tr>' +
+            '<tr><td>Terminal growth rate</td><td>2-4%</td><td>Small changes have outsized impact</td></tr>' +
+            '<tr><td>Projection period</td><td>5-7 years</td><td>Longer periods require more confidence</td></tr>' +
+            '<tr><td>Capital expenditure</td><td>2-8% of revenue</td><td>Capital-light = higher multiples</td></tr>' +
+          '</tbody>' +
+        '</table>' +
+      '</div>' +
+    '</div>' +
+  '</div>' +
+  '<div id="method-market" style="' + (activeMethod !== 'market' ? 'display:none' : '') + '">' +
+    '<div class="card">' +
+      '<div class="t-h2" style="margin-bottom:var(--space-xs)">Market Comparable Transactions</div>' +
+      '<p class="t-small t-secondary" style="margin-bottom:var(--space-md)">What similar businesses have actually sold for</p>' +
+      '<p class="t-small t-secondary">The most intuitive method and often the most persuasive in negotiations because it is grounded in real market data.</p>' +
+      '<div class="t-h3" style="margin:var(--space-lg) 0 var(--space-md)">Comparability Criteria</div>' +
+      '<div class="checklist" id="compChecklist">' +
+        checkItem('comp_industry', 'Industry Match: Same NAICS code or clearly similar business model') +
+        checkItem('comp_size', 'Size Match: Within 0.5x to 2.0x of your revenue') +
+        checkItem('comp_recency', 'Recency: Transaction within the last 3 years') +
+        checkItem('comp_profile', 'Financial Profile: Similar margins, growth, concentration') +
+        checkItem('comp_structure', 'Deal Structure: Arm\'s-length between unrelated parties') +
+      '</div>' +
+    '</div>' +
+  '</div>' +
+  '<div id="method-asset" style="' + (activeMethod !== 'asset' ? 'display:none' : '') + '">' +
+    '<div class="card">' +
+      '<div class="t-h2" style="margin-bottom:var(--space-xs)">Asset-Based Approach</div>' +
+      '<p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Sum of fair market value of all assets minus liabilities</p>' +
+      '<p class="t-small t-secondary">Most relevant for asset-heavy businesses, holding companies, or liquidation scenarios. Typically produces the lowest value for profitable operating companies.</p>' +
+      '<div style="overflow-x:auto;margin-top:var(--space-md)">' +
+        '<table class="data-table">' +
+          '<thead><tr><th>Method</th><th>Best For</th><th>Limitations</th></tr></thead>' +
+          '<tbody>' +
+            '<tr><td>DCF / Income</td><td>Profitable, growing, predictable</td><td>Sensitive to assumptions</td></tr>' +
+            '<tr><td>Market Comps</td><td>Active M&A markets</td><td>Hard to find true comps</td></tr>' +
+            '<tr><td>Asset-Based</td><td>Asset-heavy or distressed</td><td>Ignores going-concern value</td></tr>' +
+          '</tbody>' +
+        '</table>' +
+      '</div>' +
+    '</div>' +
+  '</div>' +
+  '<div class="card">' +
+    '<div class="t-h3" style="margin-bottom:var(--space-md)">Which method is most relevant for your business?</div>' +
+    '<div class="form-group">' +
+      '<div class="form-label">Primary valuation approach</div>' +
+      '<select class="form-input" data-field="primary_method" onchange="PB.saveField(\'primary_method\',this.value)">' +
+        '<option value="">Select method...</option>' +
+        '<option value="dcf"' + (state.fields.primary_method === 'dcf' ? ' selected' : '') + '>DCF / Income Approach (profitable, growing business)</option>' +
+        '<option value="market"' + (state.fields.primary_method === 'market' ? ' selected' : '') + '>Market Comparables (active M&A market in your industry)</option>' +
+        '<option value="asset"' + (state.fields.primary_method === 'asset' ? ' selected' : '') + '>Asset-Based (asset-heavy business)</option>' +
+        '<option value="hybrid"' + (state.fields.primary_method === 'hybrid' ? ' selected' : '') + '>Hybrid / All Three (recommended for most businesses)</option>' +
+      '</select>' +
+    '</div>' +
+  '</div>' +
+  pageNav(true, 'Industry Multiples', 'methods');
+}
+
+function renderMultiples() {
+  var industry = state.fields.industry || '';
+  var ebitdaRange = state.fields.ebitda_range || '';
+  var multiplesHtml = '';
+
+  if (industry) {
+    var d = INDUSTRY_DATA[industry];
+    if (d) {
+      var sizeAdj = ebitdaRange ? (SIZE_ADJ_MAP[ebitdaRange] || 0) : 0;
+      var adjLow = d.ev_low + sizeAdj;
+      var adjHigh = d.ev_high + sizeAdj;
+      var adjMid = ((adjLow + adjHigh) / 2).toFixed(1);
+      var maxMult = 20;
+      multiplesHtml = '<div class="card">' +
+        '<div class="t-h3" style="margin-bottom:var(--space-md)">Your Industry Multiples</div>' +
+        '<div class="summary-grid" style="grid-template-columns:repeat(3,1fr)">' +
+          '<div class="summary-item"><div class="summary-item-value">' + adjLow.toFixed(1) + 'x</div><div class="summary-item-label">Low EV/EBITDA</div></div>' +
+          '<div class="summary-item"><div class="summary-item-value" style="color:var(--color-accent)">' + adjMid + 'x</div><div class="summary-item-label">Median EV/EBITDA</div></div>' +
+          '<div class="summary-item"><div class="summary-item-value">' + adjHigh.toFixed(1) + 'x</div><div class="summary-item-label">High EV/EBITDA</div></div>' +
+        '</div>' +
+        '<div style="position:relative;height:36px;background:var(--color-surface-alt);border-radius:var(--radius-sm);overflow:hidden;margin-top:var(--space-sm)">' +
+          '<div style="position:absolute;left:' + ((adjLow / maxMult) * 100) + '%;width:' + (((adjHigh - adjLow) / maxMult) * 100) + '%;height:100%;background:linear-gradient(90deg,var(--color-accent),#D4925A);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center">' +
+            '<span style="font-size:12px;font-weight:700;color:#fff">' + adjLow.toFixed(1) + 'x - ' + adjHigh.toFixed(1) + 'x</span>' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--color-text-tertiary);margin-top:var(--space-xs)"><span>0x</span><span>5x</span><span>10x</span><span>15x</span><span>20x</span></div>' +
+        '<div class="callout callout-info" style="margin-top:var(--space-md)"><strong>' + esc(d.name) + '</strong>: Key value drivers are ' + esc(d.drivers) + '.' + (ebitdaRange ? ' Size premium of +' + sizeAdj.toFixed(1) + 'x applied based on your EBITDA range.' : ' Select an EBITDA range to see size-adjusted multiples.') + '</div>' +
+      '</div>';
+    }
+  }
+
+  // Size premium chart
+  var sizeChartHtml = '<div class="bar-chart">';
+  SIZE_DATA.forEach(function(s) {
+    var color = s.pct >= 80 ? 'var(--color-primary)' : s.pct >= 55 ? 'var(--color-accent)' : 'var(--color-text-tertiary)';
+    sizeChartHtml += '<div class="bar-row"><div class="bar-label">' + s.label + '</div><div class="bar-track"><div class="bar-fill" style="width:' + s.pct + '%;background:' + color + '"><span class="bar-value">' + s.base + '</span></div></div></div>';
+  });
+  sizeChartHtml += '</div>';
+
+  return '<div class="page-header">' +
+    '<div class="t-label">Phase 3 of 8</div>' +
+    '<div class="t-display">Industry Multiples</div>' +
+    '<p class="t-body t-secondary">What buyers actually pay. Select your industry and size to see typical multiples and position yourself.</p>' +
+  '</div>' +
+  '<div class="card">' +
+    '<div class="t-h3" style="margin-bottom:var(--space-md)">Your Business Profile</div>' +
+    '<div class="input-row cols-2">' +
+      '<div class="form-group">' +
+        '<div class="form-label">Industry</div>' +
+        '<select class="form-input" data-field="industry" onchange="PB.saveField(\'industry\',this.value);PB.refreshPage()">' +
+          '<option value="">Select industry...</option>' +
+          '<option value="saas"' + (industry === 'saas' ? ' selected' : '') + '>SaaS / Software</option>' +
+          '<option value="healthcare"' + (industry === 'healthcare' ? ' selected' : '') + '>Healthcare Services</option>' +
+          '<option value="it_msp"' + (industry === 'it_msp' ? ' selected' : '') + '>IT Managed Services</option>' +
+          '<option value="gov_contracting"' + (industry === 'gov_contracting' ? ' selected' : '') + '>Government Contracting</option>' +
+          '<option value="manufacturing"' + (industry === 'manufacturing' ? ' selected' : '') + '>Manufacturing</option>' +
+          '<option value="prof_services"' + (industry === 'prof_services' ? ' selected' : '') + '>Professional Services</option>' +
+          '<option value="construction"' + (industry === 'construction' ? ' selected' : '') + '>Construction / Trades</option>' +
+          '<option value="distribution"' + (industry === 'distribution' ? ' selected' : '') + '>Distribution / Wholesale</option>' +
+          '<option value="restaurants"' + (industry === 'restaurants' ? ' selected' : '') + '>Restaurants / Food Service</option>' +
+          '<option value="retail"' + (industry === 'retail' ? ' selected' : '') + '>Retail (Brick & Mortar)</option>' +
+          '<option value="home_services"' + (industry === 'home_services' ? ' selected' : '') + '>Home Services (HVAC, Plumbing)</option>' +
+          '<option value="insurance"' + (industry === 'insurance' ? ' selected' : '') + '>Insurance Agencies</option>' +
+        '</select>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<div class="form-label">Annual EBITDA Range</div>' +
+        '<select class="form-input" data-field="ebitda_range" onchange="PB.saveField(\'ebitda_range\',this.value);PB.refreshPage()">' +
+          '<option value="">Select range...</option>' +
+          '<option value="u500"' + (ebitdaRange === 'u500' ? ' selected' : '') + '>Under $500K</option>' +
+          '<option value="500_1m"' + (ebitdaRange === '500_1m' ? ' selected' : '') + '>$500K - $1M</option>' +
+          '<option value="1_3m"' + (ebitdaRange === '1_3m' ? ' selected' : '') + '>$1M - $3M</option>' +
+          '<option value="3_5m"' + (ebitdaRange === '3_5m' ? ' selected' : '') + '>$3M - $5M</option>' +
+          '<option value="5_10m"' + (ebitdaRange === '5_10m' ? ' selected' : '') + '>$5M - $10M</option>' +
+          '<option value="10m_plus"' + (ebitdaRange === '10m_plus' ? ' selected' : '') + '>$10M+</option>' +
+        '</select>' +
+      '</div>' +
+    '</div>' +
+  '</div>' +
+  multiplesHtml +
+  '<div class="card">' +
+    '<div class="t-h3" style="margin-bottom:var(--space-xs)">Size Premium Reference</div>' +
+    '<p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Larger businesses command higher multiples</p>' +
+    sizeChartHtml +
+  '</div>' +
+  pageNav(true, 'Premium vs. Discount', 'multiples');
+}
+
+function renderPremiums() {
+  var premHtml = '';
+  PREM_FIELDS.forEach(function(p) {
+    premHtml += '<div class="form-group">' +
+      '<div class="form-label">' + esc(p.label) + '</div>' +
+      '<div class="form-hint">' + esc(p.hint) + '</div>' +
+      scoreSelector('prem', p.key, ['Weak', 'Below Avg', 'Average', 'Strong', 'Exceptional']) +
+    '</div>';
+  });
+
+  var discHtml = '';
+  DISC_FIELDS.forEach(function(d) {
+    discHtml += '<div class="form-group">' +
+      '<div class="form-label">' + esc(d.label) + '</div>' +
+      '<div class="form-hint">' + esc(d.hint) + '</div>' +
+      scoreSelector('disc', d.key, ['None', 'Low', 'Moderate', 'High', 'Critical']) +
+    '</div>';
+  });
+
+  // Build heat map
+  var hasAny = false;
+  var heatHtml = '<div style="margin-bottom:var(--space-lg)"><div class="t-h3" style="color:var(--color-success);margin-bottom:var(--space-md)">Premium Drivers</div>';
+  PREM_FIELDS.forEach(function(p) {
+    var v = parseInt(state.fields[p.key]) || 0;
+    if (v) hasAny = true;
+    var pct = (v / 5) * 100;
+    var color = v >= 4 ? 'var(--color-success)' : v >= 3 ? 'var(--color-warning)' : v > 0 ? 'var(--color-danger)' : 'var(--color-border)';
+    heatHtml += '<div class="heat-row"><div class="heat-label">' + esc(p.label.split('(')[0].trim()) + '</div><div class="heat-bar-wrap"><div class="heat-bar" style="width:' + pct + '%;background:' + color + '"><span class="heat-val">' + (v || '-') + '/5</span></div></div></div>';
+  });
+  heatHtml += '</div><div><div class="t-h3" style="color:var(--color-danger);margin-bottom:var(--space-md)">Discount Drivers (lower is better)</div>';
+  DISC_FIELDS.forEach(function(d) {
+    var v = parseInt(state.fields[d.key]) || 0;
+    if (v) hasAny = true;
+    var pct = (v / 5) * 100;
+    var color = v <= 2 ? 'var(--color-success)' : v <= 3 ? 'var(--color-warning)' : v > 0 ? 'var(--color-danger)' : 'var(--color-border)';
+    heatHtml += '<div class="heat-row"><div class="heat-label">' + esc(d.label.split('(')[0].trim()) + '</div><div class="heat-bar-wrap"><div class="heat-bar" style="width:' + pct + '%;background:' + color + '"><span class="heat-val">' + (v || '-') + '/5</span></div></div></div>';
+  });
+  heatHtml += '</div>';
+
+  return '<div class="page-header">' +
+    '<div class="t-label">Phase 4 of 8</div>' +
+    '<div class="t-display">What Drives Premium vs. Discount</div>' +
+    '<p class="t-body t-secondary">Within any industry, individual businesses sell at multiples that can vary by 2-3x. Rate each factor for your business to see where you stand.</p>' +
+  '</div>' +
+  '<div class="card">' +
+    '<div class="t-h2" style="margin-bottom:var(--space-xs);color:var(--color-success)">Premium Drivers</div>' +
+    '<p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Factors that move you to the top of the range</p>' +
+    premHtml +
+  '</div>' +
+  '<div class="card">' +
+    '<div class="t-h2" style="margin-bottom:var(--space-xs);color:var(--color-danger)">Discount Drivers</div>' +
+    '<p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Factors that move you to the bottom of the range</p>' +
+    discHtml +
+  '</div>' +
+  (hasAny ? '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Your Premium / Discount Profile</div>' + heatHtml + '</div>' : '') +
+  pageNav(true, 'Normalize EBITDA', 'premiums');
+}
+
+function renderEbitda() {
+  var ebitdaData = calcAdjustedEBITDA();
+
+  var addFieldsHtml = '';
+  EBITDA_ADD_FIELDS.forEach(function(f) {
+    addFieldsHtml += '<div class="form-group">' +
+      '<div class="form-label">' + esc(f.label) + '</div>' +
+      '<div class="input-prefix"><input type="number" class="form-input" data-field="' + f.key + '" value="' + (state.fields[f.key] || '') + '" placeholder="0" onchange="PB.saveField(\'' + f.key + '\',this.value);PB.refreshPage()"></div>' +
+    '</div>';
+  });
+
+  var subFieldsHtml = '';
+  EBITDA_SUB_FIELDS.forEach(function(f) {
+    subFieldsHtml += '<div class="form-group">' +
+      '<div class="form-label">' + esc(f.label) + '</div>' +
+      '<div class="input-prefix"><input type="number" class="form-input" data-field="' + f.key + '" value="' + (state.fields[f.key] || '') + '" placeholder="0" onchange="PB.saveField(\'' + f.key + '\',this.value);PB.refreshPage()"></div>' +
+    '</div>';
+  });
+
+  return '<div class="page-header">' +
+    '<div class="t-label">Phase 5 of 8</div>' +
+    '<div class="t-display">Normalizing EBITDA for Valuation</div>' +
+    '<p class="t-body t-secondary">Buyers value businesses on adjusted EBITDA. Enter your numbers to calculate your normalized figure.</p>' +
+  '</div>' +
+  '<div class="callout callout-warning"><strong>The Add-Back Trap.</strong> Every add-back that cannot be defended with documentation will be rejected in diligence, and your credibility will suffer. Only include adjustments you can prove with receipts, contracts, or clear documentation.</div>' +
+  '<div class="card">' +
+    '<div class="t-h2" style="margin-bottom:var(--space-xs)">EBITDA Normalization Worksheet</div>' +
+    '<p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Enter amounts for the most recent trailing 12 months</p>' +
+    '<div class="form-group">' +
+      '<div class="form-label">Reported EBITDA (from P&L or tax return)</div>' +
+      '<div class="input-prefix"><input type="number" class="form-input" data-field="reported_ebitda" value="' + (state.fields.reported_ebitda || '') + '" placeholder="0" onchange="PB.saveField(\'reported_ebitda\',this.value);PB.refreshPage()"></div>' +
+    '</div>' +
+    '<div class="t-h3" style="color:var(--color-success);margin:var(--space-lg) 0 var(--space-md)">Add-Backs (increase adjusted EBITDA)</div>' +
+    addFieldsHtml +
+    '<div class="t-h3" style="color:var(--color-danger);margin:var(--space-lg) 0 var(--space-md)">Subtractions (decrease adjusted EBITDA)</div>' +
+    subFieldsHtml +
+    '<div style="background:var(--color-surface-alt);border-radius:var(--radius-md);padding:var(--space-lg);margin-top:var(--space-lg)">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center">' +
+        '<div class="t-label">Adjusted EBITDA</div>' +
+        '<div style="font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--color-text)">' + formatCurrency(ebitdaData.adjusted) + '</div>' +
+      '</div>' +
+      '<div class="t-caption t-secondary" style="margin-top:var(--space-sm)">Reported ' + formatCurrency(ebitdaData.reported) + ' + Add-backs ' + formatCurrency(ebitdaData.addBacks) + ' - Subtractions ' + formatCurrency(ebitdaData.subs) + '</div>' +
+    '</div>' +
+    '<div class="form-group" style="margin-top:var(--space-lg)">' +
+      '<div class="form-label">Notes on adjustments (for your records)</div>' +
+      '<textarea class="form-input" data-field="ebitda_notes" placeholder="Document the rationale and supporting evidence for each adjustment..." onchange="PB.saveField(\'ebitda_notes\',this.value)">' + esc(state.fields.ebitda_notes || '') + '</textarea>' +
+    '</div>' +
+  '</div>' +
+  pageNav(true, 'Build Valuation Range', 'ebitda');
+}
+
+function renderRange() {
+  var range = calcWeightedRange();
+  var dcfW = state.fields.dcf_weight || '40';
+  var compW = state.fields.comp_weight || '40';
+  var assetW = state.fields.asset_weight || '20';
+  var totalW = parseInt(dcfW) + parseInt(compW) + parseInt(assetW);
+  var badgeClass = totalW === 100 ? 'badge-success' : totalW > 100 ? 'badge-danger' : 'badge-warning';
+
+  var rangeResultHtml = '';
+  if (range.mid > 0) {
+    rangeResultHtml = '<div class="val-result">' +
+      '<h3>Your Estimated Valuation Range</h3>' +
+      '<div class="val-range-display">' + formatCurrency(range.low) + ' - ' + formatCurrency(range.high) + '</div>' +
+      '<div class="val-mid-display">Weighted midpoint: ' + formatCurrency(range.mid) + '</div>' +
+      '<div class="val-bar">' +
+        '<div class="val-end">' + formatCurrency(range.low * 0.8) + '</div>' +
+        '<div class="val-track"><div class="val-range-fill" style="left:20%;width:60%"></div></div>' +
+        '<div class="val-end">' + formatCurrency(range.high * 1.2) + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function methodInputs(prefix, label) {
+    return '<div style="margin-bottom:var(--space-lg)">' +
+      '<div class="t-h3">' + label + '</div>' +
+      '<div class="input-row cols-3" style="margin-top:var(--space-sm)">' +
+        '<div class="form-group"><div class="form-label">Low Estimate</div><div class="input-prefix"><input type="number" class="form-input" data-field="' + prefix + '_low" value="' + (state.fields[prefix + '_low'] || '') + '" placeholder="0" onchange="PB.saveField(\'' + prefix + '_low\',this.value);PB.refreshPage()"></div></div>' +
+        '<div class="form-group"><div class="form-label">Mid Estimate</div><div class="input-prefix"><input type="number" class="form-input" data-field="' + prefix + '_mid" value="' + (state.fields[prefix + '_mid'] || '') + '" placeholder="0" onchange="PB.saveField(\'' + prefix + '_mid\',this.value);PB.refreshPage()"></div></div>' +
+        '<div class="form-group"><div class="form-label">High Estimate</div><div class="input-prefix"><input type="number" class="form-input" data-field="' + prefix + '_high" value="' + (state.fields[prefix + '_high'] || '') + '" placeholder="0" onchange="PB.saveField(\'' + prefix + '_high\',this.value);PB.refreshPage()"></div></div>' +
+      '</div>' +
+      '<div class="slider-group">' +
+        '<div class="slider-header"><div class="form-label" style="margin:0">Weight</div><div class="slider-value">' + (state.fields[prefix + '_weight'] || (prefix === 'dcf' ? '40' : prefix === 'comp' ? '40' : '20')) + '%</div></div>' +
+        '<input type="range" min="0" max="100" value="' + (state.fields[prefix + '_weight'] || (prefix === 'dcf' ? '40' : prefix === 'comp' ? '40' : '20')) + '" data-field="' + prefix + '_weight" oninput="PB.saveField(\'' + prefix + '_weight\',this.value);PB.refreshPage()">' +
+      '</div>' +
+    '</div>';
+  }
+
+  return '<div class="page-header">' +
+    '<div class="t-label">Phase 6 of 8</div>' +
+    '<div class="t-display">Building Your Valuation Range</div>' +
+    '<p class="t-body t-secondary">Using the triangulation method, weight each approach and build a defensible range.</p>' +
+  '</div>' +
+  '<div class="card">' +
+    '<div class="t-h2" style="margin-bottom:var(--space-xs)">Method Weighting & Estimates</div>' +
+    '<p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Enter your estimate from each method and assign weights (must total 100%)</p>' +
+    methodInputs('dcf', 'DCF / Income Approach') +
+    methodInputs('comp', 'Market Comparables') +
+    methodInputs('asset', 'Asset-Based') +
+    '<div style="text-align:center"><span class="badge ' + badgeClass + '">Total Weight: ' + totalW + '%</span></div>' +
+  '</div>' +
+  rangeResultHtml +
+  '<div class="card">' +
+    '<div class="t-h3" style="margin-bottom:var(--space-md)">Sanity Check: The Rule of Reason</div>' +
+    '<div class="checklist">' +
+      checkItem('sanity_multiple', 'Does the implied multiple fall within the normal range for your industry and size?') +
+      checkItem('sanity_buyer', 'Could a buyer finance this acquisition and earn a reasonable return?') +
+      checkItem('sanity_growth', 'Does the price imply revenue growth that is realistic given your history?') +
+      checkItem('sanity_you', 'Would you buy this business at this price if you were the buyer?') +
+    '</div>' +
+  '</div>' +
+  pageNav(true, 'Common Mistakes', 'range');
+}
+
+function renderMistakes() {
+  var mistakesHtml = '<div class="checklist">';
+  MISTAKES.forEach(function(m) {
+    var isChecked = state.checks[m.key];
+    mistakesHtml += '<div class="check-item' + (isChecked ? ' checked' : '') + '" data-check="' + m.key + '" role="checkbox" aria-checked="' + (isChecked ? 'true' : 'false') + '" tabindex="0">' +
+      '<div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>' +
+      '<div class="check-text"><strong>' + esc(m.title) + '</strong><br><span class="t-small t-secondary">' + esc(m.desc) + '</span></div>' +
+    '</div>';
+  });
+  mistakesHtml += '</div>';
+
+  var valTypeNeeded = state.fields.val_type_needed || '';
+
+  return '<div class="page-header">' +
+    '<div class="t-label">Phase 7 of 8</div>' +
+    '<div class="t-display">Common Mistakes & Professional Valuations</div>' +
+    '<p class="t-body t-secondary">Avoid the traps that cost sellers millions. And know which type of professional valuation you need.</p>' +
+  '</div>' +
+  '<div class="card">' +
+    '<div class="t-h2" style="margin-bottom:var(--space-xs)">Common Valuation Mistakes</div>' +
+    '<p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Check any that apply to your current situation</p>' +
+    mistakesHtml +
+  '</div>' +
+  '<div class="card">' +
+    '<div class="t-h2" style="margin-bottom:var(--space-xs)">BOV vs. Formal Appraisal</div>' +
+    '<p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Two types of professional valuation for different purposes</p>' +
+    '<div style="overflow-x:auto">' +
+      '<table class="data-table">' +
+        '<thead><tr><th>Aspect</th><th>Broker Opinion of Value</th><th>Formal Appraisal</th></tr></thead>' +
+        '<tbody>' +
+          '<tr><td>Cost</td><td>Free to $5,000</td><td>$5,000 - $30,000+</td></tr>' +
+          '<tr><td>Timeline</td><td>1-3 weeks</td><td>4-8 weeks</td></tr>' +
+          '<tr><td>Methodology</td><td>Market comps, broker experience</td><td>DCF + market + asset (triangulated)</td></tr>' +
+          '<tr><td>Best For</td><td>Pricing a sale; selecting a broker</td><td>Tax, legal, financing, ESOP</td></tr>' +
+          '<tr><td>Defensibility</td><td>Not defensible in court</td><td>Fully defensible</td></tr>' +
+        '</tbody>' +
+      '</table>' +
+    '</div>' +
+    '<div class="form-group" style="margin-top:var(--space-md)">' +
+      '<div class="form-label">Which do you need?</div>' +
+      '<select class="form-input" data-field="val_type_needed" onchange="PB.saveField(\'val_type_needed\',this.value)">' +
+        '<option value="">Select...</option>' +
+        '<option value="bov"' + (valTypeNeeded === 'bov' ? ' selected' : '') + '>BOV from 2-3 brokers (initial planning)</option>' +
+        '<option value="formal"' + (valTypeNeeded === 'formal' ? ' selected' : '') + '>Formal appraisal (tax/legal/financing)</option>' +
+        '<option value="both"' + (valTypeNeeded === 'both' ? ' selected' : '') + '>Both (BOV for market, formal for compliance)</option>' +
+        '<option value="unsure"' + (valTypeNeeded === 'unsure' ? ' selected' : '') + '>Not sure yet</option>' +
+      '</select>' +
+    '</div>' +
+  '</div>' +
+  '<div class="card">' +
+    '<div class="t-h3" style="margin-bottom:var(--space-md)">Valuator Credentials Reference</div>' +
+    '<div style="overflow-x:auto">' +
+      '<table class="data-table">' +
+        '<thead><tr><th>Credential</th><th>Issuing Body</th><th>Best For</th></tr></thead>' +
+        '<tbody>' +
+          '<tr><td><strong>ASA</strong></td><td>American Society of Appraisers</td><td>Formal appraisals, litigation, estate/gift tax</td></tr>' +
+          '<tr><td><strong>CVA</strong></td><td>NACVA</td><td>Tax reporting, financial planning, SBA</td></tr>' +
+          '<tr><td><strong>ABV</strong></td><td>AICPA</td><td>CPA firms doing valuation work</td></tr>' +
+          '<tr><td><strong>CFA</strong></td><td>CFA Institute</td><td>Investment banking, PE due diligence</td></tr>' +
+          '<tr><td><strong>CM&AA</strong></td><td>AM&AA</td><td>M&A advisory, deal structuring</td></tr>' +
+        '</tbody>' +
+      '</table>' +
+    '</div>' +
+  '</div>' +
+  pageNav(true, 'View Summary', 'mistakes');
+}
+
+function renderDashboard() {
+  var range = calcWeightedRange();
+  var ebitdaData = calcAdjustedEBITDA();
+  var score = calcScore();
+
+  // Valuation range hero
+  var rangeHeroHtml = '';
+  if (range.mid > 0) {
+    rangeHeroHtml = '<div class="val-result">' +
+      '<h3>Your Estimated Valuation Range</h3>' +
+      '<div class="val-range-display">' + formatCurrency(range.low) + ' - ' + formatCurrency(range.high) + '</div>' +
+      '<div class="val-mid-display">Weighted midpoint: ' + formatCurrency(range.mid) + '</div>' +
+    '</div>';
+  } else {
+    rangeHeroHtml = '<div class="callout callout-warning">Complete the Valuation Range Builder (Phase 6) to see your estimated range here.</div>';
+  }
+
+  // Stats
+  var premTotal = 0, premCount = 0, discTotal = 0, discCount = 0;
+  PREM_FIELDS.forEach(function(p) { var v = parseInt(state.fields[p.key]) || 0; if (v) { premTotal += v; premCount++; } });
+  DISC_FIELDS.forEach(function(d) { var v = parseInt(state.fields[d.key]) || 0; if (v) { discTotal += v; discCount++; } });
+  var premAvg = premCount ? (premTotal / premCount).toFixed(1) : '--';
+  var discAvg = discCount ? (discTotal / discCount).toFixed(1) : '--';
+
+  // Heat map
+  var heatHtml = '';
+  PREM_FIELDS.forEach(function(p) {
+    var v = parseInt(state.fields[p.key]) || 0;
+    var color = v >= 4 ? 'var(--color-success)' : v >= 3 ? 'var(--color-warning)' : v > 0 ? 'var(--color-danger)' : 'var(--color-border)';
+    heatHtml += '<div class="heat-row"><div class="heat-label">' + esc(p.label.split('(')[0].trim()) + '</div><div class="heat-bar-wrap"><div class="heat-bar" style="width:' + ((v / 5) * 100) + '%;background:' + color + '"><span class="heat-val">' + (v || '-') + '</span></div></div></div>';
+  });
+  heatHtml += '<div style="height:var(--space-md)"></div>';
+  DISC_FIELDS.forEach(function(d) {
+    var v = parseInt(state.fields[d.key]) || 0;
+    var color = v <= 2 ? 'var(--color-success)' : v <= 3 ? 'var(--color-warning)' : v > 0 ? 'var(--color-danger)' : 'var(--color-border)';
+    heatHtml += '<div class="heat-row"><div class="heat-label">' + esc(d.label.split('(')[0].trim()) + '</div><div class="heat-bar-wrap"><div class="heat-bar" style="width:' + ((v / 5) * 100) + '%;background:' + color + '"><span class="heat-val">' + (v || '-') + '</span></div></div></div>';
+  });
+
+  // Actions
+  var actions = [];
+  var timeline = state.fields.sale_timeline;
+  if (timeline && parseInt(timeline) <= 12) actions.push('Get BOV from 2-3 brokers immediately -- your timeline is tight.');
+  if (fieldVal('disc_owner_dep') >= 4) actions.push('Address owner dependency urgently. This is your biggest discount driver. Begin delegating key relationships and documenting processes.');
+  if (fieldVal('disc_cust_conc') >= 4) actions.push('Diversify your customer base. Concentration >25% in one customer is a significant value risk.');
+  if (fieldVal('disc_messy_fin') >= 3) actions.push('Engage a CPA to clean up your financials. Messy books destroy credibility in diligence.');
+  if (fieldVal('prem_recurring') > 0 && fieldVal('prem_recurring') <= 2) actions.push('Explore ways to increase recurring/contracted revenue. This is the single largest premium driver.');
+  if (fieldVal('prem_management') > 0 && fieldVal('prem_management') <= 2) actions.push('Invest in building a management team that can operate without you. This adds +0.5x to +1.5x to your multiple.');
+  if (fieldVal('disc_revenue_trend') >= 3) actions.push('Declining revenue is the most severe discount factor. Focus on stabilizing and growing revenue before going to market.');
+  if (!ebitdaData.adjusted) actions.push('Complete the EBITDA normalization worksheet to understand your adjusted earnings.');
+  if (!range.mid) actions.push('Complete the valuation range builder to establish your expected price range.');
+  if (actions.length === 0) actions.push('Your profile looks solid. Consider engaging a credentialed valuator to validate your range and prepare for market.');
+
+  var actionsHtml = '<ol style="margin:0;padding-left:var(--space-lg);font-size:14px;color:var(--color-text-secondary)">';
+  actions.forEach(function(a) { actionsHtml += '<li style="margin-bottom:var(--space-sm)">' + a + '</li>'; });
+  actionsHtml += '</ol>';
+
+  // Valuator checklist
+  var valuatorChecklistHtml = '<div class="checklist">' +
+    checkItem('val_q1', 'How many valuations have you completed in my industry in the last 3 years?') +
+    checkItem('val_q2', 'What databases do you use for comparable transactions?') +
+    checkItem('val_q3', 'Will you provide a range or a single point estimate?') +
+    checkItem('val_q4', 'What is your turnaround time, and what documents do you need from me?') +
+    checkItem('val_q5', 'Will the report be defensible if challenged in court or by the IRS?') +
+    checkItem('val_q6', 'What is your fee structure -- flat fee, hourly, or based on complexity?') +
+  '</div>';
+
+  // Gauge
+  var circ = 2 * Math.PI * 68;
+  var offset = circ - (score / 100) * circ;
+  var gaugeHtml = '<div class="gauge-wrap"><div class="gauge-ring">' +
+    '<svg viewBox="0 0 160 160"><circle class="gauge-bg" cx="80" cy="80" r="68"/>' +
+    '<circle class="gauge-fill" cx="80" cy="80" r="68" stroke="' + getScoreColor(score) + '" stroke-dasharray="' + circ.toFixed(1) + '" stroke-dashoffset="' + offset.toFixed(1) + '"/></svg>' +
+    '<div class="gauge-center"><div class="gauge-center-value" style="color:' + getScoreColor(score) + '">' + score + '</div><div class="gauge-center-label">Readiness</div></div>' +
+  '</div></div>';
+
+  return '<div class="page-header">' +
+    '<div class="t-label">Phase 8 of 8</div>' +
+    '<div class="t-display">Your Valuation Benchmarking Summary</div>' +
+    '<p class="t-body t-secondary">Everything you have assessed, in one view. Review your findings and plan your next steps.</p>' +
+  '</div>' +
+  rangeHeroHtml +
+  gaugeHtml +
+  '<div class="summary-grid" style="grid-template-columns:repeat(3,1fr)">' +
+    '<div class="summary-item"><div class="summary-item-value">' + (ebitdaData.adjusted ? formatCurrency(ebitdaData.adjusted) : '--') + '</div><div class="summary-item-label">Adjusted EBITDA</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:var(--color-success)">' + premAvg + '</div><div class="summary-item-label">Avg Premium Score</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:' + (discCount && discTotal / discCount >= 3 ? 'var(--color-danger)' : 'var(--color-success)') + '">' + discAvg + '</div><div class="summary-item-label">Avg Discount Risk</div></div>' +
+  '</div>' +
+  '<div class="card">' +
+    '<div class="t-h2" style="margin-bottom:var(--space-md)">Premium & Discount Heat Map</div>' +
+    heatHtml +
+  '</div>' +
+  '<div class="card">' +
+    '<div class="t-h2" style="margin-bottom:var(--space-md)">Recommended Next Steps</div>' +
+    actionsHtml +
+  '</div>' +
+  '<div class="card">' +
+    '<div class="t-h2" style="margin-bottom:var(--space-md)">Valuator Interview Checklist</div>' +
+    valuatorChecklistHtml +
+  '</div>' +
+  '<div class="callout callout-success" style="text-align:center;margin-top:var(--space-lg)"><strong>"Price is what you pay. Value is what you get."</strong> -- Warren Buffett<br>Know your value before the market tells you.</div>' +
+  '<div class="page-nav" style="margin-top:var(--space-2xl);padding-top:var(--space-xl);border-top:1px solid var(--color-border)">' +
+    '<button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button>' +
+    '<div style="display:flex;gap:var(--space-sm)">' +
+      '<button class="btn btn-secondary" onclick="PB.exportData()">Export</button>' +
+      '<button class="btn btn-secondary" onclick="window.print()">Print</button>' +
+      '<button class="btn btn-accent" onclick="PB.resetAll()">Start Over</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function checkItem(key, label) {
+  var isChecked = state.checks[key];
+  return '<div class="check-item' + (isChecked ? ' checked' : '') + '" data-check="' + key + '" role="checkbox" aria-checked="' + (isChecked ? 'true' : 'false') + '" tabindex="0">' +
+    '<div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>' +
+    '<div class="check-text">' + label + '</div>' +
+  '</div>';
+}
+
+// === EVENT DELEGATION ===
+document.addEventListener('click', function(e) {
+  // Score selector
+  var opt = e.target.closest('.score-option');
+  if (opt) {
+    var sel = opt.closest('.score-selector');
+    sel.querySelectorAll('.score-option').forEach(function(o) { o.classList.remove('selected'); o.setAttribute('aria-checked', 'false'); });
+    opt.classList.add('selected');
+    opt.setAttribute('aria-checked', 'true');
+    var fld = opt.getAttribute('data-field');
+    var val = parseInt(opt.getAttribute('data-value'));
+    if (fld && val) {
+      state.fields[fld] = val;
+      saveState();
+    }
+    return;
+  }
+  // Check items
+  var ci = e.target.closest('.check-item');
+  if (ci) {
+    var isNowChecked = !ci.classList.contains('checked');
+    ci.classList.toggle('checked');
+    ci.setAttribute('aria-checked', String(isNowChecked));
+    var ck = ci.getAttribute('data-check');
+    if (ck) {
+      state.checks[ck] = isNowChecked;
+      saveState();
+    }
+    return;
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    var opt = e.target.closest('.score-option');
+    if (opt) { e.preventDefault(); opt.click(); return; }
+    var ci = e.target.closest('.check-item');
+    if (ci) { e.preventDefault(); ci.click(); return; }
+  }
+});
+
+// === PUBLIC API ===
+window.PB = {
+  goToPage: goToPage,
+  completePage: completePage,
+  prevPage: prevPage,
+  saveField: function(key, value) {
+    state.fields[key] = value;
+    saveState();
+  },
+  refreshPage: function() {
+    renderPage();
+  },
+  showMethod: function(method) {
+    state.fields._activeMethod = method;
+    saveState();
+    document.querySelectorAll('[id^="method-"]').forEach(function(el) { el.style.display = 'none'; });
+    var target = document.getElementById('method-' + method);
+    if (target) target.style.display = '';
+    document.querySelectorAll('.toggle-option').forEach(function(t, i) {
+      t.classList.remove('active');
+      if ((method === 'dcf' && i === 0) || (method === 'market' && i === 1) || (method === 'asset' && i === 2)) t.classList.add('active');
+    });
+  },
+  exportData: function() {
+    var lines = ['VALUATION BENCHMARKING -- EXPORT', '================================', ''];
+    var range = calcWeightedRange();
+    var ebitdaData = calcAdjustedEBITDA();
+    if (range.mid > 0) {
+      lines.push('VALUATION RANGE: ' + formatCurrency(range.low) + ' - ' + formatCurrency(range.high));
+      lines.push('Weighted Midpoint: ' + formatCurrency(range.mid));
+      lines.push('');
+    }
+    if (ebitdaData.adjusted) {
+      lines.push('ADJUSTED EBITDA: ' + formatCurrency(ebitdaData.adjusted));
+      lines.push('  Reported: ' + formatCurrency(ebitdaData.reported));
+      lines.push('  Add-backs: ' + formatCurrency(ebitdaData.addBacks));
+      lines.push('  Subtractions: ' + formatCurrency(ebitdaData.subs));
+      lines.push('');
+    }
+    lines.push('PREMIUM DRIVERS:');
+    PREM_FIELDS.forEach(function(p) {
+      var v = parseInt(state.fields[p.key]) || 0;
+      lines.push('  ' + p.label + ': ' + v + '/5');
+    });
+    lines.push('');
+    lines.push('DISCOUNT DRIVERS:');
+    DISC_FIELDS.forEach(function(d) {
+      var v = parseInt(state.fields[d.key]) || 0;
+      lines.push('  ' + d.label + ': ' + v + '/5');
+    });
+    lines.push('');
+    lines.push('READINESS SCORE: ' + calcScore() + '/100');
+    lines.push('');
+    lines.push('Generated: ' + new Date().toLocaleDateString());
+
+    var blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'valuation-benchmarking-export.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Export downloaded');
+  },
+  resetAll: function() {
+    if (confirm('This will clear all your data. Are you sure?')) {
+      localStorage.removeItem(STORAGE_KEY);
+      state = defaultState();
+      renderPage();
+      renderNav();
+      updateProgress();
+      updateScore();
+      showToast('All data cleared');
+    }
+  }
+};
+
+// === INIT ===
+renderNav();
+renderPage();
+updateProgress();
+updateScore();
+
+})();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

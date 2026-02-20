@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contract & Agreement Review | Exit Planning Playbook #21</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+/* RESET */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  color: var(--color-text); background: var(--color-bg);
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a { color: var(--color-primary); text-decoration: none; }
+
+/* TYPOGRAPHY */
+.t-display { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+
+/* LAYOUT */
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 272px; min-width: 272px; background: var(--color-text);
+  color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow); overflow-y: auto;
+}
+.sidebar.collapsed { transform: translateX(-272px); }
+.main-content { flex: 1; margin-left: 272px; min-height: 100vh; transition: margin-left var(--transition-slow); }
+.sidebar.collapsed + .main-content { margin-left: 0; }
+.content-area { max-width: 820px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content:''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-272px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+/* SIDEBAR */
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: #fff; line-height: 1.3; }
+
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.6);
+  font-size: 13px; transition: all var(--transition-fast); cursor: pointer; position: relative;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+/* CARDS */
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-lg);
+  transition: box-shadow var(--transition-normal); margin-bottom: var(--space-md);
+}
+.card:hover { box-shadow: var(--shadow-sm); }
+
+.callout {
+  padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md);
+  border-left: 3px solid; font-size: 14px; line-height: 1.6; margin-bottom: var(--space-lg);
+}
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+
+/* BUTTONS */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); border-color: var(--color-text-tertiary); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-danger { background: var(--color-danger); color: #fff; }
+.btn-danger:hover { background: #A52020; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.btn-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+
+/* FORMS */
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+/* SCORE SELECTOR */
+.score-selector { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); }
+.score-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center;
+}
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+
+@media (max-width: 600px) {
+  .score-selector { gap: 4px; }
+  .score-option { padding: 10px 4px; }
+  .score-number { font-size: 18px; }
+  .score-label-text { font-size: 9px; }
+}
+
+/* RISK SELECTOR */
+.risk-selector { display: flex; gap: var(--space-sm); margin-bottom: var(--space-sm); }
+.risk-option {
+  flex: 1; padding: 12px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center; font-size: 14px; font-weight: 500;
+}
+.risk-option:hover { border-color: var(--color-text-tertiary); }
+.risk-option.selected.risk-low { border-color: var(--color-success); background: var(--color-success-light); color: var(--color-success); }
+.risk-option.selected.risk-med { border-color: var(--color-warning); background: var(--color-warning-light); color: var(--color-warning); }
+.risk-option.selected.risk-high { border-color: var(--color-danger); background: var(--color-danger-light); color: var(--color-danger); }
+
+/* BADGES */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+  border-radius: 999px; font-size: 12px; font-weight: 500;
+}
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+
+/* PROGRESS RING */
+.progress-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.progress-ring-text { position: absolute; text-align: center; }
+.progress-ring-value { font-family: var(--font-display); font-weight: 700; line-height: 1; }
+.progress-ring-label { font-size: 10px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* BAR CHART */
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 28px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; }
+@media (max-width: 600px) { .bar-label { width: 90px; font-size: 11px; } }
+
+/* HEAT MAP */
+.heatmap-container { overflow-x: auto; }
+.heatmap { display: grid; gap: 3px; min-width: 400px; }
+.heatmap-cell {
+  aspect-ratio: 1.4; border-radius: var(--radius-sm); display: flex; align-items: center;
+  justify-content: center; font-size: 13px; font-weight: 600; color: #fff;
+  transition: transform var(--transition-fast); cursor: default;
+}
+.heatmap-cell:hover { transform: scale(1.05); z-index: 1; }
+.heatmap-cell.hs0 { background: var(--color-border); color: var(--color-text-tertiary); }
+.heatmap-cell.hs1 { background: var(--color-score-5); }
+.heatmap-cell.hs2 { background: var(--color-score-4); }
+.heatmap-cell.hs3 { background: var(--color-score-3); }
+.heatmap-cell.hs4 { background: var(--color-score-2); }
+.heatmap-cell.hs5 { background: var(--color-score-1); }
+.heatmap-row-label { font-size: 12px; color: var(--color-text-secondary); display: flex; align-items: center; padding-right: var(--space-sm); }
+.heatmap-col-label { font-size: 10px; color: var(--color-text-tertiary); text-align: center; text-transform: uppercase; letter-spacing: 0.03em; padding-bottom: 4px; }
+
+/* PAGES */
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 620px; }
+
+.section-divider { height: 1px; background: var(--color-border); margin: var(--space-2xl) 0; }
+
+/* WELCOME */
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon {
+  width: 72px; height: 72px; background: var(--color-primary-light);
+  border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center;
+  margin: 0 auto var(--space-lg); font-size: 32px;
+}
+.welcome-hero .t-display { margin-bottom: var(--space-md); }
+.welcome-hero .t-body { margin-bottom: var(--space-2xl); }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+.welcome-phases { display: flex; flex-direction: column; gap: var(--space-md); margin: var(--space-2xl) 0; text-align: left; }
+.welcome-phase { display: flex; gap: var(--space-lg); padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-phase-num { width: 36px; height: 36px; background: var(--color-primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--color-primary); flex-shrink: 0; }
+.welcome-phase-title { font-weight: 600; margin-bottom: 2px; }
+.welcome-phase-desc { font-size: 14px; color: var(--color-text-secondary); }
+@media (max-width: 600px) { .welcome-stats { grid-template-columns: 1fr; } .welcome-hero { padding: var(--space-2xl) var(--space-md); } }
+
+/* CONTRACT TABLE */
+.contract-table-wrap { overflow-x: auto; margin-bottom: var(--space-lg); }
+.contract-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 700px; }
+.contract-table th { background: var(--color-surface-alt); padding: 10px 12px; text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); border-bottom: 2px solid var(--color-border); white-space: nowrap; }
+.contract-table td { padding: 10px 12px; border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.contract-table tr:hover td { background: var(--color-surface-alt); }
+.contract-table input, .contract-table select { font-size: 13px; padding: 6px 8px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-surface); width: 100%; min-width: 80px; }
+.contract-table input:focus, .contract-table select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-light); }
+.contract-table .row-actions { display: flex; gap: 4px; }
+.contract-table .btn-icon { width: 28px; height: 28px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.contract-table .btn-icon:hover { background: var(--color-surface-alt); }
+
+/* CHECKLIST */
+.checklist { display: flex; flex-direction: column; gap: var(--space-sm); }
+.checklist-item {
+  display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md);
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast);
+}
+.checklist-item:hover { border-color: var(--color-primary); }
+.checklist-item.checked { background: var(--color-primary-light); border-color: var(--color-primary); }
+.checklist-box {
+  width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition-fast); margin-top: 1px;
+}
+.checklist-item.checked .checklist-box { background: var(--color-primary); border-color: var(--color-primary); }
+.checklist-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; transition: opacity var(--transition-fast); }
+.checklist-item.checked .checklist-box svg { opacity: 1; }
+.checklist-text { font-size: 14px; line-height: 1.5; }
+.checklist-detail { font-size: 12px; color: var(--color-text-tertiary); margin-top: 2px; }
+
+/* TIMELINE */
+.timeline { position: relative; padding-left: 28px; }
+.timeline::before { content: ''; position: absolute; left: 8px; top: 4px; bottom: 4px; width: 2px; background: var(--color-border); }
+.timeline-item { position: relative; margin-bottom: var(--space-lg); }
+.timeline-dot {
+  position: absolute; left: -24px; top: 4px; width: 14px; height: 14px;
+  border-radius: 50%; border: 2px solid var(--color-border); background: var(--color-surface);
+}
+.timeline-item.done .timeline-dot { background: var(--color-success); border-color: var(--color-success); }
+.timeline-item.active .timeline-dot { background: var(--color-accent); border-color: var(--color-accent); }
+.timeline-time { font-size: 12px; font-weight: 600; color: var(--color-accent); margin-bottom: 2px; }
+.timeline-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+.timeline-desc { font-size: 13px; color: var(--color-text-secondary); }
+.timeline-owner { font-size: 12px; color: var(--color-text-tertiary); margin-top: 4px; }
+
+/* GAUGE */
+.gauge-wrap { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); }
+.gauge-label { font-size: 13px; font-weight: 600; color: var(--color-text-secondary); }
+.gauge-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; }
+
+/* NAV FOOTER */
+.page-nav { display: flex; justify-content: space-between; align-items: center; padding-top: var(--space-2xl); border-top: 1px solid var(--color-border); margin-top: var(--space-2xl); }
+
+/* DASHBOARD GRID */
+.dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-lg); }
+.dash-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); text-align: center; }
+.dash-card-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1.2; }
+.dash-card-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+
+/* EXPANDABLE SECTION */
+.expandable { border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: var(--space-sm); overflow: hidden; }
+.expandable-header {
+  display: flex; align-items: center; justify-content: space-between; padding: var(--space-md) var(--space-lg);
+  cursor: pointer; background: var(--color-surface); font-weight: 500; font-size: 15px;
+  transition: background var(--transition-fast);
+}
+.expandable-header:hover { background: var(--color-surface-alt); }
+.expandable-chevron { transition: transform var(--transition-fast); font-size: 12px; color: var(--color-text-tertiary); }
+.expandable.open .expandable-chevron { transform: rotate(180deg); }
+.expandable-body { display: none; padding: 0 var(--space-lg) var(--space-lg); background: var(--color-surface); }
+.expandable.open .expandable-body { display: block; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--color-text); color: #fff; padding: 12px 20px; border-radius: var(--radius-md); font-size: 14px; z-index: 200; transform: translateY(100px); opacity: 0; transition: all var(--transition-slow); }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* PRINT */
+/* Accessibility */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; }
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+
+/* Print */
+@media print { .sidebar, .mobile-header, .page-nav, .sidebar-overlay, .toast, .btn-group, .skip-link { display: none !important; } .main-content { margin-left: 0 !important; } .page { display: block !important; page-break-inside: avoid; } .content-area { max-width: 100%; padding: 0; } }
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<div class="app">
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #21</div>
+      <div class="sidebar-brand-title">Contract & Agreement Review</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width: 0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <div class="sidebar-nav" id="sidebarNav"></div>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Contract Readiness</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete assessments to see your score</div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <div class="main-content" id="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation"><span></span></button>
+      <span style="font-weight:600;font-size:15px;">Contract Review</span>
+    </div>
+
+    <div class="content-area" id="contentArea">
+
+      <!-- PAGE 0: Welcome -->
+      <div class="page active" id="page-0">
+        <div class="welcome-hero">
+          <div class="welcome-icon">&#128203;</div>
+          <div class="t-display">Contract & Agreement Review</div>
+          <p class="t-body t-secondary">Every contract your business has signed will be read by the buyer's lawyers. This interactive playbook helps you find what they will find -- before they do.</p>
+          <div class="welcome-stats">
+            <div class="welcome-stat">
+              <div class="welcome-stat-value">50-200</div>
+              <div class="welcome-stat-label">Material contracts in a typical deal</div>
+            </div>
+            <div class="welcome-stat">
+              <div class="welcome-stat-value">60-80%</div>
+              <div class="welcome-stat-label">Revenue in top 10-20 contracts</div>
+            </div>
+            <div class="welcome-stat">
+              <div class="welcome-stat-value">#1</div>
+              <div class="welcome-stat-label">Reason deals get repriced</div>
+            </div>
+          </div>
+          <div class="welcome-phases">
+            <div class="welcome-phase"><div class="welcome-phase-num">1</div><div><div class="welcome-phase-title">Understand the Stakes</div><div class="welcome-phase-desc">Learn how buyers evaluate your contract portfolio and why it matters for your deal price.</div></div></div>
+            <div class="welcome-phase"><div class="welcome-phase-num">2</div><div><div class="welcome-phase-title">Inventory & Assess</div><div class="welcome-phase-desc">Build your material contract inventory and score each contract category for risk.</div></div></div>
+            <div class="welcome-phase"><div class="welcome-phase-num">3</div><div><div class="welcome-phase-title">Identify Risks</div><div class="welcome-phase-desc">Analyze change-of-control provisions, anti-assignment clauses, and hidden liabilities.</div></div></div>
+            <div class="welcome-phase"><div class="welcome-phase-num">4</div><div><div class="welcome-phase-title">Take Action</div><div class="welcome-phase-desc">Build a 12-month action plan with tracking worksheets to get your contracts deal-ready.</div></div></div>
+          </div>
+          <button class="btn btn-primary btn-lg" onclick="goToPage(1)">Begin Your Contract Review &rarr;</button>
+        </div>
+      </div>
+
+      <!-- PAGE 1: Why Contracts Matter -->
+      <div class="page" id="page-1">
+        <div class="page-header">
+          <div class="t-label">Section 1 of 9</div>
+          <div class="t-display">Why Contracts Matter in M&A</div>
+          <p class="t-body t-secondary">Contracts define the legal framework of your business relationships. In a transaction, every contract is simultaneously a source of value and a source of risk.</p>
+        </div>
+
+        <div class="callout callout-accent" style="margin-bottom:var(--space-2xl);">
+          <strong>The Core Principle:</strong> A contract that cannot be assigned to the buyer is a contract the buyer cannot rely on. Anti-assignment clauses, change-of-control termination rights, and consent requirements are the three most common provisions that derail transactions.
+        </div>
+
+        <div class="t-h2" style="margin-bottom:var(--space-lg);">How Buyers Evaluate Contracts</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-md);">Rate your company's current state on each dimension. Be honest -- this is for your benefit.</p>
+
+        <div id="buyerEvalCards"></div>
+
+        <div class="section-divider"></div>
+
+        <div class="t-h2" style="margin-bottom:var(--space-lg);">Stock Sale vs. Asset Sale: Impact on Your Contracts</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-lg);">
+          <div class="card" style="border-left:3px solid var(--color-primary);">
+            <div class="t-h3" style="margin-bottom:var(--space-sm);">Stock / Equity Sale</div>
+            <p class="t-small t-secondary">The company remains the same legal entity. Contracts generally continue in force. However, change-of-control provisions may still be triggered because the ultimate ownership has changed.</p>
+          </div>
+          <div class="card" style="border-left:3px solid var(--color-accent);">
+            <div class="t-h3" style="margin-bottom:var(--space-sm);">Asset Sale</div>
+            <p class="t-small t-secondary">Contracts must be individually assigned from seller to buyer. Anti-assignment clauses and consent requirements apply. Under UCC 2-210, assignment is possible unless the contract prohibits it.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <strong>Structural Implication:</strong> If your portfolio has significant anti-assignment restrictions, the buyer may push for a stock deal -- which shifts tax consequences to you. Understanding your contract assignability early helps you negotiate deal structure from a position of knowledge.
+        </div>
+
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(0)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goToPage(2)">Contract Inventory &rarr;</button>
+        </div>
+      </div>
+
+      <!-- PAGE 2: Material Contract Inventory -->
+      <div class="page" id="page-2">
+        <div class="page-header">
+          <div class="t-label">Section 2 of 9</div>
+          <div class="t-display">Material Contract Inventory</div>
+          <p class="t-body t-secondary">A "material contract" is any agreement involving significant revenue/expense, remaining terms over one year, change-of-control provisions, related parties, non-competes, or material liabilities.</p>
+        </div>
+
+        <div class="t-h2" style="margin-bottom:var(--space-lg);">Contract Categories to Inventory</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-md);">For each category, enter your estimated number of contracts. This helps prioritize your review effort.</p>
+
+        <div id="categoryInventory"></div>
+
+        <div class="section-divider"></div>
+
+        <div class="t-h2" style="margin-bottom:var(--space-lg);">Your Contract Inventory</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-md);">Add your material contracts below. Focus on the highest-value and highest-risk agreements first.</p>
+
+        <div class="contract-table-wrap">
+          <table class="contract-table" id="inventoryTable">
+            <thead>
+              <tr>
+                <th>Contract Name</th>
+                <th>Counterparty</th>
+                <th>Type</th>
+                <th>Annual Value</th>
+                <th>Term/Expiry</th>
+                <th>Risk</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="inventoryBody"></tbody>
+          </table>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="addInventoryRow()">+ Add Contract</button>
+
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(1)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goToPage(3)">Customer Contracts &rarr;</button>
+        </div>
+      </div>
+
+      <!-- PAGE 3: Customer Agreements -->
+      <div class="page" id="page-3">
+        <div class="page-header">
+          <div class="t-label">Section 3 of 9</div>
+          <div class="t-display">Customer Agreements & Revenue Contracts</div>
+          <p class="t-body t-secondary">Customer contracts are the foundation of your revenue. Buyers analyze them for durability, concentration risk, and transferability.</p>
+        </div>
+
+        <div class="t-h2" style="margin-bottom:var(--space-lg);">Customer Contract Risk Assessment</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-md);">Score your top customer contracts across these risk dimensions. Green means low risk; red means urgent attention needed.</p>
+
+        <div id="customerRiskMatrix"></div>
+
+        <div class="section-divider"></div>
+
+        <div class="t-h2" style="margin-bottom:var(--space-lg);">Key Terms Buyers Scrutinize</div>
+        <div class="checklist" id="customerChecklist"></div>
+
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(2)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goToPage(4)">Vendor Agreements &rarr;</button>
+        </div>
+      </div>
+
+      <!-- PAGE 4: Vendor & Supplier -->
+      <div class="page" id="page-4">
+        <div class="page-header">
+          <div class="t-label">Section 4 of 9</div>
+          <div class="t-display">Vendor & Supplier Agreements</div>
+          <p class="t-body t-secondary">Vendor contracts are reviewed for dependency risk, pricing stability, and assignability. A key vendor that can terminate on change of control creates material supply chain risk.</p>
+        </div>
+
+        <div class="t-h2" style="margin-bottom:var(--space-lg);">Critical Vendor Risk Assessment</div>
+        <div id="vendorRiskAssessment"></div>
+
+        <div class="section-divider"></div>
+
+        <div class="t-h2" style="margin-bottom:var(--space-lg);">Vendor Risk Mitigation Tracker</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-md);">Track your mitigation actions for identified vendor risks.</p>
+        <div class="contract-table-wrap">
+          <table class="contract-table" id="vendorMitigationTable">
+            <thead>
+              <tr><th>Risk</th><th>Mitigation Strategy</th><th>Timeline</th><th>Status</th></tr>
+            </thead>
+            <tbody id="vendorMitigationBody"></tbody>
+          </table>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="addVendorMitigationRow()">+ Add Risk</button>
+
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(3)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goToPage(5)">Partnerships & JVs &rarr;</button>
+        </div>
+      </div>
+
+      <!-- PAGE 5: Partnership & JV -->
+      <div class="page" id="page-5">
+        <div class="page-header">
+          <div class="t-label">Section 5 of 9</div>
+          <div class="t-display">Partnership & Joint Venture Agreements</div>
+          <p class="t-body t-secondary">Partnership and JV agreements often contain the most restrictive transfer provisions and complex consent requirements. A partner may have the right to veto your sale.</p>
+        </div>
+
+        <div class="t-h2" style="margin-bottom:var(--space-lg);">JV/Partnership Provisions Checklist</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-md);">Check which provisions exist in your partnership and JV agreements. Each checked item requires pre-transaction planning.</p>
+        <div class="checklist" id="jvChecklist"></div>
+
+        <div class="section-divider"></div>
+
+        <div class="callout callout-info">
+          <strong>Pre-Transaction Approach:</strong> Review every JV and partnership agreement with transaction counsel at least 6 months before going to market. Options include: negotiating waivers, structuring the deal to avoid triggers, buying out the partner pre-transaction, or dissolving the JV and bringing operations in-house.
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Partnership/JV Action Notes</label>
+          <textarea class="form-input" id="jvNotes" placeholder="Document your plans for addressing JV and partnership provisions..." rows="4" oninput="saveState()"></textarea>
+        </div>
+
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(4)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goToPage(6)">Employment Contracts &rarr;</button>
+        </div>
+      </div>
+
+      <!-- PAGE 6: Employment & IC -->
+      <div class="page" id="page-6">
+        <div class="page-header">
+          <div class="t-label">Section 6 of 9</div>
+          <div class="t-display">Employment & Contractor Agreements</div>
+          <p class="t-body t-secondary">Employment contracts are scrutinized for retention risk, post-closing obligations, and compliance. Buyers want to understand compensation commitments, restrictive covenants, and potential liabilities.</p>
+        </div>
+
+        <div class="t-h2" style="margin-bottom:var(--space-lg);">Employment Agreement Key Terms</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-md);">Score each term for risk. Buyers focus heavily on these areas.</p>
+        <div id="employmentScoring"></div>
+
+        <div class="section-divider"></div>
+
+        <div class="t-h2" style="margin-bottom:var(--space-lg);">Independent Contractor Risk</div>
+        <div class="callout callout-danger" style="margin-bottom:var(--space-lg);">
+          <strong>Deal Impact:</strong> Misclassification discovered during diligence typically requires a specific indemnity, tax escrow, or purchase price reduction estimated at 1.5-3x the potential back-tax liability. Proactively auditing is far less expensive.
+        </div>
+        <div class="checklist" id="icChecklist"></div>
+
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(5)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goToPage(7)">Change-of-Control &rarr;</button>
+        </div>
+      </div>
+
+      <!-- PAGE 7: Change-of-Control -->
+      <div class="page" id="page-7">
+        <div class="page-header">
+          <div class="t-label">Section 7 of 9</div>
+          <div class="t-display">Change-of-Control & Anti-Assignment</div>
+          <p class="t-body t-secondary">Change-of-control and anti-assignment provisions are the single most impactful contract terms in a transaction. Identify them early, address them proactively.</p>
+        </div>
+
+        <div class="t-h2" style="margin-bottom:var(--space-lg);">Provision Type Reference</div>
+        <div id="cocProvisionCards"></div>
+
+        <div class="section-divider"></div>
+
+        <div class="t-h2" style="margin-bottom:var(--space-lg);">Change-of-Control & Consent Tracker</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-md);">Track each contract requiring consent or containing restrictive provisions.</p>
+        <div class="contract-table-wrap">
+          <table class="contract-table" id="consentTable">
+            <thead>
+              <tr><th>Contract</th><th>Counterparty</th><th>Provision Type</th><th>Consent Required?</th><th>Status</th></tr>
+            </thead>
+            <tbody id="consentBody"></tbody>
+          </table>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="addConsentRow()">+ Add Contract</button>
+
+        <div class="section-divider"></div>
+
+        <div class="t-h2" style="margin-bottom:var(--space-lg);">The Consent Process</div>
+        <div class="checklist" id="consentChecklist"></div>
+
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(6)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goToPage(8)">Action Plan &rarr;</button>
+        </div>
+      </div>
+
+      <!-- PAGE 8: Action Plan -->
+      <div class="page" id="page-8">
+        <div class="page-header">
+          <div class="t-label">Section 8 of 9</div>
+          <div class="t-display">12-Month Action Plan</div>
+          <p class="t-body t-secondary">Use this timeline to systematically address contract risks before going to market. Each milestone builds on the previous one.</p>
+        </div>
+
+        <div class="timeline" id="actionTimeline"></div>
+
+        <div class="section-divider"></div>
+
+        <div class="t-h2" style="margin-bottom:var(--space-lg);">Auto-Renewal Calendar</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-md);">Track auto-renewal deadlines to avoid getting locked into unfavorable terms. Missing a non-renewal notice window can lock you into another 1-3 year term.</p>
+        <div class="contract-table-wrap">
+          <table class="contract-table" id="renewalTable">
+            <thead>
+              <tr><th>Contract</th><th>Term End</th><th>Auto-Renew?</th><th>Notice Period</th><th>Deadline</th><th>Action</th></tr>
+            </thead>
+            <tbody id="renewalBody"></tbody>
+          </table>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="addRenewalRow()">+ Add Contract</button>
+
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(7)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goToPage(9)">View Results &rarr;</button>
+        </div>
+      </div>
+
+      <!-- PAGE 9: Dashboard / Results -->
+      <div class="page" id="page-9">
+        <div class="page-header">
+          <div class="t-label">Your Results</div>
+          <div class="t-display">Contract Readiness Dashboard</div>
+          <p class="t-body t-secondary">A comprehensive view of your contract portfolio readiness for a transaction.</p>
+        </div>
+
+        <div class="dash-grid" id="dashKPIs"></div>
+
+        <div class="card" style="margin-bottom:var(--space-lg);padding:var(--space-xl);">
+          <div class="t-h2" style="margin-bottom:var(--space-lg);">Readiness by Category</div>
+          <div class="bar-chart" id="categoryBarChart"></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-lg);">
+          <div class="card" style="padding:var(--space-xl);">
+            <div class="t-h2" style="margin-bottom:var(--space-lg);">Risk Heat Map</div>
+            <div class="heatmap-container"><div class="heatmap" id="riskHeatmap" style="grid-template-columns:100px repeat(6, 1fr);"></div></div>
+          </div>
+          <div class="card" style="padding:var(--space-xl);">
+            <div class="t-h2" style="margin-bottom:var(--space-lg);">Priority Actions</div>
+            <div id="priorityActions"></div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:var(--space-xl);">
+          <div class="t-h2" style="margin-bottom:var(--space-md);">Contract Readiness Score</div>
+          <div style="display:flex;align-items:center;gap:var(--space-2xl);">
+            <div class="gauge-wrap">
+              <svg width="160" height="100" viewBox="0 0 160 100">
+                <path d="M 20 90 A 60 60 0 0 1 140 90" fill="none" stroke="#E5E7EB" stroke-width="12" stroke-linecap="round"/>
+                <path id="gaugeArc" d="M 20 90 A 60 60 0 0 1 140 90" fill="none" stroke="var(--color-primary)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 188.5"/>
+              </svg>
+              <div class="gauge-value" id="gaugeValue" style="margin-top:-20px;">--</div>
+              <div class="gauge-label">out of 100</div>
+            </div>
+            <div style="flex:1;">
+              <div id="scoreInterpretation" class="t-body t-secondary" style="margin-bottom:var(--space-md);"></div>
+              <div id="scoreRecommendation"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent" style="margin-top:var(--space-lg);">
+          <strong>Final Thought:</strong> "A business is only as strong as the contracts that underpin it. Review every agreement as if a buyer is reading over your shoulder -- because they will be."
+        </div>
+
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(8)">&larr; Back</button>
+          <button class="btn btn-accent" onclick="exportResults()">Export Summary</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" aria-live="polite" role="status"></div>
+
+<script>
+/* ============================================================
+   STATE MANAGEMENT
+   ============================================================ */
+const STORAGE_KEY = 'exitosx-pb21-contract-review';
+// Migrate from old key
+(function() { try { const old = localStorage.getItem('playbook21_contract_review'); if (old && !localStorage.getItem('exitosx-pb21-contract-review')) { localStorage.setItem('exitosx-pb21-contract-review', old); localStorage.removeItem('playbook21_contract_review'); } } catch(e) {} })();
+let state = loadState();
+
+function defaultState() {
+  return {
+    currentPage: 0,
+    buyerEval: {},
+    categoryInventory: {},
+    inventoryRows: [],
+    customerRisk: {},
+    customerChecklist: {},
+    vendorRisk: {},
+    vendorMitigationRows: [],
+    jvChecklist: {},
+    jvNotes: '',
+    employmentScores: {},
+    icChecklist: {},
+    consentRows: [],
+    consentChecklist: {},
+    renewalRows: [],
+    actionTimeline: {},
+    completedPages: [],
+  };
+}
+
+function loadState() {
+  try { const s = localStorage.getItem(STORAGE_KEY); return s ? {...defaultState(), ...JSON.parse(s)} : defaultState(); }
+  catch(e) { return defaultState(); }
+}
+
+function saveState() {
+  state.jvNotes = document.getElementById('jvNotes')?.value || '';
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  updateProgress();
+  updateSidebarScore();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+const PAGES = [
+  { id: 'welcome', label: 'Welcome', icon: '&#9679;' },
+  { id: 'why-contracts', label: 'Why Contracts Matter', icon: '&#9670;' },
+  { id: 'inventory', label: 'Contract Inventory', icon: '&#9670;' },
+  { id: 'customer', label: 'Customer Agreements', icon: '&#9670;' },
+  { id: 'vendor', label: 'Vendor Agreements', icon: '&#9670;' },
+  { id: 'partnership', label: 'Partnerships & JVs', icon: '&#9670;' },
+  { id: 'employment', label: 'Employment Contracts', icon: '&#9670;' },
+  { id: 'coc', label: 'Change-of-Control', icon: '&#9670;' },
+  { id: 'action-plan', label: 'Action Plan', icon: '&#9670;' },
+  { id: 'dashboard', label: 'Dashboard', icon: '&#9632;' },
+];
+
+function buildSidebar() {
+  const nav = document.getElementById('sidebarNav');
+  nav.innerHTML = '<div class="nav-section-label">Assessment</div>';
+  PAGES.forEach((p, i) => {
+    const item = document.createElement('div');
+    item.className = 'nav-item' + (i === state.currentPage ? ' active' : '') + (state.completedPages.includes(i) ? ' completed' : '');
+    item.setAttribute('role', 'button');
+    item.setAttribute('tabindex', '0');
+    item.setAttribute('aria-label', p.label);
+    item.innerHTML = `<span class="nav-icon">${p.icon}</span><span>${p.label}</span><span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>`;
+    item.onclick = () => goToPage(i);
+    item.onkeydown = (e) => { if(e.key==='Enter'||e.key===' ') { e.preventDefault(); goToPage(i); }};
+    nav.appendChild(item);
+  });
+}
+
+function goToPage(idx) {
+  // Mark previous page as visited
+  if (state.currentPage > 0 && state.currentPage < 9 && !state.completedPages.includes(state.currentPage)) {
+    state.completedPages.push(state.currentPage);
+  }
+  state.currentPage = idx;
+  document.querySelectorAll('.page').forEach((p, i) => p.classList.toggle('active', i === idx));
+  buildSidebar();
+  saveState();
+  window.scrollTo(0, 0);
+  if (idx === 9) renderDashboard();
+  // Close mobile sidebar
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+  // Focus management
+  setTimeout(() => { const page = document.querySelectorAll('.page')[idx]; if (page) { const heading = page.querySelector('h1, h2, .t-display'); if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); } } }, 100);
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+function updateProgress() {
+  const total = 8; // pages 1-8
+  const done = state.completedPages.filter(p => p >= 1 && p <= 8).length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+}
+
+/* ============================================================
+   SCORING ENGINE
+   ============================================================ */
+function calculateOverallScore() {
+  let scores = [];
+  // Buyer eval (page 1): 8 dimensions, each 1-5
+  const beKeys = Object.keys(state.buyerEval);
+  if (beKeys.length > 0) {
+    const beAvg = beKeys.reduce((s, k) => s + state.buyerEval[k], 0) / 8;
+    scores.push(beAvg * 20); // scale to 100
+  }
+  // Customer risk (page 3): avg of all scores
+  const crVals = Object.values(state.customerRisk).map(v => typeof v === 'number' ? v : 0);
+  if (crVals.length > 0) {
+    const crAvg = crVals.reduce((s, v) => s + v, 0) / crVals.length;
+    scores.push(crAvg * 20);
+  }
+  // Vendor risk (page 4)
+  const vrVals = Object.values(state.vendorRisk).map(v => typeof v === 'number' ? v : 0);
+  if (vrVals.length > 0) {
+    const vrAvg = vrVals.reduce((s, v) => s + v, 0) / vrVals.length;
+    scores.push(vrAvg * 20);
+  }
+  // Employment scores (page 6)
+  const esVals = Object.values(state.employmentScores).map(v => typeof v === 'number' ? v : 0);
+  if (esVals.length > 0) {
+    const esAvg = esVals.reduce((s, v) => s + v, 0) / esVals.length;
+    scores.push(esAvg * 20);
+  }
+  // Checklists contribute
+  const clTotal = Object.values(state.customerChecklist).filter(Boolean).length +
+                  Object.values(state.jvChecklist).filter(Boolean).length +
+                  Object.values(state.icChecklist).filter(Boolean).length +
+                  Object.values(state.consentChecklist).filter(Boolean).length;
+  const clMax = 22; // approximate total checklist items
+  if (clTotal > 0) scores.push((clTotal / clMax) * 100);
+
+  if (scores.length === 0) return null;
+  return Math.round(scores.reduce((s, v) => s + v, 0) / scores.length);
+}
+
+function updateSidebarScore() {
+  const score = calculateOverallScore();
+  const el = document.getElementById('sidebarScore');
+  const desc = document.getElementById('sidebarScoreDesc');
+  if (score === null) {
+    el.innerHTML = '--<span class="sidebar-score-max">/100</span>';
+    desc.textContent = 'Complete assessments to see your score';
+  } else {
+    el.innerHTML = score + '<span class="sidebar-score-max">/100</span>';
+    if (score >= 80) desc.textContent = 'Strong -- minimal risk';
+    else if (score >= 60) desc.textContent = 'Moderate -- some attention needed';
+    else if (score >= 40) desc.textContent = 'Below average -- significant gaps';
+    else desc.textContent = 'Critical -- urgent remediation needed';
+  }
+}
+
+/* ============================================================
+   PAGE 1: Buyer Evaluation
+   ============================================================ */
+const BUYER_EVAL_DIMS = [
+  { key: 'revenue_durability', label: 'Revenue Durability', low: 'Month-to-month; concentrated in 1-3 customers', high: 'Long-term contracts with recurring revenue' },
+  { key: 'assignability', label: 'Assignability', low: 'Anti-assignment clauses; consent required', high: 'Silent or freely assignable' },
+  { key: 'change_of_control', label: 'Change-of-Control', low: 'Counterparty can terminate on sale', high: 'No CoC termination rights' },
+  { key: 'term_renewal', label: 'Term & Renewal', low: 'Short terms; approaching expiration', high: 'Multi-year terms with auto-renewal' },
+  { key: 'pricing', label: 'Pricing & Margins', low: 'Below-market; MFN restrictions', high: 'Favorable pricing locked in; escalators' },
+  { key: 'liability', label: 'Liability Exposure', low: 'Unlimited liability; uncapped indemnification', high: 'Standard indemnification; insurance-backed' },
+  { key: 'exclusivity', label: 'Exclusivity', low: 'Exclusive obligations limiting growth', high: 'Non-exclusive or favorable exclusivity' },
+  { key: 'governing_law', label: 'Governing Law', low: 'Foreign law; mandatory mediation', high: 'Favorable jurisdiction; standard arbitration' },
+];
+
+function buildBuyerEvalCards() {
+  const container = document.getElementById('buyerEvalCards');
+  container.innerHTML = '';
+  BUYER_EVAL_DIMS.forEach(dim => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-sm);">
+        <div class="t-h3">${dim.label}</div>
+        <span class="badge ${state.buyerEval[dim.key] ? (state.buyerEval[dim.key] >= 4 ? 'badge-success' : state.buyerEval[dim.key] >= 3 ? 'badge-warning' : 'badge-danger') : 'badge-neutral'}">${state.buyerEval[dim.key] ? state.buyerEval[dim.key] + '/5' : 'Not scored'}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:var(--space-sm);">
+        <span class="t-caption" style="color:var(--color-danger);">${dim.low}</span>
+        <span class="t-caption" style="color:var(--color-success);text-align:right;">${dim.high}</span>
+      </div>
+      <div class="score-selector" data-key="${dim.key}" data-store="buyerEval" role="radiogroup" aria-label="${dim.label}">
+        ${[1,2,3,4,5].map(n => `<label class="score-option s${n} ${state.buyerEval[dim.key] === n ? 'selected' : ''}" tabindex="0" role="radio" aria-checked="${state.buyerEval[dim.key] === n}" aria-label="Score ${n}"><input type="radio" name="be_${dim.key}" value="${n}" ${state.buyerEval[dim.key] === n ? 'checked' : ''}><span class="score-number">${n}</span><span class="score-label-text">${['Critical','Poor','Fair','Good','Strong'][n-1]}</span></label>`).join('')}
+      </div>`;
+    container.appendChild(card);
+  });
+  // Event delegation for score selectors
+  container.querySelectorAll('.score-selector').forEach(sel => {
+    sel.querySelectorAll('.score-option').forEach(opt => {
+      opt.onclick = () => selectScore(sel, opt);
+      opt.onkeydown = (e) => { if(e.key==='Enter'||e.key===' ') { e.preventDefault(); selectScore(sel, opt); }};
+    });
+  });
+}
+
+function selectScore(selector, option) {
+  const key = selector.dataset.key;
+  const store = selector.dataset.store;
+  const val = parseInt(option.querySelector('input').value);
+  state[store][key] = val;
+  selector.querySelectorAll('.score-option').forEach(o => {
+    o.classList.remove('selected');
+    o.setAttribute('aria-checked', 'false');
+  });
+  option.classList.add('selected');
+  option.setAttribute('aria-checked', 'true');
+  // Update badge
+  const card = selector.closest('.card');
+  const badge = card.querySelector('.badge');
+  if (badge) {
+    badge.className = 'badge ' + (val >= 4 ? 'badge-success' : val >= 3 ? 'badge-warning' : 'badge-danger');
+    badge.textContent = val + '/5';
+  }
+  saveState();
+}
+
+/* ============================================================
+   PAGE 2: Category Inventory
+   ============================================================ */
+const CONTRACT_CATEGORIES = [
+  { key: 'customer', label: 'Customer/Revenue Agreements', typical: '10-100+', priority: 'Critical', risk: 'Concentration; assignability; termination rights' },
+  { key: 'vendor', label: 'Vendor/Supplier Agreements', typical: '20-50+', priority: 'High', risk: 'Sole-source dependencies; pricing' },
+  { key: 'lease_real', label: 'Lease Agreements (Real Property)', typical: '1-5', priority: 'High', risk: 'Assignment restrictions; remaining term' },
+  { key: 'equipment', label: 'Equipment Leases', typical: '5-20', priority: 'Medium', risk: 'Personal guarantees; CoC provisions' },
+  { key: 'employment', label: 'Employment Agreements', typical: '3-15', priority: 'High', risk: 'Non-competes; severance triggers' },
+  { key: 'contractor', label: 'Independent Contractor', typical: '5-30', priority: 'Medium', risk: 'IP assignment; misclassification' },
+  { key: 'partnership', label: 'Partnership / JV', typical: '0-5', priority: 'High', risk: 'Consent requirements; buyout provisions' },
+  { key: 'loan', label: 'Loan/Credit Agreements', typical: '1-5', priority: 'Critical', risk: 'CoC defaults; prepayment penalties' },
+  { key: 'insurance', label: 'Insurance Policies', typical: '3-10', priority: 'Medium', risk: 'Coverage gaps; tail coverage' },
+  { key: 'tech', label: 'Technology Licenses', typical: '5-20', priority: 'Medium-High', risk: 'Assignability; open-source terms' },
+  { key: 'govt', label: 'Government Contracts', typical: '0-10', priority: 'High (if any)', risk: 'Novation requirements; set-aside status' },
+  { key: 'franchise', label: 'Franchise / License', typical: '0-5', priority: 'Critical (if any)', risk: 'Transfer restrictions; approval requirements' },
+];
+
+function buildCategoryInventory() {
+  const container = document.getElementById('categoryInventory');
+  container.innerHTML = '';
+  CONTRACT_CATEGORIES.forEach(cat => {
+    const div = document.createElement('div');
+    div.className = 'expandable' + (state.categoryInventory[cat.key] ? ' open' : '');
+    const priorityClass = cat.priority.includes('Critical') ? 'badge-danger' : cat.priority.includes('High') ? 'badge-warning' : 'badge-neutral';
+    div.innerHTML = `
+      <div class="expandable-header" onclick="this.parentElement.classList.toggle('open')">
+        <div style="display:flex;align-items:center;gap:var(--space-md);">
+          <span>${cat.label}</span>
+          <span class="badge ${priorityClass}">${cat.priority}</span>
+          ${state.categoryInventory[cat.key] ? `<span class="badge badge-primary">${state.categoryInventory[cat.key]} contracts</span>` : ''}
+        </div>
+        <span class="expandable-chevron">&#9660;</span>
+      </div>
+      <div class="expandable-body">
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-sm);">Typical: ${cat.typical} | Key risks: ${cat.risk}</p>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">How many contracts in this category?</label>
+          <input type="number" class="form-input" style="max-width:120px;" value="${state.categoryInventory[cat.key] || ''}" min="0" placeholder="0" oninput="state.categoryInventory['${cat.key}']=parseInt(this.value)||0;saveState();buildCategoryInventory();">
+        </div>
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+/* Inventory Table */
+function renderInventoryTable() {
+  const body = document.getElementById('inventoryBody');
+  body.innerHTML = '';
+  if (state.inventoryRows.length === 0) { addInventoryRow(); return; }
+  state.inventoryRows.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input value="${row.name||''}" oninput="state.inventoryRows[${i}].name=this.value;saveState();" placeholder="Contract name"></td>
+      <td><input value="${row.counterparty||''}" oninput="state.inventoryRows[${i}].counterparty=this.value;saveState();" placeholder="Company"></td>
+      <td><select onchange="state.inventoryRows[${i}].type=this.value;saveState();">
+        <option value="">Select...</option>
+        ${['Customer','Vendor','Lease','Equipment','Employment','Contractor','Partnership','Loan','Insurance','Tech','Government','Franchise'].map(t => `<option ${row.type===t?'selected':''}>${t}</option>`).join('')}
+      </select></td>
+      <td><input value="${row.value||''}" oninput="state.inventoryRows[${i}].value=this.value;saveState();" placeholder="$"></td>
+      <td><input type="date" value="${row.expiry||''}" oninput="state.inventoryRows[${i}].expiry=this.value;saveState();"></td>
+      <td><select onchange="state.inventoryRows[${i}].risk=this.value;saveState();">
+        <option value="">--</option>
+        <option value="Low" ${row.risk==='Low'?'selected':''}>Low</option>
+        <option value="Medium" ${row.risk==='Medium'?'selected':''}>Medium</option>
+        <option value="High" ${row.risk==='High'?'selected':''}>High</option>
+      </select></td>
+      <td><div class="row-actions"><button class="btn-icon" onclick="state.inventoryRows.splice(${i},1);saveState();renderInventoryTable();" title="Remove" aria-label="Remove row">&#10005;</button></div></td>`;
+    body.appendChild(tr);
+  });
+}
+
+function addInventoryRow() {
+  state.inventoryRows.push({ name:'', counterparty:'', type:'', value:'', expiry:'', risk:'' });
+  saveState(); renderInventoryTable();
+}
+
+/* ============================================================
+   PAGE 3: Customer Risk Matrix
+   ============================================================ */
+const CUSTOMER_RISK_FACTORS = [
+  { key: 'term', label: 'Contract Term', low: '<1 year or month-to-month', med: '1-3 years remaining', high: '3+ years remaining' },
+  { key: 'termination', label: 'Termination', low: 'For convenience, 30 days', med: 'For convenience, 90+ days', high: 'For cause only; 90+ day cure' },
+  { key: 'assignability', label: 'Assignability', low: 'Prohibits assignment', med: 'Requires notice', high: 'Silent or freely assignable' },
+  { key: 'concentration', label: 'Revenue Concentration', low: '>15% of total revenue', med: '5-15% of total', high: '<5% of total revenue' },
+  { key: 'pricing', label: 'Pricing', low: 'Below market; MFN restrictions', med: 'At market; fixed', high: 'Above market; annual escalators' },
+  { key: 'liability', label: 'Liability', low: 'Uncapped; one-sided', med: 'Capped but asymmetric', high: 'Capped at contract value; mutual' },
+];
+
+function buildCustomerRiskMatrix() {
+  const container = document.getElementById('customerRiskMatrix');
+  container.innerHTML = '';
+  CUSTOMER_RISK_FACTORS.forEach(f => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="t-h3" style="margin-bottom:var(--space-sm);">${f.label}</div>
+      <div class="risk-selector">
+        <div class="risk-option risk-high ${state.customerRisk[f.key]===1?'selected':''}" onclick="setRisk('customerRisk','${f.key}',1,this)" tabindex="0" role="radio" aria-label="High risk">
+          <div style="font-size:12px;font-weight:600;">High Risk</div>
+          <div style="font-size:11px;font-weight:400;margin-top:2px;">${f.low}</div>
+        </div>
+        <div class="risk-option risk-med ${state.customerRisk[f.key]===3?'selected':''}" onclick="setRisk('customerRisk','${f.key}',3,this)" tabindex="0" role="radio" aria-label="Medium risk">
+          <div style="font-size:12px;font-weight:600;">Medium</div>
+          <div style="font-size:11px;font-weight:400;margin-top:2px;">${f.med}</div>
+        </div>
+        <div class="risk-option risk-low ${state.customerRisk[f.key]===5?'selected':''}" onclick="setRisk('customerRisk','${f.key}',5,this)" tabindex="0" role="radio" aria-label="Low risk">
+          <div style="font-size:12px;font-weight:600;">Low Risk</div>
+          <div style="font-size:11px;font-weight:400;margin-top:2px;">${f.high}</div>
+        </div>
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+function setRisk(store, key, val, el) {
+  state[store][key] = val;
+  el.parentElement.querySelectorAll('.risk-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  saveState();
+}
+
+function buildCustomerChecklist() {
+  const items = [
+    { key: 'term_conv', text: 'Reviewed termination-for-convenience clauses in top 10 contracts', detail: 'Can customers terminate without cause on 30-60 days notice?' },
+    { key: 'auto_renew', text: 'Identified auto-renewal vs. affirmative renewal terms', detail: 'Auto-renew provides continuity; affirmative renewal is a risk.' },
+    { key: 'pricing_esc', text: 'Documented pricing and escalation provisions', detail: 'Are prices locked? MFN clauses? Annual increase rights?' },
+    { key: 'exclusivity', text: 'Flagged exclusivity and minimum commitments', detail: 'Does the customer have in-sourcing rights?' },
+    { key: 'sla', text: 'Reviewed SLA obligations and penalties', detail: 'Liquidated damages? Termination rights for SLA misses?' },
+    { key: 'indemnity', text: 'Checked indemnification and liability caps', detail: 'Uncapped indemnification in your largest contract is a material risk.' },
+  ];
+  const container = document.getElementById('customerChecklist');
+  container.innerHTML = '';
+  items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'checklist-item' + (state.customerChecklist[item.key] ? ' checked' : '');
+    div.onclick = () => { state.customerChecklist[item.key] = !state.customerChecklist[item.key]; saveState(); buildCustomerChecklist(); };
+    div.innerHTML = `<div class="checklist-box"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div><div class="checklist-text">${item.text}</div><div class="checklist-detail">${item.detail}</div></div>`;
+    container.appendChild(div);
+  });
+}
+
+/* ============================================================
+   PAGE 4: Vendor Risk
+   ============================================================ */
+const VENDOR_RISK_DIMS = [
+  { key: 'sole_source', label: 'Sole-Source Dependencies', desc: 'Can you switch vendors quickly if needed?' },
+  { key: 'assignment', label: 'Vendor Contract Assignability', desc: 'Can key vendor agreements transfer to a buyer?' },
+  { key: 'pricing_prot', label: 'Pricing Protections', desc: 'Are favorable prices locked in and transferable?' },
+  { key: 'payment_terms', label: 'Payment Terms', desc: 'Are vendor payment terms standard (Net 30-60)?' },
+];
+
+function buildVendorRisk() {
+  const container = document.getElementById('vendorRiskAssessment');
+  container.innerHTML = '';
+  VENDOR_RISK_DIMS.forEach(dim => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-sm);">
+        <div class="t-h3">${dim.label}</div>
+        <span class="badge ${state.vendorRisk[dim.key] ? (state.vendorRisk[dim.key] >= 4 ? 'badge-success' : state.vendorRisk[dim.key] >= 3 ? 'badge-warning' : 'badge-danger') : 'badge-neutral'}">${state.vendorRisk[dim.key] ? state.vendorRisk[dim.key] + '/5' : 'Not scored'}</span>
+      </div>
+      <p class="t-small t-secondary" style="margin-bottom:var(--space-sm);">${dim.desc}</p>
+      <div class="score-selector" data-key="${dim.key}" data-store="vendorRisk" role="radiogroup" aria-label="${dim.label}">
+        ${[1,2,3,4,5].map(n => `<label class="score-option s${n} ${state.vendorRisk[dim.key] === n ? 'selected' : ''}" tabindex="0" role="radio" aria-checked="${state.vendorRisk[dim.key] === n}"><input type="radio" name="vr_${dim.key}" value="${n}" ${state.vendorRisk[dim.key] === n ? 'checked' : ''}><span class="score-number">${n}</span><span class="score-label-text">${['Critical','Poor','Fair','Good','Strong'][n-1]}</span></label>`).join('')}
+      </div>`;
+    container.appendChild(card);
+  });
+  container.querySelectorAll('.score-selector').forEach(sel => {
+    sel.querySelectorAll('.score-option').forEach(opt => {
+      opt.onclick = () => selectScore(sel, opt);
+      opt.onkeydown = (e) => { if(e.key==='Enter'||e.key===' ') { e.preventDefault(); selectScore(sel, opt); }};
+    });
+  });
+}
+
+function renderVendorMitigationTable() {
+  const body = document.getElementById('vendorMitigationBody');
+  body.innerHTML = '';
+  state.vendorMitigationRows.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input value="${row.risk||''}" oninput="state.vendorMitigationRows[${i}].risk=this.value;saveState();" placeholder="Describe risk"></td>
+      <td><input value="${row.strategy||''}" oninput="state.vendorMitigationRows[${i}].strategy=this.value;saveState();" placeholder="Mitigation plan"></td>
+      <td><input value="${row.timeline||''}" oninput="state.vendorMitigationRows[${i}].timeline=this.value;saveState();" placeholder="e.g. 4-8 weeks"></td>
+      <td><select onchange="state.vendorMitigationRows[${i}].status=this.value;saveState();">
+        <option value="">--</option>
+        <option value="Not Started" ${row.status==='Not Started'?'selected':''}>Not Started</option>
+        <option value="In Progress" ${row.status==='In Progress'?'selected':''}>In Progress</option>
+        <option value="Complete" ${row.status==='Complete'?'selected':''}>Complete</option>
+      </select></td>`;
+    body.appendChild(tr);
+  });
+}
+
+function addVendorMitigationRow() {
+  state.vendorMitigationRows.push({ risk:'', strategy:'', timeline:'', status:'' });
+  saveState(); renderVendorMitigationTable();
+}
+
+/* ============================================================
+   PAGE 5: JV Checklist
+   ============================================================ */
+function buildJVChecklist() {
+  const items = [
+    { key: 'rofr', text: 'Right of First Refusal (ROFR)', detail: 'Partner has the right to purchase your interest before it can be sold to a third party.' },
+    { key: 'consent', text: 'Consent Requirements', detail: 'Certain decisions including a sale require consent of all partners or supermajority.' },
+    { key: 'noncompete', text: 'Non-Compete Provisions', detail: 'A buyer who acquires a competing business may trigger non-compete violations.' },
+    { key: 'buysell', text: 'Buy-Sell / Shotgun Provisions', detail: 'Partner may buy your interest upon triggering events, including a change of control.' },
+    { key: 'dissolution', text: 'Dissolution Triggers', detail: 'A change of control may accelerate winding down or trigger dissolution rights.' },
+  ];
+  const container = document.getElementById('jvChecklist');
+  container.innerHTML = '';
+  items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'checklist-item' + (state.jvChecklist[item.key] ? ' checked' : '');
+    div.onclick = () => { state.jvChecklist[item.key] = !state.jvChecklist[item.key]; saveState(); buildJVChecklist(); };
+    div.innerHTML = `<div class="checklist-box"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div><div class="checklist-text">${item.text}</div><div class="checklist-detail">${item.detail}</div></div>`;
+    container.appendChild(div);
+  });
+  document.getElementById('jvNotes').value = state.jvNotes || '';
+}
+
+/* ============================================================
+   PAGE 6: Employment Scoring
+   ============================================================ */
+const EMPLOYMENT_DIMS = [
+  { key: 'coc_severance', label: 'Change-of-Control Severance', desc: 'Total cost if key employees trigger severance post-close' },
+  { key: 'noncompete', label: 'Non-Compete / Non-Solicit', desc: 'Scope, duration, and enforceability of restrictive covenants' },
+  { key: 'guaranteed_comp', label: 'Guaranteed Compensation', desc: 'Locked-in salary, bonus, or commission structures' },
+  { key: 'title_role', label: 'Title / Role Guarantees', desc: 'Contractual right to specific role that may conflict with buyer plans' },
+  { key: 'ip_assignment', label: 'IP Assignment Clauses', desc: 'All IP created by employee is assigned to company' },
+  { key: 'arbitration', label: 'Arbitration / Forum Selection', desc: 'Where employment disputes must be resolved' },
+];
+
+function buildEmploymentScoring() {
+  const container = document.getElementById('employmentScoring');
+  container.innerHTML = '';
+  EMPLOYMENT_DIMS.forEach(dim => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-sm);">
+        <div class="t-h3">${dim.label}</div>
+        <span class="badge ${state.employmentScores[dim.key] ? (state.employmentScores[dim.key] >= 4 ? 'badge-success' : state.employmentScores[dim.key] >= 3 ? 'badge-warning' : 'badge-danger') : 'badge-neutral'}">${state.employmentScores[dim.key] ? state.employmentScores[dim.key] + '/5' : 'Not scored'}</span>
+      </div>
+      <p class="t-small t-secondary" style="margin-bottom:var(--space-sm);">${dim.desc}</p>
+      <div class="score-selector" data-key="${dim.key}" data-store="employmentScores" role="radiogroup" aria-label="${dim.label}">
+        ${[1,2,3,4,5].map(n => `<label class="score-option s${n} ${state.employmentScores[dim.key] === n ? 'selected' : ''}" tabindex="0" role="radio"><input type="radio" name="es_${dim.key}" value="${n}" ${state.employmentScores[dim.key] === n ? 'checked' : ''}><span class="score-number">${n}</span><span class="score-label-text">${['Critical','Poor','Fair','Good','Strong'][n-1]}</span></label>`).join('')}
+      </div>`;
+    container.appendChild(card);
+  });
+  container.querySelectorAll('.score-selector').forEach(sel => {
+    sel.querySelectorAll('.score-option').forEach(opt => {
+      opt.onclick = () => selectScore(sel, opt);
+      opt.onkeydown = (e) => { if(e.key==='Enter'||e.key===' ') { e.preventDefault(); selectScore(sel, opt); }};
+    });
+  });
+}
+
+function buildICChecklist() {
+  const items = [
+    { key: 'exclusive', text: 'Worker performs services exclusively/primarily for your company' },
+    { key: 'control', text: 'Company controls when, where, and how work is performed' },
+    { key: 'tools', text: 'Company provides tools, equipment, or workspace' },
+    { key: 'schedule', text: 'Worker paid on regular schedule rather than by project' },
+    { key: 'no_entity', text: 'Worker lacks own business entity, insurance, or other clients' },
+    { key: 'duration', text: 'Relationship has lasted more than 12 months continuously' },
+    { key: 'same_work', text: 'Worker performs same type of work as W-2 employees' },
+    { key: 'no_agreement', text: 'Worker does not have a written IC agreement' },
+  ];
+  const container = document.getElementById('icChecklist');
+  container.innerHTML = '<p class="t-small t-secondary" style="margin-bottom:var(--space-md);">Check each factor that applies to ANY current independent contractor. Three or more checked items means the classification should be reviewed by employment counsel.</p>';
+  items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'checklist-item' + (state.icChecklist[item.key] ? ' checked' : '');
+    div.onclick = () => { state.icChecklist[item.key] = !state.icChecklist[item.key]; saveState(); buildICChecklist(); };
+    div.innerHTML = `<div class="checklist-box"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="checklist-text">${item.text}</div>`;
+    container.appendChild(div);
+  });
+  const checked = Object.values(state.icChecklist).filter(Boolean).length;
+  if (checked >= 3) {
+    const warn = document.createElement('div');
+    warn.className = 'callout callout-danger';
+    warn.style.marginTop = 'var(--space-md)';
+    warn.innerHTML = `<strong>${checked} of 8 risk factors identified.</strong> This level of risk strongly suggests misclassification. Consult employment counsel immediately.`;
+    container.appendChild(warn);
+  }
+}
+
+/* ============================================================
+   PAGE 7: CoC Provisions
+   ============================================================ */
+function buildCoCProvisions() {
+  const provisions = [
+    { type: 'Anti-Assignment (Absolute)', example: '"This agreement may not be assigned by either party"', effect: 'Assignment void or voidable', workaround: 'Stock deal (no assignment); negotiate amendment' },
+    { type: 'Anti-Assignment (Consent)', example: '"Assignment requires prior written consent, not to be unreasonably withheld"', effect: 'Must obtain consent; refusal must be reasonable', workaround: 'Request consent early; document reasonableness' },
+    { type: 'CoC Termination', example: '"Either party may terminate upon a change of control"', effect: 'Counterparty can walk away on any deal structure', workaround: 'Negotiate waiver; offer sweetener' },
+    { type: 'CoC Consent', example: '"A change of control requires prior written consent"', effect: 'Must obtain affirmative consent', workaround: 'Begin consent process early; plan for refusals' },
+    { type: 'CoC Renegotiation', example: '"Upon CoC, counterparty may request renegotiation"', effect: 'Counterparty can demand better terms', workaround: 'Pre-negotiate acceptable parameters' },
+    { type: 'Successor Exception', example: '"Binding upon successors and assigns"', effect: 'Assignment permitted to legitimate successors', workaround: 'Confirm deal qualifies as succession' },
+  ];
+  const container = document.getElementById('cocProvisionCards');
+  container.innerHTML = '';
+  provisions.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'expandable';
+    div.innerHTML = `
+      <div class="expandable-header" onclick="this.parentElement.classList.toggle('open')">
+        <span style="font-weight:600;">${p.type}</span>
+        <span class="expandable-chevron">&#9660;</span>
+      </div>
+      <div class="expandable-body">
+        <div style="margin-bottom:var(--space-sm);"><span class="t-label">Example Language</span><p class="t-small" style="font-style:italic;margin-top:4px;">${p.example}</p></div>
+        <div style="margin-bottom:var(--space-sm);"><span class="t-label">Effect</span><p class="t-small" style="margin-top:4px;">${p.effect}</p></div>
+        <div><span class="t-label">Workaround</span><p class="t-small" style="margin-top:4px;">${p.workaround}</p></div>
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+function renderConsentTable() {
+  const body = document.getElementById('consentBody');
+  body.innerHTML = '';
+  state.consentRows.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input value="${row.contract||''}" oninput="state.consentRows[${i}].contract=this.value;saveState();" placeholder="Contract name"></td>
+      <td><input value="${row.counterparty||''}" oninput="state.consentRows[${i}].counterparty=this.value;saveState();" placeholder="Company"></td>
+      <td><select onchange="state.consentRows[${i}].provision=this.value;saveState();">
+        <option value="">Select...</option>
+        ${['Anti-Assignment','CoC Termination','CoC Consent','CoC Renegotiation','Successor Exception'].map(t => `<option ${row.provision===t?'selected':''}>${t}</option>`).join('')}
+      </select></td>
+      <td><select onchange="state.consentRows[${i}].consentReq=this.value;saveState();">
+        <option value="">--</option><option ${row.consentReq==='Yes'?'selected':''}>Yes</option><option ${row.consentReq==='No'?'selected':''}>No</option>
+      </select></td>
+      <td><select onchange="state.consentRows[${i}].status=this.value;saveState();">
+        <option value="">--</option>
+        <option ${row.status==='Not Started'?'selected':''}>Not Started</option>
+        <option ${row.status==='In Progress'?'selected':''}>In Progress</option>
+        <option ${row.status==='Sent'?'selected':''}>Sent</option>
+        <option ${row.status==='Received'?'selected':''}>Received</option>
+        <option ${row.status==='Refused'?'selected':''}>Refused</option>
+      </select></td>`;
+    body.appendChild(tr);
+  });
+}
+
+function addConsentRow() {
+  state.consentRows.push({ contract:'', counterparty:'', provision:'', consentReq:'', status:'' });
+  saveState(); renderConsentTable();
+}
+
+function buildConsentChecklist() {
+  const items = [
+    { key: 'confidentiality', text: 'Protect confidentiality during consent process', detail: 'Use "a proposed transaction involving a change of ownership" language. Require NDAs.' },
+    { key: 'leverage', text: 'Prepare for counterparty leverage plays', detail: 'Some counterparties will use consent requests to renegotiate. Budget for concessions.' },
+    { key: 'tracking', text: 'Set up consent tracking system', detail: 'Track every consent request, response, and outstanding item. A single missing consent can delay closing.' },
+    { key: 'fallback', text: 'Develop fallback plans', detail: 'If a critical counterparty refuses, address consequences: escrow holdback, earnout adjustment, or transition services agreement.' },
+  ];
+  const container = document.getElementById('consentChecklist');
+  container.innerHTML = '';
+  items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'checklist-item' + (state.consentChecklist[item.key] ? ' checked' : '');
+    div.onclick = () => { state.consentChecklist[item.key] = !state.consentChecklist[item.key]; saveState(); buildConsentChecklist(); };
+    div.innerHTML = `<div class="checklist-box"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div><div class="checklist-text">${item.text}</div><div class="checklist-detail">${item.detail}</div></div>`;
+    container.appendChild(div);
+  });
+}
+
+/* ============================================================
+   PAGE 8: Action Plan Timeline
+   ============================================================ */
+function buildActionTimeline() {
+  const items = [
+    { time: 'T-12 months', title: 'Complete material contract inventory', desc: 'Digitize all agreements. Create master list.', owner: 'Controller / Office Manager' },
+    { time: 'T-10 months', title: 'Identify all anti-assignment and CoC provisions', desc: 'Flag every contract with restrictive provisions.', owner: 'Transaction counsel' },
+    { time: 'T-10 months', title: 'Flag contracts expiring within 24 months', desc: 'Priority renewal list for critical agreements.', owner: 'Controller / Operations' },
+    { time: 'T-9 months', title: 'Negotiate critical contract renewals', desc: 'Extend terms on key revenue and vendor contracts.', owner: 'CEO / Sales / Operations' },
+    { time: 'T-8 months', title: 'Seek amendments removing CoC termination rights', desc: 'Where possible, negotiate out restrictive provisions.', owner: 'Transaction counsel' },
+    { time: 'T-8 months', title: 'Audit IC agreements for IP and classification', desc: 'Review IP assignment clauses and worker classification.', owner: 'HR / Transaction counsel' },
+    { time: 'T-6 months', title: 'Review employment agreements for CoC severance', desc: 'Calculate total potential CoC severance obligations.', owner: 'HR / Transaction counsel' },
+    { time: 'T-6 months', title: 'Prepare consent request letters', desc: 'Draft but hold until timing is appropriate.', owner: 'Transaction counsel' },
+    { time: 'T-4 months', title: 'Organize contracts in virtual data room', desc: 'Categorize by type, risk level, and priority.', owner: 'Deal team' },
+    { time: 'T-3 months', title: 'Prepare contract summary schedule', desc: 'High-level summary for buyer (without confidential terms).', owner: 'Transaction counsel' },
+    { time: 'T-2 months', title: 'Begin consent process for critical contracts', desc: 'Send consent letters; track responses.', owner: 'CEO / Transaction counsel' },
+    { time: 'T-0 (Signing)', title: 'Deliver all required consents', desc: 'Address gaps in purchase agreement provisions.', owner: 'Transaction counsel' },
+  ];
+  const container = document.getElementById('actionTimeline');
+  container.innerHTML = '';
+  items.forEach((item, i) => {
+    const done = state.actionTimeline[i] || false;
+    const div = document.createElement('div');
+    div.className = 'timeline-item' + (done ? ' done' : '');
+    div.style.cursor = 'pointer';
+    div.onclick = () => { state.actionTimeline[i] = !state.actionTimeline[i]; saveState(); buildActionTimeline(); };
+    div.innerHTML = `
+      <div class="timeline-dot"></div>
+      <div class="timeline-time">${item.time}</div>
+      <div class="timeline-title">${item.title}${done ? ' <span style="color:var(--color-success);font-size:12px;">&#10003; Done</span>' : ''}</div>
+      <div class="timeline-desc">${item.desc}</div>
+      <div class="timeline-owner">${item.owner}</div>`;
+    container.appendChild(div);
+  });
+}
+
+function renderRenewalTable() {
+  const body = document.getElementById('renewalBody');
+  body.innerHTML = '';
+  state.renewalRows.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input value="${row.contract||''}" oninput="state.renewalRows[${i}].contract=this.value;saveState();" placeholder="Contract name"></td>
+      <td><input type="date" value="${row.termEnd||''}" oninput="state.renewalRows[${i}].termEnd=this.value;saveState();"></td>
+      <td><select onchange="state.renewalRows[${i}].autoRenew=this.value;saveState();">
+        <option value="">--</option><option ${row.autoRenew==='Yes'?'selected':''}>Yes</option><option ${row.autoRenew==='No'?'selected':''}>No</option>
+      </select></td>
+      <td><input value="${row.notice||''}" oninput="state.renewalRows[${i}].notice=this.value;saveState();" placeholder="e.g. 30 days"></td>
+      <td><input type="date" value="${row.deadline||''}" oninput="state.renewalRows[${i}].deadline=this.value;saveState();"></td>
+      <td><input value="${row.action||''}" oninput="state.renewalRows[${i}].action=this.value;saveState();" placeholder="Renew / Renegotiate / Let expire"></td>`;
+    body.appendChild(tr);
+  });
+}
+
+function addRenewalRow() {
+  state.renewalRows.push({ contract:'', termEnd:'', autoRenew:'', notice:'', deadline:'', action:'' });
+  saveState(); renderRenewalTable();
+}
+
+/* ============================================================
+   PAGE 9: Dashboard
+   ============================================================ */
+function renderDashboard() {
+  const score = calculateOverallScore() || 0;
+
+  // KPIs
+  const kpis = document.getElementById('dashKPIs');
+  const totalContracts = state.inventoryRows.filter(r => r.name).length;
+  const highRisk = state.inventoryRows.filter(r => r.risk === 'High').length;
+  const consentsNeeded = state.consentRows.filter(r => r.consentReq === 'Yes').length;
+  const consentsReceived = state.consentRows.filter(r => r.status === 'Received').length;
+  const timelineDone = Object.values(state.actionTimeline).filter(Boolean).length;
+
+  kpis.innerHTML = `
+    <div class="dash-card"><div class="dash-card-value" style="color:var(--color-primary);">${score}</div><div class="dash-card-label">Readiness Score</div></div>
+    <div class="dash-card"><div class="dash-card-value">${totalContracts}</div><div class="dash-card-label">Contracts Inventoried</div></div>
+    <div class="dash-card"><div class="dash-card-value" style="color:${highRisk > 0 ? 'var(--color-danger)' : 'var(--color-success)'};">${highRisk}</div><div class="dash-card-label">High Risk Contracts</div></div>
+    <div class="dash-card"><div class="dash-card-value">${consentsReceived}/${consentsNeeded || 0}</div><div class="dash-card-label">Consents Obtained</div></div>
+    <div class="dash-card"><div class="dash-card-value">${timelineDone}/12</div><div class="dash-card-label">Action Items Done</div></div>`;
+
+  // Category Bar Chart
+  const barChart = document.getElementById('categoryBarChart');
+  const categories = [
+    { label: 'Buyer Evaluation', vals: Object.values(state.buyerEval) },
+    { label: 'Customer Risk', vals: Object.values(state.customerRisk) },
+    { label: 'Vendor Risk', vals: Object.values(state.vendorRisk) },
+    { label: 'Employment', vals: Object.values(state.employmentScores) },
+  ];
+  barChart.innerHTML = '';
+  categories.forEach(cat => {
+    const avg = cat.vals.length > 0 ? (cat.vals.reduce((s,v) => s+v, 0) / cat.vals.length) : 0;
+    const pct = (avg / 5) * 100;
+    const color = pct >= 80 ? 'var(--color-score-5)' : pct >= 60 ? 'var(--color-score-4)' : pct >= 40 ? 'var(--color-score-3)' : pct >= 20 ? 'var(--color-score-2)' : 'var(--color-score-1)';
+    barChart.innerHTML += `<div class="bar-row"><div class="bar-label">${cat.label}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color};min-width:${pct>0?'30px':'0'};"><span class="bar-value">${Math.round(pct)}%</span></div></div></div>`;
+  });
+
+  // Heatmap
+  const heatmap = document.getElementById('riskHeatmap');
+  const hmDims = ['Term', 'Termination', 'Assignability', 'Concentration', 'Pricing', 'Liability'];
+  const hmStores = ['customerRisk', 'vendorRisk'];
+  const hmLabels = ['Customer', 'Vendor'];
+  heatmap.innerHTML = '<div class="heatmap-col-label"></div>' + hmDims.map(d => `<div class="heatmap-col-label">${d}</div>`).join('');
+  hmLabels.forEach((lbl, li) => {
+    heatmap.innerHTML += `<div class="heatmap-row-label">${lbl}</div>`;
+    const keys = li === 0 ? Object.keys(state.customerRisk) : Object.keys(state.vendorRisk);
+    hmDims.forEach((d, di) => {
+      const storeKey = li === 0 ? CUSTOMER_RISK_FACTORS[di]?.key : VENDOR_RISK_DIMS[di]?.key;
+      const store = li === 0 ? state.customerRisk : state.vendorRisk;
+      const val = storeKey ? (store[storeKey] || 0) : 0;
+      const cls = val === 0 ? 'hs0' : val === 1 ? 'hs5' : val === 3 ? 'hs3' : val === 5 ? 'hs1' : 'hs0';
+      heatmap.innerHTML += `<div class="heatmap-cell ${cls}" title="${lbl}: ${d} = ${val === 0 ? 'N/A' : val === 1 ? 'High Risk' : val === 3 ? 'Medium' : 'Low Risk'}">${val || '-'}</div>`;
+    });
+  });
+
+  // Priority Actions
+  const actions = document.getElementById('priorityActions');
+  let actionItems = [];
+  if (highRisk > 0) actionItems.push({ text: `Review ${highRisk} high-risk contracts`, level: 'danger' });
+  if (consentsNeeded > consentsReceived) actionItems.push({ text: `${consentsNeeded - consentsReceived} consents still needed`, level: 'warning' });
+  const icChecked = Object.values(state.icChecklist).filter(Boolean).length;
+  if (icChecked >= 3) actionItems.push({ text: 'IC misclassification risk identified', level: 'danger' });
+  const beWeak = Object.values(state.buyerEval).filter(v => v <= 2).length;
+  if (beWeak > 0) actionItems.push({ text: `${beWeak} weak buyer evaluation dimensions`, level: 'warning' });
+  if (timelineDone < 4) actionItems.push({ text: 'Action plan still in early stages', level: 'neutral' });
+  if (actionItems.length === 0) actionItems.push({ text: 'No critical actions identified', level: 'success' });
+
+  actions.innerHTML = actionItems.map(a => `<div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-sm);"><span class="badge badge-${a.level === 'neutral' ? 'neutral' : a.level}">${a.level === 'danger' ? 'Urgent' : a.level === 'warning' ? 'Important' : a.level === 'success' ? 'Good' : 'Info'}</span><span class="t-small">${a.text}</span></div>`).join('');
+
+  // Gauge
+  const gaugeArc = document.getElementById('gaugeArc');
+  const gaugeValue = document.getElementById('gaugeValue');
+  const arcLen = 188.5;
+  const fill = (score / 100) * arcLen;
+  gaugeArc.style.strokeDasharray = `${fill} ${arcLen}`;
+  gaugeArc.style.stroke = score >= 80 ? 'var(--color-score-5)' : score >= 60 ? 'var(--color-score-4)' : score >= 40 ? 'var(--color-score-3)' : score >= 20 ? 'var(--color-score-2)' : 'var(--color-score-1)';
+  gaugeValue.textContent = score;
+
+  const interp = document.getElementById('scoreInterpretation');
+  const rec = document.getElementById('scoreRecommendation');
+  if (score >= 80) {
+    interp.textContent = 'Your contract portfolio is in strong shape for a transaction. Most dimensions show low risk and good transferability.';
+    rec.innerHTML = '<div class="callout callout-info">Continue monitoring renewal dates and maintain your consent tracker. You are well-positioned for buyer diligence.</div>';
+  } else if (score >= 60) {
+    interp.textContent = 'Your contracts show moderate readiness. Some areas need attention before going to market, but the foundation is solid.';
+    rec.innerHTML = '<div class="callout callout-warning">Focus on the highest-risk dimensions first: address CoC provisions, obtain critical consents, and close gaps in your contract inventory.</div>';
+  } else if (score >= 40) {
+    interp.textContent = 'Below-average readiness. Several significant contract risks could impact deal pricing or structure.';
+    rec.innerHTML = '<div class="callout callout-danger">Engage transaction counsel immediately. Prioritize amendment negotiations for CoC provisions and begin the consent process for critical contracts.</div>';
+  } else {
+    interp.textContent = 'Critical contract readiness gaps detected. These issues could materially impact your ability to close a transaction.';
+    rec.innerHTML = '<div class="callout callout-danger">Do not go to market until these issues are addressed. Engage transaction counsel, prioritize your 12-month action plan, and consider a dedicated contract remediation effort.</div>';
+  }
+}
+
+function exportResults() {
+  const score = calculateOverallScore() || 0;
+  let text = `CONTRACT & AGREEMENT REVIEW - SUMMARY REPORT\n${'='.repeat(50)}\n\n`;
+  text += `Overall Readiness Score: ${score}/100\n`;
+  text += `Contracts Inventoried: ${state.inventoryRows.filter(r=>r.name).length}\n`;
+  text += `High Risk Contracts: ${state.inventoryRows.filter(r=>r.risk==='High').length}\n`;
+  text += `Action Items Completed: ${Object.values(state.actionTimeline).filter(Boolean).length}/12\n\n`;
+
+  text += `BUYER EVALUATION SCORES\n${'-'.repeat(30)}\n`;
+  BUYER_EVAL_DIMS.forEach(d => { text += `${d.label}: ${state.buyerEval[d.key] || 'Not scored'}/5\n`; });
+
+  text += `\nCONTRACT INVENTORY\n${'-'.repeat(30)}\n`;
+  state.inventoryRows.filter(r=>r.name).forEach(r => { text += `${r.name} | ${r.counterparty} | ${r.type} | ${r.value} | Risk: ${r.risk}\n`; });
+
+  text += `\nCONSENT TRACKER\n${'-'.repeat(30)}\n`;
+  state.consentRows.filter(r=>r.contract).forEach(r => { text += `${r.contract} | ${r.provision} | Consent: ${r.consentReq} | Status: ${r.status}\n`; });
+
+  const blob = new Blob([text], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Contract-Review-Summary.txt';
+  a.click();
+  showToast('Report exported successfully');
+}
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
+function init() {
+  buildSidebar();
+  buildBuyerEvalCards();
+  buildCategoryInventory();
+  renderInventoryTable();
+  buildCustomerRiskMatrix();
+  buildCustomerChecklist();
+  buildVendorRisk();
+  renderVendorMitigationTable();
+  buildJVChecklist();
+  buildEmploymentScoring();
+  buildICChecklist();
+  buildCoCProvisions();
+  renderConsentTable();
+  buildConsentChecklist();
+  buildActionTimeline();
+  renderRenewalTable();
+  updateProgress();
+  updateSidebarScore();
+  goToPage(state.currentPage);
+}
+
+init();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

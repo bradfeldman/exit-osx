@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Involuntary Exit Preparedness | Exit Planning Playbook #39</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a { color: var(--color-primary); text-decoration: none; }
+
+.t-display { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 280px; min-width: 280px; background: var(--color-text);
+  color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow);
+  overflow-y: auto;
+}
+.sidebar.collapsed { transform: translateX(-280px); }
+.main-content {
+  flex: 1; margin-left: 280px; min-height: 100vh;
+  transition: margin-left var(--transition-slow);
+}
+.sidebar.collapsed + .main-content { margin-left: 0; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-280px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.6);
+  font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-lg);
+  transition: box-shadow var(--transition-normal);
+}
+.card:hover { box-shadow: var(--shadow-sm); }
+.card-elevated { box-shadow: var(--shadow-md); border-color: transparent; }
+
+.callout {
+  padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md);
+  border-left: 3px solid; font-size: 14px; line-height: 1.6;
+}
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); border-color: var(--color-text-tertiary); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.btn-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); color: var(--color-text); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.form-input::placeholder { color: var(--color-text-tertiary); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center; min-width: 0;
+}
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+
+@media (max-width: 600px) {
+  .score-selector { gap: 4px; }
+  .score-option { padding: 10px 4px; }
+  .score-number { font-size: 18px; }
+  .score-label-text { font-size: 9px; }
+}
+
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+  border-radius: 999px; font-size: 12px; font-weight: 500;
+}
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+
+.progress-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.progress-ring-text { position: absolute; text-align: center; }
+.progress-ring-value { font-family: var(--font-display); font-weight: 700; line-height: 1; }
+.progress-ring-label { font-size: 10px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+
+.section-divider { height: 1px; background: var(--color-border); margin: var(--space-2xl) 0; }
+
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon {
+  width: 72px; height: 72px; background: var(--color-danger-light);
+  border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center;
+  margin: 0 auto var(--space-lg); font-size: 32px;
+}
+.welcome-hero .t-display { margin-bottom: var(--space-md); }
+.welcome-hero .t-body { margin-bottom: var(--space-2xl); }
+
+.welcome-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md);
+  margin: var(--space-2xl) 0; text-align: center;
+}
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+
+.welcome-phases { display: flex; flex-direction: column; gap: var(--space-md); margin: var(--space-2xl) 0; text-align: left; }
+.welcome-phase {
+  display: flex; gap: var(--space-lg); padding: var(--space-lg);
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+}
+.welcome-phase-num {
+  width: 36px; height: 36px; background: var(--color-primary-light); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-weight: 700;
+  color: var(--color-primary); flex-shrink: 0; font-size: 15px;
+}
+.welcome-phase-title { font-weight: 600; margin-bottom: 2px; }
+.welcome-phase-desc { font-size: 14px; color: var(--color-text-secondary); }
+
+@media (max-width: 600px) {
+  .welcome-stats { grid-template-columns: 1fr; }
+  .welcome-hero { padding: var(--space-2xl) var(--space-md); }
+}
+
+/* D-Card grid */
+.d-grid { display: grid; grid-template-columns: 1fr; gap: var(--space-md); margin: var(--space-lg) 0; }
+.d-card {
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+  padding: var(--space-lg); cursor: pointer; transition: all var(--transition-normal);
+}
+.d-card:hover { box-shadow: var(--shadow-md); border-color: var(--color-primary); }
+.d-card-head { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md); }
+.d-card-icon { width: 44px; height: 44px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.d-card-title { font-weight: 600; font-size: 16px; }
+.d-card-risk { font-size: 13px; color: var(--color-text-tertiary); }
+.d-card-body { font-size: 14px; color: var(--color-text-secondary); line-height: 1.6; }
+.d-card-score-row { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--color-border-light); }
+
+/* Assessment table */
+.assess-table { width: 100%; border-collapse: collapse; margin: var(--space-lg) 0; }
+.assess-table th { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-tertiary); text-align: left; padding: var(--space-sm) var(--space-md); border-bottom: 2px solid var(--color-border); }
+.assess-table td { padding: var(--space-md); border-bottom: 1px solid var(--color-border-light); font-size: 14px; vertical-align: top; }
+.assess-table tr:last-child td { border-bottom: none; }
+
+/* Funding bar chart */
+.funding-bar { display: flex; flex-direction: column; gap: var(--space-sm); margin: var(--space-lg) 0; }
+.funding-bar-item { display: flex; align-items: center; gap: var(--space-md); }
+.funding-bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.funding-bar-track { flex: 1; height: 28px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; position: relative; }
+.funding-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; padding-left: 10px; }
+.funding-bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+@media (max-width: 600px) { .funding-bar-label { width: 90px; font-size: 11px; } }
+
+/* Checklist */
+.checklist { display: flex; flex-direction: column; gap: 2px; margin: var(--space-lg) 0; }
+.checklist-item {
+  display: flex; align-items: flex-start; gap: var(--space-md); padding: 12px var(--space-md);
+  background: var(--color-surface); border: 1px solid var(--color-border-light); border-radius: var(--radius-sm);
+  cursor: pointer; transition: all var(--transition-fast); user-select: none;
+}
+.checklist-item:hover { background: var(--color-surface-alt); }
+.checklist-item.checked { background: var(--color-success-light); border-color: var(--color-success); }
+.checklist-item.checked .cl-text { text-decoration: line-through; color: var(--color-text-tertiary); }
+.cl-box {
+  width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+  transition: all var(--transition-fast);
+}
+.checklist-item.checked .cl-box { background: var(--color-success); border-color: var(--color-success); }
+.cl-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; transition: opacity var(--transition-fast); }
+.checklist-item.checked .cl-box svg { opacity: 1; }
+.cl-text { font-size: 14px; line-height: 1.5; flex: 1; }
+
+/* Worksheet row */
+.ws-row {
+  display: grid; grid-template-columns: 1fr 1fr 1fr 120px;
+  gap: var(--space-sm); padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+.ws-row:last-child { border-bottom: none; }
+.ws-header { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-tertiary); padding-bottom: var(--space-sm); border-bottom: 2px solid var(--color-border); }
+.ws-input { padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 14px; background: var(--color-surface); width: 100%; transition: all var(--transition-fast); }
+.ws-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+@media (max-width: 700px) {
+  .ws-row { grid-template-columns: 1fr 1fr; }
+}
+
+/* Gauge */
+.gauge-wrap { display: flex; justify-content: center; margin: var(--space-lg) 0; }
+.gauge-container { position: relative; width: 200px; height: 120px; }
+.gauge-bg { fill: none; stroke: var(--color-border); stroke-width: 14; }
+.gauge-fill { fill: none; stroke-width: 14; stroke-linecap: round; transition: stroke-dashoffset 1s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease; }
+.gauge-value-text { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); text-align: center; }
+.gauge-number { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1; }
+.gauge-label { font-size: 11px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* Heatmap */
+.heatmap-grid { display: grid; gap: 3px; margin: var(--space-lg) 0; }
+.hm-cell {
+  border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: #fff; padding: 10px 6px; text-align: center;
+  transition: transform var(--transition-fast); cursor: default; min-height: 44px;
+}
+.hm-cell:hover { transform: scale(1.04); z-index: 1; }
+.hm-header { background: transparent; color: var(--color-text-tertiary); font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+.hm-row-label { background: transparent; color: var(--color-text-secondary); font-size: 12px; text-align: right; justify-content: flex-end; padding-right: var(--space-sm); font-weight: 500; }
+.hm-0 { background: var(--color-border); color: var(--color-text-tertiary); }
+.hm-1 { background: #C53030; }
+.hm-2 { background: #D97706; }
+.hm-3 { background: #C67F20; }
+.hm-4 { background: #2D8A4E; }
+.hm-5 { background: #1A6B35; }
+
+/* Nav footer buttons */
+.page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: var(--space-lg); right: var(--space-lg); padding: 14px 24px;
+  background: var(--color-text); color: #fff; border-radius: var(--radius-md);
+  font-size: 14px; font-weight: 500; box-shadow: var(--shadow-lg); z-index: 200;
+  transform: translateY(100px); opacity: 0; transition: all var(--transition-slow);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* Notification dot */
+.notif-table { width: 100%; border-collapse: collapse; }
+.notif-table th { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-tertiary); text-align: left; padding: var(--space-sm) var(--space-md); border-bottom: 2px solid var(--color-border); }
+.notif-table td { padding: 10px var(--space-md); border-bottom: 1px solid var(--color-border-light); font-size: 14px; }
+.notif-table tr:last-child td { border-bottom: none; }
+
+/* Insurance worksheet */
+.ins-row {
+  display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 120px 100px;
+  gap: var(--space-sm); padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+@media (max-width: 900px) { .ins-row { grid-template-columns: 1fr 1fr 1fr; } }
+
+/* Print styles */
+@media print {
+  .sidebar, .mobile-header, .sidebar-overlay, .page-nav, .btn, .toast, .skip-link { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-after: always; }
+  .content-area { max-width: 100%; padding: 0; }
+}
+
+/* ACCESSIBILITY */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; text-decoration: none; }
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<div class="app">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Playbook sections">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #39</div>
+      <div class="sidebar-brand-title">Involuntary Exit Preparedness</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0 of 10 sections</div>
+    </div>
+    <div class="sidebar-nav" id="sidebarNav"></div>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Preparedness Score</div>
+      <div><span class="sidebar-score-value" id="sidebarScore">0</span><span class="sidebar-score-max"> / 100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete assessments to see your score</div>
+    </div>
+  </nav>
+
+  <div class="main-content" id="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation"><span></span></button>
+      <span style="font-weight:600;font-size:15px;">Playbook #39</span>
+    </div>
+
+    <div class="content-area">
+      <!-- PAGE 0: WELCOME -->
+      <div class="page active" id="page-0">
+        <div class="welcome-hero">
+          <div class="welcome-icon">&#x1F6E1;</div>
+          <div class="t-display">Involuntary Exit Preparedness</div>
+          <p class="t-body t-secondary">Planning for the 5 D's -- death, disability, divorce, disagreement, and distress -- so your business survives what you cannot control.</p>
+          <div class="welcome-stats">
+            <div class="welcome-stat"><div class="welcome-stat-value">75%</div><div class="welcome-stat-label">of business transitions are involuntary</div></div>
+            <div class="welcome-stat"><div class="welcome-stat-value">&lt;25%</div><div class="welcome-stat-label">of businesses have emergency plans</div></div>
+            <div class="welcome-stat"><div class="welcome-stat-value">10</div><div class="welcome-stat-label">sections to complete readiness</div></div>
+          </div>
+          <div class="welcome-phases">
+            <div class="welcome-phase"><div class="welcome-phase-num">1</div><div><div class="welcome-phase-title">Understand the Risks</div><div class="welcome-phase-desc">Assess your exposure to the 5 involuntary exit triggers</div></div></div>
+            <div class="welcome-phase"><div class="welcome-phase-num">2</div><div><div class="welcome-phase-title">Build Your Defenses</div><div class="welcome-phase-desc">Evaluate buy-sell agreements, insurance, and succession plans</div></div></div>
+            <div class="welcome-phase"><div class="welcome-phase-num">3</div><div><div class="welcome-phase-title">Document and Prepare</div><div class="welcome-phase-desc">Create protocols, worksheets, and action plans</div></div></div>
+          </div>
+          <button class="btn btn-primary btn-lg" onclick="goToPage(1)">Begin Assessment</button>
+        </div>
+      </div>
+
+      <!-- PAGE 1: THE 5 D's -->
+      <div class="page" id="page-1">
+        <div class="page-header">
+          <div class="t-label">Section 1 of 10</div>
+          <div class="t-display">The 5 D's of Involuntary Exit</div>
+          <p class="t-body t-secondary">Most business transitions are triggered not by choice, but by circumstance. Rate your preparedness for each trigger below.</p>
+        </div>
+        <div class="callout callout-accent" style="margin-bottom:var(--space-2xl)">
+          <strong>Advisor Insight:</strong> The time to plan for involuntary exits is when relationships are strong, health is good, and the business is performing. Once a triggering event occurs, negotiating leverage shifts dramatically and options narrow.
+        </div>
+        <div class="d-grid" id="dGrid"></div>
+        <div class="section-divider"></div>
+        <div class="t-h2" style="margin-bottom:var(--space-lg)">5 D's Preparedness Heat Map</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-md)">This heat map cross-references each trigger with key defense dimensions. Scores auto-populate from your ratings above.</p>
+        <div id="heatmapContainer"></div>
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(0)">Back</button>
+          <button class="btn btn-primary" onclick="goToPage(2)">Continue to Buy-Sell Agreements</button>
+        </div>
+      </div>
+
+      <!-- PAGE 2: BUY-SELL AGREEMENTS -->
+      <div class="page" id="page-2">
+        <div class="page-header">
+          <div class="t-label">Section 2 of 10</div>
+          <div class="t-display">Buy-Sell Agreement Structures</div>
+          <p class="t-body t-secondary">A buy-sell agreement is the cornerstone of involuntary exit planning. It defines when, how, and at what price an ownership interest changes hands.</p>
+        </div>
+        <div class="callout callout-danger" style="margin-bottom:var(--space-2xl)">
+          <strong>Critical Warning:</strong> A buy-sell agreement drafted at formation and never updated is almost as dangerous as having no agreement at all. Review and update every 2-3 years.
+        </div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Which Structure Fits Your Situation?</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Select the structure that best matches your current agreement (or the one you intend to adopt).</p>
+        <div class="d-grid" id="buySellGrid"></div>
+        <div class="section-divider"></div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Essential Provisions Checklist</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Does your buy-sell agreement include these critical provisions? Check each one that is currently in place.</p>
+        <div class="checklist" id="buySellChecklist"></div>
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(1)">Back</button>
+          <button class="btn btn-primary" onclick="goToPage(3)">Continue to Funding</button>
+        </div>
+      </div>
+
+      <!-- PAGE 3: FUNDING -->
+      <div class="page" id="page-3">
+        <div class="page-header">
+          <div class="t-label">Section 3 of 10</div>
+          <div class="t-display">Funding Your Buy-Sell Agreement</div>
+          <p class="t-body t-secondary">A buy-sell agreement is only as good as the funding behind it. An unfunded buy-sell is a promise without the means to deliver.</p>
+        </div>
+        <div class="callout callout-info" style="margin-bottom:var(--space-2xl)">
+          <strong>Pro Tip:</strong> The most resilient funding strategies use a layered approach: life insurance for death, disability buyout insurance for disability, a sinking fund for divorce and disagreement, and installment terms as a backstop.
+        </div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Funding Methods Assessment</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Rate the readiness of each funding mechanism on a 1-5 scale.</p>
+        <div id="fundingAssessment"></div>
+        <div class="section-divider"></div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Funding Readiness Visualization</div>
+        <div class="funding-bar" id="fundingBars"></div>
+        <div class="section-divider"></div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Sinking Fund Calculator</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Estimate the annual contribution needed to self-fund a buyout.</p>
+        <div class="card" style="margin-bottom:var(--space-lg)">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg)">
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Target Buyout Amount ($)</label>
+              <input class="form-input" type="number" id="sinkTarget" placeholder="5000000" value="5000000" oninput="calcSinking()">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Years to Accumulate</label>
+              <input class="form-input" type="number" id="sinkYears" placeholder="10" value="10" oninput="calcSinking()">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Expected Annual Return (%)</label>
+              <input class="form-input" type="number" id="sinkReturn" placeholder="5" value="5" step="0.5" oninput="calcSinking()">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Annual Contribution Needed</label>
+              <div style="font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--color-primary);padding-top:6px" id="sinkResult">$397,480</div>
+            </div>
+          </div>
+        </div>
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(2)">Back</button>
+          <button class="btn btn-primary" onclick="goToPage(4)">Continue to Key-Person Insurance</button>
+        </div>
+      </div>
+
+      <!-- PAGE 4: KEY-PERSON INSURANCE -->
+      <div class="page" id="page-4">
+        <div class="page-header">
+          <div class="t-label">Section 4 of 10</div>
+          <div class="t-display">Key-Person Insurance Planning</div>
+          <p class="t-body t-secondary">Key-person insurance protects the business against the financial impact of losing a critical individual. This is distinct from buy-sell insurance -- it compensates the business, not the departing owner's estate.</p>
+        </div>
+        <div class="callout callout-warning" style="margin-bottom:var(--space-2xl)">
+          <strong>Lender Requirement:</strong> Many commercial lenders require key-person insurance as a condition of lending, particularly for SBA loans. Check your loan covenants for minimum coverage requirements.
+        </div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Coverage Needs Calculator</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Enter details for each key person to estimate the insurance coverage gap.</p>
+        <div id="keyPersonCards"></div>
+        <button class="btn btn-secondary" style="margin-top:var(--space-md)" onclick="addKeyPerson()">+ Add Key Person</button>
+        <div class="section-divider"></div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Coverage Gap Summary</div>
+        <div class="gauge-wrap"><div class="gauge-container" id="coverageGauge"></div></div>
+        <div id="coverageGapSummary" style="text-align:center;margin-top:var(--space-md)"></div>
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(3)">Back</button>
+          <button class="btn btn-primary" onclick="goToPage(5)">Continue to Emergency Succession</button>
+        </div>
+      </div>
+
+      <!-- PAGE 5: EMERGENCY SUCCESSION -->
+      <div class="page" id="page-5">
+        <div class="page-header">
+          <div class="t-label">Section 5 of 10</div>
+          <div class="t-display">Emergency Succession Plans</div>
+          <p class="t-body t-secondary">If the owner or CEO is incapacitated tomorrow, who does what? Unlike a long-term plan, this is a rapid-deployment playbook for the first 90 days.</p>
+        </div>
+        <div class="callout callout-danger" style="margin-bottom:var(--space-2xl)">
+          <strong>Reality Check:</strong> Fewer than 25% of family businesses have a written emergency succession plan. Businesses with a plan resume normal operations in ~3 weeks; those without take 3-6 months -- and many never fully recover.
+        </div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">72-Hour Emergency Protocol</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Document who handles each critical action in the first 72 hours and beyond.</p>
+        <div id="protocolTable"></div>
+        <div class="section-divider"></div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Emergency Succession Document Checklist</div>
+        <div class="checklist" id="emergencyChecklist"></div>
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(4)">Back</button>
+          <button class="btn btn-primary" onclick="goToPage(6)">Continue to Business Continuity</button>
+        </div>
+      </div>
+
+      <!-- PAGE 6: BUSINESS CONTINUITY -->
+      <div class="page" id="page-6">
+        <div class="page-header">
+          <div class="t-label">Section 6 of 10</div>
+          <div class="t-display">Business Continuity in Crisis</div>
+          <p class="t-body t-secondary">Maintain essential functions and minimize revenue disruption during and after any crisis. Build your Business Impact Analysis below.</p>
+        </div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Business Impact Analysis</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Rate the recovery priority and document the maximum tolerable downtime for each business function.</p>
+        <div id="biaTable"></div>
+        <div class="section-divider"></div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Crisis Communication Framework</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Rate your readiness for communicating with each stakeholder group during a crisis.</p>
+        <div id="crisisCommCards"></div>
+        <div class="callout callout-warning" style="margin-top:var(--space-lg)">
+          <strong>Insurance Reminder:</strong> Business interruption insurance covers lost income during a covered event but typically requires physical loss, has 24-72 hour waiting periods, and caps at 12-18 months. Review annually.
+        </div>
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(5)">Back</button>
+          <button class="btn btn-primary" onclick="goToPage(7)">Continue to Legal Documents</button>
+        </div>
+      </div>
+
+      <!-- PAGE 7: POWERS OF ATTORNEY -->
+      <div class="page" id="page-7">
+        <div class="page-header">
+          <div class="t-label">Section 7 of 10</div>
+          <div class="t-display">Powers of Attorney & Estate Documents</div>
+          <p class="t-body t-secondary">Business owners often have robust corporate documents but neglect the personal legal instruments essential during an involuntary exit.</p>
+        </div>
+        <div class="callout callout-accent" style="margin-bottom:var(--space-2xl)">
+          <strong>Coordination is Everything:</strong> The buy-sell agreement, estate plan, insurance program, and emergency succession plan must all work together. A mismatch creates legal conflict and delays transition.
+        </div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Essential Personal Documents</div>
+        <div class="checklist" id="estateChecklist"></div>
+        <div class="section-divider"></div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Business-Specific Estate Planning</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Rate your preparedness in each estate planning area.</p>
+        <div id="estateAssessment"></div>
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(6)">Back</button>
+          <button class="btn btn-primary" onclick="goToPage(8)">Continue to Valuation Mechanisms</button>
+        </div>
+      </div>
+
+      <!-- PAGE 8: VALUATION MECHANISMS -->
+      <div class="page" id="page-8">
+        <div class="page-header">
+          <div class="t-label">Section 8 of 10</div>
+          <div class="t-display">Valuation Mechanisms for Forced Exits</div>
+          <p class="t-body t-secondary">The most contentious aspect of any involuntary exit is the price. If the mechanism is flawed, disputes are inevitable.</p>
+        </div>
+        <div class="callout callout-info" style="margin-bottom:var(--space-2xl)">
+          <strong>Drafting Tip:</strong> Specify the valuation standard (fair market value vs. fair value), the level of value (controlling vs. minority), whether discounts apply, and the date of valuation. Ambiguity invites litigation.
+        </div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Current Valuation Method</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Select the valuation method currently specified in your buy-sell agreement.</p>
+        <div id="valuationMethods"></div>
+        <div class="section-divider"></div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Discount Considerations</div>
+        <div id="discountSection"></div>
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(7)">Back</button>
+          <button class="btn btn-primary" onclick="goToPage(9)">Continue to Communication Protocols</button>
+        </div>
+      </div>
+
+      <!-- PAGE 9: COMMUNICATION PROTOCOLS -->
+      <div class="page" id="page-9">
+        <div class="page-header">
+          <div class="t-label">Section 9 of 10</div>
+          <div class="t-display">Communication & Notification Protocols</div>
+          <p class="t-body t-secondary">When an involuntary exit occurs, communication must be swift, coordinated, and controlled. Pre-establish your protocol below.</p>
+        </div>
+        <div class="callout callout-warning" style="margin-bottom:var(--space-2xl)">
+          <strong>Confidentiality Note:</strong> Medical conditions, personal matters, and financial distress are sensitive and may be legally protected. Have communication protocols reviewed by legal counsel.
+        </div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Notification Priority Matrix</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Document who communicates to each stakeholder group and when.</p>
+        <div id="notificationMatrix"></div>
+        <div class="section-divider"></div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Message Template Readiness</div>
+        <div class="checklist" id="messageChecklist"></div>
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(8)">Back</button>
+          <button class="btn btn-primary" onclick="goToPage(10)">Continue to Implementation</button>
+        </div>
+      </div>
+
+      <!-- PAGE 10: IMPLEMENTATION -->
+      <div class="page" id="page-10">
+        <div class="page-header">
+          <div class="t-label">Section 10 of 10</div>
+          <div class="t-display">Implementation Checklist & Worksheets</div>
+          <p class="t-body t-secondary">Use this master checklist to assess your current state and identify gaps that need to be addressed.</p>
+        </div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Master Preparedness Audit</div>
+        <div class="checklist" id="masterChecklist"></div>
+        <div class="section-divider"></div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Buy-Sell Agreement Summary Worksheet</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Document the current status and needed actions for each buy-sell provision.</p>
+        <div id="buySellWorksheet"></div>
+        <div class="section-divider"></div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Insurance Coverage Worksheet</div>
+        <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Inventory all insurance policies related to involuntary exit planning.</p>
+        <div id="insuranceWorksheet"></div>
+        <button class="btn btn-secondary" style="margin-top:var(--space-md)" onclick="addInsuranceRow()">+ Add Policy</button>
+        <div class="section-divider"></div>
+        <div class="t-h2" style="margin-bottom:var(--space-md)">Overall Preparedness Score</div>
+        <div class="gauge-wrap"><div class="gauge-container" id="finalGauge"></div></div>
+        <div id="finalSummary" style="text-align:center;margin-top:var(--space-lg)"></div>
+        <div class="callout callout-accent" style="margin-top:var(--space-2xl)">
+          <strong>Final Thought:</strong> "The best time to prepare for an involuntary exit was five years ago. The second-best time is today."
+        </div>
+        <div class="page-nav">
+          <button class="btn btn-secondary" onclick="goToPage(9)">Back</button>
+          <div class="btn-group"><button class="btn btn-primary" onclick="exportReport()">Export Report</button><button class="btn btn-accent" onclick="exportData()">Export Raw Data</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" aria-live="polite" role="status"></div>
+
+<script>
+/* ============================================================
+   STATE MANAGEMENT
+   ============================================================ */
+const STORAGE_KEY = 'exitosx-pb39-involuntary-exit';
+let state = loadState();
+
+function defaultState() {
+  return {
+    currentPage: 0,
+    dScores: { death: 0, disability: 0, divorce: 0, disagreement: 0, distress: 0 },
+    buySellStructure: '',
+    buySellChecks: {},
+    fundingScores: { lifeIns: 0, disIns: 0, sinkFund: 0, reserves: 0, installment: 0, bankFin: 0 },
+    keyPersons: [{ name: '', role: '', salary: '', revenueImpact: '', currentCoverage: '' }],
+    protocolAssignees: {},
+    emergencyChecks: {},
+    biaScores: { custFulfill: 0, acctRecv: 0, salesMktg: 0, prodDev: 0, hrAdmin: 0 },
+    crisisCommScores: { internal: 0, customers: 0, vendors: 0, financial: 0, media: 0 },
+    estateChecks: {},
+    estateScores: { succession: 0, buySellCoord: 0, liquidity: 0, discounts: 0, sec6166: 0 },
+    valuationMethod: '',
+    discountApplies: '',
+    notificationAssignees: {},
+    messageChecks: {},
+    masterChecks: {},
+    buySellWS: [{provision:'',status:'',action:'',deadline:''}],
+    insuranceWS: [{type:'',carrier:'',insured:'',beneficiary:'',amount:'',premium:''}],
+    completedSections: {}
+  };
+}
+
+function loadState() {
+  try { const s = localStorage.getItem(STORAGE_KEY); return s ? {...defaultState(), ...JSON.parse(s)} : defaultState(); }
+  catch(e) { return defaultState(); }
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  updateProgress();
+  updateSidebarScore();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+const NAV_ITEMS = [
+  { id: 0, icon: '&#x1F3E0;', label: 'Welcome' },
+  { id: 1, icon: '&#x26A0;', label: 'The 5 D\'s' },
+  { id: 2, icon: '&#x1F4DD;', label: 'Buy-Sell Agreements' },
+  { id: 3, icon: '&#x1F4B0;', label: 'Funding' },
+  { id: 4, icon: '&#x1F6E1;', label: 'Key-Person Insurance' },
+  { id: 5, icon: '&#x1F465;', label: 'Emergency Succession' },
+  { id: 6, icon: '&#x1F3E2;', label: 'Business Continuity' },
+  { id: 7, icon: '&#x1F4DC;', label: 'Legal Documents' },
+  { id: 8, icon: '&#x1F4CA;', label: 'Valuation Mechanisms' },
+  { id: 9, icon: '&#x1F4E3;', label: 'Communication Protocols' },
+  { id: 10, icon: '&#x2705;', label: 'Implementation' }
+];
+
+function buildNav() {
+  const nav = document.getElementById('sidebarNav');
+  nav.innerHTML = NAV_ITEMS.map(n => `
+    <div class="nav-item ${n.id === state.currentPage ? 'active' : ''} ${state.completedSections[n.id] ? 'completed' : ''}"
+         onclick="goToPage(${n.id})" role="button" tabindex="0" aria-label="${n.label}"
+         onkeydown="if(event.key==='Enter')goToPage(${n.id})">
+      <span class="nav-icon">${n.icon}</span>
+      <span>${n.label}</span>
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>
+    </div>
+  `).join('');
+}
+
+function goToPage(idx) {
+  if (state.currentPage > 0 && state.currentPage <= 10) {
+    state.completedSections[state.currentPage] = true;
+  }
+  state.currentPage = idx;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const page = document.getElementById('page-' + idx);
+  if (page) page.classList.add('active');
+  buildNav();
+  saveState();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  closeSidebar();
+  setTimeout(() => { if (page) { const heading = page.querySelector('.t-display, h1, h2'); if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); } } }, 100);
+}
+
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebarOverlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+function updateProgress() {
+  const completed = Object.keys(state.completedSections).length;
+  const pct = Math.round((completed / 10) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = completed + ' of 10 sections';
+}
+
+function calcOverallScore() {
+  let total = 0, count = 0;
+  // 5 D's scores (each 1-5, weighted x3)
+  Object.values(state.dScores).forEach(v => { if(v>0) { total += v * 3; count += 15; } });
+  // Funding scores (each 1-5, weighted x2)
+  Object.values(state.fundingScores).forEach(v => { if(v>0) { total += v * 2; count += 10; } });
+  // BIA scores
+  Object.values(state.biaScores).forEach(v => { if(v>0) { total += v; count += 5; } });
+  // Crisis comm scores
+  Object.values(state.crisisCommScores).forEach(v => { if(v>0) { total += v; count += 5; } });
+  // Estate scores
+  Object.values(state.estateScores).forEach(v => { if(v>0) { total += v; count += 5; } });
+  // Checklists
+  const chkSets = [state.buySellChecks, state.emergencyChecks, state.estateChecks, state.messageChecks, state.masterChecks];
+  chkSets.forEach(cs => {
+    const vals = Object.values(cs);
+    if(vals.length > 0) { total += vals.filter(v=>v).length; count += vals.length || 1; }
+  });
+  if (count === 0) return 0;
+  return Math.round((total / count) * 100);
+}
+
+function updateSidebarScore() {
+  const score = calcOverallScore();
+  document.getElementById('sidebarScore').textContent = score;
+  let desc = 'Complete assessments to see your score';
+  if (score > 0 && score < 30) desc = 'Significant gaps remain';
+  else if (score >= 30 && score < 60) desc = 'Foundation in place, work to do';
+  else if (score >= 60 && score < 80) desc = 'Good preparedness, refine details';
+  else if (score >= 80) desc = 'Strong preparedness posture';
+  document.getElementById('sidebarScoreDesc').textContent = desc;
+}
+
+/* ============================================================
+   SCORE SELECTOR HELPER
+   ============================================================ */
+function makeScoreSelector(name, value, onChange, labels) {
+  const defaultLabels = ['Critical','Poor','Partial','Good','Strong'];
+  const lbls = labels || defaultLabels;
+  return `<div class="score-selector" role="radiogroup" aria-label="${name}">${
+    [1,2,3,4,5].map(n => `
+      <label class="score-option s${n} ${value===n?'selected':''}" onclick="${onChange}(${n})" tabindex="0"
+             role="radio" aria-checked="${value===n}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${onChange}(${n})}">
+        <input type="radio" name="${name}" value="${n}" ${value===n?'checked':''}>
+        <span class="score-number">${n}</span>
+        <span class="score-label-text">${lbls[n-1]}</span>
+      </label>
+    `).join('')
+  }</div>`;
+}
+
+/* ============================================================
+   PAGE 1: THE 5 D's
+   ============================================================ */
+const FIVE_DS = [
+  { key: 'death', icon: '&#x2620;', color: '#C53030', bg: '#FFF0F0', title: 'Death', risk: 'Heirs become unwanted partners', desc: 'The sudden death of an owner creates immediate legal, financial, and operational chaos. Ownership passes to the estate.', defense: 'Buy-sell agreement', funding: 'Life insurance' },
+  { key: 'disability', icon: '&#x1F9BD;', color: '#D97706', bg: '#FFF8EB', title: 'Disability', risk: 'Absent owner retains ownership', desc: 'A disabled owner retains legal ownership but cannot contribute. The definition of disability must be precisely defined.', defense: 'Disability buyout clause', funding: 'Disability insurance' },
+  { key: 'divorce', icon: '&#x1F494;', color: '#9333EA', bg: '#F5F0FF', title: 'Divorce', risk: 'Ex-spouse gains ownership interest', desc: 'A business interest is a marital asset subject to division. This can result in a non-involved spouse receiving ownership.', defense: 'Transfer restrictions + prenup', funding: 'Company reserves / installment' },
+  { key: 'disagreement', icon: '&#x1F91C;', color: '#2563EB', bg: '#EFF6FF', title: 'Disagreement', risk: 'Deadlock and litigation', desc: 'Partner disputes over strategy, compensation, or growth can fracture partnerships and destroy value through litigation.', defense: 'Shotgun clause / arbitration', funding: 'Company reserves / financing' },
+  { key: 'distress', icon: '&#x1F4C9;', color: '#059669', bg: '#ECFDF5', title: 'Distress (Financial)', risk: 'Forced sale at depressed value', desc: 'Personal or corporate financial distress can force a sale of ownership interests at fire-sale prices.', defense: 'Right of first refusal', funding: 'Sinking fund / insurance' }
+];
+
+function buildFiveDs() {
+  document.getElementById('dGrid').innerHTML = FIVE_DS.map(d => `
+    <div class="d-card">
+      <div class="d-card-head">
+        <div class="d-card-icon" style="background:${d.bg};color:${d.color}">${d.icon}</div>
+        <div><div class="d-card-title">${d.title}</div><div class="d-card-risk">${d.risk}</div></div>
+      </div>
+      <div class="d-card-body">${d.desc}</div>
+      <div style="margin-top:var(--space-sm);font-size:13px;color:var(--color-text-tertiary)"><strong>Key Defense:</strong> ${d.defense} &nbsp;|&nbsp; <strong>Funding:</strong> ${d.funding}</div>
+      <div class="d-card-score-row">
+        <span class="t-small" style="font-weight:500">Your preparedness for ${d.title}:</span>
+      </div>
+      <div style="margin-top:var(--space-sm)">${makeScoreSelector('d_'+d.key, state.dScores[d.key], 'setDScore_'+d.key)}</div>
+    </div>
+  `).join('');
+  buildHeatmap();
+}
+
+FIVE_DS.forEach(d => {
+  window['setDScore_' + d.key] = function(val) {
+    state.dScores[d.key] = val;
+    saveState();
+    buildFiveDs();
+  };
+});
+
+function buildHeatmap() {
+  const dims = ['Agreement','Insurance','Succession','Communication','Legal Docs'];
+  const triggers = FIVE_DS.map(d => d.title.split(' ')[0]);
+  const cols = dims.length + 1;
+  let html = `<div class="heatmap-grid" style="grid-template-columns: 100px repeat(${dims.length}, 1fr)">`;
+  html += `<div class="hm-cell hm-header"></div>`;
+  dims.forEach(d => { html += `<div class="hm-cell hm-header">${d}</div>`; });
+  FIVE_DS.forEach((d, i) => {
+    html += `<div class="hm-cell hm-row-label">${triggers[i]}</div>`;
+    dims.forEach(() => {
+      const sc = state.dScores[d.key] || 0;
+      html += `<div class="hm-cell hm-${sc}" title="${d.title}: ${sc}/5">${sc > 0 ? sc : '-'}</div>`;
+    });
+  });
+  html += '</div>';
+  document.getElementById('heatmapContainer').innerHTML = html;
+}
+
+/* ============================================================
+   PAGE 2: BUY-SELL AGREEMENTS
+   ============================================================ */
+const BUY_SELL_STRUCTURES = [
+  { key: 'cross', title: 'Cross-Purchase', desc: 'Individual owners purchase the departing owner\'s interest. Stepped-up tax basis.', best: '2-3 owners, similar ages' },
+  { key: 'entity', title: 'Entity Redemption', desc: 'The company purchases the departing owner\'s interest. Simpler administration.', best: '4+ owners, simplicity' },
+  { key: 'hybrid', title: 'Hybrid (Wait-and-See)', desc: 'Company has first right to redeem; remaining owners pick up the rest.', best: 'Complex situations' },
+  { key: 'trusteed', title: 'Trusteed Cross-Purchase', desc: 'Trust buys on behalf of owners. Stepped-up basis with admin ease.', best: 'Multiple owners, admin ease' }
+];
+
+const BUY_SELL_PROVISIONS = [
+  'Triggering events clearly defined (death, disability, retirement, termination, divorce, bankruptcy)',
+  'Mandatory vs. optional buyout specified for each trigger type',
+  'Valuation method specified (formula, appraisal, or agreed-value)',
+  'Payment terms defined (lump sum, installment, earnout, insurance-funded)',
+  'Transfer restrictions in place (right of first refusal, consent requirements)',
+  'Disability definition and waiting period specified',
+  'Divorce provisions included',
+  'Agreement reviewed and updated within the last 2 years'
+];
+
+function buildBuySell() {
+  document.getElementById('buySellGrid').innerHTML = BUY_SELL_STRUCTURES.map(s => `
+    <div class="d-card ${state.buySellStructure===s.key?'':''.trim()}" onclick="selectBuySell('${s.key}')"
+         style="${state.buySellStructure===s.key ? 'border-color:var(--color-primary);background:var(--color-primary-light)' : ''}">
+      <div class="d-card-head">
+        <div><div class="d-card-title">${s.title}</div><div class="d-card-risk">Best for: ${s.best}</div></div>
+        ${state.buySellStructure===s.key ? '<span class="badge badge-primary">Selected</span>' : ''}
+      </div>
+      <div class="d-card-body">${s.desc}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('buySellChecklist').innerHTML = BUY_SELL_PROVISIONS.map((p, i) => {
+    const checked = state.buySellChecks['bs_' + i];
+    return `<div class="checklist-item ${checked?'checked':''}" onclick="toggleBuySellCheck(${i})" role="checkbox" aria-checked="${!!checked}" tabindex="0"
+                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleBuySellCheck(${i})}">
+      <div class="cl-box"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>
+      <span class="cl-text">${p}</span>
+    </div>`;
+  }).join('');
+}
+
+function selectBuySell(key) { state.buySellStructure = key; saveState(); buildBuySell(); }
+function toggleBuySellCheck(i) { state.buySellChecks['bs_' + i] = !state.buySellChecks['bs_' + i]; saveState(); buildBuySell(); }
+
+/* ============================================================
+   PAGE 3: FUNDING
+   ============================================================ */
+const FUNDING_METHODS = [
+  { key: 'lifeIns', label: 'Life Insurance', desc: 'Immediate tax-free liquidity for death trigger' },
+  { key: 'disIns', label: 'Disability Buyout Insurance', desc: 'Lump sum or installment for disability trigger' },
+  { key: 'sinkFund', label: 'Sinking Fund', desc: 'Flexible, no underwriting; slow accumulation' },
+  { key: 'reserves', label: 'Company Reserves', desc: 'Immediate availability; ties up operating capital' },
+  { key: 'installment', label: 'Installment Payments', desc: 'No upfront cash; prolonged obligation' },
+  { key: 'bankFin', label: 'Bank Financing', desc: 'Preserves liquidity; interest costs' }
+];
+
+function buildFunding() {
+  document.getElementById('fundingAssessment').innerHTML = FUNDING_METHODS.map(f => `
+    <div class="card" style="margin-bottom:var(--space-md)">
+      <div class="t-h3" style="margin-bottom:2px">${f.label}</div>
+      <div class="t-small t-secondary" style="margin-bottom:var(--space-md)">${f.desc}</div>
+      ${makeScoreSelector('fund_'+f.key, state.fundingScores[f.key], 'setFunding_'+f.key, ['None','Exploring','Partial','Good','Fully Funded'])}
+    </div>
+  `).join('');
+
+  const colors = ['#C53030','#D97706','#C67F20','#2D8A4E','#1A6B35','#2563EB'];
+  document.getElementById('fundingBars').innerHTML = FUNDING_METHODS.map((f, i) => {
+    const val = state.fundingScores[f.key] || 0;
+    const pct = val * 20;
+    return `<div class="funding-bar-item">
+      <div class="funding-bar-label">${f.label}</div>
+      <div class="funding-bar-track">
+        <div class="funding-bar-fill" style="width:${pct}%;background:${colors[i]}">${val > 0 ? `<span class="funding-bar-value">${val}/5</span>` : ''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+FUNDING_METHODS.forEach(f => {
+  window['setFunding_' + f.key] = function(val) {
+    state.fundingScores[f.key] = val;
+    saveState();
+    buildFunding();
+  };
+});
+
+function calcSinking() {
+  const target = parseFloat(document.getElementById('sinkTarget').value) || 0;
+  const years = parseFloat(document.getElementById('sinkYears').value) || 1;
+  const rate = (parseFloat(document.getElementById('sinkReturn').value) || 0) / 100;
+  let annual;
+  if (rate === 0) { annual = target / years; }
+  else { annual = target * rate / (Math.pow(1 + rate, years) - 1); }
+  document.getElementById('sinkResult').textContent = '$' + Math.round(annual).toLocaleString();
+}
+
+/* ============================================================
+   PAGE 4: KEY-PERSON INSURANCE
+   ============================================================ */
+function buildKeyPersons() {
+  document.getElementById('keyPersonCards').innerHTML = state.keyPersons.map((kp, i) => `
+    <div class="card" style="margin-bottom:var(--space-md)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-md)">
+        <span class="t-h3">Key Person ${i + 1}</span>
+        ${state.keyPersons.length > 1 ? `<button class="btn btn-sm btn-secondary" onclick="removeKeyPerson(${i})" style="color:var(--color-danger)">Remove</button>` : ''}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Name</label>
+          <input class="form-input" value="${kp.name}" placeholder="e.g., Jane Smith" onchange="updateKP(${i},'name',this.value)">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Role</label>
+          <input class="form-input" value="${kp.role}" placeholder="e.g., CEO" onchange="updateKP(${i},'role',this.value)">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Annual Salary ($)</label>
+          <input class="form-input" type="number" value="${kp.salary}" placeholder="500000" onchange="updateKP(${i},'salary',this.value)">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Revenue Impact ($)</label>
+          <input class="form-input" type="number" value="${kp.revenueImpact}" placeholder="2000000" onchange="updateKP(${i},'revenueImpact',this.value)">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Current Coverage ($)</label>
+          <input class="form-input" type="number" value="${kp.currentCoverage}" placeholder="1000000" onchange="updateKP(${i},'currentCoverage',this.value)">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Recommended (5-10x salary)</label>
+          <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--color-primary);padding-top:8px">
+            ${kp.salary ? '$' + (parseInt(kp.salary) * 7.5).toLocaleString() : '--'}
+          </div>
+        </div>
+      </div>
+      ${kp.salary && kp.currentCoverage ? `<div style="margin-top:var(--space-md);padding-top:var(--space-md);border-top:1px solid var(--color-border-light)">
+        <div class="t-small" style="margin-bottom:var(--space-sm)">Coverage Gap</div>
+        <div style="height:12px;background:var(--color-surface-alt);border-radius:6px;overflow:hidden">
+          <div style="height:100%;width:${Math.min(100, (parseInt(kp.currentCoverage) / (parseInt(kp.salary) * 7.5)) * 100)}%;background:${parseInt(kp.currentCoverage) >= parseInt(kp.salary) * 5 ? 'var(--color-success)' : 'var(--color-warning)'};border-radius:6px;transition:width 0.5s ease"></div>
+        </div>
+        <div class="t-caption t-secondary" style="margin-top:4px">${Math.round((parseInt(kp.currentCoverage) / (parseInt(kp.salary) * 7.5)) * 100)}% of recommended coverage</div>
+      </div>` : ''}
+    </div>
+  `).join('');
+  buildCoverageGauge();
+}
+
+function updateKP(i, field, val) { state.keyPersons[i][field] = val; saveState(); buildKeyPersons(); }
+function addKeyPerson() { state.keyPersons.push({ name:'', role:'', salary:'', revenueImpact:'', currentCoverage:'' }); saveState(); buildKeyPersons(); }
+function removeKeyPerson(i) { state.keyPersons.splice(i, 1); saveState(); buildKeyPersons(); }
+
+function buildCoverageGauge() {
+  let totalNeeded = 0, totalHave = 0;
+  state.keyPersons.forEach(kp => {
+    if (kp.salary) { totalNeeded += parseInt(kp.salary) * 7.5; totalHave += parseInt(kp.currentCoverage) || 0; }
+  });
+  const pct = totalNeeded > 0 ? Math.min(100, Math.round((totalHave / totalNeeded) * 100)) : 0;
+  const color = pct >= 80 ? 'var(--color-success)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-danger)';
+  const r = 80, cx = 100, cy = 95, startAngle = Math.PI, endAngle = 0;
+  const circumference = Math.PI * r;
+  const offset = circumference * (1 - pct / 100);
+
+  document.getElementById('coverageGauge').innerHTML = `
+    <svg width="200" height="120" viewBox="0 0 200 120">
+      <path class="gauge-bg" d="M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}" />
+      <path class="gauge-fill" d="M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}"
+            style="stroke:${color};stroke-dasharray:${circumference};stroke-dashoffset:${offset}" />
+    </svg>
+    <div class="gauge-value-text">
+      <div class="gauge-number" style="color:${color}">${pct}%</div>
+      <div class="gauge-label">Covered</div>
+    </div>
+  `;
+  const gap = totalNeeded - totalHave;
+  document.getElementById('coverageGapSummary').innerHTML = totalNeeded > 0
+    ? `<div class="t-small t-secondary">Total recommended: <strong>$${totalNeeded.toLocaleString()}</strong> | Current: <strong>$${totalHave.toLocaleString()}</strong> | Gap: <strong style="color:${gap > 0 ? 'var(--color-danger)' : 'var(--color-success)'}">$${Math.abs(gap).toLocaleString()}</strong></div>`
+    : '<div class="t-small t-secondary">Enter salary data above to see coverage analysis</div>';
+}
+
+/* ============================================================
+   PAGE 5: EMERGENCY SUCCESSION
+   ============================================================ */
+const PROTOCOL_STEPS = [
+  { time: '0-4 hours', action: 'Notify designated emergency contact / interim leader', party: 'Office manager / COO' },
+  { time: '4-24 hours', action: 'Activate emergency succession plan; notify key employees', party: 'Interim leader' },
+  { time: '24-48 hours', action: 'Notify key customers, vendors, and lender', party: 'Interim leader + advisors' },
+  { time: '48-72 hours', action: 'Assess financial position; secure critical systems', party: 'CFO / controller' },
+  { time: 'Week 1', action: 'Engage legal counsel; review buy-sell and insurance', party: 'Attorney + insurance broker' },
+  { time: 'Week 2-4', action: 'Stabilize operations; begin replacement search', party: 'Board / advisory team' },
+  { time: 'Month 2-3', action: 'Implement permanent leadership transition', party: 'Full advisory team' }
+];
+
+const EMERGENCY_CHECKS = [
+  'Designated interim leader identified and has accepted the role',
+  'Interim leader has access to critical passwords, accounts, and systems',
+  'Key employee contact list with personal cell numbers and emails',
+  'Key customer and vendor contact list with relationship owners',
+  'Bank account signatories updated to include interim leader',
+  'Insurance policies documented (life, disability, key-person, BI)',
+  'Legal counsel, CPA, financial advisor, and insurance broker contact info',
+  'Buy-sell agreement location and summary of key terms accessible',
+  'Power of attorney documents executed and accessible',
+  'Operating procedures for critical daily, weekly, and monthly tasks'
+];
+
+function buildEmergencySuccession() {
+  document.getElementById('protocolTable').innerHTML = `
+    <div class="card" style="overflow-x:auto">
+      <table class="assess-table">
+        <thead><tr><th>Timeframe</th><th>Action</th><th>Default Party</th><th>Your Assignee</th></tr></thead>
+        <tbody>${PROTOCOL_STEPS.map((p, i) => `
+          <tr>
+            <td style="font-weight:600;white-space:nowrap">${p.time}</td>
+            <td>${p.action}</td>
+            <td style="color:var(--color-text-tertiary)">${p.party}</td>
+            <td><input class="ws-input" value="${state.protocolAssignees['p_'+i]||''}" placeholder="Name / role" onchange="state.protocolAssignees['p_'+${i}]=this.value;saveState()"></td>
+          </tr>
+        `).join('')}</tbody>
+      </table>
+    </div>
+  `;
+
+  document.getElementById('emergencyChecklist').innerHTML = EMERGENCY_CHECKS.map((c, i) => {
+    const checked = state.emergencyChecks['ec_' + i];
+    return `<div class="checklist-item ${checked?'checked':''}" onclick="toggleEmergencyCheck(${i})" role="checkbox" aria-checked="${!!checked}" tabindex="0"
+                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleEmergencyCheck(${i})}">
+      <div class="cl-box"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>
+      <span class="cl-text">${c}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleEmergencyCheck(i) { state.emergencyChecks['ec_' + i] = !state.emergencyChecks['ec_' + i]; saveState(); buildEmergencySuccession(); }
+
+/* ============================================================
+   PAGE 6: BUSINESS CONTINUITY
+   ============================================================ */
+const BIA_FUNCTIONS = [
+  { key: 'custFulfill', label: 'Customer Fulfillment', priority: 'Critical', downtime: '24 hours' },
+  { key: 'acctRecv', label: 'Accounts Receivable', priority: 'Critical', downtime: '48 hours' },
+  { key: 'salesMktg', label: 'Sales & Marketing', priority: 'High', downtime: '1 week' },
+  { key: 'prodDev', label: 'Product Development', priority: 'Medium', downtime: '2 weeks' },
+  { key: 'hrAdmin', label: 'HR / Admin', priority: 'Lower', downtime: '2 weeks' }
+];
+
+const CRISIS_COMM_GROUPS = [
+  { key: 'internal', icon: '&#x1F465;', label: 'Internal (Employees)', desc: 'Employees first -- they need clarity, reassurance, and direction' },
+  { key: 'customers', icon: '&#x1F91D;', label: 'Key Customers', desc: 'Within 24-48 hours -- transparent about impact and timeline' },
+  { key: 'vendors', icon: '&#x1F4E6;', label: 'Vendors & Suppliers', desc: 'Ensure supply continuity and payment assurance' },
+  { key: 'financial', icon: '&#x1F3E6;', label: 'Financial Partners', desc: 'Proactive communication preserves trust and covenant flexibility' },
+  { key: 'media', icon: '&#x1F4F0;', label: 'Media / Public', desc: 'Only when necessary; control the narrative' }
+];
+
+function buildContinuity() {
+  document.getElementById('biaTable').innerHTML = BIA_FUNCTIONS.map(f => `
+    <div class="card" style="margin-bottom:var(--space-md)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-sm)">
+        <span class="t-h3">${f.label}</span>
+        <span class="badge ${f.priority === 'Critical' ? 'badge-danger' : f.priority === 'High' ? 'badge-warning' : 'badge-neutral'}">${f.priority}</span>
+      </div>
+      <div class="t-caption t-secondary" style="margin-bottom:var(--space-md)">Max tolerable downtime: ${f.downtime}</div>
+      ${makeScoreSelector('bia_'+f.key, state.biaScores[f.key], 'setBIA_'+f.key, ['No Plan','Minimal','Some Docs','Documented','Tested & Ready'])}
+    </div>
+  `).join('');
+
+  document.getElementById('crisisCommCards').innerHTML = CRISIS_COMM_GROUPS.map(g => `
+    <div class="card" style="margin-bottom:var(--space-md)">
+      <div class="d-card-head" style="margin-bottom:var(--space-sm)">
+        <span style="font-size:20px">${g.icon}</span>
+        <div><div class="t-h3">${g.label}</div><div class="t-caption t-secondary">${g.desc}</div></div>
+      </div>
+      ${makeScoreSelector('cc_'+g.key, state.crisisCommScores[g.key], 'setCC_'+g.key, ['No Plan','Ad Hoc','Partial','Documented','Tested'])}
+    </div>
+  `).join('');
+}
+
+BIA_FUNCTIONS.forEach(f => {
+  window['setBIA_' + f.key] = function(val) { state.biaScores[f.key] = val; saveState(); buildContinuity(); };
+});
+CRISIS_COMM_GROUPS.forEach(g => {
+  window['setCC_' + g.key] = function(val) { state.crisisCommScores[g.key] = val; saveState(); buildContinuity(); };
+});
+
+/* ============================================================
+   PAGE 7: ESTATE DOCUMENTS
+   ============================================================ */
+const ESTATE_DOCS = [
+  'Durable Power of Attorney (Financial) -- authorizes agent to manage financial affairs',
+  'Healthcare Power of Attorney -- designates healthcare decision-maker',
+  'Living Will / Advance Directive -- states end-of-life treatment preferences',
+  'Revocable Living Trust -- holds assets to avoid probate',
+  'Pour-Over Will -- catches assets not transferred to the trust',
+  'ILIT (Irrevocable Life Insurance Trust) -- keeps proceeds out of taxable estate'
+];
+
+const ESTATE_AREAS = [
+  { key: 'succession', label: 'Ownership Succession', desc: 'Who inherits the business interest -- active heirs vs. passive heirs' },
+  { key: 'buySellCoord', label: 'Buy-Sell Coordination', desc: 'Ensuring the business can repurchase interests from the estate' },
+  { key: 'liquidity', label: 'Estate Tax Liquidity', desc: 'Business interests often represent 50-80% of net worth, creating liquidity problems' },
+  { key: 'discounts', label: 'Valuation Discounts / Gifting', desc: 'GRATs, IDGTs, family limited partnerships to reduce estate tax' },
+  { key: 'sec6166', label: 'IRC Section 6166', desc: 'Installment payment of estate taxes over 14 years for closely held businesses' }
+];
+
+function buildEstate() {
+  document.getElementById('estateChecklist').innerHTML = ESTATE_DOCS.map((d, i) => {
+    const checked = state.estateChecks['est_' + i];
+    return `<div class="checklist-item ${checked?'checked':''}" onclick="toggleEstateCheck(${i})" role="checkbox" aria-checked="${!!checked}" tabindex="0"
+                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleEstateCheck(${i})}">
+      <div class="cl-box"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>
+      <span class="cl-text">${d}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('estateAssessment').innerHTML = ESTATE_AREAS.map(a => `
+    <div class="card" style="margin-bottom:var(--space-md)">
+      <div class="t-h3" style="margin-bottom:2px">${a.label}</div>
+      <div class="t-caption t-secondary" style="margin-bottom:var(--space-md)">${a.desc}</div>
+      ${makeScoreSelector('est_'+a.key, state.estateScores[a.key], 'setEstate_'+a.key, ['Not Done','Aware','In Progress','Documented','Coordinated'])}
+    </div>
+  `).join('');
+}
+
+function toggleEstateCheck(i) { state.estateChecks['est_' + i] = !state.estateChecks['est_' + i]; saveState(); buildEstate(); }
+ESTATE_AREAS.forEach(a => {
+  window['setEstate_' + a.key] = function(val) { state.estateScores[a.key] = val; saveState(); buildEstate(); };
+});
+
+/* ============================================================
+   PAGE 8: VALUATION MECHANISMS
+   ============================================================ */
+const VALUATION_METHODS = [
+  { key: 'fixed', title: 'Fixed Price', desc: 'Owners agree on a price and update periodically. Simple but almost never kept current.', pros: 'Simple; no disputes', cons: 'Quickly becomes stale' },
+  { key: 'formula', title: 'Formula-Based', desc: 'Predefined formula (e.g., 5x EBITDA). Automatic and objective.', pros: 'Automatic; objective', cons: 'May not reflect market' },
+  { key: 'appraisal', title: 'Appraisal at Trigger', desc: 'Independent appraiser values the business when a trigger occurs.', pros: 'Most accurate', cons: 'Expensive; time-consuming' },
+  { key: 'multiple', title: 'Multiple Appraisers', desc: 'Each side picks an appraiser; if >10% apart, a third decides.', pros: 'Reduces bias', cons: 'Costly; contentious' },
+  { key: 'book', title: 'Book Value', desc: 'Per the financial statements. Simple and verifiable.', pros: 'Simple; verifiable', cons: 'Often far below FMV' },
+  { key: 'hybrid', title: 'Hybrid', desc: 'Formula with an appraisal cap or floor. Balanced approach.', pros: 'Balanced', cons: 'More complex drafting' }
+];
+
+function buildValuation() {
+  document.getElementById('valuationMethods').innerHTML = VALUATION_METHODS.map(m => `
+    <div class="d-card" onclick="selectValuation('${m.key}')"
+         style="${state.valuationMethod===m.key ? 'border-color:var(--color-primary);background:var(--color-primary-light)' : ''};margin-bottom:var(--space-sm)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="d-card-title">${m.title}</div>
+        ${state.valuationMethod===m.key ? '<span class="badge badge-primary">Current Method</span>' : ''}
+      </div>
+      <div class="d-card-body" style="margin-top:var(--space-sm)">${m.desc}</div>
+      <div style="display:flex;gap:var(--space-xl);margin-top:var(--space-sm);font-size:13px">
+        <span style="color:var(--color-success)">+ ${m.pros}</span>
+        <span style="color:var(--color-danger)">- ${m.cons}</span>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('discountSection').innerHTML = `
+    <div class="card">
+      <div class="t-h3" style="margin-bottom:var(--space-md)">Do minority discounts apply in your buy-sell agreement?</div>
+      <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Minority interest discounts (DLOC + DLOM) can reduce value by 25-45%. Most involuntary exits should use pro-rata value (no discounts) to avoid penalizing the departing owner.</p>
+      <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap">
+        ${['No discounts (pro-rata)','Discounts apply','Not specified','Don\'t know'].map(opt => `
+          <button class="btn ${state.discountApplies === opt ? 'btn-primary' : 'btn-secondary'}" onclick="state.discountApplies='${opt}';saveState();buildValuation()">${opt}</button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function selectValuation(key) { state.valuationMethod = key; saveState(); buildValuation(); }
+
+/* ============================================================
+   PAGE 9: COMMUNICATION PROTOCOLS
+   ============================================================ */
+const NOTIFICATION_MATRIX = [
+  { stakeholder: 'Immediate family', within: 'Immediately', who: 'Personal contact', message: 'Support and next steps' },
+  { stakeholder: 'Co-owners / partners', within: 'Within hours', who: 'Designated contact', message: 'Plan activation; roles' },
+  { stakeholder: 'Key employees', within: 'Within 24 hours', who: 'Interim leader', message: 'Stability; continuity' },
+  { stakeholder: 'Legal counsel', within: 'Within 24 hours', who: 'Interim leader / family', message: 'Activate buy-sell' },
+  { stakeholder: 'Insurance broker', within: 'Within 24 hours', who: 'CFO or attorney', message: 'File claims; confirm coverage' },
+  { stakeholder: 'Lender / bank', within: 'Within 48 hours', who: 'CFO + attorney', message: 'Continuity; covenant compliance' },
+  { stakeholder: 'Key customers', within: '48-72 hours', who: 'Sales leadership', message: 'Continuity of service' },
+  { stakeholder: 'Vendors / suppliers', within: 'Within 1 week', who: 'Operations leader', message: 'Business as usual' }
+];
+
+const MESSAGE_TEMPLATES = [
+  'Employee notification template prepared',
+  'Customer communication template prepared',
+  'Vendor/supplier notification template prepared',
+  'Lender notification template prepared',
+  'Media/press statement template prepared',
+  'Social media holding statement prepared',
+  'Templates reviewed by legal counsel'
+];
+
+function buildCommunication() {
+  document.getElementById('notificationMatrix').innerHTML = `
+    <div class="card" style="overflow-x:auto">
+      <table class="notif-table">
+        <thead><tr><th>Stakeholder</th><th>Notify Within</th><th>Default Contact</th><th>Your Assignee</th></tr></thead>
+        <tbody>${NOTIFICATION_MATRIX.map((n, i) => `
+          <tr>
+            <td style="font-weight:500">${n.stakeholder}</td>
+            <td><span class="badge ${n.within.includes('Immediately') || n.within.includes('hours') ? 'badge-danger' : n.within.includes('24') ? 'badge-warning' : 'badge-neutral'}">${n.within}</span></td>
+            <td style="color:var(--color-text-tertiary);font-size:13px">${n.who}</td>
+            <td><input class="ws-input" value="${state.notificationAssignees['na_'+i]||''}" placeholder="Name" onchange="state.notificationAssignees['na_'+${i}]=this.value;saveState()"></td>
+          </tr>
+        `).join('')}</tbody>
+      </table>
+    </div>
+  `;
+
+  document.getElementById('messageChecklist').innerHTML = MESSAGE_TEMPLATES.map((m, i) => {
+    const checked = state.messageChecks['msg_' + i];
+    return `<div class="checklist-item ${checked?'checked':''}" onclick="toggleMsgCheck(${i})" role="checkbox" aria-checked="${!!checked}" tabindex="0"
+                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleMsgCheck(${i})}">
+      <div class="cl-box"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>
+      <span class="cl-text">${m}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleMsgCheck(i) { state.messageChecks['msg_' + i] = !state.messageChecks['msg_' + i]; saveState(); buildCommunication(); }
+
+/* ============================================================
+   PAGE 10: IMPLEMENTATION
+   ============================================================ */
+const MASTER_CHECKS = [
+  'Buy-sell agreement is in place and reviewed within the last 2 years',
+  'Buy-sell addresses all 5 D\'s (death, disability, divorce, disagreement, distress)',
+  'Buy-sell valuation mechanism reflects current business value',
+  'Life insurance coverage matches current buy-sell obligation',
+  'Disability buyout insurance is in place with appropriate elimination period',
+  'Key-person insurance coverage is adequate and current',
+  'Emergency succession plan is written and accessible',
+  'Interim leader is identified and has accepted the role',
+  'Powers of attorney (financial and healthcare) are executed and current',
+  'Estate plan coordinates with buy-sell agreement and insurance program',
+  'Communication protocol is documented and key contacts are current',
+  'Critical passwords, account access, and system credentials are documented',
+  'Annual review of all involuntary exit planning documents is scheduled'
+];
+
+function buildImplementation() {
+  document.getElementById('masterChecklist').innerHTML = MASTER_CHECKS.map((c, i) => {
+    const checked = state.masterChecks['mc_' + i];
+    return `<div class="checklist-item ${checked?'checked':''}" onclick="toggleMasterCheck(${i})" role="checkbox" aria-checked="${!!checked}" tabindex="0"
+                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleMasterCheck(${i})}">
+      <div class="cl-box"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>
+      <span class="cl-text">${c}</span>
+    </div>`;
+  }).join('');
+
+  // Buy-Sell Worksheet
+  document.getElementById('buySellWorksheet').innerHTML = `
+    <div class="card" style="overflow-x:auto">
+      <table class="assess-table">
+        <thead><tr><th>Provision</th><th>Current Status</th><th>Action Needed</th><th>Deadline</th></tr></thead>
+        <tbody>${state.buySellWS.map((row, i) => `
+          <tr>
+            <td><input class="ws-input" value="${row.provision}" placeholder="e.g., Valuation clause" onchange="updateBSWS(${i},'provision',this.value)"></td>
+            <td><input class="ws-input" value="${row.status}" placeholder="Status" onchange="updateBSWS(${i},'status',this.value)"></td>
+            <td><input class="ws-input" value="${row.action}" placeholder="Action needed" onchange="updateBSWS(${i},'action',this.value)"></td>
+            <td><input class="ws-input" type="date" value="${row.deadline}" onchange="updateBSWS(${i},'deadline',this.value)"></td>
+          </tr>
+        `).join('')}</tbody>
+      </table>
+      <button class="btn btn-sm btn-secondary" style="margin-top:var(--space-md)" onclick="addBSWSRow()">+ Add Row</button>
+    </div>
+  `;
+
+  // Insurance Worksheet
+  document.getElementById('insuranceWorksheet').innerHTML = `
+    <div class="card" style="overflow-x:auto">
+      <table class="assess-table">
+        <thead><tr><th>Policy Type</th><th>Carrier</th><th>Insured</th><th>Beneficiary</th><th>Coverage ($)</th><th>Premium ($)</th></tr></thead>
+        <tbody>${state.insuranceWS.map((row, i) => `
+          <tr>
+            <td><input class="ws-input" value="${row.type}" placeholder="e.g., Term Life" onchange="updateInsWS(${i},'type',this.value)"></td>
+            <td><input class="ws-input" value="${row.carrier}" placeholder="Carrier" onchange="updateInsWS(${i},'carrier',this.value)"></td>
+            <td><input class="ws-input" value="${row.insured}" placeholder="Insured" onchange="updateInsWS(${i},'insured',this.value)"></td>
+            <td><input class="ws-input" value="${row.beneficiary}" placeholder="Beneficiary" onchange="updateInsWS(${i},'beneficiary',this.value)"></td>
+            <td><input class="ws-input" type="number" value="${row.amount}" placeholder="Amount" onchange="updateInsWS(${i},'amount',this.value)"></td>
+            <td><input class="ws-input" type="number" value="${row.premium}" placeholder="Premium" onchange="updateInsWS(${i},'premium',this.value)"></td>
+          </tr>
+        `).join('')}</tbody>
+      </table>
+    </div>
+  `;
+
+  buildFinalGauge();
+}
+
+function toggleMasterCheck(i) { state.masterChecks['mc_' + i] = !state.masterChecks['mc_' + i]; saveState(); buildImplementation(); }
+function updateBSWS(i, field, val) { state.buySellWS[i][field] = val; saveState(); }
+function addBSWSRow() { state.buySellWS.push({provision:'',status:'',action:'',deadline:''}); saveState(); buildImplementation(); }
+function updateInsWS(i, field, val) { state.insuranceWS[i][field] = val; saveState(); }
+function addInsuranceRow() { state.insuranceWS.push({type:'',carrier:'',insured:'',beneficiary:'',amount:'',premium:''}); saveState(); buildImplementation(); }
+
+function buildFinalGauge() {
+  const score = calcOverallScore();
+  const color = score >= 80 ? 'var(--color-success)' : score >= 50 ? 'var(--color-warning)' : 'var(--color-danger)';
+  const r = 80, cx = 100, cy = 95;
+  const circumference = Math.PI * r;
+  const offset = circumference * (1 - score / 100);
+
+  document.getElementById('finalGauge').innerHTML = `
+    <svg width="200" height="120" viewBox="0 0 200 120">
+      <path class="gauge-bg" d="M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}" />
+      <path class="gauge-fill" d="M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}"
+            style="stroke:${color};stroke-dasharray:${circumference};stroke-dashoffset:${offset}" />
+    </svg>
+    <div class="gauge-value-text">
+      <div class="gauge-number" style="color:${color}">${score}</div>
+      <div class="gauge-label">Score</div>
+    </div>
+  `;
+
+  let level = 'Critical Gaps', levelColor = 'var(--color-danger)';
+  if (score >= 80) { level = 'Strong Preparedness'; levelColor = 'var(--color-success)'; }
+  else if (score >= 60) { level = 'Good Foundation'; levelColor = 'var(--color-success)'; }
+  else if (score >= 40) { level = 'Partial Coverage'; levelColor = 'var(--color-warning)'; }
+  else if (score >= 20) { level = 'Significant Gaps'; levelColor = 'var(--color-warning)'; }
+
+  document.getElementById('finalSummary').innerHTML = `
+    <div class="t-h2" style="color:${levelColor};margin-bottom:var(--space-sm)">${level}</div>
+    <p class="t-small t-secondary">Your overall involuntary exit preparedness score is <strong>${score}/100</strong>. ${score < 60 ? 'Focus on completing the highest-priority items in your master checklist above.' : 'Continue refining your plans and conduct annual reviews.'}</p>
+  `;
+}
+
+/* LOCALSTORAGE MIGRATION */
+(function() {
+  const OLD_KEY = 'playbook39_involuntary_exit';
+  const NEW_KEY = 'exitosx-pb39-involuntary-exit';
+  if (OLD_KEY === STORAGE_KEY) return;
+  try {
+    const old = localStorage.getItem(OLD_KEY);
+    if (old && !localStorage.getItem(NEW_KEY)) {
+      localStorage.setItem(NEW_KEY, old);
+      localStorage.removeItem(OLD_KEY);
+    }
+  } catch(e) {}
+})();
+
+function exportReport() {
+  let text = 'INVOLUNTARY EXIT PREPAREDNESS - Summary Report\n';
+  text += 'Generated: ' + new Date().toLocaleDateString() + '\n';
+  text += '='.repeat(50) + '\n\n';
+  text += 'PREPAREDNESS SCORE: ' + (document.getElementById('sidebarScore')?.textContent || '--') + '/100\n\n';
+  text += '--- THE 5 D\'s SCORES ---\n';
+  const triggers = ['death','disability','divorce','disagreement','distress'];
+  triggers.forEach(t => { text += t + ': ' + (state.fiveDScores?.[t] || '--') + '/5\n'; });
+  text += '\n--- BUY-SELL AGREEMENT ---\n';
+  text += 'Structure: ' + (state.buySellStructure || '--') + '\n';
+  const bsChecked = state.buySellChecks ? Object.values(state.buySellChecks).filter(Boolean).length : 0;
+  text += 'Provisions checklist: ' + bsChecked + ' items checked\n\n';
+  text += '--- SECTIONS COMPLETED ---\n';
+  const completed = state.completedSections ? Object.values(state.completedSections).filter(Boolean).length : 0;
+  text += completed + ' of 10 sections completed\n';
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'playbook-39-involuntary-exit-report.txt';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Report exported successfully');
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'playbook-39-involuntary-exit-data.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Data exported successfully');
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init() {
+  buildNav();
+  buildFiveDs();
+  buildBuySell();
+  buildFunding();
+  buildKeyPersons();
+  buildEmergencySuccession();
+  buildContinuity();
+  buildEstate();
+  buildValuation();
+  buildCommunication();
+  buildImplementation();
+  calcSinking();
+  updateProgress();
+  updateSidebarScore();
+  goToPage(state.currentPage);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -122,6 +122,7 @@ export const FEATURE_REQUIREMENTS: Record<string, PlanTier> = {
   'bri-overview': 'foundation',
 
   // Growth required
+  'playbooks': 'growth',
   'ai-coach': 'growth',
   'company-assessment': 'growth',
   'risk-assessment': 'growth',

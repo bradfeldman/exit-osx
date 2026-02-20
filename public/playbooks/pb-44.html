@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Timing Assessment | Exit Planning Playbook #44</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  color: var(--color-text); background: var(--color-bg);
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a { color: var(--color-primary); text-decoration: none; }
+
+.t-display { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.t-tertiary { color: var(--color-text-tertiary); }
+.mb-xs { margin-bottom: var(--space-xs); }
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+.mb-xl { margin-bottom: var(--space-xl); }
+.mb-2xl { margin-bottom: var(--space-2xl); }
+
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 260px; min-width: 260px; background: var(--color-text);
+  color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow); overflow-y: auto;
+}
+.sidebar.collapsed { transform: translateX(-260px); }
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; transition: margin-left var(--transition-slow); }
+.sidebar.collapsed + .main-content { margin-left: 0; }
+.content-area { max-width: 860px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.6);
+  font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--color-text-tertiary); }
+.nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-lg);
+  transition: box-shadow var(--transition-normal);
+}
+.card:hover { box-shadow: var(--shadow-sm); }
+.callout {
+  padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md);
+  border-left: 3px solid; font-size: 14px; line-height: 1.6;
+}
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); border-color: var(--color-text-tertiary); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.btn-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); color: var(--color-text); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.form-input::placeholder { color: var(--color-text-tertiary); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+  border-radius: 999px; font-size: 12px; font-weight: 500;
+}
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+.badge-accent { background: var(--color-accent-light); color: var(--color-accent); }
+
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.section-divider { height: 1px; background: var(--color-border); margin: var(--space-2xl) 0; }
+
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon {
+  width: 72px; height: 72px; background: var(--color-primary-light);
+  border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center;
+  margin: 0 auto var(--space-lg); font-size: 32px;
+}
+.welcome-hero .t-display { margin-bottom: var(--space-md); }
+.welcome-hero .t-body { margin-bottom: var(--space-2xl); }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+.welcome-phases { display: flex; flex-direction: column; gap: var(--space-md); margin: var(--space-2xl) 0; text-align: left; }
+.welcome-phase {
+  display: flex; gap: var(--space-lg); padding: var(--space-lg);
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+}
+.welcome-phase-num {
+  width: 36px; height: 36px; background: var(--color-primary-light); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-weight: 700;
+  color: var(--color-primary); flex-shrink: 0; font-size: 15px;
+}
+.welcome-phase-title { font-weight: 600; margin-bottom: 2px; }
+.welcome-phase-desc { font-size: 14px; color: var(--color-text-secondary); }
+@media (max-width: 600px) { .welcome-stats { grid-template-columns: 1fr; } .welcome-hero { padding: var(--space-2xl) var(--space-md); } }
+
+/* Score selector */
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center; min-width: 0;
+}
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+@media (max-width: 600px) { .score-selector { gap: 4px; } .score-option { padding: 10px 4px; } .score-number { font-size: 18px; } .score-label-text { font-size: 9px; } }
+
+/* KPI row */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-xl); }
+.kpi-card { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-align: center; }
+.kpi-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1.1; }
+.kpi-label { font-size: 12px; color: var(--color-text-secondary); margin-top: 4px; }
+@media (max-width: 700px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+
+/* Progress ring */
+.progress-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.progress-ring-text { position: absolute; text-align: center; }
+.progress-ring-value { font-family: var(--font-display); font-weight: 700; line-height: 1; }
+.progress-ring-label { font-size: 10px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* Bar chart */
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 160px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 28px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+@media (max-width: 600px) { .bar-label { width: 100px; font-size: 11px; } }
+
+/* Gauge */
+.gauge-wrap { display: flex; flex-direction: column; align-items: center; }
+.gauge-svg { width: 200px; height: 120px; }
+.gauge-label { font-size: 14px; color: var(--color-text-secondary); margin-top: var(--space-sm); }
+
+/* Indicator card */
+.indicator-card {
+  border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  padding: var(--space-lg); margin-bottom: var(--space-md); background: var(--color-surface);
+  transition: all var(--transition-fast);
+}
+.indicator-card.favorable { border-left: 4px solid var(--color-success); }
+.indicator-card.unfavorable { border-left: 4px solid var(--color-danger); }
+.indicator-card.neutral { border-left: 4px solid var(--color-warning); }
+
+/* Signal selector */
+.signal-selector { display: flex; gap: var(--space-sm); }
+.signal-option {
+  flex: 1; padding: 10px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center; font-size: 13px; font-weight: 500;
+}
+.signal-option:hover { border-color: var(--color-text-tertiary); }
+.signal-option.selected.sig-fav { border-color: var(--color-success); background: var(--color-success-light); color: var(--color-success); }
+.signal-option.selected.sig-neut { border-color: var(--color-warning); background: var(--color-warning-light); color: var(--color-warning); }
+.signal-option.selected.sig-unfav { border-color: var(--color-danger); background: var(--color-danger-light); color: var(--color-danger); }
+
+/* Check items */
+.check-item {
+  display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md);
+  border: 1px solid var(--color-border-light); border-radius: var(--radius-sm);
+  cursor: pointer; transition: all var(--transition-fast); margin-bottom: var(--space-sm);
+}
+.check-item:hover { background: var(--color-surface-alt); }
+.check-item.checked { background: var(--color-success-light); border-color: var(--color-success); }
+.check-box {
+  width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all var(--transition-fast);
+}
+.check-item.checked .check-box { background: var(--color-success); border-color: var(--color-success); }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; transition: opacity var(--transition-fast); }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-text { font-size: 14px; padding-top: 1px; }
+
+/* Comp table */
+.comp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.comp-table th { text-align: left; padding: 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); }
+.comp-table td { padding: 6px 8px; border-bottom: 1px solid var(--color-border-light); vertical-align: middle; }
+.comp-table tr:hover td { background: var(--color-surface-alt); }
+.comp-input { padding: 4px 8px; border: 1px solid var(--color-border); border-radius: 4px; font-size: 13px; background: var(--color-surface); width: 100%; }
+.comp-input:focus { outline: none; border-color: var(--color-primary); }
+
+/* Decision matrix */
+.matrix-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: var(--color-border); border-radius: var(--radius-md); overflow: hidden; margin-bottom: var(--space-xl); }
+.matrix-cell { padding: var(--space-md); background: var(--color-surface); text-align: center; font-size: 13px; }
+.matrix-cell.header { background: var(--color-surface-alt); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); }
+.matrix-cell.go { background: #E8F8EE; color: var(--color-success); font-weight: 600; }
+.matrix-cell.hold { background: var(--color-warning-light); color: var(--color-warning); font-weight: 600; }
+.matrix-cell.caution { background: #FFF3E8; color: var(--color-accent); font-weight: 600; }
+.matrix-cell.rush { background: var(--color-danger-light); color: var(--color-danger); font-weight: 600; }
+
+/* Toast */
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  padding: 12px 20px; border-radius: var(--radius-md); background: var(--color-text);
+  color: #fff; font-size: 14px; font-weight: 500; box-shadow: var(--shadow-lg);
+  animation: toastIn 0.3s ease; max-width: 360px;
+}
+.toast.out { animation: toastOut 0.3s ease forwards; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-8px); } }
+
+/* Skip link */
+.skip-link {
+  position: absolute; top: -100%; left: 16px; z-index: 10000;
+  padding: 10px 20px; background: var(--color-primary); color: #fff;
+  border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  text-decoration: none; transition: top 0.2s ease;
+}
+.skip-link:focus { top: 16px; }
+
+/* Focus visible */
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+button:focus:not(:focus-visible), .nav-item:focus:not(:focus-visible),
+.score-option:focus:not(:focus-visible), .check-item:focus:not(:focus-visible),
+.signal-option:focus:not(:focus-visible) { outline: none; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  html { scroll-behavior: auto; }
+  .page { animation: none; }
+}
+
+/* Print */
+@media print {
+  .sidebar, .sidebar-overlay, .mobile-header, .btn-group, .toast-container, .skip-link { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .content-area { max-width: 100% !important; padding: 0 !important; }
+  .page { display: block !important; break-inside: avoid; }
+  .page:not(.active) { display: none !important; }
+  .card { break-inside: avoid; box-shadow: none !important; border: 1px solid #ccc !important; }
+  body { font-size: 12pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* Monthly tracker */
+.monthly-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.monthly-table th { text-align: center; padding: 8px 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); }
+.monthly-table td { padding: 6px 4px; border-bottom: 1px solid var(--color-border-light); text-align: center; }
+.monthly-table td:first-child { text-align: left; font-weight: 500; }
+.monthly-input { width: 100%; padding: 3px 6px; border: 1px solid transparent; border-radius: 3px; font-size: 12px; text-align: center; background: transparent; }
+.monthly-input:focus { outline: none; border-color: var(--color-primary); background: var(--color-surface); }
+.monthly-input:hover { border-color: var(--color-border); }
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<div class="toast-container" id="toastContainer" aria-live="polite" role="status"></div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<div class="app">
+  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #44</div>
+      <div class="sidebar-brand-title">Market Timing Assessment</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <div class="sidebar-nav" id="sidebarNav">
+      <div class="nav-section-label">Journey</div>
+      <div class="nav-item active" data-page="welcome" onclick="goToPage('welcome')" tabindex="0" role="button">
+        <div class="nav-icon">1</div><span>Welcome</span>
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="macro" onclick="goToPage('macro')" tabindex="0" role="button">
+        <div class="nav-icon">2</div><span>Macro Indicators</span>
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="industry" onclick="goToPage('industry')" tabindex="0" role="button">
+        <div class="nav-icon">3</div><span>Industry Cycles</span>
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="buyers" onclick="goToPage('buyers')" tabindex="0" role="button">
+        <div class="nav-icon">4</div><span>Buyer Appetite</span>
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="scorecard" onclick="goToPage('scorecard')" tabindex="0" role="button">
+        <div class="nav-icon">5</div><span>Market Scorecard</span>
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="decision" onclick="goToPage('decision')" tabindex="0" role="button">
+        <div class="nav-icon">6</div><span>Sell vs. Hold</span>
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="comps" onclick="goToPage('comps')" tabindex="0" role="button">
+        <div class="nav-icon">7</div><span>Comparable Deals</span>
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="monthly" onclick="goToPage('monthly')" tabindex="0" role="button">
+        <div class="nav-icon">8</div><span>Monthly Tracker</span>
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="dashboard" onclick="goToPage('dashboard')" tabindex="0" role="button">
+        <div class="nav-icon">9</div><span>Dashboard</span>
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+    </div>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Market Signal</div>
+      <div class="sidebar-score-value" id="sidebarSignal">--</div>
+      <div class="sidebar-score-desc" id="sidebarSignalDesc">Complete assessment to see</div>
+    </div>
+  </nav>
+
+  <div class="main-content" id="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation"><span></span></button>
+      <div style="font-weight:600;font-size:15px">Market Timing Assessment</div>
+    </div>
+    <div class="content-area">
+
+      <!-- WELCOME -->
+      <div class="page active" id="page-welcome">
+        <div class="welcome-hero">
+          <div class="welcome-icon">&#128200;</div>
+          <div class="t-display">The Best Time to Sell Is When You Do Not Have To</div>
+          <p class="t-body t-secondary">Market timing in M&amp;A is not about predicting the future. It is about understanding the present clearly enough to make an informed decision. The difference between selling in a strong market and a weak one can be 1-3x on your EBITDA multiple.</p>
+          <div class="welcome-stats">
+            <div class="welcome-stat">
+              <div class="welcome-stat-value">1-3x</div>
+              <div class="welcome-stat-label">Multiple difference between strong and weak markets</div>
+            </div>
+            <div class="welcome-stat">
+              <div class="welcome-stat-value">10</div>
+              <div class="welcome-stat-label">Key indicators tracked</div>
+            </div>
+            <div class="welcome-stat">
+              <div class="welcome-stat-value">3</div>
+              <div class="welcome-stat-label">Factor alignment needed</div>
+            </div>
+          </div>
+          <div class="welcome-phases">
+            <div class="welcome-phase">
+              <div class="welcome-phase-num">1</div>
+              <div><div class="welcome-phase-title">Assess macro and industry conditions</div><div class="welcome-phase-desc">Evaluate interest rates, GDP, credit markets, and your industry's M&amp;A cycle.</div></div>
+            </div>
+            <div class="welcome-phase">
+              <div class="welcome-phase-num">2</div>
+              <div><div class="welcome-phase-title">Gauge buyer appetite</div><div class="welcome-phase-desc">Understand PE dry powder, strategic buyer activity, and search fund demand.</div></div>
+            </div>
+            <div class="welcome-phase">
+              <div class="welcome-phase-num">3</div>
+              <div><div class="welcome-phase-title">Score your market window</div><div class="welcome-phase-desc">Rate 10 indicators to get a clear go/hold signal for your specific situation.</div></div>
+            </div>
+            <div class="welcome-phase">
+              <div class="welcome-phase-num">4</div>
+              <div><div class="welcome-phase-title">Make the sell vs. hold decision</div><div class="welcome-phase-desc">Combine market, business, and personal factors into a defensible decision.</div></div>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-lg" onclick="startJourney()">Begin Assessment &rarr;</button>
+        </div>
+      </div>
+
+      <!-- MACRO -->
+      <div class="page" id="page-macro">
+        <div class="page-header">
+          <div class="t-label">Step 1 of 8</div>
+          <div class="t-display">Macroeconomic Indicators</div>
+          <p class="t-body t-secondary">M&amp;A activity follows predictable macroeconomic patterns. These four factors determine how much capital is available, how aggressively buyers compete, and what multiples the market supports.</p>
+        </div>
+        <div class="callout callout-accent mb-xl">
+          <strong>Why This Matters:</strong> Interest rates are the single most influential factor in M&amp;A. Because most acquisitions -- especially by private equity -- are financed with debt, the cost of that debt directly determines what buyers can afford to pay. A 2% rate change can shift multiples by 1-2x.
+        </div>
+        <div id="macroCards"></div>
+        <div class="section-divider"></div>
+        <div class="t-h2 mb-lg">Seller's Market vs. Buyer's Market</div>
+        <p class="t-small t-secondary mb-lg">Understanding which environment you are in is essential. Markets shift over 6-18 months -- if you spot the transition early, you can time accordingly.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);margin-bottom:var(--space-xl)">
+          <div class="card" style="padding:var(--space-lg);border-left:4px solid var(--color-success)">
+            <div class="t-h3 mb-md" style="color:var(--color-success)">Seller's Market</div>
+            <ul style="font-size:13px;color:var(--color-text-secondary);padding-left:var(--space-lg);display:flex;flex-direction:column;gap:6px">
+              <li>Multiple buyers competing for same targets</li>
+              <li>Multiples at or above historical averages</li>
+              <li>Shorter diligence timelines (buyers fear losing deal)</li>
+              <li>Less aggressive buyer-friendly terms</li>
+              <li>More cash at close; smaller earnouts</li>
+              <li>Deals close faster (4-6 months LOI to close)</li>
+              <li>Lenders aggressive; leverage 4-5x+ for mid-market</li>
+            </ul>
+          </div>
+          <div class="card" style="padding:var(--space-lg);border-left:4px solid var(--color-danger)">
+            <div class="t-h3 mb-md" style="color:var(--color-danger)">Buyer's Market</div>
+            <ul style="font-size:13px;color:var(--color-text-secondary);padding-left:var(--space-lg);display:flex;flex-direction:column;gap:6px">
+              <li>Fewer active buyers; less competition</li>
+              <li>Multiples below historical averages</li>
+              <li>Extended diligence (buyers in no rush)</li>
+              <li>Aggressive buyer-friendly terms</li>
+              <li>More earnout-heavy structures</li>
+              <li>Deals take longer (8-12+ months)</li>
+              <li>Lenders cautious; leverage 2.5-3.5x</li>
+            </ul>
+          </div>
+        </div>
+        <div class="t-h3 mb-md">Market Shift Signals</div>
+        <div class="card mb-xl" style="padding:var(--space-lg)">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--color-border);border-radius:var(--radius-md);overflow:hidden;font-size:13px">
+            <div style="padding:var(--space-sm) var(--space-md);background:var(--color-surface);font-weight:600">Signal</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px">
+              <div style="padding:var(--space-sm) var(--space-md);background:var(--color-danger-light);font-weight:600;color:var(--color-danger);text-align:center">Seller &#8594; Buyer</div>
+              <div style="padding:var(--space-sm) var(--space-md);background:var(--color-success-light);font-weight:600;color:var(--color-success);text-align:center">Buyer &#8594; Seller</div>
+            </div>
+            <div style="padding:var(--space-sm) var(--space-md);background:var(--color-surface)">Interest rates</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px">
+              <div style="padding:var(--space-sm) var(--space-md);background:var(--color-surface);color:var(--color-text-secondary)">Rising; Fed tightening</div>
+              <div style="padding:var(--space-sm) var(--space-md);background:var(--color-surface);color:var(--color-text-secondary)">Falling or stable; Fed easing</div>
+            </div>
+            <div style="padding:var(--space-sm) var(--space-md);background:var(--color-surface)">Deal volume</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px">
+              <div style="padding:var(--space-sm) var(--space-md);background:var(--color-surface);color:var(--color-text-secondary)">Declining from peak</div>
+              <div style="padding:var(--space-sm) var(--space-md);background:var(--color-surface);color:var(--color-text-secondary)">Increasing from trough</div>
+            </div>
+            <div style="padding:var(--space-sm) var(--space-md);background:var(--color-surface)">Retrades</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px">
+              <div style="padding:var(--space-sm) var(--space-md);background:var(--color-surface);color:var(--color-text-secondary)">Increasing; buyers renegotiating after LOI</div>
+              <div style="padding:var(--space-sm) var(--space-md);background:var(--color-surface);color:var(--color-text-secondary)">Decreasing; buyers honoring terms</div>
+            </div>
+            <div style="padding:var(--space-sm) var(--space-md);background:var(--color-surface)">Time to close</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px">
+              <div style="padding:var(--space-sm) var(--space-md);background:var(--color-surface);color:var(--color-text-secondary)">Lengthening</div>
+              <div style="padding:var(--space-sm) var(--space-md);background:var(--color-surface);color:var(--color-text-secondary)">Shortening; buyers moving faster</div>
+            </div>
+          </div>
+        </div>
+        <div class="callout callout-accent mb-xl">
+          <strong>The Cardinal Rule:</strong> Do not wait for the perfect market. It does not exist. A prepared seller in a good market will always outperform an unprepared seller in a great market.
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="goToPage('welcome')">&larr; Back</button>
+          <button class="btn btn-primary" onclick="completeMacro()">Continue to Industry Cycles &rarr;</button>
+        </div>
+      </div>
+
+      <!-- INDUSTRY -->
+      <div class="page" id="page-industry">
+        <div class="page-header">
+          <div class="t-label">Step 2 of 8</div>
+          <div class="t-display">Industry M&amp;A Cycles</div>
+          <p class="t-body t-secondary">M&amp;A activity varies by industry. Identify your industry and where it sits in the current cycle.</p>
+        </div>
+        <div class="card mb-xl" style="padding:var(--space-xl)">
+          <div class="form-group">
+            <label class="form-label">Your Industry</label>
+            <select class="form-input" id="industrySelect" onchange="setIndustry(this.value)" style="max-width:400px">
+              <option value="">Select your industry...</option>
+              <option value="healthcare">Healthcare Services</option>
+              <option value="technology">Technology / SaaS</option>
+              <option value="manufacturing">Manufacturing</option>
+              <option value="professional">Professional Services</option>
+              <option value="construction">Construction / Trades</option>
+              <option value="distribution">Distribution / Logistics</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div id="industryDetail"></div>
+        </div>
+        <div class="card mb-xl" style="padding:var(--space-xl)">
+          <div class="t-h2 mb-md">Where Are You in the Cycle?</div>
+          <p class="t-small t-secondary mb-lg">Based on your observations, where does your industry's M&amp;A activity currently sit?</p>
+          <div id="cycleAssessment"></div>
+        </div>
+        <div class="callout callout-warning mb-xl">
+          <strong>The Consolidation Wave:</strong> The most favorable time to sell is during a consolidation wave -- when large buyers are actively acquiring to build scale. These waves last 3-5 years. If you see one forming, accelerate your preparation.
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="goToPage('macro')">&larr; Back</button>
+          <button class="btn btn-primary" onclick="completeIndustry()">Continue to Buyer Appetite &rarr;</button>
+        </div>
+      </div>
+
+      <!-- BUYERS -->
+      <div class="page" id="page-buyers">
+        <div class="page-header">
+          <div class="t-label">Step 3 of 8</div>
+          <div class="t-display">Buyer Appetite Indicators</div>
+          <p class="t-body t-secondary">Even in a weak overall market, specific buyer types may be actively acquiring. Assess the demand for businesses like yours.</p>
+        </div>
+        <div id="buyerCards"></div>
+        <div class="section-divider"></div>
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="goToPage('industry')">&larr; Back</button>
+          <button class="btn btn-primary" onclick="completeBuyers()">Continue to Market Scorecard &rarr;</button>
+        </div>
+      </div>
+
+      <!-- SCORECARD -->
+      <div class="page" id="page-scorecard">
+        <div class="page-header">
+          <div class="t-label">Step 4 of 8</div>
+          <div class="t-display">Market Timing Scorecard</div>
+          <p class="t-body t-secondary">Rate each of the 10 key indicators. This scorecard gives you a clear, data-driven signal about current market conditions.</p>
+        </div>
+        <div id="scorecardItems"></div>
+        <div class="section-divider"></div>
+        <div id="scorecardResult" style="display:none"></div>
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="goToPage('buyers')">&larr; Back</button>
+          <button class="btn btn-primary" onclick="completeScorecard()">Continue to Sell vs. Hold &rarr;</button>
+        </div>
+      </div>
+
+      <!-- DECISION -->
+      <div class="page" id="page-decision">
+        <div class="page-header">
+          <div class="t-label">Step 5 of 8</div>
+          <div class="t-display">Sell vs. Hold Decision</div>
+          <p class="t-body t-secondary">The decision is the intersection of market conditions, business performance, and personal readiness. All three must align.</p>
+        </div>
+        <div class="t-h2 mb-lg">The Three-Factor Decision Matrix</div>
+        <div class="matrix-grid mb-xl">
+          <div class="matrix-cell header">Market + Business + Personal</div>
+          <div class="matrix-cell header">Performance</div>
+          <div class="matrix-cell header">Recommendation</div>
+          <div class="matrix-cell">Strong market</div><div class="matrix-cell">Strong &amp; growing + Ready</div><div class="matrix-cell go">GO</div>
+          <div class="matrix-cell">Strong market</div><div class="matrix-cell">Strong + Not ready</div><div class="matrix-cell caution">PREPARE FAST</div>
+          <div class="matrix-cell">Strong market</div><div class="matrix-cell">Flat / declining + Ready</div><div class="matrix-cell hold">PROCEED W/ CAUTION</div>
+          <div class="matrix-cell">Neutral market</div><div class="matrix-cell">Strong + Ready</div><div class="matrix-cell go">GO</div>
+          <div class="matrix-cell">Neutral market</div><div class="matrix-cell">Flat + Ready</div><div class="matrix-cell hold">HOLD &amp; IMPROVE</div>
+          <div class="matrix-cell">Weak market</div><div class="matrix-cell">Strong + Ready</div><div class="matrix-cell caution">CONSIDER GOING</div>
+          <div class="matrix-cell">Weak market</div><div class="matrix-cell">Flat + Ready</div><div class="matrix-cell rush">HOLD</div>
+          <div class="matrix-cell">Any market</div><div class="matrix-cell">Must-sell situation</div><div class="matrix-cell rush">GO (set realistic expectations)</div>
+        </div>
+        <div class="t-h2 mb-lg">Your Sell vs. Hold Checklist</div>
+        <div class="card mb-xl" style="padding:var(--space-xl)">
+          <div id="sellHoldChecklist"></div>
+          <div class="section-divider"></div>
+          <div id="sellHoldResult"></div>
+        </div>
+        <div class="t-h2 mb-lg">The Five Conditions to Sell Without Urgency</div>
+        <div class="card mb-xl" style="padding:var(--space-xl)">
+          <p class="t-small t-secondary mb-lg">Selling when you do not have to requires these five conditions. Check the ones you currently have.</p>
+          <div id="urgencyChecks"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);margin-bottom:var(--space-xl)">
+          <div class="card" style="padding:var(--space-lg)">
+            <div class="t-h3 mb-md" style="color:var(--color-success)">Reasons to Sell Now</div>
+            <ul style="font-size:13px;color:var(--color-text-secondary);padding-left:var(--space-lg);display:flex;flex-direction:column;gap:8px">
+              <li><strong>Peak Performance:</strong> Business at or near peak and the next 2-3 years will not be materially better</li>
+              <li><strong>Personal Factors:</strong> Burnout, health issues, or family pressure that will not improve</li>
+              <li><strong>Consolidation Wave:</strong> Active consolidation in your industry with inbound interest</li>
+              <li><strong>Existential Threat:</strong> Pending regulatory, technology, or competitive threats</li>
+              <li><strong>Financial Sufficiency:</strong> Current proceeds meet your personal wealth target</li>
+              <li><strong>Next Chapter Clarity:</strong> A compelling next chapter motivates you more than incremental value</li>
+            </ul>
+          </div>
+          <div class="card" style="padding:var(--space-lg)">
+            <div class="t-h3 mb-md" style="color:var(--color-danger)">Reasons to Hold</div>
+            <ul style="font-size:13px;color:var(--color-text-secondary);padding-left:var(--space-lg);display:flex;flex-direction:column;gap:8px">
+              <li><strong>Value Gap:</strong> Specific improvements could increase value 30%+ within 12-18 months</li>
+              <li><strong>Team Not Ready:</strong> Management team not ready; too owner-dependent</li>
+              <li><strong>Financial Cleanup:</strong> Financials will not survive Quality of Earnings scrutiny</li>
+              <li><strong>Upcoming Catalyst:</strong> Major initiative that will significantly boost trailing EBITDA</li>
+              <li><strong>Personal Unreadiness:</strong> Have not done financial planning, emotional readiness, or post-exit planning</li>
+            </ul>
+          </div>
+        </div>
+        <div class="t-h2 mb-lg">The Opportunity Cost of Waiting</div>
+        <div class="card mb-xl" style="padding:var(--space-xl)">
+          <p class="t-small t-secondary mb-lg">Every year you hold the business carries real costs. Rate how significant each risk is for your situation. The decision to hold should be based on a specific, defensible thesis -- not vague optimism or fear of change.</p>
+          <div id="oppCostItems"></div>
+        </div>
+        <div class="section-divider"></div>
+        <div class="t-h2 mb-lg">Data Sources Reference</div>
+        <div class="card mb-xl" style="padding:var(--space-xl)">
+          <div class="t-h3 mb-md">Macroeconomic Data</div>
+          <div style="display:grid;grid-template-columns:1fr 2fr;gap:1px;background:var(--color-border);border-radius:var(--radius-sm);overflow:hidden;font-size:13px;margin-bottom:var(--space-lg)">
+            <div style="padding:6px 10px;background:var(--color-surface-alt);font-weight:600">FRED</div><div style="padding:6px 10px;background:var(--color-surface)">Interest rates, GDP, inflation, employment, credit (free, fred.stlouisfed.org)</div>
+            <div style="padding:6px 10px;background:var(--color-surface-alt);font-weight:600">BEA</div><div style="padding:6px 10px;background:var(--color-surface)">GDP data, economic indicators, industry output (free, bea.gov)</div>
+            <div style="padding:6px 10px;background:var(--color-surface-alt);font-weight:600">ISM PMI</div><div style="padding:6px 10px;background:var(--color-surface)">Leading indicator of expansion/contraction (monthly)</div>
+            <div style="padding:6px 10px;background:var(--color-surface-alt);font-weight:600">Fed Loan Survey</div><div style="padding:6px 10px;background:var(--color-surface)">Bank lending standards -- tightening or loosening (quarterly)</div>
+          </div>
+          <div class="t-h3 mb-md">M&amp;A Market Data</div>
+          <div style="display:grid;grid-template-columns:1fr 2fr;gap:1px;background:var(--color-border);border-radius:var(--radius-sm);overflow:hidden;font-size:13px;margin-bottom:var(--space-lg)">
+            <div style="padding:6px 10px;background:var(--color-surface-alt);font-weight:600">PitchBook</div><div style="padding:6px 10px;background:var(--color-surface)">Comprehensive M&amp;A, PE, VC data; valuations; multiples (paid, ask advisor)</div>
+            <div style="padding:6px 10px;background:var(--color-surface-alt);font-weight:600">GF Data</div><div style="padding:6px 10px;background:var(--color-surface)">Lower middle market multiples and terms -- $1-25M EBITDA (paid)</div>
+            <div style="padding:6px 10px;background:var(--color-surface-alt);font-weight:600">DealStats (BVR)</div><div style="padding:6px 10px;background:var(--color-surface)">Private company transactions; financial ratios (paid)</div>
+            <div style="padding:6px 10px;background:var(--color-surface-alt);font-weight:600">Bain PE Report</div><div style="padding:6px 10px;background:var(--color-surface)">Annual PE trends and dry powder data (free annual report)</div>
+            <div style="padding:6px 10px;background:var(--color-surface-alt);font-weight:600">IBBA Market Pulse</div><div style="padding:6px 10px;background:var(--color-surface)">Advisor survey on market conditions (free quarterly)</div>
+          </div>
+          <div class="t-h3 mb-md">Industry-Specific Sources</div>
+          <div style="display:grid;grid-template-columns:1fr 2fr;gap:1px;background:var(--color-border);border-radius:var(--radius-sm);overflow:hidden;font-size:13px">
+            <div style="padding:6px 10px;background:var(--color-surface-alt);font-weight:600">Trade Publications</div><div style="padding:6px 10px;background:var(--color-surface)">Monitor M&amp;A announcements, consolidation, regulatory changes</div>
+            <div style="padding:6px 10px;background:var(--color-surface-alt);font-weight:600">Industry Conferences</div><div style="padding:6px 10px;background:var(--color-surface)">Gauge buyer appetite; meet potential acquirers informally</div>
+            <div style="padding:6px 10px;background:var(--color-surface-alt);font-weight:600">Peer Groups (YPO/EO)</div><div style="padding:6px 10px;background:var(--color-surface)">Real-time intelligence: who sold, what multiples, who the active buyers are</div>
+            <div style="padding:6px 10px;background:var(--color-surface-alt);font-weight:600">Your M&amp;A Advisor</div><div style="padding:6px 10px;background:var(--color-surface)">Proprietary deal flow data; more deals than any public database</div>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="goToPage('scorecard')">&larr; Back</button>
+          <button class="btn btn-primary" onclick="completeDecision()">Continue to Comparables &rarr;</button>
+        </div>
+      </div>
+
+      <!-- COMPS -->
+      <div class="page" id="page-comps">
+        <div class="page-header">
+          <div class="t-label">Step 6 of 8</div>
+          <div class="t-display">Comparable Transaction Tracker</div>
+          <p class="t-body t-secondary">Track deals in your industry to understand what multiples the market is supporting. This is your real-world evidence base.</p>
+        </div>
+        <div class="card mb-xl" style="padding:var(--space-lg);overflow-x:auto">
+          <table class="comp-table" id="compTable">
+            <thead><tr><th>Company</th><th>Industry</th><th>Revenue</th><th>EBITDA</th><th>Multiple</th><th>Buyer Type</th><th>Date</th></tr></thead>
+            <tbody id="compBody"></tbody>
+          </table>
+          <button class="btn btn-sm btn-secondary" style="margin-top:var(--space-md)" onclick="addCompRow()">+ Add Transaction</button>
+        </div>
+        <div id="compSummary"></div>
+        <div class="section-divider"></div>
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="goToPage('decision')">&larr; Back</button>
+          <button class="btn btn-primary" onclick="completeComps()">Continue to Monthly Tracker &rarr;</button>
+        </div>
+      </div>
+
+      <!-- MONTHLY -->
+      <div class="page" id="page-monthly">
+        <div class="page-header">
+          <div class="t-label">Step 7 of 8</div>
+          <div class="t-display">Monthly Intelligence Dashboard</div>
+          <p class="t-body t-secondary">Track your 10 key indicators monthly to spot trends. Review this dashboard at least quarterly to assess whether your market window is opening or closing.</p>
+        </div>
+        <div class="card mb-xl" style="padding:var(--space-lg);overflow-x:auto">
+          <table class="monthly-table" id="monthlyTable">
+            <thead id="monthlyHead"></thead>
+            <tbody id="monthlyBody"></tbody>
+          </table>
+        </div>
+        <div class="callout callout-accent mb-xl">
+          <strong>The Dashboard Trap:</strong> Do not become paralyzed by data. If 6 of 10 indicators are favorable, your business is performing well, and you are personally ready -- that is enough. Perfect conditions do not exist. Good conditions combined with strong preparation produce great outcomes.
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="goToPage('comps')">&larr; Back</button>
+          <button class="btn btn-primary" onclick="completeMonthly()">View Your Dashboard &rarr;</button>
+        </div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div class="page" id="page-dashboard">
+        <div class="page-header">
+          <div class="t-label">Your Market Intelligence</div>
+          <div class="t-display">Timing Dashboard</div>
+          <p class="t-body t-secondary">Your complete market timing assessment at a glance.</p>
+        </div>
+        <div class="kpi-row" id="dashKpis"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);margin-bottom:var(--space-xl)">
+          <div class="card" style="padding:var(--space-xl)">
+            <div class="t-h3 mb-md">Market Signal Gauge</div>
+            <div id="dashGauge" style="text-align:center"></div>
+          </div>
+          <div class="card" style="padding:var(--space-xl)">
+            <div class="t-h3 mb-md">Sell vs. Hold Signal</div>
+            <div id="dashSellHold" style="text-align:center;padding:var(--space-lg) 0"></div>
+          </div>
+        </div>
+        <div class="card mb-xl" style="padding:var(--space-xl)">
+          <div class="t-h2 mb-lg">Indicator Breakdown</div>
+          <div class="bar-chart" id="dashBars"></div>
+        </div>
+        <div class="card mb-xl" style="padding:var(--space-xl)">
+          <div class="t-h2 mb-lg">Recommendations</div>
+          <div id="dashRecs"></div>
+        </div>
+        <div class="callout callout-info mb-xl">
+          <strong>Remember:</strong> Market timing is a factor, not a strategy. You cannot control interest rates, credit markets, or buyer appetite. But you can control your readiness. The owner who is prepared to sell at any time has the luxury of waiting for the right time.
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="goToPage('monthly')">&larr; Back to Tracker</button>
+          <button class="btn btn-accent" onclick="exportReport()">Export Report</button>
+          <button class="btn btn-secondary" onclick="exportData()">Export Raw Data</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'exitosx-pb44-market-timing';
+
+const MACRO_INDICATORS = [
+  { id: 'rates', label: 'Interest Rate Environment', desc: 'Current Fed Funds rate and direction. Low/falling rates = strong M&A activity.', favorable: 'Below 4%, stable or falling', unfavorable: 'Above 5%, rising', source: 'FRED (fred.stlouisfed.org)' },
+  { id: 'gdp', label: 'GDP and Economic Growth', desc: 'Trailing 4 quarters of GDP growth signal buyer confidence.', favorable: 'Above 2% growth, expansion', unfavorable: 'Below 1% or negative, recession', source: 'Bureau of Economic Analysis' },
+  { id: 'credit', label: 'Credit Availability', desc: 'Bank lending standards determine deal volume even more than rates.', favorable: 'Banks loosening, aggressive lending', unfavorable: 'Banks tightening, cautious', source: 'Fed Senior Loan Officer Survey' },
+  { id: 'markets', label: 'Stock Market Valuations', desc: 'Public company multiples set the ceiling for private company valuations.', favorable: 'S&P 500 EV/EBITDA above historical average', unfavorable: 'Below historical average', source: 'Capital IQ / Yahoo Finance' }
+];
+
+const BUYER_INDICATORS = [
+  { id: 'pe_dry', label: 'PE Dry Powder', desc: 'Uninvested capital PE firms have available to deploy.', favorable: 'Record high or near record', unfavorable: 'Declining from prior year' },
+  { id: 'pe_pressure', label: 'Fund Vintage Pressure', desc: 'PE funds raised 3-4 years ago are under deployment pressure.', favorable: 'Funds under deployment pressure', unfavorable: 'Recently raised, no urgency' },
+  { id: 'strategic', label: 'Strategic Buyer Activity', desc: 'Corporate cash, stock prices, and public M&A announcements.', favorable: 'Active acquirers, high corporate cash', unfavorable: 'Strategic buyers cutting costs' },
+  { id: 'search', label: 'Search Fund Activity', desc: 'For $500K-$3M EBITDA, search funds are increasingly active buyers.', favorable: 'Growing search fund formation', unfavorable: 'SBA lending tightening' },
+  { id: 'sector', label: 'Sector-Specific Fund Formation', desc: 'New funds being raised specifically for your industry.', favorable: 'New sector funds being raised', unfavorable: 'No recent sector-specific activity' }
+];
+
+const SCORECARD_ITEMS = [
+  { id: 'sc_rates', label: 'Federal Funds Rate', source: 'FRED', favorable: 'Below 4%; stable or falling', unfavorable: 'Above 5%; rising' },
+  { id: 'sc_gdp', label: 'GDP Growth (trailing 4Q)', source: 'BEA', favorable: 'Above 2% growth', unfavorable: 'Below 1% or negative' },
+  { id: 'sc_lending', label: 'Bank Lending Standards', source: 'Fed Senior Loan Officer Survey', favorable: 'Loosening or unchanged', unfavorable: 'Tightening' },
+  { id: 'sc_drypow', label: 'PE Dry Powder', source: 'PitchBook / Bain Report', favorable: 'At or near record highs', unfavorable: 'Declining from prior year' },
+  { id: 'sc_volume', label: 'Industry Deal Volume', source: 'PitchBook / Trade Pubs', favorable: 'Increasing year-over-year', unfavorable: 'Declining year-over-year' },
+  { id: 'sc_multiples', label: 'Industry Multiples', source: 'GF Data / DealStats', favorable: 'At or above 5-year average', unfavorable: 'Below 5-year average' },
+  { id: 'sc_comps', label: 'Comparable Transactions', source: 'Advisor network', favorable: 'Peers selling at strong multiples', unfavorable: 'Peers struggling to close' },
+  { id: 'sc_sp500', label: 'S&P 500 EV/EBITDA', source: 'Capital IQ / Yahoo Finance', favorable: 'Above historical average', unfavorable: 'Below historical average' },
+  { id: 'sc_revenue', label: 'Your Revenue Trend', source: 'Internal', favorable: 'Growing 10%+ year-over-year', unfavorable: 'Flat or declining' },
+  { id: 'sc_ebitda', label: 'Your EBITDA Trend', source: 'Internal', favorable: 'Growing; margins expanding', unfavorable: 'Flat or declining' }
+];
+
+const SELL_HOLD_CHECKS = [
+  'Market conditions: At least 5 of 10 dashboard indicators are favorable',
+  'Business performance: Revenue and EBITDA are growing or stable',
+  'Business readiness: Data room built, team in place, financials clean',
+  'Personal readiness: Financially independent of the business; emotionally prepared',
+  'Family alignment: Spouse/partner aligned on timing, terms, and post-exit plan',
+  'Advisor consensus: M&A advisor, CPA, and attorney agree now is reasonable',
+  'Walk-away number: Current expected valuation exceeds minimum acceptable net proceeds',
+  'Next chapter: You have a clear vision for life after the sale'
+];
+
+const URGENCY_CONDITIONS = [
+  'Financial Independence: Business performing well, generating strong cash flow, does not require a sale',
+  'Emotional Stability: Not burnt out, ill, or in a personal crisis that forces a sale',
+  'Genuine Alternatives: Real alternatives exist -- continue operating, different buyer, recapitalization, ESOP',
+  'Operational Readiness: Data room built, team in place, financials clean -- process will not be rushed',
+  'Family Alignment: You and your family are aligned on the decision and post-exit plan'
+];
+
+const OPP_COST_ITEMS = [
+  { id: 'concentrated', label: 'Concentrated Wealth Risk', desc: 'Your entire net worth in one illiquid asset' },
+  { id: 'diversification', label: 'Foregone Diversification', desc: 'Proceeds invested could earn market returns' },
+  { id: 'time', label: 'Personal Time and Energy', desc: 'Devoted to the business rather than other pursuits' },
+  { id: 'business_risk', label: 'Business-Specific Risk', desc: 'Key employee departure, customer loss, industry disruption' },
+  { id: 'age_risk', label: 'Age-Related Risk', desc: 'Your energy and health are not guaranteed in 3-5 years' }
+];
+
+const INDUSTRY_DATA = {
+  healthcare: { name: 'Healthcare Services', driver: 'Regulatory change, reimbursement shifts, PE rollup waves', cycle: '5-7 years', peak: 'New favorable regulations; PE platforms in buy mode', trough: 'Regulatory uncertainty; reimbursement cuts' },
+  technology: { name: 'Technology / SaaS', driver: 'Innovation cycles, funding availability, strategic acquirer appetite', cycle: '3-5 years', peak: 'New tech adoption wave; abundant VC/PE capital', trough: 'Tech correction; funding drought' },
+  manufacturing: { name: 'Manufacturing', driver: 'Economic cycle, trade policy, supply chain shifts', cycle: '7-10 years', peak: 'Strong GDP; favorable trade policy; reshoring', trough: 'Recession; tariffs; supply chain disruption' },
+  professional: { name: 'Professional Services', driver: 'Consolidation waves, PE interest, talent scarcity', cycle: '5-8 years', peak: 'PE platforms in acquisition mode; consolidation', trough: 'Platforms fully built; economic slowdown' },
+  construction: { name: 'Construction / Trades', driver: 'Infrastructure spending, housing cycles, interest rates', cycle: '7-12 years', peak: 'Government spending; low rates; housing boom', trough: 'High rates; housing downturn; austerity' },
+  distribution: { name: 'Distribution / Logistics', driver: 'E-commerce growth, supply chain evolution', cycle: '5-7 years', peak: 'E-commerce acceleration; supply chain innovation', trough: 'Growth normalizes; overcapacity' }
+};
+
+const CYCLE_POSITIONS = [
+  { id: 'early', label: 'Early Recovery', desc: 'Activity picking up from a trough. Deal volume increasing. Early movers get attention.' },
+  { id: 'expansion', label: 'Expansion', desc: 'Strong activity. Multiple buyers competing. Multiples rising. Good time to sell.' },
+  { id: 'peak', label: 'Peak / Late Cycle', desc: 'Record activity. Premium valuations. But signals of cooling may be appearing.' },
+  { id: 'correction', label: 'Correction', desc: 'Activity declining. Buyers becoming selective. Consider waiting unless you must sell.' },
+  { id: 'trough', label: 'Trough', desc: 'Low activity. Only best-in-class businesses attract competitive offers. Hold if possible.' }
+];
+
+let state = {
+  currentPage: 'welcome',
+  pagesUnlocked: ['welcome'],
+  pagesCompleted: [],
+  macroScores: {},
+  macroNotes: {},
+  industry: '',
+  cyclePosition: '',
+  cycleNotes: '',
+  buyerScores: {},
+  buyerNotes: {},
+  scorecardScores: {},
+  scorecardNotes: {},
+  sellHoldChecks: {},
+  oppCostScores: {},
+  urgencyChecks: {},
+  comps: [],
+  monthlyData: {}
+};
+
+function saveData() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {} }
+function loadData() { try { const d = localStorage.getItem(STORAGE_KEY); if (d) Object.assign(state, JSON.parse(d)); } catch(e) {} }
+
+function goToPage(pageId) {
+  const item = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+  if (item && item.classList.contains('locked')) return;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const page = document.getElementById('page-' + pageId);
+  if (page) page.classList.add('active');
+  if (item) item.classList.add('active');
+  state.currentPage = pageId;
+  saveData();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  closeSidebar();
+
+  setTimeout(() => {
+    const heading = page ? page.querySelector('.t-display, h1, h2, .t-h2') : null;
+    if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); }
+  }, 100);
+
+  if (pageId === 'macro') renderMacro();
+  if (pageId === 'industry') renderIndustry();
+  if (pageId === 'buyers') renderBuyers();
+  if (pageId === 'scorecard') renderScorecard();
+  if (pageId === 'decision') renderDecision();
+  if (pageId === 'comps') renderComps();
+  if (pageId === 'monthly') renderMonthly();
+  if (pageId === 'dashboard') renderDashboard();
+}
+
+function unlockPage(p) {
+  if (!state.pagesUnlocked.includes(p)) state.pagesUnlocked.push(p);
+  const item = document.querySelector(`.nav-item[data-page="${p}"]`);
+  if (item) item.classList.remove('locked');
+  saveData();
+}
+function completePage(p) {
+  if (!state.pagesCompleted.includes(p)) state.pagesCompleted.push(p);
+  const item = document.querySelector(`.nav-item[data-page="${p}"]`);
+  if (item) item.classList.add('completed');
+  saveData();
+  updateProgress();
+}
+function updateProgress() {
+  const total = 9;
+  const done = state.pagesCompleted.length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+  updateSidebarSignal();
+}
+function updateSidebarSignal() {
+  const scores = Object.values(state.scorecardScores).filter(v => v > 0);
+  if (scores.length < 5) {
+    document.getElementById('sidebarSignal').textContent = '--';
+    document.getElementById('sidebarSignalDesc').textContent = 'Complete scorecard to see';
+    return;
+  }
+  const favorable = scores.filter(s => s >= 4).length;
+  let signal = '', desc = '';
+  if (favorable >= 8) { signal = 'GO'; desc = 'Excellent market conditions'; }
+  else if (favorable >= 5) { signal = 'GO'; desc = 'Good market conditions'; }
+  else if (favorable >= 3) { signal = 'HOLD'; desc = 'Mixed conditions'; }
+  else { signal = 'HOLD'; desc = 'Challenging market'; }
+  document.getElementById('sidebarSignal').textContent = signal;
+  document.getElementById('sidebarSignalDesc').textContent = desc;
+}
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+function showToast(msg) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg; c.appendChild(t);
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300); }, 3000);
+}
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function getScoreColor(v) {
+  if (v >= 4.5) return 'var(--color-score-5)';
+  if (v >= 3.5) return 'var(--color-score-4)';
+  if (v >= 2.5) return 'var(--color-score-3)';
+  if (v >= 1.5) return 'var(--color-score-2)';
+  return 'var(--color-score-1)';
+}
+
+function startJourney() {
+  completePage('welcome');
+  unlockPage('macro');
+  goToPage('macro');
+}
+
+/* ============================================================
+   MACRO
+   ============================================================ */
+function renderMacro() {
+  let html = '';
+  MACRO_INDICATORS.forEach(ind => {
+    const score = state.macroScores[ind.id] || 0;
+    const note = state.macroNotes[ind.id] || '';
+    html += `<div class="card mb-lg" style="padding:var(--space-xl)">
+      <div class="t-h3 mb-sm">${ind.label}</div>
+      <p class="t-small t-secondary mb-md">${ind.desc}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-lg);font-size:13px">
+        <div style="padding:var(--space-sm) var(--space-md);background:var(--color-success-light);border-radius:var(--radius-sm);color:var(--color-success)"><strong>Favorable:</strong> ${ind.favorable}</div>
+        <div style="padding:var(--space-sm) var(--space-md);background:var(--color-danger-light);border-radius:var(--radius-sm);color:var(--color-danger)"><strong>Unfavorable:</strong> ${ind.unfavorable}</div>
+      </div>
+      <div class="score-selector mb-md">
+        ${[1,2,3,4,5].map(s => `
+          <div class="score-option s${s} ${score===s?'selected':''}" onclick="setMacro('${ind.id}',${s})" role="radio" aria-checked="${score===s}" tabindex="0">
+            <input type="radio" name="m_${ind.id}" value="${s}">
+            <div class="score-number">${s}</div>
+            <div class="score-label-text">${['Very unfav.','Unfav.','Neutral','Favorable','Very fav.'][s-1]}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="t-caption t-tertiary mb-sm">Source: ${ind.source}</div>
+      <input class="form-input" style="font-size:13px" placeholder="Your notes or current reading..." value="${esc(note)}" oninput="state.macroNotes['${ind.id}']=this.value;saveData()">
+    </div>`;
+  });
+  document.getElementById('macroCards').innerHTML = html;
+}
+function setMacro(id, val) { state.macroScores[id] = val; saveData(); renderMacro(); }
+function completeMacro() { completePage('macro'); unlockPage('industry'); goToPage('industry'); showToast('Macro indicators assessed. Review your industry cycle.'); }
+
+/* ============================================================
+   INDUSTRY
+   ============================================================ */
+function renderIndustry() {
+  if (state.industry) document.getElementById('industrySelect').value = state.industry;
+  renderIndustryDetail();
+  renderCycleAssessment();
+}
+function setIndustry(val) { state.industry = val; saveData(); renderIndustryDetail(); }
+function renderIndustryDetail() {
+  const d = INDUSTRY_DATA[state.industry];
+  if (!d) { document.getElementById('industryDetail').innerHTML = ''; return; }
+  document.getElementById('industryDetail').innerHTML = `
+    <div style="padding:var(--space-lg);background:var(--color-surface-alt);border-radius:var(--radius-md)">
+      <div class="t-h3 mb-sm">${d.name}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);font-size:14px">
+        <div><strong>Cycle Driver:</strong><br><span class="t-secondary">${d.driver}</span></div>
+        <div><strong>Typical Cycle:</strong><br><span class="t-secondary">${d.cycle}</span></div>
+        <div><strong>Peak Characteristics:</strong><br><span class="t-secondary">${d.peak}</span></div>
+        <div><strong>Trough Characteristics:</strong><br><span class="t-secondary">${d.trough}</span></div>
+      </div>
+    </div>`;
+}
+function renderCycleAssessment() {
+  let html = '<div style="display:flex;flex-direction:column;gap:var(--space-sm)">';
+  CYCLE_POSITIONS.forEach(cp => {
+    const sel = state.cyclePosition === cp.id;
+    html += `<div class="indicator-card ${sel ? 'favorable' : ''}" style="cursor:pointer;${sel ? 'border-color:var(--color-primary);background:var(--color-primary-light)' : ''}" onclick="setCyclePosition('${cp.id}')">
+      <div class="t-h3" style="${sel ? 'color:var(--color-primary)' : ''}">${cp.label}</div>
+      <div class="t-small t-secondary">${cp.desc}</div>
+    </div>`;
+  });
+  html += '</div>';
+  html += `<div class="form-group" style="margin-top:var(--space-lg)">
+    <label class="form-label">Your Industry Observations</label>
+    <textarea class="form-input" rows="3" placeholder="What are you seeing in deal volume, consolidation activity, buyer interest in your space?" oninput="state.cycleNotes=this.value;saveData()">${esc(state.cycleNotes)}</textarea>
+  </div>`;
+  document.getElementById('cycleAssessment').innerHTML = html;
+}
+function setCyclePosition(id) { state.cyclePosition = id; saveData(); renderCycleAssessment(); }
+function completeIndustry() { completePage('industry'); unlockPage('buyers'); goToPage('buyers'); showToast('Industry cycle assessed. Evaluate buyer appetite.'); }
+
+/* ============================================================
+   BUYERS
+   ============================================================ */
+function renderBuyers() {
+  let html = '';
+  BUYER_INDICATORS.forEach(ind => {
+    const score = state.buyerScores[ind.id] || 0;
+    const note = state.buyerNotes[ind.id] || '';
+    html += `<div class="card mb-lg" style="padding:var(--space-xl)">
+      <div class="t-h3 mb-sm">${ind.label}</div>
+      <p class="t-small t-secondary mb-md">${ind.desc}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-lg);font-size:13px">
+        <div style="padding:var(--space-sm) var(--space-md);background:var(--color-success-light);border-radius:var(--radius-sm);color:var(--color-success)"><strong>Favorable:</strong> ${ind.favorable}</div>
+        <div style="padding:var(--space-sm) var(--space-md);background:var(--color-danger-light);border-radius:var(--radius-sm);color:var(--color-danger)"><strong>Unfavorable:</strong> ${ind.unfavorable}</div>
+      </div>
+      <div class="signal-selector mb-md">
+        <div class="signal-option sig-fav ${score===5?'selected':''}" onclick="setBuyer('${ind.id}',5)">Favorable</div>
+        <div class="signal-option sig-neut ${score===3?'selected':''}" onclick="setBuyer('${ind.id}',3)">Neutral</div>
+        <div class="signal-option sig-unfav ${score===1?'selected':''}" onclick="setBuyer('${ind.id}',1)">Unfavorable</div>
+      </div>
+      <input class="form-input" style="font-size:13px" placeholder="Evidence or notes..." value="${esc(note)}" oninput="state.buyerNotes['${ind.id}']=this.value;saveData()">
+    </div>`;
+  });
+  document.getElementById('buyerCards').innerHTML = html;
+}
+function setBuyer(id, val) { state.buyerScores[id] = val; saveData(); renderBuyers(); }
+function completeBuyers() { completePage('buyers'); unlockPage('scorecard'); goToPage('scorecard'); showToast('Buyer appetite assessed. Complete your market scorecard.'); }
+
+/* ============================================================
+   SCORECARD
+   ============================================================ */
+function renderScorecard() {
+  let html = '';
+  SCORECARD_ITEMS.forEach(item => {
+    const score = state.scorecardScores[item.id] || 0;
+    const note = state.scorecardNotes[item.id] || '';
+    html += `<div class="card mb-md" style="padding:var(--space-lg)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:var(--space-sm);margin-bottom:var(--space-md)">
+        <div>
+          <div class="t-h3">${item.label}</div>
+          <div class="t-caption t-tertiary">Source: ${item.source}</div>
+        </div>
+        ${score > 0 ? `<span class="badge ${score >= 4 ? 'badge-success' : score >= 3 ? 'badge-warning' : 'badge-danger'}">${score >= 4 ? 'Favorable' : score >= 3 ? 'Neutral' : 'Unfavorable'}</span>` : ''}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm);margin-bottom:var(--space-md);font-size:12px">
+        <div style="padding:4px 8px;background:var(--color-success-light);border-radius:4px;color:var(--color-success)">${item.favorable}</div>
+        <div style="padding:4px 8px;background:var(--color-danger-light);border-radius:4px;color:var(--color-danger)">${item.unfavorable}</div>
+      </div>
+      <div class="score-selector mb-sm">
+        ${[1,2,3,4,5].map(s => `
+          <div class="score-option s${s} ${score===s?'selected':''}" onclick="setScorecard('${item.id}',${s})" role="radio" aria-checked="${score===s}" tabindex="0">
+            <input type="radio" name="sc_${item.id}" value="${s}">
+            <div class="score-number">${s}</div>
+            <div class="score-label-text">${['V.Unfav','Unfav','Neutral','Fav','V.Fav'][s-1]}</div>
+          </div>
+        `).join('')}
+      </div>
+      <input class="form-input" style="font-size:12px;padding:6px 10px" placeholder="Evidence / notes..." value="${esc(note)}" oninput="state.scorecardNotes['${item.id}']=this.value;saveData()">
+    </div>`;
+  });
+  document.getElementById('scorecardItems').innerHTML = html;
+  renderScorecardResult();
+}
+function setScorecard(id, val) { state.scorecardScores[id] = val; saveData(); renderScorecard(); }
+function renderScorecardResult() {
+  const scores = SCORECARD_ITEMS.map(i => state.scorecardScores[i.id] || 0).filter(v => v > 0);
+  if (scores.length < 5) { document.getElementById('scorecardResult').style.display = 'none'; return; }
+  document.getElementById('scorecardResult').style.display = 'block';
+  const favorable = scores.filter(s => s >= 4).length;
+  const total = scores.length;
+  let signal = '', desc = '', color = '';
+  if (favorable >= 8) { signal = 'Excellent'; desc = 'Excellent market conditions -- go to market if ready. Accelerate preparation; move quickly.'; color = 'var(--color-success)'; }
+  else if (favorable >= 5) { signal = 'Good'; desc = 'Good market conditions -- go to market if business is strong. Expect a solid but not exceptional result.'; color = 'var(--color-score-4)'; }
+  else if (favorable >= 3) { signal = 'Mixed'; desc = 'Mixed market -- proceed only with a strong business. Consider waiting 6-12 months; monitor closely.'; color = 'var(--color-warning)'; }
+  else { signal = 'Challenging'; desc = 'Challenging market -- hold unless you must sell. Focus on business improvement; prepare for the next window.'; color = 'var(--color-danger)'; }
+
+  document.getElementById('scorecardResult').innerHTML = `
+    <div style="display:flex;align-items:center;gap:var(--space-xl);margin-bottom:var(--space-lg)">
+      <div style="text-align:center;min-width:120px">
+        <div style="font-family:var(--font-display);font-size:48px;font-weight:700;color:${color}">${favorable}<span style="font-size:24px;color:var(--color-text-tertiary)">/${total}</span></div>
+        <div class="t-small t-secondary">favorable indicators</div>
+      </div>
+      <div>
+        <div class="t-h2 mb-sm" style="color:${color}">${signal} Market Conditions</div>
+        <p class="t-body t-secondary">${desc}</p>
+      </div>
+    </div>
+  `;
+}
+function completeScorecard() { completePage('scorecard'); unlockPage('decision'); goToPage('decision'); showToast('Scorecard complete. Make your sell vs. hold decision.'); }
+
+/* ============================================================
+   DECISION
+   ============================================================ */
+function renderDecision() {
+  renderSellHoldChecklist();
+  renderUrgencyChecks();
+  renderOppCost();
+}
+function renderUrgencyChecks() {
+  document.getElementById('urgencyChecks').innerHTML = URGENCY_CONDITIONS.map((item, i) => {
+    const checked = state.urgencyChecks[i] || false;
+    return `<div class="check-item ${checked ? 'checked' : ''}" onclick="toggleUrgency(${i})" role="checkbox" aria-checked="${checked}" tabindex="0">
+      <div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      <div class="check-text">${item}</div>
+    </div>`;
+  }).join('');
+  const met = Object.values(state.urgencyChecks).filter(Boolean).length;
+  const el = document.getElementById('urgencyChecks');
+  if (met >= 4) el.insertAdjacentHTML('beforeend', '<div class="callout callout-info" style="margin-top:var(--space-md)"><strong>Strong position.</strong> You have the luxury of timing your exit. The market must come to you on your terms.</div>');
+  else if (met >= 2) el.insertAdjacentHTML('beforeend', '<div class="callout callout-warning" style="margin-top:var(--space-md)">You are partially positioned. Work on the missing conditions to strengthen your negotiating leverage.</div>');
+  else if (met > 0) el.insertAdjacentHTML('beforeend', '<div class="callout callout-danger" style="margin-top:var(--space-md)">Significant gaps. Without these conditions, you may be forced to accept unfavorable terms. Prioritize building toward selling from strength.</div>');
+}
+function toggleUrgency(i) { state.urgencyChecks[i] = !state.urgencyChecks[i]; saveData(); renderUrgencyChecks(); }
+function renderSellHoldChecklist() {
+  document.getElementById('sellHoldChecklist').innerHTML = SELL_HOLD_CHECKS.map((item, i) => {
+    const checked = state.sellHoldChecks[i] || false;
+    return `<div class="check-item ${checked ? 'checked' : ''}" onclick="toggleSellHold(${i})" role="checkbox" aria-checked="${checked}" tabindex="0">
+      <div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      <div class="check-text">${item}</div>
+    </div>`;
+  }).join('');
+  const checked = Object.values(state.sellHoldChecks).filter(Boolean).length;
+  let signal = '', color = '';
+  if (checked >= 6) { signal = 'Strong go signal. Engage your advisor and begin the process.'; color = 'var(--color-success)'; }
+  else if (checked >= 4) { signal = 'Conditional go. Address the missing items within 3-6 months.'; color = 'var(--color-warning)'; }
+  else { signal = 'Hold. Focus on the unchecked items before going to market.'; color = 'var(--color-danger)'; }
+  document.getElementById('sellHoldResult').innerHTML = `
+    <div style="text-align:center;padding:var(--space-md) 0">
+      <div style="font-family:var(--font-display);font-size:36px;font-weight:700;color:${color}">${checked}/${SELL_HOLD_CHECKS.length}</div>
+      <p class="t-body" style="color:${color};font-weight:500;margin-top:var(--space-sm)">${signal}</p>
+    </div>`;
+}
+function toggleSellHold(i) { state.sellHoldChecks[i] = !state.sellHoldChecks[i]; saveData(); renderSellHoldChecklist(); }
+function renderOppCost() {
+  document.getElementById('oppCostItems').innerHTML = OPP_COST_ITEMS.map(item => {
+    const score = state.oppCostScores[item.id] || 0;
+    return `<div style="padding:var(--space-md) 0;border-bottom:1px solid var(--color-border-light)">
+      <div class="t-h3 mb-xs">${item.label}</div>
+      <p class="t-small t-secondary mb-md">${item.desc}</p>
+      <div class="score-selector">
+        ${[1,2,3,4,5].map(s => `
+          <div class="score-option s${s} ${score===s?'selected':''}" onclick="setOppCost('${item.id}',${s})" role="radio" tabindex="0">
+            <input type="radio" name="opp_${item.id}" value="${s}">
+            <div class="score-number">${s}</div>
+            <div class="score-label-text">${['Low risk','Minor','Moderate','Significant','Critical'][s-1]}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+function setOppCost(id, val) { state.oppCostScores[id] = val; saveData(); renderOppCost(); }
+function completeDecision() { completePage('decision'); unlockPage('comps'); goToPage('comps'); showToast('Decision framework complete. Track comparable deals.'); }
+
+/* ============================================================
+   COMPS
+   ============================================================ */
+function renderComps() {
+  if (state.comps.length === 0) {
+    state.comps = [
+      { company: '', industry: '', revenue: '', ebitda: '', multiple: '', buyer: '', date: '' },
+      { company: '', industry: '', revenue: '', ebitda: '', multiple: '', buyer: '', date: '' },
+      { company: '', industry: '', revenue: '', ebitda: '', multiple: '', buyer: '', date: '' }
+    ];
+  }
+  document.getElementById('compBody').innerHTML = state.comps.map((c, i) => `<tr>
+    <td><input class="comp-input" value="${esc(c.company)}" placeholder="Name..." oninput="updateComp(${i},'company',this.value)"></td>
+    <td><input class="comp-input" value="${esc(c.industry)}" placeholder="Sector..." oninput="updateComp(${i},'industry',this.value)"></td>
+    <td><input class="comp-input" value="${esc(c.revenue)}" placeholder="$M" oninput="updateComp(${i},'revenue',this.value)"></td>
+    <td><input class="comp-input" value="${esc(c.ebitda)}" placeholder="$M" oninput="updateComp(${i},'ebitda',this.value)"></td>
+    <td><input class="comp-input" value="${esc(c.multiple)}" placeholder="x.x" oninput="updateComp(${i},'multiple',this.value)"></td>
+    <td><input class="comp-input" value="${esc(c.buyer)}" placeholder="PE/Strategic" oninput="updateComp(${i},'buyer',this.value)"></td>
+    <td><input class="comp-input" type="date" value="${c.date}" oninput="updateComp(${i},'date',this.value)"></td>
+  </tr>`).join('');
+  renderCompSummary();
+}
+function updateComp(i, f, v) { state.comps[i][f] = v; saveData(); renderCompSummary(); }
+function addCompRow() { state.comps.push({ company:'',industry:'',revenue:'',ebitda:'',multiple:'',buyer:'',date:'' }); saveData(); renderComps(); }
+function renderCompSummary() {
+  const multiples = state.comps.map(c => parseFloat(c.multiple)).filter(m => m > 0);
+  if (multiples.length === 0) { document.getElementById('compSummary').innerHTML = ''; return; }
+  const avg = multiples.reduce((a,b)=>a+b,0) / multiples.length;
+  const min = Math.min(...multiples);
+  const max = Math.max(...multiples);
+  document.getElementById('compSummary').innerHTML = `
+    <div class="card" style="padding:var(--space-xl)">
+      <div class="t-h3 mb-lg">Comparable Transaction Summary</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-lg);text-align:center">
+        <div><div style="font-family:var(--font-display);font-size:32px;font-weight:700;color:var(--color-primary)">${avg.toFixed(1)}x</div><div class="t-small t-secondary">Average Multiple</div></div>
+        <div><div style="font-family:var(--font-display);font-size:32px;font-weight:700;color:var(--color-score-2)">${min.toFixed(1)}x</div><div class="t-small t-secondary">Low End</div></div>
+        <div><div style="font-family:var(--font-display);font-size:32px;font-weight:700;color:var(--color-success)">${max.toFixed(1)}x</div><div class="t-small t-secondary">High End</div></div>
+      </div>
+    </div>`;
+}
+function completeComps() { completePage('comps'); unlockPage('monthly'); goToPage('monthly'); showToast('Comparables saved. Set up your monthly tracker.'); }
+
+/* ============================================================
+   MONTHLY
+   ============================================================ */
+function renderMonthly() {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun'];
+  let headHtml = '<tr><th style="text-align:left;min-width:160px">Indicator</th>';
+  months.forEach(m => { headHtml += `<th style="min-width:70px">${m}</th>`; });
+  headHtml += '<th style="min-width:70px">Trend</th></tr>';
+  document.getElementById('monthlyHead').innerHTML = headHtml;
+
+  let bodyHtml = '';
+  SCORECARD_ITEMS.forEach(item => {
+    bodyHtml += `<tr><td style="font-size:12px">${item.label}</td>`;
+    months.forEach((m, mi) => {
+      const key = item.id + '_' + mi;
+      const val = state.monthlyData[key] || '';
+      bodyHtml += `<td><input class="monthly-input" value="${esc(val)}" oninput="setMonthly('${key}',this.value)"></td>`;
+    });
+    const vals = months.map((m, mi) => parseFloat(state.monthlyData[item.id + '_' + mi])).filter(v => !isNaN(v));
+    let trend = '--';
+    if (vals.length >= 2) {
+      const diff = vals[vals.length-1] - vals[0];
+      trend = diff > 0 ? '<span style="color:var(--color-success)">&#9650;</span>' : diff < 0 ? '<span style="color:var(--color-danger)">&#9660;</span>' : '<span style="color:var(--color-warning)">&#9654;</span>';
+    }
+    bodyHtml += `<td>${trend}</td></tr>`;
+  });
+  document.getElementById('monthlyBody').innerHTML = bodyHtml;
+}
+function setMonthly(key, val) { state.monthlyData[key] = val; saveData(); }
+function completeMonthly() { completePage('monthly'); unlockPage('dashboard'); goToPage('dashboard'); showToast('Monthly data saved. Here is your dashboard.'); }
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+function renderDashboard() {
+  const scores = SCORECARD_ITEMS.map(i => state.scorecardScores[i.id] || 0).filter(v => v > 0);
+  const favorable = scores.filter(s => s >= 4).length;
+  const avg = scores.length > 0 ? scores.reduce((a,b) => a+b, 0) / scores.length : 0;
+  const sellChecked = Object.values(state.sellHoldChecks).filter(Boolean).length;
+  const compsEntered = state.comps.filter(c => c.multiple && parseFloat(c.multiple) > 0).length;
+
+  document.getElementById('dashKpis').innerHTML = `
+    <div class="kpi-card"><div class="kpi-value" style="color:${favorable >= 5 ? 'var(--color-success)' : favorable >= 3 ? 'var(--color-warning)' : 'var(--color-danger)'}">${favorable}/${scores.length}</div><div class="kpi-label">Favorable Indicators</div></div>
+    <div class="kpi-card"><div class="kpi-value" style="color:${getScoreColor(avg)}">${avg > 0 ? avg.toFixed(1) : '--'}</div><div class="kpi-label">Average Score</div></div>
+    <div class="kpi-card"><div class="kpi-value" style="color:${sellChecked >= 6 ? 'var(--color-success)' : 'var(--color-warning)'}">${sellChecked}/8</div><div class="kpi-label">Go Criteria Met</div></div>
+    <div class="kpi-card"><div class="kpi-value" style="color:var(--color-primary)">${compsEntered}</div><div class="kpi-label">Comparable Deals</div></div>
+  `;
+
+  // Gauge
+  const gaugeVal = scores.length > 0 ? (favorable / scores.length) * 100 : 0;
+  const gaugeAngle = -90 + (gaugeVal / 100) * 180;
+  document.getElementById('dashGauge').innerHTML = `
+    <svg viewBox="0 0 200 120" style="width:200px;height:120px">
+      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="var(--color-surface-alt)" stroke-width="16" stroke-linecap="round"/>
+      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#gaugeGrad)" stroke-width="16" stroke-linecap="round"
+        stroke-dasharray="${Math.PI * 80}" stroke-dashoffset="${Math.PI * 80 * (1 - gaugeVal/100)}" style="transition:stroke-dashoffset 1s ease"/>
+      <defs><linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%"><stop offset="0%" stop-color="var(--color-danger)"/><stop offset="50%" stop-color="var(--color-warning)"/><stop offset="100%" stop-color="var(--color-success)"/></linearGradient></defs>
+      <text x="100" y="95" text-anchor="middle" style="font-family:var(--font-display);font-size:28px;font-weight:700;fill:var(--color-text)">${Math.round(gaugeVal)}%</text>
+      <text x="100" y="112" text-anchor="middle" style="font-size:11px;fill:var(--color-text-tertiary)">Market Favorability</text>
+    </svg>`;
+
+  // Sell vs Hold
+  let sellSignal = '', sellColor = '';
+  if (sellChecked >= 6) { sellSignal = 'GO'; sellColor = 'var(--color-success)'; }
+  else if (sellChecked >= 4) { sellSignal = 'CONDITIONAL'; sellColor = 'var(--color-warning)'; }
+  else { sellSignal = 'HOLD'; sellColor = 'var(--color-danger)'; }
+  document.getElementById('dashSellHold').innerHTML = `
+    <div style="font-family:var(--font-display);font-size:56px;font-weight:700;color:${sellColor}">${sellSignal}</div>
+    <div class="t-small t-secondary" style="margin-top:var(--space-sm)">${sellChecked} of 8 criteria met</div>
+  `;
+
+  // Bars
+  let barsHtml = '';
+  SCORECARD_ITEMS.forEach((item, idx) => {
+    const s = state.scorecardScores[item.id] || 0;
+    const pct = (s / 5) * 100;
+    barsHtml += `<div class="bar-row">
+      <div class="bar-label">${item.label}</div>
+      <div class="bar-track">
+        <div class="bar-fill" data-width="${pct}" data-delay="${idx * 60}" style="width:0%;background:${getScoreColor(s)}">
+          <span class="bar-value">${s || '-'}</span>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('dashBars').innerHTML = barsHtml;
+  setTimeout(() => {
+    document.querySelectorAll('#dashBars .bar-fill').forEach(el => {
+      setTimeout(() => { el.style.width = el.dataset.width + '%'; }, parseInt(el.dataset.delay) || 0);
+    });
+  }, 100);
+
+  // Recommendations
+  const recs = [];
+  if (scores.length === 0) {
+    recs.push({ type: 'accent', text: 'Complete the market scorecard to receive a timing recommendation.' });
+  } else {
+    if (favorable >= 8) recs.push({ type: 'info', text: 'Excellent market conditions across the board. If your business is performing well and you are personally ready, this is an outstanding time to go to market.' });
+    else if (favorable >= 5) recs.push({ type: 'info', text: 'Good market conditions. This is a solid window to sell. Do not wait for all indicators to be green -- they never will be.' });
+    else if (favorable >= 3) recs.push({ type: 'warning', text: 'Mixed signals. Consider waiting 6-12 months if you have the luxury, but monitor closely. Markets can shift quickly.' });
+    else recs.push({ type: 'danger', text: 'Challenging market environment. Unless you have a compelling reason to sell now, focus on improving your business and preparing for the next favorable window.' });
+
+    const weakest = SCORECARD_ITEMS.filter(i => (state.scorecardScores[i.id] || 0) <= 2 && (state.scorecardScores[i.id] || 0) > 0);
+    if (weakest.length > 0) recs.push({ type: 'warning', text: `Watch these unfavorable indicators: ${weakest.map(w => w.label).join(', ')}. These are the factors most likely to suppress your valuation.` });
+
+    if (state.cyclePosition === 'peak') recs.push({ type: 'accent', text: 'You indicated your industry is at peak cycle. If true, the window may be closing. Consider accelerating your timeline.' });
+    if (state.cyclePosition === 'early') recs.push({ type: 'info', text: 'Early recovery is a great time to prepare. You have 12-24 months before the window opens fully. Use them wisely.' });
+
+    const oppScores = Object.values(state.oppCostScores).filter(v => v > 0);
+    const avgOpp = oppScores.length > 0 ? oppScores.reduce((a,b)=>a+b,0) / oppScores.length : 0;
+    if (avgOpp >= 3.5) recs.push({ type: 'danger', text: 'Your opportunity cost of waiting is high. Every year you hold carries significant risk. Weight this heavily in your sell/hold decision.' });
+  }
+  const typeMap = { danger: 'callout-danger', warning: 'callout-warning', info: 'callout-info', accent: 'callout-accent' };
+  document.getElementById('dashRecs').innerHTML = recs.map(r => `<div class="callout ${typeMap[r.type]} mb-md">${r.text}</div>`).join('');
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'market-timing-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Data exported successfully.');
+}
+
+/* ============================================================
+   STATE MIGRATION
+   ============================================================ */
+(function migrateStorageKey() {
+  const OLD_KEY = 'playbook44_market_timing_v2';
+  const NEW_KEY = 'exitosx-pb44-market-timing';
+  if (OLD_KEY === STORAGE_KEY) return;
+  try {
+    const old = localStorage.getItem(OLD_KEY);
+    if (old && !localStorage.getItem(NEW_KEY)) {
+      localStorage.setItem(NEW_KEY, old);
+      localStorage.removeItem(OLD_KEY);
+    }
+  } catch(e) {}
+})();
+
+/* ============================================================
+   TEXT EXPORT
+   ============================================================ */
+function exportReport() {
+  const lines = ['MARKET TIMING ASSESSMENT', '='.repeat(40), ''];
+
+  if (state.industry) lines.push('Industry: ' + state.industry);
+  if (state.cyclePosition) lines.push('Cycle Position: ' + state.cyclePosition);
+  if (state.cycleNotes) lines.push('Cycle Notes: ' + state.cycleNotes);
+  lines.push('');
+
+  if (state.macroScores && Object.keys(state.macroScores).length) {
+    lines.push('MACRO INDICATOR SCORES', '-'.repeat(30));
+    Object.entries(state.macroScores).forEach(([k, v]) => {
+      lines.push('  ' + k + ': ' + v);
+      if (state.macroNotes && state.macroNotes[k]) lines.push('    Note: ' + state.macroNotes[k]);
+    });
+    lines.push('');
+  }
+
+  if (state.buyerScores && Object.keys(state.buyerScores).length) {
+    lines.push('BUYER APPETITE SCORES', '-'.repeat(30));
+    Object.entries(state.buyerScores).forEach(([k, v]) => {
+      lines.push('  ' + k + ': ' + v);
+      if (state.buyerNotes && state.buyerNotes[k]) lines.push('    Note: ' + state.buyerNotes[k]);
+    });
+    lines.push('');
+  }
+
+  if (state.scorecardScores && Object.keys(state.scorecardScores).length) {
+    lines.push('SCORECARD SCORES', '-'.repeat(30));
+    Object.entries(state.scorecardScores).forEach(([k, v]) => {
+      lines.push('  ' + k + ': ' + v);
+      if (state.scorecardNotes && state.scorecardNotes[k]) lines.push('    Note: ' + state.scorecardNotes[k]);
+    });
+    lines.push('');
+  }
+
+  if (state.sellHoldChecks && Object.keys(state.sellHoldChecks).length) {
+    lines.push('SELL vs HOLD CHECKS', '-'.repeat(30));
+    Object.entries(state.sellHoldChecks).forEach(([k, v]) => {
+      lines.push('  ' + k + ': ' + (v ? 'Yes' : 'No'));
+    });
+    lines.push('');
+  }
+
+  if (state.oppCostScores && Object.keys(state.oppCostScores).length) {
+    lines.push('OPPORTUNITY COST SCORES', '-'.repeat(30));
+    Object.entries(state.oppCostScores).forEach(([k, v]) => {
+      lines.push('  ' + k + ': ' + v);
+    });
+    lines.push('');
+  }
+
+  if (state.comps && state.comps.length) {
+    lines.push('COMPARABLE DEALS', '-'.repeat(30));
+    state.comps.forEach((c, i) => {
+      lines.push('  Deal ' + (i + 1) + ': ' + (c.company || 'N/A') + ' - ' + (c.multiple || 'N/A') + 'x');
+    });
+    lines.push('');
+  }
+
+  if (state.monthlyData && Object.keys(state.monthlyData).length) {
+    lines.push('MONTHLY TRACKING DATA', '-'.repeat(30));
+    Object.entries(state.monthlyData).forEach(([k, v]) => {
+      lines.push('  ' + k + ': ' + JSON.stringify(v));
+    });
+    lines.push('');
+  }
+
+  lines.push('', 'Generated: ' + new Date().toLocaleString());
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'market-timing-report-' + new Date().toISOString().split('T')[0] + '.txt';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Report exported successfully.');
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init() {
+  loadData();
+  state.pagesUnlocked.forEach(p => unlockPage(p));
+  state.pagesCompleted.forEach(p => {
+    const item = document.querySelector(`.nav-item[data-page="${p}"]`);
+    if (item) item.classList.add('completed');
+  });
+  if (state.currentPage && state.pagesUnlocked.includes(state.currentPage)) goToPage(state.currentPage);
+  updateProgress();
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.click(); } });
+  });
+  document.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('check-item')) { e.preventDefault(); e.target.click(); }
+  });
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

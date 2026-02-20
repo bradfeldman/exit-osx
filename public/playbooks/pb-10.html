@@ -1,0 +1,1923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debt & Liability Cleanup | Exit Planning Playbook #10</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a { color: var(--color-primary); text-decoration: none; }
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.t-display { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; color: var(--color-text); }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.t-tertiary { color: var(--color-text-tertiary); }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 260px; min-width: 260px; background: var(--color-text);
+  color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow);
+  overflow-y: auto;
+}
+.sidebar.collapsed { transform: translateX(-260px); }
+.main-content {
+  flex: 1; margin-left: 260px; min-height: 100vh;
+  transition: margin-left var(--transition-slow);
+}
+.sidebar.collapsed + .main-content { margin-left: 0; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+/* ============================================================
+   SIDEBAR COMPONENTS
+   ============================================================ */
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.6);
+  font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--color-text-tertiary); }
+.nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+/* ============================================================
+   CARDS & SURFACES
+   ============================================================ */
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-lg);
+  transition: box-shadow var(--transition-normal);
+}
+.card:hover { box-shadow: var(--shadow-sm); }
+
+.callout {
+  padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md);
+  border-left: 3px solid; font-size: 14px; line-height: 1.6;
+}
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); border-color: var(--color-text-tertiary); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-danger { background: var(--color-danger); color: #fff; }
+.btn-danger:hover { background: #A82828; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+/* ============================================================
+   FORM ELEMENTS
+   ============================================================ */
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); color: var(--color-text); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.form-input::placeholder { color: var(--color-text-tertiary); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+.form-input-sm { padding: 6px 10px; font-size: 13px; }
+
+/* ============================================================
+   BADGES
+   ============================================================ */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+  border-radius: 999px; font-size: 12px; font-weight: 500;
+}
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+.badge-accent { background: var(--color-accent-light); color: var(--color-accent); }
+
+/* ============================================================
+   PROGRESS RING (SVG)
+   ============================================================ */
+.progress-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.progress-ring-text { position: absolute; text-align: center; }
+.progress-ring-value { font-family: var(--font-display); font-weight: 700; line-height: 1; }
+.progress-ring-label { font-size: 10px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ============================================================
+   CHECKLIST
+   ============================================================ */
+.checklist { display: flex; flex-direction: column; gap: 2px; }
+.check-item {
+  display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md);
+  border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast);
+}
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box {
+  width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition-fast); margin-top: 1px;
+}
+.check-item.checked .check-box { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+
+/* ============================================================
+   IMPACT TABLE
+   ============================================================ */
+.impact-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.impact-table th {
+  text-align: left; padding: var(--space-sm) var(--space-md); font-size: 11px;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border);
+}
+.impact-table td { padding: var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: top; font-size: 14px; }
+.impact-table tr:last-child td { border-bottom: none; }
+.impact-row-danger { background: var(--color-danger-light); }
+.impact-row-warning { background: var(--color-warning-light); }
+
+/* ============================================================
+   DEBT CARD
+   ============================================================ */
+.debt-card {
+  border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+  overflow: hidden; margin-bottom: var(--space-md); background: var(--color-surface);
+  transition: box-shadow var(--transition-normal);
+}
+.debt-card:hover { box-shadow: var(--shadow-sm); }
+.debt-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-md) var(--space-lg); cursor: pointer; gap: var(--space-md);
+}
+.debt-card-header:hover { background: var(--color-surface-alt); }
+.debt-card-num { width: 32px; height: 32px; background: var(--color-primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--color-primary); flex-shrink: 0; font-size: 14px; }
+.debt-card-chevron { color: var(--color-text-tertiary); transition: transform var(--transition-fast); font-size: 18px; }
+.debt-card.expanded .debt-card-chevron { transform: rotate(180deg); }
+.debt-card-body { display: none; padding: 0 var(--space-lg) var(--space-lg); }
+.debt-card.expanded .debt-card-body { display: block; }
+.debt-card-remove { color: var(--color-text-tertiary); font-size: 18px; padding: 4px 8px; border-radius: var(--radius-sm); }
+.debt-card-remove:hover { background: var(--color-danger-light); color: var(--color-danger); }
+
+/* ============================================================
+   GAUGE
+   ============================================================ */
+.gauge-container { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); }
+.gauge-label { font-size: 13px; color: var(--color-text-secondary); font-weight: 500; }
+.gauge-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; }
+
+/* ============================================================
+   EXPOSURE BAR
+   ============================================================ */
+.exposure-bar { display: flex; gap: 2px; height: 32px; border-radius: var(--radius-sm); overflow: hidden; margin: var(--space-md) 0; }
+.exposure-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; transition: width var(--transition-slow); min-width: 0; overflow: hidden; }
+
+/* ============================================================
+   SECTION PAGES
+   ============================================================ */
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+
+.section-divider { height: 1px; background: var(--color-border); margin: var(--space-2xl) 0; }
+
+/* ============================================================
+   WELCOME PAGE
+   ============================================================ */
+.welcome-hero {
+  text-align: center; padding: var(--space-3xl) var(--space-lg);
+  max-width: 640px; margin: 0 auto;
+}
+.welcome-icon {
+  width: 72px; height: 72px; background: var(--color-primary-light);
+  border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center;
+  margin: 0 auto var(--space-lg); font-size: 32px;
+}
+.welcome-hero .t-display { margin-bottom: var(--space-md); }
+.welcome-hero .t-body { margin-bottom: var(--space-2xl); }
+
+.welcome-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md);
+  margin: var(--space-2xl) 0; text-align: center;
+}
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+
+.welcome-phases { display: flex; flex-direction: column; gap: var(--space-md); margin: var(--space-2xl) 0; text-align: left; }
+.welcome-phase {
+  display: flex; gap: var(--space-lg); padding: var(--space-lg);
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+}
+.welcome-phase-num {
+  width: 36px; height: 36px; background: var(--color-primary-light); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-weight: 700;
+  color: var(--color-primary); flex-shrink: 0; font-size: 15px;
+}
+.welcome-phase-title { font-weight: 600; margin-bottom: 2px; }
+.welcome-phase-desc { font-size: 14px; color: var(--color-text-secondary); }
+
+@media (max-width: 600px) {
+  .welcome-stats { grid-template-columns: 1fr; }
+  .welcome-hero { padding: var(--space-2xl) var(--space-md); }
+}
+
+/* ============================================================
+   DASHBOARD SUMMARY
+   ============================================================ */
+.dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+@media (max-width: 700px) { .dashboard-grid { grid-template-columns: 1fr; } }
+.metric-card { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+.metric-card-label { font-size: 12px; font-weight: 500; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: var(--space-sm); }
+.metric-card-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1; }
+.metric-card-sub { font-size: 13px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+/* ============================================================
+   HORIZONTAL BAR CHART
+   ============================================================ */
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 24px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; min-width: 0; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+
+/* ============================================================
+   INSURANCE GRID
+   ============================================================ */
+.insurance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+@media (max-width: 700px) { .insurance-grid { grid-template-columns: 1fr; } }
+.insurance-card {
+  padding: var(--space-lg); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+.insurance-icon { font-size: 24px; margin-bottom: var(--space-sm); }
+.insurance-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+.insurance-desc { font-size: 13px; color: var(--color-text-secondary); margin-bottom: var(--space-md); }
+
+/* ============================================================
+   TIMELINE
+   ============================================================ */
+.timeline { position: relative; padding-left: 28px; }
+.timeline::before {
+  content: ''; position: absolute; left: 9px; top: 4px; bottom: 4px;
+  width: 2px; background: var(--color-border);
+}
+.timeline-item { position: relative; padding-bottom: var(--space-xl); }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-dot {
+  position: absolute; left: -28px; top: 2px; width: 20px; height: 20px;
+  border-radius: 50%; background: var(--color-surface); border: 2px solid var(--color-border);
+  display: flex; align-items: center; justify-content: center;
+}
+.timeline-item.tl-active .timeline-dot { border-color: var(--color-primary); background: var(--color-primary-light); }
+.timeline-item.tl-done .timeline-dot { border-color: var(--color-success); background: var(--color-success); }
+.timeline-period { font-size: 12px; font-weight: 600; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.timeline-title { font-weight: 600; margin-bottom: 4px; }
+.timeline-desc { font-size: 14px; color: var(--color-text-secondary); }
+
+/* ============================================================
+   PAGE FOOTER
+   ============================================================ */
+.page-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: var(--space-2xl); margin-top: var(--space-2xl);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast-container { position: fixed; bottom: var(--space-lg); right: var(--space-lg); z-index: 1000; display: flex; flex-direction: column; gap: var(--space-sm); }
+.toast {
+  padding: var(--space-md) var(--space-lg); background: var(--color-text);
+  color: #fff; border-radius: var(--radius-md); font-size: 14px; box-shadow: var(--shadow-lg);
+  animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+  display: flex; align-items: center; gap: var(--space-sm); max-width: 360px;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateY(16px); } }
+@keyframes toastOut { to { opacity: 0; transform: translateY(-8px); } }
+
+/* ============================================================
+   UTILITY
+   ============================================================ */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-sm { gap: var(--space-sm); }
+.gap-md { gap: var(--space-md); }
+.gap-lg { gap: var(--space-lg); }
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+.mb-xl { margin-bottom: var(--space-xl); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.w-full { width: 100%; }
+.text-center { text-align: center; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+/* Print styles */
+@media print {
+  .sidebar, .mobile-header, .sidebar-overlay, .toast-container, .btn-group, .skip-link { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; }
+  .content-area { max-width: 100%; padding: 0; }
+  .btn { display: none; }
+}
+
+/* Accessibility */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; border-radius: 0 0 var(--radius-sm) 0; }
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+
+<div class="app">
+<nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-label">Exit Planning Playbook #10</div>
+    <div class="sidebar-brand-title">Debt &amp; Liability<br>Cleanup</div>
+  </div>
+
+  <div class="sidebar-progress">
+    <div class="sidebar-progress-label">Overall Progress</div>
+    <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="globalProgressBar" style="width: 0%"></div></div>
+    <div class="sidebar-progress-text" id="globalProgressText">0% complete</div>
+  </div>
+
+  <div class="sidebar-nav" id="sidebarNav">
+    <div class="nav-section-label">Journey</div>
+    <div class="nav-item active" data-page="welcome" onclick="goToPage('welcome')" role="button" tabindex="0" aria-current="page">
+      <span class="nav-icon">&#9673;</span> Welcome
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="inventory" onclick="goToPage('inventory')" role="button" tabindex="0">
+      <span class="nav-icon">&#9776;</span> Debt Inventory
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="checklist" onclick="goToPage('checklist')" role="button" tabindex="0">
+      <span class="nav-icon">&#10003;</span> Cleanup Checklist
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="contingent" onclick="goToPage('contingent')" role="button" tabindex="0">
+      <span class="nav-icon">&#9888;</span> Contingent Liabilities
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="tax" onclick="goToPage('tax')" role="button" tabindex="0">
+      <span class="nav-icon">&#9733;</span> Tax &amp; Legal
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="insurance" onclick="goToPage('insurance')" role="button" tabindex="0">
+      <span class="nav-icon">&#9830;</span> Insurance Review
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="resolution" onclick="goToPage('resolution')" role="button" tabindex="0">
+      <span class="nav-icon">&#9654;</span> Resolution Plan
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+
+    <div class="nav-section-label" style="margin-top:var(--space-md)">Insights</div>
+    <div class="nav-item locked" data-page="dashboard" onclick="goToPage('dashboard')" role="button" tabindex="0">
+      <span class="nav-icon">&#9632;</span> Scorecard
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+  </div>
+
+  <div class="sidebar-score" id="sidebarScore" style="display:none">
+    <div class="sidebar-score-label">Readiness Score</div>
+    <div class="sidebar-score-value"><span id="sidebarScoreValue">--</span><span class="sidebar-score-max"> / 100</span></div>
+    <div class="sidebar-score-desc" id="sidebarScoreDesc"></div>
+  </div>
+  <div id="sidebarSaved" style="margin-top:var(--space-md);font-size:11px;color:rgba(255,255,255,0.3);display:none">
+    Auto-saved <span id="savedTime"></span>
+  </div>
+</nav>
+
+<main class="main-content" id="main-content">
+  <div class="mobile-header">
+    <button class="hamburger" onclick="toggleSidebar(true)" aria-label="Open navigation"><span></span></button>
+    <div style="font-weight:600;font-size:15px;">Debt &amp; Liability Cleanup</div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- ===================== PAGE: WELCOME ===================== -->
+    <div class="page active" id="page-welcome">
+      <div class="welcome-hero">
+        <div class="welcome-icon">&#9878;</div>
+        <div class="t-display">Resolve Every Liability Before a Buyer Finds It</div>
+        <p class="t-body t-secondary">
+          Every unresolved liability becomes a purchase price reduction, an escrow holdback, or a reason to walk away. This guided assessment will help you identify, quantify, and resolve every debt and liability before going to market.
+        </p>
+
+        <div class="welcome-stats">
+          <div class="welcome-stat">
+            <div class="welcome-stat-value">1.5-3x</div>
+            <div class="welcome-stat-label">Risk premium buyers apply to pending litigation</div>
+          </div>
+          <div class="welcome-stat">
+            <div class="welcome-stat-value">$1:$1</div>
+            <div class="welcome-stat-label">Unfunded obligations reduce price dollar-for-dollar</div>
+          </div>
+          <div class="welcome-stat">
+            <div class="welcome-stat-value">6+</div>
+            <div class="welcome-stat-label">Months early you should start cleanup</div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent mb-xl" style="text-align:left">
+          <strong>The core principle:</strong> In M&amp;A, uncertainty equals discount. Every unquantified liability becomes either a purchase price reduction, an escrow holdback, or a seller indemnification. The cheapest time to resolve liabilities is before the buyer knows about them.
+        </div>
+
+        <div class="welcome-phases">
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">1</div>
+            <div><div class="welcome-phase-title">Debt Inventory</div><div class="welcome-phase-desc">Catalog every debt obligation with terms, balances, and personal guarantees</div></div>
+          </div>
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">2</div>
+            <div><div class="welcome-phase-title">Cleanup Checklist</div><div class="welcome-phase-desc">Work through the 10-point cleanup checklist that covers the most common deal issues</div></div>
+          </div>
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">3</div>
+            <div><div class="welcome-phase-title">Contingent &amp; Tax Liabilities</div><div class="welcome-phase-desc">Surface hidden risks: pending lawsuits, tax disputes, environmental concerns</div></div>
+          </div>
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">4</div>
+            <div><div class="welcome-phase-title">Insurance Review</div><div class="welcome-phase-desc">Verify coverage across all policy types that buyers will scrutinize</div></div>
+          </div>
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">5</div>
+            <div><div class="welcome-phase-title">Resolution Plan</div><div class="welcome-phase-desc">Build your prioritized resolution tracker with target dates and strategies</div></div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-lg" onclick="startJourney()" style="margin-top:var(--space-lg)">
+          Begin Your Assessment &rarr;
+        </button>
+        <p class="t-caption t-tertiary" style="margin-top:var(--space-md)">Takes about 25 minutes. Your progress is saved automatically.</p>
+      </div>
+    </div>
+
+    <!-- ===================== PAGE: DEBT INVENTORY ===================== -->
+    <div class="page" id="page-inventory">
+      <div class="page-header">
+        <div class="t-label">Phase 1 of 5</div>
+        <div class="t-display">Debt Inventory</div>
+        <p class="t-body t-secondary">List every debt obligation of the business. At close, funded debt is typically paid from proceeds, but the timing, structure, and any prepayment penalties need advance planning.</p>
+      </div>
+
+      <div class="callout callout-warning mb-xl">
+        <strong>Common mistake:</strong> Assuming debt "washes out" at close. While funded debt is typically paid from proceeds, prepayment penalties and timing create real friction. Map every payoff scenario 6+ months before going to market.
+      </div>
+
+      <div id="debtCards"></div>
+
+      <button class="btn btn-secondary mt-lg" onclick="addDebt()">+ Add Debt Obligation</button>
+
+      <div class="section-divider"></div>
+
+      <div class="card mb-lg">
+        <div class="t-h2 mb-md">Debt Summary</div>
+        <div class="dashboard-grid" id="debtSummaryGrid">
+          <div class="metric-card">
+            <div class="metric-card-label">Total Debt Balance</div>
+            <div class="metric-card-value" id="totalDebtBalance">$0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-card-label">Monthly Payments</div>
+            <div class="metric-card-value" id="totalMonthlyPayment">$0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-card-label">Personal Guarantees</div>
+            <div class="metric-card-value" id="guaranteeCount">0</div>
+            <div class="metric-card-sub" id="guaranteeSub">No personal guarantees identified</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-card-label">Pay at Close</div>
+            <div class="metric-card-value" id="payAtCloseTotal">$0</div>
+            <div class="metric-card-sub">Will reduce net proceeds</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('welcome')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeInventory()">Continue to Cleanup Checklist &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ===================== PAGE: CLEANUP CHECKLIST ===================== -->
+    <div class="page" id="page-checklist">
+      <div class="page-header">
+        <div class="t-label">Phase 2 of 5</div>
+        <div class="t-display">Liability Cleanup Checklist</div>
+        <p class="t-body t-secondary">Work through each item. Every unchecked item is a potential deal complication. Be honest -- this tool only helps if it reflects your current reality.</p>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="flex items-center justify-between mb-lg">
+          <div class="t-h2">Your Cleanup Status</div>
+          <div id="checklistProgress" class="badge badge-neutral">0 / 10 complete</div>
+        </div>
+        <div class="checklist" id="cleanupChecklist"></div>
+      </div>
+
+      <div class="callout callout-info mb-lg">
+        <strong>Why this matters:</strong> Reps and warranties in the purchase agreement will make you personally liable for undisclosed liabilities. Disclose everything. Control the narrative.
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('inventory')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeChecklist()">Continue to Contingent Liabilities &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ===================== PAGE: CONTINGENT LIABILITIES ===================== -->
+    <div class="page" id="page-contingent">
+      <div class="page-header">
+        <div class="t-label">Phase 3 of 5</div>
+        <div class="t-display">Contingent Liabilities &amp; Legal Exposure</div>
+        <p class="t-body t-secondary">Contingent liabilities are obligations that may or may not materialize. Buyers fear these because they are unquantifiable. Surface everything now so you can control the narrative.</p>
+      </div>
+
+      <div class="callout callout-accent mb-xl">
+        <strong>Disclosure strategy:</strong> Disclose contingent liabilities proactively in your CIM or data room. Buyers will discover them in diligence -- finding out you hid something is far worse than learning about it upfront with your narrative around it.
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Contingent Liability Assessment</div>
+        <p class="t-small t-secondary mb-lg">For each category, indicate whether any exposure exists and estimate the potential impact.</p>
+        <div id="contingentAssessment"></div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Litigation &amp; Disputes</div>
+        <p class="t-small t-secondary mb-lg">For each pending or threatened legal matter, document the details. For each, obtain your attorney's written assessment of likely outcome.</p>
+        <div id="litigationItems"></div>
+        <button class="btn btn-secondary btn-sm mt-lg" onclick="addLitigation()">+ Add Legal Matter</button>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Tax Liability Review</div>
+        <p class="t-small t-secondary mb-lg">Tax issues are among the most common deal killers. Review each area honestly.</p>
+        <div class="checklist" id="taxChecklist"></div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Environmental Liabilities</div>
+        <p class="t-small t-secondary mb-lg">For businesses with physical operations (manufacturing, construction, real estate).</p>
+        <div id="envAssessment"></div>
+      </div>
+
+      <div class="callout callout-danger mb-lg">
+        <strong>Cost-benefit:</strong> A $50K settlement today may save $200K in escrow holdbacks and deal friction. Resolve what you can before going to market.
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('checklist')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeContingent()">Continue to Insurance Review &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ===================== PAGE: TAX & LEGAL (merged into contingent) ===================== -->
+
+    <!-- ===================== PAGE: INSURANCE REVIEW ===================== -->
+    <div class="page" id="page-insurance">
+      <div class="page-header">
+        <div class="t-label">Phase 4 of 5</div>
+        <div class="t-display">Insurance Review</div>
+        <p class="t-body t-secondary">Buyers will scrutinize your insurance coverage during diligence. Gaps in coverage signal either negligence or hidden risk. Review each policy type.</p>
+      </div>
+
+      <div class="insurance-grid mb-xl" id="insuranceGrid"></div>
+
+      <div class="callout callout-info mb-lg">
+        <strong>Pro tip:</strong> If you have a D&amp;O policy, confirm it covers pre-close acts. If selling stock, this is critical. Many D&amp;O policies terminate at change of control -- you may need tail coverage.
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('contingent')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeInsurance()">Continue to Resolution Plan &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ===================== PAGE: RESOLUTION PLAN ===================== -->
+    <div class="page" id="page-resolution">
+      <div class="page-header">
+        <div class="t-label">Phase 5 of 5</div>
+        <div class="t-display">Resolution Plan</div>
+        <p class="t-body t-secondary">Prioritize your identified liabilities and build a resolution timeline. Every item resolved before going to market improves your negotiating position.</p>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Your Exposure Summary</div>
+        <p class="t-small t-secondary mb-md">Based on your assessment, here is your total exposure by category.</p>
+        <div id="exposureChart"></div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Liability Resolution Tracker</div>
+        <p class="t-small t-secondary mb-lg">For each identified liability, define your resolution strategy and target date. Sort by priority: resolve the highest-impact items first.</p>
+        <div id="resolutionTracker"></div>
+        <button class="btn btn-secondary btn-sm mt-lg" onclick="addResolution()">+ Add Resolution Item</button>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Resolution Timeline</div>
+        <p class="t-small t-secondary mb-lg">Your recommended sequence for cleaning up liabilities before going to market.</p>
+        <div class="timeline" id="resolutionTimeline"></div>
+      </div>
+
+      <div class="callout callout-accent mb-lg">
+        <strong>Final thought:</strong> Resolve your liabilities before a buyer discovers them. The cheapest fix is always the one you do first.
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('insurance')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeResolution()">View Your Scorecard &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ===================== PAGE: DASHBOARD ===================== -->
+    <div class="page" id="page-dashboard">
+      <div class="page-header">
+        <div class="t-label">Your Results</div>
+        <div class="t-display">Liability Readiness Scorecard</div>
+        <p class="t-body t-secondary">A comprehensive view of your debt and liability position. Share this with your advisory team to align on priorities.</p>
+      </div>
+
+      <div class="card mb-xl text-center" style="padding:var(--space-2xl)">
+        <div id="dashboardRing" class="mb-md"></div>
+        <div class="t-h2" id="dashboardGrade">--</div>
+        <div class="t-small t-secondary mt-md" id="dashboardSummary"></div>
+      </div>
+
+      <div class="dashboard-grid mb-xl">
+        <div class="metric-card">
+          <div class="metric-card-label">Total Debt</div>
+          <div class="metric-card-value" id="dashDebt">$0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">Total Exposure</div>
+          <div class="metric-card-value" id="dashExposure">$0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">Checklist Completion</div>
+          <div class="metric-card-value" id="dashChecklist">0%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">Items to Resolve</div>
+          <div class="metric-card-value" id="dashItemsOpen">0</div>
+        </div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-lg">Exposure Breakdown</div>
+        <div class="bar-chart" id="dashBarChart"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-lg">Common Mistakes to Avoid</div>
+        <div id="mistakesSection"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">How Buyers View Your Liabilities</div>
+        <table class="impact-table">
+          <thead><tr><th>Liability Type</th><th>Buyer Response</th><th>Impact</th></tr></thead>
+          <tbody>
+            <tr><td>Funded, current debt</td><td>Paid at close from proceeds; no discount</td><td><span class="badge badge-success">Neutral</span></td></tr>
+            <tr><td>Unfunded pension/benefit obligations</td><td>Discount or escrow to cover</td><td><span class="badge badge-warning">$-for-$</span></td></tr>
+            <tr><td>Pending litigation</td><td>Escrow holdback or indemnity demand</td><td><span class="badge badge-danger">1.5-3x liability</span></td></tr>
+            <tr><td>Tax disputes / unresolved IRS issues</td><td>Escrow until resolved</td><td><span class="badge badge-danger">Full + legal costs</span></td></tr>
+            <tr><td>Environmental liabilities</td><td>Specialized escrow; may kill deal</td><td><span class="badge badge-danger">Unlimited</span></td></tr>
+            <tr><td>Personal guarantees on business debt</td><td>Must be released at close</td><td><span class="badge badge-warning">Blocks closing</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('resolution')">&larr; Back to Resolution Plan</button>
+        <button class="btn btn-accent" onclick="exportResults()">Export Summary</button>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<div class="toast-container" id="toastContainer" aria-live="polite" role="status"></div>
+
+<script>
+/* ============================================================
+   DATA CONSTANTS
+   ============================================================ */
+const CHECKLIST_ITEMS = [
+  { id: 'loans', text: 'All outstanding loans current and in good standing', category: 'debt' },
+  { id: 'credit', text: 'Credit line balance manageable; not maxed out', category: 'debt' },
+  { id: 'leases', text: 'Equipment leases reviewed for transfer/assignment provisions', category: 'debt' },
+  { id: 'guarantees', text: 'Personal guarantees identified; release plan in place', category: 'debt' },
+  { id: 'payroll_tax', text: 'Payroll taxes current; no unresolved IRS issues', category: 'tax' },
+  { id: 'sales_tax', text: 'Sales tax obligations current in all jurisdictions', category: 'tax' },
+  { id: 'litigation', text: 'No pending or threatened litigation', category: 'legal' },
+  { id: 'benefits', text: 'Employee benefit obligations fully funded', category: 'benefits' },
+  { id: 'environmental', text: 'Environmental compliance verified', category: 'env' },
+  { id: 'insurance', text: 'All insurance policies current and adequate', category: 'insurance' }
+];
+
+const CONTINGENT_TYPES = [
+  { id: 'lawsuits', label: 'Pending or threatened lawsuits', severity: 'high' },
+  { id: 'product_liability', label: 'Product liability claims or warranty exposure', severity: 'high' },
+  { id: 'gov_investigation', label: 'Government investigations or regulatory proceedings', severity: 'high' },
+  { id: 'third_party_guarantee', label: 'Guarantees of third-party debt', severity: 'medium' },
+  { id: 'tax_assessment', label: 'Potential tax assessments from prior-year audits', severity: 'medium' }
+];
+
+const TAX_ITEMS = [
+  { id: 'tax_filed', text: 'All federal, state, and local tax returns filed and current' },
+  { id: 'tax_disputes', text: 'All open IRS or state tax disputes resolved' },
+  { id: 'sales_nexus', text: 'Sales tax nexus and compliance verified in all operating states' },
+  { id: 'employment_tax', text: 'Proper employment tax withholding and remittance confirmed' },
+  { id: 'prior_year', text: 'Prior-year returns reviewed for positions that could be challenged on audit' }
+];
+
+const INSURANCE_TYPES = [
+  { id: 'general', icon: '&#9881;', title: 'General Liability', desc: 'Third-party injury/property damage', review: 'Limits adequate? Gaps in coverage?' },
+  { id: 'professional', icon: '&#9733;', title: 'Professional Liability (E&O)', desc: 'Errors and omissions in services', review: 'Covers your specific services?' },
+  { id: 'dando', icon: '&#9830;', title: 'Directors & Officers (D&O)', desc: 'Management decisions', review: 'Critical if selling stock; covers pre-close acts?' },
+  { id: 'cyber', icon: '&#9000;', title: 'Cyber Liability', desc: 'Data breaches and cyber events', review: 'Adequate for your data exposure?' },
+  { id: 'key_person', icon: '&#9829;', title: 'Key Person', desc: 'Loss of critical individuals', review: 'Amount sufficient to cover business disruption?' },
+  { id: 'epli', icon: '&#9878;', title: 'Employment Practices (EPLI)', desc: 'Employment-related claims', review: 'Covers pre-close employment actions?' }
+];
+
+const ENV_ITEMS = [
+  { id: 'phase1', text: 'Phase I environmental site assessment conducted' },
+  { id: 'phase2', text: 'Phase II (sampling) conducted if Phase I identified concerns' },
+  { id: 'remediation', text: 'Identified contamination remediated before going to market' },
+  { id: 'env_insurance', text: 'Environmental insurance obtained if risk is ongoing' }
+];
+
+const TIMELINE_DATA = [
+  { period: 'Month 1', title: 'Inventory & Assess', desc: 'Complete debt inventory. Surface all contingent liabilities. Obtain attorney assessments for all legal matters.' },
+  { period: 'Month 2', title: 'Prioritize & Plan', desc: 'Score each liability by deal impact. Build resolution plan. Engage advisors for complex items.' },
+  { period: 'Month 3-4', title: 'Resolve Quick Wins', desc: 'Settle small disputes. File overdue tax returns. Begin personal guarantee release negotiations.' },
+  { period: 'Month 4-5', title: 'Tackle Major Items', desc: 'Complete environmental assessments. Settle or resolve litigation. Address unfunded obligations.' },
+  { period: 'Month 5-6', title: 'Insurance & Coverage', desc: 'Fill insurance gaps. Obtain tail coverage. Confirm D&O coverage for pre-close acts.' },
+  { period: 'Month 6+', title: 'Verify & Document', desc: 'Re-verify all items resolved. Prepare disclosure strategy for CIM and data room. Brief advisors.' }
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let state = {
+  currentPage: 'welcome',
+  pagesUnlocked: ['welcome'],
+  pagesCompleted: [],
+  debts: [],
+  checklist: {},
+  contingent: {},
+  litigation: [],
+  taxChecklist: {},
+  envChecklist: {},
+  insurance: {},
+  resolutions: [],
+  timestamp: null
+};
+
+/* ============================================================
+   PERSISTENCE
+   ============================================================ */
+const STORAGE_KEY = 'exitosx-pb10-debt-liability';
+// Migrate from old localStorage key
+(function() { try { const old = localStorage.getItem('debtLiabilityCleanup'); if (old && !localStorage.getItem(STORAGE_KEY)) { localStorage.setItem(STORAGE_KEY, old); localStorage.removeItem('debtLiabilityCleanup'); } } catch(e) {} })();
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) state = { ...state, ...JSON.parse(saved) };
+  } catch(e) { console.warn('Failed to load saved data', e); }
+}
+
+function saveData() {
+  state.timestamp = new Date().toISOString();
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) { console.warn('Failed to save', e); }
+  updateProgress();
+  const savedEl = document.getElementById('sidebarSaved');
+  const timeEl = document.getElementById('savedTime');
+  if (savedEl && timeEl) {
+    savedEl.style.display = 'block';
+    timeEl.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function goToPage(pageId) {
+  if (!state.pagesUnlocked.includes(pageId)) return;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.remove('active');
+    if (n.dataset.page === pageId) n.classList.add('active');
+  });
+  state.currentPage = pageId;
+  saveData();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  toggleSidebar(false);
+  // Focus management for accessibility
+  const page = document.getElementById('page-' + pageId);
+  setTimeout(() => { const heading = page.querySelector('h1, h2, .t-display'); if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); } }, 100);
+  if (pageId === 'dashboard') renderDashboard();
+  if (pageId === 'resolution') renderResolutionPage();
+}
+
+function unlockPage(pageId) {
+  if (!state.pagesUnlocked.includes(pageId)) state.pagesUnlocked.push(pageId);
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (state.pagesUnlocked.includes(n.dataset.page)) n.classList.remove('locked');
+  });
+}
+
+function completePage(pageId) {
+  if (!state.pagesCompleted.includes(pageId)) state.pagesCompleted.push(pageId);
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (state.pagesCompleted.includes(n.dataset.page)) n.classList.add('completed');
+  });
+  saveData();
+}
+
+function updateProgress() {
+  const totalPages = 7;
+  const done = state.pagesCompleted.length;
+  const pct = Math.round((done / totalPages) * 100);
+  document.getElementById('globalProgressBar').style.width = pct + '%';
+  document.getElementById('globalProgressText').textContent = pct + '% complete';
+
+  const score = calcReadinessScore();
+  const scoreEl = document.getElementById('sidebarScore');
+  if (score > 0 && scoreEl) {
+    scoreEl.style.display = 'block';
+    document.getElementById('sidebarScoreValue').textContent = score;
+    const desc = score >= 80 ? 'Deal-ready' : score >= 60 ? 'Progressing' : score >= 40 ? 'Needs work' : 'At risk';
+    document.getElementById('sidebarScoreDesc').textContent = desc;
+  }
+}
+
+function toggleSidebar(open) {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebarOverlay');
+  if (open) { sb.classList.add('open'); ov.classList.add('show'); }
+  else { sb.classList.remove('open'); ov.classList.remove('show'); }
+}
+
+function showToast(msg) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { if (t.parentNode) t.remove(); }, 3200);
+}
+
+function formatCurrency(val) {
+  if (!val || isNaN(val)) return '$0';
+  const num = parseFloat(val);
+  if (num >= 1000000) return '$' + (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return '$' + (num / 1000).toFixed(0) + 'K';
+  return '$' + num.toLocaleString();
+}
+
+/* ============================================================
+   WELCOME
+   ============================================================ */
+function startJourney() {
+  completePage('welcome');
+  unlockPage('inventory');
+  goToPage('inventory');
+  showToast('Let\'s begin by mapping your debt obligations.');
+}
+
+/* ============================================================
+   DEBT INVENTORY
+   ============================================================ */
+function addDebt() {
+  state.debts.push({
+    id: Date.now(),
+    creditor: '', type: '', balance: '', monthlyPayment: '',
+    maturity: '', personalGuarantee: '', payAtClose: ''
+  });
+  renderDebts();
+  saveData();
+}
+
+function removeDebt(id) {
+  state.debts = state.debts.filter(d => d.id !== id);
+  renderDebts();
+  saveData();
+}
+
+function updateDebt(id, field, value) {
+  const debt = state.debts.find(d => d.id === id);
+  if (debt) debt[field] = value;
+  updateDebtSummary();
+  saveData();
+}
+
+function toggleDebtCard(id) {
+  const card = document.querySelector(`[data-debt-id="${id}"]`);
+  if (card) card.classList.toggle('expanded');
+}
+
+function renderDebts() {
+  const container = document.getElementById('debtCards');
+  if (state.debts.length === 0) {
+    state.debts.push({ id: Date.now(), creditor: '', type: '', balance: '', monthlyPayment: '', maturity: '', personalGuarantee: '', payAtClose: '' });
+  }
+  container.innerHTML = state.debts.map((d, i) => `
+    <div class="debt-card expanded" data-debt-id="${d.id}">
+      <div class="debt-card-header" onclick="toggleDebtCard(${d.id})">
+        <div class="flex items-center gap-md">
+          <div class="debt-card-num">${i + 1}</div>
+          <div>
+            <div style="font-weight:600;font-size:15px">${d.creditor || 'New Debt Obligation'}</div>
+            <div class="t-caption t-tertiary">${d.type || 'Click to expand and enter details'}</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-sm">
+          ${d.balance ? '<span class="badge badge-neutral">' + formatCurrency(d.balance) + '</span>' : ''}
+          <button class="debt-card-remove" onclick="event.stopPropagation();removeDebt(${d.id})" aria-label="Remove" title="Remove">&times;</button>
+          <span class="debt-card-chevron">&#9662;</span>
+        </div>
+      </div>
+      <div class="debt-card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+          <div class="form-group">
+            <label class="form-label">Creditor / Lender</label>
+            <input type="text" class="form-input" placeholder="e.g. First National Bank" value="${d.creditor}" oninput="updateDebt(${d.id},'creditor',this.value)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Type of Debt</label>
+            <select class="form-input" onchange="updateDebt(${d.id},'type',this.value)">
+              <option value="">Select...</option>
+              <option value="Term Loan" ${d.type==='Term Loan'?'selected':''}>Term Loan</option>
+              <option value="Line of Credit" ${d.type==='Line of Credit'?'selected':''}>Line of Credit</option>
+              <option value="Equipment Lease" ${d.type==='Equipment Lease'?'selected':''}>Equipment Lease</option>
+              <option value="Real Estate Mortgage" ${d.type==='Real Estate Mortgage'?'selected':''}>Real Estate Mortgage</option>
+              <option value="SBA Loan" ${d.type==='SBA Loan'?'selected':''}>SBA Loan</option>
+              <option value="Seller Note" ${d.type==='Seller Note'?'selected':''}>Seller Note</option>
+              <option value="Credit Card" ${d.type==='Credit Card'?'selected':''}>Credit Card</option>
+              <option value="Other" ${d.type==='Other'?'selected':''}>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Outstanding Balance</label>
+            <input type="number" class="form-input" placeholder="$0" value="${d.balance}" oninput="updateDebt(${d.id},'balance',this.value)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Monthly Payment</label>
+            <input type="number" class="form-input" placeholder="$0" value="${d.monthlyPayment}" oninput="updateDebt(${d.id},'monthlyPayment',this.value)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Maturity Date</label>
+            <input type="date" class="form-input" value="${d.maturity}" oninput="updateDebt(${d.id},'maturity',this.value)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Personal Guarantee?</label>
+            <select class="form-input" onchange="updateDebt(${d.id},'personalGuarantee',this.value)">
+              <option value="">Select...</option>
+              <option value="yes" ${d.personalGuarantee==='yes'?'selected':''}>Yes</option>
+              <option value="no" ${d.personalGuarantee==='no'?'selected':''}>No</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column:span 2">
+            <label class="form-label">Pay at Close?</label>
+            <select class="form-input" onchange="updateDebt(${d.id},'payAtClose',this.value)">
+              <option value="">Select...</option>
+              <option value="yes" ${d.payAtClose==='yes'?'selected':''}>Yes -- will be paid from proceeds</option>
+              <option value="assumed" ${d.payAtClose==='assumed'?'selected':''}>Buyer will assume this debt</option>
+              <option value="no" ${d.payAtClose==='no'?'selected':''}>No -- matures before close</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  updateDebtSummary();
+}
+
+function updateDebtSummary() {
+  const totalBalance = state.debts.reduce((s, d) => s + (parseFloat(d.balance) || 0), 0);
+  const totalMonthly = state.debts.reduce((s, d) => s + (parseFloat(d.monthlyPayment) || 0), 0);
+  const gCount = state.debts.filter(d => d.personalGuarantee === 'yes').length;
+  const payClose = state.debts.filter(d => d.payAtClose === 'yes').reduce((s, d) => s + (parseFloat(d.balance) || 0), 0);
+
+  document.getElementById('totalDebtBalance').textContent = formatCurrency(totalBalance);
+  document.getElementById('totalMonthlyPayment').textContent = formatCurrency(totalMonthly);
+  document.getElementById('guaranteeCount').textContent = gCount;
+  document.getElementById('guaranteeSub').textContent = gCount > 0 ? gCount + ' guarantee(s) need release at close' : 'No personal guarantees identified';
+  document.getElementById('payAtCloseTotal').textContent = formatCurrency(payClose);
+}
+
+function completeInventory() {
+  completePage('inventory');
+  unlockPage('checklist');
+  goToPage('checklist');
+  showToast('Debt inventory recorded. Now let\'s check your cleanup status.');
+}
+
+/* ============================================================
+   CLEANUP CHECKLIST
+   ============================================================ */
+function renderChecklist() {
+  const container = document.getElementById('cleanupChecklist');
+  container.innerHTML = CHECKLIST_ITEMS.map(item => {
+    const checked = state.checklist[item.id] ? 'checked' : '';
+    return `
+      <div class="check-item ${checked}" onclick="toggleCheck('${item.id}')" role="checkbox" aria-checked="${!!state.checklist[item.id]}" tabindex="0">
+        <div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+        <div>
+          <div class="check-text">${item.text}</div>
+          <div class="t-caption t-tertiary" style="margin-top:2px">Category: ${item.category}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  updateChecklistProgress();
+}
+
+function toggleCheck(id) {
+  state.checklist[id] = !state.checklist[id];
+  renderChecklist();
+  saveData();
+}
+
+function updateChecklistProgress() {
+  const done = Object.values(state.checklist).filter(v => v).length;
+  const total = CHECKLIST_ITEMS.length;
+  document.getElementById('checklistProgress').textContent = done + ' / ' + total + ' complete';
+  document.getElementById('checklistProgress').className = 'badge ' + (done === total ? 'badge-success' : done > total / 2 ? 'badge-warning' : 'badge-neutral');
+}
+
+function completeChecklist() {
+  completePage('checklist');
+  unlockPage('contingent');
+  goToPage('contingent');
+  showToast('Checklist saved. Let\'s assess your contingent liabilities.');
+}
+
+/* ============================================================
+   CONTINGENT LIABILITIES
+   ============================================================ */
+function renderContingent() {
+  const container = document.getElementById('contingentAssessment');
+  container.innerHTML = CONTINGENT_TYPES.map(ct => {
+    const data = state.contingent[ct.id] || {};
+    return `
+      <div class="card mb-md" style="border-left:3px solid ${ct.severity === 'high' ? 'var(--color-danger)' : 'var(--color-warning)'}">
+        <div class="flex items-center justify-between mb-md">
+          <div class="t-h3">${ct.label}</div>
+          <span class="badge ${ct.severity === 'high' ? 'badge-danger' : 'badge-warning'}">${ct.severity} severity</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Does this exposure exist?</label>
+            <select class="form-input" onchange="updateContingent('${ct.id}','exists',this.value)">
+              <option value="">Select...</option>
+              <option value="no" ${data.exists==='no'?'selected':''}>No exposure</option>
+              <option value="possible" ${data.exists==='possible'?'selected':''}>Possible / Uncertain</option>
+              <option value="yes" ${data.exists==='yes'?'selected':''}>Yes, confirmed</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Estimated Exposure ($)</label>
+            <input type="number" class="form-input" placeholder="$0" value="${data.amount || ''}" oninput="updateContingent('${ct.id}','amount',this.value)" ${data.exists==='no'?'disabled':''}>
+          </div>
+        </div>
+        ${data.exists && data.exists !== 'no' ? `
+          <div class="form-group mt-md" style="margin-bottom:0">
+            <label class="form-label">Notes / Resolution Strategy</label>
+            <textarea class="form-input" placeholder="Describe the situation and your planned approach..." oninput="updateContingent('${ct.id}','notes',this.value)">${data.notes || ''}</textarea>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function updateContingent(id, field, value) {
+  if (!state.contingent[id]) state.contingent[id] = {};
+  state.contingent[id][field] = value;
+  renderContingent();
+  saveData();
+}
+
+function renderLitigation() {
+  const container = document.getElementById('litigationItems');
+  container.innerHTML = state.litigation.map((lit, i) => `
+    <div class="card mb-md" style="border-left:3px solid var(--color-danger)">
+      <div class="flex items-center justify-between mb-md">
+        <div class="t-h3">Legal Matter ${i + 1}${lit.name ? ': ' + lit.name : ''}</div>
+        <button class="debt-card-remove" onclick="removeLitigation(${i})" aria-label="Remove">&times;</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+        <div class="form-group">
+          <label class="form-label">Matter Name / Description</label>
+          <input type="text" class="form-input" value="${lit.name || ''}" oninput="updateLitigation(${i},'name',this.value)" placeholder="e.g. Smith v. Company">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select class="form-input" onchange="updateLitigation(${i},'type',this.value)">
+            <option value="">Select...</option>
+            <option value="pending" ${lit.type==='pending'?'selected':''}>Pending lawsuit</option>
+            <option value="threatened" ${lit.type==='threatened'?'selected':''}>Threatened litigation</option>
+            <option value="regulatory" ${lit.type==='regulatory'?'selected':''}>Regulatory proceeding</option>
+            <option value="dispute" ${lit.type==='dispute'?'selected':''}>Commercial dispute</option>
+            <option value="employment" ${lit.type==='employment'?'selected':''}>Employment claim</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Maximum Exposure ($)</label>
+          <input type="number" class="form-input" value="${lit.exposure || ''}" oninput="updateLitigation(${i},'exposure',this.value)" placeholder="Worst-case amount">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Attorney Assessment</label>
+          <select class="form-input" onchange="updateLitigation(${i},'assessment',this.value)">
+            <option value="">Select...</option>
+            <option value="favorable" ${lit.assessment==='favorable'?'selected':''}>Likely favorable outcome</option>
+            <option value="uncertain" ${lit.assessment==='uncertain'?'selected':''}>Uncertain outcome</option>
+            <option value="unfavorable" ${lit.assessment==='unfavorable'?'selected':''}>Likely unfavorable outcome</option>
+            <option value="no_assessment" ${lit.assessment==='no_assessment'?'selected':''}>No assessment yet</option>
+          </select>
+        </div>
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label">Settlement advisable before going to market?</label>
+          <select class="form-input" onchange="updateLitigation(${i},'settle',this.value)">
+            <option value="">Select...</option>
+            <option value="yes" ${lit.settle==='yes'?'selected':''}>Yes -- should settle</option>
+            <option value="maybe" ${lit.settle==='maybe'?'selected':''}>Potentially -- depends on cost</option>
+            <option value="no" ${lit.settle==='no'?'selected':''}>No -- expected favorable resolution</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addLitigation() {
+  state.litigation.push({ name: '', type: '', exposure: '', assessment: '', settle: '' });
+  renderLitigation();
+  saveData();
+}
+
+function removeLitigation(i) {
+  state.litigation.splice(i, 1);
+  renderLitigation();
+  saveData();
+}
+
+function updateLitigation(i, field, value) {
+  state.litigation[i][field] = value;
+  saveData();
+}
+
+function renderTaxChecklist() {
+  const container = document.getElementById('taxChecklist');
+  container.innerHTML = TAX_ITEMS.map(item => {
+    const checked = state.taxChecklist[item.id] ? 'checked' : '';
+    return `
+      <div class="check-item ${checked}" onclick="toggleTaxCheck('${item.id}')" role="checkbox" aria-checked="${!!state.taxChecklist[item.id]}" tabindex="0">
+        <div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+        <div class="check-text">${item.text}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleTaxCheck(id) {
+  state.taxChecklist[id] = !state.taxChecklist[id];
+  renderTaxChecklist();
+  saveData();
+}
+
+function renderEnvAssessment() {
+  const container = document.getElementById('envAssessment');
+  container.innerHTML = `
+    <div class="form-group mb-lg">
+      <label class="form-label">Does your business have physical operations (manufacturing, construction, real estate)?</label>
+      <select class="form-input" onchange="state.envApplies=this.value;renderEnvChecklist();saveData()">
+        <option value="">Select...</option>
+        <option value="yes" ${state.envApplies==='yes'?'selected':''}>Yes</option>
+        <option value="no" ${state.envApplies==='no'?'selected':''}>No -- not applicable</option>
+      </select>
+    </div>
+    <div id="envChecklistInner" style="display:${state.envApplies==='yes'?'block':'none'}"></div>
+  `;
+  if (state.envApplies === 'yes') renderEnvChecklist();
+}
+
+function renderEnvChecklist() {
+  const inner = document.getElementById('envChecklistInner');
+  if (!inner) return;
+  inner.style.display = state.envApplies === 'yes' ? 'block' : 'none';
+  if (state.envApplies !== 'yes') return;
+  inner.innerHTML = '<div class="checklist">' + ENV_ITEMS.map(item => {
+    const checked = state.envChecklist[item.id] ? 'checked' : '';
+    return `
+      <div class="check-item ${checked}" onclick="toggleEnvCheck('${item.id}')" role="checkbox" aria-checked="${!!state.envChecklist[item.id]}" tabindex="0">
+        <div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+        <div class="check-text">${item.text}</div>
+      </div>
+    `;
+  }).join('') + '</div>';
+}
+
+function toggleEnvCheck(id) {
+  state.envChecklist[id] = !state.envChecklist[id];
+  renderEnvChecklist();
+  saveData();
+}
+
+function completeContingent() {
+  completePage('contingent');
+  unlockPage('tax');
+  unlockPage('insurance');
+  goToPage('insurance');
+  showToast('Contingent liabilities assessed. Let\'s review your insurance.');
+}
+
+/* ============================================================
+   INSURANCE REVIEW
+   ============================================================ */
+function renderInsurance() {
+  const container = document.getElementById('insuranceGrid');
+  container.innerHTML = INSURANCE_TYPES.map(ins => {
+    const data = state.insurance[ins.id] || {};
+    return `
+      <div class="insurance-card">
+        <div class="insurance-icon">${ins.icon}</div>
+        <div class="insurance-title">${ins.title}</div>
+        <div class="insurance-desc">${ins.desc}</div>
+        <div class="t-caption t-tertiary mb-md"><strong>Key review:</strong> ${ins.review}</div>
+        <div class="form-group mb-md">
+          <label class="form-label">Coverage Status</label>
+          <select class="form-input" onchange="updateInsurance('${ins.id}','status',this.value)">
+            <option value="">Select...</option>
+            <option value="adequate" ${data.status==='adequate'?'selected':''}>Adequate coverage in place</option>
+            <option value="gaps" ${data.status==='gaps'?'selected':''}>Coverage exists but has gaps</option>
+            <option value="none" ${data.status==='none'?'selected':''}>No coverage</option>
+            <option value="na" ${data.status==='na'?'selected':''}>Not applicable</option>
+          </select>
+        </div>
+        ${data.status === 'gaps' || data.status === 'none' ? `
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Action Needed</label>
+            <input type="text" class="form-input form-input-sm" placeholder="Describe gap or needed coverage" value="${data.action || ''}" oninput="updateInsurance('${ins.id}','action',this.value)">
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function updateInsurance(id, field, value) {
+  if (!state.insurance[id]) state.insurance[id] = {};
+  state.insurance[id][field] = value;
+  renderInsurance();
+  saveData();
+}
+
+function completeInsurance() {
+  completePage('insurance');
+  unlockPage('resolution');
+  goToPage('resolution');
+  showToast('Insurance reviewed. Now build your resolution plan.');
+}
+
+/* ============================================================
+   RESOLUTION PLAN
+   ============================================================ */
+function renderResolutionPage() {
+  renderExposureChart();
+  renderResolutionTracker();
+  renderTimeline();
+}
+
+function renderExposureChart() {
+  const container = document.getElementById('exposureChart');
+  const exposures = [];
+
+  // Debt
+  const totalDebt = state.debts.reduce((s, d) => s + (parseFloat(d.balance) || 0), 0);
+  if (totalDebt > 0) exposures.push({ label: 'Funded Debt', value: totalDebt, color: 'var(--color-primary)' });
+
+  // Contingent
+  let contingentTotal = 0;
+  Object.values(state.contingent).forEach(c => {
+    if (c.exists !== 'no' && c.amount) contingentTotal += parseFloat(c.amount) || 0;
+  });
+  if (contingentTotal > 0) exposures.push({ label: 'Contingent Liabilities', value: contingentTotal, color: 'var(--color-warning)' });
+
+  // Litigation
+  const litTotal = state.litigation.reduce((s, l) => s + (parseFloat(l.exposure) || 0), 0);
+  if (litTotal > 0) exposures.push({ label: 'Litigation Exposure', value: litTotal, color: 'var(--color-danger)' });
+
+  const total = exposures.reduce((s, e) => s + e.value, 0);
+
+  if (total === 0) {
+    container.innerHTML = '<div class="callout callout-info">No financial exposure has been entered yet. Complete the previous sections to see your exposure summary.</div>';
+    return;
+  }
+
+  // Stacked bar
+  container.innerHTML = `
+    <div class="flex items-center justify-between mb-sm">
+      <div class="t-h3">Total Exposure: ${formatCurrency(total)}</div>
+    </div>
+    <div class="exposure-bar">
+      ${exposures.map(e => `<div class="exposure-segment" style="width:${(e.value/total*100).toFixed(1)}%;background:${e.color}" title="${e.label}: ${formatCurrency(e.value)}">${(e.value/total*100).toFixed(0)}%</div>`).join('')}
+    </div>
+    <div class="flex gap-lg mt-md" style="flex-wrap:wrap">
+      ${exposures.map(e => `<div class="flex items-center gap-sm"><div style="width:12px;height:12px;border-radius:3px;background:${e.color}"></div><span class="t-small">${e.label}: ${formatCurrency(e.value)}</span></div>`).join('')}
+    </div>
+  `;
+}
+
+function addResolution() {
+  state.resolutions.push({ id: Date.now(), liability: '', type: '', amount: '', strategy: '', targetDate: '', status: 'not_started' });
+  renderResolutionTracker();
+  saveData();
+}
+
+function removeResolution(id) {
+  state.resolutions = state.resolutions.filter(r => r.id !== id);
+  renderResolutionTracker();
+  saveData();
+}
+
+function updateResolution(id, field, value) {
+  const r = state.resolutions.find(r => r.id === id);
+  if (r) r[field] = value;
+  saveData();
+}
+
+function renderResolutionTracker() {
+  const container = document.getElementById('resolutionTracker');
+  if (state.resolutions.length === 0) {
+    // Auto-populate from identified issues
+    autoPopulateResolutions();
+  }
+  container.innerHTML = state.resolutions.map((r, i) => `
+    <div class="card mb-md">
+      <div class="flex items-center justify-between mb-md">
+        <div class="flex items-center gap-md">
+          <div class="debt-card-num">${i + 1}</div>
+          <div class="t-h3">${r.liability || 'Resolution Item ' + (i + 1)}</div>
+        </div>
+        <div class="flex items-center gap-sm">
+          <select class="form-input form-input-sm" style="width:140px" onchange="updateResolution(${r.id},'status',this.value)">
+            <option value="not_started" ${r.status==='not_started'?'selected':''}>Not Started</option>
+            <option value="in_progress" ${r.status==='in_progress'?'selected':''}>In Progress</option>
+            <option value="resolved" ${r.status==='resolved'?'selected':''}>Resolved</option>
+          </select>
+          <button class="debt-card-remove" onclick="removeResolution(${r.id})" aria-label="Remove">&times;</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Liability Description</label>
+          <input type="text" class="form-input" value="${r.liability || ''}" oninput="updateResolution(${r.id},'liability',this.value)" placeholder="What needs to be resolved">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Type</label>
+          <select class="form-input" onchange="updateResolution(${r.id},'type',this.value)">
+            <option value="">Select...</option>
+            <option value="debt" ${r.type==='debt'?'selected':''}>Debt</option>
+            <option value="litigation" ${r.type==='litigation'?'selected':''}>Litigation</option>
+            <option value="tax" ${r.type==='tax'?'selected':''}>Tax</option>
+            <option value="environmental" ${r.type==='environmental'?'selected':''}>Environmental</option>
+            <option value="insurance" ${r.type==='insurance'?'selected':''}>Insurance</option>
+            <option value="guarantee" ${r.type==='guarantee'?'selected':''}>Personal Guarantee</option>
+            <option value="other" ${r.type==='other'?'selected':''}>Other</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Estimated Exposure ($)</label>
+          <input type="number" class="form-input" value="${r.amount || ''}" oninput="updateResolution(${r.id},'amount',this.value)" placeholder="$0">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Target Resolution Date</label>
+          <input type="date" class="form-input" value="${r.targetDate || ''}" oninput="updateResolution(${r.id},'targetDate',this.value)">
+        </div>
+        <div class="form-group" style="margin-bottom:0;grid-column:span 2">
+          <label class="form-label">Resolution Strategy</label>
+          <textarea class="form-input" placeholder="How will you resolve this? Who needs to be involved?" oninput="updateResolution(${r.id},'strategy',this.value)">${r.strategy || ''}</textarea>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function autoPopulateResolutions() {
+  // Add resolutions from personal guarantees
+  state.debts.filter(d => d.personalGuarantee === 'yes').forEach(d => {
+    state.resolutions.push({
+      id: Date.now() + Math.random() * 1000,
+      liability: 'Release personal guarantee: ' + (d.creditor || 'Unknown creditor'),
+      type: 'guarantee', amount: d.balance || '', strategy: 'Negotiate release with lender before close',
+      targetDate: '', status: 'not_started'
+    });
+  });
+
+  // Add from litigation
+  state.litigation.forEach(l => {
+    state.resolutions.push({
+      id: Date.now() + Math.random() * 1000,
+      liability: l.name || 'Legal matter',
+      type: 'litigation', amount: l.exposure || '', strategy: l.settle === 'yes' ? 'Settle before market' : 'Monitor and prepare disclosure',
+      targetDate: '', status: 'not_started'
+    });
+  });
+
+  // Add from contingent
+  Object.entries(state.contingent).forEach(([id, c]) => {
+    if (c.exists === 'yes' || c.exists === 'possible') {
+      const ct = CONTINGENT_TYPES.find(t => t.id === id);
+      state.resolutions.push({
+        id: Date.now() + Math.random() * 1000,
+        liability: ct ? ct.label : id,
+        type: 'other', amount: c.amount || '', strategy: c.notes || '',
+        targetDate: '', status: 'not_started'
+      });
+    }
+  });
+
+  // Add from insurance gaps
+  Object.entries(state.insurance).forEach(([id, ins]) => {
+    if (ins.status === 'gaps' || ins.status === 'none') {
+      const type = INSURANCE_TYPES.find(t => t.id === id);
+      state.resolutions.push({
+        id: Date.now() + Math.random() * 1000,
+        liability: 'Insurance gap: ' + (type ? type.title : id),
+        type: 'insurance', amount: '', strategy: ins.action || 'Obtain adequate coverage',
+        targetDate: '', status: 'not_started'
+      });
+    }
+  });
+}
+
+function renderTimeline() {
+  const container = document.getElementById('resolutionTimeline');
+  container.innerHTML = TIMELINE_DATA.map((item, i) => `
+    <div class="timeline-item ${i === 0 ? 'tl-active' : ''}">
+      <div class="timeline-dot"></div>
+      <div class="timeline-period">${item.period}</div>
+      <div class="timeline-title">${item.title}</div>
+      <div class="timeline-desc">${item.desc}</div>
+    </div>
+  `).join('');
+}
+
+function completeResolution() {
+  completePage('resolution');
+  unlockPage('dashboard');
+  goToPage('dashboard');
+  showToast('Resolution plan complete. Here is your scorecard.');
+}
+
+/* ============================================================
+   SCORING
+   ============================================================ */
+function calcReadinessScore() {
+  let score = 0;
+  let maxScore = 0;
+
+  // Checklist (40 points)
+  maxScore += 40;
+  const checkDone = Object.values(state.checklist).filter(v => v).length;
+  score += Math.round((checkDone / CHECKLIST_ITEMS.length) * 40);
+
+  // Tax checklist (15 points)
+  maxScore += 15;
+  const taxDone = Object.values(state.taxChecklist).filter(v => v).length;
+  score += Math.round((taxDone / TAX_ITEMS.length) * 15);
+
+  // Contingent (15 points - more points for "no exposure")
+  maxScore += 15;
+  let contingentScore = 0;
+  CONTINGENT_TYPES.forEach(ct => {
+    const data = state.contingent[ct.id];
+    if (data) {
+      if (data.exists === 'no') contingentScore += 3;
+      else if (data.exists === 'possible' && data.notes) contingentScore += 1;
+      else if (data.exists === 'yes' && data.notes) contingentScore += 0.5;
+    }
+  });
+  score += Math.round(contingentScore);
+
+  // Insurance (15 points)
+  maxScore += 15;
+  let insScore = 0;
+  INSURANCE_TYPES.forEach(ins => {
+    const data = state.insurance[ins.id];
+    if (data) {
+      if (data.status === 'adequate' || data.status === 'na') insScore += 2.5;
+      else if (data.status === 'gaps' && data.action) insScore += 1;
+    }
+  });
+  score += Math.round(insScore);
+
+  // Resolution progress (15 points)
+  maxScore += 15;
+  if (state.resolutions.length > 0) {
+    const resolved = state.resolutions.filter(r => r.status === 'resolved').length;
+    const inProgress = state.resolutions.filter(r => r.status === 'in_progress').length;
+    score += Math.round(((resolved * 1 + inProgress * 0.5) / state.resolutions.length) * 15);
+  } else {
+    score += 15; // No issues = full points
+  }
+
+  return Math.min(Math.round(score), 100);
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+function renderDashboard() {
+  const score = calcReadinessScore();
+  const totalDebt = state.debts.reduce((s, d) => s + (parseFloat(d.balance) || 0), 0);
+
+  let totalExposure = 0;
+  Object.values(state.contingent).forEach(c => {
+    if (c.exists !== 'no' && c.amount) totalExposure += parseFloat(c.amount) || 0;
+  });
+  state.litigation.forEach(l => { totalExposure += parseFloat(l.exposure) || 0; });
+
+  const checkDone = Object.values(state.checklist).filter(v => v).length;
+  const openItems = state.resolutions.filter(r => r.status !== 'resolved').length;
+
+  // Ring
+  const ringEl = document.getElementById('dashboardRing');
+  const circumference = 2 * Math.PI * 54;
+  const offset = circumference - (score / 100) * circumference;
+  const ringColor = score >= 80 ? 'var(--color-success)' : score >= 60 ? 'var(--color-warning)' : 'var(--color-danger)';
+  ringEl.innerHTML = `
+    <div class="progress-ring-wrap">
+      <svg width="140" height="140" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="54" fill="none" stroke="var(--color-border)" stroke-width="10"/>
+        <circle cx="70" cy="70" r="54" fill="none" stroke="${ringColor}" stroke-width="10"
+          stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
+          stroke-linecap="round" transform="rotate(-90 70 70)"
+          style="transition: stroke-dashoffset 1s cubic-bezier(0.16,1,0.3,1)"/>
+      </svg>
+      <div class="progress-ring-text">
+        <div class="progress-ring-value" style="font-size:32px;color:${ringColor}">${score}</div>
+        <div class="progress-ring-label">of 100</div>
+      </div>
+    </div>
+  `;
+
+  const grade = score >= 80 ? 'Deal-Ready' : score >= 60 ? 'Progressing -- Address Open Items' : score >= 40 ? 'Significant Work Needed' : 'At Risk -- Prioritize Immediately';
+  document.getElementById('dashboardGrade').textContent = grade;
+  document.getElementById('dashboardSummary').textContent =
+    score >= 80 ? 'Your liability position is clean. Continue monitoring and keep documentation current.' :
+    score >= 60 ? 'You have made good progress but open items remain. Focus on the resolution tracker.' :
+    'Several liabilities need attention before going to market. Address high-severity items first.';
+
+  document.getElementById('dashDebt').textContent = formatCurrency(totalDebt);
+  document.getElementById('dashExposure').textContent = formatCurrency(totalExposure);
+  document.getElementById('dashChecklist').textContent = Math.round((checkDone / CHECKLIST_ITEMS.length) * 100) + '%';
+  document.getElementById('dashItemsOpen').textContent = openItems;
+
+  // Bar chart
+  const barData = [
+    { label: 'Cleanup Checklist', pct: Math.round((checkDone / CHECKLIST_ITEMS.length) * 100), color: 'var(--color-primary)' },
+    { label: 'Tax Compliance', pct: Math.round((Object.values(state.taxChecklist).filter(v => v).length / TAX_ITEMS.length) * 100), color: 'var(--color-accent)' },
+    { label: 'Insurance Coverage', pct: Math.round((INSURANCE_TYPES.filter(ins => { const d = state.insurance[ins.id]; return d && (d.status === 'adequate' || d.status === 'na'); }).length / INSURANCE_TYPES.length) * 100), color: 'var(--color-success)' },
+    { label: 'Resolutions Done', pct: state.resolutions.length > 0 ? Math.round((state.resolutions.filter(r => r.status === 'resolved').length / state.resolutions.length) * 100) : 100, color: 'var(--color-warning)' }
+  ];
+  document.getElementById('dashBarChart').innerHTML = barData.map(b => `
+    <div class="bar-row">
+      <div class="bar-label">${b.label}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${b.pct}%;background:${b.color}"><span class="bar-value">${b.pct}%</span></div>
+      </div>
+    </div>
+  `).join('');
+
+  // Mistakes
+  const mistakes = [
+    { title: 'Assuming Debt Washes Out at Close', desc: 'While funded debt is typically paid from proceeds, prepayment penalties and timing need advance planning. Map every payoff scenario 6+ months before market.', risk: state.debts.length > 0 && state.debts.some(d => !d.payAtClose) },
+    { title: 'Hiding Known Liabilities', desc: 'Buyers will find them. Reps and warranties make you personally liable for undisclosed liabilities. Disclose everything. Control the narrative.', risk: Object.values(state.contingent).some(c => c.exists === 'yes' && !c.notes) },
+    { title: 'Not Releasing Personal Guarantees', desc: 'If you personally guarantee business debt, those guarantees must be released at close. Start working with lenders early.', risk: state.debts.some(d => d.personalGuarantee === 'yes') }
+  ];
+  document.getElementById('mistakesSection').innerHTML = mistakes.map(m => `
+    <div class="callout ${m.risk ? 'callout-danger' : 'callout-info'} mb-md">
+      <strong>${m.title}</strong>${m.risk ? ' <span class="badge badge-danger" style="margin-left:8px">Applies to you</span>' : ''}
+      <div style="margin-top:4px">${m.desc}</div>
+    </div>
+  `).join('');
+}
+
+function exportResults() {
+  const score = calcReadinessScore();
+  const totalDebt = state.debts.reduce((s, d) => s + (parseFloat(d.balance) || 0), 0);
+  let text = 'DEBT & LIABILITY CLEANUP SCORECARD\n';
+  text += '==================================\n\n';
+  text += 'Readiness Score: ' + score + '/100\n';
+  text += 'Total Debt: ' + formatCurrency(totalDebt) + '\n';
+  text += 'Debts: ' + state.debts.length + '\n';
+  text += 'Checklist: ' + Object.values(state.checklist).filter(v => v).length + '/' + CHECKLIST_ITEMS.length + '\n';
+  text += 'Open Resolutions: ' + state.resolutions.filter(r => r.status !== 'resolved').length + '\n\n';
+
+  text += 'DEBT INVENTORY\n';
+  state.debts.forEach(d => {
+    text += '  - ' + (d.creditor || 'Unknown') + ': ' + formatCurrency(d.balance) + ' (' + (d.type || 'N/A') + ')\n';
+  });
+
+  text += '\nRESOLUTION ITEMS\n';
+  state.resolutions.forEach(r => {
+    text += '  - [' + r.status.toUpperCase().replace('_', ' ') + '] ' + (r.liability || 'Unknown') + ': ' + formatCurrency(r.amount) + '\n';
+  });
+
+  const blob = new Blob([text], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'debt-liability-scorecard.txt';
+  a.click();
+  showToast('Scorecard exported successfully.');
+}
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
+function init() {
+  loadData();
+
+  // Restore page states
+  state.pagesUnlocked.forEach(p => unlockPage(p));
+  state.pagesCompleted.forEach(p => {
+    document.querySelectorAll('.nav-item').forEach(n => {
+      if (n.dataset.page === p) n.classList.add('completed');
+    });
+  });
+
+  // Render all sections
+  renderDebts();
+  renderChecklist();
+  renderContingent();
+  renderLitigation();
+  renderTaxChecklist();
+  renderEnvAssessment();
+  renderInsurance();
+
+  // Navigate to last page
+  if (state.currentPage && state.pagesUnlocked.includes(state.currentPage)) {
+    goToPage(state.currentPage);
+  }
+
+  updateProgress();
+
+  // Keyboard nav for check items
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      if (e.target.classList.contains('check-item') || e.target.classList.contains('nav-item')) {
+        e.preventDefault();
+        e.target.click();
+      }
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

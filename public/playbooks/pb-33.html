@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buyer Universe Mapping | Exit Planning Playbook #33</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.6; color: var(--color-text); background: var(--color-bg); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 1000; }
+a.skip-link:focus { position: fixed; top: 10px; left: 10px; width: auto; height: auto; padding: 12px 20px; background: var(--color-primary); color: #fff; border-radius: var(--radius-sm); font-weight: 600; z-index: 1000; }
+.t-display { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; min-width: 260px; background: #FFFFFF; border-right: 1px solid var(--color-border); color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: transform var(--transition-slow); overflow-y: auto; }
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+.mobile-header { display: none; position: sticky; top: 0; z-index: 90; background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md); }
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item { display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px; border-radius: var(--radius-sm); color: var(--color-text-secondary); font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative; }
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--color-text-tertiary); }
+.nav-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+.sidebar-footer { margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--color-border); font-size: 12px; color: rgba(255,255,255,0.3); display: flex; align-items: center; gap: 6px; }
+.sidebar-footer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-success); }
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); transition: box-shadow var(--transition-normal); margin-bottom: var(--space-md); }
+.card:hover { box-shadow: var(--shadow-sm); }
+.callout { padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); border-left: 3px solid; font-size: 14px; line-height: 1.6; margin-bottom: var(--space-md); }
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm); padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; transition: all var(--transition-fast); white-space: nowrap; }
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface); transition: all var(--transition-fast); color: var(--color-text); }
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+.score-selector { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+.score-btn { min-width: 38px; height: 38px; border: 2px solid var(--color-border); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--color-text-secondary); cursor: pointer; transition: all var(--transition-fast); background: var(--color-surface); padding: 0 4px; }
+.score-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.score-btn.selected { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.buyer-type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-bottom: var(--space-lg); }
+.buyer-type-card { border: 2px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); cursor: pointer; transition: all var(--transition-fast); position: relative; }
+.buyer-type-card:hover { border-color: var(--color-primary); box-shadow: var(--shadow-sm); }
+.buyer-type-card.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.buyer-type-card.selected::after { content: '\2713'; position: absolute; top: 10px; right: 12px; width: 22px; height: 22px; border-radius: 50%; background: var(--color-primary); color: #fff; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+.btc-icon { font-size: 24px; margin-bottom: var(--space-sm); }
+.btc-name { font-size: 14px; font-weight: 600; color: var(--color-text); margin-bottom: 2px; }
+.btc-desc { font-size: 12px; color: var(--color-text-secondary); line-height: 1.4; }
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; margin-bottom: var(--space-md); }
+.data-table th { text-align: left; padding: var(--space-sm) var(--space-md); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); }
+.data-table td { padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table input, .data-table select { width: 100%; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; background: var(--color-surface); }
+.data-table input:focus, .data-table select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-light); }
+.heatmap { display: grid; gap: 2px; margin: var(--space-md) 0; }
+.heatmap-cell { display: flex; align-items: center; justify-content: center; padding: 10px; font-size: 12px; font-weight: 600; border-radius: 4px; min-height: 44px; transition: transform var(--transition-fast); }
+.heatmap-cell:hover { transform: scale(1.03); }
+.heatmap-header { background: var(--color-text); color: #fff; font-size: 11px; letter-spacing: 0.3px; }
+.heatmap-label { background: #3D3D3D; color: #fff; font-size: 11px; text-align: left; padding-left: 12px; }
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 24px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+.bar-fill.strategic { background: linear-gradient(90deg, #7C3AED, #8B5CF6); }
+.bar-fill.pe { background: linear-gradient(90deg, #2563EB, #3B82F6); }
+.bar-fill.family { background: linear-gradient(90deg, #059669, #10B981); }
+.bar-fill.mbo { background: linear-gradient(90deg, #D97706, #F59E0B); }
+.bar-fill.individual { background: linear-gradient(90deg, #DC2626, #EF4444); }
+.bar-fill.search { background: linear-gradient(90deg, #DB2777, #EC4899); }
+.tag { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 100px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.3px; }
+.tag-strategic { background: #EDE9FE; color: #6D28D9; }
+.tag-pe { background: #DBEAFE; color: #1D4ED8; }
+.tag-family { background: #D1FAE5; color: #047857; }
+.tag-mbo { background: #FEF3C7; color: #92400E; }
+.tag-individual { background: #FEE2E2; color: #991B1B; }
+.tag-search { background: #FFE4E6; color: #9F1239; }
+.checklist { display: flex; flex-direction: column; gap: 2px; }
+.check-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md); border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast); }
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box { width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); margin-top: 1px; }
+.check-item.checked .check-box, .check-box.checked { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg, .check-box.checked svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-box.checked::after { content: '\2713'; color: #fff; font-size: 13px; font-weight: 700; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+.add-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; border: 2px dashed var(--color-border); border-radius: var(--radius-md); background: transparent; cursor: pointer; font-size: 14px; color: var(--color-text-tertiary); font-weight: 500; transition: all var(--transition-fast); font-family: inherit; margin-top: var(--space-sm); }
+.add-btn:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-light); }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-lg); }
+.summary-item { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-align: center; }
+.summary-item-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; }
+.summary-item-label { font-size: 12px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-top: var(--space-xs); }
+.gauge-wrap { display: flex; justify-content: center; margin: var(--space-lg) 0; }
+.gauge-ring { position: relative; width: 160px; height: 160px; }
+.gauge-ring svg { width: 160px; height: 160px; transform: rotate(-90deg); }
+.gauge-ring circle { fill: none; stroke-width: 8; stroke-linecap: round; }
+.gauge-bg { stroke: var(--color-border); }
+.gauge-fill { transition: stroke-dashoffset 1s ease; }
+.gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gauge-center-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; line-height: 1; }
+.gauge-center-label { font-size: 12px; color: var(--color-text-tertiary); margin-top: 4px; }
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--color-border); }
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+@media (max-width: 600px) {
+  .welcome-stats { grid-template-columns: 1fr; }
+  .welcome-hero { padding: var(--space-2xl) var(--space-md); }
+  .buyer-type-grid { grid-template-columns: 1fr; }
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .bar-label { width: 90px; font-size: 11px; }
+  .score-selector { gap: 4px; }
+  .score-btn { min-width: 32px; height: 34px; font-size: 12px; }
+}
+.toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 200; }
+.toast { background: var(--color-text); color: #fff; padding: 12px 20px; border-radius: var(--radius-md); font-size: 14px; box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(8px); transition: all 0.3s ease; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateY(0); }
+@media print {
+  .sidebar, .mobile-header, .page-nav, .sidebar-overlay, .toast-container { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; margin-bottom: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<a href="#contentArea" class="skip-link">Skip to content</a>
+<div class="app">
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #33</div>
+      <div class="sidebar-brand-title">Buyer Universe Mapping</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Readiness Score</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete sections to build your score</div>
+    </div>
+    <div class="sidebar-footer"><div class="sidebar-footer-dot"></div>Auto-saved locally</div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation"><span></span></button>
+      <div style="flex:1"><strong style="font-size:15px;">Buyer Universe Mapping</strong></div>
+      <div class="badge badge-primary" id="mobileScore">--/100</div>
+    </div>
+    <main class="content-area" id="contentArea" role="main"></main>
+  </div>
+</div>
+<div class="toast-container" aria-live="polite"><div class="toast" id="toast"></div></div>
+
+<script>
+(function() {
+'use strict';
+
+var STORAGE_KEY = 'exitosx-pb33-buyer-universe';
+
+var PAGES = [
+  { id: 'welcome', title: 'Welcome', phase: 'ORIENTATION', icon: '1' },
+  { id: 'business-profile', title: 'Your Business Profile', phase: 'ORIENTATION', icon: '2' },
+  { id: 'buyer-types', title: 'The Six Buyer Types', phase: 'UNDERSTAND', icon: '3' },
+  { id: 'buyer-fit', title: 'Buyer Fit Assessment', phase: 'UNDERSTAND', icon: '4' },
+  { id: 'comparison', title: 'Price / Process / Probability', phase: 'UNDERSTAND', icon: '5' },
+  { id: 'synergy-map', title: 'Synergy & Premium Map', phase: 'ANALYZE', icon: '6' },
+  { id: 'buyer-list', title: 'Buyer Universe List', phase: 'BUILD', icon: '7' },
+  { id: 'outreach-tracker', title: 'Outreach Tracker', phase: 'BUILD', icon: '8' },
+  { id: 'qualification', title: 'Buyer Qualification', phase: 'BUILD', icon: '9' },
+  { id: 'mistakes', title: 'Common Mistakes Audit', phase: 'REVIEW', icon: '10' },
+  { id: 'dashboard', title: 'Dashboard', phase: 'RESULTS', icon: '11' }
+];
+
+var BUYER_TYPES = [
+  { key: 'strategic', name: 'Strategic Acquirer', icon: '\u{1F3AF}', tagClass: 'tag-strategic',
+    desc: 'Operating companies that integrate your business. Highest price, longest process.',
+    price: '5x-10x+', speed: '3-6 mo', priceScore: 9.5, speedScore: 6, certainty: 7, complexity: 8 },
+  { key: 'pe_platform', name: 'PE Firm (Platform)', icon: '\u{1F4BC}', tagClass: 'tag-pe',
+    desc: 'Professional investors building industry platforms. High price, second bite opportunity.',
+    price: '5x-8x', speed: '3-6 mo', priceScore: 7.5, speedScore: 7, certainty: 7.5, complexity: 8 },
+  { key: 'pe_addon', name: 'PE Firm (Add-on)', icon: '\u{1F517}', tagClass: 'tag-pe',
+    desc: 'Bolt-on acquisitions for existing PE platforms. Moderate price, fastest close.',
+    price: '3x-6x', speed: '2-4 mo', priceScore: 5.5, speedScore: 8, certainty: 8.5, complexity: 6 },
+  { key: 'family', name: 'Family Office', icon: '\u{1F3E0}', tagClass: 'tag-family',
+    desc: 'Long-term holders seeking stable cash flow. Simple structures, permanent capital.',
+    price: '4x-7x', speed: '3-6 mo', priceScore: 7, speedScore: 6, certainty: 7.5, complexity: 6 },
+  { key: 'mbo', name: 'Management Buyout', icon: '\u{1F465}', tagClass: 'tag-mbo',
+    desc: 'Your team buys the business. Preserves legacy, lower price, seller financing common.',
+    price: '3x-5x', speed: '3-9 mo', priceScore: 5, speedScore: 6, certainty: 7, complexity: 5 },
+  { key: 'individual', name: 'Individual / Search Fund', icon: '\u{1F50D}', tagClass: 'tag-individual',
+    desc: 'Entrepreneurs and MBAs seeking owner-operator opportunities. SBA financed, price constrained.',
+    price: '3x-5x', speed: '3-6 mo', priceScore: 5, speedScore: 5, certainty: 6, complexity: 4 }
+];
+
+var QUALIFICATION_CRITERIA = [
+  'Financial capacity: Can they fund the acquisition at your expected valuation?',
+  'Strategic fit: Does your business align with their acquisition criteria?',
+  'Track record: Have they successfully closed similar acquisitions?',
+  'Timeline: Are they actively looking, not just interested in principle?',
+  'Cultural fit: Will they treat employees, customers, and legacy appropriately?',
+  'Regulatory: No antitrust or regulatory issues that could block the deal?'
+];
+
+var COMMON_MISTAKES = [
+  { id: 'mistake1', title: 'Focusing only on strategic buyers', desc: 'Strategic buyers pay highest but are hardest to engage, slowest to close, and most likely to have regulatory delays. A balanced universe provides backup and leverage.' },
+  { id: 'mistake2', title: 'Ignoring PE add-on demand', desc: 'PE-backed platforms are the most active acquirers. 50+ platforms in your industry may be actively seeking add-ons. They move fast and pay fair prices.' },
+  { id: 'mistake3', title: 'Not considering a management buyout', desc: 'Even if management cannot match strategic prices, an MBO offer establishes a floor price and signals belief in the business.' },
+  { id: 'mistake4', title: 'Underestimating search fund activity', desc: 'For $1M-$3M EBITDA businesses, search funds are increasingly important -- well-funded, motivated, and on a timeline to deploy capital.' },
+  { id: 'mistake5', title: 'Casting too narrow a net', desc: 'Confidentiality concerns limit outreach. But a good NDA process can protect you while reaching 20-50+ buyers. Narrow outreach means limited competition.' }
+];
+
+function defaultState() {
+  return {
+    currentPage: 'welcome',
+    completed: {},
+    businessProfile: { name: '', industry: '', ebitda: '', revenue: '', employees: '', location: '', yearsOp: '' },
+    selectedBuyerTypes: [],
+    buyerFitScores: {},
+    buyerRelevance: {},
+    synergyNotes: {},
+    buyerList: [],
+    outreachList: [],
+    qualificationChecks: {},
+    mistakeAudit: {},
+    actionItems: [],
+    notes: {}
+  };
+}
+
+var state = loadState();
+
+function loadState() {
+  try {
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return mergeState(defaultState(), JSON.parse(saved));
+    // Migrate from old key if exists
+    var old = localStorage.getItem('playbook33_buyer_universe');
+    if (old) {
+      var oldState = JSON.parse(old);
+      var migrated = mergeState(defaultState(), migrateOldState(oldState));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+      return migrated;
+    }
+  } catch(e) {}
+  return defaultState();
+}
+
+function mergeState(def, saved) {
+  var result = {};
+  for (var k in def) {
+    if (saved.hasOwnProperty(k)) result[k] = saved[k];
+    else result[k] = def[k];
+  }
+  return result;
+}
+
+function migrateOldState(old) {
+  var migrated = {};
+  for (var k in old) migrated[k] = old[k];
+  // Convert currentSection (index) to currentPage (id)
+  if (typeof old.currentSection === 'number') {
+    var oldSections = ['welcome','business-profile','buyer-types','buyer-fit','comparison','synergy-map','buyer-list','outreach-tracker','qualification','mistakes','summary'];
+    migrated.currentPage = oldSections[old.currentSection] || 'welcome';
+    if (migrated.currentPage === 'summary') migrated.currentPage = 'dashboard';
+    delete migrated.currentSection;
+  }
+  // Convert completedSections array to completed object
+  if (Array.isArray(old.completedSections)) {
+    migrated.completed = {};
+    old.completedSections.forEach(function(id) {
+      if (id === 'summary') id = 'dashboard';
+      migrated.completed[id] = true;
+    });
+    delete migrated.completedSections;
+  }
+  return migrated;
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  updateProgress();
+  updateScore();
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2400);
+}
+
+function calcScore() {
+  var score = 0;
+  // Buyer fit scores (40% weight)
+  var fitTotal = 0, fitCount = 0;
+  var fitScores = state.buyerFitScores;
+  for (var bk in fitScores) {
+    var bScores = fitScores[bk];
+    for (var ck in bScores) {
+      if (typeof bScores[ck] === 'number') { fitTotal += bScores[ck]; fitCount++; }
+    }
+  }
+  var fitAvg = fitCount > 0 ? fitTotal / fitCount : 0;
+  score += (fitAvg / 10) * 40;
+
+  // Buyer list size (25%)
+  var namedBuyers = state.buyerList.filter(function(b) { return b.name; }).length;
+  score += Math.min(namedBuyers / 20, 1) * 25;
+
+  // Type diversity (20%)
+  var typesUsed = {};
+  state.buyerList.forEach(function(b) { if (b.type && b.name) typesUsed[b.type] = true; });
+  score += Math.min(Object.keys(typesUsed).length / 4, 1) * 20;
+
+  // Mistakes cleared (15%)
+  var mistakesCleared = 0;
+  for (var mk in state.mistakeAudit) { if (state.mistakeAudit[mk]) mistakesCleared++; }
+  score += (mistakesCleared / 5) * 15;
+
+  return Math.min(Math.round(score), 100);
+}
+
+function getScoreColor(score) {
+  if (score >= 81) return 'var(--color-score-5)';
+  if (score >= 61) return 'var(--color-score-4)';
+  if (score >= 41) return 'var(--color-score-3)';
+  if (score >= 21) return 'var(--color-score-2)';
+  return 'var(--color-score-1)';
+}
+
+function getScoreLabel(score) {
+  if (score >= 81) return 'Excellent buyer universe readiness';
+  if (score >= 61) return 'Strong foundation, room to improve';
+  if (score >= 41) return 'Moderate -- address key gaps';
+  if (score >= 21) return 'Significant improvement needed';
+  return 'Complete sections to build your score';
+}
+
+function updateScore() {
+  var score = calcScore();
+  document.getElementById('sidebarScore').innerHTML = score + '<span class="sidebar-score-max">/100</span>';
+  document.getElementById('mobileScore').textContent = score + '/100';
+  document.getElementById('sidebarScoreDesc').textContent = getScoreLabel(score);
+}
+
+function updateProgress() {
+  var total = PAGES.length - 2; // exclude welcome and dashboard
+  var done = Object.keys(state.completed).length;
+  var pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+}
+
+function isUnlocked(pageId) {
+  var idx = PAGES.findIndex(function(p) { return p.id === pageId; });
+  if (idx <= 0) return true;
+  return state.completed[PAGES[idx - 1].id] === true;
+}
+
+function renderNav() {
+  var nav = document.getElementById('sidebarNav');
+  var html = '';
+  var lastPhase = '';
+  PAGES.forEach(function(p) {
+    if (p.phase !== lastPhase) {
+      html += '<div class="nav-section-label">' + p.phase + '</div>';
+      lastPhase = p.phase;
+    }
+    var isActive = state.currentPage === p.id;
+    var isDone = state.completed[p.id];
+    var locked = !isUnlocked(p.id);
+    html += '<div class="nav-item' + (isActive ? ' active' : '') + (isDone ? ' completed' : '') + (locked ? ' locked' : '') + '" data-page="' + p.id + '" role="button" tabindex="' + (locked ? '-1' : '0') + '" aria-current="' + (isActive ? 'step' : 'false') + '">';
+    html += '<span class="nav-icon">' + p.icon + '</span>';
+    html += '<span>' + p.title + '</span>';
+    if (isDone) html += '<span class="nav-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></span>';
+    html += '</div>';
+  });
+  nav.innerHTML = html;
+  nav.querySelectorAll('.nav-item:not(.locked)').forEach(function(el) {
+    el.addEventListener('click', function() { goToPage(el.dataset.page); });
+    el.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToPage(el.dataset.page); } });
+  });
+}
+
+function goToPage(pageId) {
+  if (!isUnlocked(pageId)) return;
+  state.currentPage = pageId;
+  saveState();
+  renderPage();
+  renderNav();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  closeSidebar();
+}
+
+function completePage(pageId) {
+  state.completed[pageId] = true;
+  var idx = PAGES.findIndex(function(p) { return p.id === pageId; });
+  if (idx < PAGES.length - 1) {
+    state.currentPage = PAGES[idx + 1].id;
+  }
+  saveState();
+  renderPage();
+  renderNav();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function prevPage() {
+  var idx = PAGES.findIndex(function(p) { return p.id === state.currentPage; });
+  if (idx > 0) goToPage(PAGES[idx - 1].id);
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+document.getElementById('hamburgerBtn').addEventListener('click', toggleSidebar);
+document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+function pageNavHTML(showPrev, nextLabel, currentId) {
+  var html = '<div class="page-nav">';
+  html += showPrev ? '<button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button>' : '<div></div>';
+  if (nextLabel !== false) {
+    html += '<button class="btn btn-primary" onclick="PB.completePage(\'' + currentId + '\')">' + (nextLabel || 'Continue') + ' &rarr;</button>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function avgScore(scores) {
+  var vals = [];
+  for (var k in scores) { if (typeof scores[k] === 'number') vals.push(scores[k]); }
+  if (vals.length === 0) return '--';
+  var sum = 0; vals.forEach(function(v) { sum += v; });
+  return (sum / vals.length).toFixed(1);
+}
+
+function countByPriority(p) { return state.buyerList.filter(function(b) { return b.priority === p; }).length; }
+function emptyBuyer() { return { name: '', type: '', capacity: '', rationale: '', priority: '' }; }
+function emptyOutreach() { return { name: '', ndaSent: false, ndaSigned: false, cimSent: false, ioiReceived: false, notes: '' }; }
+
+// PAGE RENDERERS
+function renderPage() {
+  var area = document.getElementById('contentArea');
+  var renderers = {
+    'welcome': renderWelcome,
+    'business-profile': renderBusinessProfile,
+    'buyer-types': renderBuyerTypes,
+    'buyer-fit': renderBuyerFit,
+    'comparison': renderComparison,
+    'synergy-map': renderSynergyMap,
+    'buyer-list': renderBuyerList,
+    'outreach-tracker': renderOutreachTracker,
+    'qualification': renderQualification,
+    'mistakes': renderMistakes,
+    'dashboard': renderDashboard
+  };
+  var fn = renderers[state.currentPage];
+  area.innerHTML = '<div class="page active">' + (fn ? fn() : '') + '</div>';
+  bindInputs();
+}
+
+function bindInputs() {
+  // Business profile inputs
+  document.querySelectorAll('[data-field]').forEach(function(el) {
+    var handler = function() {
+      state.businessProfile[el.dataset.field] = el.value;
+      saveState();
+    };
+    el.addEventListener('input', handler);
+    el.addEventListener('change', handler);
+  });
+
+  // Buyer type cards
+  document.querySelectorAll('.buyer-type-card[data-buyer]').forEach(function(el) {
+    var handler = function() {
+      var key = el.dataset.buyer;
+      var idx = state.selectedBuyerTypes.indexOf(key);
+      if (idx >= 0) state.selectedBuyerTypes.splice(idx, 1);
+      else state.selectedBuyerTypes.push(key);
+      saveState();
+      renderPage();
+    };
+    el.addEventListener('click', handler);
+    el.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); } });
+  });
+
+  // Score buttons
+  document.querySelectorAll('.score-btn[data-buyer]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var buyer = btn.dataset.buyer;
+      var criterion = btn.dataset.criterion;
+      var score = parseInt(btn.dataset.score);
+      if (!state.buyerFitScores[buyer]) state.buyerFitScores[buyer] = {};
+      state.buyerFitScores[buyer][criterion] = score;
+      saveState();
+      renderPage();
+    });
+  });
+
+  // Synergy notes
+  document.querySelectorAll('[data-synfield]').forEach(function(el) {
+    el.addEventListener('input', function() {
+      var key = el.dataset.buyer;
+      if (!state.synergyNotes[key]) state.synergyNotes[key] = {};
+      state.synergyNotes[key][el.dataset.synfield] = el.value;
+      saveState();
+    });
+  });
+
+  // Buyer list fields
+  document.querySelectorAll('[data-bfield]').forEach(function(el) {
+    var handler = function() {
+      var i = parseInt(el.dataset.idx);
+      state.buyerList[i][el.dataset.bfield] = el.value;
+      saveState();
+    };
+    el.addEventListener('input', handler);
+    el.addEventListener('change', handler);
+  });
+
+  // Outreach text fields
+  document.querySelectorAll('[data-ofield]').forEach(function(el) {
+    el.addEventListener('input', function() {
+      var i = parseInt(el.dataset.oidx);
+      state.outreachList[i][el.dataset.ofield] = el.value;
+      saveState();
+    });
+  });
+
+  // Outreach checkboxes
+  document.querySelectorAll('[data-ochk]').forEach(function(el) {
+    var handler = function() {
+      var i = parseInt(el.dataset.oidx);
+      var field = el.dataset.ochk;
+      state.outreachList[i][field] = !state.outreachList[i][field];
+      saveState();
+      renderPage();
+    };
+    el.addEventListener('click', handler);
+    el.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); } });
+  });
+
+  // Qualification checks
+  document.querySelectorAll('[data-qidx]').forEach(function(el) {
+    var handler = function() {
+      var i = el.dataset.qidx;
+      state.qualificationChecks[i] = !state.qualificationChecks[i];
+      saveState();
+      renderPage();
+    };
+    el.addEventListener('click', handler);
+    el.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); } });
+  });
+
+  // Mistakes audit
+  document.querySelectorAll('[data-midx]').forEach(function(el) {
+    var handler = function() {
+      var id = el.dataset.midx;
+      state.mistakeAudit[id] = !state.mistakeAudit[id];
+      saveState();
+      renderPage();
+    };
+    el.addEventListener('click', handler);
+    el.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); } });
+  });
+}
+
+// WELCOME
+function renderWelcome() {
+  return '<div class="welcome-hero">' +
+    '<div class="welcome-icon">&#127919;</div>' +
+    '<div class="t-display">Buyer Universe Mapping</div>' +
+    '<p class="t-body t-secondary" style="margin-top:var(--space-md)">Know who is buying before you start selling. Map the universe. Understand motivations. Maximize competitive tension.</p>' +
+    '<div class="welcome-stats">' +
+    '<div class="welcome-stat"><div class="welcome-stat-value">3-5</div><div class="welcome-stat-label">Motivated buyers create optimal competitive tension</div></div>' +
+    '<div class="welcome-stat"><div class="welcome-stat-value">20-40%</div><div class="welcome-stat-label">Premium from strategic vs. financial buyers</div></div>' +
+    '<div class="welcome-stat"><div class="welcome-stat-value">6</div><div class="welcome-stat-label">Buyer types assessed across multiple dimensions</div></div>' +
+    '</div>' +
+    '<div class="callout callout-accent" style="text-align:left"><strong>The Core Principle:</strong> You do not need 100 buyers. You need 3-5 motivated, qualified buyers competing for your business simultaneously. This tool helps you identify those buyers and build a strategic outreach plan.</div>' +
+    '<div class="card" style="text-align:left">' +
+    '<div class="t-h3" style="margin-bottom:var(--space-sm)">What you will build</div>' +
+    '<p class="t-small t-secondary" style="margin-bottom:var(--space-md)">A structured buyer universe tailored to your business</p>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">' +
+    '<div style="padding:var(--space-md);background:var(--color-primary-light);border-radius:var(--radius-md);"><div style="font-weight:600;font-size:14px;margin-bottom:4px;">Buyer Type Assessment</div><div style="font-size:13px;color:var(--color-text-secondary);">Score which buyer types fit your situation</div></div>' +
+    '<div style="padding:var(--space-md);background:var(--color-accent-light);border-radius:var(--radius-md);"><div style="font-weight:600;font-size:14px;margin-bottom:4px;">Competitive Heat Map</div><div style="font-size:13px;color:var(--color-text-secondary);">Compare price, speed, and certainty across types</div></div>' +
+    '<div style="padding:var(--space-md);background:var(--color-success-light);border-radius:var(--radius-md);"><div style="font-weight:600;font-size:14px;margin-bottom:4px;">Named Buyer List</div><div style="font-size:13px;color:var(--color-text-secondary);">Build a prioritized list of specific buyers</div></div>' +
+    '<div style="padding:var(--space-md);background:var(--color-warning-light);border-radius:var(--radius-md);"><div style="font-weight:600;font-size:14px;margin-bottom:4px;">Outreach Tracker</div><div style="font-size:13px;color:var(--color-text-secondary);">Track NDAs, CIMs, and IOIs in one place</div></div>' +
+    '</div></div>' +
+    '<div class="callout callout-info" style="text-align:left"><strong>Time estimate:</strong> 45-60 minutes for initial mapping. You can save progress and return anytime.<br><strong>What you will need:</strong> Your latest financial summary (revenue, EBITDA), employee count, and an idea of your ideal outcome.</div>' +
+    '</div>' +
+    pageNavHTML(false, 'Get Started', 'welcome');
+}
+
+// BUSINESS PROFILE
+function renderBusinessProfile() {
+  var p = state.businessProfile;
+  var industries = ['Technology / SaaS','Professional Services','Healthcare','Manufacturing','Distribution','Construction / Trades','Financial Services','Consumer / Retail','Food & Beverage','Transportation / Logistics','Other'];
+  var opts = '<option value="">Select...</option>';
+  industries.forEach(function(o) { opts += '<option' + (p.industry === o ? ' selected' : '') + '>' + o + '</option>'; });
+
+  return '<div class="page-header"><div class="t-label">Orientation</div><div class="t-display">Your Business Profile</div><p class="t-body t-secondary">These details shape which buyer types are most relevant. Accuracy matters more than precision -- estimates are fine.</p></div>' +
+    '<div class="card">' +
+    '<div class="form-group"><label class="form-label">Company Name</label><input class="form-input" data-field="name" value="' + esc(p.name) + '" placeholder="e.g., Acme Services Inc."></div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">' +
+    '<div class="form-group"><label class="form-label">Industry</label><select class="form-input" data-field="industry">' + opts + '</select></div>' +
+    '<div class="form-group"><label class="form-label">Years in Operation</label><input class="form-input" data-field="yearsOp" type="number" value="' + esc(p.yearsOp) + '" placeholder="e.g., 12"></div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">' +
+    '<div class="form-group"><label class="form-label">Annual Revenue</label><div class="form-hint" style="margin-bottom:var(--space-sm)">Trailing twelve months</div><input class="form-input" data-field="revenue" value="' + esc(p.revenue) + '" placeholder="e.g., $5.2M"></div>' +
+    '<div class="form-group"><label class="form-label">Adjusted EBITDA</label><div class="form-hint" style="margin-bottom:var(--space-sm)">After add-backs</div><input class="form-input" data-field="ebitda" value="' + esc(p.ebitda) + '" placeholder="e.g., $1.1M"></div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">' +
+    '<div class="form-group"><label class="form-label">Number of Employees</label><input class="form-input" data-field="employees" type="number" value="' + esc(p.employees) + '" placeholder="e.g., 35"></div>' +
+    '<div class="form-group"><label class="form-label">Primary Location</label><input class="form-input" data-field="location" value="' + esc(p.location) + '" placeholder="e.g., Dallas, TX"></div>' +
+    '</div></div>' +
+    pageNavHTML(true, 'Continue', 'business-profile');
+}
+
+// BUYER TYPES
+function renderBuyerTypes() {
+  var cards = '';
+  BUYER_TYPES.forEach(function(bt) {
+    var sel = state.selectedBuyerTypes.indexOf(bt.key) >= 0;
+    cards += '<div class="buyer-type-card' + (sel ? ' selected' : '') + '" data-buyer="' + bt.key + '" role="checkbox" aria-checked="' + sel + '" tabindex="0">' +
+      '<div class="btc-icon">' + bt.icon + '</div>' +
+      '<div class="btc-name">' + bt.name + '</div>' +
+      '<div class="btc-desc">' + bt.desc + '</div>' +
+      '<div style="margin-top:10px;display:flex;gap:12px;">' +
+      '<span style="font-size:12px;color:var(--color-text-secondary);">Valuation: <strong style="color:var(--color-text);">' + bt.price + ' EBITDA</strong></span>' +
+      '<span style="font-size:12px;color:var(--color-text-secondary);">Close: <strong style="color:var(--color-text);">' + bt.speed + '</strong></span>' +
+      '</div></div>';
+  });
+
+  return '<div class="page-header"><div class="t-label">Understand</div><div class="t-display">The Six Buyer Types</div><p class="t-body t-secondary">Different buyer types have dramatically different motivations, processes, and price sensitivity. Select the types most relevant to your situation.</p></div>' +
+    '<div class="callout callout-accent"><strong>Why it matters:</strong> Strategic buyers can pay 20-40% more than financial buyers because they extract synergies. But the single most effective way to maximize price is to create competitive tension among multiple qualified buyer types.</div>' +
+    '<div class="buyer-type-grid">' + cards + '</div>' +
+    '<div style="font-size:13px;color:var(--color-text-tertiary);text-align:center;margin-bottom:var(--space-sm);">' + state.selectedBuyerTypes.length + ' of 6 selected -- we recommend including at least 3 types for competitive tension</div>' +
+    pageNavHTML(true, 'Continue', 'buyer-types');
+}
+
+// BUYER FIT ASSESSMENT
+function renderBuyerFit() {
+  var selected = state.selectedBuyerTypes.length > 0 ? state.selectedBuyerTypes : BUYER_TYPES.map(function(b) { return b.key; });
+  var criteria = [
+    { key: 'relevance', label: 'Relevance to Your Business', hint: 'How well does this buyer type match your size, industry, and model?' },
+    { key: 'price', label: 'Expected Price Premium', hint: 'How much would this buyer type likely pay above baseline?' },
+    { key: 'likelihood', label: 'Likelihood of Engagement', hint: 'How probable is it that buyers of this type would pursue your business?' },
+    { key: 'process_fit', label: 'Process Compatibility', hint: 'How well does their typical timeline and process fit your needs?' }
+  ];
+
+  var html = '<div class="page-header"><div class="t-label">Understand</div><div class="t-display">Buyer Fit Assessment</div><p class="t-body t-secondary">Rate each buyer type on key dimensions. This shapes your outreach priorities and sets expectations.</p></div>';
+
+  selected.forEach(function(bKey) {
+    var bt = null;
+    BUYER_TYPES.forEach(function(b) { if (b.key === bKey) bt = b; });
+    if (!bt) return;
+    var scores = state.buyerFitScores[bKey] || {};
+    html += '<div class="card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:var(--space-lg);">' +
+      '<span style="font-size:22px;">' + bt.icon + '</span><div style="flex:1"><div class="t-h3">' + bt.name + '</div>' +
+      '<div class="t-small t-secondary">' + bt.price + ' EBITDA | ' + bt.speed + '</div></div>' +
+      '<span class="tag ' + bt.tagClass + '">' + avgScore(scores) + '/10</span></div>';
+    criteria.forEach(function(c) {
+      html += '<div style="margin-bottom:var(--space-md);"><div class="form-label">' + c.label + '</div>' +
+        '<div class="form-hint" style="margin-bottom:var(--space-sm)">' + c.hint + '</div>' +
+        '<div class="score-selector" role="radiogroup" aria-label="' + c.label + ' for ' + bt.name + '">';
+      for (var n = 1; n <= 10; n++) {
+        var sel = scores[c.key] === n ? ' selected' : '';
+        html += '<button class="score-btn' + sel + '" data-buyer="' + bKey + '" data-criterion="' + c.key + '" data-score="' + n + '" role="radio" aria-checked="' + (scores[c.key] === n) + '" tabindex="0">' + n + '</button>';
+      }
+      html += '</div></div>';
+    });
+    html += '</div>';
+  });
+
+  html += pageNavHTML(true, 'Continue', 'buyer-fit');
+  return html;
+}
+
+// COMPARISON
+function renderComparison() {
+  var dims = [
+    { key: 'priceScore', label: 'Price' },
+    { key: 'speedScore', label: 'Speed' },
+    { key: 'certainty', label: 'Certainty' },
+    { key: 'complexity', label: 'Complexity' }
+  ];
+
+  var html = '<div class="page-header"><div class="t-label">Understand</div><div class="t-display">Price, Process & Probability</div><p class="t-body t-secondary">Compare buyer types across the dimensions that matter: what they will pay, how fast they close, how certain the deal is, and how complex the process.</p></div>';
+
+  // Heatmap
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Buyer Type Comparison</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Scores represent typical ranges from M&A market data</p>' +
+    '<div style="overflow-x:auto;"><div class="heatmap" style="grid-template-columns:140px repeat(' + dims.length + ', 1fr);min-width:500px;">' +
+    '<div class="heatmap-cell heatmap-header">Buyer Type</div>';
+  dims.forEach(function(d) { html += '<div class="heatmap-cell heatmap-header">' + d.label + '</div>'; });
+  BUYER_TYPES.forEach(function(bt) {
+    html += '<div class="heatmap-cell heatmap-label">' + bt.name.replace(' (Platform)','').replace(' (Add-on)','') + '</div>';
+    dims.forEach(function(d) {
+      var v = bt[d.key];
+      var intensity = v / 10;
+      var rgb = d.key === 'complexity' ? '199,127,32' : d.key === 'priceScore' ? '45,90,61' : d.key === 'speedScore' ? '37,99,235' : '45,138,78';
+      var hue = 'rgba(' + rgb + ',' + (0.1 + intensity * 0.55).toFixed(2) + ')';
+      html += '<div class="heatmap-cell" style="background:' + hue + ';color:' + (intensity > 0.5 ? '#fff' : 'var(--color-text)') + '">' + v + '/10</div>';
+    });
+  });
+  html += '</div></div></div>';
+
+  // Bar chart
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Price Potential by Buyer Type</div><div class="bar-chart">';
+  BUYER_TYPES.forEach(function(bt) {
+    html += '<div class="bar-row"><div class="bar-label">' + bt.name.split('(')[0].trim() + '</div>' +
+      '<div class="bar-track"><div class="bar-fill ' + bt.key.split('_')[0] + '" style="width:' + (bt.priceScore * 10) + '%"><span class="bar-value">' + bt.price + '</span></div></div></div>';
+  });
+  html += '</div></div>';
+
+  html += '<div class="callout callout-info"><strong>Optimal buyer mix for $3-10M EBITDA:</strong> 3-5 strategic acquirers, 5-10 PE firms (platform + add-on), 2-3 family offices, and potentially your management team. Diversity creates competition. Competition drives price.</div>';
+  html += pageNavHTML(true, 'Continue', 'comparison');
+  return html;
+}
+
+// SYNERGY MAP
+function renderSynergyMap() {
+  var selected = state.selectedBuyerTypes.length > 0 ? state.selectedBuyerTypes : BUYER_TYPES.map(function(b) { return b.key; });
+
+  var html = '<div class="page-header"><div class="t-label">Analyze</div><div class="t-display">Synergy & Premium Map</div><p class="t-body t-secondary">For each buyer type you are targeting, identify the specific synergies or value drivers that could justify a premium. This thinking directly informs your CIM narrative.</p></div>';
+
+  selected.forEach(function(bKey) {
+    var bt = null;
+    BUYER_TYPES.forEach(function(b) { if (b.key === bKey) bt = b; });
+    if (!bt) return;
+    var notes = state.synergyNotes[bKey] || { synergies: '', premium: '', risks: '' };
+    html += '<div class="card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:var(--space-lg);">' +
+      '<span style="font-size:20px;">' + bt.icon + '</span><div><div class="t-h3">' + bt.name + '</div>' +
+      '<div class="t-small t-secondary">Typical range: ' + bt.price + ' EBITDA</div></div></div>' +
+      '<div class="form-group"><label class="form-label">Key Synergies / Value Drivers</label>' +
+      '<div class="form-hint" style="margin-bottom:var(--space-sm)">What would make your business more valuable to this buyer type?</div>' +
+      '<textarea class="form-input" data-buyer="' + bKey + '" data-synfield="synergies" placeholder="e.g., Cross-sell opportunities, cost consolidation, geographic expansion...">' + esc(notes.synergies) + '</textarea></div>' +
+      '<div class="form-group"><label class="form-label">Estimated Premium Justification</label>' +
+      '<div class="form-hint" style="margin-bottom:var(--space-sm)">Why might this buyer pay above the typical range?</div>' +
+      '<textarea class="form-input" data-buyer="' + bKey + '" data-synfield="premium" rows="2" placeholder="e.g., We are the only company in the Southeast with this capability...">' + esc(notes.premium) + '</textarea></div>' +
+      '<div class="form-group"><label class="form-label">Key Risks / Concerns</label>' +
+      '<div class="form-hint" style="margin-bottom:var(--space-sm)">What might cause this buyer type to discount or walk away?</div>' +
+      '<textarea class="form-input" data-buyer="' + bKey + '" data-synfield="risks" rows="2" placeholder="e.g., Integration complexity, customer concentration, regulatory issues...">' + esc(notes.risks) + '</textarea></div>' +
+      '</div>';
+  });
+
+  html += pageNavHTML(true, 'Continue', 'synergy-map');
+  return html;
+}
+
+// BUYER LIST
+function renderBuyerList() {
+  if (state.buyerList.length === 0) {
+    state.buyerList = [emptyBuyer()];
+    saveState();
+  }
+  var namedCount = state.buyerList.filter(function(b) { return b.name; }).length;
+  var typesUsed = {};
+  state.buyerList.forEach(function(b) { if (b.type && b.name) typesUsed[b.type] = true; });
+
+  var html = '<div class="page-header"><div class="t-label">Build</div><div class="t-display">Buyer Universe List</div><p class="t-body t-secondary">Name specific companies and individuals. Aim for 20-50 total across buyer types. Your broker will add more, but your industry knowledge is invaluable.</p></div>';
+
+  html += '<div class="summary-grid">' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + namedCount + '</div><div class="summary-item-label">Named Buyers</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + countByPriority('A') + '</div><div class="summary-item-label">Priority A</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + countByPriority('B') + '</div><div class="summary-item-label">Priority B</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + Object.keys(typesUsed).length + '</div><div class="summary-item-label">Buyer Types</div></div>' +
+    '</div>';
+
+  html += '<div class="card" style="overflow-x:auto;"><table class="data-table" style="min-width:700px;"><thead><tr>' +
+    '<th style="width:25%">Buyer Name</th><th style="width:18%">Type</th><th style="width:15%">Est. Capacity</th><th style="width:25%">Strategic Rationale</th><th style="width:10%">Priority</th><th style="width:7%"></th>' +
+    '</tr></thead><tbody>';
+
+  state.buyerList.forEach(function(b, i) {
+    var typeOpts = '<option value="">--</option>';
+    BUYER_TYPES.forEach(function(bt) { typeOpts += '<option value="' + bt.key + '"' + (b.type === bt.key ? ' selected' : '') + '>' + bt.name + '</option>'; });
+    html += '<tr>' +
+      '<td><input value="' + esc(b.name) + '" data-idx="' + i + '" data-bfield="name" placeholder="Company name"></td>' +
+      '<td><select data-idx="' + i + '" data-bfield="type">' + typeOpts + '</select></td>' +
+      '<td><input value="' + esc(b.capacity) + '" data-idx="' + i + '" data-bfield="capacity" placeholder="$__M"></td>' +
+      '<td><input value="' + esc(b.rationale) + '" data-idx="' + i + '" data-bfield="rationale" placeholder="Why this buyer?"></td>' +
+      '<td><select data-idx="' + i + '" data-bfield="priority"><option value="">--</option><option value="A"' + (b.priority === 'A' ? ' selected' : '') + '>A</option><option value="B"' + (b.priority === 'B' ? ' selected' : '') + '>B</option><option value="C"' + (b.priority === 'C' ? ' selected' : '') + '>C</option></select></td>' +
+      '<td style="text-align:center;">' + (state.buyerList.length > 1 ? '<button class="btn btn-ghost btn-sm" onclick="PB.removeBuyer(' + i + ')" style="color:var(--color-danger);padding:4px 8px;" aria-label="Remove">&times;</button>' : '') + '</td></tr>';
+  });
+  html += '</tbody></table><button class="add-btn" onclick="PB.addBuyer()">+ Add Buyer</button></div>';
+  html += pageNavHTML(true, 'Continue', 'buyer-list');
+  return html;
+}
+
+// OUTREACH TRACKER
+function renderOutreachTracker() {
+  if (state.outreachList.length === 0) {
+    state.outreachList = state.buyerList.filter(function(b) { return b.name; }).map(function(b) {
+      return { name: b.name, ndaSent: false, ndaSigned: false, cimSent: false, ioiReceived: false, notes: '' };
+    });
+    if (state.outreachList.length === 0) state.outreachList = [emptyOutreach()];
+    saveState();
+  }
+  var total = state.outreachList.filter(function(o) { return o.name; }).length;
+  var ndaS = state.outreachList.filter(function(o) { return o.ndaSigned; }).length;
+  var cimS = state.outreachList.filter(function(o) { return o.cimSent; }).length;
+  var ioiR = state.outreachList.filter(function(o) { return o.ioiReceived; }).length;
+
+  var html = '<div class="page-header"><div class="t-label">Build</div><div class="t-display">Outreach Tracker</div><p class="t-body t-secondary">Track each buyer through the funnel: NDA, CIM review, and IOI. A strong CIM converts 30-50% of NDA signers into IOI submitters.</p></div>';
+
+  html += '<div class="summary-grid">' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + total + '</div><div class="summary-item-label">Contacted</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + ndaS + '</div><div class="summary-item-label">NDAs Signed</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + cimS + '</div><div class="summary-item-label">CIMs Sent</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + ioiR + '</div><div class="summary-item-label">IOIs Received</div></div>' +
+    '</div>';
+
+  if (total > 0) {
+    html += '<div class="card" style="margin-bottom:var(--space-md);"><div class="t-h3" style="margin-bottom:var(--space-md)">Funnel Conversion</div><div class="bar-chart">' +
+      '<div class="bar-row"><div class="bar-label">Contacted</div><div class="bar-track"><div class="bar-fill strategic" style="width:100%"><span class="bar-value">' + total + '</span></div></div></div>' +
+      '<div class="bar-row"><div class="bar-label">NDA Signed</div><div class="bar-track"><div class="bar-fill pe" style="width:' + (total ? (ndaS / total * 100) : 0) + '%"><span class="bar-value">' + ndaS + '</span></div></div></div>' +
+      '<div class="bar-row"><div class="bar-label">CIM Sent</div><div class="bar-track"><div class="bar-fill family" style="width:' + (total ? (cimS / total * 100) : 0) + '%"><span class="bar-value">' + cimS + '</span></div></div></div>' +
+      '<div class="bar-row"><div class="bar-label">IOI Received</div><div class="bar-track"><div class="bar-fill mbo" style="width:' + (total ? (ioiR / total * 100) : 0) + '%"><span class="bar-value">' + ioiR + '</span></div></div></div>' +
+      '</div></div>';
+  }
+
+  html += '<div class="card" style="overflow-x:auto;"><table class="data-table" style="min-width:600px;"><thead><tr>' +
+    '<th>Buyer Name</th><th style="text-align:center">NDA Sent</th><th style="text-align:center">NDA Signed</th><th style="text-align:center">CIM Sent</th><th style="text-align:center">IOI Recv</th><th>Notes</th><th></th>' +
+    '</tr></thead><tbody>';
+
+  state.outreachList.forEach(function(o, i) {
+    html += '<tr>' +
+      '<td><input value="' + esc(o.name) + '" data-oidx="' + i + '" data-ofield="name" placeholder="Buyer name"></td>' +
+      '<td style="text-align:center"><div class="check-box' + (o.ndaSent ? ' checked' : '') + '" data-oidx="' + i + '" data-ochk="ndaSent" role="checkbox" aria-checked="' + o.ndaSent + '" tabindex="0"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div></td>' +
+      '<td style="text-align:center"><div class="check-box' + (o.ndaSigned ? ' checked' : '') + '" data-oidx="' + i + '" data-ochk="ndaSigned" role="checkbox" aria-checked="' + o.ndaSigned + '" tabindex="0"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div></td>' +
+      '<td style="text-align:center"><div class="check-box' + (o.cimSent ? ' checked' : '') + '" data-oidx="' + i + '" data-ochk="cimSent" role="checkbox" aria-checked="' + o.cimSent + '" tabindex="0"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div></td>' +
+      '<td style="text-align:center"><div class="check-box' + (o.ioiReceived ? ' checked' : '') + '" data-oidx="' + i + '" data-ochk="ioiReceived" role="checkbox" aria-checked="' + o.ioiReceived + '" tabindex="0"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div></td>' +
+      '<td><input value="' + esc(o.notes) + '" data-oidx="' + i + '" data-ofield="notes" placeholder="Status..."></td>' +
+      '<td><button class="btn btn-ghost btn-sm" onclick="PB.removeOutreach(' + i + ')" style="color:var(--color-danger);padding:4px 8px;" aria-label="Remove">&times;</button></td></tr>';
+  });
+  html += '</tbody></table><button class="add-btn" onclick="PB.addOutreach()">+ Add Buyer</button></div>';
+  html += pageNavHTML(true, 'Continue', 'outreach-tracker');
+  return html;
+}
+
+// QUALIFICATION
+function renderQualification() {
+  var html = '<div class="page-header"><div class="t-label">Build</div><div class="t-display">Buyer Qualification Checklist</div><p class="t-body t-secondary">Before adding a buyer to your final list, verify they meet these criteria. Unqualified buyers waste time and create false confidence.</p></div>';
+
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Qualification Criteria</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Check each item for your top-priority buyers</p>';
+  QUALIFICATION_CRITERIA.forEach(function(c, i) {
+    var checked = state.qualificationChecks[i];
+    html += '<div class="check-item' + (checked ? ' checked' : '') + '" data-qidx="' + i + '" role="checkbox" aria-checked="' + !!checked + '" tabindex="0">' +
+      '<div class="check-box"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div>' +
+      '<div class="check-text">' + c + '</div></div>';
+  });
+  html += '</div>';
+
+  var sources = [
+    { name: 'PitchBook', desc: 'PE firm profiles, deal history, fund sizes' },
+    { name: 'Axial', desc: 'Lower middle market deal network' },
+    { name: 'LinkedIn', desc: 'Corp dev professionals, PE deal teams' },
+    { name: 'Trade Publications', desc: 'Industry acquisition announcements' },
+    { name: 'Your Broker', desc: 'Proprietary buyer relationships' },
+    { name: 'Competitors/Peers', desc: 'Companies with M&A appetite in your space' }
+  ];
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Research Sources</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Where to find and validate potential buyers</p>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">';
+  sources.forEach(function(s) {
+    html += '<div style="padding:var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-sm);">' +
+      '<div style="font-weight:600;font-size:14px;">' + s.name + '</div>' +
+      '<div style="font-size:12px;color:var(--color-text-secondary);">' + s.desc + '</div></div>';
+  });
+  html += '</div></div>';
+  html += pageNavHTML(true, 'Continue', 'qualification');
+  return html;
+}
+
+// MISTAKES
+function renderMistakes() {
+  var html = '<div class="page-header"><div class="t-label">Review</div><div class="t-display">Common Mistakes Audit</div><p class="t-body t-secondary">Audit your buyer universe against the most common mapping mistakes. Be honest -- catching these now saves months later.</p></div>';
+
+  COMMON_MISTAKES.forEach(function(m) {
+    var checked = state.mistakeAudit[m.id];
+    html += '<div class="card" style="border-left:3px solid ' + (checked ? 'var(--color-success)' : 'var(--color-warning)') + ';">' +
+      '<div style="display:flex;align-items:flex-start;gap:var(--space-md);">' +
+      '<div class="check-box' + (checked ? ' checked' : '') + '" data-midx="' + m.id + '" role="checkbox" aria-checked="' + !!checked + '" tabindex="0" style="margin-top:2px;"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div>' +
+      '<div style="flex:1"><div class="t-h3">' + m.title + '</div>' +
+      '<p class="t-small t-secondary" style="margin:var(--space-sm) 0">' + m.desc + '</p>' +
+      '<div style="font-size:13px;font-weight:600;color:' + (checked ? 'var(--color-success)' : 'var(--color-warning)') + ';">' + (checked ? 'Addressed' : 'Review this') + '</div></div></div></div>';
+  });
+
+  html += pageNavHTML(true, 'View Dashboard', 'mistakes');
+  return html;
+}
+
+// DASHBOARD
+function renderDashboard() {
+  var score = calcScore();
+  var sc = getScoreColor(score);
+  var r = 60, c = 2 * Math.PI * r;
+  var offset = c - (score / 100) * c;
+
+  var totalBuyers = state.buyerList.filter(function(b) { return b.name; }).length;
+  var typesUsed = {};
+  state.buyerList.forEach(function(b) { if (b.type && b.name) typesUsed[b.type] = true; });
+  var mistakesCleared = 0;
+  for (var mk in state.mistakeAudit) { if (state.mistakeAudit[mk]) mistakesCleared++; }
+
+  var html = '<div class="page-header"><div class="t-label">Results</div><div class="t-display">Buyer Universe Dashboard</div></div>';
+
+  // Gauge
+  html += '<div class="gauge-wrap"><div class="gauge-ring"><svg viewBox="0 0 160 160"><circle class="gauge-bg" cx="80" cy="80" r="' + r + '"/><circle class="gauge-fill" cx="80" cy="80" r="' + r + '" stroke="' + sc + '" stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + offset.toFixed(1) + '"/></svg><div class="gauge-center"><div class="gauge-center-value" style="color:' + sc + '">' + score + '</div><div class="gauge-center-label">of 100</div></div></div></div>';
+
+  // KPIs
+  html += '<div class="summary-grid">' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + totalBuyers + '</div><div class="summary-item-label">Named Buyers</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + Object.keys(typesUsed).length + '</div><div class="summary-item-label">Buyer Types</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + mistakesCleared + '/5</div><div class="summary-item-label">Mistakes Cleared</div></div>' +
+    '<div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + Math.round((Object.keys(state.completed).length / (PAGES.length - 2)) * 100) + '%</div><div class="summary-item-label">Playbook Complete</div></div>' +
+    '</div>';
+
+  // Business profile
+  if (state.businessProfile.name) {
+    html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Business Profile: ' + esc(state.businessProfile.name) + '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-sm);font-size:14px;">' +
+      '<div><span style="color:var(--color-text-tertiary)">Industry:</span> ' + esc(state.businessProfile.industry || '--') + '</div>' +
+      '<div><span style="color:var(--color-text-tertiary)">Revenue:</span> ' + esc(state.businessProfile.revenue || '--') + '</div>' +
+      '<div><span style="color:var(--color-text-tertiary)">EBITDA:</span> ' + esc(state.businessProfile.ebitda || '--') + '</div>' +
+      '</div></div>';
+  }
+
+  // Buyer distribution bar chart
+  if (totalBuyers > 0) {
+    html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Buyer Distribution</div><div class="bar-chart">';
+    BUYER_TYPES.forEach(function(bt) {
+      var count = state.buyerList.filter(function(b) { return b.type === bt.key && b.name; }).length;
+      if (count > 0) {
+        var pct = totalBuyers > 0 ? (count / totalBuyers) * 100 : 0;
+        html += '<div class="bar-row"><div class="bar-label">' + bt.name.split('(')[0].trim() + '</div>' +
+          '<div class="bar-track"><div class="bar-fill ' + bt.key.split('_')[0] + '" style="width:' + Math.max(pct, 8) + '%"><span class="bar-value">' + count + '</span></div></div></div>';
+      }
+    });
+    html += '</div></div>';
+  }
+
+  // Recommendations
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Recommendations</div>';
+  if (totalBuyers < 10) html += '<div class="callout callout-warning" style="margin-bottom:var(--space-sm)">Your buyer list has ' + totalBuyers + ' entries. Aim for 20-50 named buyers to create meaningful competitive tension.</div>';
+  if (Object.keys(typesUsed).length < 3) html += '<div class="callout callout-warning" style="margin-bottom:var(--space-sm)">You have only ' + Object.keys(typesUsed).length + ' buyer type(s) represented. Diversify across at least 3 types for optimal leverage.</div>';
+  if (mistakesCleared < 3) html += '<div class="callout callout-warning" style="margin-bottom:var(--space-sm)">Only ' + mistakesCleared + ' of 5 common mistakes addressed. Review your mistakes audit before going to market.</div>';
+  if (score >= 70) html += '<div class="callout callout-info" style="background:var(--color-success-light);border-color:var(--color-success);color:var(--color-success)"><strong>Strong buyer universe.</strong> You have built a well-diversified, qualified buyer list. Share this with your broker and begin refining your outreach strategy.</div>';
+  html += '</div>';
+
+  // Next steps
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Next Steps</div>' +
+    '<ul style="margin:0 0 0 var(--space-lg);color:var(--color-text-secondary);font-size:14px;line-height:2;">' +
+    '<li>Share this buyer universe with your broker/advisor for refinement</li>' +
+    '<li>Prepare your CIM (see Playbook #34) before outreach begins</li>' +
+    '<li>Develop the synergy narrative for your top 5 targets</li>' +
+    '<li>Identify any warm introductions through your network</li>' +
+    '<li>Set a timeline: buyer outreach typically begins 4-6 weeks before CIM distribution</li>' +
+    '</ul></div>';
+
+  html += '<div class="callout callout-accent"><strong>"In the middle of every difficulty lies opportunity."</strong> -- Albert Einstein<br><br>The best deals happen when the right buyer meets the right business at the right time. Your job is to engineer that meeting.</div>';
+
+  // Actions
+  html += '<div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-top:var(--space-lg)">' +
+    '<button class="btn btn-primary" onclick="PB.exportResults()">Export Summary</button>' +
+    '<button class="btn btn-secondary" onclick="window.print()">Print</button>' +
+    '<button class="btn btn-ghost" onclick="PB.resetAll()" style="color:var(--color-danger)">Reset All Data</button></div>';
+
+  html += '<div class="page-nav"><button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button><div></div></div>';
+  return html;
+}
+
+function exportResults() {
+  var score = calcScore();
+  var totalBuyers = state.buyerList.filter(function(b) { return b.name; }).length;
+  var typesUsed = {};
+  state.buyerList.forEach(function(b) { if (b.type && b.name) typesUsed[b.type] = true; });
+  var mistakesCleared = 0;
+  for (var mk in state.mistakeAudit) { if (state.mistakeAudit[mk]) mistakesCleared++; }
+
+  var text = 'PLAYBOOK #33: BUYER UNIVERSE MAPPING\n';
+  text += 'Generated: ' + new Date().toLocaleDateString() + '\n';
+  text += '='.repeat(50) + '\n\n';
+  text += 'READINESS SCORE: ' + score + '/100\n\n';
+
+  if (state.businessProfile.name) {
+    text += 'BUSINESS PROFILE\n';
+    text += '  Company: ' + (state.businessProfile.name || '--') + '\n';
+    text += '  Industry: ' + (state.businessProfile.industry || '--') + '\n';
+    text += '  Revenue: ' + (state.businessProfile.revenue || '--') + '\n';
+    text += '  EBITDA: ' + (state.businessProfile.ebitda || '--') + '\n';
+    text += '  Employees: ' + (state.businessProfile.employees || '--') + '\n';
+    text += '  Location: ' + (state.businessProfile.location || '--') + '\n\n';
+  }
+
+  text += 'BUYER UNIVERSE: ' + totalBuyers + ' named buyers across ' + Object.keys(typesUsed).length + ' types\n';
+  state.buyerList.forEach(function(b) {
+    if (b.name) {
+      var bt = null;
+      BUYER_TYPES.forEach(function(t) { if (t.key === b.type) bt = t; });
+      text += '  - ' + b.name + ' (' + (bt ? bt.name : 'Untyped') + ') Priority: ' + (b.priority || '--') + '\n';
+    }
+  });
+  text += '\nMISTAKES CLEARED: ' + mistakesCleared + '/5\n';
+
+  var blob = new Blob([text], { type: 'text/plain' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'playbook-33-buyer-universe.txt'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('Summary exported');
+}
+
+function resetAll() {
+  if (confirm('This will erase all your data in this playbook. Are you sure?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    state = defaultState();
+    saveState();
+    goToPage('welcome');
+    showToast('All data reset');
+  }
+}
+
+// Public API
+window.PB = {
+  prevPage: prevPage,
+  completePage: completePage,
+  exportResults: exportResults,
+  resetAll: resetAll,
+  addBuyer: function() { state.buyerList.push(emptyBuyer()); saveState(); renderPage(); showToast('Row added'); },
+  removeBuyer: function(i) { state.buyerList.splice(i, 1); saveState(); renderPage(); },
+  addOutreach: function() { state.outreachList.push(emptyOutreach()); saveState(); renderPage(); showToast('Row added'); },
+  removeOutreach: function(i) { state.outreachList.splice(i, 1); saveState(); renderPage(); }
+};
+
+// Init
+renderNav();
+renderPage();
+updateProgress();
+updateScore();
+
+})();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

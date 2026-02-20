@@ -3,7 +3,7 @@ import { headers } from 'next/headers'
 import { parseUserAgent } from '@/lib/utils/parse-user-agent'
 import type { Prisma } from '@prisma/client'
 
-type EventCategory = 'auth' | 'navigation' | 'onboarding' | 'assessment' | 'task' | 'valuation' | 'subscription'
+type EventCategory = 'auth' | 'navigation' | 'onboarding' | 'assessment' | 'task' | 'valuation' | 'subscription' | 'playbook'
 
 interface TrackEventOptions {
   userId: string

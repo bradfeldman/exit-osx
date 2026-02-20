@@ -24,6 +24,9 @@ export type EmailType =
   | 'TRIAL_EXPIRED'
   | 'TRIAL_WINBACK_14'
   | 'TRIAL_WINBACK_30'
+  | 'ASSESS_DRIP_DAY_0'
+  | 'ASSESS_DRIP_DAY_2'
+  | 'ASSESS_DRIP_DAY_5'
 
 export type EmailFrequency = 'REALTIME' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'NEVER'
 

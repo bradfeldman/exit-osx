@@ -1017,6 +1017,15 @@ export async function GET(
       // Value Home: Value gap delta
       valueGapDelta,
       previousValueGap: previousSnapshot ? Number(previousSnapshot.valueGap) : null,
+      // Value Home: Top signals for SignalSummaryCard
+      topSignals: openSignalsList.slice(0, 4).map(s => ({
+        id: s.id,
+        title: s.title,
+        severity: s.severity,
+        category: s.category,
+        createdAt: s.createdAt.toISOString(),
+        estimatedValueImpact: s.estimatedValueImpact ? Number(s.estimatedValueImpact) : null,
+      })),
       // Value Home: Progress Context
       // PROD-021: valueAtRiskCurrent is now confidence-weighted
       progressContext: {

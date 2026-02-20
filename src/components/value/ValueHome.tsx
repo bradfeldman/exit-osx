@@ -18,11 +18,11 @@ import { ValueLedgerSection } from '@/components/value-ledger/ValueLedgerSection
 import { DisclosureTrigger } from '@/components/disclosures/DisclosureTrigger'
 import { DriftReportBanner } from '@/components/drift-report/DriftReportBanner'
 import { WeeklyCheckInTrigger } from '@/components/weekly-check-in/WeeklyCheckInTrigger'
-import { BenchmarkComparison } from './BenchmarkComparison'
-import { BRIRangeGauge } from '@/components/diagnosis/BRIRangeGauge'
 import { CoreScoreCard } from './CoreScoreCard'
 import { WhatIfScenarios } from './WhatIfScenarios'
 import { ProceedsWaterfall } from './ProceedsWaterfall'
+import { SignalSummaryCard } from './SignalSummaryCard'
+import { ActivePlaybooksRow } from './ActivePlaybooksRow'
 import { UpgradeModal } from '@/components/subscription/UpgradeModal'
 import { PlatformTour } from './PlatformTour'
 import { Compass } from 'lucide-react'
@@ -90,6 +90,14 @@ interface DashboardData {
     dollarImpact: number
     weight: number
     buyerExplanation: string
+  }>
+  topSignals: Array<{
+    id: string
+    title: string
+    severity: string
+    category: string | null
+    createdAt: string
+    estimatedValueImpact: number | null
   }>
   valueGapDelta: number | null
   previousValueGap: number | null
@@ -245,7 +253,7 @@ export function ValueHome() {
           </AnimatedItem>
         )}
 
-        {/* Hero Metrics Bar */}
+        {/* Hero Metrics Bar — 2-col: Valuation + BRI */}
         <AnimatedItem>
           <HeroMetricsBar
             currentValue={tier1?.currentValue ?? 0}
@@ -259,36 +267,42 @@ export function ValueHome() {
             dcfValuation={data.dcfValuation}
             drsScore={tier1?.drsScore ?? null}
             evRange={tier1?.evRange ?? null}
+            bridgeCategories={data.bridgeCategories}
+            valueTrend={data.tier5.valueTrend}
+            finalMultiple={tier1?.finalMultiple}
+            adjustedEbitda={data.tier2?.adjustedEbitda}
           />
         </AnimatedItem>
 
-        {/* BRI Range Gauge + Benchmark Comparison */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
-          <AnimatedItem>
-            <BRIRangeGauge
-              briScore={tier1?.briScore ?? null}
-              isEstimated={tier1?.isEstimated ?? true}
-            />
-          </AnimatedItem>
-          <AnimatedItem>
-            <BenchmarkComparison
-              industryName={tier1?.industryName ?? 'Your Industry'}
-              industryMultipleLow={tier1?.multipleRange?.low ?? 3}
-              industryMultipleHigh={tier1?.multipleRange?.high ?? 6}
-              currentMultiple={tier1?.finalMultiple ?? 0}
-              hasAssessment={data.hasAssessment}
-              isFreeUser={isFreeUser}
-              onUpgrade={() => handleUpgrade('company-assessment', 'Industry Benchmarks')}
-              adjustedEbitda={data.tier2?.adjustedEbitda}
-              isEbitdaFromFinancials={data.tier2?.isEbitdaFromFinancials}
-              ebitdaSource={data.tier2?.ebitdaSource}
-              multipleSource={tier1?.multipleSource}
-              multipleAsOf={tier1?.multipleAsOf}
-            />
-          </AnimatedItem>
-        </div>
+        {/* Valuation Bridge — "Where to Improve" */}
+        <AnimatedItem>
+          <ValuationBridge
+            bridgeCategories={data.bridgeCategories}
+            hasAssessment={data.hasAssessment}
+            onCategoryClick={(category) => {
+              router.push(`/dashboard/diagnosis?expand=${category}`)
+            }}
+            onAssessmentStart={() => {
+              router.push('/dashboard/diagnosis?expand=FINANCIAL')
+            }}
+          />
+        </AnimatedItem>
 
-        {/* Core Score Card — shows what drives your base multiple */}
+        {/* Next Move Card — "Your Next Move" */}
+        <AnimatedItem>
+          <NextMoveCard
+            task={data.nextMove.task}
+            comingUp={data.nextMove.comingUp}
+            isFreeUser={isFreeUser}
+            onUpgrade={() => handleUpgrade('action-plan', 'Action Plan')}
+            planTier={planTier}
+          />
+        </AnimatedItem>
+
+        {/* Active Playbooks Row — empty until C5 ships */}
+        <ActivePlaybooksRow playbooks={[]} />
+
+        {/* Core Score Card — structural factors */}
         {data.coreFactors?.coreScore != null && tier1 && (
           <AnimatedItem>
             <CoreScoreCard
@@ -299,19 +313,9 @@ export function ValueHome() {
           </AnimatedItem>
         )}
 
-        {/* Valuation Bridge */}
+        {/* Signal Summary Card — top recent signals */}
         <AnimatedItem>
-          <ValuationBridge
-            bridgeCategories={data.bridgeCategories}
-            hasAssessment={data.hasAssessment}
-            onCategoryClick={(category) => {
-              // Navigate to diagnosis page and expand that category's inline assessment
-              router.push(`/dashboard/diagnosis?expand=${category}`)
-            }}
-            onAssessmentStart={() => {
-              router.push('/dashboard/diagnosis?expand=FINANCIAL')
-            }}
-          />
+          <SignalSummaryCard signals={data.topSignals ?? []} />
         </AnimatedItem>
 
         {/* What-If Scenarios — hidden on mobile (complex interactive tool) */}
@@ -345,16 +349,6 @@ export function ValueHome() {
           </div>
         </AnimatedItem>
 
-        {/* Next Move Card */}
-        <AnimatedItem>
-          <NextMoveCard
-            task={data.nextMove.task}
-            comingUp={data.nextMove.comingUp}
-            isFreeUser={isFreeUser}
-            onUpgrade={() => handleUpgrade('action-plan', 'Action Plan')}
-          />
-        </AnimatedItem>
-
         {/* Progress Context: Recovered / At Risk / Gap */}
         <AnimatedItem>
           <ProgressContext
@@ -368,11 +362,7 @@ export function ValueHome() {
           />
         </AnimatedItem>
 
-        {/* Value Ledger Summary
-            NOTE: Not in original Mode 1 spec (which defined 4 sections). Added after
-            signal architecture (PROD-020) and value ledger were implemented. Shows recent
-            value changes (task completions, drift events) to provide momentum visibility.
-            Self-hides when no entries exist. See ADR-001 in docs/ for full rationale. */}
+        {/* Value Ledger Summary */}
         <AnimatedItem>
           <ValueLedgerSection />
         </AnimatedItem>
@@ -382,7 +372,7 @@ export function ValueHome() {
           <DriftReportBanner />
         </AnimatedItem>
 
-        {/* Value Timeline */}
+        {/* Value Timeline — now blue */}
         <AnimatedItem>
           <ValueTimeline
             valueTrend={data.tier5.valueTrend}

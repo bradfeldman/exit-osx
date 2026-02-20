@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getBRICategoryLabel, getBRICategoryColor } from '@/lib/constants/bri-categories'
 import { ComingUpList } from './ComingUpList'
+import { PlaybookSuggestionInline } from '@/components/playbook/PlaybookSuggestionInline'
+import { getPlaybookForContext } from '@/lib/playbook/playbook-surface-mapping'
+import type { PlanTier } from '@/lib/pricing'
 
 interface NextMoveTask {
   id: string
@@ -34,6 +37,7 @@ interface NextMoveCardProps {
   comingUp: ComingUpTask[]
   isFreeUser?: boolean
   onUpgrade?: () => void
+  planTier?: PlanTier
 }
 
 function formatTime(hours: number | null): string {
@@ -42,10 +46,11 @@ function formatTime(hours: number | null): string {
   return `${hours} hours`
 }
 
-export function NextMoveCard({ task, comingUp, isFreeUser: _isFreeUser = false, onUpgrade: _onUpgrade }: NextMoveCardProps) {
+export function NextMoveCard({ task, comingUp, isFreeUser: _isFreeUser = false, onUpgrade: _onUpgrade, planTier = 'foundation' }: NextMoveCardProps) {
   const router = useRouter()
   const [showRationale, setShowRationale] = useState(false)
   const isInProgress = task?.status === 'IN_PROGRESS'
+  const playbookMatch = task ? getPlaybookForContext({ briCategory: task.briCategory }) : null
 
   const handleStart = async () => {
     if (task) {
@@ -116,6 +121,15 @@ export function NextMoveCard({ task, comingUp, isFreeUser: _isFreeUser = false, 
         <p className="mt-4 text-sm text-muted-foreground italic leading-relaxed before:content-['\201C'] after:content-['\201D'] line-clamp-2">
           {task.buyerConsequence}
         </p>
+      )}
+
+      {/* Related Playbook */}
+      {playbookMatch && (
+        <PlaybookSuggestionInline
+          playbook={playbookMatch.playbook}
+          reason={playbookMatch.reason}
+          planTier={planTier}
+        />
       )}
 
       {/* Button Row */}

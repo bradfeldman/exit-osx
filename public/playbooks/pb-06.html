@@ -1,0 +1,1869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Statement Cleanup & Audit Prep | Exit Planning Playbook #6</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #E4EEF5;
+  --color-primary-hover: #153D58;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a { color: var(--color-primary); text-decoration: none; }
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.t-display { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; color: var(--color-text); }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.t-tertiary { color: var(--color-text-tertiary); }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 260px; min-width: 260px; background: var(--color-text);
+  color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow);
+  overflow-y: auto;
+}
+.sidebar.collapsed { transform: translateX(-260px); }
+.main-content {
+  flex: 1; margin-left: 260px; min-height: 100vh;
+  transition: margin-left var(--transition-slow);
+}
+.sidebar.collapsed + .main-content { margin-left: 0; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+/* ============================================================
+   SIDEBAR COMPONENTS
+   ============================================================ */
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.6);
+  font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--color-text-tertiary); }
+.nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+/* ============================================================
+   CARDS & SURFACES
+   ============================================================ */
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-lg);
+  transition: box-shadow var(--transition-normal);
+}
+.card:hover { box-shadow: var(--shadow-sm); }
+
+.callout {
+  padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md);
+  border-left: 3px solid; font-size: 14px; line-height: 1.6;
+}
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); border-color: var(--color-text-tertiary); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+/* ============================================================
+   FORM ELEMENTS
+   ============================================================ */
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); color: var(--color-text); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.form-input::placeholder { color: var(--color-text-tertiary); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+.input-mini {
+  padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+  font-size: 14px; background: var(--color-surface); transition: all var(--transition-fast); color: var(--color-text);
+}
+.input-mini:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.input-currency { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   SCORE SELECTOR
+   ============================================================ */
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center; min-width: 0;
+}
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+
+@media (max-width: 600px) {
+  .score-selector { gap: 4px; }
+  .score-option { padding: 10px 4px; }
+  .score-number { font-size: 18px; }
+  .score-label-text { font-size: 9px; }
+}
+
+/* ============================================================
+   BADGES
+   ============================================================ */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+  border-radius: 999px; font-size: 12px; font-weight: 500;
+}
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+
+/* ============================================================
+   PROGRESS RING
+   ============================================================ */
+.progress-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.progress-ring-text { position: absolute; text-align: center; }
+.progress-ring-value { font-family: var(--font-display); font-weight: 700; line-height: 1; }
+.progress-ring-label { font-size: 10px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ============================================================
+   GAUGE
+   ============================================================ */
+.gauge-wrap { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); }
+.gauge-bar { width: 100%; height: 12px; background: var(--color-surface-alt); border-radius: 6px; overflow: hidden; position: relative; }
+.gauge-fill { height: 100%; border-radius: 6px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+.gauge-labels { display: flex; justify-content: space-between; width: 100%; }
+.gauge-labels span { font-size: 11px; color: var(--color-text-tertiary); }
+
+/* ============================================================
+   HORIZONTAL BAR CHART
+   ============================================================ */
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 24px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; min-width: 0; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+
+@media (max-width: 600px) {
+  .bar-label { width: 90px; font-size: 11px; }
+}
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.data-table th {
+  text-align: left; padding: var(--space-sm) var(--space-md); font-size: 11px;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border);
+}
+.data-table td { padding: var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: top; font-size: 14px; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table .input-mini { width: 100%; }
+
+/* ============================================================
+   CHECKLIST
+   ============================================================ */
+.checklist { display: flex; flex-direction: column; gap: 2px; }
+.check-item {
+  display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md);
+  border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast);
+}
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box {
+  width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition-fast); margin-top: 1px;
+}
+.check-item.checked .check-box { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+
+/* ============================================================
+   TIMELINE
+   ============================================================ */
+.timeline { position: relative; padding-left: 28px; }
+.timeline::before {
+  content: ''; position: absolute; left: 9px; top: 4px; bottom: 4px;
+  width: 2px; background: var(--color-border);
+}
+.timeline-item { position: relative; padding-bottom: var(--space-xl); }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-dot {
+  position: absolute; left: -28px; top: 2px; width: 20px; height: 20px;
+  border-radius: 50%; background: var(--color-surface); border: 2px solid var(--color-border);
+  display: flex; align-items: center; justify-content: center;
+}
+.timeline-item.tl-active .timeline-dot { border-color: var(--color-primary); background: var(--color-primary-light); }
+.timeline-item.tl-done .timeline-dot { border-color: var(--color-success); background: var(--color-success); }
+.timeline-item.tl-done .timeline-dot::after { content: ''; width: 6px; height: 6px; background: #fff; border-radius: 50%; }
+.timeline-period { font-size: 12px; font-weight: 600; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.timeline-title { font-weight: 600; margin-bottom: 4px; }
+.timeline-desc { font-size: 14px; color: var(--color-text-secondary); }
+
+/* ============================================================
+   COMPARISON TABLE
+   ============================================================ */
+.compare-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; }
+.compare-table th { padding: 10px 14px; text-align: left; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); }
+.compare-table td { padding: 10px 14px; border-bottom: 1px solid var(--color-border-light); }
+.compare-table tr:last-child td { border-bottom: none; }
+.compare-table .col-label { font-weight: 500; color: var(--color-text); }
+.compare-table .col-tax { color: var(--color-danger); }
+.compare-table .col-gaap { color: var(--color-success); }
+
+/* ============================================================
+   SECTION PAGES
+   ============================================================ */
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+
+.section-divider { height: 1px; background: var(--color-border); margin: var(--space-2xl) 0; }
+
+/* ============================================================
+   WELCOME PAGE
+   ============================================================ */
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon {
+  width: 72px; height: 72px; background: var(--color-primary-light);
+  border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center;
+  margin: 0 auto var(--space-lg); font-size: 32px;
+}
+.welcome-hero .t-display { margin-bottom: var(--space-md); }
+.welcome-hero .t-body { margin-bottom: var(--space-2xl); }
+
+.welcome-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md);
+  margin: var(--space-2xl) 0; text-align: center;
+}
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+
+.welcome-phases { display: flex; flex-direction: column; gap: var(--space-md); margin: var(--space-2xl) 0; text-align: left; }
+.welcome-phase {
+  display: flex; gap: var(--space-lg); padding: var(--space-lg);
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+}
+.welcome-phase-num {
+  width: 36px; height: 36px; background: var(--color-primary-light); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-weight: 700;
+  color: var(--color-primary); flex-shrink: 0; font-size: 15px;
+}
+.welcome-phase-title { font-weight: 600; margin-bottom: 2px; }
+.welcome-phase-desc { font-size: 14px; color: var(--color-text-secondary); }
+
+@media (max-width: 600px) {
+  .welcome-stats { grid-template-columns: 1fr; }
+  .welcome-hero { padding: var(--space-2xl) var(--space-md); }
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+.dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+@media (max-width: 700px) { .dashboard-grid { grid-template-columns: 1fr; } }
+.metric-card { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+.metric-card-label { font-size: 12px; font-weight: 500; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: var(--space-sm); }
+.metric-card-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1; }
+.metric-card-sub { font-size: 13px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+/* ============================================================
+   HEATMAP
+   ============================================================ */
+.heatmap { display: grid; gap: 2px; }
+.heatmap-cell {
+  aspect-ratio: 1; border-radius: var(--radius-sm); display: flex; align-items: center;
+  justify-content: center; font-size: 13px; font-weight: 600; color: #fff;
+  transition: transform var(--transition-fast); min-height: 44px;
+}
+.heatmap-cell:hover { transform: scale(1.06); z-index: 1; }
+.heatmap-cell.hs0 { background: var(--color-border); color: var(--color-text-tertiary); }
+.heatmap-cell.hs1 { background: var(--color-score-1); }
+.heatmap-cell.hs2 { background: var(--color-score-2); }
+.heatmap-cell.hs3 { background: var(--color-score-3); }
+.heatmap-cell.hs4 { background: var(--color-score-4); }
+.heatmap-cell.hs5 { background: var(--color-score-5); }
+.heatmap-row-label { font-size: 12px; color: var(--color-text-secondary); display: flex; align-items: center; padding-right: var(--space-sm); }
+.heatmap-col-label { font-size: 10px; color: var(--color-text-tertiary); text-align: center; text-transform: uppercase; letter-spacing: 0.03em; padding-bottom: 4px; }
+
+/* ============================================================
+   NAVIGATION FOOTER
+   ============================================================ */
+.page-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: var(--space-2xl); margin-top: var(--space-2xl);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast-container { position: fixed; bottom: var(--space-lg); right: var(--space-lg); z-index: 1000; display: flex; flex-direction: column; gap: var(--space-sm); }
+.toast {
+  padding: var(--space-md) var(--space-lg); background: var(--color-text);
+  color: #fff; border-radius: var(--radius-md); font-size: 14px; box-shadow: var(--shadow-lg);
+  animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+  display: flex; align-items: center; gap: var(--space-sm); max-width: 360px;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateY(16px); } }
+@keyframes toastOut { to { opacity: 0; transform: translateY(-8px); } }
+
+/* ============================================================
+   UTILITY
+   ============================================================ */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-sm { gap: var(--space-sm); }
+.gap-md { gap: var(--space-md); }
+.gap-lg { gap: var(--space-lg); }
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+.mb-xl { margin-bottom: var(--space-xl); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.mt-xl { margin-top: var(--space-xl); }
+.w-full { width: 100%; }
+.text-center { text-align: center; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+.hidden { display: none !important; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+@media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+
+/* Print styles */
+@media print {
+  .sidebar, .mobile-header, .sidebar-overlay, .toast-container, .btn-group, .skip-link { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; }
+  .content-area { max-width: 100%; padding: 0; }
+  .btn { display: none; }
+}
+
+/* Accessibility */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; border-radius: 0 0 var(--radius-sm) 0; }
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<!-- SIDEBAR OVERLAY -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+
+<!-- APP SHELL -->
+<div class="app">
+<nav class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-label">Exit Planning Playbook #6</div>
+    <div class="sidebar-brand-title">Financial Statement<br>Cleanup & Audit Prep</div>
+  </div>
+
+  <div class="sidebar-progress">
+    <div class="sidebar-progress-label">Overall Progress</div>
+    <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="globalProgressBar" style="width: 0%"></div></div>
+    <div class="sidebar-progress-text" id="globalProgressText">0% complete</div>
+  </div>
+
+  <div class="sidebar-nav" id="sidebarNav">
+    <div class="nav-section-label">Journey</div>
+    <div class="nav-item active" data-page="welcome" onclick="goToPage('welcome')" role="button" tabindex="0" aria-current="page">
+      <span class="nav-icon">&#9673;</span> Welcome
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="assess" onclick="goToPage('assess')" role="button" tabindex="0">
+      <span class="nav-icon">&#9881;</span> Current State
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="coa" onclick="goToPage('coa')" role="button" tabindex="0">
+      <span class="nav-icon">&#9776;</span> Chart of Accounts
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="revenue" onclick="goToPage('revenue')" role="button" tabindex="0">
+      <span class="nav-icon">&#9733;</span> Revenue & Expenses
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="balance" onclick="goToPage('balance')" role="button" tabindex="0">
+      <span class="nav-icon">&#9878;</span> Balance Sheet
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="audit" onclick="goToPage('audit')" role="button" tabindex="0">
+      <span class="nav-icon">&#9670;</span> Audit Path
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="action" onclick="goToPage('action')" role="button" tabindex="0">
+      <span class="nav-icon">&#10003;</span> Action Plan
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+
+    <div class="nav-section-label" style="margin-top:var(--space-md)">Insights</div>
+    <div class="nav-item locked" data-page="dashboard" onclick="goToPage('dashboard')" role="button" tabindex="0">
+      <span class="nav-icon">&#9632;</span> Scorecard
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+  </div>
+
+  <div class="sidebar-score" id="sidebarScore" style="display:none">
+    <div class="sidebar-score-label">Readiness Score</div>
+    <div class="sidebar-score-value"><span id="sidebarScoreValue">--</span><span class="sidebar-score-max"> / 5.0</span></div>
+    <div class="sidebar-score-desc" id="sidebarScoreDesc"></div>
+  </div>
+  <div id="sidebarSaved" style="margin-top:var(--space-md);font-size:11px;color:rgba(255,255,255,0.3);display:none">
+    Auto-saved <span id="savedTime"></span>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main-content" id="main-content">
+  <div class="mobile-header">
+    <button class="hamburger" onclick="toggleSidebar(true)" aria-label="Open navigation"><span></span></button>
+    <div style="font-weight:600;font-size:15px;">Financial Cleanup</div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- ====== WELCOME ====== -->
+    <div class="page active" id="page-welcome">
+      <div class="welcome-hero">
+        <div class="welcome-icon">&#9783;</div>
+        <div class="t-display">Move from Tax-Return Accounting to Buyer-Grade Financials</div>
+        <p class="t-body t-secondary">
+          Clean books signal credibility and reduce diligence friction. This guided assessment helps you identify exactly where your financials fall short of buyer expectations, and builds a concrete plan to close the gaps.
+        </p>
+
+        <div class="welcome-stats">
+          <div class="welcome-stat">
+            <div class="welcome-stat-value">3-6</div>
+            <div class="welcome-stat-label">Months to reach buyer-ready financials</div>
+          </div>
+          <div class="welcome-stat">
+            <div class="welcome-stat-value">$15K-$50K</div>
+            <div class="welcome-stat-label">Typical audit cost for $10M+ businesses</div>
+          </div>
+          <div class="welcome-stat">
+            <div class="welcome-stat-value">4-8x</div>
+            <div class="welcome-stat-label">Return on every defensible EBITDA dollar</div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent mb-xl" style="text-align:left">
+          <strong>The core principle:</strong> Every ambiguity in your financials becomes a question in diligence. Every question becomes a delay. Every delay creates risk of re-trading or deal fatigue. Clean financials accelerate deals and protect value.
+        </div>
+
+        <div class="welcome-phases">
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">1</div>
+            <div><div class="welcome-phase-title">Current State Assessment</div><div class="welcome-phase-desc">Evaluate your financial presentation quality, CPA relationship, and accounting method</div></div>
+          </div>
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">2</div>
+            <div><div class="welcome-phase-title">Chart of Accounts</div><div class="welcome-phase-desc">Audit your chart of accounts for common problems and industry alignment</div></div>
+          </div>
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">3</div>
+            <div><div class="welcome-phase-title">Revenue & Expenses</div><div class="welcome-phase-desc">Assess revenue recognition and expense classification practices</div></div>
+          </div>
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">4</div>
+            <div><div class="welcome-phase-title">Balance Sheet Cleanup</div><div class="welcome-phase-desc">Review AR, inventory, fixed assets, liabilities, and equity accounts</div></div>
+          </div>
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">5</div>
+            <div><div class="welcome-phase-title">Audit Path & Action Plan</div><div class="welcome-phase-desc">Choose your assurance level and build a 6-month implementation roadmap</div></div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-lg" onclick="startJourney()" style="margin-top:var(--space-lg)">
+          Begin Your Assessment &rarr;
+        </button>
+        <p class="t-caption t-tertiary" style="margin-top:var(--space-md)">Takes about 25 minutes. Your progress is saved automatically.</p>
+      </div>
+    </div>
+
+    <!-- ====== CURRENT STATE ASSESSMENT ====== -->
+    <div class="page" id="page-assess">
+      <div class="page-header">
+        <div class="t-label">Phase 1 of 6</div>
+        <div class="t-display">Current State Assessment</div>
+        <p class="t-body t-secondary">Let's understand where your financials stand today. Honest answers here make every subsequent step more useful.</p>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Financial Presentation Quality</div>
+        <p class="t-small t-secondary mb-lg">How would a buyer describe your financial reporting today?</p>
+        <div class="score-selector" role="radiogroup" aria-label="Financial quality level" id="qualitySelector"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Current Accounting Setup</div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Accounting Method</label>
+            <select class="form-input" id="acctMethod" onchange="saveData()">
+              <option value="">Select...</option>
+              <option value="cash">Cash basis</option>
+              <option value="modified">Modified cash basis</option>
+              <option value="accrual">Full accrual</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Primary Software</label>
+            <select class="form-input" id="acctSoftware" onchange="saveData()">
+              <option value="">Select...</option>
+              <option value="quickbooks">QuickBooks</option>
+              <option value="xero">Xero</option>
+              <option value="sage">Sage</option>
+              <option value="netsuite">NetSuite</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Annual Revenue Range</label>
+            <select class="form-input" id="revenueRange" onchange="saveData()">
+              <option value="">Select...</option>
+              <option value="under3">Under $3M</option>
+              <option value="3to10">$3M - $10M</option>
+              <option value="10to25">$10M - $25M</option>
+              <option value="over25">Over $25M</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Monthly Close Timeline</label>
+            <select class="form-input" id="closeTimeline" onchange="saveData()">
+              <option value="">Select...</option>
+              <option value="15">Within 15 days</option>
+              <option value="30">Within 30 days</option>
+              <option value="45">Within 45 days</option>
+              <option value="none">No formal close process</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">CPA Relationship</div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Current CPA Role</label>
+            <select class="form-input" id="cpaRole" onchange="saveData()">
+              <option value="">Select...</option>
+              <option value="tax-only">Tax preparation only</option>
+              <option value="compile">Compiles financial statements</option>
+              <option value="review">Reviews financial statements</option>
+              <option value="audit">Performs full audit</option>
+              <option value="none">No CPA involvement</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">CPA Transaction Experience</label>
+            <select class="form-input" id="cpaExperience" onchange="saveData()">
+              <option value="">Select...</option>
+              <option value="extensive">Extensive (10+ deals)</option>
+              <option value="some">Some (3-10 deals)</option>
+              <option value="limited">Limited (1-2 deals)</option>
+              <option value="none">None / Unknown</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Tax vs. GAAP Awareness</div>
+        <p class="t-small t-secondary mb-lg">Score your awareness of the gap between how you report for taxes and how a buyer would view your financials.</p>
+        <div id="taxGaapItems"></div>
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('welcome')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeAssess()">Continue to Chart of Accounts &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ====== CHART OF ACCOUNTS ====== -->
+    <div class="page" id="page-coa">
+      <div class="page-header">
+        <div class="t-label">Phase 2 of 6</div>
+        <div class="t-display">Chart of Accounts Optimization</div>
+        <p class="t-body t-secondary">A well-structured chart of accounts makes your financials instantly readable to any buyer. Score each area to identify problems.</p>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-lg">Common Problems Assessment</div>
+        <div id="coaProblems"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Your Category Count</div>
+        <p class="t-small t-secondary mb-md">How many expense categories do you currently have in your chart of accounts?</p>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Number of Expense Categories</label>
+            <input type="number" class="form-input" id="expenseCategoryCount" min="0" max="200" placeholder="e.g., 47" oninput="updateCOAGauge();saveData()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Target Range</label>
+            <div class="gauge-wrap mt-md" id="coaGauge">
+              <div class="gauge-bar">
+                <div class="gauge-fill" id="coaGaugeFill" style="width:0%;background:var(--color-border)"></div>
+              </div>
+              <div class="gauge-labels">
+                <span>5</span>
+                <span style="color:var(--color-success);font-weight:600">15-20 ideal</span>
+                <span>50+</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Chart of Accounts Action Items</div>
+        <p class="t-small t-secondary mb-lg">Specific improvements to make. Check off as you complete them.</p>
+        <div class="checklist" id="coaChecklist"></div>
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('assess')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeCOA()">Continue to Revenue & Expenses &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ====== REVENUE & EXPENSES ====== -->
+    <div class="page" id="page-revenue">
+      <div class="page-header">
+        <div class="t-label">Phase 3 of 6</div>
+        <div class="t-display">Revenue Recognition & Expense Classification</div>
+        <p class="t-body t-secondary">Revenue recognition is the area buyers scrutinize most heavily. Expense classification determines the clarity of your operating story.</p>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Revenue Recognition Assessment</div>
+        <p class="t-small t-secondary mb-lg">Score your current practices in each area.</p>
+        <div id="revenueItems"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Expense Classification</div>
+        <p class="t-small t-secondary mb-lg">Every expense should fall into one of these categories for buyer clarity. Score how well your books align.</p>
+        <div id="expenseItems"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Personal vs. Business Expenses</div>
+        <p class="t-small t-secondary mb-lg">Identify personal expenses currently running through the business. These become add-backs in your EBITDA normalization.</p>
+        <div id="personalExpenseList"></div>
+        <button class="btn btn-secondary btn-sm mt-lg" onclick="addPersonalExpense()">+ Add Expense</button>
+      </div>
+
+      <div class="callout callout-info mb-lg">
+        <strong>This feeds into Playbook #7 (EBITDA Normalization).</strong> Every personal expense you identify here becomes a documented add-back worth 4-8x at your deal multiple.
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('coa')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeRevenue()">Continue to Balance Sheet &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ====== BALANCE SHEET ====== -->
+    <div class="page" id="page-balance">
+      <div class="page-header">
+        <div class="t-label">Phase 4 of 6</div>
+        <div class="t-display">Balance Sheet Cleanup</div>
+        <p class="t-body t-secondary">The balance sheet is where skeletons hide. Buyers will scrutinize every line for accuracy, recoverability, and hidden liabilities.</p>
+      </div>
+
+      <div id="balanceSheetSections"></div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('revenue')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeBalance()">Continue to Audit Path &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ====== AUDIT PATH ====== -->
+    <div class="page" id="page-audit">
+      <div class="page-header">
+        <div class="t-label">Phase 5 of 6</div>
+        <div class="t-display">The Path to Audited Financials</div>
+        <p class="t-body t-secondary">Choose the right level of financial assurance for your business size and buyer expectations.</p>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-lg">Assurance Level Comparison</div>
+        <table class="compare-table">
+          <thead><tr><th>Level</th><th>What It Involves</th><th>Annual Cost</th><th>Best For</th></tr></thead>
+          <tbody>
+            <tr><td class="col-label">Compilation</td><td>CPA organizes your data; no assurance</td><td>$2K-$5K</td><td>Under $3M revenue</td></tr>
+            <tr><td class="col-label">Review</td><td>Analytical procedures & inquiries; limited assurance</td><td>$5K-$15K</td><td>$3M-$10M revenue</td></tr>
+            <tr><td class="col-label">Audit</td><td>Full testing, confirmations & controls; highest assurance</td><td>$15K-$50K</td><td>Over $10M; PE buyers</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Your Recommended Level</div>
+        <div id="auditRecommendation"></div>
+        <div class="form-group mt-lg">
+          <label class="form-label">Selected Assurance Level</label>
+          <select class="form-input" id="selectedAuditLevel" onchange="saveData()">
+            <option value="">Choose your path...</option>
+            <option value="compilation">Compilation ($2K-$5K/year)</option>
+            <option value="review">Review ($5K-$15K/year)</option>
+            <option value="audit">Full Audit ($15K-$50K/year)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Common Mistakes to Avoid</div>
+        <div id="mistakesList"></div>
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('balance')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeAudit()">Continue to Action Plan &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ====== ACTION PLAN ====== -->
+    <div class="page" id="page-action">
+      <div class="page-header">
+        <div class="t-label">Phase 6 of 6</div>
+        <div class="t-display">Implementation Action Plan</div>
+        <p class="t-body t-secondary">Turn your assessment into a concrete 6-month cleanup plan. Every action should move you toward buyer-ready financials.</p>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Financial Cleanup Checklist</div>
+        <p class="t-small t-secondary mb-lg">The comprehensive list of items that must be addressed before going to market.</p>
+        <div class="checklist" id="cleanupChecklist"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">6-Month Implementation Timeline</div>
+        <p class="t-small t-secondary mb-lg">A phased approach to getting your financials deal-ready.</p>
+        <div class="timeline" id="implementationTimeline"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Your Action Items</div>
+        <p class="t-small t-secondary mb-lg">Specific actions generated from your assessment. Add your own or edit the suggestions.</p>
+        <div style="overflow-x:auto">
+          <table class="data-table" id="actionTable">
+            <thead><tr><th style="width:40%">Action</th><th style="width:20%">Owner</th><th style="width:20%">Target Date</th><th style="width:20%">Status</th></tr></thead>
+            <tbody id="actionTableBody"></tbody>
+          </table>
+        </div>
+        <button class="btn btn-secondary btn-sm mt-lg" onclick="addActionRow()">+ Add Action</button>
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('audit')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeAction()">View Your Scorecard &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ====== DASHBOARD / SCORECARD ====== -->
+    <div class="page" id="page-dashboard">
+      <div class="page-header">
+        <div class="t-label">Your Results</div>
+        <div class="t-display">Financial Readiness Scorecard</div>
+        <p class="t-body t-secondary">Your comprehensive view of financial statement readiness. Revisit this as you complete cleanup actions.</p>
+      </div>
+
+      <div class="dashboard-grid mb-xl">
+        <div class="metric-card">
+          <div class="metric-card-label">Overall Score</div>
+          <div class="metric-card-value" id="dashScore">--</div>
+          <div class="metric-card-sub" id="dashScoreDesc">Complete assessment to see score</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">Readiness Level</div>
+          <div class="metric-card-value" id="dashReadiness" style="font-size:24px">--</div>
+          <div class="metric-card-sub" id="dashReadinessDesc"></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">Checklist Progress</div>
+          <div class="metric-card-value" id="dashChecklist">0%</div>
+          <div class="metric-card-sub">of cleanup items completed</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">Personal Add-Backs</div>
+          <div class="metric-card-value" id="dashAddbacks">$0</div>
+          <div class="metric-card-sub">identified for EBITDA normalization</div>
+        </div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-lg">Score by Category</div>
+        <div id="dashBarChart"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-lg">Readiness Heat Map</div>
+        <p class="t-small t-secondary mb-md">Each cell represents a specific area of financial readiness. Red cells need the most attention.</p>
+        <div id="dashHeatmap"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Key Recommendations</div>
+        <div id="dashRecommendations"></div>
+      </div>
+
+      <div class="flex gap-md" style="flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="exportData()">Export as JSON</button>
+        <button class="btn btn-ghost" style="color:var(--color-danger)" onclick="if(confirm('Reset all data? This cannot be undone.')){localStorage.removeItem('financialCleanup');location.reload();}">Reset All Data</button>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<div class="toast-container" id="toastContainer" aria-live="polite" role="status"></div>
+
+<script>
+/* ============================================================
+   DATA MODEL
+   ============================================================ */
+const QUALITY_LEVELS = [
+  { score: 1, label: 'Tax Only', desc: 'QuickBooks with no CPA oversight' },
+  { score: 2, label: 'Compiled', desc: 'Compiled financials, basic CPA involvement' },
+  { score: 3, label: 'Compiled+', desc: 'Compiled with consistent chart of accounts' },
+  { score: 4, label: 'Reviewed', desc: 'CPA-reviewed financials annually' },
+  { score: 5, label: 'Audited', desc: 'Fully audited GAAP financials' }
+];
+
+const TAX_GAAP_ITEMS = [
+  { id: 'revRec', label: 'Revenue Recognition', tax: 'Often cash-basis', gaap: 'Accrual; recognized when earned' },
+  { id: 'depreciation', label: 'Depreciation', tax: 'Accelerated (bonus, Section 179)', gaap: 'Straight-line over useful life' },
+  { id: 'ownerComp', label: 'Owner Compensation', tax: 'Minimized or maximized for tax benefit', gaap: 'Normalized to market rate' },
+  { id: 'inventory', label: 'Inventory Valuation', tax: 'LIFO often used for tax benefit', gaap: 'FIFO or weighted average preferred' },
+  { id: 'leases', label: 'Lease Accounting', tax: 'Operating lease expense', gaap: 'ASC 842 right-of-use asset' },
+  { id: 'relatedParty', label: 'Related-Party Transactions', tax: 'May be at non-market rates', gaap: 'Must be disclosed; arm\'s length' }
+];
+
+const COA_PROBLEMS = [
+  { id: 'tooMany', label: 'Too Many Categories', desc: 'Do you have more than 25 expense categories, with some used rarely?', fix: 'Consolidate to 15-20 meaningful categories' },
+  { id: 'catchAll', label: 'Catch-All Accounts', desc: 'Do "Miscellaneous" or "Other" accounts hold more than 5% of expenses?', fix: 'Reclassify everything; eliminate catch-all accounts' },
+  { id: 'personal', label: 'Personal Mixed In', desc: 'Are personal expenses (car, club, travel) mixed with business categories?', fix: 'Separate and document as add-backs' },
+  { id: 'inconsistent', label: 'Inconsistent Naming', desc: 'Do similar items appear under different names (e.g., "Consulting" vs "Professional Fees")?', fix: 'Standardize terminology across all periods' },
+  { id: 'noDept', label: 'No Departmental Coding', desc: 'Are all expenses in one pool without cost center or department tags?', fix: 'Add cost center or department tags' }
+];
+
+const COA_CHECKLIST = [
+  'Reviewed all expense categories and eliminated redundant ones',
+  'Consolidated to 15-20 meaningful categories',
+  'Eliminated all catch-all / miscellaneous accounts',
+  'Separated personal expenses into their own add-back category',
+  'Standardized naming conventions across all periods',
+  'Added departmental or cost center coding',
+  'Mapped chart of accounts against industry standards',
+  'Restated prior 2 years to match new structure'
+];
+
+const REVENUE_ITEMS = [
+  { id: 'accrual', label: 'Accrual Recognition', desc: 'Revenue recorded when earned (delivered), not when invoiced or paid' },
+  { id: 'recurring', label: 'Recurring vs. One-Time', desc: 'Recurring revenue clearly separated from project or one-time revenue' },
+  { id: 'contracts', label: 'Contract Recognition', desc: 'Long-term contracts use appropriate method (percentage-of-completion or milestone)' },
+  { id: 'deferred', label: 'Deferred Revenue', desc: 'Prepayments properly deferred and recognized ratably over service period' }
+];
+
+const EXPENSE_ITEMS = [
+  { id: 'cogs', label: 'Cost of Goods Sold', desc: 'Direct costs clearly separated from indirect costs; gross margin is accurate' },
+  { id: 'sales', label: 'Sales & Marketing', desc: 'Sales salaries, commissions, advertising properly categorized' },
+  { id: 'ga', label: 'General & Administrative', desc: 'Rent, utilities, insurance, admin salaries clearly bucketed' },
+  { id: 'rd', label: 'Research & Development', desc: 'Product development and engineering costs separated (if applicable)' },
+  { id: 'ownerAddbacks', label: 'Owner Comp & Add-Backs', desc: 'Above-market comp, personal expenses, one-time items clearly identified' }
+];
+
+const BALANCE_SECTIONS = [
+  { id: 'ar', title: 'Accounts Receivable', icon: '&#9642;', items: [
+    { id: 'arAging', label: 'AR aging is accurate and up to date' },
+    { id: 'arWriteOff', label: 'Uncollectable amounts (>90 days) identified and written off' },
+    { id: 'arOver180', label: 'Items over 180 days are written off or have documented collection plans' },
+    { id: 'arConcentration', label: 'Customer concentration in AR is documented' }
+  ]},
+  { id: 'inventory', title: 'Inventory', icon: '&#9642;', items: [
+    { id: 'invCount', label: 'Physical inventory count has been performed recently' },
+    { id: 'invValue', label: 'Inventory valuation methodology is documented and consistent' },
+    { id: 'invObsolete', label: 'Obsolete or unsaleable items identified and written off' },
+    { id: 'invTurnover', label: 'Inventory turnover metrics are tracked' }
+  ]},
+  { id: 'fixed', title: 'Fixed Assets', icon: '&#9642;', items: [
+    { id: 'fixedVerified', label: 'All listed assets physically exist (no ghost assets)' },
+    { id: 'fixedDefunct', label: 'Defunct equipment removed from the books' },
+    { id: 'fixedLoans', label: 'Loans to owner removed from assets or properly documented' },
+    { id: 'fixedDepr', label: 'Depreciation schedules use straight-line for GAAP presentation' }
+  ]},
+  { id: 'liabilities', title: 'Liabilities', icon: '&#9642;', items: [
+    { id: 'liabLoans', label: 'Every loan and line of credit reconciled to the penny' },
+    { id: 'liabCards', label: 'All credit card balances reconciled' },
+    { id: 'liabAccruals', label: 'Accrued expenses are complete and current' },
+    { id: 'liabContingent', label: 'Contingent liabilities identified and documented' }
+  ]},
+  { id: 'equity', title: 'Equity', icon: '&#9642;', items: [
+    { id: 'eqRetained', label: 'Retained earnings are clean and reconciled' },
+    { id: 'eqPartner', label: 'Partner or shareholder account imbalances resolved' },
+    { id: 'eqDistributions', label: 'Owner distributions clearly documented' },
+    { id: 'eqRelated', label: 'Related-party transactions documented at arm\'s length' }
+  ]}
+];
+
+const CLEANUP_CHECKLIST = [
+  'Chart of accounts reviewed and optimized',
+  'Revenue recognition converted to accrual',
+  'Expenses reclassified into standard categories',
+  'Personal expenses identified and documented as add-backs',
+  'Related-party transactions documented',
+  'AR aging reviewed; uncollectables written off',
+  'Inventory counted and valued',
+  'Fixed assets verified; ghost assets removed',
+  'All liabilities reconciled',
+  'Equity accounts cleaned up',
+  '3-year financials restated in new format',
+  'Monthly close process documented'
+];
+
+const TIMELINE_DATA = [
+  { period: 'Month 1', phase: 'Setup', title: 'Engage & Assess', desc: 'Engage transaction-experienced CPA. Gather 3 years of financials and tax returns. Identify all Tax/GAAP divergences.' },
+  { period: 'Month 2-3', phase: 'Restructure', title: 'Chart of Accounts & Reclassify', desc: 'Restructure chart of accounts. Reclassify expenses into standard categories. Separate personal expenses.' },
+  { period: 'Month 3-4', phase: 'Convert', title: 'Revenue & Accrual', desc: 'Convert revenue recognition to accrual basis. Normalize depreciation schedules. Document related-party transactions.' },
+  { period: 'Month 4-5', phase: 'Clean', title: 'Balance Sheet', desc: 'Reconcile all accounts. Clean up AR, inventory, fixed assets, and liabilities. Resolve equity account issues.' },
+  { period: 'Month 5-6', phase: 'Produce', title: 'Buyer-Ready Package', desc: 'Produce presentation-ready 3-year financials. Begin audited/reviewed process if applicable.' },
+  { period: 'Ongoing', phase: 'Maintain', title: 'Monthly Discipline', desc: 'Maintain clean monthly closes. Financial statements within 15 days of month-end. Ongoing reconciliation.' }
+];
+
+const MISTAKES = [
+  { title: 'Cleaning Up Only the Current Year', desc: 'Buyers want 3 years of consistent financials. Cleaning only the latest year highlights the inconsistency of prior years.', fix: 'Restate all 3 years in the new format.' },
+  { title: 'Hiding the Add-Backs', desc: 'Owners sometimes try to "clean" personal expenses out of the books entirely. Buyers would rather see them clearly labeled.', fix: 'Be transparent. A clear add-back schedule builds trust.' },
+  { title: 'Not Engaging a Transaction-Experienced CPA', desc: 'Your annual tax preparer may not understand what buyers look for. Transaction CPAs speak the buyer\'s language.', fix: 'Hire a CPA who has supported at least 5 deals.' }
+];
+
+const SCORE_LABELS = ['', 'Critical', 'Below Std', 'Adequate', 'Strong', 'Exceptional'];
+
+let state = {
+  currentPage: 'welcome',
+  pagesUnlocked: ['welcome'],
+  pagesCompleted: [],
+  quality: 0,
+  setup: { acctMethod: '', software: '', revenue: '', closeTimeline: '', cpaRole: '', cpaExperience: '' },
+  taxGaap: {},
+  coaScores: {},
+  coaChecklist: {},
+  expenseCategoryCount: '',
+  revenueScores: {},
+  expenseScores: {},
+  personalExpenses: [],
+  balanceChecks: {},
+  auditLevel: '',
+  cleanupChecklist: {},
+  actionItems: [],
+  timestamp: null
+};
+
+/* ============================================================
+   PERSISTENCE
+   ============================================================ */
+const STORAGE_KEY = 'exitosx-pb06-financial-cleanup';
+// Migrate from old localStorage key
+(function() { try { const old = localStorage.getItem('financialCleanup'); if (old && !localStorage.getItem(STORAGE_KEY)) { localStorage.setItem(STORAGE_KEY, old); localStorage.removeItem('financialCleanup'); } } catch(e) {} })();
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) state = { ...state, ...JSON.parse(saved) };
+  } catch(e) {}
+}
+
+function saveData() {
+  // Collect form values
+  state.setup.acctMethod = gv('acctMethod');
+  state.setup.software = gv('acctSoftware');
+  state.setup.revenue = gv('revenueRange');
+  state.setup.closeTimeline = gv('closeTimeline');
+  state.setup.cpaRole = gv('cpaRole');
+  state.setup.cpaExperience = gv('cpaExperience');
+  state.auditLevel = gv('selectedAuditLevel');
+  state.expenseCategoryCount = gv('expenseCategoryCount');
+  state.timestamp = new Date().toISOString();
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  updateProgress();
+  showSavedIndicator();
+}
+
+function gv(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+function sv(id, val) { const el = document.getElementById(id); if (el) el.value = val || ''; }
+
+function showSavedIndicator() {
+  const el = document.getElementById('sidebarSaved');
+  const t = document.getElementById('savedTime');
+  if (el && t) { el.style.display = 'block'; t.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function goToPage(pageId) {
+  if (!state.pagesUnlocked.includes(pageId)) return;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.remove('active');
+    if (n.dataset.page === pageId) n.classList.add('active');
+  });
+  state.currentPage = pageId;
+  saveData();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  toggleSidebar(false);
+  // Focus management for accessibility
+  const page = document.getElementById('page-' + pageId);
+  setTimeout(() => { const heading = page.querySelector('h1, h2, .t-display'); if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); } }, 100);
+  if (pageId === 'assess') renderAssessPage();
+  if (pageId === 'coa') renderCOAPage();
+  if (pageId === 'revenue') renderRevenuePage();
+  if (pageId === 'balance') renderBalancePage();
+  if (pageId === 'audit') renderAuditPage();
+  if (pageId === 'action') renderActionPage();
+  if (pageId === 'dashboard') renderDashboard();
+}
+
+function unlockPage(id) {
+  if (!state.pagesUnlocked.includes(id)) state.pagesUnlocked.push(id);
+  document.querySelectorAll('.nav-item').forEach(n => { if (state.pagesUnlocked.includes(n.dataset.page)) n.classList.remove('locked'); });
+}
+
+function completePage(id) {
+  if (!state.pagesCompleted.includes(id)) state.pagesCompleted.push(id);
+  document.querySelectorAll('.nav-item').forEach(n => { if (state.pagesCompleted.includes(n.dataset.page)) n.classList.add('completed'); });
+  saveData();
+}
+
+function updateProgress() {
+  const total = 7;
+  const pct = Math.round((state.pagesCompleted.length / total) * 100);
+  const bar = document.getElementById('globalProgressBar');
+  const text = document.getElementById('globalProgressText');
+  if (bar) bar.style.width = pct + '%';
+  if (text) text.textContent = pct + '% complete';
+  const score = calcOverallScore();
+  const scoreEl = document.getElementById('sidebarScore');
+  if (score > 0 && scoreEl) {
+    scoreEl.style.display = 'block';
+    document.getElementById('sidebarScoreValue').textContent = score.toFixed(1);
+    document.getElementById('sidebarScoreDesc').textContent = getReadinessLevel(score).level;
+  }
+}
+
+function toggleSidebar(open) {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebarOverlay');
+  if (open) { sb.classList.add('open'); ov.classList.add('show'); }
+  else { sb.classList.remove('open'); ov.classList.remove('show'); }
+}
+
+function showToast(msg) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { if (t.parentNode) t.remove(); }, 3200);
+}
+
+function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ============================================================
+   SCORING
+   ============================================================ */
+function getScoreColor(s) {
+  if (s < 1.5) return 'var(--color-score-1)';
+  if (s < 2.5) return 'var(--color-score-2)';
+  if (s < 3.5) return 'var(--color-score-3)';
+  if (s < 4.5) return 'var(--color-score-4)';
+  return 'var(--color-score-5)';
+}
+
+function getReadinessLevel(score) {
+  if (score >= 4.0) return { level: 'Buyer-Ready', desc: 'Your financials are a competitive advantage. Highlight them in marketing materials.', badge: 'badge-success' };
+  if (score >= 3.0) return { level: 'Needs Polish', desc: 'Solid foundation. Address the gaps identified and you will be deal-ready within 3 months.', badge: 'badge-warning' };
+  if (score >= 2.0) return { level: 'Significant Work', desc: 'Plan for 4-6 months of cleanup. Engage a transaction-experienced CPA immediately.', badge: 'badge-danger' };
+  return { level: 'Not Ready', desc: 'Do not go to market. Invest 6+ months in financial cleanup before engaging buyers.', badge: 'badge-danger' };
+}
+
+function calcCategoryScores() {
+  const cats = {};
+  // Tax/GAAP awareness
+  const tgVals = Object.values(state.taxGaap).filter(v => v > 0);
+  cats.taxGaap = tgVals.length > 0 ? tgVals.reduce((a,b)=>a+b,0)/tgVals.length : 0;
+  // COA
+  const coaVals = Object.values(state.coaScores).filter(v => v > 0);
+  cats.coa = coaVals.length > 0 ? coaVals.reduce((a,b)=>a+b,0)/coaVals.length : 0;
+  // Revenue
+  const revVals = Object.values(state.revenueScores).filter(v => v > 0);
+  cats.revenue = revVals.length > 0 ? revVals.reduce((a,b)=>a+b,0)/revVals.length : 0;
+  // Expenses
+  const expVals = Object.values(state.expenseScores).filter(v => v > 0);
+  cats.expenses = expVals.length > 0 ? expVals.reduce((a,b)=>a+b,0)/expVals.length : 0;
+  // Balance sheet
+  const bsItems = [];
+  BALANCE_SECTIONS.forEach(s => s.items.forEach(i => { if (state.balanceChecks[i.id]) bsItems.push(state.balanceChecks[i.id]); }));
+  cats.balance = bsItems.length > 0 ? bsItems.reduce((a,b)=>a+b,0)/bsItems.length : 0;
+  // Quality baseline
+  cats.quality = state.quality || 0;
+  return cats;
+}
+
+function calcOverallScore() {
+  const cats = calcCategoryScores();
+  const vals = Object.values(cats).filter(v => v > 0);
+  return vals.length > 0 ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+}
+
+/* ============================================================
+   WELCOME
+   ============================================================ */
+function startJourney() {
+  completePage('welcome');
+  unlockPage('assess');
+  goToPage('assess');
+  showToast('Let\'s assess your current financial state.');
+}
+
+/* ============================================================
+   ASSESS PAGE
+   ============================================================ */
+function renderAssessPage() {
+  // Quality selector
+  const qc = document.getElementById('qualitySelector');
+  qc.innerHTML = QUALITY_LEVELS.map(q => `
+    <label class="score-option s${q.score} ${state.quality===q.score?'selected':''}" onclick="state.quality=${q.score};saveData();renderAssessPage()" role="radio" aria-checked="${state.quality===q.score}" tabindex="0">
+      <input type="radio" name="quality" value="${q.score}" ${state.quality===q.score?'checked':''}>
+      <span class="score-number">${q.score}</span>
+      <span class="score-label-text">${q.label}</span>
+    </label>
+  `).join('');
+
+  // Restore form values
+  sv('acctMethod', state.setup.acctMethod);
+  sv('acctSoftware', state.setup.software);
+  sv('revenueRange', state.setup.revenue);
+  sv('closeTimeline', state.setup.closeTimeline);
+  sv('cpaRole', state.setup.cpaRole);
+  sv('cpaExperience', state.setup.cpaExperience);
+
+  // Tax vs GAAP items
+  document.getElementById('taxGaapItems').innerHTML = TAX_GAAP_ITEMS.map(item => {
+    const val = state.taxGaap[item.id] || 0;
+    return `
+      <div class="card mb-md" style="padding:var(--space-md)">
+        <div class="t-h3 mb-sm">${item.label}</div>
+        <div class="grid-2 mb-md">
+          <div style="font-size:13px"><span class="badge badge-danger" style="margin-right:4px">Tax</span> ${item.tax}</div>
+          <div style="font-size:13px"><span class="badge badge-success" style="margin-right:4px">GAAP</span> ${item.gaap}</div>
+        </div>
+        <div class="form-label" style="margin-bottom:6px">How aligned are you with GAAP treatment?</div>
+        <div class="score-selector" role="radiogroup" aria-label="${item.label} GAAP alignment">
+          ${[1,2,3,4,5].map(s => `
+            <label class="score-option s${s} ${val===s?'selected':''}" onclick="state.taxGaap['${item.id}']=${s};saveData();renderAssessPage()" role="radio" aria-checked="${val===s}" tabindex="0">
+              <input type="radio" name="tg-${item.id}" value="${s}" ${val===s?'checked':''}>
+              <span class="score-number">${s}</span>
+              <span class="score-label-text">${SCORE_LABELS[s]}</span>
+            </label>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function completeAssess() {
+  completePage('assess');
+  unlockPage('coa');
+  goToPage('coa');
+  showToast('Assessment saved. Now let\'s look at your chart of accounts.');
+}
+
+/* ============================================================
+   COA PAGE
+   ============================================================ */
+function renderCOAPage() {
+  document.getElementById('coaProblems').innerHTML = COA_PROBLEMS.map(p => {
+    const val = state.coaScores[p.id] || 0;
+    return `
+      <div style="padding:var(--space-md) 0;border-bottom:1px solid var(--color-border-light)">
+        <div class="t-h3 mb-sm">${p.label}</div>
+        <p class="t-small t-secondary mb-sm">${p.desc}</p>
+        <p class="t-small mb-md" style="color:var(--color-success)"><strong>Fix:</strong> ${p.fix}</p>
+        <div class="score-selector" role="radiogroup" aria-label="${p.label} severity">
+          ${[1,2,3,4,5].map(s => `
+            <label class="score-option s${s} ${val===s?'selected':''}" onclick="state.coaScores['${p.id}']=${s};saveData();renderCOAPage()" role="radio" aria-checked="${val===s}" tabindex="0">
+              <input type="radio" name="coa-${p.id}" value="${s}" ${val===s?'checked':''}>
+              <span class="score-number">${s}</span>
+              <span class="score-label-text">${s<=2?'Major Issue':s===3?'Minor Issue':'Clean'}</span>
+            </label>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  sv('expenseCategoryCount', state.expenseCategoryCount);
+  updateCOAGauge();
+
+  document.getElementById('coaChecklist').innerHTML = COA_CHECKLIST.map((item, i) => {
+    const checked = state.coaChecklist['coa-'+i] || false;
+    return `
+      <div class="check-item ${checked?'checked':''}" onclick="state.coaChecklist['coa-${i}']=!state.coaChecklist['coa-${i}'];saveData();renderCOAPage()" role="checkbox" aria-checked="${checked}" tabindex="0">
+        <div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+        <div class="check-text">${item}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateCOAGauge() {
+  const count = parseInt(gv('expenseCategoryCount')) || 0;
+  const fill = document.getElementById('coaGaugeFill');
+  if (!fill) return;
+  const pct = Math.min(100, (count / 60) * 100);
+  fill.style.width = pct + '%';
+  if (count >= 15 && count <= 20) fill.style.background = 'var(--color-success)';
+  else if (count < 15 || count <= 25) fill.style.background = 'var(--color-warning)';
+  else fill.style.background = 'var(--color-danger)';
+  if (count === 0) fill.style.background = 'var(--color-border)';
+}
+
+function completeCOA() {
+  completePage('coa');
+  unlockPage('revenue');
+  goToPage('revenue');
+  showToast('Chart of accounts reviewed. Moving to revenue and expenses.');
+}
+
+/* ============================================================
+   REVENUE & EXPENSES PAGE
+   ============================================================ */
+function renderRevenuePage() {
+  document.getElementById('revenueItems').innerHTML = REVENUE_ITEMS.map(item => {
+    const val = state.revenueScores[item.id] || 0;
+    return `
+      <div style="padding:var(--space-md) 0;border-bottom:1px solid var(--color-border-light)">
+        <div class="t-h3 mb-sm">${item.label}</div>
+        <p class="t-small t-secondary mb-md">${item.desc}</p>
+        <div class="score-selector" role="radiogroup" aria-label="${item.label} score">
+          ${[1,2,3,4,5].map(s => `
+            <label class="score-option s${s} ${val===s?'selected':''}" onclick="state.revenueScores['${item.id}']=${s};saveData();renderRevenuePage()" role="radio" aria-checked="${val===s}" tabindex="0">
+              <input type="radio" name="rev-${item.id}" value="${s}" ${val===s?'checked':''}>
+              <span class="score-number">${s}</span>
+              <span class="score-label-text">${SCORE_LABELS[s]}</span>
+            </label>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('expenseItems').innerHTML = EXPENSE_ITEMS.map(item => {
+    const val = state.expenseScores[item.id] || 0;
+    return `
+      <div style="padding:var(--space-md) 0;border-bottom:1px solid var(--color-border-light)">
+        <div class="t-h3 mb-sm">${item.label}</div>
+        <p class="t-small t-secondary mb-md">${item.desc}</p>
+        <div class="score-selector" role="radiogroup" aria-label="${item.label} score">
+          ${[1,2,3,4,5].map(s => `
+            <label class="score-option s${s} ${val===s?'selected':''}" onclick="state.expenseScores['${item.id}']=${s};saveData();renderRevenuePage()" role="radio" aria-checked="${val===s}" tabindex="0">
+              <input type="radio" name="exp-${item.id}" value="${s}" ${val===s?'checked':''}>
+              <span class="score-number">${s}</span>
+              <span class="score-label-text">${SCORE_LABELS[s]}</span>
+            </label>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  renderPersonalExpenses();
+}
+
+function renderPersonalExpenses() {
+  if (state.personalExpenses.length === 0) {
+    state.personalExpenses = [
+      { desc: '', category: '', annualAmt: '', documented: '' },
+      { desc: '', category: '', annualAmt: '', documented: '' },
+      { desc: '', category: '', annualAmt: '', documented: '' }
+    ];
+  }
+  const cats = ['Personal auto', 'Travel & entertainment', 'Country club', 'Personal insurance', 'Family payroll', 'Home office', 'Other'];
+  document.getElementById('personalExpenseList').innerHTML = `
+    <div style="display:grid;grid-template-columns:2fr 1fr 100px 80px;gap:8px;margin-bottom:8px;padding:0 4px">
+      <div class="t-caption t-tertiary">Description</div>
+      <div class="t-caption t-tertiary">Category</div>
+      <div class="t-caption t-tertiary">Annual $</div>
+      <div class="t-caption t-tertiary">Documented?</div>
+    </div>
+    ${state.personalExpenses.map((e, i) => `
+      <div style="display:grid;grid-template-columns:2fr 1fr 100px 80px;gap:8px;margin-bottom:6px">
+        <input class="input-mini" value="${escHtml(e.desc)}" placeholder="e.g., Owner's car lease" oninput="state.personalExpenses[${i}].desc=this.value;saveData()">
+        <select class="input-mini" onchange="state.personalExpenses[${i}].category=this.value;saveData()">
+          <option value="">--</option>
+          ${cats.map(c => `<option value="${c}" ${e.category===c?'selected':''}>${c}</option>`).join('')}
+        </select>
+        <input class="input-mini input-currency" type="number" min="0" value="${e.annualAmt}" placeholder="$0" oninput="state.personalExpenses[${i}].annualAmt=this.value;saveData()">
+        <select class="input-mini" onchange="state.personalExpenses[${i}].documented=this.value;saveData()">
+          <option value="">--</option>
+          <option value="yes" ${e.documented==='yes'?'selected':''}>Yes</option>
+          <option value="partial" ${e.documented==='partial'?'selected':''}>Partial</option>
+          <option value="no" ${e.documented==='no'?'selected':''}>No</option>
+        </select>
+      </div>
+    `).join('')}
+  `;
+}
+
+function addPersonalExpense() {
+  state.personalExpenses.push({ desc: '', category: '', annualAmt: '', documented: '' });
+  renderPersonalExpenses();
+  saveData();
+}
+
+function completeRevenue() {
+  completePage('revenue');
+  unlockPage('balance');
+  goToPage('balance');
+  showToast('Revenue and expenses assessed. Let\'s check the balance sheet.');
+}
+
+/* ============================================================
+   BALANCE SHEET PAGE
+   ============================================================ */
+function renderBalancePage() {
+  document.getElementById('balanceSheetSections').innerHTML = BALANCE_SECTIONS.map(section => {
+    const allChecked = section.items.every(i => state.balanceChecks[i.id] >= 4);
+    return `
+      <div class="card mb-xl">
+        <div class="flex items-center justify-between mb-md">
+          <div class="t-h2">${section.title}</div>
+          ${allChecked ? '<span class="badge badge-success">Clean</span>' : ''}
+        </div>
+        ${section.items.map(item => {
+          const val = state.balanceChecks[item.id] || 0;
+          return `
+            <div style="padding:var(--space-sm) 0;border-bottom:1px solid var(--color-border-light)">
+              <div class="t-small mb-sm" style="font-weight:500">${item.label}</div>
+              <div class="score-selector" role="radiogroup" aria-label="${item.label}">
+                ${[1,2,3,4,5].map(s => `
+                  <label class="score-option s${s} ${val===s?'selected':''}" onclick="state.balanceChecks['${item.id}']=${s};saveData();renderBalancePage()" style="padding:8px 4px" role="radio" aria-checked="${val===s}" tabindex="0">
+                    <input type="radio" name="bs-${item.id}" value="${s}" ${val===s?'checked':''}>
+                    <span class="score-number" style="font-size:18px">${s}</span>
+                    <span class="score-label-text">${SCORE_LABELS[s]}</span>
+                  </label>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }).join('');
+}
+
+function completeBalance() {
+  completePage('balance');
+  unlockPage('audit');
+  goToPage('audit');
+  showToast('Balance sheet reviewed. Let\'s determine your audit path.');
+}
+
+/* ============================================================
+   AUDIT PATH PAGE
+   ============================================================ */
+function renderAuditPage() {
+  sv('selectedAuditLevel', state.auditLevel);
+
+  // Generate recommendation based on revenue
+  const rev = state.setup.revenue;
+  let rec = '';
+  if (rev === 'under3') rec = '<strong>Compilation</strong> is typically sufficient for businesses under $3M. Focus your budget on cleanup, not assurance level.';
+  else if (rev === '3to10') rec = '<strong>Review engagement</strong> is the sweet spot. It provides credibility without the full cost of an audit. Most lower-middle-market deals proceed with reviewed financials.';
+  else if (rev === '10to25') rec = '<strong>Full audit</strong> is strongly recommended. PE buyers and institutional acquirers expect audited financials at this level.';
+  else if (rev === 'over25') rec = '<strong>Full audit is essential.</strong> At this revenue level, any buyer will require audited financials and likely commission a Quality of Earnings study.';
+  else rec = 'Complete the Current State assessment to see a personalized recommendation.';
+
+  document.getElementById('auditRecommendation').innerHTML = `<div class="callout callout-info">${rec}</div>`;
+
+  document.getElementById('mistakesList').innerHTML = MISTAKES.map((m, i) => `
+    <div class="callout callout-warning mb-md">
+      <strong>Mistake #${i+1}: ${m.title}</strong>
+      <p style="margin:6px 0">${m.desc}</p>
+      <p><strong>Solution:</strong> ${m.fix}</p>
+    </div>
+  `).join('');
+}
+
+function completeAudit() {
+  completePage('audit');
+  unlockPage('action');
+  goToPage('action');
+  showToast('Audit path selected. Build your action plan.');
+}
+
+/* ============================================================
+   ACTION PLAN PAGE
+   ============================================================ */
+function renderActionPage() {
+  // Cleanup checklist
+  document.getElementById('cleanupChecklist').innerHTML = CLEANUP_CHECKLIST.map((item, i) => {
+    const checked = state.cleanupChecklist['cl-'+i] || false;
+    return `
+      <div class="check-item ${checked?'checked':''}" onclick="state.cleanupChecklist['cl-${i}']=!state.cleanupChecklist['cl-${i}'];saveData();renderActionPage()" role="checkbox" aria-checked="${checked}" tabindex="0">
+        <div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+        <div class="check-text">${item}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Timeline
+  document.getElementById('implementationTimeline').innerHTML = TIMELINE_DATA.map((item, i) => `
+    <div class="timeline-item ${i===0?'tl-active':''}">
+      <div class="timeline-dot"></div>
+      <div class="timeline-period">${item.period}</div>
+      <div class="timeline-title">${item.title}</div>
+      <div class="timeline-desc">${item.desc}</div>
+    </div>
+  `).join('');
+
+  // Action table
+  if (state.actionItems.length === 0) {
+    state.actionItems = generateSuggestedActions();
+  }
+  renderActionTable();
+}
+
+function generateSuggestedActions() {
+  const actions = [];
+  if (state.setup.cpaExperience === 'none' || state.setup.cpaExperience === 'limited') {
+    actions.push({ action: 'Identify and engage transaction-experienced CPA', owner: '', date: '', status: 'not-started' });
+  }
+  if (state.setup.acctMethod === 'cash') {
+    actions.push({ action: 'Begin conversion from cash to accrual basis accounting', owner: '', date: '', status: 'not-started' });
+  }
+  if (state.quality <= 2) {
+    actions.push({ action: 'Restructure chart of accounts to 15-20 standard categories', owner: '', date: '', status: 'not-started' });
+  }
+  const undocumented = state.personalExpenses.filter(e => e.desc && e.documented !== 'yes');
+  if (undocumented.length > 0) {
+    actions.push({ action: `Document ${undocumented.length} personal add-back${undocumented.length>1?'s':''} with supporting evidence`, owner: '', date: '', status: 'not-started' });
+  }
+  if (state.setup.closeTimeline === 'none' || state.setup.closeTimeline === '45') {
+    actions.push({ action: 'Establish monthly close process (target: 15 days)', owner: '', date: '', status: 'not-started' });
+  }
+  actions.push({ action: 'Restate prior 2 years of financials in new format', owner: '', date: '', status: 'not-started' });
+  actions.push({ action: 'Reconcile all balance sheet accounts', owner: '', date: '', status: 'not-started' });
+  actions.push({ action: 'Produce buyer-ready 3-year financial package', owner: '', date: '', status: 'not-started' });
+  return actions.slice(0, 8);
+}
+
+function renderActionTable() {
+  document.getElementById('actionTableBody').innerHTML = state.actionItems.map((item, i) => `
+    <tr>
+      <td><input class="input-mini w-full" value="${escHtml(item.action)}" placeholder="Specific action..." oninput="state.actionItems[${i}].action=this.value;saveData()"></td>
+      <td><input class="input-mini w-full" value="${escHtml(item.owner)}" placeholder="Who?" oninput="state.actionItems[${i}].owner=this.value;saveData()"></td>
+      <td><input class="input-mini w-full" type="date" value="${item.date}" oninput="state.actionItems[${i}].date=this.value;saveData()"></td>
+      <td><select class="input-mini w-full" onchange="state.actionItems[${i}].status=this.value;saveData()">
+        <option value="not-started" ${item.status==='not-started'?'selected':''}>Not Started</option>
+        <option value="in-progress" ${item.status==='in-progress'?'selected':''}>In Progress</option>
+        <option value="done" ${item.status==='done'?'selected':''}>Done</option>
+      </select></td>
+    </tr>
+  `).join('');
+}
+
+function addActionRow() {
+  state.actionItems.push({ action: '', owner: '', date: '', status: 'not-started' });
+  renderActionTable();
+  saveData();
+}
+
+function completeAction() {
+  completePage('action');
+  unlockPage('dashboard');
+  goToPage('dashboard');
+  showToast('Action plan saved. Here is your full scorecard.');
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+function renderDashboard() {
+  const score = calcOverallScore();
+  const readiness = getReadinessLevel(score);
+  const cats = calcCategoryScores();
+
+  document.getElementById('dashScore').textContent = score > 0 ? score.toFixed(1) : '--';
+  document.getElementById('dashScoreDesc').textContent = score > 0 ? 'out of 5.0' : 'Complete assessment to see score';
+  document.getElementById('dashReadiness').textContent = score > 0 ? readiness.level : '--';
+  document.getElementById('dashReadinessDesc').textContent = readiness.desc || '';
+
+  // Checklist progress
+  const clTotal = CLEANUP_CHECKLIST.length;
+  const clDone = Object.values(state.cleanupChecklist).filter(Boolean).length;
+  document.getElementById('dashChecklist').textContent = Math.round((clDone/clTotal)*100) + '%';
+
+  // Add-backs total
+  const addbackTotal = state.personalExpenses.reduce((sum, e) => sum + (parseFloat(e.annualAmt) || 0), 0);
+  document.getElementById('dashAddbacks').textContent = '$' + addbackTotal.toLocaleString();
+
+  // Bar chart
+  const catLabels = {
+    quality: 'Presentation Quality',
+    taxGaap: 'Tax/GAAP Alignment',
+    coa: 'Chart of Accounts',
+    revenue: 'Revenue Recognition',
+    expenses: 'Expense Classification',
+    balance: 'Balance Sheet'
+  };
+  const barHtml = Object.entries(catLabels).map(([key, label], idx) => {
+    const val = cats[key] || 0;
+    const pct = (val / 5) * 100;
+    const color = getScoreColor(val);
+    return `
+      <div class="bar-row">
+        <div class="bar-label">${label}</div>
+        <div class="bar-track">
+          <div class="bar-fill" data-width="${pct}" data-delay="${idx*100}" style="width:0%;background:${color}">
+            <span class="bar-value">${val > 0 ? val.toFixed(1) : '-'}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('dashBarChart').innerHTML = barHtml;
+  setTimeout(() => {
+    document.querySelectorAll('#dashBarChart .bar-fill').forEach(el => {
+      const w = el.dataset.width;
+      const d = parseInt(el.dataset.delay) || 0;
+      setTimeout(() => { el.style.width = w + '%'; }, d);
+    });
+  }, 100);
+
+  // Heatmap
+  renderDashHeatmap();
+
+  // Recommendations
+  renderRecommendations();
+}
+
+function renderDashHeatmap() {
+  const sections = [
+    { label: 'Tax/GAAP', items: TAX_GAAP_ITEMS.map(i => ({ label: i.label.substring(0,8), score: state.taxGaap[i.id] || 0 })) },
+    { label: 'COA', items: COA_PROBLEMS.map(i => ({ label: i.label.substring(0,8), score: state.coaScores[i.id] || 0 })) },
+    { label: 'Revenue', items: REVENUE_ITEMS.map(i => ({ label: i.label.substring(0,8), score: state.revenueScores[i.id] || 0 })) },
+    { label: 'Expenses', items: EXPENSE_ITEMS.map(i => ({ label: i.label.substring(0,8), score: state.expenseScores[i.id] || 0 })) }
+  ];
+  const maxCols = Math.max(...sections.map(s => s.items.length));
+  const html = `
+    <div class="heatmap" style="grid-template-columns: 80px repeat(${maxCols}, 1fr);">
+      ${sections.map(s => `
+        <div class="heatmap-row-label">${s.label}</div>
+        ${s.items.map(i => `<div class="heatmap-cell hs${i.score}" title="${i.label}: ${i.score||'Not scored'}">${i.score||'-'}</div>`).join('')}
+        ${'<div></div>'.repeat(maxCols - s.items.length)}
+      `).join('')}
+    </div>
+  `;
+  document.getElementById('dashHeatmap').innerHTML = html;
+}
+
+function renderRecommendations() {
+  const recs = [];
+  const cats = calcCategoryScores();
+
+  if (cats.quality <= 2) recs.push({ priority: 'Critical', text: 'Your financial presentation quality is below buyer standards. Engage a transaction-experienced CPA and begin the cleanup process immediately.' });
+  if (state.setup.acctMethod === 'cash') recs.push({ priority: 'Critical', text: 'Convert from cash to accrual basis accounting. This is non-negotiable for most institutional buyers.' });
+  if (cats.coa > 0 && cats.coa < 3) recs.push({ priority: 'High', text: 'Your chart of accounts needs restructuring. Consolidate to 15-20 meaningful categories and restate prior years.' });
+  if (cats.revenue > 0 && cats.revenue < 3) recs.push({ priority: 'High', text: 'Revenue recognition practices need attention. Ensure accrual basis and proper separation of recurring vs. one-time revenue.' });
+  if (cats.balance > 0 && cats.balance < 3) recs.push({ priority: 'High', text: 'Balance sheet items need cleanup. Focus on writing off uncollectable AR, verifying fixed assets, and reconciling all liabilities.' });
+
+  const undocumented = state.personalExpenses.filter(e => e.desc && e.documented !== 'yes');
+  if (undocumented.length > 0) recs.push({ priority: 'Medium', text: `${undocumented.length} personal expense add-back${undocumented.length>1?'s':''} need documentation with supporting evidence for your EBITDA normalization.` });
+
+  if (state.setup.closeTimeline === 'none') recs.push({ priority: 'Medium', text: 'Establish a formal monthly close process. Buyers expect financial statements within 15 days of month-end.' });
+
+  if (recs.length === 0 && calcOverallScore() >= 4) {
+    recs.push({ priority: 'Success', text: 'Your financial statements appear buyer-ready. Maintain your current discipline and consider engaging an audit firm to formalize your assurance level.' });
+  }
+
+  document.getElementById('dashRecommendations').innerHTML = recs.length > 0 ? recs.map(r => {
+    const cls = r.priority === 'Critical' ? 'callout-danger' : r.priority === 'High' ? 'callout-warning' : r.priority === 'Success' ? 'callout-info' : 'callout-accent';
+    return `<div class="callout ${cls} mb-md"><strong>${r.priority}:</strong> ${r.text}</div>`;
+  }).join('') : '<p class="t-small t-tertiary">Complete the assessment to see recommendations.</p>';
+}
+
+/* ============================================================
+   EXPORT
+   ============================================================ */
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'financial-cleanup-assessment.json'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('Data exported successfully.');
+}
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
+function init() {
+  loadData();
+  // Restore navigation state
+  state.pagesUnlocked.forEach(p => unlockPage(p));
+  state.pagesCompleted.forEach(p => {
+    document.querySelectorAll('.nav-item').forEach(n => { if (n.dataset.page === p) n.classList.add('completed'); });
+  });
+  goToPage(state.currentPage || 'welcome');
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+// Keyboard navigation for nav items
+document.addEventListener('keydown', function(e) {
+  if (e.target.classList.contains('nav-item') && (e.key === 'Enter' || e.key === ' ')) {
+    e.preventDefault();
+    e.target.click();
+  }
+  if (e.target.classList.contains('check-item') && (e.key === 'Enter' || e.key === ' ')) {
+    e.preventDefault();
+    e.target.click();
+  }
+});
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

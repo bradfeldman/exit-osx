@@ -1,0 +1,1864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spousal &amp; Family Alignment | Exit Planning Playbook #4</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a { color: var(--color-primary); text-decoration: none; }
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.t-display { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; color: var(--color-text); }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.t-tertiary { color: var(--color-text-tertiary); }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 260px; min-width: 260px; background: var(--color-text);
+  color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow);
+  overflow-y: auto;
+}
+.sidebar.collapsed { transform: translateX(-260px); }
+.main-content {
+  flex: 1; margin-left: 260px; min-height: 100vh;
+  transition: margin-left var(--transition-slow);
+}
+.sidebar.collapsed + .main-content { margin-left: 0; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+/* ============================================================
+   SIDEBAR COMPONENTS
+   ============================================================ */
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.6);
+  font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--color-text-tertiary); }
+.nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+/* ============================================================
+   CARDS & SURFACES
+   ============================================================ */
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-lg);
+  transition: box-shadow var(--transition-normal);
+}
+.card:hover { box-shadow: var(--shadow-sm); }
+
+.callout {
+  padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md);
+  border-left: 3px solid; font-size: 14px; line-height: 1.6;
+}
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); border-color: var(--color-text-tertiary); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.btn-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+
+/* ============================================================
+   FORM ELEMENTS
+   ============================================================ */
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); color: var(--color-text); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.form-input::placeholder { color: var(--color-text-tertiary); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+/* ============================================================
+   ALIGNMENT GAUGE
+   ============================================================ */
+.gauge-wrap { display: flex; flex-direction: column; align-items: center; padding: var(--space-lg) 0; }
+.gauge-svg { width: 200px; height: 120px; }
+.gauge-label { font-size: 13px; color: var(--color-text-secondary); margin-top: var(--space-sm); text-align: center; }
+.gauge-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; margin-top: var(--space-xs); }
+
+/* ============================================================
+   SCORE SELECTOR
+   ============================================================ */
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center; min-width: 0;
+}
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+
+@media (max-width: 600px) {
+  .score-selector { gap: 4px; }
+  .score-option { padding: 10px 4px; }
+  .score-number { font-size: 18px; }
+  .score-label-text { font-size: 9px; }
+}
+
+/* ============================================================
+   CONVERSATION CARDS
+   ============================================================ */
+.convo-card {
+  border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+  overflow: hidden; margin-bottom: var(--space-md); background: var(--color-surface);
+  transition: box-shadow var(--transition-normal);
+}
+.convo-card:hover { box-shadow: var(--shadow-sm); }
+.convo-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-md) var(--space-lg); cursor: pointer; gap: var(--space-md);
+}
+.convo-card-header:hover { background: var(--color-surface-alt); }
+.convo-card-title-area { display: flex; align-items: center; gap: var(--space-md); flex: 1; min-width: 0; }
+.convo-card-num { width: 36px; height: 36px; border-radius: 50%; background: var(--color-primary-light); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+.convo-card-title { font-weight: 600; font-size: 15px; }
+.convo-card-status { font-size: 12px; color: var(--color-text-tertiary); }
+.convo-card-chevron { color: var(--color-text-tertiary); transition: transform var(--transition-fast); font-size: 18px; }
+.convo-card.expanded .convo-card-chevron { transform: rotate(180deg); }
+.convo-card-body { display: none; padding: 0 var(--space-lg) var(--space-lg); }
+.convo-card.expanded .convo-card-body { display: block; }
+
+/* ============================================================
+   PARTNER COMPARISON
+   ============================================================ */
+.partner-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+.partner-col { }
+.partner-col-header { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); margin-bottom: var(--space-sm); padding-bottom: var(--space-sm); border-bottom: 2px solid var(--color-border); display: flex; align-items: center; gap: var(--space-sm); }
+.partner-dot { width: 10px; height: 10px; border-radius: 50%; }
+.partner-dot-1 { background: var(--color-primary); }
+.partner-dot-2 { background: var(--color-accent); }
+
+@media (max-width: 600px) {
+  .partner-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   IDEAL WEEK GRID
+   ============================================================ */
+.week-grid { display: grid; grid-template-columns: 80px 1fr 1fr 40px; gap: 2px; }
+.week-cell { padding: var(--space-sm); font-size: 13px; }
+.week-header { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-tertiary); padding: var(--space-sm); }
+.week-day { font-weight: 600; font-size: 13px; color: var(--color-text-secondary); display: flex; align-items: center; padding: var(--space-sm); }
+.week-input { width: 100%; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: var(--color-surface); resize: none; min-height: 44px; }
+.week-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.week-match { display: flex; align-items: center; justify-content: center; }
+.match-dot { width: 12px; height: 12px; border-radius: 50%; }
+.match-dot.match { background: var(--color-success); }
+.match-dot.conflict { background: var(--color-danger); }
+.match-dot.partial { background: var(--color-warning); }
+.match-dot.empty { background: var(--color-border); }
+
+@media (max-width: 700px) {
+  .week-grid { grid-template-columns: 60px 1fr 1fr 32px; }
+  .week-day { font-size: 11px; }
+}
+
+/* ============================================================
+   ALIGNMENT TABLE
+   ============================================================ */
+.align-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.align-table th {
+  text-align: left; padding: var(--space-sm) var(--space-md); font-size: 11px;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border);
+}
+.align-table td { padding: var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.align-table tr:last-child td { border-bottom: none; }
+
+/* ============================================================
+   BADGES & TAGS
+   ============================================================ */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+  border-radius: 999px; font-size: 12px; font-weight: 500;
+}
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+
+/* ============================================================
+   PROGRESS RING (SVG)
+   ============================================================ */
+.progress-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.progress-ring-text { position: absolute; text-align: center; }
+.progress-ring-value { font-family: var(--font-display); font-weight: 700; line-height: 1; }
+.progress-ring-label { font-size: 10px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ============================================================
+   BAR CHART
+   ============================================================ */
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 120px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 24px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; min-width: 0; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+
+@media (max-width: 600px) {
+  .bar-label { width: 80px; font-size: 11px; }
+}
+
+/* ============================================================
+   CHECKLIST
+   ============================================================ */
+.checklist { display: flex; flex-direction: column; gap: 2px; }
+.check-item {
+  display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md);
+  border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast);
+}
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box {
+  width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition-fast); margin-top: 1px;
+}
+.check-item.checked .check-box { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+
+/* ============================================================
+   MISTAKE CARDS
+   ============================================================ */
+.mistake-card {
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+  padding: var(--space-lg); margin-bottom: var(--space-md);
+}
+.mistake-num { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--color-danger-light); color: var(--color-danger); font-size: 12px; font-weight: 700; margin-right: var(--space-sm); }
+.mistake-title { font-weight: 600; font-size: 15px; display: inline; }
+.mistake-desc { color: var(--color-text-secondary); font-size: 14px; margin: var(--space-sm) 0; }
+.mistake-fix { background: var(--color-success-light); border-radius: var(--radius-sm); padding: var(--space-sm) var(--space-md); font-size: 13px; color: var(--color-success); }
+.mistake-fix strong { color: var(--color-primary); }
+
+/* ============================================================
+   SECTIONS / PAGES
+   ============================================================ */
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+
+.section-divider { height: 1px; background: var(--color-border); margin: var(--space-2xl) 0; }
+
+/* ============================================================
+   WELCOME PAGE
+   ============================================================ */
+.welcome-hero {
+  text-align: center; padding: var(--space-3xl) var(--space-lg);
+  max-width: 640px; margin: 0 auto;
+}
+.welcome-icon {
+  width: 72px; height: 72px; background: var(--color-accent-light);
+  border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center;
+  margin: 0 auto var(--space-lg); font-size: 32px;
+}
+.welcome-hero .t-display { margin-bottom: var(--space-md); }
+.welcome-hero .t-body { margin-bottom: var(--space-2xl); }
+
+.welcome-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md);
+  margin: var(--space-2xl) 0; text-align: center;
+}
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+
+.welcome-phases { display: flex; flex-direction: column; gap: var(--space-md); margin: var(--space-2xl) 0; text-align: left; }
+.welcome-phase {
+  display: flex; gap: var(--space-lg); padding: var(--space-lg);
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+}
+.welcome-phase-num {
+  width: 36px; height: 36px; background: var(--color-primary-light); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-weight: 700;
+  color: var(--color-primary); flex-shrink: 0; font-size: 15px;
+}
+.welcome-phase-title { font-weight: 600; margin-bottom: 2px; }
+.welcome-phase-desc { font-size: 14px; color: var(--color-text-secondary); }
+
+@media (max-width: 600px) {
+  .welcome-stats { grid-template-columns: 1fr; }
+  .welcome-hero { padding: var(--space-2xl) var(--space-md); }
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast {
+  position: fixed; bottom: var(--space-xl); right: var(--space-xl); z-index: 200;
+  background: var(--color-text); color: #fff; padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-md); font-size: 14px; box-shadow: var(--shadow-lg);
+  transform: translateY(80px); opacity: 0; transition: all var(--transition-slow);
+  max-width: 400px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* ============================================================
+   MISALIGNMENT TABLE
+   ============================================================ */
+.mis-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.mis-table th { text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); background: var(--color-surface-alt); }
+.mis-table td { padding: 12px 14px; border-bottom: 1px solid var(--color-border-light); font-size: 14px; vertical-align: top; }
+.mis-table tr:last-child td { border-bottom: none; }
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+.mb-xs { margin-bottom: var(--space-xs); }
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+.mb-xl { margin-bottom: var(--space-xl); }
+.mb-2xl { margin-bottom: var(--space-2xl); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.mt-xl { margin-top: var(--space-xl); }
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-sm { gap: var(--space-sm); }
+.gap-md { gap: var(--space-md); }
+.gap-lg { gap: var(--space-lg); }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+/* ============================================================
+   PROFESSIONAL CARD
+   ============================================================ */
+.pro-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-md); }
+.pro-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); }
+.pro-card-icon { font-size: 24px; margin-bottom: var(--space-sm); }
+.pro-card-title { font-weight: 600; font-size: 15px; margin-bottom: var(--space-xs); }
+.pro-card-role { font-size: 13px; color: var(--color-text-secondary); margin-bottom: var(--space-sm); }
+.pro-card-when { font-size: 12px; color: var(--color-text-tertiary); padding-top: var(--space-sm); border-top: 1px solid var(--color-border-light); }
+
+/* Action input */
+.action-input-mini { width: 100%; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: var(--color-surface); }
+.action-input-mini:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+
+/* Print styles */
+@media print {
+  .sidebar, .mobile-header, .sidebar-overlay, .toast, .btn-group, .skip-link { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; }
+  .content-area { max-width: 100%; padding: 0; }
+  .btn { display: none; }
+}
+
+/* Accessibility */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; border-radius: 0 0 var(--radius-sm) 0; }
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<div class="app">
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #4</div>
+      <div class="sidebar-brand-title">Spousal &amp; Family Alignment</div>
+    </div>
+
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0 of 8 complete</div>
+    </div>
+
+    <div class="sidebar-nav">
+      <div class="nav-section-label">Journey</div>
+      <div class="nav-item active" data-page="welcome" onclick="goToPage('welcome')" tabindex="0" role="button">
+        <div class="nav-icon">1</div> Welcome
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item" data-page="why" onclick="goToPage('why')" tabindex="0" role="button">
+        <div class="nav-icon">2</div> Why It Matters
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="conversations" onclick="goToPage('conversations')" tabindex="0" role="button">
+        <div class="nav-icon">3</div> Conversations
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="alignment" onclick="goToPage('alignment')" tabindex="0" role="button">
+        <div class="nav-icon">4</div> Alignment Assessment
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="idealweek" onclick="goToPage('idealweek')" tabindex="0" role="button">
+        <div class="nav-icon">5</div> Ideal Week
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="family" onclick="goToPage('family')" tabindex="0" role="button">
+        <div class="nav-icon">6</div> Children &amp; Family
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="mistakes" onclick="goToPage('mistakes')" tabindex="0" role="button">
+        <div class="nav-icon">7</div> Common Mistakes
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="dashboard" onclick="goToPage('dashboard')" tabindex="0" role="button">
+        <div class="nav-icon">8</div> Dashboard
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+    </div>
+
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Alignment Score</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/5</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete assessment to see score</div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content" id="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="Open navigation"><span></span></button>
+      <div style="font-weight:600;font-size:15px">Spousal &amp; Family Alignment</div>
+    </div>
+
+    <div class="content-area">
+      <!-- ========== PAGE 1: WELCOME ========== -->
+      <div class="page active" id="page-welcome">
+        <div class="welcome-hero">
+          <div class="welcome-icon">&#x1f3e0;</div>
+          <div class="t-display">Spousal &amp; Family Alignment</div>
+          <p class="t-body t-secondary">
+            A business exit is a family event, not just a business event. It affects your spouse's daily life, your children's expectations, your family's identity, and the financial trajectory of the next generation.
+          </p>
+
+          <div class="welcome-stats">
+            <div class="welcome-stat">
+              <div class="welcome-stat-value">30-40%</div>
+              <div class="welcome-stat-label">of failed deals cite spousal misalignment</div>
+            </div>
+            <div class="welcome-stat">
+              <div class="welcome-stat-value">2x</div>
+              <div class="welcome-stat-label">increase in divorce within 2 years post-sale</div>
+            </div>
+            <div class="welcome-stat">
+              <div class="welcome-stat-value">4</div>
+              <div class="welcome-stat-label">structured conversations to build alignment</div>
+            </div>
+          </div>
+
+          <div class="callout callout-accent mb-2xl" style="text-align:left">
+            <strong>The core principle:</strong> Your spouse has been a silent partner in this business -- absorbing your stress, accepting your absence, supporting your risk-taking. They have earned a voice in how this ends. If they are not aligned, you will face resistance at the worst possible time.
+          </div>
+
+          <div class="welcome-phases">
+            <div class="welcome-phase">
+              <div class="welcome-phase-num">1</div>
+              <div>
+                <div class="welcome-phase-title">Understand Why It Matters</div>
+                <div class="welcome-phase-desc">See how misalignment shows up and why it kills deals.</div>
+              </div>
+            </div>
+            <div class="welcome-phase">
+              <div class="welcome-phase-num">2</div>
+              <div>
+                <div class="welcome-phase-title">Have the Four Conversations</div>
+                <div class="welcome-phase-desc">Guided discussion frameworks for the topics that matter most.</div>
+              </div>
+            </div>
+            <div class="welcome-phase">
+              <div class="welcome-phase-num">3</div>
+              <div>
+                <div class="welcome-phase-title">Measure Your Alignment</div>
+                <div class="welcome-phase-desc">Score where you agree, where you differ, and what to do about it.</div>
+              </div>
+            </div>
+            <div class="welcome-phase">
+              <div class="welcome-phase-num">4</div>
+              <div>
+                <div class="welcome-phase-title">Design Your Ideal Post-Exit Life</div>
+                <div class="welcome-phase-desc">Compare visions, find overlap, and address the gaps.</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-lg" onclick="completeWelcome()">Begin the Journey</button>
+        </div>
+      </div>
+
+      <!-- ========== PAGE 2: WHY IT MATTERS ========== -->
+      <div class="page" id="page-why">
+        <div class="page-header">
+          <div class="t-label">Section 2</div>
+          <div class="t-display">Why Family Alignment Matters</div>
+          <p class="t-body t-secondary">Misalignment doesn't announce itself. It shows up in subtle resistance, unexpected emotions, and deal-killing moments.</p>
+        </div>
+
+        <div class="t-h2 mb-lg">How Misalignment Manifests</div>
+        <div class="card mb-2xl" style="padding:0;overflow:auto">
+          <table class="mis-table">
+            <thead>
+              <tr><th>Misalignment</th><th>How It Shows Up</th><th>Impact on Deal</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Timing</strong></td><td>Spouse wants you to sell now; you want 3 more years (or vice versa)</td><td><span class="badge badge-danger">Delays &amp; resentment</span></td></tr>
+              <tr><td><strong>Price Expectations</strong></td><td>Spouse expects $10M; realistic value is $5M</td><td><span class="badge badge-danger">Rejected offers</span></td></tr>
+              <tr><td><strong>Post-Exit Life</strong></td><td>You want a new company; spouse wants you home</td><td><span class="badge badge-warning">Post-close conflict</span></td></tr>
+              <tr><td><strong>Risk Tolerance</strong></td><td>Spouse wants all-cash; you accept earnout</td><td><span class="badge badge-warning">Structure fights</span></td></tr>
+              <tr><td><strong>Lifestyle</strong></td><td>Different visions for where to live, how to spend</td><td><span class="badge badge-warning">Post-exit regret</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="t-h2 mb-lg">The Research</div>
+        <div class="card mb-lg">
+          <div class="flex gap-md items-center mb-md">
+            <div style="width:48px;height:48px;background:var(--color-danger-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">&#x26A0;</div>
+            <div>
+              <div class="t-h3">30-40% of failed transactions</div>
+              <div class="t-small t-secondary">cite spousal misalignment as a contributing factor</div>
+            </div>
+          </div>
+          <div class="flex gap-md items-center mb-md">
+            <div style="width:48px;height:48px;background:var(--color-warning-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">&#x1F4C8;</div>
+            <div>
+              <div class="t-h3">Divorce rates increase 2x</div>
+              <div class="t-small t-secondary">in the 2 years following a business sale</div>
+            </div>
+          </div>
+          <div class="flex gap-md items-center">
+            <div style="width:48px;height:48px;background:var(--color-success-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">&#x2714;</div>
+            <div>
+              <div class="t-h3">Formal alignment exercises</div>
+              <div class="t-small t-secondary">lead to dramatically higher post-exit satisfaction</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="t-h2 mb-lg">When "I'm Not Ready" Really Means...</div>
+        <div class="card mb-2xl" style="padding:0;overflow:auto">
+          <table class="mis-table">
+            <thead>
+              <tr><th>"I'm not ready" might mean...</th><th>The Real Issue</th><th>How to Address</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>I'm afraid of what comes next</td><td>Identity / purpose gap</td><td>Post-Exit Identity planning</td></tr>
+              <tr><td>I think we can get more</td><td>Price expectations</td><td>Get a professional valuation</td></tr>
+              <tr><td>The business needs me</td><td>Owner dependency</td><td>Owner Dependency Reduction</td></tr>
+              <tr><td>I don't trust the buyer</td><td>Control anxiety</td><td>Explore deal structures with involvement</td></tr>
+              <tr><td>I'll be bored</td><td>Purpose gap</td><td>Pre-exit exploration of new activities</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="flex justify-between">
+          <button class="btn btn-ghost" onclick="goToPage('welcome')">&larr; Back</button>
+          <button class="btn btn-primary" onclick="completeWhy()">Continue to Conversations &rarr;</button>
+        </div>
+      </div>
+
+      <!-- ========== PAGE 3: CONVERSATIONS ========== -->
+      <div class="page" id="page-conversations">
+        <div class="page-header">
+          <div class="t-label">Section 3</div>
+          <div class="t-display">The Alignment Conversation Framework</div>
+          <p class="t-body t-secondary">Alignment does not happen in one conversation. It happens over a series of structured discussions, ideally facilitated by a neutral party.</p>
+        </div>
+
+        <div class="callout callout-info mb-2xl">
+          <strong>How to use this:</strong> Work through each conversation with your partner. Use the prompts below as a guide. Record both partners' responses directly in the fields -- you can always come back and update them.
+        </div>
+
+        <div id="conversationCards"></div>
+
+        <div class="section-divider"></div>
+
+        <div class="flex justify-between">
+          <button class="btn btn-ghost" onclick="goToPage('why')">&larr; Back</button>
+          <button class="btn btn-primary" onclick="completeConversations()">Continue to Assessment &rarr;</button>
+        </div>
+      </div>
+
+      <!-- ========== PAGE 4: ALIGNMENT ASSESSMENT ========== -->
+      <div class="page" id="page-alignment">
+        <div class="page-header">
+          <div class="t-label">Section 4</div>
+          <div class="t-display">Partner Alignment Assessment</div>
+          <p class="t-body t-secondary">Rate your current level of alignment on each critical dimension. Be honest -- identifying gaps is the first step to closing them.</p>
+        </div>
+
+        <div id="alignmentAssessment"></div>
+
+        <div class="section-divider"></div>
+
+        <div class="flex justify-between">
+          <button class="btn btn-ghost" onclick="goToPage('conversations')">&larr; Back</button>
+          <button class="btn btn-primary" onclick="completeAlignment()">Continue to Ideal Week &rarr;</button>
+        </div>
+      </div>
+
+      <!-- ========== PAGE 5: IDEAL WEEK ========== -->
+      <div class="page" id="page-idealweek">
+        <div class="page-header">
+          <div class="t-label">Section 5</div>
+          <div class="t-display">Ideal Week Comparison</div>
+          <p class="t-body t-secondary">Both partners independently describe their ideal week after exit. The differences reveal the alignment work that needs to happen.</p>
+        </div>
+
+        <div class="callout callout-accent mb-2xl">
+          <strong>Instructions:</strong> Each partner writes out their ideal week -- what they do Monday through Sunday, how much time together vs. apart, where they are, and how they feel. Then compare. Use the match indicator to flag overlap and conflict.
+        </div>
+
+        <div class="card mb-2xl" style="overflow-x:auto">
+          <div class="week-grid" id="weekGrid"></div>
+        </div>
+
+        <div class="card mb-2xl">
+          <div class="t-h3 mb-md">Week Comparison Summary</div>
+          <div id="weekSummary"></div>
+        </div>
+
+        <div class="section-divider"></div>
+        <div class="flex justify-between">
+          <button class="btn btn-ghost" onclick="goToPage('alignment')">&larr; Back</button>
+          <button class="btn btn-primary" onclick="completeIdealWeek()">Continue to Family &rarr;</button>
+        </div>
+      </div>
+
+      <!-- ========== PAGE 6: CHILDREN & FAMILY ========== -->
+      <div class="page" id="page-family">
+        <div class="page-header">
+          <div class="t-label">Section 6</div>
+          <div class="t-display">Children &amp; Extended Family</div>
+          <p class="t-body t-secondary">Family dynamics add layers of complexity to an exit. Address these conversations early and compassionately.</p>
+        </div>
+
+        <div class="t-h2 mb-lg">Adult Children Considerations</div>
+        <div class="card mb-2xl">
+          <div class="checklist" id="childrenChecklist"></div>
+        </div>
+
+        <div class="t-h2 mb-lg">Family Members in the Business</div>
+        <div class="callout callout-warning mb-lg">
+          A buyer will evaluate family employees on merit, not relationship. Be honest about whether family members add value or create risk in a transaction context.
+        </div>
+
+        <div id="familyMemberCards"></div>
+
+        <div class="section-divider"></div>
+
+        <div class="t-h2 mb-lg">When Alignment Is Not Possible</div>
+        <div class="card mb-lg">
+          <p class="t-body t-secondary mb-lg">Sometimes partners cannot align. When this happens, recognize it early and seek help.</p>
+          <div class="checklist" id="noAlignChecklist"></div>
+        </div>
+
+        <div class="t-h2 mb-lg">Working with Professionals</div>
+        <div class="pro-cards mb-2xl">
+          <div class="pro-card">
+            <div class="pro-card-icon">&#x1F91D;</div>
+            <div class="pro-card-title">Couples Therapist / Coach</div>
+            <div class="pro-card-role">Facilitate alignment conversations and address emotional dynamics</div>
+            <div class="pro-card-when"><strong>When:</strong> If any conversation gets stuck or heated</div>
+          </div>
+          <div class="pro-card">
+            <div class="pro-card-icon">&#x1F4CA;</div>
+            <div class="pro-card-title">Financial Planner (Fee-Only)</div>
+            <div class="pro-card-role">Model scenarios and present objective data</div>
+            <div class="pro-card-when"><strong>When:</strong> For the Money conversation</div>
+          </div>
+          <div class="pro-card">
+            <div class="pro-card-icon">&#x2696;</div>
+            <div class="pro-card-title">Estate Planning Attorney</div>
+            <div class="pro-card-role">Address inheritance, trust, and gifting questions</div>
+            <div class="pro-card-when"><strong>When:</strong> For family and legacy discussions</div>
+          </div>
+        </div>
+
+        <div class="flex justify-between">
+          <button class="btn btn-ghost" onclick="goToPage('idealweek')">&larr; Back</button>
+          <button class="btn btn-primary" onclick="completeFamily()">Continue to Common Mistakes &rarr;</button>
+        </div>
+      </div>
+
+      <!-- ========== PAGE 7: COMMON MISTAKES ========== -->
+      <div class="page" id="page-mistakes">
+        <div class="page-header">
+          <div class="t-label">Section 7</div>
+          <div class="t-display">Common Mistakes to Avoid</div>
+          <p class="t-body t-secondary">Learn from the patterns that trip up most couples navigating a business exit.</p>
+        </div>
+
+        <div id="mistakeCards"></div>
+
+        <div class="section-divider"></div>
+
+        <div class="t-h2 mb-lg">Your Commitment Checklist</div>
+        <p class="t-body t-secondary mb-lg">Review these commitments and check each one you are willing to make with your partner.</p>
+        <div class="card mb-2xl">
+          <div class="checklist" id="commitmentChecklist"></div>
+        </div>
+
+        <div class="flex justify-between">
+          <button class="btn btn-ghost" onclick="goToPage('family')">&larr; Back</button>
+          <button class="btn btn-primary" onclick="completeMistakes()">View Dashboard &rarr;</button>
+        </div>
+      </div>
+
+      <!-- ========== PAGE 8: DASHBOARD ========== -->
+      <div class="page" id="page-dashboard">
+        <div class="page-header">
+          <div class="t-label">Your Results</div>
+          <div class="t-display">Family Alignment Dashboard</div>
+          <p class="t-body t-secondary">A complete view of where you stand, what's aligned, and what needs attention.</p>
+        </div>
+
+        <!-- Gauge -->
+        <div class="card mb-lg text-center">
+          <div class="gauge-wrap" id="dashGauge"></div>
+        </div>
+
+        <!-- KPI Row -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-md)" class="mb-2xl">
+          <div class="card text-center">
+            <div class="t-caption t-tertiary mb-xs">Alignment Score</div>
+            <div style="font-family:var(--font-display);font-size:28px;font-weight:700" id="dashScore">--</div>
+            <div class="t-caption t-tertiary">out of 5.0</div>
+          </div>
+          <div class="card text-center">
+            <div class="t-caption t-tertiary mb-xs">Topics Aligned</div>
+            <div style="font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--color-success)" id="dashAligned">--</div>
+            <div class="t-caption t-tertiary">of 8 topics</div>
+          </div>
+          <div class="card text-center">
+            <div class="t-caption t-tertiary mb-xs">Week Overlap</div>
+            <div style="font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--color-primary)" id="dashWeekOverlap">--</div>
+            <div class="t-caption t-tertiary">of 7 days</div>
+          </div>
+          <div class="card text-center">
+            <div class="t-caption t-tertiary mb-xs">Conversations Done</div>
+            <div style="font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--color-accent)" id="dashConvos">--</div>
+            <div class="t-caption t-tertiary">of 4 conversations</div>
+          </div>
+        </div>
+
+        <!-- Alignment Bars -->
+        <div class="card mb-2xl">
+          <div class="t-h2 mb-lg">Alignment by Topic</div>
+          <div class="bar-chart" id="dashBarChart"></div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="card mb-2xl">
+          <div class="t-h2 mb-lg">Recommendations</div>
+          <div id="dashRecommendations"></div>
+        </div>
+
+        <!-- Action Items -->
+        <div class="card mb-2xl">
+          <div class="t-h2 mb-lg">Next Steps</div>
+          <div id="dashActions"></div>
+          <button class="btn btn-sm btn-secondary mt-md" onclick="addNextStep()">+ Add Step</button>
+        </div>
+
+        <div class="flex justify-between">
+          <button class="btn btn-ghost" onclick="goToPage('mistakes')">&larr; Back</button>
+          <button class="btn btn-accent" onclick="exportData()">Export Assessment Data</button>
+        </div>
+
+        <div class="callout callout-info mt-xl">
+          <strong>Final Thought:</strong> The strongest exits are built on aligned partnerships. This conversation is as important as any deal term.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" aria-live="polite" role="status"></div>
+
+<script>
+/* ============================================================
+   DATA MODEL
+   ============================================================ */
+const STORAGE_KEY = 'exitosx-pb04-family-alignment';
+// Migrate from old localStorage key
+(function() { try { const old = localStorage.getItem('playbook-04-family-alignment'); if (old && !localStorage.getItem(STORAGE_KEY)) { localStorage.setItem(STORAGE_KEY, old); localStorage.removeItem('playbook-04-family-alignment'); } } catch(e) {} })();
+
+const CONVERSATIONS = [
+  {
+    id: 'why-exit',
+    num: 1,
+    title: 'Why Exit?',
+    desc: 'Both partners answer independently, then discuss together.',
+    prompts: [
+      { id: 'want-sell', label: 'Why do you want to (or not want to) sell the business?' },
+      { id: 'life-after', label: 'What are you hoping life looks like after?' },
+      { id: 'afraid', label: 'What are you most afraid of about the transition?' },
+      { id: 'success', label: 'What would make this feel like a success to you?' }
+    ]
+  },
+  {
+    id: 'money',
+    num: 2,
+    title: 'The Money',
+    desc: 'Get on the same page about financial reality and expectations.',
+    prompts: [
+      { id: 'live-comfortably', label: 'What do we need to live comfortably?' },
+      { id: 'worth', label: 'What is the business realistically worth?' },
+      { id: 'after-tax', label: 'How much will we actually keep after taxes?' },
+      { id: 'minimum', label: 'What is the minimum we would accept?' },
+      { id: 'earnout', label: 'How do we feel about earnouts, seller notes, and ongoing risk?' }
+    ]
+  },
+  {
+    id: 'life-design',
+    num: 3,
+    title: 'Post-Exit Life Design',
+    desc: 'The most important -- and most neglected -- conversation.',
+    prompts: [
+      { id: 'where-live', label: 'Where do we want to live?' },
+      { id: 'time', label: 'How do we want to spend our time -- individually and together?' },
+      { id: 'purpose', label: 'What role does work/purpose play for each of us?' },
+      { id: 'giving', label: 'What are our giving/legacy goals?' },
+      { id: 'wealth-children', label: 'How do we handle wealth with children and family?' }
+    ]
+  },
+  {
+    id: 'timing-process',
+    num: 4,
+    title: 'Timing and Process',
+    desc: 'Align on when and how the exit will unfold.',
+    prompts: [
+      { id: 'when', label: 'When is the right time to sell?' },
+      { id: 'involvement', label: 'How involved does each partner want to be in the process?' },
+      { id: 'advisors', label: 'Who are our trusted advisors?' },
+      { id: 'non-negotiable', label: 'What are our non-negotiable deal terms?' }
+    ]
+  }
+];
+
+const ALIGNMENT_TOPICS = [
+  { id: 'why-sell', label: 'Why sell?', desc: 'Agreement on the reason to pursue an exit' },
+  { id: 'when-sell', label: 'When to sell?', desc: 'Agreement on timing and readiness' },
+  { id: 'min-price', label: 'Minimum price', desc: 'Agreement on walk-away floor' },
+  { id: 'post-location', label: 'Post-exit location', desc: 'Agreement on where to live' },
+  { id: 'post-purpose', label: 'Post-exit work/purpose', desc: 'Agreement on what comes next' },
+  { id: 'children', label: 'Children/family impact', desc: 'Agreement on family communication and roles' },
+  { id: 'legacy', label: 'Legacy/giving goals', desc: 'Agreement on philanthropic and legacy plans' },
+  { id: 'deal-structure', label: 'Deal structure tolerance', desc: 'Agreement on acceptable deal terms and risk' }
+];
+
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+const CHILDREN_ITEMS = [
+  'We have discussed whether any adult children expect to take over the business',
+  'We have talked with adult children about the sale and our timeline',
+  'We have discussed what role (if any) children will have post-close',
+  'We have addressed inheritance expectations openly',
+  'We have a plan for how to communicate the decision to extended family'
+];
+
+const NO_ALIGN_ITEMS = [
+  'Engage a couples therapist who specializes in life transitions',
+  'Consider a structured mediation with a neutral financial planner',
+  'Identify the core fear or need driving the disagreement (it is rarely about the money)',
+  'Accept that proceeding without alignment carries significant personal risk'
+];
+
+const MISTAKES = [
+  {
+    title: 'Having the "We\'re Selling" Conversation Instead of the "Let\'s Explore" Conversation',
+    desc: 'Announcing a decision triggers defensiveness. Inviting exploration creates partnership.',
+    fix: 'Frame it as: "I want us to think together about the next chapter of our lives."'
+  },
+  {
+    title: 'Assuming Your Spouse Shares Your Enthusiasm (or Your Anxiety)',
+    desc: 'Your emotions are not their emotions. They may be relieved, terrified, angry, or indifferent -- and you won\'t know unless you ask.',
+    fix: 'Ask open-ended questions and genuinely listen.'
+  },
+  {
+    title: 'Leaving the Spouse Out of Advisor Meetings',
+    desc: 'If your spouse is not in the room when the financial planner or attorney speaks, they will form their own (often inaccurate) narrative.',
+    fix: 'Include your spouse in all major advisory conversations.'
+  }
+];
+
+const COMMITMENTS = [
+  'I will frame exit planning as exploration, not announcement',
+  'I will include my partner in all major advisor conversations',
+  'I will listen to my partner\'s concerns without defending or dismissing',
+  'I will not assume my partner shares my emotions about the exit',
+  'I will schedule dedicated time for these conversations (not rush them)',
+  'I will seek professional help if any conversation becomes stuck',
+  'I will complete the alignment assessment honestly with my partner',
+  'I will revisit and update our alignment at least quarterly'
+];
+
+let state = {
+  currentPage: 'welcome',
+  pagesUnlocked: ['welcome','why'],
+  pagesCompleted: [],
+  conversations: {},
+  alignment: {},
+  weekData: {},
+  childrenChecks: {},
+  noAlignChecks: {},
+  commitmentChecks: {},
+  familyMembers: [],
+  nextSteps: []
+};
+
+/* ============================================================
+   PERSISTENCE
+   ============================================================ */
+function saveData() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+function loadData() {
+  try {
+    const d = localStorage.getItem(STORAGE_KEY);
+    if (d) { const parsed = JSON.parse(d); Object.assign(state, parsed); }
+  } catch(e) {}
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function goToPage(pageId) {
+  const navItem = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+  if (navItem && navItem.classList.contains('locked') && !state.pagesUnlocked.includes(pageId)) return;
+
+  state.currentPage = pageId;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (navItem) navItem.classList.add('active');
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  closeSidebar();
+  saveData();
+
+  // Focus management for accessibility
+  const page = document.getElementById('page-' + pageId);
+  setTimeout(() => { const heading = page.querySelector('h1, h2, .t-display'); if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); } }, 100);
+
+  // Render dynamic content
+  if (pageId === 'conversations') renderConversations();
+  if (pageId === 'alignment') renderAlignment();
+  if (pageId === 'idealweek') renderIdealWeek();
+  if (pageId === 'family') renderFamily();
+  if (pageId === 'mistakes') renderMistakes();
+  if (pageId === 'dashboard') renderDashboard();
+}
+
+function unlockPage(pageId) {
+  if (!state.pagesUnlocked.includes(pageId)) state.pagesUnlocked.push(pageId);
+  const navItem = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+  if (navItem) navItem.classList.remove('locked');
+  saveData();
+}
+
+function completePage(pageId) {
+  if (!state.pagesCompleted.includes(pageId)) state.pagesCompleted.push(pageId);
+  const navItem = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+  if (navItem) navItem.classList.add('completed');
+  updateProgress();
+  saveData();
+}
+
+function updateProgress() {
+  const total = 8;
+  const done = state.pagesCompleted.length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = done + ' of ' + total + ' complete';
+  updateSidebarScore();
+}
+
+function updateSidebarScore() {
+  const score = calcAlignmentScore();
+  const el = document.getElementById('sidebarScore');
+  const desc = document.getElementById('sidebarScoreDesc');
+  if (score > 0) {
+    el.innerHTML = score.toFixed(1) + '<span class="sidebar-score-max">/5</span>';
+    desc.textContent = getScoreLabel(score);
+  } else {
+    el.innerHTML = '--<span class="sidebar-score-max">/5</span>';
+    desc.textContent = 'Complete assessment to see score';
+  }
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ============================================================
+   CALCULATIONS
+   ============================================================ */
+function calcAlignmentScore() {
+  const vals = ALIGNMENT_TOPICS.map(t => state.alignment[t.id] || 0).filter(v => v > 0);
+  if (vals.length === 0) return 0;
+  return vals.reduce((a,b) => a+b, 0) / vals.length;
+}
+
+function getScoreColor(val) {
+  if (val >= 4.5) return 'var(--color-score-5)';
+  if (val >= 3.5) return 'var(--color-score-4)';
+  if (val >= 2.5) return 'var(--color-score-3)';
+  if (val >= 1.5) return 'var(--color-score-2)';
+  return 'var(--color-score-1)';
+}
+
+function getScoreLabel(val) {
+  if (val >= 4.5) return 'Strongly Aligned';
+  if (val >= 3.5) return 'Mostly Aligned';
+  if (val >= 2.5) return 'Partially Aligned';
+  if (val >= 1.5) return 'Significant Gaps';
+  return 'Major Misalignment';
+}
+
+function countConversationsDone() {
+  let done = 0;
+  CONVERSATIONS.forEach(c => {
+    const hasP1 = c.prompts.some(p => (state.conversations[c.id + '-' + p.id + '-p1'] || '').trim());
+    const hasP2 = c.prompts.some(p => (state.conversations[c.id + '-' + p.id + '-p2'] || '').trim());
+    if (hasP1 && hasP2) done++;
+  });
+  return done;
+}
+
+function countWeekMatches() {
+  let matches = 0;
+  DAYS.forEach(d => {
+    const m = state.weekData[d.toLowerCase() + '-match'];
+    if (m === 'match') matches++;
+  });
+  return matches;
+}
+
+/* ============================================================
+   COMPLETION HANDLERS
+   ============================================================ */
+function completeWelcome() {
+  completePage('welcome');
+  unlockPage('why');
+  goToPage('why');
+}
+
+function completeWhy() {
+  completePage('why');
+  unlockPage('conversations');
+  goToPage('conversations');
+  showToast('Great. Now let\'s prepare for the four key conversations.');
+}
+
+function completeConversations() {
+  completePage('conversations');
+  unlockPage('alignment');
+  goToPage('alignment');
+  showToast('Conversations recorded. Time to measure your alignment.');
+}
+
+function completeAlignment() {
+  completePage('alignment');
+  unlockPage('idealweek');
+  goToPage('idealweek');
+  showToast('Assessment saved. Let\'s compare your ideal weeks.');
+}
+
+function completeIdealWeek() {
+  completePage('idealweek');
+  unlockPage('family');
+  goToPage('family');
+  showToast('Week comparison saved. Now address family considerations.');
+}
+
+function completeFamily() {
+  completePage('family');
+  unlockPage('mistakes');
+  goToPage('mistakes');
+  showToast('Family section complete. Review common mistakes next.');
+}
+
+function completeMistakes() {
+  completePage('mistakes');
+  unlockPage('dashboard');
+  goToPage('dashboard');
+  showToast('Here is your complete alignment dashboard.');
+}
+
+/* ============================================================
+   RENDER: CONVERSATIONS
+   ============================================================ */
+function renderConversations() {
+  const container = document.getElementById('conversationCards');
+  container.innerHTML = CONVERSATIONS.map(c => {
+    const hasData = c.prompts.some(p =>
+      (state.conversations[c.id + '-' + p.id + '-p1'] || '').trim() ||
+      (state.conversations[c.id + '-' + p.id + '-p2'] || '').trim()
+    );
+    return `
+      <div class="convo-card ${hasData ? 'expanded' : ''}" id="convo-${c.id}">
+        <div class="convo-card-header" onclick="toggleConvo('${c.id}')" aria-expanded="${hasData}">
+          <div class="convo-card-title-area">
+            <div class="convo-card-num">${c.num}</div>
+            <div>
+              <div class="convo-card-title">${c.title}</div>
+              <div class="convo-card-status">${c.desc}</div>
+            </div>
+          </div>
+          <div class="convo-card-chevron">&#x25BC;</div>
+        </div>
+        <div class="convo-card-body">
+          ${c.prompts.map(p => `
+            <div class="form-group">
+              <label class="form-label">${p.label}</label>
+              <div class="partner-grid">
+                <div class="partner-col">
+                  <div class="partner-col-header"><div class="partner-dot partner-dot-1"></div> Partner 1</div>
+                  <textarea class="form-input" placeholder="Partner 1's response..." rows="3"
+                    oninput="setConvoData('${c.id}','${p.id}','p1',this.value)">${escHtml(state.conversations[c.id + '-' + p.id + '-p1'] || '')}</textarea>
+                </div>
+                <div class="partner-col">
+                  <div class="partner-col-header"><div class="partner-dot partner-dot-2"></div> Partner 2</div>
+                  <textarea class="form-input" placeholder="Partner 2's response..." rows="3"
+                    oninput="setConvoData('${c.id}','${p.id}','p2',this.value)">${escHtml(state.conversations[c.id + '-' + p.id + '-p2'] || '')}</textarea>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleConvo(id) {
+  const card = document.getElementById('convo-' + id);
+  card.classList.toggle('expanded');
+}
+
+function setConvoData(convoId, promptId, partner, val) {
+  state.conversations[convoId + '-' + promptId + '-' + partner] = val;
+  saveData();
+}
+
+/* ============================================================
+   RENDER: ALIGNMENT ASSESSMENT
+   ============================================================ */
+function renderAlignment() {
+  const container = document.getElementById('alignmentAssessment');
+  container.innerHTML = ALIGNMENT_TOPICS.map(topic => {
+    const val = state.alignment[topic.id] || 0;
+    const scores = [
+      { v: 1, label: 'No Alignment' },
+      { v: 2, label: 'Mostly Apart' },
+      { v: 3, label: 'Mixed' },
+      { v: 4, label: 'Mostly Aligned' },
+      { v: 5, label: 'Fully Aligned' }
+    ];
+    return `
+      <div class="card mb-md">
+        <div class="t-h3 mb-xs">${topic.label}</div>
+        <div class="t-small t-secondary mb-md">${topic.desc}</div>
+        <div class="score-selector" role="radiogroup" aria-label="${topic.label}">
+          ${scores.map(s => `
+            <label class="score-option s${s.v} ${val === s.v ? 'selected' : ''}" onclick="setAlignScore('${topic.id}',${s.v})" role="radio" aria-checked="${val === s.v}" tabindex="0">
+              <input type="radio" name="align-${topic.id}" value="${s.v}" ${val === s.v ? 'checked' : ''}>
+              <div class="score-number">${s.v}</div>
+              <div class="score-label-text">${s.label}</div>
+            </label>
+          `).join('')}
+        </div>
+        ${val > 0 && val <= 2 ? `<div class="form-group mt-md" style="margin-bottom:0"><label class="form-label">What is the root of this gap?</label><textarea class="form-input" placeholder="Describe the underlying disagreement..." rows="2" oninput="setAlignNote('${topic.id}',this.value)">${escHtml(state.alignment[topic.id + '-note'] || '')}</textarea></div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function setAlignScore(topicId, val) {
+  state.alignment[topicId] = val;
+  saveData();
+  renderAlignment();
+  updateSidebarScore();
+}
+
+function setAlignNote(topicId, val) {
+  state.alignment[topicId + '-note'] = val;
+  saveData();
+}
+
+/* ============================================================
+   RENDER: IDEAL WEEK
+   ============================================================ */
+function renderIdealWeek() {
+  const grid = document.getElementById('weekGrid');
+  let html = `
+    <div class="week-header"></div>
+    <div class="week-header"><div class="partner-dot partner-dot-1" style="display:inline-block;margin-right:6px"></div>Partner 1</div>
+    <div class="week-header"><div class="partner-dot partner-dot-2" style="display:inline-block;margin-right:6px"></div>Partner 2</div>
+    <div class="week-header" style="text-align:center">Match</div>
+  `;
+  DAYS.forEach(day => {
+    const key = day.toLowerCase();
+    const p1 = state.weekData[key + '-p1'] || '';
+    const p2 = state.weekData[key + '-p2'] || '';
+    const match = state.weekData[key + '-match'] || '';
+    html += `
+      <div class="week-day">${day.slice(0,3)}</div>
+      <div class="week-cell"><textarea class="week-input" placeholder="What Partner 1 does..." oninput="setWeekData('${key}','p1',this.value)">${escHtml(p1)}</textarea></div>
+      <div class="week-cell"><textarea class="week-input" placeholder="What Partner 2 does..." oninput="setWeekData('${key}','p2',this.value)">${escHtml(p2)}</textarea></div>
+      <div class="week-match">
+        <div class="match-dot ${match || 'empty'}" onclick="cycleMatch('${key}')" title="Click to toggle: match / partial / conflict" style="cursor:pointer" role="button" tabindex="0" aria-label="Match status for ${day}"></div>
+      </div>
+    `;
+  });
+  grid.innerHTML = html;
+  renderWeekSummary();
+}
+
+function setWeekData(dayKey, field, val) {
+  state.weekData[dayKey + '-' + field] = val;
+  saveData();
+}
+
+function cycleMatch(dayKey) {
+  const key = dayKey + '-match';
+  const current = state.weekData[key] || '';
+  const cycle = ['', 'match', 'partial', 'conflict'];
+  const idx = cycle.indexOf(current);
+  state.weekData[key] = cycle[(idx + 1) % cycle.length];
+  saveData();
+  renderIdealWeek();
+}
+
+function renderWeekSummary() {
+  let matches = 0, partials = 0, conflicts = 0, empty = 0;
+  DAYS.forEach(d => {
+    const m = state.weekData[d.toLowerCase() + '-match'] || '';
+    if (m === 'match') matches++;
+    else if (m === 'partial') partials++;
+    else if (m === 'conflict') conflicts++;
+    else empty++;
+  });
+
+  document.getElementById('weekSummary').innerHTML = `
+    <div style="display:flex;gap:var(--space-lg);flex-wrap:wrap;margin-bottom:var(--space-md)">
+      <div class="flex items-center gap-sm"><div class="match-dot match" style="width:14px;height:14px"></div><span class="t-small"><strong>${matches}</strong> days aligned</span></div>
+      <div class="flex items-center gap-sm"><div class="match-dot partial" style="width:14px;height:14px"></div><span class="t-small"><strong>${partials}</strong> days partially aligned</span></div>
+      <div class="flex items-center gap-sm"><div class="match-dot conflict" style="width:14px;height:14px"></div><span class="t-small"><strong>${conflicts}</strong> days in conflict</span></div>
+      <div class="flex items-center gap-sm"><div class="match-dot empty" style="width:14px;height:14px"></div><span class="t-small"><strong>${empty}</strong> not yet rated</span></div>
+    </div>
+    ${conflicts > 0 ? '<div class="callout callout-warning">You have ' + conflicts + ' day(s) where your ideal visions conflict. These are the areas that need the most discussion.</div>' : ''}
+    ${matches >= 5 ? '<div class="callout callout-info">Strong overlap on most days. This is a great foundation for post-exit life design.</div>' : ''}
+  `;
+}
+
+/* ============================================================
+   RENDER: FAMILY
+   ============================================================ */
+function renderFamily() {
+  // Children checklist
+  document.getElementById('childrenChecklist').innerHTML = CHILDREN_ITEMS.map((item, i) => {
+    const checked = state.childrenChecks['c-' + i] || false;
+    return `
+      <div class="check-item ${checked ? 'checked' : ''}" onclick="toggleChildCheck('c-${i}')" role="checkbox" aria-checked="${checked}" tabindex="0">
+        <div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+        <div class="check-text">${item}</div>
+      </div>
+    `;
+  }).join('');
+
+  // No-alignment checklist
+  document.getElementById('noAlignChecklist').innerHTML = NO_ALIGN_ITEMS.map((item, i) => {
+    const checked = state.noAlignChecks['na-' + i] || false;
+    return `
+      <div class="check-item ${checked ? 'checked' : ''}" onclick="toggleNoAlignCheck('na-${i}')" role="checkbox" aria-checked="${checked}" tabindex="0">
+        <div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+        <div class="check-text">${item}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Family members in business
+  renderFamilyMembers();
+}
+
+function toggleChildCheck(id) {
+  state.childrenChecks[id] = !state.childrenChecks[id];
+  saveData();
+  renderFamily();
+}
+
+function toggleNoAlignCheck(id) {
+  state.noAlignChecks[id] = !state.noAlignChecks[id];
+  saveData();
+  renderFamily();
+}
+
+function renderFamilyMembers() {
+  const container = document.getElementById('familyMemberCards');
+  if (state.familyMembers.length === 0) {
+    state.familyMembers = [{ name: '', role: '', addsValue: '', plan: '' }];
+  }
+  container.innerHTML = state.familyMembers.map((fm, i) => `
+    <div class="card mb-md">
+      <div class="flex items-center justify-between mb-md">
+        <div class="t-h3">Family Member ${i + 1}</div>
+        ${state.familyMembers.length > 1 ? `<button class="btn btn-ghost btn-sm" onclick="removeFamilyMember(${i})" style="color:var(--color-danger)">Remove</button>` : ''}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+        <div class="form-group">
+          <label class="form-label">Name</label>
+          <input class="form-input" placeholder="Name..." value="${escHtml(fm.name)}" oninput="setFamilyMember(${i},'name',this.value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role in Business</label>
+          <input class="form-input" placeholder="Their role..." value="${escHtml(fm.role)}" oninput="setFamilyMember(${i},'role',this.value)">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Does this person add value a buyer would recognize?</label>
+        <div class="score-selector" style="max-width:400px">
+          <label class="score-option s5 ${fm.addsValue === 'yes' ? 'selected' : ''}" onclick="setFamilyMember(${i},'addsValue','yes')">
+            <div class="score-number" style="font-size:14px">Yes</div>
+          </label>
+          <label class="score-option s3 ${fm.addsValue === 'maybe' ? 'selected' : ''}" onclick="setFamilyMember(${i},'addsValue','maybe')">
+            <div class="score-number" style="font-size:14px;color:var(--color-score-3)">Maybe</div>
+          </label>
+          <label class="score-option s1 ${fm.addsValue === 'no' ? 'selected' : ''}" onclick="setFamilyMember(${i},'addsValue','no')">
+            <div class="score-number" style="font-size:14px">No</div>
+          </label>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Transition plan for this person</label>
+        <textarea class="form-input" placeholder="How will you handle this person's role during and after the sale?" rows="2" oninput="setFamilyMember(${i},'plan',this.value)">${escHtml(fm.plan)}</textarea>
+      </div>
+    </div>
+  `).join('') + `<button class="btn btn-secondary btn-sm mb-2xl" onclick="addFamilyMember()">+ Add Family Member</button>`;
+}
+
+function setFamilyMember(i, field, val) {
+  state.familyMembers[i][field] = val;
+  saveData();
+  if (field === 'addsValue') renderFamilyMembers();
+}
+
+function addFamilyMember() {
+  state.familyMembers.push({ name: '', role: '', addsValue: '', plan: '' });
+  saveData();
+  renderFamilyMembers();
+}
+
+function removeFamilyMember(i) {
+  state.familyMembers.splice(i, 1);
+  saveData();
+  renderFamilyMembers();
+}
+
+/* ============================================================
+   RENDER: MISTAKES
+   ============================================================ */
+function renderMistakes() {
+  document.getElementById('mistakeCards').innerHTML = MISTAKES.map((m, i) => `
+    <div class="mistake-card">
+      <div class="mb-sm"><span class="mistake-num">${i + 1}</span><div class="mistake-title">${m.title}</div></div>
+      <div class="mistake-desc">${m.desc}</div>
+      <div class="mistake-fix"><strong>Solution:</strong> ${m.fix}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('commitmentChecklist').innerHTML = COMMITMENTS.map((item, i) => {
+    const checked = state.commitmentChecks['cm-' + i] || false;
+    return `
+      <div class="check-item ${checked ? 'checked' : ''}" onclick="toggleCommitment('cm-${i}')" role="checkbox" aria-checked="${checked}" tabindex="0">
+        <div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+        <div class="check-text">${item}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleCommitment(id) {
+  state.commitmentChecks[id] = !state.commitmentChecks[id];
+  saveData();
+  renderMistakes();
+}
+
+/* ============================================================
+   RENDER: DASHBOARD
+   ============================================================ */
+function renderDashboard() {
+  const score = calcAlignmentScore();
+  const aligned = ALIGNMENT_TOPICS.filter(t => (state.alignment[t.id] || 0) >= 4).length;
+  const weekMatches = countWeekMatches();
+  const convosDone = countConversationsDone();
+
+  // KPIs
+  document.getElementById('dashScore').textContent = score > 0 ? score.toFixed(1) : '--';
+  document.getElementById('dashAligned').textContent = aligned;
+  document.getElementById('dashWeekOverlap').textContent = weekMatches;
+  document.getElementById('dashConvos').textContent = convosDone;
+
+  // Gauge
+  renderGauge(score);
+
+  // Bar chart
+  const barHtml = ALIGNMENT_TOPICS.map((topic, idx) => {
+    const val = state.alignment[topic.id] || 0;
+    const pct = (val / 5) * 100;
+    const color = val > 0 ? getScoreColor(val) : 'var(--color-border)';
+    return `
+      <div class="bar-row">
+        <div class="bar-label">${topic.label}</div>
+        <div class="bar-track">
+          <div class="bar-fill" data-width="${pct}" data-delay="${idx * 80}" style="width:0%;background:${color}">
+            <span class="bar-value">${val > 0 ? val : '-'}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('dashBarChart').innerHTML = barHtml;
+  setTimeout(() => {
+    document.querySelectorAll('#dashBarChart .bar-fill').forEach(el => {
+      const w = el.dataset.width;
+      const d = parseInt(el.dataset.delay) || 0;
+      setTimeout(() => { el.style.width = w + '%'; }, d);
+    });
+  }, 100);
+
+  // Recommendations
+  renderRecommendations(score, aligned, weekMatches, convosDone);
+
+  // Next Steps
+  renderNextSteps();
+}
+
+function renderGauge(score) {
+  const container = document.getElementById('dashGauge');
+  const pct = score > 0 ? (score / 5) : 0;
+  const angle = pct * 180;
+  const color = score > 0 ? getScoreColor(score) : 'var(--color-border)';
+  const label = score > 0 ? getScoreLabel(score) : 'Not yet assessed';
+
+  // SVG arc gauge
+  const r = 80;
+  const cx = 100;
+  const cy = 95;
+  const startAngle = Math.PI;
+  const endAngle = Math.PI + (angle * Math.PI / 180);
+  const x1 = cx + r * Math.cos(startAngle);
+  const y1 = cy + r * Math.sin(startAngle);
+  const x2 = cx + r * Math.cos(endAngle);
+  const y2 = cy + r * Math.sin(endAngle);
+  const largeArc = angle > 180 ? 1 : 0;
+
+  container.innerHTML = `
+    <svg viewBox="0 0 200 120" class="gauge-svg">
+      <path d="M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}" fill="none" stroke="var(--color-border)" stroke-width="12" stroke-linecap="round"/>
+      ${score > 0 ? `<path d="M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}" fill="none" stroke="${color}" stroke-width="12" stroke-linecap="round" style="transition: all 1s cubic-bezier(0.16, 1, 0.3, 1)"/>` : ''}
+      <text x="${cx}" y="${cy - 15}" text-anchor="middle" font-family="Georgia, serif" font-size="32" font-weight="700" fill="var(--color-text)">${score > 0 ? score.toFixed(1) : '--'}</text>
+      <text x="${cx}" y="${cy + 5}" text-anchor="middle" font-size="11" fill="var(--color-text-tertiary)" text-transform="uppercase" letter-spacing="0.05em">${label}</text>
+    </svg>
+  `;
+}
+
+function renderRecommendations(score, aligned, weekMatches, convosDone) {
+  const recs = [];
+
+  if (convosDone < 4) {
+    recs.push({ type: 'warning', text: `You have completed ${convosDone} of 4 alignment conversations. The remaining conversations are critical -- schedule dedicated, uninterrupted time for each one.` });
+  }
+
+  const gaps = ALIGNMENT_TOPICS.filter(t => (state.alignment[t.id] || 0) > 0 && (state.alignment[t.id] || 0) <= 2);
+  gaps.forEach(g => {
+    const note = state.alignment[g.id + '-note'] || '';
+    recs.push({ type: 'danger', text: `<strong>${g.label}</strong> scored ${state.alignment[g.id]}/5 -- this is a significant gap. ${note ? 'You noted: "' + escHtml(note) + '." ' : ''}Consider engaging a neutral third party for this topic.` });
+  });
+
+  if (weekMatches <= 2 && DAYS.some(d => state.weekData[d.toLowerCase() + '-match'])) {
+    recs.push({ type: 'warning', text: 'Your ideal weeks show limited overlap. Focus on finding at least 2-3 shared days/activities as a foundation.' });
+  }
+
+  const familyRisks = state.familyMembers.filter(fm => fm.addsValue === 'no' && fm.name);
+  familyRisks.forEach(fm => {
+    recs.push({ type: 'warning', text: `<strong>${escHtml(fm.name)}</strong> may not add value a buyer would recognize. Have this conversation early and compassionately before it becomes a deal issue.` });
+  });
+
+  if (score >= 4.0 && score > 0) {
+    recs.push({ type: 'success', text: 'Your alignment score is strong. Continue to revisit these conversations quarterly as conditions change. Aligned couples report dramatically higher post-exit satisfaction.' });
+  }
+
+  if (recs.length === 0) {
+    recs.push({ type: 'info', text: 'Complete the assessment sections to receive personalized recommendations for strengthening your family alignment.' });
+  }
+
+  const typeMap = { danger: 'callout-danger', warning: 'callout-warning', success: 'callout-info', info: 'callout-accent' };
+  document.getElementById('dashRecommendations').innerHTML = recs.map(r => `<div class="callout ${typeMap[r.type]} mb-md">${r.text}</div>`).join('');
+}
+
+function renderNextSteps() {
+  if (state.nextSteps.length === 0) {
+    state.nextSteps = generateDefaultSteps();
+  }
+  document.getElementById('dashActions').innerHTML = `
+    <table class="align-table" style="width:100%">
+      <thead><tr><th>Action</th><th style="width:120px">Owner</th><th style="width:110px">Target Date</th><th style="width:100px">Status</th></tr></thead>
+      <tbody>
+        ${state.nextSteps.map((s, i) => `
+          <tr>
+            <td><input class="action-input-mini" value="${escHtml(s.action)}" placeholder="What needs to happen..." oninput="updateStep(${i},'action',this.value)"></td>
+            <td><input class="action-input-mini" value="${escHtml(s.owner)}" placeholder="Who" oninput="updateStep(${i},'owner',this.value)"></td>
+            <td><input class="action-input-mini" type="date" value="${s.date}" oninput="updateStep(${i},'date',this.value)"></td>
+            <td>
+              <select class="action-input-mini" onchange="updateStep(${i},'status',this.value)">
+                <option value="not-started" ${s.status==='not-started'?'selected':''}>Not Started</option>
+                <option value="in-progress" ${s.status==='in-progress'?'selected':''}>In Progress</option>
+                <option value="done" ${s.status==='done'?'selected':''}>Done</option>
+              </select>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function generateDefaultSteps() {
+  const steps = [];
+  const convosDone = countConversationsDone();
+  if (convosDone < 4) {
+    steps.push({ action: 'Schedule Conversation #' + (convosDone + 1) + ' with partner', owner: '', date: '', status: 'not-started' });
+  }
+  const gaps = ALIGNMENT_TOPICS.filter(t => (state.alignment[t.id] || 0) > 0 && (state.alignment[t.id] || 0) <= 2);
+  gaps.slice(0, 2).forEach(g => {
+    steps.push({ action: 'Address misalignment on: ' + g.label, owner: '', date: '', status: 'not-started' });
+  });
+  if (steps.length < 3) {
+    steps.push({ action: 'Meet with fee-only financial planner as couple', owner: '', date: '', status: 'not-started' });
+    steps.push({ action: 'Review and update alignment assessment quarterly', owner: '', date: '', status: 'not-started' });
+  }
+  return steps;
+}
+
+function updateStep(i, field, val) {
+  state.nextSteps[i][field] = val;
+  saveData();
+}
+
+function addNextStep() {
+  state.nextSteps.push({ action: '', owner: '', date: '', status: 'not-started' });
+  saveData();
+  renderNextSteps();
+}
+
+/* ============================================================
+   EXPORT
+   ============================================================ */
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'family-alignment-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Data exported successfully.');
+}
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
+function init() {
+  loadData();
+
+  // Restore nav state
+  state.pagesUnlocked.forEach(p => unlockPage(p));
+  state.pagesCompleted.forEach(p => {
+    const navItem = document.querySelector(`.nav-item[data-page="${p}"]`);
+    if (navItem) navItem.classList.add('completed');
+  });
+
+  updateProgress();
+
+  // Navigate to last page
+  if (state.currentPage && state.pagesUnlocked.includes(state.currentPage)) {
+    goToPage(state.currentPage);
+  }
+
+  // Keyboard nav
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.click(); }
+    });
+  });
+
+  document.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('check-item')) {
+      e.preventDefault(); e.target.click();
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

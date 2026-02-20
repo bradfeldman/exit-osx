@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIM Preparation | Exit Planning Playbook #34</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.6; color: var(--color-text); background: var(--color-bg); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 1000; }
+a.skip-link:focus { position: fixed; top: 10px; left: 10px; width: auto; height: auto; padding: 12px 20px; background: var(--color-primary); color: #fff; border-radius: var(--radius-sm); font-weight: 600; z-index: 1000; }
+.t-display { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; min-width: 260px; background: #FFFFFF; border-right: 1px solid var(--color-border); color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: transform var(--transition-slow); overflow-y: auto; }
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+.mobile-header { display: none; position: sticky; top: 0; z-index: 90; background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md); }
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item { display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px; border-radius: var(--radius-sm); color: rgba(255,255,255,0.6); font-size: 13px; transition: all var(--transition-fast); cursor: pointer; position: relative; }
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--color-text-tertiary); }
+.nav-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 13px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+.sidebar-footer { margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--color-border); font-size: 12px; color: rgba(255,255,255,0.3); display: flex; align-items: center; gap: 6px; }
+.sidebar-footer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-success); }
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); transition: box-shadow var(--transition-normal); margin-bottom: var(--space-md); }
+.card:hover { box-shadow: var(--shadow-sm); }
+.callout { padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); border-left: 3px solid; font-size: 14px; line-height: 1.6; margin-bottom: var(--space-md); }
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm); padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; transition: all var(--transition-fast); white-space: nowrap; }
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface); transition: all var(--transition-fast); color: var(--color-text); }
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+.score-selector { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+.score-btn { min-width: 34px; height: 34px; border: 2px solid var(--color-border); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--color-text-secondary); cursor: pointer; transition: all var(--transition-fast); background: var(--color-surface); padding: 0 4px; }
+.score-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.score-btn.selected { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; margin-bottom: var(--space-md); }
+.data-table th { text-align: left; padding: var(--space-sm) var(--space-md); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); }
+.data-table td { padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: top; font-size: 13.5px; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table input, .data-table select, .data-table textarea { width: 100%; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; background: var(--color-surface); }
+.data-table input:focus, .data-table select:focus, .data-table textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-light); }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-lg); }
+.summary-item { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-align: center; }
+.summary-item-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; }
+.summary-item-label { font-size: 12px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-top: var(--space-xs); }
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 24px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; }
+.bar-fill.navy { background: linear-gradient(90deg, #0071E3, #2A6A9E); }
+.bar-fill.orange { background: linear-gradient(90deg, #B87333, #D4944A); }
+.bar-fill.emerald { background: linear-gradient(90deg, #2D8A4E, #3DA562); }
+.bar-fill.amber { background: linear-gradient(90deg, #C67F20, #D99730); }
+.bar-fill.red { background: linear-gradient(90deg, #C53030, #E04040); }
+.gauge-wrap { display: flex; justify-content: center; margin: var(--space-lg) 0; }
+.gauge-ring { position: relative; width: 160px; height: 160px; }
+.gauge-ring svg { width: 160px; height: 160px; transform: rotate(-90deg); }
+.gauge-ring circle { fill: none; stroke-width: 8; stroke-linecap: round; }
+.gauge-bg { stroke: var(--color-border); }
+.gauge-fill { transition: stroke-dashoffset 1s ease; }
+.gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gauge-center-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; line-height: 1; }
+.gauge-center-label { font-size: 12px; color: var(--color-text-tertiary); margin-top: 4px; }
+.check-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md); border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast); }
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box { width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); margin-top: 1px; }
+.check-item.checked .check-box, .check-box.checked { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg, .check-box.checked svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-box.checked::after { content: '\2713'; color: #fff; font-size: 13px; font-weight: 700; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+.add-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; border: 2px dashed var(--color-border); border-radius: var(--radius-md); background: transparent; cursor: pointer; font-size: 14px; color: var(--color-text-tertiary); font-weight: 500; transition: all var(--transition-fast); font-family: inherit; margin-top: var(--space-sm); }
+.add-btn:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-light); }
+.cim-section-card { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-sm); transition: all var(--transition-fast); cursor: pointer; display: flex; align-items: center; gap: var(--space-md); }
+.cim-section-card:hover { border-color: var(--color-primary); box-shadow: var(--shadow-sm); }
+.cim-section-card.expanded { border-color: var(--color-primary); box-shadow: var(--shadow-md); }
+.cim-num { width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary-light); color: var(--color-primary); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.cim-num.done { background: var(--color-success); color: #fff; }
+.cim-section-detail { margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--color-border-light); display: none; }
+.cim-section-card.expanded .cim-section-detail { display: block; }
+.tag-draft { background: var(--color-warning-light); color: var(--color-warning); }
+.tag-review { background: var(--color-primary-light); color: var(--color-primary); }
+.tag-final { background: var(--color-success-light); color: var(--color-success); }
+.tag-na { background: var(--color-surface-alt); color: var(--color-text-tertiary); }
+.growth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin: var(--space-md) 0; }
+.growth-card { border: 2px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); cursor: pointer; transition: all var(--transition-fast); position: relative; }
+.growth-card:hover { border-color: var(--color-primary); }
+.growth-card.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.growth-card.selected::after { content: '\2713'; position: absolute; top: 10px; right: 12px; width: 22px; height: 22px; border-radius: 50%; background: var(--color-primary); color: #fff; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+.mistake-card { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-sm); display: flex; align-items: flex-start; gap: var(--space-md); }
+.mistake-card.flagged { border-left: 3px solid var(--color-danger); background: var(--color-danger-light); }
+.mistake-card.cleared { border-left: 3px solid var(--color-success); }
+.mistake-num { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+.mistake-num.flagged { background: var(--color-danger); color: #fff; }
+.mistake-num.cleared { background: var(--color-success); color: #fff; }
+.mistake-num.neutral { background: var(--color-border); color: var(--color-text-secondary); }
+.fin-grid { display: grid; grid-template-columns: 2fr repeat(4, 1fr) 0.8fr; gap: 2px; margin: var(--space-md) 0; font-size: 13px; }
+.fin-cell { padding: 10px 12px; background: var(--color-surface); }
+.fin-header { background: var(--color-primary); color: #fff; font-size: 11px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+.fin-label { background: var(--color-bg); font-weight: 500; color: var(--color-text); }
+.fin-total { background: var(--color-primary-light); font-weight: 700; color: var(--color-primary); }
+.fin-cell input { width: 100%; border: none; background: transparent; font-size: 13px; font-family: inherit; padding: 0; color: var(--color-text); text-align: right; }
+.fin-cell input:focus { outline: none; background: rgba(27,77,110,0.04); border-radius: 2px; }
+.compare-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.compare-table th { text-align: left; padding: 10px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-tertiary); font-weight: 600; border-bottom: 2px solid var(--color-border); }
+.compare-table td { padding: 12px; border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.compare-table tr:last-child td { border-bottom: none; }
+.compare-table .weak { background: var(--color-danger-light); color: var(--color-danger); padding: 3px 8px; border-radius: 4px; font-size: 12px; }
+.compare-table .strong { background: var(--color-success-light); color: var(--color-success); padding: 3px 8px; border-radius: 4px; font-size: 12px; }
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--color-border); }
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+.toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 200; }
+.toast { background: var(--color-text); color: #fff; padding: 12px 20px; border-radius: var(--radius-md); font-size: 14px; box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(8px); transition: all 0.3s ease; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateY(0); }
+@media (max-width: 600px) {
+  .welcome-stats { grid-template-columns: 1fr; }
+  .welcome-hero { padding: var(--space-2xl) var(--space-md); }
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .bar-label { width: 90px; font-size: 11px; }
+  .growth-grid { grid-template-columns: 1fr; }
+  .fin-grid { font-size: 11px; grid-template-columns: 1.5fr repeat(4, 1fr) 0.6fr; }
+}
+@media print {
+  .sidebar, .mobile-header, .page-nav, .sidebar-overlay, .toast-container { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; margin-bottom: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<a href="#contentArea" class="skip-link">Skip to content</a>
+<div class="app">
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #34</div>
+      <div class="sidebar-brand-title">CIM Preparation</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">CIM Readiness Score</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete sections to build your score</div>
+    </div>
+    <div class="sidebar-footer"><div class="sidebar-footer-dot"></div>Auto-saved locally</div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation"><span></span></button>
+      <div style="flex:1"><strong style="font-size:15px;">CIM Preparation</strong></div>
+      <div class="badge badge-primary" id="mobileScore">--/100</div>
+    </div>
+    <main class="content-area" id="contentArea" role="main"></main>
+  </div>
+</div>
+<div class="toast-container" aria-live="polite"><div class="toast" id="toast"></div></div>
+
+<script>
+(function() {
+'use strict';
+
+var STORAGE_KEY = 'exitosx-pb34-cim-prep';
+
+var PAGES = [
+  { id: 'welcome', title: 'Welcome', phase: 'OVERVIEW', icon: '1' },
+  { id: 'audience', title: 'Know Your Audience', phase: 'OVERVIEW', icon: '2' },
+  { id: 'structure', title: 'CIM Structure & TOC', phase: 'BUILD THE CIM', icon: '3' },
+  { id: 'exec-summary', title: 'Executive Summary', phase: 'BUILD THE CIM', icon: '4' },
+  { id: 'investment-highlights', title: 'Investment Highlights', phase: 'BUILD THE CIM', icon: '5' },
+  { id: 'financials', title: 'Financial Presentation', phase: 'BUILD THE CIM', icon: '6' },
+  { id: 'growth-story', title: 'The Growth Story', phase: 'BUILD THE CIM', icon: '7' },
+  { id: 'management', title: 'Management Team', phase: 'BUILD THE CIM', icon: '8' },
+  { id: 'competitive', title: 'Competitive Positioning', phase: 'BUILD THE CIM', icon: '9' },
+  { id: 'mistakes', title: 'Common Mistakes Audit', phase: 'QUALITY CONTROL', icon: '10' },
+  { id: 'info-gathering', title: 'Information Gathering', phase: 'QUALITY CONTROL', icon: '11' },
+  { id: 'review-checklist', title: 'Final Review Checklist', phase: 'QUALITY CONTROL', icon: '12' },
+  { id: 'dashboard', title: 'Dashboard', phase: 'RESULTS', icon: '13' }
+];
+
+var CIM_TOC_SECTIONS = [
+  { name: 'Disclaimer / Confidentiality', pages: '1', purpose: 'Legal protection' },
+  { name: 'Executive Summary', pages: '2-3', purpose: 'Hook the reader with highlights and key metrics' },
+  { name: 'Company Overview', pages: '3-5', purpose: 'History, milestones, ownership, credibility' },
+  { name: 'Products & Services', pages: '3-5', purpose: 'Revenue by product, pricing model, value prop' },
+  { name: 'Market & Industry', pages: '3-5', purpose: 'TAM/SAM, growth trends, competitive landscape' },
+  { name: 'Sales & Marketing', pages: '2-4', purpose: 'GTM engine, pipeline, CAC, channels' },
+  { name: 'Operations', pages: '2-4', purpose: 'Facilities, technology, supply chain, processes' },
+  { name: 'Management Team', pages: '2-3', purpose: 'Bios, org chart, depth, retention readiness' },
+  { name: 'Financial Performance', pages: '5-8', purpose: 'Historical data, adjusted EBITDA, revenue bridge' },
+  { name: 'Growth Opportunities', pages: '2-4', purpose: 'Organic growth, M&A, new markets, pricing' },
+  { name: 'Transaction Overview', pages: '1-2', purpose: 'Process, timeline, seller expectations' },
+  { name: 'Appendices', pages: 'Varies', purpose: 'Customer list, contracts, equipment' }
+];
+
+var GROWTH_TYPES = [
+  { key: 'market', name: 'Market Expansion', desc: 'Enter new geographies or verticals', appeal: 'High -- especially for strategic buyers' },
+  { key: 'product', name: 'Product/Service Extension', desc: 'Add new offerings to existing customers', appeal: 'High -- cross-sell is low-risk growth' },
+  { key: 'pricing', name: 'Pricing Optimization', desc: 'Raise prices or restructure pricing model', appeal: 'Moderate -- easy to execute' },
+  { key: 'acquisition', name: 'Acquisition (Buy & Build)', desc: 'Acquire competitors or complementary businesses', appeal: 'Very high for PE buyers' },
+  { key: 'efficiency', name: 'Operational Efficiency', desc: 'Reduce costs, automate, improve margins', appeal: 'Moderate -- proves scalability' },
+  { key: 'digital', name: 'Digital / Technology', desc: 'E-commerce, SaaS conversion, automation', appeal: 'High -- modernization premium' }
+];
+
+var CIM_MISTAKES = [
+  { id: 'm1', title: 'Writing for the seller, not the buyer', desc: 'Buyers care about cash flow, growth, risk, and management -- not your personal journey or awards unless they support a value driver.' },
+  { id: 'm2', title: 'Burying the financial data', desc: 'PE associates flip directly to financials. Key metrics should appear on pages 1-2. Financial section must be easy to find.' },
+  { id: 'm3', title: 'Undefensible projections', desc: 'Hockey-stick projections without historical support destroy credibility. Conservative projections you can defend are far more valuable.' },
+  { id: 'm4', title: 'Too long or too short', desc: '15 pages feels thin. 100 pages is exhausting. Target 30-60 pages with additional detail in appendices.' },
+  { id: 'm5', title: 'Inconsistent numbers', desc: 'If page 5 says $8.2M revenue and page 22 says $8.4M, credibility is destroyed. Have your CPA verify all figures.' },
+  { id: 'm6', title: 'No disclosure of known issues', desc: 'Hiding customer concentration, declining margins, or pending litigation. Buyers will find them in diligence. Surprises kill deals.' }
+];
+
+var FINAL_CHECKLIST = [
+  'All financial figures are consistent throughout the document',
+  'EBITDA adjustments are defensible and documented',
+  'Investment highlights are specific, quantified, and compelling',
+  'Growth opportunities are credible and supported by evidence',
+  'Management team section addresses transition and retention',
+  'Competitive analysis is honest and balanced',
+  'No confidential information that should not be shared at this stage',
+  'Professional design and formatting throughout',
+  'Legal disclaimer and confidentiality notice included',
+  'M&A attorney and CPA have reviewed relevant sections'
+];
+
+var INFO_CATEGORIES = [
+  { name: 'Financial', docs: '3-5 years tax returns, P&L, balance sheet, AR/AP aging', time: '1-2 weeks' },
+  { name: 'EBITDA Adjustments', docs: 'Documented add-backs with supporting evidence', time: '1-2 weeks' },
+  { name: 'Customer Data', docs: 'Revenue by customer (top 20), retention rates, contract terms', time: '1 week' },
+  { name: 'Sales & Marketing', docs: 'Pipeline data, marketing spend, customer acquisition cost', time: '1 week' },
+  { name: 'Operations', docs: 'Org chart, employee roster, facility details, tech stack', time: '1 week' },
+  { name: 'Legal', docs: 'Material contracts, leases, IP registrations, litigation summary', time: '1-2 weeks' },
+  { name: 'Growth Opportunities', docs: 'Documented opportunities with supporting evidence', time: '1-2 weeks' },
+  { name: 'Management Bios', docs: 'Professional bios for all leadership team members', time: '1 week' }
+];
+
+function defaultState() {
+  return {
+    currentPage: 'welcome', completed: {},
+    companyName: '', ttmRevenue: '', ttmEBITDA: '', revenueCAGR: '', grossMargin: '',
+    recurringRevPct: '', activeCustomers: '', retentionRate: '', employeeCount: '',
+    highlights: [{ text: '', evidence: '', appeal: 0 },{ text: '', evidence: '', appeal: 0 },{ text: '', evidence: '', appeal: 0 },{ text: '', evidence: '', appeal: 0 },{ text: '', evidence: '', appeal: 0 }],
+    financials: { yr1: {}, yr2: {}, yr3: {}, ttm: {} },
+    adjustments: [],
+    selectedGrowth: [], growthDetails: {},
+    teamMembers: [{ name: '', title: '', years: '', stays: '', bio: '' }],
+    ownerDependency: '', transitionPlan: '',
+    marketPosition: '', advantages: '', barriers: '', valueProposition: '',
+    tam: '', sam: '', som: '', tailwinds: '',
+    cimSectionStatus: {}, mistakeAudit: {}, infoStatus: {}, finalChecklist: {},
+    notes: {}
+  };
+}
+
+var state = loadState();
+
+function loadState() {
+  try {
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return merge(defaultState(), JSON.parse(saved));
+    var old = localStorage.getItem('playbook34_cim_prep');
+    if (old) {
+      var m = merge(defaultState(), migrateOld(JSON.parse(old)));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(m));
+      return m;
+    }
+  } catch(e) {}
+  return defaultState();
+}
+
+function merge(def, saved) { var r = {}; for (var k in def) r[k] = saved.hasOwnProperty(k) ? saved[k] : def[k]; return r; }
+
+function migrateOld(old) {
+  var m = {}; for (var k in old) m[k] = old[k];
+  if (typeof old.currentSection === 'number') {
+    var ids = ['welcome','audience','structure','exec-summary','investment-highlights','financials','growth-story','management','competitive','mistakes','info-gathering','review-checklist','summary'];
+    m.currentPage = ids[old.currentSection] || 'welcome';
+    if (m.currentPage === 'summary') m.currentPage = 'dashboard';
+    delete m.currentSection;
+  }
+  if (Array.isArray(old.completedSections)) {
+    m.completed = {};
+    old.completedSections.forEach(function(id) { m.completed[id === 'summary' ? 'dashboard' : id] = true; });
+    delete m.completedSections;
+  }
+  return m;
+}
+
+function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {} updateProgress(); updateScore(); }
+
+function showToast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(function() { t.classList.remove('show'); }, 2400); }
+
+function calcScore() {
+  var s = 0;
+  var hl = state.highlights.filter(function(h) { return h.text; }).length;
+  s += Math.min(hl / 5, 1) * 20;
+  var cimDone = 0; CIM_TOC_SECTIONS.forEach(function(_, i) { if (state.cimSectionStatus[i] === 'final') cimDone++; });
+  s += (cimDone / 12) * 20;
+  var mc = 0; for (var mk in state.mistakeAudit) { if (state.mistakeAudit[mk] === 'cleared') mc++; }
+  s += (mc / 6) * 20;
+  var id = 0; INFO_CATEGORIES.forEach(function(_, i) { if (state.infoStatus[i] === 'delivered') id++; });
+  s += (id / 8) * 20;
+  var cl = 0; for (var ck in state.finalChecklist) { if (state.finalChecklist[ck]) cl++; }
+  s += (cl / FINAL_CHECKLIST.length) * 20;
+  return Math.min(Math.round(s), 100);
+}
+
+function getScoreColor(score) {
+  if (score >= 81) return 'var(--color-score-5)';
+  if (score >= 61) return 'var(--color-score-4)';
+  if (score >= 41) return 'var(--color-score-3)';
+  if (score >= 21) return 'var(--color-score-2)';
+  return 'var(--color-score-1)';
+}
+
+function getScoreLabel(score) {
+  if (score >= 81) return 'Excellent CIM readiness';
+  if (score >= 61) return 'Strong foundation, room to improve';
+  if (score >= 41) return 'Moderate -- address key gaps';
+  if (score >= 21) return 'Significant work remaining';
+  return 'Complete sections to build your score';
+}
+
+function updateScore() {
+  var score = calcScore();
+  document.getElementById('sidebarScore').innerHTML = score + '<span class="sidebar-score-max">/100</span>';
+  document.getElementById('mobileScore').textContent = score + '/100';
+  document.getElementById('sidebarScoreDesc').textContent = getScoreLabel(score);
+}
+
+function updateProgress() {
+  var total = PAGES.length - 2;
+  var done = Object.keys(state.completed).length;
+  var pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+}
+
+function isUnlocked(pageId) {
+  var idx = PAGES.findIndex(function(p) { return p.id === pageId; });
+  if (idx <= 0) return true;
+  return state.completed[PAGES[idx - 1].id] === true;
+}
+
+function renderNav() {
+  var nav = document.getElementById('sidebarNav'); var html = ''; var lastPhase = '';
+  PAGES.forEach(function(p) {
+    if (p.phase !== lastPhase) { html += '<div class="nav-section-label">' + p.phase + '</div>'; lastPhase = p.phase; }
+    var isActive = state.currentPage === p.id, isDone = state.completed[p.id], locked = !isUnlocked(p.id);
+    html += '<div class="nav-item' + (isActive ? ' active' : '') + (isDone ? ' completed' : '') + (locked ? ' locked' : '') + '" data-page="' + p.id + '" role="button" tabindex="' + (locked ? '-1' : '0') + '" aria-current="' + (isActive ? 'step' : 'false') + '">';
+    html += '<span class="nav-icon">' + p.icon + '</span><span>' + p.title + '</span>';
+    if (isDone) html += '<span class="nav-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></span>';
+    html += '</div>';
+  });
+  nav.innerHTML = html;
+  nav.querySelectorAll('.nav-item:not(.locked)').forEach(function(el) {
+    el.addEventListener('click', function() { goToPage(el.dataset.page); });
+    el.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToPage(el.dataset.page); } });
+  });
+}
+
+function goToPage(pageId) { if (!isUnlocked(pageId)) return; state.currentPage = pageId; saveState(); renderPage(); renderNav(); window.scrollTo({ top: 0, behavior: 'smooth' }); closeSidebar(); }
+function completePage(pageId) { state.completed[pageId] = true; var idx = PAGES.findIndex(function(p) { return p.id === pageId; }); if (idx < PAGES.length - 1) state.currentPage = PAGES[idx + 1].id; saveState(); renderPage(); renderNav(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function prevPage() { var idx = PAGES.findIndex(function(p) { return p.id === state.currentPage; }); if (idx > 0) goToPage(PAGES[idx - 1].id); }
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('show'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('show'); }
+document.getElementById('hamburgerBtn').addEventListener('click', toggleSidebar);
+document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+function pageNavHTML(showPrev, nextLabel, currentId) { var h = '<div class="page-nav">'; h += showPrev ? '<button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button>' : '<div></div>'; if (nextLabel !== false) h += '<button class="btn btn-primary" onclick="PB.completePage(\'' + currentId + '\')">' + (nextLabel || 'Continue') + ' &rarr;</button>'; h += '</div>'; return h; }
+
+function countCimStatus(s) { var c = 0; CIM_TOC_SECTIONS.forEach(function(_, i) { if ((state.cimSectionStatus[i] || 'not_started') === s) c++; }); return c; }
+function hasMetrics() { return state.ttmRevenue || state.ttmEBITDA || state.revenueCAGR; }
+function checklistPct() { var done = 0; for (var k in state.finalChecklist) { if (state.finalChecklist[k]) done++; } return Math.round(done / FINAL_CHECKLIST.length * 100); }
+
+function renderPage() {
+  var area = document.getElementById('contentArea');
+  var renderers = { 'welcome': renderWelcome, 'audience': renderAudience, 'structure': renderStructure, 'exec-summary': renderExecSummary, 'investment-highlights': renderInvestmentHighlights, 'financials': renderFinancials, 'growth-story': renderGrowthStory, 'management': renderManagement, 'competitive': renderCompetitive, 'mistakes': renderMistakes, 'info-gathering': renderInfoGathering, 'review-checklist': renderReviewChecklist, 'dashboard': renderDashboard };
+  var fn = renderers[state.currentPage];
+  area.innerHTML = '<div class="page active">' + (fn ? fn() : '') + '</div>';
+  bindInputs();
+}
+
+function bindInputs() {
+  document.querySelectorAll('[data-field]').forEach(function(el) { var h = function() { state[el.dataset.field] = el.value; saveState(); }; el.addEventListener('input', h); el.addEventListener('change', h); });
+  document.querySelectorAll('[data-hfield]').forEach(function(el) { el.addEventListener('input', function() { var i = parseInt(el.dataset.hidx); state.highlights[i][el.dataset.hfield] = el.value; saveState(); }); });
+  document.querySelectorAll('.score-btn[data-hidx]').forEach(function(btn) { btn.addEventListener('click', function() { state.highlights[parseInt(btn.dataset.hidx)].appeal = parseInt(btn.dataset.score); saveState(); renderPage(); }); });
+  document.querySelectorAll('[data-fyr]').forEach(function(el) { el.addEventListener('input', function() { if (!state.financials[el.dataset.fyr]) state.financials[el.dataset.fyr] = {}; state.financials[el.dataset.fyr][el.dataset.fkey] = el.value; saveState(); }); });
+  document.querySelectorAll('[data-afield]').forEach(function(el) { el.addEventListener('input', function() { var i = parseInt(el.dataset.aidx); if (!state.adjustments[i]) state.adjustments[i] = {}; state.adjustments[i][el.dataset.afield] = el.value; saveState(); }); });
+  document.querySelectorAll('.growth-card[data-gkey]').forEach(function(el) { var h = function() { var k = el.dataset.gkey, idx = state.selectedGrowth.indexOf(k); if (idx >= 0) state.selectedGrowth.splice(idx, 1); else state.selectedGrowth.push(k); saveState(); renderPage(); }; el.addEventListener('click', h); el.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); h(); } }); });
+  document.querySelectorAll('[data-gfield]').forEach(function(el) { el.addEventListener('input', function() { if (!state.growthDetails[el.dataset.gkey]) state.growthDetails[el.dataset.gkey] = {}; state.growthDetails[el.dataset.gkey][el.dataset.gfield] = el.value; saveState(); }); });
+  document.querySelectorAll('[data-tfield]').forEach(function(el) { var h = function() { state.teamMembers[parseInt(el.dataset.tidx)][el.dataset.tfield] = el.value; saveState(); }; el.addEventListener('input', h); el.addEventListener('change', h); });
+  document.querySelectorAll('[data-chkidx]').forEach(function(el) { var h = function() { state.finalChecklist[el.dataset.chkidx] = !state.finalChecklist[el.dataset.chkidx]; saveState(); renderPage(); }; el.addEventListener('click', h); el.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); h(); } }); });
+}
+
+function renderWelcome() {
+  return '<div class="welcome-hero"><div class="welcome-icon">&#128220;</div><div class="t-display">CIM Preparation</div><p class="t-body t-secondary" style="margin-top:var(--space-md)">Your CIM is your first impression with buyers. Make it compelling. Make it credible. Make it close-worthy.</p>' +
+    '<div class="welcome-stats"><div class="welcome-stat"><div class="welcome-stat-value">30-50%</div><div class="welcome-stat-label">NDA signers converted to IOIs by a strong CIM</div></div><div class="welcome-stat"><div class="welcome-stat-value">30-60</div><div class="welcome-stat-label">Target pages for a professional CIM</div></div><div class="welcome-stat"><div class="welcome-stat-value">12</div><div class="welcome-stat-label">Standard sections buyers expect</div></div></div>' +
+    '<div class="callout callout-accent" style="text-align:left"><strong>The Core Principle:</strong> The CIM is not an objective description of your business. It is a sales document written from the buyer\'s perspective. Every page should answer: "Why would a sophisticated buyer pay a premium for this business?"</div>' +
+    '<div class="callout callout-info" style="text-align:left"><strong>Time:</strong> 2-3 hours total. Save progress anytime. <strong>Target:</strong> 30-60 page CIM.</div></div>' +
+    pageNavHTML(false, 'Get Started', 'welcome');
+}
+
+function renderAudience() {
+  var readers = [
+    { role: 'PE Associate / Analyst', focus: 'Financial metrics, multiples, growth math', time: '2-4 hours', decision: 'Bring to investment committee?' },
+    { role: 'PE Partner / MD', focus: 'Strategic thesis, deal size, management quality', time: '30-60 min', decision: 'Submit an IOI?' },
+    { role: 'Corporate Development', focus: 'Synergies, integration complexity, competitive threat', time: '1-3 hours', decision: 'Recommend to leadership?' },
+    { role: 'CEO / Division President', focus: 'Cultural fit, strategic rationale, risk', time: '15-30 min', decision: 'Approve pursuing the deal?' },
+    { role: 'Family Office Principal', focus: 'Cash flow stability, management team, industry dynamics', time: '1-2 hours', decision: 'Request management meeting?' }
+  ];
+  var html = '<div class="page-header"><div class="t-label">Overview</div><div class="t-display">Know Your Audience</div><p class="t-body t-secondary">Different readers spend different time on your CIM and focus on different things. Understanding this shapes how you prioritize content.</p></div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Who Reads the CIM</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">And what they are looking for</p>';
+  readers.forEach(function(r) {
+    html += '<div style="display:flex;gap:var(--space-md);padding:14px 0;border-bottom:1px solid var(--color-border-light);"><div style="min-width:160px;"><div style="font-size:14px;font-weight:600;color:var(--color-primary);">' + r.role + '</div><div style="font-size:11px;color:var(--color-text-tertiary);margin-top:2px;">' + r.time + '</div></div><div style="flex:1;"><div style="font-size:13px;color:var(--color-text-secondary);">' + r.focus + '</div><div style="font-size:12px;color:var(--color-text);font-weight:500;margin-top:4px;">Decision: ' + r.decision + '</div></div></div>';
+  });
+  html += '</div>';
+  html += '<div class="callout callout-accent"><strong>Key takeaway:</strong> A strong CIM converts 30-50% of NDA signers into IOI submitters. A weak CIM loses buyers before they ever meet you. Pages 1-3 must hook the reader -- lead with your strongest metrics and investment highlights.</div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">The CIM in the Sale Funnel</div><div class="bar-chart"><div class="bar-row"><div class="bar-label">Teasers Sent</div><div class="bar-track"><div class="bar-fill navy" style="width:100%"><span class="bar-value">50-200 buyers</span></div></div></div><div class="bar-row"><div class="bar-label">NDAs Signed</div><div class="bar-track"><div class="bar-fill orange" style="width:40%"><span class="bar-value">20-80</span></div></div></div><div class="bar-row"><div class="bar-label">CIM Reviewed</div><div class="bar-track"><div class="bar-fill emerald" style="width:25%"><span class="bar-value">IOIs Submitted</span></div></div></div><div class="bar-row"><div class="bar-label">Management Mtg</div><div class="bar-track"><div class="bar-fill amber" style="width:12%"><span class="bar-value">LOIs / Final Bids</span></div></div></div></div></div>';
+  html += pageNavHTML(true, 'Continue', 'audience');
+  return html;
+}
+
+function renderStructure() {
+  var html = '<div class="page-header"><div class="t-label">Build the CIM</div><div class="t-display">CIM Structure & Table of Contents</div><p class="t-body t-secondary">A professional CIM follows a standard structure buyers expect. Track your section-by-section progress here.</p></div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Standard CIM Sections</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Click a section to set its status. Target: 30-60 pages total.</p>';
+  CIM_TOC_SECTIONS.forEach(function(s, i) {
+    var status = state.cimSectionStatus[i] || 'not_started';
+    var tagHtml = status === 'final' ? '<span class="badge badge-success">Final</span>' : status === 'review' ? '<span class="badge badge-primary">In Review</span>' : status === 'draft' ? '<span class="badge badge-warning">Draft</span>' : '<span class="badge badge-neutral">Not Started</span>';
+    html += '<div class="cim-section-card" data-cidx="' + i + '" onclick="PB.toggleCim(this)"><div class="cim-num' + (status === 'final' ? ' done' : '') + '">' + (i + 1) + '</div><div style="flex:1"><div style="font-size:14px;font-weight:600;">' + s.name + '</div><div style="font-size:12px;color:var(--color-text-secondary);">' + s.purpose + '</div></div><div style="font-size:12px;color:var(--color-text-tertiary);background:var(--color-surface-alt);padding:2px 8px;border-radius:100px;">' + s.pages + ' pg</div>' + tagHtml + '<div class="cim-section-detail"><div class="form-label" style="margin-bottom:var(--space-sm)">Set Status</div><div style="display:flex;gap:6px;flex-wrap:wrap;"><button class="btn btn-sm ' + (status === 'not_started' ? 'btn-primary' : 'btn-secondary') + '" onclick="event.stopPropagation();PB.setCimStatus(' + i + ',\'not_started\')">Not Started</button><button class="btn btn-sm ' + (status === 'draft' ? 'btn-primary' : 'btn-secondary') + '" onclick="event.stopPropagation();PB.setCimStatus(' + i + ',\'draft\')">Draft</button><button class="btn btn-sm ' + (status === 'review' ? 'btn-primary' : 'btn-secondary') + '" onclick="event.stopPropagation();PB.setCimStatus(' + i + ',\'review\')">Review</button><button class="btn btn-sm ' + (status === 'final' ? 'btn-primary' : 'btn-secondary') + '" onclick="event.stopPropagation();PB.setCimStatus(' + i + ',\'final\')">Final</button></div></div></div>';
+  });
+  html += '</div>';
+  html += '<div class="summary-grid"><div class="summary-item"><div class="summary-item-value" style="color:var(--color-success)">' + countCimStatus('final') + '</div><div class="summary-item-label">Finalized</div></div><div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + countCimStatus('review') + '</div><div class="summary-item-label">In Review</div></div><div class="summary-item"><div class="summary-item-value" style="color:var(--color-warning)">' + countCimStatus('draft') + '</div><div class="summary-item-label">Drafting</div></div><div class="summary-item"><div class="summary-item-value">' + countCimStatus('not_started') + '</div><div class="summary-item-label">Not Started</div></div></div>';
+  html += pageNavHTML(true, 'Continue', 'structure');
+  return html;
+}
+
+function renderExecSummary() {
+  var html = '<div class="page-header"><div class="t-label">Build the CIM</div><div class="t-display">Executive Summary</div><p class="t-body t-secondary">The most important section. Many buyers decide based solely on the first 2-3 pages. Lead with your strongest metrics.</p></div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Key Financial Metrics Box</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">This appears on page 1 or 2 of your CIM. Enter your current figures.</p>';
+  html += '<div class="form-group"><label class="form-label">Company Name</label><input class="form-input" data-field="companyName" value="' + esc(state.companyName) + '" placeholder="Your company name"></div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);"><div class="form-group"><label class="form-label">TTM Revenue</label><input class="form-input" data-field="ttmRevenue" value="' + esc(state.ttmRevenue) + '" placeholder="e.g., $8.2M"></div><div class="form-group"><label class="form-label">TTM Adjusted EBITDA</label><input class="form-input" data-field="ttmEBITDA" value="' + esc(state.ttmEBITDA) + '" placeholder="e.g., $1.6M"></div></div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);"><div class="form-group"><label class="form-label">Revenue CAGR (3-year)</label><input class="form-input" data-field="revenueCAGR" value="' + esc(state.revenueCAGR) + '" placeholder="e.g., 14%"></div><div class="form-group"><label class="form-label">Gross Margin</label><input class="form-input" data-field="grossMargin" value="' + esc(state.grossMargin) + '" placeholder="e.g., 62%"></div></div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);"><div class="form-group"><label class="form-label">Recurring Revenue %</label><input class="form-input" data-field="recurringRevPct" value="' + esc(state.recurringRevPct) + '" placeholder="e.g., 73%"></div><div class="form-group"><label class="form-label">Active Customers</label><input class="form-input" data-field="activeCustomers" value="' + esc(state.activeCustomers) + '" placeholder="e.g., 380+"></div></div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);"><div class="form-group"><label class="form-label">Customer Retention Rate</label><input class="form-input" data-field="retentionRate" value="' + esc(state.retentionRate) + '" placeholder="e.g., 92%"></div><div class="form-group"><label class="form-label">Number of Employees</label><input class="form-input" data-field="employeeCount" value="' + esc(state.employeeCount) + '" placeholder="e.g., 45"></div></div></div>';
+  if (hasMetrics()) {
+    var metrics = [{l:'TTM Revenue',v:state.ttmRevenue},{l:'Adj. EBITDA',v:state.ttmEBITDA},{l:'Revenue CAGR',v:state.revenueCAGR},{l:'Gross Margin',v:state.grossMargin},{l:'Recurring Rev',v:state.recurringRevPct},{l:'Customers',v:state.activeCustomers},{l:'Retention',v:state.retentionRate},{l:'Employees',v:state.employeeCount}].filter(function(m) { return m.v; });
+    html += '<div class="card" style="background:var(--color-primary);color:#fff;border:none;"><div style="font-size:12px;letter-spacing:1px;text-transform:uppercase;opacity:0.5;margin-bottom:12px;">Preview: CIM Metrics Box</div><div style="font-size:20px;font-weight:700;margin-bottom:var(--space-md);">' + (esc(state.companyName) || 'Your Company') + '</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">';
+    metrics.forEach(function(m) { html += '<div style="text-align:center;"><div style="font-size:20px;font-weight:700;">' + esc(m.v) + '</div><div style="font-size:11px;opacity:0.6;">' + m.l + '</div></div>'; });
+    html += '</div></div>';
+  }
+  html += pageNavHTML(true, 'Continue', 'exec-summary');
+  return html;
+}
+
+function renderInvestmentHighlights() {
+  var weakStrong = [['Strong customer relationships','92% retention rate over 10 years; avg customer tenure 7.3 years'],['Growing revenue','Revenue CAGR of 14% over 3 years; $8.2M TTM with $1.6M adjusted EBITDA'],['Experienced management team','4-person leadership team averaging 12 years tenure; all committed to staying post-close'],['Recurring revenue model','73% of revenue under multi-year contracts; avg contract length 3.2 years'],['Large addressable market','$4.2B TAM growing 8% annually; company holds <1% market share'],['Diversified customer base','380+ active customers; no single customer >6% of revenue; top 10 = 28%']];
+  var html = '<div class="page-header"><div class="t-label">Build the CIM</div><div class="t-display">Investment Highlights</div><p class="t-body t-secondary">Lead with 5-7 investment highlights that answer: "Why should a buyer pay a premium for this business?" Each must be specific and quantified.</p></div>';
+  html += '<div class="card" style="margin-bottom:var(--space-md)"><div class="t-h3" style="margin-bottom:var(--space-sm)">Weak vs. Strong Highlights</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Every highlight needs supporting data to be credible</p><table class="compare-table"><thead><tr><th>Weak</th><th>Strong</th></tr></thead><tbody>';
+  weakStrong.forEach(function(r) { html += '<tr><td><span class="weak">' + r[0] + '</span></td><td><span class="strong">' + r[1] + '</span></td></tr>'; });
+  html += '</tbody></table></div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Draft Your Investment Highlights</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Rate each highlight\'s buyer appeal to prioritize the strongest</p>';
+  state.highlights.forEach(function(h, i) {
+    var tagHtml = h.appeal ? '<span class="badge ' + (h.appeal >= 7 ? 'badge-success' : h.appeal >= 4 ? 'badge-warning' : 'badge-neutral') + '" style="margin-left:auto;">' + h.appeal + '/10</span>' : '';
+    html += '<div style="padding:var(--space-md) 0;' + (i < state.highlights.length - 1 ? 'border-bottom:1px solid var(--color-border-light);' : '') + '"><div style="display:flex;align-items:center;gap:10px;margin-bottom:var(--space-sm);"><div style="width:28px;height:28px;border-radius:50%;background:var(--color-primary-light);color:var(--color-primary);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + (i + 1) + '</div><div style="font-size:14px;font-weight:600;">Highlight #' + (i + 1) + '</div>' + tagHtml + '</div>';
+    html += '<div class="form-group" style="margin-bottom:10px;"><input class="form-input" data-hidx="' + i + '" data-hfield="text" value="' + esc(h.text) + '" placeholder="e.g., 92% customer retention rate over 10 years..."></div>';
+    html += '<div class="form-group" style="margin-bottom:10px;"><input class="form-input" data-hidx="' + i + '" data-hfield="evidence" value="' + esc(h.evidence) + '" placeholder="Supporting data / evidence..." style="font-size:13px;"></div>';
+    html += '<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:12px;color:var(--color-text-tertiary);">Buyer Appeal:</span><div class="score-selector" role="radiogroup" aria-label="Appeal for highlight ' + (i + 1) + '">';
+    for (var n = 1; n <= 10; n++) html += '<button class="score-btn' + (h.appeal === n ? ' selected' : '') + '" data-hidx="' + i + '" data-score="' + n + '" role="radio" aria-checked="' + (h.appeal === n) + '" tabindex="0">' + n + '</button>';
+    html += '</div></div></div>';
+  });
+  html += '<button class="add-btn" onclick="PB.addHighlight()">+ Add Highlight</button></div>';
+  html += pageNavHTML(true, 'Continue', 'investment-highlights');
+  return html;
+}
+
+function renderFinancials() {
+  var rows = ['Revenue','COGS','Gross Profit','Gross Margin %','Operating Expenses','EBITDA (Reported)','Adjustments','Adjusted EBITDA','Adj. EBITDA Margin %'];
+  var rowKeys = ['revenue','cogs','grossProfit','grossMargin','opex','ebitdaReported','adjustments','adjEbitda','adjMargin'];
+  var years = ['yr1','yr2','yr3','ttm'], yearLabels = ['Year 1','Year 2','Year 3','TTM'];
+  var html = '<div class="page-header"><div class="t-label">Build the CIM</div><div class="t-display">Financial Presentation</div><p class="t-body t-secondary">The section where deals are won or lost. PE firms spend more time here than anywhere else.</p></div>';
+  html += '<div class="callout callout-info"><strong>Revenue quality matters:</strong> Buyers distinguish "good revenue" (long-term contracts, creditworthy customers) from "bad revenue" (project-based, single customer). Break revenue down by type, by customer, and by contract term wherever possible.</div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Historical Financial Summary</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Enter approximate figures -- your CPA will finalize the exact numbers</p><div style="overflow-x:auto;"><div class="fin-grid" style="min-width:600px;"><div class="fin-cell fin-header">Line Item</div>';
+  yearLabels.forEach(function(y) { html += '<div class="fin-cell fin-header">' + y + '</div>'; });
+  html += '<div class="fin-cell fin-header">CAGR</div>';
+  rowKeys.forEach(function(key, ri) {
+    var isTotal = key === 'grossProfit' || key === 'adjEbitda', isMargin = key === 'grossMargin' || key === 'adjMargin';
+    html += '<div class="fin-cell ' + (isTotal ? 'fin-total' : 'fin-label') + '">' + rows[ri] + '</div>';
+    years.forEach(function(yr) { html += '<div class="fin-cell ' + (isTotal ? 'fin-total' : '') + '"><input data-fyr="' + yr + '" data-fkey="' + key + '" value="' + esc((state.financials[yr] || {})[key] || '') + '" placeholder="' + (isMargin ? 'XX%' : '$X.XM') + '"></div>'; });
+    html += '<div class="fin-cell ' + (isTotal ? 'fin-total' : '') + '"><input data-fyr="cagr" data-fkey="' + key + '" value="' + esc((state.financials.cagr || {})[key] || '') + '" placeholder="' + (key === 'revenue' || key === 'adjEbitda' ? 'X%' : '') + '"></div>';
+  });
+  html += '</div></div></div>';
+  // Adjustments
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">EBITDA Adjustments (Add-backs)</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Every adjustment must be defensible. Document the rationale.</p>';
+  var adjs = state.adjustments.length === 0 ? [{ item: '', amount: '', rationale: '' }] : state.adjustments;
+  adjs.forEach(function(a, i) {
+    html += '<div style="display:grid;grid-template-columns:2fr 1fr 3fr 40px;gap:var(--space-sm);margin-bottom:10px;align-items:start;"><input class="form-input" data-aidx="' + i + '" data-afield="item" value="' + esc(a.item) + '" placeholder="Adjustment item" style="font-size:13px;padding:8px 10px;"><input class="form-input" data-aidx="' + i + '" data-afield="amount" value="' + esc(a.amount) + '" placeholder="$__K" style="font-size:13px;padding:8px 10px;"><input class="form-input" data-aidx="' + i + '" data-afield="rationale" value="' + esc(a.rationale) + '" placeholder="Supporting rationale..." style="font-size:13px;padding:8px 10px;"><button class="btn btn-ghost btn-sm" onclick="PB.removeAdj(' + i + ')" style="color:var(--color-danger);padding:6px;">&times;</button></div>';
+  });
+  html += '<button class="add-btn" onclick="PB.addAdj()">+ Add Adjustment</button></div>';
+  // Revenue bridge
+  var bridgeItems = ['Beginning-of-year recurring/contracted revenue','Lost revenue from churned customers','Expansion revenue from existing customers','New customer revenue','Price increases','End-of-year total revenue'];
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Revenue Bridge Concept</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Show buyers how revenue changed year over year</p><div style="display:grid;grid-template-columns:1fr;gap:var(--space-sm);">';
+  bridgeItems.forEach(function(item, i) { html += '<div style="display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm) var(--space-md);background:' + (i === 0 || i === 5 ? 'var(--color-primary-light)' : 'var(--color-surface-alt)') + ';border-radius:var(--radius-sm);"><span style="font-size:16px;color:' + (i === 1 ? 'var(--color-danger)' : 'var(--color-success)') + ';">' + (i === 1 ? '\u2212' : i === 0 || i === 5 ? '\u25CF' : '+') + '</span><span style="font-size:13.5px;' + (i === 0 || i === 5 ? 'font-weight:600;' : '') + '">' + item + '</span></div>'; });
+  html += '</div></div>';
+  html += pageNavHTML(true, 'Continue', 'financials');
+  return html;
+}
+
+function renderGrowthStory() {
+  var html = '<div class="page-header"><div class="t-label">Build the CIM</div><div class="t-display">The Growth Story</div><p class="t-body t-secondary">Buyers pay multiples based on future potential. Present credible, specific opportunities that a resourced buyer can execute.</p></div>';
+  html += '<div class="callout callout-accent"><strong>Biggest CIM mistake here:</strong> Blue-sky fantasies. Buyers have seen thousands of CIMs claiming "$100B TAM -- we just need 1%." Instead: show evidence, quantify the opportunity, identify required investment, and explain why you have not done it yet.</div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Select Relevant Growth Types</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Which growth opportunities can you credibly present?</p><div class="growth-grid">';
+  GROWTH_TYPES.forEach(function(g) { html += '<div class="growth-card' + (state.selectedGrowth.indexOf(g.key) >= 0 ? ' selected' : '') + '" data-gkey="' + g.key + '" role="checkbox" tabindex="0"><div style="font-size:14px;font-weight:600;margin-bottom:2px;">' + g.name + '</div><div style="font-size:12px;color:var(--color-text-secondary);line-height:1.4;">' + g.desc + '</div><div style="font-size:11px;margin-top:var(--space-sm);"><span style="color:var(--color-text-tertiary);">Buyer appeal:</span> <strong style="color:var(--color-primary);">' + g.appeal + '</strong></div></div>'; });
+  html += '</div></div>';
+  state.selectedGrowth.forEach(function(gKey) {
+    var g = null; GROWTH_TYPES.forEach(function(t) { if (t.key === gKey) g = t; }); if (!g) return;
+    var d = state.growthDetails[gKey] || {};
+    html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-xs)">' + g.name + '</div><div class="t-small t-secondary" style="margin-bottom:var(--space-md)">Buyer appeal: ' + g.appeal + '</div>';
+    html += '<div class="form-group"><label class="form-label">Describe the Opportunity</label><div class="form-hint" style="margin-bottom:var(--space-sm)">Be specific: market, revenue potential, timeline</div><textarea class="form-input" data-gkey="' + gKey + '" data-gfield="description" placeholder="e.g., We could add $500K-$1M in revenue by expanding to Florida within 12-18 months...">' + esc(d.description || '') + '</textarea></div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);"><div class="form-group"><label class="form-label">Evidence / Traction</label><textarea class="form-input" data-gkey="' + gKey + '" data-gfield="evidence" rows="2" placeholder="Pilot market results, customer requests, competitive analysis...">' + esc(d.evidence || '') + '</textarea></div><div class="form-group"><label class="form-label">Required Investment</label><textarea class="form-input" data-gkey="' + gKey + '" data-gfield="investment" rows="2" placeholder="Capital needed, hires required, timeline...">' + esc(d.investment || '') + '</textarea></div></div>';
+    html += '<div class="form-group"><label class="form-label">Why You Haven\'t Done It</label><div class="form-hint" style="margin-bottom:var(--space-sm)">This is a feature, not a bug: "We haven\'t pursued this because our team is at capacity" = growth opportunity for a buyer</div><input class="form-input" data-gkey="' + gKey + '" data-gfield="whyNot" value="' + esc(d.whyNot || '') + '" placeholder="e.g., Management team at capacity; requires capital we chose not to raise..."></div></div>';
+  });
+  html += pageNavHTML(true, 'Continue', 'growth-story');
+  return html;
+}
+
+function renderManagement() {
+  var html = '<div class="page-header"><div class="t-label">Build the CIM</div><div class="t-display">Management Team</div><p class="t-body t-secondary">Addresses one of the buyer\'s biggest fears: "What happens after the owner leaves?"</p></div>';
+  html += '<div class="callout callout-info"><strong>The litmus test:</strong> "If I were hit by a bus tomorrow, could this team run the business for 6 months without any decline in performance?" If yes, your CIM can credibly present a strong management section.</div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Leadership Team Profiles</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Include for each: name, title, years, bio, and post-close commitment</p>';
+  state.teamMembers.forEach(function(m, i) {
+    var staysOpts = '<option value="">Post-close commitment...</option><option value="committed"' + (m.stays === 'committed' ? ' selected' : '') + '>Committed to stay 3+ years</option><option value="transition"' + (m.stays === 'transition' ? ' selected' : '') + '>Transition role (6-12 months)</option><option value="departing"' + (m.stays === 'departing' ? ' selected' : '') + '>Departing post-close</option><option value="tbd"' + (m.stays === 'tbd' ? ' selected' : '') + '>To be determined</option>';
+    html += '<div style="padding:var(--space-md) 0;' + (i < state.teamMembers.length - 1 ? 'border-bottom:1px solid var(--color-border-light);' : '') + '"><div style="display:flex;gap:var(--space-sm);margin-bottom:10px;"><div style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;">' + ((m.name || '?').charAt(0).toUpperCase()) + '</div><div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm);"><input class="form-input" data-tidx="' + i + '" data-tfield="name" value="' + esc(m.name) + '" placeholder="Full name" style="font-size:13px;padding:8px 10px;"><input class="form-input" data-tidx="' + i + '" data-tfield="title" value="' + esc(m.title) + '" placeholder="Title / Role" style="font-size:13px;padding:8px 10px;"></div>' + (state.teamMembers.length > 1 ? '<button class="btn btn-ghost btn-sm" onclick="PB.removeMember(' + i + ')" style="color:var(--color-danger);padding:6px;">&times;</button>' : '') + '</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm);margin-bottom:var(--space-sm);"><input class="form-input" data-tidx="' + i + '" data-tfield="years" value="' + esc(m.years) + '" placeholder="Years with company" style="font-size:13px;padding:8px 10px;"><select class="form-input" data-tidx="' + i + '" data-tfield="stays" style="font-size:13px;padding:8px 10px;">' + staysOpts + '</select></div><textarea class="form-input" data-tidx="' + i + '" data-tfield="bio" rows="2" placeholder="Brief professional biography..." style="font-size:13px;">' + esc(m.bio) + '</textarea></div>';
+  });
+  html += '<button class="add-btn" onclick="PB.addMember()">+ Add Team Member</button></div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Owner Dependency & Transition</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Address this proactively -- buyers will ask</p><div class="form-group"><label class="form-label">Current Owner Involvement</label><div class="form-hint" style="margin-bottom:var(--space-sm)">What functions does the owner handle?</div><textarea class="form-input" data-field="ownerDependency" placeholder="e.g., Owner handles 30% of sales relationships...">' + esc(state.ownerDependency) + '</textarea></div><div class="form-group"><label class="form-label">Transition Plan</label><div class="form-hint" style="margin-bottom:var(--space-sm)">Documented SOPs? Training materials? Specific timeline?</div><textarea class="form-input" data-field="transitionPlan" placeholder="e.g., 12-month transition support committed...">' + esc(state.transitionPlan) + '</textarea></div></div>';
+  html += pageNavHTML(true, 'Continue', 'management');
+  return html;
+}
+
+function renderCompetitive() {
+  var fields = [{ key: 'marketPosition', label: 'Market Position', hint: 'Market share, ranking, geographic reach', placeholder: 'e.g., #2 regional provider in the Southeast' },{ key: 'advantages', label: 'Competitive Advantages', hint: 'IP, relationships, brand, processes -- sustainable moats', placeholder: 'e.g., Proprietary scheduling software reduces labor costs 15%' },{ key: 'barriers', label: 'Barriers to Entry', hint: 'Licensing, capital, expertise, regulations, scale', placeholder: 'e.g., State licensing requires 3-year apprenticeship' },{ key: 'valueProposition', label: 'Customer Value Proposition', hint: 'Why customers buy from you vs. alternatives', placeholder: 'e.g., 98% on-time completion rate; 24/7 emergency response' }];
+  var html = '<div class="page-header"><div class="t-label">Build the CIM</div><div class="t-display">Competitive Positioning & Market</div><p class="t-body t-secondary">Buyers want to understand your moat -- why customers choose you and why that advantage is sustainable.</p></div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Positioning Framework</div>';
+  fields.forEach(function(f) { html += '<div class="form-group"><label class="form-label">' + f.label + '</label><div class="form-hint" style="margin-bottom:var(--space-sm)">' + f.hint + '</div><textarea class="form-input" data-field="' + f.key + '" rows="2" placeholder="' + f.placeholder + '">' + esc(state[f.key]) + '</textarea></div>'; });
+  html += '</div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Market Size (TAM / SAM / SOM)</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Use third-party research to support claims.</p><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-md);">';
+  html += '<div style="padding:var(--space-md);background:var(--color-primary-light);border-radius:var(--radius-md);text-align:center;"><div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--color-text-tertiary);margin-bottom:4px;">TAM</div><input class="form-input" data-field="tam" value="' + esc(state.tam) + '" placeholder="$__B" style="text-align:center;font-size:18px;font-weight:700;border:none;background:transparent;color:var(--color-primary);"><div style="font-size:11px;color:var(--color-text-secondary);">Total Addressable</div></div>';
+  html += '<div style="padding:var(--space-md);background:var(--color-accent-light);border-radius:var(--radius-md);text-align:center;"><div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--color-text-tertiary);margin-bottom:4px;">SAM</div><input class="form-input" data-field="sam" value="' + esc(state.sam) + '" placeholder="$__B" style="text-align:center;font-size:18px;font-weight:700;border:none;background:transparent;color:var(--color-accent);"><div style="font-size:11px;color:var(--color-text-secondary);">Serviceable Addressable</div></div>';
+  html += '<div style="padding:var(--space-md);background:var(--color-success-light);border-radius:var(--radius-md);text-align:center;"><div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--color-text-tertiary);margin-bottom:4px;">SOM</div><input class="form-input" data-field="som" value="' + esc(state.som) + '" placeholder="$__M" style="text-align:center;font-size:18px;font-weight:700;border:none;background:transparent;color:var(--color-success);"><div style="font-size:11px;color:var(--color-text-secondary);">Serviceable Obtainable</div></div></div>';
+  html += '<div class="form-group"><label class="form-label">Industry Tailwinds</label><div class="form-hint" style="margin-bottom:var(--space-sm)">Demographic shifts, regulatory changes, technology trends, consolidation</div><textarea class="form-input" data-field="tailwinds" placeholder="e.g., Aging commercial building stock driving 12% annual growth...">' + esc(state.tailwinds) + '</textarea></div></div>';
+  html += pageNavHTML(true, 'Continue', 'competitive');
+  return html;
+}
+
+function renderMistakes() {
+  var html = '<div class="page-header"><div class="t-label">Quality Control</div><div class="t-display">Common CIM Mistakes Audit</div><p class="t-body t-secondary">Audit your CIM draft against the six most common mistakes that kill deals.</p></div>';
+  CIM_MISTAKES.forEach(function(m, i) {
+    var status = state.mistakeAudit[m.id] || 'unreviewed';
+    html += '<div class="mistake-card' + (status === 'flagged' ? ' flagged' : status === 'cleared' ? ' cleared' : '') + '"><div class="mistake-num ' + (status === 'flagged' ? 'flagged' : status === 'cleared' ? 'cleared' : 'neutral') + '">' + (i + 1) + '</div><div style="flex:1;"><div class="t-h3" style="margin-bottom:4px;">' + m.title + '</div><p class="t-small t-secondary" style="margin-bottom:10px;">' + m.desc + '</p><div style="display:flex;gap:6px;"><button class="btn btn-sm ' + (status === 'cleared' ? 'btn-primary' : 'btn-secondary') + '" onclick="PB.setMistake(\'' + m.id + '\',\'cleared\')">Cleared</button><button class="btn btn-sm ' + (status === 'flagged' ? 'btn-primary' : 'btn-secondary') + '" style="' + (status === 'flagged' ? 'background:var(--color-danger);border-color:var(--color-danger);color:#fff;' : '') + '" onclick="PB.setMistake(\'' + m.id + '\',\'flagged\')">Flagged</button><button class="btn btn-sm btn-ghost" onclick="PB.setMistake(\'' + m.id + '\',\'unreviewed\')">Not Reviewed</button></div></div></div>';
+  });
+  var mc = 0, mf = 0; for (var mk in state.mistakeAudit) { if (state.mistakeAudit[mk] === 'cleared') mc++; if (state.mistakeAudit[mk] === 'flagged') mf++; }
+  html += '<div class="summary-grid" style="margin-top:var(--space-md);"><div class="summary-item"><div class="summary-item-value" style="color:var(--color-success)">' + mc + '</div><div class="summary-item-label">Cleared</div></div><div class="summary-item"><div class="summary-item-value" style="color:var(--color-danger)">' + mf + '</div><div class="summary-item-label">Flagged</div></div><div class="summary-item"><div class="summary-item-value">' + (6 - mc - mf) + '</div><div class="summary-item-label">Unreviewed</div></div><div class="summary-item"><div class="summary-item-value">' + Math.round(mc / 6 * 100) + '%</div><div class="summary-item-label">Clear Rate</div></div></div>';
+  html += pageNavHTML(true, 'Continue', 'mistakes');
+  return html;
+}
+
+function renderInfoGathering() {
+  var html = '<div class="page-header"><div class="t-label">Quality Control</div><div class="t-display">Information Gathering Tracker</div><p class="t-body t-secondary">Track document collection by category to ensure nothing is missed.</p></div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Document Collection Status</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">Total preparation time: 6-10 weeks.</p>';
+  INFO_CATEGORIES.forEach(function(cat, i) {
+    var status = state.infoStatus[i] || 'not_started';
+    var opts = '<option value="not_started"' + (status === 'not_started' ? ' selected' : '') + '>Not Started</option><option value="in_progress"' + (status === 'in_progress' ? ' selected' : '') + '>In Progress</option><option value="collected"' + (status === 'collected' ? ' selected' : '') + '>Collected</option><option value="delivered"' + (status === 'delivered' ? ' selected' : '') + '>Delivered to Broker</option>';
+    html += '<div style="display:flex;align-items:center;gap:var(--space-md);padding:14px 0;border-bottom:1px solid var(--color-border-light);"><div style="flex:1;"><div style="font-size:14px;font-weight:600;">' + cat.name + '</div><div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px;">' + cat.docs + '</div><div style="font-size:11px;color:var(--color-text-tertiary);margin-top:2px;">Estimated time: ' + cat.time + '</div></div><select class="form-input" style="width:140px;font-size:12px;padding:6px 10px;" onchange="PB.setInfoStatus(' + i + ',this.value)">' + opts + '</select></div>';
+  });
+  html += '</div>';
+  var statusMap = {delivered:'emerald',collected:'navy',in_progress:'amber',not_started:'red'}, labelMap = {delivered:'Delivered',collected:'Collected',in_progress:'In Progress',not_started:'Not Started'};
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Collection Progress</div><div class="bar-chart">';
+  ['delivered','collected','in_progress','not_started'].forEach(function(s) { var count = 0; INFO_CATEGORIES.forEach(function(_, i) { if ((state.infoStatus[i] || 'not_started') === s) count++; }); html += '<div class="bar-row"><div class="bar-label">' + labelMap[s] + '</div><div class="bar-track"><div class="bar-fill ' + statusMap[s] + '" style="width:' + (count / INFO_CATEGORIES.length * 100) + '%"><span class="bar-value">' + count + '</span></div></div></div>'; });
+  html += '</div></div>';
+  html += pageNavHTML(true, 'Continue', 'info-gathering');
+  return html;
+}
+
+function renderReviewChecklist() {
+  var done = 0; for (var k in state.finalChecklist) { if (state.finalChecklist[k]) done++; }
+  var pct = checklistPct();
+  var html = '<div class="page-header"><div class="t-label">Quality Control</div><div class="t-display">Final Review Checklist</div><p class="t-body t-secondary">Before the CIM is distributed, verify every item.</p></div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-sm)">Pre-Distribution Checklist</div><p class="t-small t-secondary" style="margin-bottom:var(--space-md)">' + done + ' of ' + FINAL_CHECKLIST.length + ' verified</p>';
+  FINAL_CHECKLIST.forEach(function(item, i) {
+    var checked = state.finalChecklist[i];
+    html += '<div class="check-item' + (checked ? ' checked' : '') + '" data-chkidx="' + i + '" role="checkbox" aria-checked="' + !!checked + '" tabindex="0"><div class="check-box"><svg viewBox="0 0 14 14"><polyline points="2.5 7 5.5 10 11.5 4"/></svg></div><div class="check-text">' + item + '</div></div>';
+  });
+  html += '</div>';
+  var r = 60, c = 2 * Math.PI * r, offset = c - (pct / 100) * c, sc = pct >= 80 ? 'var(--color-success)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-danger)';
+  html += '<div class="gauge-wrap"><div class="gauge-ring"><svg viewBox="0 0 160 160"><circle class="gauge-bg" cx="80" cy="80" r="' + r + '"/><circle class="gauge-fill" cx="80" cy="80" r="' + r + '" stroke="' + sc + '" stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + offset.toFixed(1) + '"/></svg><div class="gauge-center"><div class="gauge-center-value" style="color:' + sc + '">' + pct + '%</div><div class="gauge-center-label">Checklist Completion</div></div></div></div>';
+  html += pageNavHTML(true, 'View Dashboard', 'review-checklist');
+  return html;
+}
+
+function renderDashboard() {
+  var score = calcScore(); var sc = getScoreColor(score);
+  var r = 60, c = 2 * Math.PI * r, offset = c - (score / 100) * c;
+  var hl = state.highlights.filter(function(h) { return h.text; }).length;
+  var cimDone = countCimStatus('final');
+  var teamDefined = state.teamMembers.filter(function(m) { return m.name; }).length;
+  var mc = 0; for (var mk in state.mistakeAudit) { if (state.mistakeAudit[mk] === 'cleared') mc++; }
+  var id = 0; INFO_CATEGORIES.forEach(function(_, i) { if (state.infoStatus[i] === 'delivered') id++; });
+  var cl = 0; for (var ck in state.finalChecklist) { if (state.finalChecklist[ck]) cl++; }
+
+  var html = '<div class="page-header"><div class="t-label">Results</div><div class="t-display">CIM Readiness Dashboard</div></div>';
+  html += '<div class="gauge-wrap"><div class="gauge-ring"><svg viewBox="0 0 160 160"><circle class="gauge-bg" cx="80" cy="80" r="' + r + '"/><circle class="gauge-fill" cx="80" cy="80" r="' + r + '" stroke="' + sc + '" stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + offset.toFixed(1) + '"/></svg><div class="gauge-center"><div class="gauge-center-value" style="color:' + sc + '">' + score + '</div><div class="gauge-center-label">of 100</div></div></div></div>';
+  html += '<div class="summary-grid"><div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + hl + '</div><div class="summary-item-label">Highlights Drafted</div></div><div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + cimDone + '/12</div><div class="summary-item-label">Sections Finalized</div></div><div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + teamDefined + '</div><div class="summary-item-label">Team Members</div></div><div class="summary-item"><div class="summary-item-value" style="color:var(--color-primary)">' + Math.round(Object.keys(state.completed).length / (PAGES.length - 2) * 100) + '%</div><div class="summary-item-label">Playbook Complete</div></div></div>';
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Preparation Dashboard</div><div class="bar-chart"><div class="bar-row"><div class="bar-label">Investment Highlights</div><div class="bar-track"><div class="bar-fill navy" style="width:' + Math.max(hl / 5 * 100, 5) + '%"><span class="bar-value">' + hl + '/5</span></div></div></div><div class="bar-row"><div class="bar-label">CIM Sections</div><div class="bar-track"><div class="bar-fill orange" style="width:' + Math.max(cimDone / 12 * 100, 5) + '%"><span class="bar-value">' + cimDone + '/12</span></div></div></div><div class="bar-row"><div class="bar-label">Mistakes Cleared</div><div class="bar-track"><div class="bar-fill emerald" style="width:' + Math.max(mc / 6 * 100, 5) + '%"><span class="bar-value">' + mc + '/6</span></div></div></div><div class="bar-row"><div class="bar-label">Info Delivered</div><div class="bar-track"><div class="bar-fill amber" style="width:' + Math.max(id / 8 * 100, 5) + '%"><span class="bar-value">' + id + '/8</span></div></div></div><div class="bar-row"><div class="bar-label">Final Checklist</div><div class="bar-track"><div class="bar-fill navy" style="width:' + Math.max(cl / FINAL_CHECKLIST.length * 100, 5) + '%"><span class="bar-value">' + cl + '/' + FINAL_CHECKLIST.length + '</span></div></div></div></div></div>';
+  if (state.companyName) {
+    html += '<div class="card" style="background:var(--color-primary);color:#fff;border:none;"><div style="font-size:12px;letter-spacing:1px;text-transform:uppercase;opacity:0.5;margin-bottom:var(--space-sm);">CIM for</div><div style="font-size:22px;font-weight:700;margin-bottom:var(--space-sm);">' + esc(state.companyName) + '</div><div style="display:flex;gap:var(--space-lg);font-size:13px;opacity:0.8;">';
+    if (state.ttmRevenue) html += '<span>Revenue: ' + esc(state.ttmRevenue) + '</span>';
+    if (state.ttmEBITDA) html += '<span>EBITDA: ' + esc(state.ttmEBITDA) + '</span>';
+    if (state.activeCustomers) html += '<span>Customers: ' + esc(state.activeCustomers) + '</span>';
+    html += '</div></div>';
+  }
+  html += '<div class="card"><div class="t-h3" style="margin-bottom:var(--space-md)">Next Steps</div><ul style="margin:0 0 0 var(--space-lg);color:var(--color-text-secondary);font-size:14px;line-height:2;"><li>Finalize all financial figures with your CPA for consistency</li><li>Send completed information package to your broker for CIM drafting</li><li>Have your M&A attorney review legal disclosures and confidentiality notice</li><li>Review broker\'s first CIM draft with investment highlights front and center</li><li>Build your Buyer Universe (see Playbook #33) to coordinate with CIM completion</li></ul></div>';
+  html += '<div class="callout callout-accent"><strong>"You never get a second chance to make a first impression."</strong> -- Will Rogers<br><br>Your CIM is your company\'s first impression with the people who will determine its future. Make every page count.</div>';
+  html += '<div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-top:var(--space-lg)"><button class="btn btn-primary" onclick="PB.exportResults()">Export Summary</button><button class="btn btn-secondary" onclick="window.print()">Print</button><button class="btn btn-ghost" onclick="PB.resetAll()" style="color:var(--color-danger)">Reset All Data</button></div>';
+  html += '<div class="page-nav"><button class="btn btn-secondary" onclick="PB.prevPage()">&larr; Back</button><div></div></div>';
+  return html;
+}
+
+function exportResults() {
+  var score = calcScore();
+  var text = 'PLAYBOOK #34: CIM PREPARATION\nGenerated: ' + new Date().toLocaleDateString() + '\n' + '='.repeat(50) + '\n\nCIM READINESS SCORE: ' + score + '/100\n\n';
+  if (state.companyName) text += 'COMPANY: ' + state.companyName + '\n';
+  if (state.ttmRevenue) text += 'TTM Revenue: ' + state.ttmRevenue + '\n';
+  if (state.ttmEBITDA) text += 'TTM EBITDA: ' + state.ttmEBITDA + '\n\n';
+  text += 'INVESTMENT HIGHLIGHTS:\n';
+  state.highlights.forEach(function(h, i) { if (h.text) text += '  ' + (i + 1) + '. ' + h.text + (h.appeal ? ' (Appeal: ' + h.appeal + '/10)' : '') + '\n'; });
+  text += '\nCIM SECTIONS FINALIZED: ' + countCimStatus('final') + '/12\n';
+  text += 'TEAM MEMBERS: ' + state.teamMembers.filter(function(m) { return m.name; }).length + '\n';
+  var mc = 0; for (var mk in state.mistakeAudit) { if (state.mistakeAudit[mk] === 'cleared') mc++; }
+  text += 'MISTAKES CLEARED: ' + mc + '/6\n';
+  var blob = new Blob([text], { type: 'text/plain' }); var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = url; a.download = 'playbook-34-cim-prep.txt'; a.click(); URL.revokeObjectURL(url);
+  showToast('Summary exported');
+}
+
+function resetAll() { if (confirm('This will erase all your data in this playbook. Are you sure?')) { localStorage.removeItem(STORAGE_KEY); state = defaultState(); saveState(); goToPage('welcome'); showToast('All data reset'); } }
+
+window.PB = {
+  prevPage: prevPage, completePage: completePage, exportResults: exportResults, resetAll: resetAll,
+  addHighlight: function() { state.highlights.push({ text: '', evidence: '', appeal: 0 }); saveState(); renderPage(); showToast('Highlight added'); },
+  addAdj: function() { if (state.adjustments.length === 0) state.adjustments = []; state.adjustments.push({ item: '', amount: '', rationale: '' }); saveState(); renderPage(); showToast('Row added'); },
+  removeAdj: function(i) { state.adjustments.splice(i, 1); saveState(); renderPage(); },
+  addMember: function() { state.teamMembers.push({ name: '', title: '', years: '', stays: '', bio: '' }); saveState(); renderPage(); showToast('Member added'); },
+  removeMember: function(i) { state.teamMembers.splice(i, 1); saveState(); renderPage(); },
+  toggleCim: function(el) { el.classList.toggle('expanded'); },
+  setCimStatus: function(idx, status) { state.cimSectionStatus[idx] = status; saveState(); renderPage(); showToast('Status updated'); },
+  setMistake: function(id, status) { state.mistakeAudit[id] = status; saveState(); renderPage(); showToast('Status updated'); },
+  setInfoStatus: function(idx, status) { state.infoStatus[idx] = status; saveState(); renderPage(); }
+};
+
+renderNav(); renderPage(); updateProgress(); updateScore();
+})();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

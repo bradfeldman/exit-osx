@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technology & Systems Audit | Exit Planning Playbook #16</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  color: var(--color-text); background: var(--color-bg);
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a { color: var(--color-primary); text-decoration: none; }
+
+.t-display { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.t-tertiary { color: var(--color-text-tertiary); }
+
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 260px; min-width: 260px; background: var(--color-text); color: #fff;
+  padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow); overflow-y: auto;
+}
+.sidebar.collapsed { transform: translateX(-260px); }
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; transition: margin-left var(--transition-slow); }
+.sidebar.collapsed + .main-content { margin-left: 0; }
+.content-area { max-width: 820px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.6);
+  font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--color-text-tertiary); }
+.nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); transition: box-shadow var(--transition-normal); }
+.card:hover { box-shadow: var(--shadow-sm); }
+.callout { padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); border-left: 3px solid; font-size: 14px; line-height: 1.6; }
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); border-color: var(--color-text-tertiary); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); color: var(--color-text); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.form-input::placeholder { color: var(--color-text-tertiary); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center; min-width: 0;
+}
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+
+@media (max-width: 600px) {
+  .score-selector { gap: 4px; }
+  .score-option { padding: 10px 4px; }
+  .score-number { font-size: 18px; }
+  .score-label-text { font-size: 9px; }
+}
+
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 24px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; min-width: 0; }
+.bar-fill.animated { min-width: 30px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+
+@media (max-width: 600px) { .bar-label { width: 90px; font-size: 11px; } }
+
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-hero .t-display { margin-bottom: var(--space-md); }
+.welcome-hero .t-body { margin-bottom: var(--space-2xl); }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+.welcome-phases { display: flex; flex-direction: column; gap: var(--space-md); margin: var(--space-2xl) 0; text-align: left; }
+.welcome-phase { display: flex; gap: var(--space-lg); padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-phase-num { width: 36px; height: 36px; background: var(--color-primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--color-primary); flex-shrink: 0; font-size: 15px; }
+.welcome-phase-title { font-weight: 600; margin-bottom: 2px; }
+.welcome-phase-desc { font-size: 14px; color: var(--color-text-secondary); }
+
+@media (max-width: 600px) {
+  .welcome-stats { grid-template-columns: 1fr; }
+  .welcome-hero { padding: var(--space-2xl) var(--space-md); }
+}
+
+.mb-xs { margin-bottom: var(--space-xs); }
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+.mb-xl { margin-bottom: var(--space-xl); }
+.mb-2xl { margin-bottom: var(--space-2xl); }
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-sm { gap: var(--space-sm); }
+.gap-md { gap: var(--space-md); }
+
+.checklist-item {
+  display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+.checklist-box {
+  width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: var(--radius-sm);
+  flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition-fast); margin-top: 1px;
+}
+.checklist-box:hover { border-color: var(--color-primary); }
+.checklist-box.checked { background: var(--color-primary); border-color: var(--color-primary); }
+.checklist-box.checked svg { display: block; }
+.checklist-box svg { display: none; width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+.toast {
+  position: fixed; bottom: 24px; right: 24px; background: var(--color-text);
+  color: #fff; padding: 12px 20px; border-radius: var(--radius-md);
+  font-size: 14px; z-index: 1000; opacity: 0; transform: translateY(10px);
+  transition: all var(--transition-normal); max-width: 360px;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+.page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+
+.system-card {
+  border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  overflow: hidden; margin-bottom: var(--space-sm); background: var(--color-surface);
+}
+.system-card-header {
+  display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md) var(--space-lg);
+  cursor: pointer; transition: background var(--transition-fast);
+}
+.system-card-header:hover { background: var(--color-surface-alt); }
+.system-card-body { padding: 0 var(--space-lg) var(--space-lg); display: none; }
+.system-card-body.open { display: block; }
+.system-card-chevron { transition: transform var(--transition-fast); color: var(--color-text-tertiary); }
+.system-card-chevron.rotated { transform: rotate(90deg); }
+
+.risk-pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
+}
+.risk-critical { background: #FEE2E2; color: var(--color-danger); }
+.risk-high { background: #FEF3C7; color: var(--color-score-2); }
+.risk-medium { background: var(--color-warning-light); color: var(--color-warning); }
+.risk-low { background: var(--color-success-light); color: var(--color-success); }
+
+.debt-row {
+  display: grid; grid-template-columns: 1fr 90px 100px 90px 1fr 100px; gap: 8px;
+  align-items: center; padding: var(--space-sm) 0; border-bottom: 1px solid var(--color-border-light);
+  font-size: 13px;
+}
+@media (max-width: 768px) {
+  .debt-row { grid-template-columns: 1fr; gap: 4px; padding: var(--space-md) 0; }
+  .debt-header { display: none !important; }
+}
+
+.heatmap { display: grid; gap: 2px; }
+.heatmap-cell {
+  border-radius: var(--radius-sm); display: flex; align-items: center;
+  justify-content: center; font-size: 12px; font-weight: 600; color: #fff;
+  transition: transform var(--transition-fast); padding: 8px 4px; min-height: 36px;
+}
+.heatmap-cell:hover { transform: scale(1.05); z-index: 1; }
+.heatmap-cell.hs0 { background: var(--color-border); color: var(--color-text-tertiary); }
+.heatmap-cell.hs1 { background: var(--color-score-1); }
+.heatmap-cell.hs2 { background: var(--color-score-2); }
+.heatmap-cell.hs3 { background: var(--color-score-3); }
+.heatmap-cell.hs4 { background: var(--color-score-4); }
+.heatmap-cell.hs5 { background: var(--color-score-5); }
+.heatmap-row-label { font-size: 12px; color: var(--color-text-secondary); display: flex; align-items: center; padding-right: var(--space-sm); }
+.heatmap-col-label { font-size: 10px; color: var(--color-text-tertiary); text-align: center; text-transform: uppercase; letter-spacing: 0.03em; padding-bottom: 4px; }
+
+.cost-callout {
+  display: flex; align-items: center; gap: var(--space-lg); padding: var(--space-lg);
+  background: var(--color-danger-light); border-radius: var(--radius-md); border: 1px solid #FECACA;
+}
+.cost-callout-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; color: var(--color-danger); white-space: nowrap; }
+
+/* ACCESSIBILITY */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; }
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+
+/* REDUCED MOTION */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* PRINT */
+@media print {
+  .sidebar, .mobile-header, .toast, .btn-group, .skip-link, .page-nav { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; }
+  .content-area { max-width: 100%; padding: 0; }
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<div class="app">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #16</div>
+      <div class="sidebar-brand-title">Technology & Systems Audit</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav" role="navigation" aria-label="Playbook sections"></nav>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Tech Readiness</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete assessments to see score</div>
+    </div>
+  </div>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <div class="main-content" id="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="Open navigation"><span></span></button>
+      <div style="font-weight:600;font-size:15px">Playbook #16: Tech Audit</div>
+    </div>
+    <div class="content-area" id="contentArea"></div>
+  </div>
+</div>
+<div class="toast" id="toast" aria-live="polite" role="status"></div>
+
+<script>
+const STORAGE_KEY = 'exitosx-pb16-technology-systems-audit';
+// Migrate from old key
+(function() { const old = localStorage.getItem('playbook16-tech-audit-v1'); if (old && !localStorage.getItem(STORAGE_KEY)) { localStorage.setItem(STORAGE_KEY, old); localStorage.removeItem('playbook16-tech-audit-v1'); } })();
+
+const PAGES = [
+  { id: 'welcome', title: 'Welcome', icon: '\u2302', section: 'start' },
+  { id: 'domains', title: 'Audit Framework', icon: '\u2630', section: 'assess' },
+  { id: 'inventory', title: 'Tech Stack Inventory', icon: '\u2261', section: 'assess' },
+  { id: 'debt', title: 'Technical Debt', icon: '\u26A0', section: 'assess' },
+  { id: 'shadow', title: 'Shadow IT', icon: '\u{1F441}', section: 'assess' },
+  { id: 'data', title: 'Data Governance', icon: '\u{1F4BE}', section: 'remediate' },
+  { id: 'security', title: 'Cybersecurity', icon: '\u{1F512}', section: 'remediate' },
+  { id: 'licensing', title: 'Software Licensing', icon: '\u2696', section: 'remediate' },
+  { id: 'diligence', title: 'Due Diligence Prep', icon: '\u2611', section: 'prepare' },
+  { id: 'dashboard', title: 'Your Dashboard', icon: '\u2605', section: 'results' }
+];
+
+const AUDIT_DOMAINS = [
+  { id: 'infrastructure', title: 'Infrastructure', desc: 'Servers, network, cloud, hardware age', question: 'Is anything end-of-life? When was it last upgraded?' },
+  { id: 'software', title: 'Software Applications', desc: 'ERP, CRM, accounting, vertical tools', question: 'Is everything licensed? Supported? Integrated?' },
+  { id: 'dataManagement', title: 'Data Management', desc: 'Storage, backup, recovery, governance', question: 'Is data centralized? Backed up? Recoverable?' },
+  { id: 'cybersecurity', title: 'Cybersecurity', desc: 'Firewalls, access controls, training', question: 'Could you survive a basic penetration test?' },
+  { id: 'integration', title: 'Integration', desc: 'How systems connect and share data', question: 'Are integrations documented? Maintained? Reliable?' },
+  { id: 'people', title: 'People & Skills', desc: 'IT staff, vendors, knowledge concentration', question: 'Does one person hold all IT knowledge?' },
+  { id: 'compliance', title: 'Compliance', desc: 'Licensing, privacy, industry regulations', question: 'Are you compliant with all applicable standards?' }
+];
+
+const SYSTEM_CATEGORIES = [
+  { id: 'erp', label: 'ERP / Core Business', examples: 'SAP, NetSuite, Epicor, QuickBooks Enterprise', buyerWant: 'Modern, supported version; clean data' },
+  { id: 'crm', label: 'CRM', examples: 'Salesforce, HubSpot, Zoho, Pipedrive', buyerWant: 'Actively used; data current; pipeline trackable' },
+  { id: 'accounting', label: 'Accounting', examples: 'QuickBooks, Xero, Sage, NetSuite', buyerWant: 'Current version; bank integrations; clean chart of accounts' },
+  { id: 'hr', label: 'HR / Payroll', examples: 'ADP, Gusto, Paychex, BambooHR', buyerWant: 'Compliant; employee records complete' },
+  { id: 'email', label: 'Email / Collaboration', examples: 'Microsoft 365, Google Workspace', buyerWant: 'Business-grade (not personal Gmail); archived' },
+  { id: 'industry', label: 'Industry-Specific', examples: 'Vertical software relevant to your business', buyerWant: 'Current version; vendor-supported; data exportable' },
+  { id: 'website', label: 'Website / E-Commerce', examples: 'WordPress, Shopify, custom builds', buyerWant: 'Secure; updated; analytics integrated' }
+];
+
+const DEBT_TYPES = [
+  { id: 'deferred', title: 'Deferred Upgrades', examples: 'Software 2+ versions behind; unsupported OS', costRange: '$5K-$50K/system', priority: 'High' },
+  { id: 'manual', title: 'Manual Workarounds', examples: 'CSV exports between systems; manual re-keying', costRange: '$10K-$100K to automate', priority: 'Medium' },
+  { id: 'undocumented', title: 'Undocumented Integrations', examples: 'Custom scripts; no documentation', costRange: '$5K-$25K to document', priority: 'High' },
+  { id: 'customizations', title: 'Accumulated Customizations', examples: 'Heavily modified off-the-shelf software', costRange: '$20K-$200K to rationalize', priority: 'Medium' },
+  { id: 'dataQuality', title: 'Data Quality Issues', examples: 'Duplicates, missing fields, inconsistent formats', costRange: '$5K-$50K to clean', priority: 'High' },
+  { id: 'infrastructure_debt', title: 'Inadequate Infrastructure', examples: 'Undersized servers, slow network, no redundancy', costRange: '$10K-$100K to upgrade', priority: 'Medium' }
+];
+
+const SHADOW_IT_EXAMPLES = [
+  { id: 'cloud_storage', text: 'Personal Dropbox, Google Drive, or OneDrive storing business data' },
+  { id: 'saas_tools', text: 'Unauthorized SaaS tools (Trello, Asana, Slack) with business data' },
+  { id: 'personal_email', text: 'Personal email accounts used for business communication' },
+  { id: 'extensions', text: 'Unauthorized browser extensions' },
+  { id: 'usb_drives', text: 'USB drives and external hard drives with unencrypted business data' },
+  { id: 'excel_macros', text: 'Excel macros and Access databases performing critical functions' }
+];
+
+const SECURITY_CONTROLS = [
+  { id: 'mfa', title: 'Multi-factor Authentication (MFA)', desc: 'Require 2nd factor for all business logins', cost: 'Free-$5/user/month', priority: 'Critical' },
+  { id: 'endpoint', title: 'Endpoint Protection', desc: 'Antivirus/anti-malware on all devices', cost: '$3-$8/device/month', priority: 'Critical' },
+  { id: 'emailSec', title: 'Email Security', desc: 'Spam filtering, phishing protection, SPF/DKIM/DMARC', cost: '$2-$5/user/month', priority: 'Critical' },
+  { id: 'patching', title: 'Regular Patching', desc: 'OS and software updates applied within 30 days', cost: 'IT staff time', priority: 'High' },
+  { id: 'backup', title: 'Backup & Recovery', desc: 'Automated daily backups; tested monthly', cost: '$50-$500/month', priority: 'Critical' },
+  { id: 'access', title: 'Access Control', desc: 'Least privilege principle; immediate off-boarding', cost: 'IT staff time', priority: 'High' },
+  { id: 'training', title: 'Employee Training', desc: 'Annual security awareness; phishing simulations', cost: '$500-$2,000/year', priority: 'Medium' },
+  { id: 'incident', title: 'Incident Response Plan', desc: 'Documented plan for responding to a breach', cost: '$2K-$5K one-time', priority: 'Medium' },
+  { id: 'insurance', title: 'Cyber Insurance', desc: 'Policy covering breach response, interruption, liability', cost: '$1K-$5K/year', priority: 'High' },
+  { id: 'passwords', title: 'Password Manager', desc: 'All credentials in enterprise password manager', cost: '$3-$8/user/month', priority: 'High' }
+];
+
+const DATA_TYPES = [
+  { id: 'customer', label: 'Customer Data', oftenLives: 'Outlook contacts, spreadsheets, memory', shouldLive: 'CRM system (Salesforce, HubSpot)' },
+  { id: 'financial', label: 'Financial Data', oftenLives: 'Accounting + disconnected spreadsheets', shouldLive: 'Integrated accounting/ERP' },
+  { id: 'pipeline', label: 'Sales Pipeline', oftenLives: 'Salesperson\'s notebook or head', shouldLive: 'CRM with pipeline stages' },
+  { id: 'employee', label: 'Employee Records', oftenLives: 'Filing cabinet, scattered files', shouldLive: 'HRIS (BambooHR, Gusto)' },
+  { id: 'contracts', label: 'Contracts & Legal', oftenLives: 'Email attachments, desk drawers', shouldLive: 'Document management system' },
+  { id: 'operational', label: 'Operational Data', oftenLives: 'Whiteboards, tribal knowledge', shouldLive: 'ERP or ops management system' }
+];
+
+const DILIGENCE_ITEMS = [
+  { id: 'd1', text: 'Complete technology inventory (hardware, software, cloud services)' },
+  { id: 'd2', text: 'Network architecture diagram' },
+  { id: 'd3', text: 'Software license inventory with proof of compliance' },
+  { id: 'd4', text: 'Data backup and disaster recovery plan (tested)' },
+  { id: 'd5', text: 'Cybersecurity policies and incident response plan' },
+  { id: 'd6', text: 'IT staffing and vendor contracts' },
+  { id: 'd7', text: 'System integration documentation' },
+  { id: 'd8', text: 'Data privacy compliance documentation (GDPR, CCPA)' },
+  { id: 'd9', text: 'Technology budget and spend history (3 years)' },
+  { id: 'd10', text: 'Outstanding technical debt items and open IT projects' },
+  { id: 'd11', text: 'IT-related contracts (MSP, hosting, SaaS, telecom)' },
+  { id: 'd12', text: 'Technology roadmap (planned investments 12-24 months)' }
+];
+
+function getDefaultState() {
+  return {
+    currentPage: 'welcome',
+    completedPages: [],
+    unlockedPages: ['welcome'],
+    domainScores: {},
+    domainNotes: {},
+    systems: {},
+    systemOpen: {},
+    debtItems: {},
+    debtCustom: [],
+    shadowFound: {},
+    shadowRemediation: {},
+    dataCentralization: {},
+    dataQuality: {},
+    securityChecklist: {},
+    licensingNotes: {},
+    diligenceChecklist: {},
+    costEstimate: 0
+  };
+}
+
+let state = getDefaultState();
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) state = { ...getDefaultState(), ...JSON.parse(saved) };
+  } catch(e) {}
+}
+
+function saveData() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+const loadState = loadData;
+const saveState = saveData;
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+function goToPage(pageId) {
+  if (!state.unlockedPages.includes(pageId)) return;
+  state.currentPage = pageId;
+  saveData();
+  renderAll();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (window.innerWidth <= 900) {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+  }
+  setTimeout(() => {
+    const heading = document.querySelector('#contentArea .t-display, #contentArea .t-h1, #contentArea h1, #contentArea h2');
+    if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); }
+  }, 100);
+}
+
+function completePage(pageId) {
+  if (!state.completedPages.includes(pageId)) state.completedPages.push(pageId);
+  const idx = PAGES.findIndex(p => p.id === pageId);
+  if (idx < PAGES.length - 1) {
+    const next = PAGES[idx + 1].id;
+    if (!state.unlockedPages.includes(next)) state.unlockedPages.push(next);
+  }
+  saveData();
+}
+
+function calcOverallScore() {
+  let score = 0;
+  // Domain scores (35 points max): 7 domains, 5 pts each
+  const domainTotal = AUDIT_DOMAINS.reduce((s, d) => s + (state.domainScores[d.id] || 0), 0);
+  score += (domainTotal / 35) * 35;
+  // Security controls (30 points max)
+  const secTotal = SECURITY_CONTROLS.filter(c => state.securityChecklist[c.id]).length;
+  score += (secTotal / SECURITY_CONTROLS.length) * 30;
+  // Due diligence readiness (20 points max)
+  const dilTotal = DILIGENCE_ITEMS.filter(d => state.diligenceChecklist[d.id]).length;
+  score += (dilTotal / DILIGENCE_ITEMS.length) * 20;
+  // Data governance (15 points max)
+  const dataTotal = DATA_TYPES.filter(d => state.dataCentralization[d.id] === 'centralized').length;
+  score += (dataTotal / DATA_TYPES.length) * 15;
+  return Math.round(Math.min(score, 100));
+}
+
+function getScoreColor(s) {
+  if (s >= 80) return 'var(--color-score-5)';
+  if (s >= 60) return 'var(--color-score-4)';
+  if (s >= 40) return 'var(--color-score-3)';
+  if (s >= 20) return 'var(--color-score-2)';
+  return 'var(--color-score-1)';
+}
+
+function getScoreLabel(s) {
+  if (s >= 80) return 'Buyer-Ready';
+  if (s >= 60) return 'Good Foundation';
+  if (s >= 40) return 'Needs Work';
+  if (s >= 20) return 'Significant Gaps';
+  return 'Not Started';
+}
+
+function calcDebtCost() {
+  let total = 0;
+  DEBT_TYPES.forEach(dt => {
+    const d = state.debtItems[dt.id];
+    if (d && d.cost) total += parseInt(d.cost) || 0;
+  });
+  (state.debtCustom || []).forEach(c => { if (c.cost) total += parseInt(c.cost) || 0; });
+  return total;
+}
+
+function renderProgressRing(pct, size, stroke, color) {
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const offset = c - (pct / 100) * c;
+  return `
+    <div style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px">
+      <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+        <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--color-border)" stroke-width="${stroke}"/>
+        <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}"
+                stroke-dasharray="${c}" stroke-dashoffset="${offset}" stroke-linecap="round"
+                transform="rotate(-90 ${size/2} ${size/2})" style="transition:stroke-dashoffset 0.8s ease"/>
+      </svg>
+      <div style="position:absolute;text-align:center">
+        <div style="font-family:var(--font-display);font-weight:700;font-size:${size/4}px;line-height:1;color:${color}">${pct}%</div>
+      </div>
+    </div>`;
+}
+
+function renderSidebar() {
+  const progress = state.completedPages.length / (PAGES.length - 1) * 100;
+  document.getElementById('progressFill').style.width = progress + '%';
+  document.getElementById('progressText').textContent = Math.round(progress) + '% complete';
+  const score = calcOverallScore();
+  document.getElementById('sidebarScore').innerHTML = score + '<span class="sidebar-score-max">/100</span>';
+  document.getElementById('sidebarScoreDesc').textContent = getScoreLabel(score);
+
+  const sections = { start: 'Start', assess: 'Assess', remediate: 'Remediate', prepare: 'Prepare', results: 'Results' };
+  let html = '', lastSection = '';
+  PAGES.forEach(p => {
+    if (p.section !== lastSection) {
+      html += `<div class="nav-section-label">${sections[p.section]}</div>`;
+      lastSection = p.section;
+    }
+    const isActive = state.currentPage === p.id;
+    const isCompleted = state.completedPages.includes(p.id);
+    const isLocked = !state.unlockedPages.includes(p.id);
+    html += `
+      <div class="nav-item ${isActive?'active':''} ${isCompleted?'completed':''} ${isLocked?'locked':''}"
+           onclick="${isLocked?'':"goToPage('"+p.id+"')"}" role="button" tabindex="${isLocked?-1:0}"
+           aria-current="${isActive?'page':'false'}">
+        <span class="nav-icon">${p.icon}</span>
+        <span>${p.title}</span>
+        <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+      </div>`;
+  });
+  document.getElementById('sidebarNav').innerHTML = html;
+}
+
+function renderContent() {
+  const fns = { welcome: renderWelcome, domains: renderDomains, inventory: renderInventory, debt: renderDebt, shadow: renderShadow, data: renderData, security: renderSecurity, licensing: renderLicensing, diligence: renderDiligence, dashboard: renderDashboard };
+  document.getElementById('contentArea').innerHTML = (fns[state.currentPage] || renderWelcome)();
+}
+
+function renderAll() { renderSidebar(); renderContent(); }
+
+function renderPageNav(prev, next, nextLabel) {
+  return `
+    <div class="page-nav">
+      ${prev ? `<button class="btn btn-secondary" onclick="goToPage('${prev}')">Back</button>` : '<div></div>'}
+      ${next ? `<button class="btn btn-primary" onclick="completePage('${state.currentPage}');goToPage('${next}')">${nextLabel||'Continue'}</button>` :
+        `<button class="btn btn-primary" disabled>${nextLabel||'Complete more to continue'}</button>`}
+    </div>`;
+}
+
+function renderWelcome() {
+  return `
+    <div class="welcome-hero">
+      <div class="welcome-icon">\u{1F4BB}</div>
+      <div class="t-display">Technology & Systems Audit</div>
+      <p class="t-body t-secondary">Buyers inherit your tech stack -- including your technical debt. This playbook will help you audit your technology, identify risks, and bring your systems to buyer-ready condition.</p>
+      <div class="welcome-stats">
+        <div class="welcome-stat">
+          <div class="welcome-stat-value">7</div>
+          <div class="welcome-stat-label">Technology domains to audit</div>
+        </div>
+        <div class="welcome-stat">
+          <div class="welcome-stat-value">2-4x</div>
+          <div class="welcome-stat-label">ROI on pre-sale IT investment</div>
+        </div>
+        <div class="welcome-stat">
+          <div class="welcome-stat-value">10</div>
+          <div class="welcome-stat-label">Security controls assessed</div>
+        </div>
+      </div>
+      <div class="callout callout-accent mb-2xl">
+        <strong>The core principle:</strong> Every technology shortcoming becomes a post-close cost estimate in the buyer's model. Spending $100K to modernize before going to market can save $200K-$400K in purchase price reduction.
+      </div>
+      <div class="welcome-phases">
+        <div class="welcome-phase">
+          <div class="welcome-phase-num">1</div>
+          <div>
+            <div class="welcome-phase-title">Assess Your Tech Environment</div>
+            <div class="welcome-phase-desc">Score each domain, inventory your stack, identify technical debt and shadow IT.</div>
+          </div>
+        </div>
+        <div class="welcome-phase">
+          <div class="welcome-phase-num">2</div>
+          <div>
+            <div class="welcome-phase-title">Remediate Key Risks</div>
+            <div class="welcome-phase-desc">Centralize data, implement cybersecurity basics, clean up software licensing.</div>
+          </div>
+        </div>
+        <div class="welcome-phase">
+          <div class="welcome-phase-num">3</div>
+          <div>
+            <div class="welcome-phase-title">Prepare for Diligence</div>
+            <div class="welcome-phase-desc">Assemble the documentation buyers and PE firms will request.</div>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-lg" onclick="completePage('welcome');goToPage('domains')">Begin Audit</button>
+    </div>`;
+}
+
+function renderDomains() {
+  const scored = AUDIT_DOMAINS.filter(d => state.domainScores[d.id]).length;
+  return `
+    <div class="page-header">
+      <div class="t-label">Phase 1: Assess</div>
+      <div class="t-display">Audit Framework</div>
+      <p class="t-body t-secondary">Rate your business across 7 technology domains. Be honest -- this assessment drives your remediation priorities.</p>
+    </div>
+    <div class="flex items-center justify-between mb-lg" style="flex-wrap:wrap;gap:8px">
+      <div class="t-h3">Score Each Domain (1-5)</div>
+      <span class="badge ${scored===7?'badge-success':'badge-neutral'}">${scored}/7 scored</span>
+    </div>
+    ${AUDIT_DOMAINS.map(d => {
+      const current = state.domainScores[d.id] || 0;
+      return `
+        <div class="card mb-md">
+          <div class="flex items-center justify-between mb-sm" style="flex-wrap:wrap;gap:8px">
+            <div>
+              <div class="t-h3">${d.title}</div>
+              <div class="t-small t-secondary">${d.desc}</div>
+            </div>
+            ${current > 0 ? `<span class="badge ${current>=4?'badge-success':current>=3?'badge-warning':'badge-danger'}">${current}/5</span>` : ''}
+          </div>
+          <div class="callout callout-accent mb-md" style="font-size:13px"><strong>Key question:</strong> ${d.question}</div>
+          <div class="score-selector" role="radiogroup" aria-label="${d.name} score">
+            ${[1,2,3,4,5].map(n => {
+              const labels = ['Critical Gap','Weak','Adequate','Good','Strong'];
+              return `
+                <div class="score-option s${n} ${current===n?'selected':''}" onclick="setDomainScore('${d.id}',${n})"
+                     role="radio" aria-checked="${current===n}" tabindex="0"
+                     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();setDomainScore('${d.id}',${n})}">
+                  <div class="score-number">${n}</div>
+                  <div class="score-label-text">${labels[n-1]}</div>
+                </div>`;
+            }).join('')}
+          </div>
+          <div class="form-group" style="margin-top:var(--space-md);margin-bottom:0">
+            <textarea class="form-input" style="min-height:50px" placeholder="Notes on this domain..." oninput="setDomainNote('${d.id}',this.value)">${state.domainNotes[d.id]||''}</textarea>
+          </div>
+        </div>`;
+    }).join('')}
+    ${renderPageNav('welcome', scored >= 3 ? 'inventory' : null, scored >= 3 ? 'Continue to Tech Stack Inventory' : 'Score at least 3 domains to continue')}`;
+}
+
+function setDomainScore(id, val) { state.domainScores[id] = val; saveData(); renderAll(); }
+function setDomainNote(id, val) { state.domainNotes[id] = val; saveData(); }
+
+function renderInventory() {
+  return `
+    <div class="page-header">
+      <div class="t-label">Phase 1: Assess</div>
+      <div class="t-display">Tech Stack Inventory</div>
+      <p class="t-body t-secondary">Create a complete inventory of every technology system. This is the document buyers will request in technology due diligence.</p>
+    </div>
+    ${SYSTEM_CATEGORIES.map(cat => {
+      const sys = state.systems[cat.id] || {};
+      const isOpen = state.systemOpen[cat.id];
+      return `
+        <div class="system-card">
+          <div class="system-card-header" onclick="toggleSystem('${cat.id}')">
+            <span style="flex:1;font-weight:500;font-size:14px">${cat.label}</span>
+            ${sys.name ? `<span class="badge badge-primary">${sys.name}</span>` : '<span class="badge badge-neutral">Not entered</span>'}
+            <span class="system-card-chevron ${isOpen?'rotated':''}">\u25B6</span>
+          </div>
+          <div class="system-card-body ${isOpen?'open':''}">
+            <div class="callout callout-info mb-md" style="font-size:12px">
+              <strong>Examples:</strong> ${cat.examples}<br>
+              <strong>Buyers want:</strong> ${cat.buyerWant}
+            </div>
+            <div class="form-group">
+              <label class="form-label">System Name</label>
+              <input class="form-input" placeholder="e.g., ${cat.examples.split(',')[0].trim()}" value="${sys.name||''}" oninput="setSystem('${cat.id}','name',this.value)">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+              <div class="form-group">
+                <label class="form-label">Vendor</label>
+                <input class="form-input" placeholder="Vendor name" value="${sys.vendor||''}" oninput="setSystem('${cat.id}','vendor',this.value)">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Version</label>
+                <input class="form-input" placeholder="Current version" value="${sys.version||''}" oninput="setSystem('${cat.id}','version',this.value)">
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+              <div class="form-group">
+                <label class="form-label">License Type</label>
+                <select class="form-input" onchange="setSystem('${cat.id}','licenseType',this.value)">
+                  <option value="">Select...</option>
+                  <option value="subscription" ${sys.licenseType==='subscription'?'selected':''}>Subscription (SaaS)</option>
+                  <option value="perpetual" ${sys.licenseType==='perpetual'?'selected':''}>Perpetual License</option>
+                  <option value="open-source" ${sys.licenseType==='open-source'?'selected':''}>Open Source</option>
+                  <option value="custom" ${sys.licenseType==='custom'?'selected':''}>Custom/Enterprise</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Annual Cost</label>
+                <input class="form-input" type="text" placeholder="$0" value="${sys.cost||''}" oninput="setSystem('${cat.id}','cost',this.value)">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">End-of-Life Concerns?</label>
+              <select class="form-input" onchange="setSystem('${cat.id}','eol',this.value)">
+                <option value="">Select...</option>
+                <option value="current" ${sys.eol==='current'?'selected':''}>Current and supported</option>
+                <option value="aging" ${sys.eol==='aging'?'selected':''}>Aging but functional (1-2 versions behind)</option>
+                <option value="eol" ${sys.eol==='eol'?'selected':''}>End-of-life / unsupported</option>
+                <option value="na" ${sys.eol==='na'?'selected':''}>Not applicable</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Notes</label>
+              <textarea class="form-input" style="min-height:50px" placeholder="Integration notes, known issues, upgrade plans..." oninput="setSystem('${cat.id}','notes',this.value)">${sys.notes||''}</textarea>
+            </div>
+          </div>
+        </div>`;
+    }).join('')}
+    <div class="card mb-xl" style="margin-top:var(--space-xl)">
+      <div class="t-h2 mb-md">Hardware Assessment</div>
+      <p class="t-small t-secondary mb-lg">Anything over 5 years is a flag. Operating systems no longer receiving patches are a security risk.</p>
+      <div class="form-group">
+        <label class="form-label">Average Age of Hardware (servers, desktops, networking)</label>
+        <select class="form-input" onchange="setSystem('_hardware','age',this.value)">
+          <option value="">Select...</option>
+          <option value="new" ${(state.systems._hardware||{}).age==='new'?'selected':''}>0-2 years (Modern)</option>
+          <option value="moderate" ${(state.systems._hardware||{}).age==='moderate'?'selected':''}>3-4 years (Acceptable)</option>
+          <option value="old" ${(state.systems._hardware||{}).age==='old'?'selected':''}>5+ years (Flag for buyers)</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Hardware Notes</label>
+        <textarea class="form-input" style="min-height:50px" placeholder="Lease terms, purchase records, maintenance contracts, capacity concerns..." oninput="setSystem('_hardware','notes',this.value)">${(state.systems._hardware||{}).notes||''}</textarea>
+      </div>
+    </div>
+    ${renderPageNav('domains', 'debt', 'Continue to Technical Debt')}`;
+}
+
+function toggleSystem(id) { state.systemOpen[id] = !state.systemOpen[id]; saveData(); renderContent(); }
+function setSystem(catId, field, val) {
+  if (!state.systems[catId]) state.systems[catId] = {};
+  state.systems[catId][field] = val;
+  saveData();
+}
+
+function renderDebt() {
+  const totalCost = calcDebtCost();
+  return `
+    <div class="page-header">
+      <div class="t-label">Phase 1: Assess</div>
+      <div class="t-display">Technical Debt Register</div>
+      <p class="t-body t-secondary">Technical debt is the accumulated cost of deferred technology decisions. Buyers will identify it and model the cost of resolving it.</p>
+    </div>
+    ${totalCost > 0 ? `
+      <div class="cost-callout mb-xl">
+        <div class="cost-callout-value">$${totalCost.toLocaleString()}</div>
+        <div>
+          <div class="t-h3">Estimated Technical Debt</div>
+          <div class="t-small t-secondary">This amount could come directly off your purchase price -- often with a risk premium. Investing to fix it now typically returns 2-4x.</div>
+        </div>
+      </div>` : ''}
+    <div class="callout callout-warning mb-xl">
+      <strong>Prioritization rule:</strong> Focus on debt that (1) creates security risk, (2) will be discovered in diligence, or (3) affects daily operations.
+    </div>
+    ${DEBT_TYPES.map(dt => {
+      const d = state.debtItems[dt.id] || {};
+      return `
+        <div class="card mb-md">
+          <div class="flex items-center justify-between mb-sm" style="flex-wrap:wrap;gap:8px">
+            <div>
+              <div class="t-h3">${dt.title}</div>
+              <div class="t-caption t-secondary">${dt.examples}</div>
+            </div>
+            <div class="flex gap-sm items-center">
+              <span class="badge ${dt.priority==='High'?'badge-danger':'badge-warning'}">${dt.priority} Priority</span>
+              <span class="t-caption t-tertiary">${dt.costRange}</span>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md);margin-top:var(--space-md)">
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Risk Level</label>
+              <select class="form-input" onchange="setDebtItem('${dt.id}','risk',this.value)">
+                <option value="">Select...</option>
+                <option value="critical" ${d.risk==='critical'?'selected':''}>Critical</option>
+                <option value="high" ${d.risk==='high'?'selected':''}>High</option>
+                <option value="medium" ${d.risk==='medium'?'selected':''}>Medium</option>
+                <option value="low" ${d.risk==='low'?'selected':''}>Low</option>
+                <option value="none" ${d.risk==='none'?'selected':''}>Not Applicable</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Est. Cost to Resolve ($)</label>
+              <input class="form-input" type="number" placeholder="0" value="${d.cost||''}" oninput="setDebtItem('${dt.id}','cost',this.value)">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Target Date</label>
+              <input class="form-input" type="date" value="${d.target||''}" oninput="setDebtItem('${dt.id}','target',this.value)">
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:var(--space-md);margin-bottom:0">
+            <textarea class="form-input" style="min-height:40px" placeholder="Specific items in your business..." oninput="setDebtItem('${dt.id}','details',this.value)">${d.details||''}</textarea>
+          </div>
+        </div>`;
+    }).join('')}
+    <button class="btn btn-ghost mb-xl" onclick="addCustomDebt()">+ Add Custom Debt Item</button>
+    <div id="customDebtItems">
+      ${(state.debtCustom||[]).map((cd, i) => `
+        <div class="card mb-md">
+          <div style="display:grid;grid-template-columns:1fr 100px 100px;gap:var(--space-md)">
+            <div class="form-group" style="margin-bottom:0">
+              <input class="form-input" placeholder="Debt item description" value="${cd.desc||''}" oninput="setCustomDebt(${i},'desc',this.value)">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <input class="form-input" type="number" placeholder="Cost $" value="${cd.cost||''}" oninput="setCustomDebt(${i},'cost',this.value)">
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="removeCustomDebt(${i})" style="color:var(--color-danger)">Remove</button>
+          </div>
+        </div>`).join('')}
+    </div>
+    ${renderPageNav('inventory', 'shadow', 'Continue to Shadow IT')}`;
+}
+
+function setDebtItem(id, field, val) {
+  if (!state.debtItems[id]) state.debtItems[id] = {};
+  state.debtItems[id][field] = val;
+  saveData(); renderContent();
+}
+function addCustomDebt() { if (!state.debtCustom) state.debtCustom = []; state.debtCustom.push({}); saveData(); renderContent(); }
+function setCustomDebt(i, field, val) { state.debtCustom[i][field] = val; saveData(); renderContent(); }
+function removeCustomDebt(i) { state.debtCustom.splice(i, 1); saveData(); renderContent(); }
+
+function renderShadow() {
+  const found = SHADOW_IT_EXAMPLES.filter(s => state.shadowFound[s.id]).length;
+  return `
+    <div class="page-header">
+      <div class="t-label">Phase 1: Assess</div>
+      <div class="t-display">Shadow IT Discovery</div>
+      <p class="t-body t-secondary">Shadow IT is technology used without IT approval. It is endemic in small businesses and creates compliance, security, and data risks buyers will flag.</p>
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-md">Common Shadow IT</div>
+      <p class="t-small t-secondary mb-lg">Check any that exist in your organization. Be thorough -- discovery during diligence creates trust issues.</p>
+      ${SHADOW_IT_EXAMPLES.map(s => `
+        <div class="checklist-item">
+          <div class="checklist-box ${state.shadowFound[s.id]?'checked':''}" onclick="toggleShadow('${s.id}')" tabindex="0" role="checkbox" aria-checked="${!!state.shadowFound[s.id]}"
+               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleShadow('${s.id}')}">
+            <svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg>
+          </div>
+          <div class="t-small">${s.text}</div>
+        </div>`).join('')}
+      ${found > 0 ? `<div class="callout callout-danger" style="margin-top:var(--space-lg)"><strong>${found} shadow IT risk${found > 1 ? 's' : ''} identified.</strong> Each needs a remediation plan before going to market.</div>` : ''}
+    </div>
+    ${found > 0 ? `
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Remediation Plan</div>
+        <p class="t-small t-secondary mb-lg">For each shadow IT instance, decide: adopt officially, migrate to approved alternative, or eliminate.</p>
+        ${SHADOW_IT_EXAMPLES.filter(s => state.shadowFound[s.id]).map(s => {
+          const rem = state.shadowRemediation[s.id] || {};
+          return `
+            <div style="padding:var(--space-md) 0;border-bottom:1px solid var(--color-border-light)">
+              <div class="t-small" style="font-weight:500;margin-bottom:8px">${s.text}</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+                <select class="form-input" onchange="setShadowRemediation('${s.id}','action',this.value)">
+                  <option value="">Select action...</option>
+                  <option value="adopt" ${rem.action==='adopt'?'selected':''}>Adopt officially</option>
+                  <option value="migrate" ${rem.action==='migrate'?'selected':''}>Migrate to approved tool</option>
+                  <option value="eliminate" ${rem.action==='eliminate'?'selected':''}>Eliminate</option>
+                </select>
+                <input class="form-input" placeholder="Notes / timeline" value="${rem.notes||''}" oninput="setShadowRemediation('${s.id}','notes',this.value)">
+              </div>
+            </div>`;
+        }).join('')}
+      </div>` : ''}
+    ${renderPageNav('debt', 'data', 'Continue to Data Governance')}`;
+}
+
+function toggleShadow(id) { state.shadowFound[id] = !state.shadowFound[id]; saveData(); renderContent(); }
+function setShadowRemediation(id, field, val) {
+  if (!state.shadowRemediation[id]) state.shadowRemediation[id] = {};
+  state.shadowRemediation[id][field] = val; saveData();
+}
+
+function renderData() {
+  const centralized = DATA_TYPES.filter(d => state.dataCentralization[d.id] === 'centralized').length;
+  return `
+    <div class="page-header">
+      <div class="t-label">Phase 2: Remediate</div>
+      <div class="t-display">Data Centralization & Governance</div>
+      <p class="t-body t-secondary">Buyers need confidence that business data is reliable, accessible, and protected. Scattered data is a red flag.</p>
+    </div>
+    <div class="card mb-xl">
+      <div class="flex items-center justify-between mb-lg" style="flex-wrap:wrap;gap:8px">
+        <div class="t-h2">Data Centralization Status</div>
+        <span class="badge ${centralized >= 5?'badge-success':centralized>=3?'badge-warning':'badge-danger'}">${centralized}/${DATA_TYPES.length} centralized</span>
+      </div>
+      ${DATA_TYPES.map(dt => {
+        const current = state.dataCentralization[dt.id] || '';
+        return `
+          <div style="display:grid;grid-template-columns:120px 1fr 1fr 140px;gap:var(--space-md);align-items:center;padding:var(--space-md) 0;border-bottom:1px solid var(--color-border-light)">
+            <div class="t-small" style="font-weight:600">${dt.label}</div>
+            <div class="t-caption t-tertiary">Often: ${dt.oftenLives}</div>
+            <div class="t-caption" style="color:var(--color-primary)">Should: ${dt.shouldLive}</div>
+            <select class="form-input" style="padding:6px 10px;font-size:12px" onchange="setDataCentral('${dt.id}',this.value)">
+              <option value="">Select...</option>
+              <option value="centralized" ${current==='centralized'?'selected':''}>Centralized</option>
+              <option value="partial" ${current==='partial'?'selected':''}>Partially</option>
+              <option value="scattered" ${current==='scattered'?'selected':''}>Scattered</option>
+            </select>
+          </div>`;
+      }).join('')}
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-md">Data Quality Standards</div>
+      <p class="t-small t-secondary mb-lg">Rate your compliance with each standard.</p>
+      ${[
+        { id: 'singleSource', label: 'Single source of truth', desc: 'One authoritative source for each data type' },
+        { id: 'completeness', label: 'Completeness', desc: 'Required fields complete; format standardized' },
+        { id: 'accuracy', label: 'Accuracy', desc: 'Data reflects current reality; no stale records' },
+        { id: 'security', label: 'Security', desc: 'Appropriate access controls; sensitive data protected' },
+        { id: 'backup', label: 'Backup', desc: 'Automated, tested, restorable backups' }
+      ].map(q => {
+        const val = state.dataQuality[q.id] || '';
+        return `
+          <div style="display:flex;align-items:center;gap:var(--space-lg);padding:var(--space-md) 0;border-bottom:1px solid var(--color-border-light)">
+            <div style="flex:1">
+              <div class="t-small" style="font-weight:500">${q.label}</div>
+              <div class="t-caption t-tertiary">${q.desc}</div>
+            </div>
+            <div class="score-selector" style="width:250px;flex-shrink:0" role="radiogroup" aria-label="${q.label}">
+              ${[{v:'yes',l:'Yes'},{v:'partial',l:'Partial'},{v:'no',l:'No'}].map(o => `
+                <div class="score-option ${val===o.v?'selected':''} ${o.v==='yes'?'s4':o.v==='partial'?'s3':'s1'}" style="padding:8px 4px"
+                     onclick="setDataQuality('${q.id}','${o.v}')" tabindex="0" role="radio" aria-checked="${val===o.v}"
+                     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();setDataQuality('${q.id}','${o.v}')}">
+                  <div class="score-label-text">${o.l}</div>
+                </div>`).join('')}
+            </div>
+          </div>`;
+      }).join('')}
+    </div>
+    ${renderPageNav('shadow', 'security', 'Continue to Cybersecurity')}`;
+}
+
+function setDataCentral(id, val) { state.dataCentralization[id] = val; saveData(); renderAll(); }
+function setDataQuality(id, val) { state.dataQuality[id] = val; saveData(); renderContent(); }
+
+function renderSecurity() {
+  const implemented = SECURITY_CONTROLS.filter(c => state.securityChecklist[c.id]).length;
+  const critical = SECURITY_CONTROLS.filter(c => c.priority === 'Critical');
+  const criticalDone = critical.filter(c => state.securityChecklist[c.id]).length;
+  return `
+    <div class="page-header">
+      <div class="t-label">Phase 2: Remediate</div>
+      <div class="t-display">Cybersecurity Baseline</div>
+      <p class="t-body t-secondary">You do not need enterprise-grade security, but you need the basics. A data breach during diligence will kill most deals.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-xl)">
+      <div class="card" style="text-align:center;padding:var(--space-lg)">
+        ${renderProgressRing(Math.round(implemented/SECURITY_CONTROLS.length*100), 100, 8, getScoreColor(implemented/SECURITY_CONTROLS.length*100))}
+        <div class="t-h3" style="margin-top:12px">${implemented}/${SECURITY_CONTROLS.length} Controls</div>
+        <div class="t-caption t-tertiary">Implemented</div>
+      </div>
+      <div class="card" style="text-align:center;padding:var(--space-lg)">
+        ${renderProgressRing(Math.round(criticalDone/critical.length*100), 100, 8, criticalDone===critical.length?'var(--color-success)':'var(--color-danger)')}
+        <div class="t-h3" style="margin-top:12px">${criticalDone}/${critical.length} Critical</div>
+        <div class="t-caption t-tertiary">Must-Have Controls</div>
+      </div>
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-lg">Security Controls Checklist</div>
+      ${SECURITY_CONTROLS.map(c => `
+        <div class="checklist-item">
+          <div class="checklist-box ${state.securityChecklist[c.id]?'checked':''}" onclick="toggleSecurity('${c.id}')" tabindex="0" role="checkbox" aria-checked="${!!state.securityChecklist[c.id]}"
+               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSecurity('${c.id}')}">
+            <svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg>
+          </div>
+          <div style="flex:1">
+            <div class="flex items-center gap-sm" style="flex-wrap:wrap">
+              <span class="t-small" style="font-weight:500">${c.title}</span>
+              <span class="risk-pill ${c.priority==='Critical'?'risk-critical':c.priority==='High'?'risk-high':'risk-medium'}">${c.priority}</span>
+            </div>
+            <div class="t-caption t-secondary">${c.desc}</div>
+            <div class="t-caption t-tertiary">Est. cost: ${c.cost}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+    ${criticalDone < critical.length ? `
+      <div class="callout callout-danger mb-xl">
+        <strong>Critical gaps remain.</strong> You are missing ${critical.length - criticalDone} critical security control${critical.length-criticalDone>1?'s':''}:
+        ${critical.filter(c => !state.securityChecklist[c.id]).map(c => c.title).join(', ')}.
+        These are non-negotiable for most PE buyers.
+      </div>` : `
+      <div class="callout callout-info mb-xl">
+        <strong>All critical controls in place.</strong> Your cybersecurity baseline meets the minimum standard most buyers expect. Consider the remaining controls to further strengthen your position.
+      </div>`}
+    ${renderPageNav('data', 'licensing', 'Continue to Software Licensing')}`;
+}
+
+function toggleSecurity(id) { state.securityChecklist[id] = !state.securityChecklist[id]; saveData(); renderAll(); }
+
+function renderLicensing() {
+  const ln = state.licensingNotes;
+  return `
+    <div class="page-header">
+      <div class="t-label">Phase 2: Remediate</div>
+      <div class="t-display">Software Licensing & Compliance</div>
+      <p class="t-body t-secondary">Unlicensed software is a liability that buyers will discover and price into the deal.</p>
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-lg">License Audit</div>
+      <p class="t-small t-secondary mb-lg">Review each licensing area. Confirm compliance or identify gaps.</p>
+      ${[
+        { id: 'auditAll', label: 'All licenses audited', desc: 'Inventory every application; verify license count vs. user count', hint: 'Have you confirmed that every software install is properly licensed?' },
+        { id: 'transferable', label: 'Licenses transferable', desc: 'All licenses can be transferred to new owner (check EULA terms)', hint: 'Some perpetual licenses are non-transferable. Check each one.' },
+        { id: 'subscription', label: 'Subscription migration', desc: 'Migrate to subscription/cloud where possible (easier to transfer)', hint: 'Which perpetual licenses should move to SaaS?' },
+        { id: 'openSource', label: 'Open-source compliance', desc: 'All open-source software identified with license compliance verified', hint: 'GPL, MIT, Apache -- each has different requirements.' },
+        { id: 'customDev', label: 'Custom development IP', desc: 'All custom software agreements in writing with clear IP ownership', hint: 'Do you own the code your contractors wrote?' }
+      ].map(item => {
+        const val = ln[item.id] || {};
+        return `
+          <div style="padding:var(--space-lg) 0;border-bottom:1px solid var(--color-border-light)">
+            <div class="flex items-center justify-between mb-sm" style="flex-wrap:wrap;gap:8px">
+              <div>
+                <div class="t-h3">${item.label}</div>
+                <div class="t-caption t-secondary">${item.desc}</div>
+              </div>
+              <div class="score-selector" style="width:200px;flex-shrink:0" role="radiogroup" aria-label="${item.label} compliance">
+                ${[{v:'compliant',l:'Compliant'},{v:'partial',l:'Partial'},{v:'gap',l:'Gap'}].map(o => `
+                  <div class="score-option ${val.status===o.v?'selected':''} ${o.v==='compliant'?'s4':o.v==='partial'?'s3':'s1'}" style="padding:8px 4px"
+                       onclick="setLicensing('${item.id}','status','${o.v}')" tabindex="0" role="radio" aria-checked="${val.status===o.v}"
+                       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();setLicensing('${item.id}','status','${o.v}')}">
+                    <div class="score-label-text">${o.l}</div>
+                  </div>`).join('')}
+              </div>
+            </div>
+            <div class="form-hint mb-sm">${item.hint}</div>
+            <textarea class="form-input" style="min-height:40px" placeholder="Details and action items..." oninput="setLicensing('${item.id}','notes',this.value)">${val.notes||''}</textarea>
+          </div>`;
+      }).join('')}
+    </div>
+    ${renderPageNav('security', 'diligence', 'Continue to Due Diligence Prep')}`;
+}
+
+function setLicensing(id, field, val) {
+  if (!state.licensingNotes[id]) state.licensingNotes[id] = {};
+  state.licensingNotes[id][field] = val; saveData(); renderContent();
+}
+
+function renderDiligence() {
+  const checked = DILIGENCE_ITEMS.filter(d => state.diligenceChecklist[d.id]).length;
+  const pct = Math.round((checked / DILIGENCE_ITEMS.length) * 100);
+  return `
+    <div class="page-header">
+      <div class="t-label">Phase 3: Prepare</div>
+      <div class="t-display">Due Diligence Preparation</div>
+      <p class="t-body t-secondary">Buyers -- especially PE firms -- will request the following during technology due diligence. Have each item ready before they ask.</p>
+    </div>
+    <div class="card mb-xl" style="text-align:center;padding:var(--space-2xl)">
+      ${renderProgressRing(pct, 120, 10, getScoreColor(pct))}
+      <div class="t-h2" style="margin-top:var(--space-md)">${checked}/${DILIGENCE_ITEMS.length} Documents Ready</div>
+      <div class="t-small t-secondary">${pct >= 80 ? 'You are well-prepared for technology due diligence.' : pct >= 50 ? 'Good progress. Keep assembling documentation.' : 'Significant preparation still needed.'}</div>
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-lg">Technology Diligence Checklist</div>
+      ${DILIGENCE_ITEMS.map(d => `
+        <div class="checklist-item">
+          <div class="checklist-box ${state.diligenceChecklist[d.id]?'checked':''}" onclick="toggleDiligence('${d.id}')" tabindex="0" role="checkbox" aria-checked="${!!state.diligenceChecklist[d.id]}"
+               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleDiligence('${d.id}')}">
+            <svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg>
+          </div>
+          <div class="t-small">${d.text}</div>
+        </div>`).join('')}
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-md">Common Mistakes to Avoid</div>
+      ${[
+        { title: 'Deferring all IT spending to "let the buyer decide"', desc: 'Deferred spending becomes a negotiating chip: "$300K for IT modernization" comes directly off your price.', fix: 'Invest in basics now. Pre-sale IT investment returns 2-4x in preserved deal value.' },
+        { title: 'One person who knows everything about IT', desc: 'A single IT person with all passwords and system knowledge is a critical single point of failure.', fix: 'Document all systems. Store credentials in a password manager. Cross-train a backup.' },
+        { title: 'Running on consumer-grade tools', desc: 'Personal Gmail, free Dropbox, consumer routers, and pirated software signal immaturity.', fix: 'Upgrade to business-grade: Microsoft 365 or Google Workspace, managed firewall, licensed software.' },
+        { title: 'No disaster recovery testing', desc: 'Having backups you\'ve never tested is the same as having no backups.', fix: 'Test a full restore from backup at least once per quarter. Document the results.' }
+      ].map(m => `
+        <div style="padding:var(--space-md) 0;border-bottom:1px solid var(--color-border-light)">
+          <div class="t-h3 mb-xs" style="color:var(--color-danger)">${m.title}</div>
+          <div class="t-small t-secondary mb-sm">${m.desc}</div>
+          <div class="t-small"><strong>Solution:</strong> ${m.fix}</div>
+        </div>`).join('')}
+    </div>
+    ${renderPageNav('licensing', 'dashboard', 'View Your Dashboard')}`;
+}
+
+function toggleDiligence(id) { state.diligenceChecklist[id] = !state.diligenceChecklist[id]; saveData(); renderAll(); }
+
+function renderDashboard() {
+  const score = calcOverallScore();
+  const domainScored = AUDIT_DOMAINS.filter(d => state.domainScores[d.id]).length;
+  const secDone = SECURITY_CONTROLS.filter(c => state.securityChecklist[c.id]).length;
+  const dilDone = DILIGENCE_ITEMS.filter(d => state.diligenceChecklist[d.id]).length;
+  const dataDone = DATA_TYPES.filter(d => state.dataCentralization[d.id] === 'centralized').length;
+  const debtCost = calcDebtCost();
+  const shadowCount = SHADOW_IT_EXAMPLES.filter(s => state.shadowFound[s.id]).length;
+  const systemsEntered = SYSTEM_CATEGORIES.filter(c => state.systems[c.id]?.name).length;
+
+  return `
+    <div class="page-header">
+      <div class="t-label">Your Results</div>
+      <div class="t-display">Technology Readiness Dashboard</div>
+      <p class="t-body t-secondary">Your complete technology audit results at a glance.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-md);margin-bottom:var(--space-xl)">
+      <div class="card" style="text-align:center;padding:var(--space-lg)">
+        <div style="font-family:var(--font-display);font-size:32px;font-weight:700;color:${getScoreColor(score)}">${score}</div>
+        <div class="t-caption t-tertiary">Overall Score</div>
+        <span class="badge ${score>=60?'badge-success':score>=30?'badge-warning':'badge-danger'}" style="margin-top:8px">${getScoreLabel(score)}</span>
+      </div>
+      <div class="card" style="text-align:center;padding:var(--space-lg)">
+        <div style="font-family:var(--font-display);font-size:32px;font-weight:700;color:var(--color-primary)">${secDone}/${SECURITY_CONTROLS.length}</div>
+        <div class="t-caption t-tertiary">Security Controls</div>
+      </div>
+      <div class="card" style="text-align:center;padding:var(--space-lg)">
+        <div style="font-family:var(--font-display);font-size:32px;font-weight:700;color:${debtCost>0?'var(--color-danger)':'var(--color-success)'}">$${debtCost>0?(debtCost>=1000?(Math.round(debtCost/1000)+'K'):debtCost):'0'}</div>
+        <div class="t-caption t-tertiary">Est. Tech Debt</div>
+      </div>
+      <div class="card" style="text-align:center;padding:var(--space-lg)">
+        <div style="font-family:var(--font-display);font-size:32px;font-weight:700;color:${dilDone>=10?'var(--color-success)':'var(--color-warning)'}">${dilDone}/12</div>
+        <div class="t-caption t-tertiary">Diligence Ready</div>
+      </div>
+    </div>
+    <div class="card mb-xl">
+      <div class="t-h2 mb-md">Domain Scores</div>
+      <div class="bar-chart">
+        ${AUDIT_DOMAINS.map(d => {
+          const s = state.domainScores[d.id] || 0;
+          const pct = (s / 5) * 100;
+          const color = s >= 4 ? 'var(--color-success)' : s >= 3 ? 'var(--color-warning)' : s >= 1 ? 'var(--color-danger)' : 'var(--color-border)';
+          return `
+            <div class="bar-row">
+              <div class="bar-label">${d.title}</div>
+              <div class="bar-track">
+                <div class="bar-fill animated" style="width:${pct}%;background:${color}">
+                  ${s > 0 ? `<span class="bar-value">${s}/5</span>` : ''}
+                </div>
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);margin-bottom:var(--space-xl)">
+      <div class="card">
+        <div class="t-h2 mb-md">Risk Summary</div>
+        <div style="display:flex;flex-direction:column;gap:var(--space-sm)">
+          <div class="flex items-center justify-between" style="padding:8px 0;border-bottom:1px solid var(--color-border-light)">
+            <span class="t-small">Shadow IT instances</span>
+            <span class="badge ${shadowCount===0?'badge-success':shadowCount<=2?'badge-warning':'badge-danger'}">${shadowCount} found</span>
+          </div>
+          <div class="flex items-center justify-between" style="padding:8px 0;border-bottom:1px solid var(--color-border-light)">
+            <span class="t-small">Data centralization</span>
+            <span class="badge ${dataDone>=5?'badge-success':dataDone>=3?'badge-warning':'badge-danger'}">${dataDone}/${DATA_TYPES.length}</span>
+          </div>
+          <div class="flex items-center justify-between" style="padding:8px 0;border-bottom:1px solid var(--color-border-light)">
+            <span class="t-small">Systems inventoried</span>
+            <span class="badge ${systemsEntered>=5?'badge-success':'badge-warning'}">${systemsEntered}/${SYSTEM_CATEGORIES.length}</span>
+          </div>
+          <div class="flex items-center justify-between" style="padding:8px 0">
+            <span class="t-small">Critical security controls</span>
+            <span class="badge ${SECURITY_CONTROLS.filter(c=>c.priority==='Critical'&&state.securityChecklist[c.id]).length===SECURITY_CONTROLS.filter(c=>c.priority==='Critical').length?'badge-success':'badge-danger'}">
+              ${SECURITY_CONTROLS.filter(c=>c.priority==='Critical'&&state.securityChecklist[c.id]).length}/${SECURITY_CONTROLS.filter(c=>c.priority==='Critical').length}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="t-h2 mb-md">Next Steps</div>
+        <div style="display:flex;flex-direction:column;gap:var(--space-sm)">
+          ${(() => {
+            const steps = [];
+            const critGaps = SECURITY_CONTROLS.filter(c => c.priority==='Critical' && !state.securityChecklist[c.id]);
+            if (critGaps.length > 0) steps.push({ color: 'var(--color-danger)', text: `Implement ${critGaps.length} critical security control${critGaps.length>1?'s':''}: ${critGaps.map(c=>c.title).join(', ')}` });
+            if (debtCost > 0) steps.push({ color: 'var(--color-warning)', text: `Address $${debtCost.toLocaleString()} in technical debt before it becomes a buyer deduction` });
+            if (shadowCount > 0) steps.push({ color: 'var(--color-warning)', text: `Remediate ${shadowCount} shadow IT instance${shadowCount>1?'s':''}` });
+            if (dataDone < DATA_TYPES.length) steps.push({ color: 'var(--color-primary)', text: `Centralize ${DATA_TYPES.length - dataDone} remaining data type${DATA_TYPES.length-dataDone>1?'s':''}` });
+            if (dilDone < DILIGENCE_ITEMS.length) steps.push({ color: 'var(--color-primary)', text: `Prepare ${DILIGENCE_ITEMS.length - dilDone} remaining diligence document${DILIGENCE_ITEMS.length-dilDone>1?'s':''}` });
+            if (steps.length === 0) steps.push({ color: 'var(--color-success)', text: 'Excellent work. Your technology environment is buyer-ready. Maintain this standard.' });
+            return steps.map((s, i) => `
+              <div class="t-small" style="padding:8px 0;${i < steps.length-1?'border-bottom:1px solid var(--color-border-light)':''}">
+                <span style="color:${s.color};font-weight:600">${i+1}.</span> ${s.text}
+              </div>`).join('');
+          })()}
+        </div>
+      </div>
+    </div>
+    <div class="callout callout-accent mb-xl" style="text-align:center;padding:var(--space-xl)">
+      <div style="font-family:var(--font-display);font-size:20px;font-weight:700;margin-bottom:8px">Technology debt is invisible until diligence reveals it.</div>
+      <div class="t-small">Every dollar you invest in modernization now saves multiples at the closing table.</div>
+    </div>
+    <div class="btn-group" style="justify-content:center">
+      <button class="btn btn-primary" onclick="exportReport()">Export Report</button>
+      <button class="btn btn-secondary" onclick="window.print()">Print Summary</button>
+      <button class="btn btn-ghost" onclick="if(confirm('This will reset all your data. Are you sure?')){localStorage.removeItem(STORAGE_KEY);state=getDefaultState();renderAll();showToast('Data cleared.')}">Reset All Data</button>
+    </div>`;
+}
+
+function exportReport() {
+  const score = calcOverallScore();
+  const secDone = SECURITY_CONTROLS.filter(c => state.securityChecklist[c.id]).length;
+  const dilDone = DILIGENCE_ITEMS.filter(d => state.diligenceChecklist[d.id]).length;
+  const debtCost = calcDebtCost();
+  const shadowCount = SHADOW_IT_EXAMPLES.filter(s => state.shadowFound[s.id]).length;
+
+  let text = 'TECHNOLOGY & SYSTEMS AUDIT - Summary Report\n';
+  text += '='.repeat(50) + '\n';
+  text += 'Generated: ' + new Date().toLocaleDateString() + '\n\n';
+  text += 'OVERALL SCORE: ' + score + '/100 (' + getScoreLabel(score) + ')\n';
+  text += 'Security Controls: ' + secDone + '/' + SECURITY_CONTROLS.length + '\n';
+  text += 'Diligence Ready: ' + dilDone + '/12\n';
+  text += 'Est. Tech Debt: $' + debtCost.toLocaleString() + '\n';
+  text += 'Shadow IT Found: ' + shadowCount + '\n\n';
+  text += 'DOMAIN SCORES\n' + '-'.repeat(30) + '\n';
+  AUDIT_DOMAINS.forEach(d => {
+    text += d.title + ': ' + (state.domainScores[d.id] || 0) + '/5';
+    if (state.domainNotes[d.id]) text += ' - ' + state.domainNotes[d.id];
+    text += '\n';
+  });
+  text += '\nSYSTEMS INVENTORY\n' + '-'.repeat(30) + '\n';
+  SYSTEM_CATEGORIES.forEach(c => {
+    const s = state.systems[c.id] || {};
+    if (s.name) text += '- ' + c.title + ': ' + s.name + ' (' + (s.vendor||'-') + ') v' + (s.version||'-') + ' | $' + (s.cost||'?') + '/mo\n';
+  });
+  text += '\nTECHNICAL DEBT\n' + '-'.repeat(30) + '\n';
+  DEBT_TYPES.forEach(d => {
+    const dt = state.techDebt[d.id] || {};
+    if (dt.risk) text += '- ' + d.title + ': Risk=' + dt.risk + ' Cost=$' + (dt.cost||'?') + ' Target=' + (dt.targetDate||'-') + '\n';
+  });
+  text += '\nSECURITY CONTROLS\n' + '-'.repeat(30) + '\n';
+  SECURITY_CONTROLS.forEach(c => {
+    text += (state.securityChecklist[c.id] ? '[X] ' : '[ ] ') + c.title + ' (' + c.priority + ')\n';
+  });
+
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'technology-systems-audit-report.txt';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Report exported.');
+}
+
+// Initialize
+loadData();
+if (state.unlockedPages.length === 0) state.unlockedPages = ['welcome'];
+renderAll();
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+  }
+});
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

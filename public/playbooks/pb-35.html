@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Room Construction | Exit Planning Playbook #35</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.6; color: var(--color-text); background: var(--color-bg); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+
+/* Skip link */
+a.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 1000; }
+a.skip-link:focus { position: fixed; top: 10px; left: 10px; width: auto; height: auto; padding: 12px 20px; background: var(--color-primary); color: #fff; border-radius: var(--radius-sm); font-weight: 600; z-index: 1000; }
+
+/* Typography */
+.t-display { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+
+/* Layout */
+.app { display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar { width: 260px; min-width: 260px; background: #FFFFFF; border-right: 1px solid var(--color-border); color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: transform var(--transition-slow); overflow-y: auto; }
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item { display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px; border-radius: var(--radius-sm); color: var(--color-text-secondary); font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative; }
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: rgba(255,255,255,0.1); color: #fff; font-weight: 600; }
+.nav-item.completed { color: rgba(255,255,255,0.8); }
+.nav-item.locked { opacity: 0.35; pointer-events: none; }
+.nav-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 11px; flex-shrink: 0; border: 1.5px solid rgba(255,255,255,0.2); }
+.nav-item.active .nav-icon { border-color: var(--color-accent); background: var(--color-accent); color: #fff; }
+.nav-item.completed .nav-icon { border-color: var(--color-success); background: var(--color-success); color: #fff; }
+
+.sidebar-score { padding: var(--space-lg) 0 0; margin-top: var(--space-lg); border-top: 1px solid var(--color-border); text-align: center; }
+.sidebar-score-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; color: var(--color-accent); }
+.sidebar-score-label { font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+
+.sidebar-footer { padding-top: var(--space-lg); margin-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.btn-reset { width: 100%; padding: var(--space-sm) var(--space-md); background: none; border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.4); font-size: 12px; border-radius: var(--radius-sm); cursor: pointer; transition: all var(--transition-fast); }
+.btn-reset:hover { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.7); }
+
+/* Main */
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+/* Mobile */
+.mobile-header { display: none; position: sticky; top: 0; z-index: 90; background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md); }
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+/* Page transitions */
+.page { display: none; animation: pageIn var(--transition-slow) both; }
+.page.active { display: block; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .page, .sidebar-progress-fill, .gauge-bar-fill, .ring-fill { animation: none !important; transition: none !important; }
+}
+
+/* Cards */
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); margin-bottom: var(--space-md); box-shadow: var(--shadow-sm); }
+.card-header { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md); }
+.card-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); font-size: 20px; flex-shrink: 0; }
+.card-icon.primary { background: var(--color-primary-light); }
+.card-icon.accent { background: var(--color-accent-light); }
+.card-icon.success { background: var(--color-success-light); }
+.card-icon.warning { background: var(--color-warning-light); }
+.card-icon.danger { background: var(--color-danger-light); }
+
+/* Callout */
+.callout { border-left: 4px solid var(--color-accent); background: var(--color-accent-light); border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: var(--space-md) var(--space-lg); margin: var(--space-lg) 0; }
+.callout-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-accent); margin-bottom: var(--space-xs); }
+.callout p { font-size: 14px; color: var(--color-text); margin: 0; }
+.callout-primary { border-left-color: var(--color-primary); background: var(--color-primary-light); }
+.callout-primary .callout-label { color: var(--color-primary); }
+.callout-danger { border-left-color: var(--color-danger); background: var(--color-danger-light); }
+.callout-danger .callout-label { color: var(--color-danger); }
+
+/* Stats */
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-md); margin: var(--space-lg) 0; }
+.stat-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); text-align: center; }
+.stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-text); }
+.stat-label { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+/* Tables */
+.table-wrap { overflow-x: auto; margin: var(--space-md) 0; border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { background: var(--color-surface-alt); padding: 10px 14px; text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); border-bottom: 1px solid var(--color-border); }
+td { padding: 10px 14px; border-bottom: 1px solid var(--color-border-light); color: var(--color-text); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:hover { background: var(--color-surface-alt); }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: var(--space-sm); padding: 10px 20px; font-size: 14px; font-weight: 600; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: all var(--transition-fast); }
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { border-color: var(--color-text-secondary); }
+.btn-ghost { background: none; color: var(--color-text-secondary); padding: 10px 12px; }
+.btn-ghost:hover { color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #A36528; }
+.btn-sm { padding: 6px 14px; font-size: 12px; }
+.btn-export { background: var(--color-primary); color: #fff; }
+.btn-export:hover { background: var(--color-primary-hover); }
+
+/* Nav buttons */
+.nav-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+
+/* Forms */
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 13px; font-weight: 600; color: var(--color-text); margin-bottom: var(--space-xs); }
+.form-input, .form-select, .form-textarea { width: 100%; padding: 10px 14px; font-size: 14px; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm); transition: border-color var(--transition-fast); font-family: inherit; }
+.form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(45,90,61,0.1); }
+.form-textarea { resize: vertical; min-height: 80px; }
+
+/* Score selector */
+.score-row { display: grid; grid-template-columns: 1fr auto; gap: var(--space-md); align-items: center; padding: var(--space-md) 0; border-bottom: 1px solid var(--color-border-light); }
+.score-row:last-child { border-bottom: none; }
+.score-row-label { font-size: 14px; font-weight: 500; }
+.score-row-sub { font-size: 12px; color: var(--color-text-tertiary); margin-top: 2px; }
+.score-selector { display: flex; gap: 4px; }
+.score-selector[role="radiogroup"] { gap: 4px; }
+.score-btn { width: 32px; height: 32px; border: 1.5px solid var(--color-border); background: var(--color-surface); border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--color-text-secondary); cursor: pointer; transition: all var(--transition-fast); display: flex; align-items: center; justify-content: center; }
+.score-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.score-btn.selected { color: #fff; }
+.score-btn.s1.selected, .score-btn.s2.selected { background: var(--color-score-1); border-color: var(--color-score-1); }
+.score-btn.s3.selected, .score-btn.s4.selected { background: var(--color-score-2); border-color: var(--color-score-2); }
+.score-btn.s5.selected, .score-btn.s6.selected { background: var(--color-score-3); border-color: var(--color-score-3); }
+.score-btn.s7.selected, .score-btn.s8.selected { background: var(--color-score-4); border-color: var(--color-score-4); }
+.score-btn.s9.selected, .score-btn.s10.selected { background: var(--color-score-5); border-color: var(--color-score-5); }
+
+/* Checklist */
+.checklist-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: 10px 0; border-bottom: 1px solid var(--color-border-light); }
+.checklist-item:last-child { border-bottom: none; }
+.check-box { width: 22px; height: 22px; flex-shrink: 0; border: 2px solid var(--color-border); border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); margin-top: 1px; background: var(--color-surface); }
+.check-box:hover { border-color: var(--color-primary); }
+.check-box.checked { background: var(--color-success); border-color: var(--color-success); }
+.check-box.checked::after { content: "\2713"; color: #fff; font-size: 13px; font-weight: 700; }
+.check-label { font-size: 14px; color: var(--color-text); cursor: pointer; }
+.checklist-item.done .check-label { color: var(--color-text-tertiary); text-decoration: line-through; }
+
+/* Pills */
+.pill { display: inline-flex; align-items: center; padding: 3px 10px; font-size: 12px; font-weight: 600; border-radius: 20px; }
+.pill-success { background: var(--color-success-light); color: var(--color-success); }
+.pill-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.pill-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.pill-primary { background: var(--color-primary-light); color: var(--color-primary); }
+.pill-accent { background: var(--color-accent-light); color: var(--color-accent); }
+
+/* Progress ring */
+.ring-wrap { position: relative; width: 120px; height: 120px; margin: 0 auto var(--space-md); }
+.ring-wrap svg { transform: rotate(-90deg); }
+.ring-bg { stroke: var(--color-border); }
+.ring-fill { stroke: var(--color-accent); transition: stroke-dashoffset 1s ease; stroke-linecap: round; }
+.ring-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+.ring-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-text); display: block; }
+.ring-label-text { font-size: 11px; color: var(--color-text-secondary); display: block; }
+
+/* Gauge rows */
+.gauge-row { display: flex; align-items: center; gap: var(--space-md); padding: 12px 0; border-bottom: 1px solid var(--color-border-light); }
+.gauge-row:last-child { border-bottom: none; }
+.gauge-name { flex: 1; font-size: 14px; font-weight: 500; min-width: 120px; }
+.gauge-track { flex: 2; height: 10px; background: var(--color-surface-alt); border-radius: 5px; overflow: hidden; }
+.gauge-fill { height: 100%; border-radius: 5px; transition: width 0.8s ease; }
+.gauge-score { width: 48px; text-align: right; font-size: 14px; font-weight: 700; }
+
+/* Heatmap */
+.heatmap { display: grid; grid-template-columns: 180px repeat(4, 1fr); gap: 2px; margin: var(--space-lg) 0; }
+.heatmap-header { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.04em; padding: 8px 12px; background: var(--color-surface-alt); text-align: center; }
+.heatmap-header:first-child { text-align: left; }
+.heatmap-cell { padding: 10px 12px; font-size: 13px; text-align: center; border-radius: 2px; }
+.heatmap-label { text-align: left; font-weight: 500; background: var(--color-surface); }
+.heat-1 { background: var(--color-danger-light); color: var(--color-danger); }
+.heat-2 { background: var(--color-warning-light); color: var(--color-warning); }
+.heat-3 { background: #FEF9C3; color: #7C5500; }
+.heat-4 { background: var(--color-success-light); color: var(--color-success); }
+
+/* Tier cards */
+.tier-card { border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; margin-bottom: var(--space-md); transition: all var(--transition-fast); }
+.tier-card:hover { box-shadow: var(--shadow-md); }
+.tier-header { display: flex; align-items: center; justify-content: space-between; padding: 14px var(--space-md); font-size: 14px; font-weight: 600; }
+.tier-1 .tier-header { background: var(--color-success-light); border-bottom: 2px solid var(--color-success); }
+.tier-2 .tier-header { background: var(--color-primary-light); border-bottom: 2px solid var(--color-primary); }
+.tier-3 .tier-header { background: var(--color-warning-light); border-bottom: 2px solid var(--color-warning); }
+.tier-4 .tier-header { background: var(--color-danger-light); border-bottom: 2px solid var(--color-danger); }
+.tier-body { padding: 14px var(--space-md); background: var(--color-surface); }
+.tier-body p { font-size: 14px; margin: 0; }
+
+/* Accordion */
+.accordion { margin: var(--space-md) 0; }
+.accordion-trigger { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 14px var(--space-md); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); color: var(--color-text); text-align: left; }
+.accordion-trigger:hover { border-color: var(--color-primary); }
+.accordion-trigger.open { border-radius: var(--radius-md) var(--radius-md) 0 0; border-bottom-color: var(--color-border-light); }
+.accordion-trigger .chevron { transition: transform 0.3s ease; font-size: 12px; }
+.accordion-trigger.open .chevron { transform: rotate(180deg); }
+.accordion-body { display: none; padding: var(--space-md); border: 1px solid var(--color-border); border-top: none; border-radius: 0 0 var(--radius-md) var(--radius-md); background: var(--color-surface); }
+.accordion-body.open { display: block; }
+
+/* Timeline */
+.timeline-item { display: flex; gap: var(--space-md); padding: var(--space-md) 0; border-bottom: 1px solid var(--color-border-light); }
+.timeline-item:last-child { border-bottom: none; }
+.timeline-marker { width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%; background: var(--color-surface-alt); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--color-text-secondary); cursor: pointer; transition: all var(--transition-fast); }
+.timeline-marker.done { background: var(--color-success-light); color: var(--color-success); }
+.timeline-content h4 { font-size: 14px; font-weight: 600; margin: 0; }
+.timeline-content p { font-size: 13px; color: var(--color-text-secondary); margin: 2px 0 0; }
+
+/* Focus */
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+/* Toast */
+.toast-container { position: fixed; bottom: var(--space-lg); right: var(--space-lg); z-index: 500; display: flex; flex-direction: column; gap: var(--space-sm); }
+.toast { padding: 12px var(--space-lg); background: var(--color-text); color: #fff; border-radius: var(--radius-md); font-size: 14px; box-shadow: var(--shadow-lg); animation: toastIn 0.3s ease; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Print */
+@media print {
+  .sidebar, .mobile-header, .sidebar-overlay, .nav-buttons, .btn-reset, .toast-container { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; margin-bottom: 24px; }
+  .card { break-inside: avoid; }
+}
+
+@media (max-width: 600px) {
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .heatmap { overflow-x: auto; min-width: 500px; }
+  .nav-buttons { flex-direction: column; gap: var(--space-md); }
+  .nav-buttons .btn { width: 100%; justify-content: center; }
+  .score-selector { flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<div class="app">
+  <!-- Sidebar overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #35</div>
+      <div class="sidebar-brand-title">Data Room Construction</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Overall Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0%</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-score" id="sidebarScore" style="display:none">
+      <div class="sidebar-score-value" id="sidebarScoreValue">--</div>
+      <div class="sidebar-score-label">Readiness Score</div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="btn-reset" onclick="PB.reset()">Reset All Progress</button>
+    </div>
+  </aside>
+
+  <!-- Mobile header -->
+  <div class="mobile-header">
+    <button class="hamburger" onclick="PB.toggleSidebar()" aria-label="Toggle navigation"><span></span></button>
+    <span class="t-h3">Data Room Construction</span>
+  </div>
+
+  <!-- Main content -->
+  <main class="main-content" id="main-content">
+    <div class="content-area" id="contentArea"></div>
+  </main>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script>
+// ── Data ──
+const STORAGE_KEY = 'exitosx-pb35-data-room';
+const OLD_KEY = 'pb35_data_room';
+
+const PAGES = [
+  { id: 'welcome', title: 'Welcome', phase: 'Start', icon: '1' },
+  { id: 'why', title: 'Why Data Rooms Matter', phase: 'Learn', icon: '2' },
+  { id: 'platform', title: 'Platform Selection', phase: 'Learn', icon: '3' },
+  { id: 'structure', title: 'Folder Structure', phase: 'Build', icon: '4' },
+  { id: 'checklist', title: 'Document Checklist', phase: 'Build', icon: '5' },
+  { id: 'quality', title: 'Quality Standards', phase: 'Build', icon: '6' },
+  { id: 'access', title: 'Access Controls', phase: 'Build', icon: '7' },
+  { id: 'prepopulate', title: 'Pre-Build Timeline', phase: 'Plan', icon: '8' },
+  { id: 'mistakes', title: 'Common Mistakes', phase: 'Plan', icon: '9' },
+  { id: 'readiness', title: 'Readiness Score', phase: 'Assess', icon: '10' },
+  { id: 'timeline', title: 'Implementation Plan', phase: 'Assess', icon: '11' },
+  { id: 'dashboard', title: 'Dashboard', phase: 'Assess', icon: '12' },
+];
+
+const DOC_CATEGORIES = {
+  corporate: {
+    label: 'Corporate (1.0)',
+    icon: '\u{1F3DB}',
+    docs: [
+      'Articles of Incorporation / Certificate of Formation',
+      'Bylaws or Operating Agreement (all amendments)',
+      'Certificate of Good Standing (each state)',
+      'Organizational chart (entity structure & ownership)',
+      'Board meeting minutes (last 3 years)',
+      'Shareholder/member meeting minutes (last 3 years)',
+      'Stock ledger / cap table with all issuances',
+      'Stockholder agreements, buy-sell, voting agreements',
+      'List of subsidiaries, JVs, and affiliates',
+      'Business licenses and permits (all jurisdictions)',
+    ]
+  },
+  financial: {
+    label: 'Financial (2.0)',
+    icon: '\u{1F4CA}',
+    docs: [
+      'Audited/reviewed financial statements (3-5 years)',
+      'Monthly P&L statements (trailing 24 months)',
+      'Balance sheets (monthly, trailing 24 months)',
+      'Cash flow statements (annual and monthly)',
+      'Quality of earnings / normalized EBITDA bridge',
+      'Revenue by customer, product line, geography',
+      'Accounts receivable aging report (current)',
+      'Accounts payable aging report (current)',
+      'Capital expenditure history and projections',
+      'Debt schedule (all obligations, terms, maturity)',
+      'Financial projections / budget (current + 2 years)',
+      'Bank statements (trailing 12 months)',
+    ]
+  },
+  legal: {
+    label: 'Legal (3.0)',
+    icon: '\u2696',
+    docs: [
+      'All material contracts (customers, suppliers, partners)',
+      'Lease agreements (real property and equipment)',
+      'Loan agreements, promissory notes, security agreements',
+      'Guarantees (personal and corporate)',
+      'Pending or threatened litigation (with assessment)',
+      'Settled litigation (last 5 years, with terms)',
+      'Regulatory correspondence (last 3 years)',
+      'Government contracts or grants',
+      'Non-disclosure agreements (material, in force)',
+    ]
+  },
+  operational: {
+    label: 'Operational (4.0)',
+    icon: '\u2699',
+    docs: [
+      'Facility information and lease summaries',
+      'Major equipment list with depreciation schedule',
+      'Inventory reports and valuation methodology',
+      'IT systems architecture and vendor contracts',
+      'Supply chain documentation',
+      'Quality certifications (ISO, etc.)',
+    ]
+  },
+  hr: {
+    label: 'Human Resources (5.0)',
+    icon: '\u{1F465}',
+    docs: [
+      'Employee census (name, title, start, comp, location)',
+      'Organizational chart by department',
+      'Employment agreements (all, especially key employees)',
+      'Non-compete and non-solicitation agreements',
+      'Employee handbook (current version)',
+      'Benefits summary (health, dental, 401k, etc.)',
+      'Bonus and commission structures',
+      'Workers compensation claims history (3 years)',
+      'Independent contractor agreements and 1099 list',
+      'OSHA compliance records',
+    ]
+  },
+  ip: {
+    label: 'Intellectual Property (6.0)',
+    icon: '\u{1F4A1}',
+    docs: [
+      'Patent registrations and applications',
+      'Trademark registrations',
+      'Trade secret documentation and protections',
+      'Software licenses (inbound and outbound)',
+      'IP assignment agreements from employees/contractors',
+    ]
+  },
+  tax: {
+    label: 'Tax (7.0)',
+    icon: '\u{1F4D1}',
+    docs: [
+      'Federal tax returns (3-5 years)',
+      'State tax returns (all states, 3-5 years)',
+      'Tax audit correspondence and resolutions',
+      'Transfer pricing documentation (if applicable)',
+      'Sales/use tax filings and nexus analysis',
+    ]
+  },
+  insurance: {
+    label: 'Insurance (8.0)',
+    icon: '\u{1F6E1}',
+    docs: [
+      'All current insurance policies',
+      'Claims history (last 5 years)',
+      'Certificates of insurance',
+      'Directors & Officers policy details',
+    ]
+  },
+  customers: {
+    label: 'Customers & Revenue (9.0)',
+    icon: '\u{1F91D}',
+    docs: [
+      'Top 20 customer revenue data (3 years)',
+      'Customer contracts and terms',
+      'Pipeline and backlog reports',
+      'Customer concentration analysis',
+      'Pricing schedules and discount policies',
+    ]
+  },
+  environmental: {
+    label: 'Environmental & Regulatory (10.0)',
+    icon: '\u{1F331}',
+    docs: [
+      'Environmental permits',
+      'Compliance audit reports',
+      'Remediation plans or reports',
+      'Phase I / Phase II environmental assessments',
+    ]
+  }
+};
+
+const PLATFORMS = [
+  { name: 'Intralinks', cost: '$1,500-3,000/mo', best: 'Large (>$50M)', feature: 'Industry standard; robust audit trail' },
+  { name: 'Datasite', cost: '$1,200-2,500/mo', best: 'Mid ($10M-100M)', feature: 'AI-powered redaction & indexing' },
+  { name: 'Firmex', cost: '$500-1,500/mo', best: 'Mid ($5M-50M)', feature: 'Easy setup; good Q&A module' },
+  { name: 'SecureDocs', cost: '$250-500/mo', best: 'Lower mid ($2M-20M)', feature: 'Flat-rate pricing; simple UI' },
+  { name: 'Google/Dropbox', cost: '$0-25/mo', best: 'Sub-$2M', feature: 'Free but lacks controls' },
+  { name: 'Box Business', cost: '$50-200/mo', best: 'Budget-conscious', feature: 'Decent permissions' },
+];
+
+const QUALITY_STANDARDS = [
+  { std: 'Format', req: 'PDF (searchable/OCR), not scanned images', why: 'Buyers need to search, copy, reference text' },
+  { std: 'Completeness', req: 'Full documents including all exhibits and amendments', why: 'Missing pages trigger requests and delays' },
+  { std: 'Currency', req: 'Most recent version, clearly dated', why: 'Outdated documents create confusion' },
+  { std: 'Signatures', req: 'Fully executed copies with all signatures', why: 'Unsigned documents have no legal standing' },
+  { std: 'Readability', req: 'Clean scans, legible text, oriented correctly', why: 'Blurry documents signal carelessness' },
+  { std: 'Redaction', req: 'Sensitive items (SSN, bank accounts) redacted', why: 'Data security awareness; legal requirement' },
+];
+
+const MISTAKES = [
+  { mistake: 'Dumping files with no structure', avoid: 'Build folder structure first; follow master index', risk: 'high' },
+  { mistake: 'Missing executed signatures', avoid: 'Review every document for signatures before upload', risk: 'high' },
+  { mistake: 'Inconsistent financial periods', avoid: 'Standardize all financials to same fiscal periods', risk: 'medium' },
+  { mistake: 'Expired or outdated documents', avoid: 'Conduct annual document refresh; flag expiration dates', risk: 'medium' },
+  { mistake: 'No redaction of sensitive data', avoid: 'Run redaction review before granting access', risk: 'high' },
+  { mistake: 'Duplicate or conflicting versions', avoid: 'Single upload coordinator; version control protocol', risk: 'medium' },
+  { mistake: 'Granting too much access too early', avoid: 'Follow tiered access protocol; release strategically', risk: 'low' },
+  { mistake: 'No Q&A tracking', avoid: 'Use VDR Q&A module; log all responses', risk: 'low' },
+];
+
+// ── State ──
+function defaultState() {
+  return {
+    currentPage: 'welcome',
+    completed: {},
+    companyName: '',
+    dealSize: '',
+    targetDate: '',
+    platformChoice: '',
+    checklistStatus: {},
+    qualityScores: {},
+    readinessScores: {},
+    mistakeChecks: {},
+    timelineChecks: {},
+    accessNotes: {},
+  };
+}
+
+function migrateOldState() {
+  const old = localStorage.getItem(OLD_KEY);
+  if (!old) return null;
+  try {
+    const s = JSON.parse(old);
+    const migrated = defaultState();
+    migrated.companyName = s.companyName || '';
+    migrated.dealSize = s.dealSize || '';
+    migrated.targetDate = s.targetDate || '';
+    migrated.platformChoice = s.platformChoice || '';
+    migrated.checklistStatus = s.checklistStatus || {};
+    migrated.qualityScores = s.qualityScores || {};
+    migrated.readinessScores = s.readinessScores || {};
+    migrated.mistakeChecks = s.mistakeChecks || {};
+    migrated.timelineChecks = s.timelineChecks || {};
+    migrated.accessNotes = s.accessNotes || {};
+    // Convert currentPhase index to page ID
+    if (typeof s.currentPhase === 'number' && s.currentPhase < PAGES.length) {
+      migrated.currentPage = PAGES[s.currentPhase].id;
+    }
+    // Mark visited pages as completed
+    PAGES.forEach(p => {
+      if (s['visited_' + p.id]) migrated.completed[p.id] = true;
+    });
+    localStorage.removeItem(OLD_KEY);
+    return migrated;
+  } catch(e) { return null; }
+}
+
+function loadState() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (stored) return { ...defaultState(), ...stored };
+  } catch(e) {}
+  const migrated = migrateOldState();
+  if (migrated) return migrated;
+  return defaultState();
+}
+
+let state = loadState();
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  updateSidebar();
+}
+
+// ── Navigation ──
+function isCompleted(pageId) { return !!state.completed[pageId]; }
+
+function isUnlocked(pageId) {
+  const idx = PAGES.findIndex(p => p.id === pageId);
+  if (idx <= 0) return true;
+  return isCompleted(PAGES[idx - 1].id);
+}
+
+function completePage(pageId) {
+  state.completed[pageId] = true;
+  save();
+}
+
+function goToPage(pageId) {
+  if (!isUnlocked(pageId)) return;
+  state.currentPage = pageId;
+  save();
+  renderPage();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  closeSidebar();
+}
+
+function nextPage() {
+  const idx = PAGES.findIndex(p => p.id === state.currentPage);
+  if (idx < PAGES.length - 1) {
+    completePage(state.currentPage);
+    goToPage(PAGES[idx + 1].id);
+  }
+}
+
+function prevPage() {
+  const idx = PAGES.findIndex(p => p.id === state.currentPage);
+  if (idx > 0) goToPage(PAGES[idx - 1].id);
+}
+
+// ── Sidebar ──
+function updateSidebar() {
+  const nav = document.getElementById('sidebarNav');
+  let html = '';
+  let currentPhase = '';
+  const completedCount = PAGES.filter(p => isCompleted(p.id)).length;
+  const pct = Math.round((completedCount / PAGES.length) * 100);
+
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '%';
+
+  PAGES.forEach(p => {
+    if (p.phase !== currentPhase) {
+      currentPhase = p.phase;
+      html += '<div class="nav-section-label">' + currentPhase + '</div>';
+    }
+    const active = state.currentPage === p.id;
+    const completed = isCompleted(p.id);
+    const locked = !isUnlocked(p.id);
+    let cls = 'nav-item';
+    if (active) cls += ' active';
+    if (completed) cls += ' completed';
+    if (locked) cls += ' locked';
+
+    html += '<div class="' + cls + '" data-page="' + p.id + '" onclick="goToPage(\'' + p.id + '\')" tabindex="' + (locked ? -1 : 0) + '" role="button" aria-label="' + p.title + (completed ? ' (completed)' : '') + (locked ? ' (locked)' : '') + '">';
+    html += '<span class="nav-icon">' + (completed ? '\u2713' : p.icon) + '</span>';
+    html += '<span>' + p.title + '</span>';
+    html += '</div>';
+  });
+  nav.innerHTML = html;
+
+  // Sidebar score
+  const score = calcOverallScore();
+  const scoreEl = document.getElementById('sidebarScore');
+  const scoreValEl = document.getElementById('sidebarScoreValue');
+  if (score > 0) {
+    scoreEl.style.display = 'block';
+    scoreValEl.textContent = score;
+  } else {
+    scoreEl.style.display = 'none';
+  }
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+// ── Scoring ──
+function getScoreColor(score, max) {
+  const pct = score / max;
+  if (pct < 0.4) return 'var(--color-danger)';
+  if (pct < 0.7) return 'var(--color-warning)';
+  return 'var(--color-success)';
+}
+
+function getScoreLabel(score) {
+  if (score <= 3) return 'Critical';
+  if (score <= 5) return 'Needs Work';
+  if (score <= 7) return 'Good';
+  if (score <= 9) return 'Strong';
+  return 'Excellent';
+}
+
+function calcOverallScore() {
+  const totalDocs = Object.values(DOC_CATEGORIES).reduce((s, c) => s + c.docs.length, 0);
+  const checkedDocs = Object.values(state.checklistStatus).filter(Boolean).length;
+  const docPct = totalDocs > 0 ? (checkedDocs / totalDocs) * 100 : 0;
+
+  const qualScores = Object.values(state.qualityScores).filter(v => v > 0);
+  const qualAvg = qualScores.length > 0 ? qualScores.reduce((a,b) => a+b, 0) / qualScores.length : 0;
+
+  const readScores = Object.values(state.readinessScores).filter(v => v > 0);
+  const readAvg = readScores.length > 0 ? readScores.reduce((a,b) => a+b, 0) / readScores.length : 0;
+
+  const mistakesTotal = MISTAKES.length;
+  const mistakesCleared = Object.values(state.mistakeChecks).filter(Boolean).length;
+
+  if (docPct === 0 && qualAvg === 0 && readAvg === 0 && mistakesCleared === 0) return 0;
+
+  const score = Math.round(
+    (docPct * 0.30) +
+    (qualAvg * 10 * 0.25) +
+    (readAvg * 10 * 0.30) +
+    ((mistakesCleared / mistakesTotal) * 100 * 0.15)
+  );
+  return Math.min(100, score);
+}
+
+function getPlatformRec() {
+  const m = { sub2: 'Google Drive or Box Business', '2to10': 'SecureDocs', '10to50': 'Firmex', '50to100': 'Datasite', '100plus': 'Intralinks' };
+  return m[state.dealSize] || '';
+}
+
+// ── Toast ──
+function showToast(msg) {
+  const container = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  container.appendChild(t);
+  setTimeout(() => { t.remove(); }, 3000);
+}
+
+// ── Render ──
+function renderPage() {
+  const container = document.getElementById('contentArea');
+  const page = PAGES.find(p => p.id === state.currentPage);
+  if (!page) return;
+
+  const idx = PAGES.findIndex(p => p.id === state.currentPage);
+  const prevP = idx > 0 ? PAGES[idx - 1] : null;
+  const nextP = idx < PAGES.length - 1 ? PAGES[idx + 1] : null;
+
+  const navBtns = '<div class="nav-buttons">' +
+    (prevP ? '<button class="btn btn-ghost" onclick="prevPage()">&larr; ' + prevP.title + '</button>' : '<div></div>') +
+    (nextP ? '<button class="btn btn-primary" onclick="nextPage()">' + nextP.title + ' &rarr;</button>' : '') +
+    '</div>';
+
+  const renderers = {
+    welcome: renderWelcome,
+    why: renderWhy,
+    platform: renderPlatform,
+    structure: renderStructure,
+    checklist: renderChecklist,
+    quality: renderQuality,
+    access: renderAccess,
+    prepopulate: renderPrepopulate,
+    mistakes: renderMistakes,
+    readiness: renderReadiness,
+    timeline: renderTimeline,
+    dashboard: renderDashboard,
+  };
+
+  const renderer = renderers[page.id];
+  container.innerHTML = '<div class="page active">' + (renderer ? renderer() : '') + navBtns + '</div>';
+  updateSidebar();
+}
+
+function renderWelcome() {
+  return '' +
+    '<h2 class="t-display">Build Your Buyer-Ready Data Room</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">A well-organized data room is the first signal buyers receive about how you run your business. This interactive guide walks you through every step -- from platform selection to document upload to access controls.</p>' +
+
+    '<div class="callout">' +
+      '<div class="callout-label">The Core Principle</div>' +
+      '<p>Buyers form their first impression of your business from your data room -- before they ever visit your facility or meet your team. A disorganized data room tells them you run a disorganized business. That impression directly affects the multiple they are willing to pay.</p>' +
+    '</div>' +
+
+    '<div class="card" style="margin-top: var(--space-xl)">' +
+      '<h3 class="t-h2" style="margin-bottom: var(--space-md)">Personalize Your Plan</h3>' +
+      '<p class="t-small t-secondary" style="margin-bottom: var(--space-lg)">We will tailor recommendations based on your situation.</p>' +
+      '<div class="form-group">' +
+        '<label class="form-label" for="companyName">Company name</label>' +
+        '<input class="form-input" id="companyName" type="text" placeholder="e.g., Acme Manufacturing" value="' + (state.companyName || '') + '" data-bind="companyName">' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label class="form-label" for="dealSize">Estimated deal size</label>' +
+        '<select class="form-select" id="dealSize" data-bind="dealSize">' +
+          '<option value="">Select range...</option>' +
+          '<option value="sub2"' + (state.dealSize === 'sub2' ? ' selected' : '') + '>Under $2M</option>' +
+          '<option value="2to10"' + (state.dealSize === '2to10' ? ' selected' : '') + '>$2M - $10M</option>' +
+          '<option value="10to50"' + (state.dealSize === '10to50' ? ' selected' : '') + '>$10M - $50M</option>' +
+          '<option value="50to100"' + (state.dealSize === '50to100' ? ' selected' : '') + '>$50M - $100M</option>' +
+          '<option value="100plus"' + (state.dealSize === '100plus' ? ' selected' : '') + '>$100M+</option>' +
+        '</select>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label class="form-label" for="targetDate">Target go-to-market date</label>' +
+        '<input class="form-input" id="targetDate" type="date" value="' + (state.targetDate || '') + '" data-bind="targetDate">' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="stats-row" style="margin-top: var(--space-lg)">' +
+      '<div class="stat-card"><div class="stat-value" style="color: var(--color-primary)">30-50%</div><div class="stat-label">Faster diligence with a pre-built data room</div></div>' +
+      '<div class="stat-card"><div class="stat-value" style="color: var(--color-accent)">10</div><div class="stat-label">Standard folder categories</div></div>' +
+      '<div class="stat-card"><div class="stat-value" style="color: var(--color-success)">6 mo</div><div class="stat-label">Recommended pre-build timeline</div></div>' +
+    '</div>';
+}
+
+function renderWhy() {
+  return '' +
+    '<h2 class="t-display">Why Data Rooms Matter More Than You Think</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">Most business owners view the data room as an administrative burden. This is a costly misunderstanding. The data room is the single most important tool in controlling the diligence narrative.</p>' +
+
+    '<h3 class="t-h2" style="margin-bottom: var(--space-md)">Buyer Psychology of Diligence</h3>' +
+    '<p class="t-small t-secondary" style="margin-bottom: var(--space-md)">When a buyer enters diligence, they are looking for reasons to confirm their investment thesis -- and reasons to reduce the price. Every missing document becomes a data point in the "risk" column.</p>' +
+
+    '<div class="heatmap">' +
+      '<div class="heatmap-header">Data Room Quality</div>' +
+      '<div class="heatmap-header">Perception</div>' +
+      '<div class="heatmap-header">Deal Impact</div>' +
+      '<div class="heatmap-header">Speed</div>' +
+      '<div class="heatmap-header">Risk Level</div>' +
+
+      '<div class="heatmap-cell heatmap-label">Complete, indexed</div>' +
+      '<div class="heatmap-cell heat-4">Professional</div>' +
+      '<div class="heatmap-cell heat-4">Price holds</div>' +
+      '<div class="heatmap-cell heat-4">Fast close</div>' +
+      '<div class="heatmap-cell heat-4">Low</div>' +
+
+      '<div class="heatmap-cell heatmap-label">Mostly complete</div>' +
+      '<div class="heatmap-cell heat-3">Competent</div>' +
+      '<div class="heatmap-cell heat-3">Neutral</div>' +
+      '<div class="heatmap-cell heat-3">Normal</div>' +
+      '<div class="heatmap-cell heat-3">Medium</div>' +
+
+      '<div class="heatmap-cell heatmap-label">Gaps, slow responses</div>' +
+      '<div class="heatmap-cell heat-2">Disorganized</div>' +
+      '<div class="heatmap-cell heat-2">Price cuts</div>' +
+      '<div class="heatmap-cell heat-2">Extended</div>' +
+      '<div class="heatmap-cell heat-2">High</div>' +
+
+      '<div class="heatmap-cell heatmap-label">Major gaps</div>' +
+      '<div class="heatmap-cell heat-1">High risk</div>' +
+      '<div class="heatmap-cell heat-1">Re-trade</div>' +
+      '<div class="heatmap-cell heat-1">Stalled</div>' +
+      '<div class="heatmap-cell heat-1">Critical</div>' +
+    '</div>' +
+
+    '<div class="card" style="margin-top: var(--space-lg)">' +
+      '<div class="card-header">' +
+        '<div class="card-icon success">\u26A1</div>' +
+        '<div class="t-h3">The Speed Advantage</div>' +
+      '</div>' +
+      '<p class="t-small t-secondary">A pre-populated data room lets you respond to buyer requests in hours instead of weeks. In a competitive process, the seller who provides information fastest maintains deal momentum and leverage.</p>' +
+    '</div>' +
+
+    '<div class="callout">' +
+      '<div class="callout-label">Real-World Example</div>' +
+      '<p>A $12M EBITDA manufacturing company pre-built their data room 6 months before market. When they received three LOIs, they granted access within 24 hours. The winning bidder completed diligence in 21 days versus the typical 60-90. The seller avoided $180K in advisory fees and 3 months of disruption.</p>' +
+    '</div>';
+}
+
+function renderPlatform() {
+  var rec = getPlatformRec();
+  var html = '' +
+    '<h2 class="t-display">Virtual Data Room Platform Selection</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">Not all platforms are equal. The right one provides security, access controls, activity tracking, and ease of use for both your team and buyers.</p>';
+
+  if (rec) {
+    html += '<div class="callout-primary callout"><div class="callout-label">Recommended for You</div><p>Based on your estimated deal size, consider <strong>' + rec + '</strong> as your primary VDR platform.</p></div>';
+  }
+
+  html += '<div class="table-wrap"><table><thead><tr><th>Platform</th><th>Monthly Cost</th><th>Best For</th><th>Key Feature</th><th></th></tr></thead><tbody>';
+  PLATFORMS.forEach(function(p) {
+    var sel = state.platformChoice === p.name;
+    html += '<tr><td style="font-weight:600">' + p.name + '</td><td>' + p.cost + '</td><td>' + p.best + '</td><td>' + p.feature + '</td>' +
+      '<td><button class="btn ' + (sel ? 'btn-primary' : 'btn-secondary') + ' btn-sm" onclick="selectPlatform(\'' + p.name.replace(/'/g, "\\'") + '\')">' + (sel ? 'Selected' : 'Select') + '</button></td></tr>';
+  });
+  html += '</tbody></table></div>';
+
+  html += '<h3 class="t-h2" style="margin-top: var(--space-xl); margin-bottom: var(--space-md)">Must-Have Features Checklist</h3>' +
+    '<div class="card">';
+  ['Granular access controls by user group','Activity tracking (who viewed, how long)','Dynamic watermarking (viewer name + date)','Structured Q&A module with audit trail','Bulk upload with automatic indexing','Document versioning (updates without losing priors)','Expiration controls (instant revocation)'].forEach(function(f) {
+    html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--color-border-light)">' +
+      '<span style="color:var(--color-success);font-size:16px">\u2713</span>' +
+      '<span class="t-small">' + f + '</span></div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderStructure() {
+  var cats = Object.entries(DOC_CATEGORIES);
+  var html = '' +
+    '<h2 class="t-display">The Master Folder Structure</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">A standardized folder structure allows buyers and their advisors to find documents quickly. This follows the convention used by most M&A advisory firms.</p>' +
+
+    '<div class="callout-primary callout"><div class="callout-label">Pro Tip</div>' +
+    '<p>Create a master index spreadsheet listing every document with folder location, file name, date uploaded, and status. Upload it as document 0.1 in a "Data Room Index" folder. Buyers will use this as their primary navigation tool.</p></div>' +
+
+    '<h3 class="t-h2" style="margin-top: var(--space-xl); margin-bottom: var(--space-md)">Standard 10-Folder Architecture</h3>' +
+    '<div class="table-wrap"><table><thead><tr><th>#</th><th>Category</th><th>Documents</th></tr></thead><tbody>';
+  cats.forEach(function(entry, i) {
+    var cat = entry[1];
+    html += '<tr><td style="font-weight:700;color:var(--color-primary)">' + (i+1) + '.0</td>' +
+      '<td style="font-weight:600">' + cat.label.split('(')[0].trim() + '</td>' +
+      '<td><span class="pill pill-primary">' + cat.docs.length + ' docs</span></td></tr>';
+  });
+  html += '</tbody></table></div>';
+
+  html += '<h3 class="t-h2" style="margin-top: var(--space-xl); margin-bottom: var(--space-md)">Naming Convention</h3>' +
+    '<div class="card">' +
+      '<p class="t-small" style="margin-bottom: 8px">Every document follows: <code style="background:var(--color-surface-alt);padding:3px 8px;border-radius:4px;font-size:13px">[Folder#]_[Category]_[Description]_[Date].pdf</code></p>' +
+      '<p class="t-caption t-secondary" style="margin:0">Example: <code style="background:var(--color-surface-alt);padding:3px 8px;border-radius:4px">2.1_Financial_Income_Statement_2023.pdf</code></p>' +
+    '</div>';
+
+  html += '<h3 class="t-h2" style="margin-top: var(--space-xl); margin-bottom: var(--space-md)">The 3-Click Rule</h3>' +
+    '<p class="t-small t-secondary">A buyer should find any document in 3 clicks or fewer: category folder, sub-folder, document. If your data room requires more navigation, restructure it.</p>';
+
+  return html;
+}
+
+function renderChecklist() {
+  var cats = Object.entries(DOC_CATEGORIES);
+  var total = cats.reduce(function(s, e) { return s + e[1].docs.length; }, 0);
+  var checked = Object.values(state.checklistStatus).filter(Boolean).length;
+  var pct = total > 0 ? Math.round((checked / total) * 100) : 0;
+  var circ = 2 * Math.PI * 52;
+
+  var html = '' +
+    '<h2 class="t-display">Document Checklist</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">Check off each document you have ready. This is your inventory of what exists and what needs to be gathered.</p>' +
+
+    '<div style="text-align:center;margin-bottom:var(--space-xl)">' +
+      '<div class="ring-wrap">' +
+        '<svg width="120" height="120" viewBox="0 0 120 120">' +
+          '<circle class="ring-bg" cx="60" cy="60" r="52" fill="none" stroke-width="8"/>' +
+          '<circle class="ring-fill" cx="60" cy="60" r="52" fill="none" stroke-width="8" stroke-dasharray="' + circ + '" stroke-dashoffset="' + (circ * (1 - pct/100)) + '"/>' +
+        '</svg>' +
+        '<div class="ring-text"><span class="ring-value">' + pct + '%</span><span class="ring-label-text">Ready</span></div>' +
+      '</div>' +
+      '<div class="t-small t-secondary">' + checked + ' of ' + total + ' documents</div>' +
+    '</div>';
+
+  cats.forEach(function(entry) {
+    var key = entry[0];
+    var cat = entry[1];
+    var catChecked = cat.docs.filter(function(_, i) { return state.checklistStatus[key + '_' + i]; }).length;
+    var pillCls = catChecked === cat.docs.length ? 'pill-success' : catChecked > 0 ? 'pill-warning' : 'pill-danger';
+
+    html += '<div class="accordion">' +
+      '<button class="accordion-trigger" onclick="toggleAccordion(this)" aria-expanded="false">' +
+        '<span>' + cat.icon + ' ' + cat.label + ' <span class="pill ' + pillCls + '" style="margin-left:8px">' + catChecked + '/' + cat.docs.length + '</span></span>' +
+        '<span class="chevron">\u25BC</span>' +
+      '</button>' +
+      '<div class="accordion-body">';
+
+    cat.docs.forEach(function(doc, i) {
+      var ck = state.checklistStatus[key + '_' + i];
+      html += '<div class="checklist-item' + (ck ? ' done' : '') + '">' +
+        '<div class="check-box' + (ck ? ' checked' : '') + '" tabindex="0" role="checkbox" aria-checked="' + (!!ck) + '" data-key="' + key + '_' + i + '" onclick="toggleDocCheck(this)" onkeydown="if(event.key===\' \'||event.key===\'Enter\'){event.preventDefault();toggleDocCheck(this)}"></div>' +
+        '<span class="check-label" onclick="toggleDocCheck(this.previousElementSibling)">' + doc + '</span>' +
+      '</div>';
+    });
+
+    html += '</div></div>';
+  });
+
+  return html;
+}
+
+function renderQuality() {
+  var html = '' +
+    '<h2 class="t-display">Document Quality Standards</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">Having the right documents is necessary but not sufficient. Rate how well your existing documents meet each standard.</p>' +
+    '<div class="card">';
+
+  QUALITY_STANDARDS.forEach(function(q, i) {
+    var score = state.qualityScores['q_' + i] || 0;
+    html += '<div class="score-row">' +
+      '<div><div class="score-row-label">' + q.std + '</div><div class="score-row-sub">' + q.req + '</div></div>' +
+      '<div class="score-selector" role="radiogroup" aria-label="Score for ' + q.std + '">';
+    for (var n = 1; n <= 10; n++) {
+      html += '<button class="score-btn s' + n + (score === n ? ' selected' : '') + '" role="radio" aria-checked="' + (score === n) + '" aria-label="Score ' + n + '" data-key="q_' + i + '" data-val="' + n + '" onclick="setQualityScore(this)">' + n + '</button>';
+    }
+    html += '</div></div>';
+  });
+  html += '</div>';
+
+  var hasScores = Object.keys(state.qualityScores).length >= 3;
+  if (hasScores) {
+    html += '<div class="card" style="margin-top: var(--space-md)"><h3 class="t-h2" style="margin-bottom: var(--space-md)">Your Quality Assessment</h3>';
+    QUALITY_STANDARDS.forEach(function(q, i) {
+      var score = state.qualityScores['q_' + i] || 0;
+      if (!score) return;
+      html += '<div class="gauge-row"><div class="gauge-name">' + q.std + '</div>' +
+        '<div class="gauge-track"><div class="gauge-fill" style="width:' + (score*10) + '%;background:' + getScoreColor(score, 10) + '"></div></div>' +
+        '<div class="gauge-score" style="color:' + getScoreColor(score, 10) + '">' + score + '/10</div></div>';
+    });
+    html += '</div>';
+  }
+
+  html += '<div class="callout" style="margin-top: var(--space-lg)">' +
+    '<div class="callout-label">Why It Matters</div>' +
+    '<p>Blurry scans, unsigned documents, and missing exhibits do not just slow diligence -- they signal carelessness to buyers who are evaluating your operational discipline.</p></div>';
+
+  return html;
+}
+
+function renderAccess() {
+  var html = '' +
+    '<h2 class="t-display">Access Controls & Permission Tiers</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">In a competitive process, you may have multiple bidders reviewing simultaneously. Access controls protect sensitive information and allow strategic document release.</p>' +
+
+    '<div class="tier-card tier-1">' +
+      '<div class="tier-header"><span>Tier 1: Teaser</span><span class="pill pill-success">Initial Outreach</span></div>' +
+      '<div class="tier-body"><p><strong>Access:</strong> Anonymized overview only. CIM and financial summary without company identification.</p>' +
+      '<p style="margin-top:8px"><strong>Purpose:</strong> Gauge interest before revealing identity. No NDA required at this stage.</p></div>' +
+    '</div>' +
+
+    '<div class="tier-card tier-2">' +
+      '<div class="tier-header"><span>Tier 2: Preliminary</span><span class="pill pill-primary">After NDA + IOI</span></div>' +
+      '<div class="tier-body"><p><strong>Access:</strong> Core financials, operations overview, organizational chart, customer summary (anonymized).</p>' +
+      '<p style="margin-top:8px"><strong>Purpose:</strong> Enable buyers to build their preliminary investment model and submit an Indication of Interest.</p></div>' +
+    '</div>' +
+
+    '<div class="tier-card tier-3">' +
+      '<div class="tier-header"><span>Tier 3: Confirmatory</span><span class="pill pill-warning">After Signed LOI</span></div>' +
+      '<div class="tier-body"><p><strong>Access:</strong> Full document access -- all contracts, legal, HR, IP, and tax documents.</p>' +
+      '<p style="margin-top:8px"><strong>Purpose:</strong> Enable complete confirmatory diligence. This is where 80% of buyer questions arise.</p></div>' +
+    '</div>' +
+
+    '<div class="tier-card tier-4">' +
+      '<div class="tier-header"><span>Tier 4: Sensitive</span><span class="pill pill-danger">Final Stages Only</span></div>' +
+      '<div class="tier-body"><p><strong>Access:</strong> Customer names, individual compensation details, trade secrets, proprietary formulas.</p>' +
+      '<p style="margin-top:8px"><strong>Purpose:</strong> Restricted to final bidder(s) only. Named individuals with specific authorization.</p></div>' +
+    '</div>' +
+
+    '<h3 class="t-h2" style="margin-top: var(--space-xl); margin-bottom: var(--space-md)">Activity Monitoring Signals</h3>' +
+    '<div class="card">' +
+      '<div class="checklist-item"><span style="color:var(--color-success);font-size:18px;flex-shrink:0">\u2191</span><span class="check-label"><strong>High financial activity</strong> -- Buyer is building their model. Positive signal.</span></div>' +
+      '<div class="checklist-item"><span style="color:var(--color-warning);font-size:18px;flex-shrink:0">\u21AA</span><span class="check-label"><strong>Legal/compliance focus</strong> -- May indicate concern. Address proactively.</span></div>' +
+      '<div class="checklist-item"><span style="color:var(--color-danger);font-size:18px;flex-shrink:0">\u2193</span><span class="check-label"><strong>Declining activity</strong> -- Buyer may be losing interest. Follow up immediately.</span></div>' +
+      '<div class="checklist-item"><span style="color:var(--color-primary);font-size:18px;flex-shrink:0">\u2605</span><span class="check-label"><strong>Customer contract deep-dive</strong> -- Buyer is in advanced evaluation. Strong signal.</span></div>' +
+    '</div>';
+
+  return html;
+}
+
+function renderPrepopulate() {
+  var steps = [
+    { month: 6, title: 'Platform Setup', desc: 'Establish VDR platform; create complete folder structure', owner: 'CFO / Advisor' },
+    { month: 5, title: 'Corporate & IP Upload', desc: 'Upload all corporate formation docs, org charts, board minutes, IP registrations', owner: 'Legal / Admin' },
+    { month: 4, title: 'Financial Documents', desc: 'Upload financial statements, tax returns, AR/AP aging reports, debt schedules', owner: 'CFO / Controller' },
+    { month: 3, title: 'Legal & Operations', desc: 'Upload all material contracts, leases, legal documents, operational information', owner: 'Legal / Outside Counsel' },
+    { month: 2, title: 'HR, Tax & Insurance', desc: 'Upload employee census, benefits, employment agreements, insurance policies', owner: 'HR / CFO' },
+    { month: 1, title: 'Gap Analysis', desc: 'Identify all missing documents and resolve; conduct quality review', owner: 'Advisor / CFO' },
+    { month: 0, title: 'Go-Live', desc: 'Master index complete; test access controls; grant Tier 1 access to first bidders', owner: 'Advisor' },
+  ];
+
+  var html = '' +
+    '<h2 class="t-display">Pre-Build Timeline</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">The single biggest mistake sellers make is waiting until they have an LOI to start building the data room. Start 6 months before going to market.</p>' +
+
+    '<div class="callout"><div class="callout-label">Advisor Insight</div>' +
+    '<p>Have your M&A advisor or attorney do a "mock diligence" review of your data room before going to market. They will spot gaps, inconsistencies, and quality issues that buyers would flag -- giving you time to fix problems before they become deal issues.</p></div>' +
+
+    '<h3 class="t-h2" style="margin-top: var(--space-xl); margin-bottom: var(--space-md)">The 6-Month Pre-Build Plan</h3>';
+
+  steps.forEach(function(step, i) {
+    var ck = state.timelineChecks['t_' + i];
+    html += '<div class="timeline-item">' +
+      '<div class="timeline-marker' + (ck ? ' done' : '') + '" tabindex="0" role="checkbox" aria-checked="' + (!!ck) + '" onclick="toggleTimelineCheck(\'t_' + i + '\')" onkeydown="if(event.key===\' \'||event.key===\'Enter\'){event.preventDefault();toggleTimelineCheck(\'t_' + i + '\')}">' +
+        (ck ? '\u2713' : (step.month === 0 ? '\u2605' : 'M' + step.month)) +
+      '</div>' +
+      '<div class="timeline-content">' +
+        '<h4>' + step.title + (step.month > 0 ? ' <span style="font-weight:400;color:var(--color-text-tertiary)">(' + step.month + ' months before)</span>' : '') + '</h4>' +
+        '<p>' + step.desc + '</p>' +
+        '<p style="font-size:12px;color:var(--color-accent);margin-top:4px">Owner: ' + step.owner + '</p>' +
+      '</div>' +
+    '</div>';
+  });
+
+  return html;
+}
+
+function renderMistakes() {
+  var html = '' +
+    '<h2 class="t-display">Common Data Room Mistakes</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">Each of these mistakes costs time, creates buyer doubt, and can lead to price reductions. Mark the ones you have addressed or plan to address.</p>' +
+    '<div class="card">';
+
+  MISTAKES.forEach(function(m, i) {
+    var ck = state.mistakeChecks['m_' + i];
+    var riskCls = m.risk === 'high' ? 'pill-danger' : m.risk === 'medium' ? 'pill-warning' : 'pill-success';
+    html += '<div class="checklist-item' + (ck ? ' done' : '') + '">' +
+      '<div class="check-box' + (ck ? ' checked' : '') + '" tabindex="0" role="checkbox" aria-checked="' + (!!ck) + '" data-key="m_' + i + '" onclick="toggleMistakeCheck(this)" onkeydown="if(event.key===\' \'||event.key===\'Enter\'){event.preventDefault();toggleMistakeCheck(this)}"></div>' +
+      '<div style="flex:1">' +
+        '<span class="check-label" style="font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="toggleMistakeCheck(this.closest(\'.checklist-item\').querySelector(\'.check-box\'))">' +
+          m.mistake + ' <span class="pill ' + riskCls + '">' + m.risk + ' risk</span>' +
+        '</span>' +
+        '<p class="t-caption t-secondary" style="margin:4px 0 0"><strong>Prevention:</strong> ' + m.avoid + '</p>' +
+      '</div>' +
+    '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderReadiness() {
+  var categories = ['Corporate','Financial','Legal','Operational','HR','IP','Tax','Insurance','Customers','Environmental'];
+  var scores = Object.values(state.readinessScores).filter(function(v) { return v > 0; });
+  var avgScore = scores.length > 0 ? (scores.reduce(function(a,b) { return a+b; }, 0) / scores.length).toFixed(1) : 0;
+  var hasScores = scores.length >= 3;
+  var circ = 2 * Math.PI * 52;
+
+  var html = '' +
+    '<h2 class="t-display">Diligence Readiness Score</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">Rate your readiness on a 1-10 scale across each category. Any category below a 7 should be prioritized for improvement before going to market.</p>';
+
+  if (hasScores) {
+    html += '<div style="text-align:center;margin-bottom:var(--space-xl)">' +
+      '<div class="ring-wrap">' +
+        '<svg width="120" height="120" viewBox="0 0 120 120">' +
+          '<circle class="ring-bg" cx="60" cy="60" r="52" fill="none" stroke-width="8"/>' +
+          '<circle class="ring-fill" cx="60" cy="60" r="52" fill="none" stroke-width="8" stroke-dasharray="' + circ + '" stroke-dashoffset="' + (circ * (1 - avgScore/10)) + '" style="stroke:' + getScoreColor(avgScore, 10) + '"/>' +
+        '</svg>' +
+        '<div class="ring-text"><span class="ring-value" style="color:' + getScoreColor(avgScore, 10) + '">' + avgScore + '</span><span class="ring-label-text">' + getScoreLabel(parseFloat(avgScore)) + '</span></div>' +
+      '</div>' +
+      '<div class="t-small t-secondary">Average Readiness Score</div>' +
+    '</div>';
+  }
+
+  html += '<div class="card">';
+  categories.forEach(function(cat, i) {
+    var score = state.readinessScores['r_' + i] || 0;
+    html += '<div class="score-row">' +
+      '<div><div class="score-row-label">' + cat + '</div><div class="score-row-sub">' + (score > 0 ? getScoreLabel(score) : 'Not rated') + '</div></div>' +
+      '<div class="score-selector" role="radiogroup" aria-label="Readiness score for ' + cat + '">';
+    for (var n = 1; n <= 10; n++) {
+      html += '<button class="score-btn s' + n + (score === n ? ' selected' : '') + '" role="radio" aria-checked="' + (score === n) + '" aria-label="Score ' + n + '" data-key="r_' + i + '" data-val="' + n + '" onclick="setReadinessScore(this)">' + n + '</button>';
+    }
+    html += '</div></div>';
+  });
+  html += '</div>';
+
+  if (hasScores) {
+    html += '<h3 class="t-h2" style="margin-top: var(--space-xl); margin-bottom: var(--space-md)">Category Breakdown</h3><div class="card">';
+    categories.forEach(function(cat, i) {
+      var score = state.readinessScores['r_' + i] || 0;
+      if (!score) return;
+      html += '<div class="gauge-row"><div class="gauge-name">' + cat + '</div>' +
+        '<div class="gauge-track"><div class="gauge-fill" style="width:' + (score*10) + '%;background:' + getScoreColor(score, 10) + '"></div></div>' +
+        '<div class="gauge-score" style="color:' + getScoreColor(score, 10) + '">' + score + '/10</div></div>';
+    });
+    html += '</div>';
+
+    var weak = categories.filter(function(c, i) { var s = state.readinessScores['r_'+i]; return s && s < 7; });
+    html += '<div class="callout"><div class="callout-label">Priority Areas</div><p>' +
+      (weak.length > 0
+        ? 'Focus on improving: <strong>' + weak.join(', ') + '</strong>. These categories score below 7 and should be prioritized before going to market.'
+        : 'All rated categories are at 7 or above. Your data room foundation is strong.') +
+    '</p></div>';
+  }
+
+  return html;
+}
+
+function renderTimeline() {
+  var milestones = [
+    { weeks: '1-2', title: 'Platform selected and configured', deliverable: 'VDR account active with folder structure' },
+    { weeks: '3-6', title: 'Corporate and IP documents uploaded', deliverable: '100% of Folders 1.0 and 6.0 complete' },
+    { weeks: '7-10', title: 'Financial documents uploaded', deliverable: '100% of Folder 2.0 complete' },
+    { weeks: '11-14', title: 'Legal and operational documents', deliverable: '100% of Folders 3.0 and 4.0 complete' },
+    { weeks: '15-18', title: 'HR, tax, and insurance uploaded', deliverable: '100% of Folders 5.0, 7.0, 8.0 complete' },
+    { weeks: '19-22', title: 'Gap analysis and remediation', deliverable: 'All gaps identified and resolved' },
+    { weeks: '23-24', title: 'Mock diligence and final QA', deliverable: 'Data room certified buyer-ready' },
+  ];
+
+  var html = '' +
+    '<h2 class="t-display">Implementation Plan</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">A 24-week build schedule with clear milestones and deliverables. Assign owners and track completion below.</p>';
+
+  milestones.forEach(function(m, i) {
+    var ck = state.timelineChecks['impl_' + i];
+    html += '<div class="card" style="display:flex;gap:var(--space-md);align-items:flex-start">' +
+      '<div class="check-box' + (ck ? ' checked' : '') + '" style="margin-top:4px" tabindex="0" role="checkbox" aria-checked="' + (!!ck) + '" data-key="impl_' + i + '" onclick="toggleImplCheck(this)" onkeydown="if(event.key===\' \'||event.key===\'Enter\'){event.preventDefault();toggleImplCheck(this)}"></div>' +
+      '<div style="flex:1">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">' +
+          '<span class="t-h3">' + m.title + '</span>' +
+          '<span class="pill pill-primary">Weeks ' + m.weeks + '</span>' +
+        '</div>' +
+        '<p class="t-small t-secondary" style="margin:0">' + m.deliverable + '</p>' +
+      '</div>' +
+    '</div>';
+  });
+
+  return html;
+}
+
+function renderDashboard() {
+  var cats = Object.entries(DOC_CATEGORIES);
+  var totalDocs = cats.reduce(function(s, e) { return s + e[1].docs.length; }, 0);
+  var checkedDocs = Object.values(state.checklistStatus).filter(Boolean).length;
+  var docPct = totalDocs > 0 ? Math.round((checkedDocs / totalDocs) * 100) : 0;
+
+  var qualScores = Object.values(state.qualityScores).filter(function(v) { return v > 0; });
+  var qualAvg = qualScores.length > 0 ? (qualScores.reduce(function(a,b) { return a+b; }, 0) / qualScores.length).toFixed(1) : '--';
+
+  var readScores = Object.values(state.readinessScores).filter(function(v) { return v > 0; });
+  var readAvg = readScores.length > 0 ? (readScores.reduce(function(a,b) { return a+b; }, 0) / readScores.length).toFixed(1) : '--';
+
+  var mistakesAddressed = Object.values(state.mistakeChecks).filter(Boolean).length;
+  var overallScore = calcOverallScore();
+  var circ = 2 * Math.PI * 52;
+
+  // Weak categories
+  var categories = ['Corporate','Financial','Legal','Operational','HR','IP','Tax','Insurance','Customers','Environmental'];
+  var weakCats = [];
+  categories.forEach(function(c, i) {
+    var s = state.readinessScores['r_' + i];
+    if (s && s < 7) weakCats.push({ name: c, score: s });
+  });
+  weakCats.sort(function(a, b) { return a.score - b.score; });
+
+  // Missing doc categories
+  var missingCats = [];
+  cats.forEach(function(entry) {
+    var key = entry[0]; var cat = entry[1];
+    var catChecked = cat.docs.filter(function(_, i) { return state.checklistStatus[key + '_' + i]; }).length;
+    if (catChecked < cat.docs.length) {
+      missingCats.push({ name: cat.label, missing: cat.docs.length - catChecked, total: cat.docs.length });
+    }
+  });
+  missingCats.sort(function(a, b) { return b.missing - a.missing; });
+
+  var html = '' +
+    '<h2 class="t-display">Your Data Room Action Plan</h2>' +
+    '<p class="t-body t-secondary" style="margin: var(--space-sm) 0 var(--space-lg)">' +
+      (state.companyName ? 'Here is a summary of ' + state.companyName + '\'s data room readiness and next steps.' : 'Here is a summary of your data room readiness and the actions needed to get buyer-ready.') +
+    '</p>';
+
+  // Score ring
+  html += '<div style="text-align:center;margin-bottom:var(--space-xl)">' +
+    '<div class="ring-wrap">' +
+      '<svg width="120" height="120" viewBox="0 0 120 120">' +
+        '<circle class="ring-bg" cx="60" cy="60" r="52" fill="none" stroke-width="8"/>' +
+        '<circle class="ring-fill" cx="60" cy="60" r="52" fill="none" stroke-width="8" stroke-dasharray="' + circ + '" stroke-dashoffset="' + (circ * (1 - overallScore/100)) + '" style="stroke:' + getScoreColor(overallScore, 100) + '"/>' +
+      '</svg>' +
+      '<div class="ring-text"><span class="ring-value" style="color:' + getScoreColor(overallScore, 100) + '">' + overallScore + '</span><span class="ring-label-text">Overall</span></div>' +
+    '</div>' +
+  '</div>';
+
+  // KPIs
+  html += '<div class="stats-row">' +
+    '<div class="stat-card"><div class="stat-value" style="color:' + getScoreColor(docPct, 100) + '">' + docPct + '%</div><div class="stat-label">Documents Ready</div></div>' +
+    '<div class="stat-card"><div class="stat-value" style="color:' + (qualAvg !== '--' ? getScoreColor(parseFloat(qualAvg), 10) : 'var(--color-text-tertiary)') + '">' + qualAvg + '</div><div class="stat-label">Quality Score (avg)</div></div>' +
+    '<div class="stat-card"><div class="stat-value" style="color:' + (readAvg !== '--' ? getScoreColor(parseFloat(readAvg), 10) : 'var(--color-text-tertiary)') + '">' + readAvg + '</div><div class="stat-label">Readiness Score (avg)</div></div>' +
+    '<div class="stat-card"><div class="stat-value" style="font-size:18px">' + (state.platformChoice || '--') + '</div><div class="stat-label">Platform Selected</div></div>' +
+  '</div>';
+
+  // Weak categories
+  if (weakCats.length > 0) {
+    html += '<div class="card" style="border-left:4px solid var(--color-danger)">' +
+      '<h3 class="t-h2" style="color:var(--color-danger);margin-bottom:var(--space-md)">Priority Improvements Needed</h3>' +
+      '<p class="t-small t-secondary" style="margin-bottom:var(--space-md)">These categories scored below 7 on readiness. Focus here before going to market:</p>';
+    weakCats.forEach(function(c) {
+      html += '<div class="gauge-row"><div class="gauge-name">' + c.name + '</div>' +
+        '<div class="gauge-track"><div class="gauge-fill" style="width:' + (c.score*10) + '%;background:' + getScoreColor(c.score, 10) + '"></div></div>' +
+        '<div class="gauge-score" style="color:' + getScoreColor(c.score, 10) + '">' + c.score + '/10</div></div>';
+    });
+    html += '</div>';
+  }
+
+  // Missing docs
+  if (missingCats.length > 0) {
+    html += '<div class="card"><h3 class="t-h2" style="margin-bottom:var(--space-md)">Documents Still Needed</h3>';
+    missingCats.slice(0, 5).forEach(function(c) {
+      html += '<div class="gauge-row"><div class="gauge-name">' + c.name + '</div>' +
+        '<div class="gauge-track"><div class="gauge-fill" style="width:' + (((c.total - c.missing) / c.total) * 100) + '%;background:var(--color-accent)"></div></div>' +
+        '<div class="gauge-score">' + (c.total - c.missing) + '/' + c.total + '</div></div>';
+    });
+    html += '</div>';
+  }
+
+  // Mistakes
+  var mistPillCls = mistakesAddressed >= MISTAKES.length ? 'pill-success' : mistakesAddressed >= MISTAKES.length / 2 ? 'pill-warning' : 'pill-danger';
+  var mistLabel = mistakesAddressed >= MISTAKES.length ? 'All clear' : mistakesAddressed >= MISTAKES.length / 2 ? 'In progress' : 'Needs attention';
+  html += '<div class="card"><h3 class="t-h2" style="margin-bottom:var(--space-md)">Mistakes Audit</h3>' +
+    '<p class="t-small">' + mistakesAddressed + ' of ' + MISTAKES.length + ' common mistakes addressed. <span class="pill ' + mistPillCls + '">' + mistLabel + '</span></p></div>';
+
+  // Final quote
+  html += '<div class="callout"><div class="callout-label">Final Thought</div>' +
+    '<p>"In M&A, the quality of your data room is the quality of your deal. Prepare it like your valuation depends on it -- because it does."</p></div>';
+
+  // Export
+  html += '<div style="text-align:center;margin-top:var(--space-xl)">' +
+    '<button class="btn btn-export" onclick="exportSummary()">Export Summary</button></div>';
+
+  return html;
+}
+
+// ── Event Handlers ──
+function toggleDocCheck(el) {
+  var key = el.dataset.key;
+  state.checklistStatus[key] = !state.checklistStatus[key];
+  save();
+  renderPage();
+}
+
+function toggleMistakeCheck(el) {
+  var key = el.dataset.key;
+  state.mistakeChecks[key] = !state.mistakeChecks[key];
+  save();
+  renderPage();
+}
+
+function toggleTimelineCheck(key) {
+  state.timelineChecks[key] = !state.timelineChecks[key];
+  save();
+  renderPage();
+}
+
+function toggleImplCheck(el) {
+  var key = el.dataset.key;
+  state.timelineChecks[key] = !state.timelineChecks[key];
+  save();
+  renderPage();
+}
+
+function setQualityScore(el) {
+  state.qualityScores[el.dataset.key] = parseInt(el.dataset.val);
+  save();
+  renderPage();
+}
+
+function setReadinessScore(el) {
+  state.readinessScores[el.dataset.key] = parseInt(el.dataset.val);
+  save();
+  renderPage();
+}
+
+function selectPlatform(name) {
+  state.platformChoice = name;
+  save();
+  renderPage();
+}
+
+function toggleAccordion(trigger) {
+  var body = trigger.nextElementSibling;
+  var isOpen = trigger.classList.contains('open');
+  trigger.classList.toggle('open');
+  body.classList.toggle('open');
+  trigger.setAttribute('aria-expanded', !isOpen);
+}
+
+// ── Bind inputs ──
+function bindInputs() {
+  document.querySelectorAll('[data-bind]').forEach(function(el) {
+    el.addEventListener('change', function() {
+      state[this.dataset.bind] = this.value;
+      save();
+    });
+    el.addEventListener('input', function() {
+      if (this.type === 'text' || this.tagName === 'TEXTAREA') {
+        state[this.dataset.bind] = this.value;
+        save();
+      }
+    });
+  });
+}
+
+// ── Auto-complete logic ──
+function checkAutoComplete() {
+  var id = state.currentPage;
+  switch (id) {
+    case 'welcome': if (state.companyName) completePage(id); break;
+    case 'platform': if (state.platformChoice) completePage(id); break;
+    case 'checklist': {
+      var total = Object.values(DOC_CATEGORIES).reduce(function(s, c) { return s + c.docs.length; }, 0);
+      var checked = Object.values(state.checklistStatus).filter(Boolean).length;
+      if (checked >= total * 0.3) completePage(id);
+      break;
+    }
+    case 'quality': if (Object.keys(state.qualityScores).length >= 4) completePage(id); break;
+    case 'readiness': if (Object.keys(state.readinessScores).length >= 8) completePage(id); break;
+    case 'timeline': if (Object.values(state.timelineChecks).filter(Boolean).length >= 3) completePage(id); break;
+    case 'mistakes': if (Object.values(state.mistakeChecks).filter(Boolean).length >= 4) completePage(id); break;
+    default:
+      // Visit-based completion for info pages
+      completePage(id);
+      break;
+  }
+}
+
+// ── Export ──
+function exportSummary() {
+  var cats = Object.entries(DOC_CATEGORIES);
+  var totalDocs = cats.reduce(function(s, e) { return s + e[1].docs.length; }, 0);
+  var checkedDocs = Object.values(state.checklistStatus).filter(Boolean).length;
+  var categories = ['Corporate','Financial','Legal','Operational','HR','IP','Tax','Insurance','Customers','Environmental'];
+
+  var lines = ['DATA ROOM CONSTRUCTION -- SUMMARY', ''];
+  if (state.companyName) lines.push('Company: ' + state.companyName);
+  if (state.dealSize) lines.push('Deal Size: ' + state.dealSize);
+  if (state.platformChoice) lines.push('Platform: ' + state.platformChoice);
+  lines.push('Overall Score: ' + calcOverallScore() + '/100');
+  lines.push('Documents Ready: ' + checkedDocs + '/' + totalDocs);
+  lines.push('');
+
+  lines.push('READINESS BY CATEGORY');
+  categories.forEach(function(c, i) {
+    var s = state.readinessScores['r_' + i];
+    lines.push('  ' + c + ': ' + (s ? s + '/10' : 'Not rated'));
+  });
+  lines.push('');
+
+  lines.push('QUALITY STANDARDS');
+  QUALITY_STANDARDS.forEach(function(q, i) {
+    var s = state.qualityScores['q_' + i];
+    lines.push('  ' + q.std + ': ' + (s ? s + '/10' : 'Not rated'));
+  });
+  lines.push('');
+
+  lines.push('MISTAKES ADDRESSED');
+  MISTAKES.forEach(function(m, i) {
+    lines.push('  [' + (state.mistakeChecks['m_' + i] ? 'X' : ' ') + '] ' + m.mistake);
+  });
+
+  var blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'data-room-construction-summary.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('Summary exported');
+}
+
+// ── Reset ──
+function resetFn() {
+  if (confirm('Reset all progress? This cannot be undone.')) {
+    state = defaultState();
+    save();
+    goToPage('welcome');
+    showToast('Progress reset');
+  }
+}
+
+// ── Public API ──
+var PB = {
+  reset: resetFn,
+  toggleSidebar: toggleSidebar,
+};
+
+// ── Observer for auto-bind ──
+var observer = new MutationObserver(function() {
+  bindInputs();
+  checkAutoComplete();
+});
+
+// ── Init ──
+updateSidebar();
+renderPage();
+observer.observe(document.getElementById('contentArea'), { childList: true, subtree: true });
+
+// Sidebar overlay click to close
+document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+// Keyboard nav for sidebar items
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && e.target.classList.contains('nav-item')) {
+    e.target.click();
+  }
+});
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

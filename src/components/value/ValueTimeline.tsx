@@ -143,8 +143,8 @@ export function ValueTimeline({ valueTrend, annotations }: ValueTimelineProps) {
             <AreaChart data={chartData} margin={{ top: 10, right: 20, left: 20, bottom: 0 }}>
               <defs>
                 <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#B87333" stopOpacity={0.1} />
-                  <stop offset="95%" stopColor="#B87333" stopOpacity={0.01} />
+                  <stop offset="5%" stopColor="#0071E3" stopOpacity={0.1} />
+                  <stop offset="95%" stopColor="#0071E3" stopOpacity={0.01} />
                 </linearGradient>
               </defs>
               <XAxis
@@ -164,7 +164,7 @@ export function ValueTimeline({ valueTrend, annotations }: ValueTimelineProps) {
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#B87333"
+                stroke="#0071E3"
                 strokeWidth={2}
                 fill="url(#valueGradient)"
               />
@@ -199,7 +199,7 @@ export function ValueTimeline({ valueTrend, annotations }: ValueTimelineProps) {
         {hasDcfData && (
           <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <span className="inline-block w-4 h-0.5 bg-[#B87333]" /> EBITDA Multiple
+              <span className="inline-block w-4 h-0.5 bg-[#0071E3]" /> EBITDA Multiple
             </span>
             <span className="flex items-center gap-1.5">
               <span className="inline-block w-4 h-0.5 border-t-[1.5px] border-dashed border-gray-500" /> DCF

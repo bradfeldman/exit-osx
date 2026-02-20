@@ -46,6 +46,11 @@ const capitalLinks: NavLink[] = [
   { name: 'Business Loans', href: '/dashboard/loans/business', icon: BankIcon },
 ]
 
+// PROGRAMS section (secondary nav for playbook library)
+const programsLink: NavLink = {
+  name: 'Programs', href: '/dashboard/playbook', icon: ProgramsIcon, exactMatch: true,
+}
+
 // EXIT TOOLS section removed -- consolidated into Mode 5 (Deal Room) at /dashboard/deal-room
 
 export function Sidebar() {
@@ -120,6 +125,16 @@ export function Sidebar() {
           <div className="mb-4">
             <ul role="list" className="space-y-1">
               {coreLinks.map((link) => renderNavLink(link))}
+            </ul>
+          </div>
+
+          {/* PROGRAMS Section */}
+          <div className="mb-4 pt-4 border-t border-sidebar-border/50">
+            <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
+              Programs
+            </p>
+            <ul role="list" className="mt-1 space-y-1">
+              {renderNavLink(programsLink)}
             </ul>
           </div>
 
@@ -226,6 +241,14 @@ function BankIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" />
+    </svg>
+  )
+}
+
+function ProgramsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
     </svg>
   )
 }

@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Management Team Bench Strength | Exit Planning Playbook #12</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --shadow-xl: 0 16px 50px rgba(0,0,0,0.12);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a { color: var(--color-primary); text-decoration: none; }
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.t-display { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; color: var(--color-text); }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.t-tertiary { color: var(--color-text-tertiary); }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 260px; min-width: 260px; background: var(--color-text);
+  color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow);
+  overflow-y: auto;
+}
+.sidebar.collapsed { transform: translateX(-260px); }
+.main-content {
+  flex: 1; margin-left: 260px; min-height: 100vh;
+  transition: margin-left var(--transition-slow);
+}
+.sidebar.collapsed + .main-content { margin-left: 0; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+/* Mobile */
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+/* ============================================================
+   SIDEBAR COMPONENTS
+   ============================================================ */
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.6);
+  font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--color-text-tertiary); }
+.nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+/* ============================================================
+   CARDS & SURFACES
+   ============================================================ */
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-lg);
+  transition: box-shadow var(--transition-normal);
+}
+.card:hover { box-shadow: var(--shadow-sm); }
+.card-elevated { box-shadow: var(--shadow-md); border-color: transparent; }
+.card-section { padding: var(--space-xl); }
+
+.callout {
+  padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md);
+  border-left: 3px solid; font-size: 14px; line-height: 1.6;
+}
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); border-color: var(--color-text-tertiary); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn-icon { width: 36px; height: 36px; padding: 0; border-radius: var(--radius-sm); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.btn-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+
+/* ============================================================
+   FORM ELEMENTS
+   ============================================================ */
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); color: var(--color-text); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.form-input::placeholder { color: var(--color-text-tertiary); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+/* ============================================================
+   SCORE SELECTOR (Radio buttons styled as score cards)
+   ============================================================ */
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center; min-width: 0;
+}
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+
+@media (max-width: 600px) {
+  .score-selector { gap: 4px; }
+  .score-option { padding: 10px 4px; }
+  .score-number { font-size: 18px; }
+  .score-label-text { font-size: 9px; }
+}
+
+/* ============================================================
+   RETENTION RISK SELECTOR
+   ============================================================ */
+.risk-selector { display: flex; gap: var(--space-sm); }
+.risk-option {
+  flex: 1; padding: 12px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center; font-size: 14px; font-weight: 500;
+}
+.risk-option:hover { border-color: var(--color-text-tertiary); }
+.risk-option.selected.risk-low { border-color: var(--color-success); background: var(--color-success-light); color: var(--color-success); }
+.risk-option.selected.risk-med { border-color: var(--color-warning); background: var(--color-warning-light); color: var(--color-warning); }
+.risk-option.selected.risk-high { border-color: var(--color-danger); background: var(--color-danger-light); color: var(--color-danger); }
+
+/* ============================================================
+   BADGES & TAGS
+   ============================================================ */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+  border-radius: 999px; font-size: 12px; font-weight: 500;
+}
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+
+/* ============================================================
+   PROGRESS RING (SVG-based)
+   ============================================================ */
+.progress-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.progress-ring-text { position: absolute; text-align: center; }
+.progress-ring-value { font-family: var(--font-display); font-weight: 700; line-height: 1; }
+.progress-ring-label { font-size: 10px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ============================================================
+   HEAT MAP
+   ============================================================ */
+.heatmap { display: grid; gap: 2px; }
+.heatmap-cell {
+  aspect-ratio: 1; border-radius: var(--radius-sm); display: flex; align-items: center;
+  justify-content: center; font-size: 13px; font-weight: 600; color: #fff;
+  transition: transform var(--transition-fast);
+}
+.heatmap-cell:hover { transform: scale(1.08); z-index: 1; }
+.heatmap-cell.hs1 { background: var(--color-score-1); }
+.heatmap-cell.hs2 { background: var(--color-score-2); }
+.heatmap-cell.hs3 { background: var(--color-score-3); }
+.heatmap-cell.hs4 { background: var(--color-score-4); }
+.heatmap-cell.hs5 { background: var(--color-score-5); }
+.heatmap-cell.hs0 { background: var(--color-border); color: var(--color-text-tertiary); }
+.heatmap-row-label { font-size: 12px; color: var(--color-text-secondary); display: flex; align-items: center; padding-right: var(--space-sm); }
+.heatmap-col-label { font-size: 10px; color: var(--color-text-tertiary); text-align: center; text-transform: uppercase; letter-spacing: 0.03em; padding-bottom: 4px; }
+
+/* ============================================================
+   HORIZONTAL BAR CHART
+   ============================================================ */
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 120px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 24px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; min-width: 0; }
+.bar-fill.animated { min-width: 30px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+
+@media (max-width: 600px) {
+  .bar-label { width: 80px; font-size: 11px; }
+}
+
+/* ============================================================
+   SECTION PAGES
+   ============================================================ */
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+
+.section-divider { height: 1px; background: var(--color-border); margin: var(--space-2xl) 0; }
+
+/* ============================================================
+   WELCOME PAGE
+   ============================================================ */
+.welcome-hero {
+  text-align: center; padding: var(--space-3xl) var(--space-lg);
+  max-width: 640px; margin: 0 auto;
+}
+.welcome-icon {
+  width: 72px; height: 72px; background: var(--color-primary-light);
+  border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center;
+  margin: 0 auto var(--space-lg); font-size: 32px;
+}
+.welcome-hero .t-display { margin-bottom: var(--space-md); }
+.welcome-hero .t-body { margin-bottom: var(--space-2xl); }
+
+.welcome-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md);
+  margin: var(--space-2xl) 0; text-align: center;
+}
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+
+.welcome-phases { display: flex; flex-direction: column; gap: var(--space-md); margin: var(--space-2xl) 0; text-align: left; }
+.welcome-phase {
+  display: flex; gap: var(--space-lg); padding: var(--space-lg);
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+}
+.welcome-phase-num {
+  width: 36px; height: 36px; background: var(--color-primary-light); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-weight: 700;
+  color: var(--color-primary); flex-shrink: 0; font-size: 15px;
+}
+.welcome-phase-title { font-weight: 600; margin-bottom: 2px; }
+.welcome-phase-desc { font-size: 14px; color: var(--color-text-secondary); }
+
+@media (max-width: 600px) {
+  .welcome-stats { grid-template-columns: 1fr; }
+  .welcome-hero { padding: var(--space-2xl) var(--space-md); }
+}
+
+/* ============================================================
+   ROLE CARDS
+   ============================================================ */
+.role-card {
+  border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+  overflow: hidden; margin-bottom: var(--space-md); background: var(--color-surface);
+  transition: box-shadow var(--transition-normal);
+}
+.role-card:hover { box-shadow: var(--shadow-sm); }
+.role-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-md) var(--space-lg); cursor: pointer; gap: var(--space-md);
+}
+.role-card-header:hover { background: var(--color-surface-alt); }
+.role-card-title-area { display: flex; align-items: center; gap: var(--space-md); flex: 1; min-width: 0; }
+.role-card-title { font-weight: 600; font-size: 15px; }
+.role-card-subtitle { font-size: 13px; color: var(--color-text-tertiary); }
+.role-card-avg {
+  width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; border: 2px solid;
+}
+.role-card-chevron { color: var(--color-text-tertiary); transition: transform var(--transition-fast); font-size: 18px; }
+.role-card.expanded .role-card-chevron { transform: rotate(180deg); }
+.role-card-body { display: none; padding: 0 var(--space-lg) var(--space-lg); }
+.role-card.expanded .role-card-body { display: block; }
+.role-card-body .form-group:last-child { margin-bottom: 0; }
+
+/* ============================================================
+   OWNER FUNCTION ROW
+   ============================================================ */
+.function-row {
+  display: grid; grid-template-columns: 1fr 100px 60px 80px 80px;
+  gap: var(--space-sm); align-items: center; padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+.function-row:last-child { border-bottom: none; }
+@media (max-width: 700px) {
+  .function-row { grid-template-columns: 1fr 1fr; gap: var(--space-sm); }
+}
+
+/* ============================================================
+   PRIORITY MATRIX
+   ============================================================ */
+.priority-matrix {
+  display: grid; grid-template-columns: auto 1fr 1fr;
+  grid-template-rows: auto 1fr 1fr; gap: 2px; margin: var(--space-lg) 0;
+}
+.matrix-header { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); padding: var(--space-sm); text-align: center; }
+.matrix-cell {
+  min-height: 100px; border-radius: var(--radius-sm); padding: var(--space-md);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.matrix-cell.p1 { background: #FEF2F2; }
+.matrix-cell.p2 { background: #FFF7ED; }
+.matrix-cell.p3 { background: #FEFCE8; }
+.matrix-cell.p4 { background: var(--color-surface-alt); }
+.matrix-chip {
+  display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px;
+  background: var(--color-surface); border-radius: 999px; font-size: 12px;
+  box-shadow: var(--shadow-sm); max-width: fit-content; border: 1px solid var(--color-border-light);
+}
+
+/* ============================================================
+   ACTION PLAN TABLE
+   ============================================================ */
+.action-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.action-table th {
+  text-align: left; padding: var(--space-sm) var(--space-md); font-size: 11px;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border);
+}
+.action-table td { padding: var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.action-table tr:last-child td { border-bottom: none; }
+.action-table .form-input { padding: 6px 10px; font-size: 13px; }
+.action-input-mini { width: 100%; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: var(--color-surface); }
+.action-input-mini:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.action-status {
+  padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 500;
+  border: none; cursor: pointer; appearance: none; background-repeat: no-repeat;
+  background-position: right 6px center;
+}
+
+/* ============================================================
+   CHECKLIST
+   ============================================================ */
+.checklist { display: flex; flex-direction: column; gap: 2px; }
+.check-item {
+  display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md);
+  border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast);
+}
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box {
+  width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition-fast); margin-top: 1px;
+}
+.check-item.checked .check-box { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+
+/* ============================================================
+   TIMELINE
+   ============================================================ */
+.timeline { position: relative; padding-left: 28px; }
+.timeline::before {
+  content: ''; position: absolute; left: 9px; top: 4px; bottom: 4px;
+  width: 2px; background: var(--color-border);
+}
+.timeline-item { position: relative; padding-bottom: var(--space-xl); }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-dot {
+  position: absolute; left: -28px; top: 2px; width: 20px; height: 20px;
+  border-radius: 50%; background: var(--color-surface); border: 2px solid var(--color-border);
+  display: flex; align-items: center; justify-content: center;
+}
+.timeline-item.tl-active .timeline-dot { border-color: var(--color-primary); background: var(--color-primary-light); }
+.timeline-item.tl-done .timeline-dot { border-color: var(--color-success); background: var(--color-success); }
+.timeline-item.tl-done .timeline-dot::after { content: ''; width: 6px; height: 6px; background: #fff; border-radius: 50%; }
+.timeline-period { font-size: 12px; font-weight: 600; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.timeline-title { font-weight: 600; margin-bottom: 4px; }
+.timeline-desc { font-size: 14px; color: var(--color-text-secondary); }
+
+/* ============================================================
+   DASHBOARD SUMMARY
+   ============================================================ */
+.dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+@media (max-width: 700px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+.metric-card { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+.metric-card-label { font-size: 12px; font-weight: 500; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: var(--space-sm); }
+.metric-card-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1; }
+.metric-card-sub { font-size: 13px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+/* ============================================================
+   NAVIGATION FOOTER
+   ============================================================ */
+.page-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: var(--space-2xl); margin-top: var(--space-2xl);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast-container { position: fixed; bottom: var(--space-lg); right: var(--space-lg); z-index: 1000; display: flex; flex-direction: column; gap: var(--space-sm); }
+.toast {
+  padding: var(--space-md) var(--space-lg); background: var(--color-text);
+  color: #fff; border-radius: var(--radius-md); font-size: 14px; box-shadow: var(--shadow-lg);
+  animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+  display: flex; align-items: center; gap: var(--space-sm); max-width: 360px;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateY(16px); } }
+@keyframes toastOut { to { opacity: 0; transform: translateY(-8px); } }
+
+/* ============================================================
+   UTILITY
+   ============================================================ */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-sm { gap: var(--space-sm); }
+.gap-md { gap: var(--space-md); }
+.gap-lg { gap: var(--space-lg); }
+.gap-xl { gap: var(--space-xl); }
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+.mb-xl { margin-bottom: var(--space-xl); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.mt-xl { margin-top: var(--space-xl); }
+.w-full { width: 100%; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+.hidden { display: none !important; }
+
+/* Skip-to-content */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; transition: top var(--transition-fast); }
+.skip-link:focus { top: 0; }
+
+/* Focus-visible */
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* Print */
+@media print {
+  .sidebar, .sidebar-overlay, .mobile-header, .toast-container, .btn-group, .skip-link, #toast { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; }
+  .content-area { max-width: 100%; padding: 0; }
+  .card { box-shadow: none; border: 1px solid #ddd; }
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+
+<!-- SIDEBAR -->
+<div class="app">
+<nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-label">Exit Planning Playbook #12</div>
+    <div class="sidebar-brand-title">Management Team<br>Bench Strength</div>
+  </div>
+
+  <div class="sidebar-progress">
+    <div class="sidebar-progress-label">Overall Progress</div>
+    <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="globalProgressBar" style="width: 0%"></div></div>
+    <div class="sidebar-progress-text" id="globalProgressText">0% complete</div>
+  </div>
+
+  <div class="sidebar-nav" id="sidebarNav">
+    <div class="nav-section-label">Journey</div>
+    <div class="nav-item active" data-page="welcome" onclick="goToPage('welcome')" role="button" tabindex="0" aria-current="page">
+      <span class="nav-icon">&#9673;</span> Welcome
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="audit" onclick="goToPage('audit')" role="button" tabindex="0">
+      <span class="nav-icon">&#9881;</span> Team Audit
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="assess" onclick="goToPage('assess')" role="button" tabindex="0">
+      <span class="nav-icon">&#9733;</span> Role Assessment
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="gaps" onclick="goToPage('gaps')" role="button" tabindex="0">
+      <span class="nav-icon">&#9650;</span> Gap Analysis
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="retention" onclick="goToPage('retention')" role="button" tabindex="0">
+      <span class="nav-icon">&#9829;</span> Retention Planning
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+    <div class="nav-item locked" data-page="action" onclick="goToPage('action')" role="button" tabindex="0">
+      <span class="nav-icon">&#10003;</span> Action Plan
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+
+    <div class="nav-section-label" style="margin-top:var(--space-md)">Insights</div>
+    <div class="nav-item locked" data-page="dashboard" onclick="goToPage('dashboard')" role="button" tabindex="0">
+      <span class="nav-icon">&#9632;</span> Scorecard
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span>
+    </div>
+  </div>
+
+  <div class="sidebar-score" id="sidebarScore" style="display:none">
+    <div class="sidebar-score-label">Bench Strength Score</div>
+    <div class="sidebar-score-value"><span id="sidebarScoreValue">--</span><span class="sidebar-score-max"> / 5.0</span></div>
+    <div class="sidebar-score-desc" id="sidebarScoreDesc"></div>
+  </div>
+  <div id="sidebarSaved" style="margin-top:var(--space-md);font-size:11px;color:rgba(255,255,255,0.3);display:none">
+    Auto-saved <span id="savedTime"></span>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main-content" id="main-content">
+  <div class="mobile-header">
+    <button class="hamburger" onclick="toggleSidebar(true)" aria-label="Open navigation"><span></span></button>
+    <div style="font-weight:600;font-size:15px;">Bench Strength Assessment</div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- ====================================================
+         PAGE: WELCOME
+         ==================================================== -->
+    <div class="page active" id="page-welcome">
+      <div class="welcome-hero">
+        <div class="welcome-icon">&#9819;</div>
+        <div class="t-display">Build the Team That Makes You Optional</div>
+        <p class="t-body t-secondary">
+          Your management team is one of the top three factors that determine whether your business sells at a premium, a discount, or not at all. This guided assessment will help you evaluate your team honestly, identify the gaps that matter most, and build a plan to close them.
+        </p>
+
+        <div class="welcome-stats">
+          <div class="welcome-stat">
+            <div class="welcome-stat-value">+2x</div>
+            <div class="welcome-stat-label">EBITDA multiple uplift with a strong team</div>
+          </div>
+          <div class="welcome-stat">
+            <div class="welcome-stat-value">-3x</div>
+            <div class="welcome-stat-label">Discount for key-person concentration</div>
+          </div>
+          <div class="welcome-stat">
+            <div class="welcome-stat-value">18-24</div>
+            <div class="welcome-stat-label">Months to build deal-ready bench strength</div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent mb-xl" style="text-align:left">
+          <strong>The core principle:</strong> A buyer is purchasing future cash flows. Those cash flows are generated by people. If the people are uncertain, the cash flows are uncertain, and uncertain cash flows are worth less. Your job is to make those cash flows as certain as possible.
+        </div>
+
+        <div class="welcome-phases">
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">1</div>
+            <div><div class="welcome-phase-title">Team Audit</div><div class="welcome-phase-desc">Map your leadership roles and identify which functions you personally hold</div></div>
+          </div>
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">2</div>
+            <div><div class="welcome-phase-title">Role Assessment</div><div class="welcome-phase-desc">Score each role across 5 dimensions that buyers evaluate</div></div>
+          </div>
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">3</div>
+            <div><div class="welcome-phase-title">Gap Analysis</div><div class="welcome-phase-desc">Prioritize gaps by deal impact and feasibility to fix</div></div>
+          </div>
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">4</div>
+            <div><div class="welcome-phase-title">Retention Planning</div><div class="welcome-phase-desc">Assess flight risk and design incentives for key people</div></div>
+          </div>
+          <div class="welcome-phase">
+            <div class="welcome-phase-num">5</div>
+            <div><div class="welcome-phase-title">Action Plan</div><div class="welcome-phase-desc">Build your 90-day plan with hiring, development, and presentation readiness</div></div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-lg" onclick="startJourney()" style="margin-top:var(--space-lg)">
+          Begin Your Assessment &rarr;
+        </button>
+        <p class="t-caption t-tertiary" style="margin-top:var(--space-md)">Takes about 30 minutes. Your progress is saved automatically.</p>
+      </div>
+    </div>
+
+    <!-- ====================================================
+         PAGE: TEAM AUDIT
+         ==================================================== -->
+    <div class="page" id="page-audit">
+      <div class="page-header">
+        <div class="t-label">Phase 1 of 5</div>
+        <div class="t-display">Team Audit</div>
+        <p class="t-body t-secondary">Map your leadership roles and identify where you -- the owner -- are the leader a buyer would need to replace.</p>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Your Leadership Roles</div>
+        <p class="t-small t-secondary mb-lg">Every business needs these 7 critical functions covered. For each, tell us who currently owns it and whether you are personally involved.</p>
+        <div id="auditRoles"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Owner Function Map</div>
+        <p class="t-small t-secondary mb-lg">List the recurring activities you personally perform. For each, estimate your weekly hours, whether a backup exists, and what would happen if you stopped for 30 days.</p>
+        <div id="ownerFunctions"></div>
+        <button class="btn btn-secondary btn-sm mt-lg" onclick="addOwnerFunction()">+ Add Activity</button>
+      </div>
+
+      <div class="callout callout-info mb-lg">
+        <strong>Why this matters:</strong> Every function you personally hold is a function the buyer must replace, learn, or absorb. That is risk -- and risk reduces your price.
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('welcome')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeAudit()">Continue to Role Assessment &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ====================================================
+         PAGE: ROLE ASSESSMENT
+         ==================================================== -->
+    <div class="page" id="page-assess">
+      <div class="page-header">
+        <div class="t-label">Phase 2 of 5</div>
+        <div class="t-display">Role-by-Role Assessment</div>
+        <p class="t-body t-secondary">Score each leadership role across the 5 dimensions buyers care about most. Be honest -- this assessment only helps if it reflects reality.</p>
+      </div>
+
+      <div class="callout callout-accent mb-xl">
+        <strong>The 5 dimensions:</strong> Competence (can they do the job?), Autonomy (without you?), Institutional Knowledge (do they hold critical info?), Replaceability (could you replace them in 90 days?), and Retention Risk (will they stay through the deal?).
+      </div>
+
+      <div class="mb-lg" style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
+        <div class="badge badge-danger">1 = Critical Gap</div>
+        <div class="badge badge-warning">2 = Below Standard</div>
+        <div class="badge badge-neutral">3 = Adequate</div>
+        <div class="badge badge-success">4 = Strong</div>
+        <div class="badge badge-primary">5 = Exceptional</div>
+      </div>
+
+      <div id="roleAssessments"></div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('audit')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeAssess()">Continue to Gap Analysis &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ====================================================
+         PAGE: GAP ANALYSIS
+         ==================================================== -->
+    <div class="page" id="page-gaps">
+      <div class="page-header">
+        <div class="t-label">Phase 3 of 5</div>
+        <div class="t-display">Gap Analysis &amp; Prioritization</div>
+        <p class="t-body t-secondary">You cannot fix everything at once. This analysis identifies which roles and dimensions to address first based on deal impact and feasibility.</p>
+      </div>
+
+      <div class="card mb-xl" id="gapHeatmapCard">
+        <div class="t-h2 mb-lg">Bench Strength Heat Map</div>
+        <p class="t-small t-secondary mb-lg">Each cell shows the score for that role and dimension. Red cells are the gaps that need the most attention.</p>
+        <div id="heatmapContainer"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">The Three Gaps That Kill Deals</div>
+        <p class="t-small t-secondary mb-lg">Based on transaction experience, these are the management gaps that most frequently cause deals to fail or lose significant value.</p>
+        <div id="dealKillerGaps"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Priority Matrix</div>
+        <p class="t-small t-secondary mb-lg">For each gap, assign a deal impact and feasibility rating. The matrix will sort your priorities automatically.</p>
+        <div id="priorityAssignments"></div>
+        <div class="section-divider"></div>
+        <div class="t-h3 mb-md">Your Priority Map</div>
+        <div id="priorityMatrixView"></div>
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('assess')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeGaps()">Continue to Retention Planning &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ====================================================
+         PAGE: RETENTION
+         ==================================================== -->
+    <div class="page" id="page-retention">
+      <div class="page-header">
+        <div class="t-label">Phase 4 of 5</div>
+        <div class="t-display">Retention Planning</div>
+        <p class="t-body t-secondary">Building a strong team is useless if they leave before, during, or immediately after the transaction. Assess the flight risk for each key person and design retention strategies.</p>
+      </div>
+
+      <div class="callout callout-warning mb-xl">
+        <strong>Why people leave during transactions:</strong> Uncertainty (they assume the worst), personal loyalty to the owner (not the company), fear of change, aggressive recruiting by competitors, and no financial incentive to stay through the disruption.
+      </div>
+
+      <div id="retentionAssessments"></div>
+
+      <div class="card mt-xl">
+        <div class="t-h2 mb-md">Compensation Strategy Guide</div>
+        <p class="t-small t-secondary mb-lg">Based on your retention assessments, here are recommended incentive structures.</p>
+        <div id="compensationGuide"></div>
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('gaps')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeRetention()">Continue to Action Plan &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ====================================================
+         PAGE: ACTION PLAN
+         ==================================================== -->
+    <div class="page" id="page-action">
+      <div class="page-header">
+        <div class="t-label">Phase 5 of 5</div>
+        <div class="t-display">Action Plan</div>
+        <p class="t-body t-secondary">Turn your assessment into a concrete plan. Define actions, assign owners, set deadlines, and prepare your team for buyer presentations.</p>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">90-Day Action Items</div>
+        <p class="t-small t-secondary mb-lg">Focus on the highest-impact actions you can accomplish in the next 90 days. Be specific and assign ownership.</p>
+        <div style="overflow-x:auto">
+          <table class="action-table" id="actionTable">
+            <thead>
+              <tr><th style="width:35%">Action</th><th style="width:20%">Owner</th><th style="width:20%">Target Date</th><th style="width:25%">Status</th></tr>
+            </thead>
+            <tbody id="actionTableBody"></tbody>
+          </table>
+        </div>
+        <button class="btn btn-secondary btn-sm mt-lg" onclick="addActionRow()">+ Add Action</button>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Succession Planning</div>
+        <p class="t-small t-secondary mb-lg">The ultimate bench strength question: who replaces you? Select a succession model and document your transition plan.</p>
+        <div class="form-group">
+          <label class="form-label">Succession Model</label>
+          <select class="form-input" id="successionModel" onchange="renderSuccessionDetails();saveData()">
+            <option value="">Select your approach...</option>
+            <option value="internal">Model A: Internal Promotion</option>
+            <option value="external">Model B: External Hire</option>
+            <option value="buyer">Model C: Buyer-Provided Leadership</option>
+          </select>
+        </div>
+        <div id="successionDetails"></div>
+        <div class="form-group">
+          <label class="form-label">Successor Name (if identified)</label>
+          <input type="text" class="form-input" id="successorName" placeholder="Name of identified successor" oninput="saveData()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Transition Timeline Notes</label>
+          <textarea class="form-input" id="transitionNotes" placeholder="Document the phases: Shadow (1-3 mo), Co-Lead (3-6 mo), Support (6-12 mo), Exit (12+ mo)" oninput="saveData()"></textarea>
+        </div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Management Presentation Checklist</div>
+        <p class="t-small t-secondary mb-lg">In most transactions, buyers request management presentations. Use this checklist to ensure your team is ready.</p>
+        <div class="checklist" id="presentationChecklist"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Implementation Timeline</div>
+        <p class="t-small t-secondary mb-lg">An 18-24 month roadmap for building deal-ready bench strength.</p>
+        <div class="timeline" id="implementationTimeline"></div>
+      </div>
+
+      <div class="page-footer">
+        <button class="btn btn-ghost" onclick="goToPage('retention')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="completeAction()">View Your Scorecard &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ====================================================
+         PAGE: DASHBOARD / SCORECARD
+         ==================================================== -->
+    <div class="page" id="page-dashboard">
+      <div class="page-header">
+        <div class="t-label">Your Results</div>
+        <div class="t-display">Bench Strength Scorecard</div>
+        <p class="t-body t-secondary">Your comprehensive view of management team readiness. Use this as your tracking tool over the coming months.</p>
+      </div>
+
+      <div class="dashboard-grid mb-xl">
+        <div class="metric-card">
+          <div class="metric-card-label">Overall Score</div>
+          <div class="metric-card-value" id="dashScore">--</div>
+          <div class="metric-card-sub" id="dashScoreDesc">Complete assessment to see score</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">Readiness Level</div>
+          <div class="metric-card-value" id="dashReadiness" style="font-size:24px">--</div>
+          <div class="metric-card-sub" id="dashReadinessDesc"></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">Roles Assessed</div>
+          <div class="metric-card-value" id="dashRolesAssessed">0</div>
+          <div class="metric-card-sub">of active roles scored</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">Owner-Held Functions</div>
+          <div class="metric-card-value" id="dashOwnerFunctions">0</div>
+          <div class="metric-card-sub">functions to transfer before exit</div>
+        </div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-lg">Score by Role</div>
+        <div id="dashBarChart"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-lg">Dimension Analysis</div>
+        <p class="t-small t-secondary mb-md">Average score across all roles for each of the 5 dimensions.</p>
+        <div id="dashDimensionBars"></div>
+      </div>
+
+      <div class="card mb-xl" id="dashHeatmapCard">
+        <div class="t-h2 mb-lg">Full Heat Map</div>
+        <div id="dashHeatmap"></div>
+      </div>
+
+      <div class="card mb-xl">
+        <div class="t-h2 mb-md">Key Recommendations</div>
+        <div id="dashRecommendations"></div>
+      </div>
+
+      <div class="flex gap-md" style="flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="exportData()">Export as JSON</button>
+        <button class="btn btn-ghost" style="color:var(--color-danger)" onclick="if(confirm('Reset all data? This cannot be undone.')){localStorage.removeItem(STORAGE_KEY);location.reload();}">Reset All Data</button>
+      </div>
+    </div>
+
+  </div><!-- /content-area -->
+</main>
+</div><!-- /app -->
+
+<div class="toast-container" id="toastContainer" aria-live="polite" role="status"></div>
+
+<script>
+/* ============================================================
+   APPLICATION STATE & DATA MODEL
+   ============================================================ */
+const ROLES = [
+  { id: 'gm', title: 'General Management', typical: 'GM / COO / President', why: 'The post-close operator -- the single most important role for deal viability' },
+  { id: 'sales', title: 'Sales & Revenue', typical: 'VP Sales / Sales Director', why: 'Owns customer relationships and revenue pipeline independently of the owner' },
+  { id: 'finance', title: 'Finance & Accounting', typical: 'Controller / CFO', why: 'Produces reliable financials; critical for PE reporting' },
+  { id: 'ops', title: 'Operations / Delivery', typical: 'VP Ops / Operations Mgr', why: 'Ensures consistent fulfillment, quality, and scalability' },
+  { id: 'tech', title: 'Technology', typical: 'CTO / IT Director', why: 'Maintains and evolves technology assets' },
+  { id: 'hr', title: 'Human Resources', typical: 'HR Manager / VP People', why: 'Manages employment compliance, culture, and retention' },
+  { id: 'marketing', title: 'Marketing', typical: 'Marketing Dir / VP Marketing', why: 'Drives brand, lead generation, and market position' }
+];
+
+const DIMENSIONS = [
+  { id: 'competence', label: 'Competence', short: 'Comp.', desc: 'Can this person do the job at the level a buyer expects?' },
+  { id: 'autonomy', label: 'Autonomy', short: 'Auton.', desc: 'Can they operate without the owner\'s involvement?' },
+  { id: 'knowledge', label: 'Inst. Knowledge', short: 'Know.', desc: 'Do they hold critical knowledge about the business?' },
+  { id: 'replaceability', label: 'Replaceability', short: 'Repl.', desc: 'Could this person be replaced within 90 days?' },
+  { id: 'retention', label: 'Retention Risk', short: 'Ret.', desc: 'How likely is this person to stay through a deal? (5 = very likely to stay)' }
+];
+
+const RETENTION_FACTORS = [
+  { id: 'tenure', label: 'Tenure', low: '10+ years', med: '3-10 years', high: '<3 years' },
+  { id: 'comp', label: 'Comp vs. Market', low: 'Above market', med: 'At market', high: 'Below market' },
+  { id: 'incentive', label: 'Long-Term Incentive', low: 'Equity or retention bonus', med: 'Annual bonus only', high: 'No variable comp' },
+  { id: 'loyalty', label: 'Loyalty Anchor', low: 'Loyal to company/role', med: 'Loyal to owner', high: 'Loyal to neither' },
+  { id: 'marketability', label: 'Ext. Marketability', low: 'Niche skills; limited alternatives', med: 'Solid professional', high: 'Highly recruited' },
+  { id: 'lifeSituation', label: 'Life Situation', low: 'Stable; rooted in community', med: 'Open to change', high: 'Actively exploring' }
+];
+
+const PRESENTATION_ITEMS = [
+  'Org chart finalized and reviewed',
+  'Leader bios written and approved',
+  'Each leader has a presentation deck (results, strategy, team, plans)',
+  'Financial leader can present P&L, variance analysis, and forecasts',
+  'Sales leader can present pipeline, win rates, and growth strategy',
+  'Operations leader can present capacity, quality, and efficiency metrics',
+  'Practice session #1 completed (internal, with feedback)',
+  'Practice session #2 completed (with advisor or M&A attorney present)',
+  'Tough-question preparation completed (20 likely buyer questions answered)',
+  'Team briefed on confidentiality and communication protocols',
+  'Retention mechanisms in place and communicated to key leaders',
+  'Team aligned on the narrative: why the business is positioned for growth'
+];
+
+const TIMELINE_DATA = [
+  { period: 'Month 1-2', phase: 'Audit', title: 'Assess & Score', desc: 'Complete management team audit; score all roles; map owner functions. Deliverable: Bench Strength Scorecard (baseline).' },
+  { period: 'Month 2-3', phase: 'Prioritize', title: 'Gap Analysis', desc: 'Run gap analysis; prioritize P1/P2 gaps; define hiring plan.' },
+  { period: 'Month 3-6', phase: 'Recruit & Develop', title: 'Build the Bench', desc: 'Launch searches for critical hires; begin development programs for internal candidates.' },
+  { period: 'Month 6-9', phase: 'Integrate', title: 'Onboard & Expand', desc: 'Onboard new hires; expand responsibilities of developing leaders; begin owner function transfer.' },
+  { period: 'Month 9-12', phase: 'Stabilize', title: 'Operate & Retain', desc: 'New leaders operating autonomously; re-score all roles; implement retention incentives.' },
+  { period: 'Month 12-15', phase: 'Validate', title: 'Stress Test', desc: 'Owner steps back for extended periods; prepare management presentation materials.' },
+  { period: 'Month 15-18', phase: 'Polish', title: 'Deal-Ready', desc: 'Finalize org chart; complete documentation; rehearse management presentations.' },
+  { period: 'Month 18-24', phase: 'Execute', title: 'Go to Market', desc: 'Team meets buyers; support diligence; achieve buyer confidence in your leadership.' }
+];
+
+const SCORE_LABELS = ['', 'Critical Gap', 'Below Std', 'Adequate', 'Strong', 'Exceptional'];
+
+let state = {
+  currentPage: 'welcome',
+  pagesUnlocked: ['welcome'],
+  pagesCompleted: [],
+  audit: {
+    roles: {},
+    ownerFunctions: []
+  },
+  assessment: {},
+  gaps: {},
+  retentionData: {},
+  actionItems: [],
+  succession: { model: '', successor: '', notes: '' },
+  checklist: {},
+  timestamp: null
+};
+
+const STORAGE_KEY = 'exitosx-pb12-bench-strength';
+
+// Migrate old localStorage key
+(function() {
+  const OLD_KEY = 'benchStrength';
+  if (OLD_KEY === STORAGE_KEY) return;
+  try {
+    const old = localStorage.getItem(OLD_KEY);
+    if (old && !localStorage.getItem(STORAGE_KEY)) {
+      localStorage.setItem(STORAGE_KEY, old);
+      localStorage.removeItem(OLD_KEY);
+    }
+  } catch(e) {}
+})();
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state = { ...state, ...parsed };
+    }
+  } catch(e) { console.warn('Failed to load saved data', e); }
+}
+
+function saveData() {
+  state.timestamp = new Date().toISOString();
+  state.succession.model = document.getElementById('successionModel')?.value || '';
+  state.succession.successor = document.getElementById('successorName')?.value || '';
+  state.succession.notes = document.getElementById('transitionNotes')?.value || '';
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) { console.warn('Failed to save', e); }
+  updateProgress();
+  // Show saved indicator
+  const savedEl = document.getElementById('sidebarSaved');
+  const timeEl = document.getElementById('savedTime');
+  if (savedEl && timeEl) {
+    savedEl.style.display = 'block';
+    const now = new Date();
+    timeEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function goToPage(pageId) {
+  if (!state.pagesUnlocked.includes(pageId)) return;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.remove('active');
+    if (n.dataset.page === pageId) n.classList.add('active');
+  });
+  state.currentPage = pageId;
+  saveData();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  toggleSidebar(false);
+  if (pageId === 'gaps') renderGapsPage();
+  if (pageId === 'dashboard') renderDashboard();
+  if (pageId === 'retention') renderRetentionPage();
+  // Focus management for accessibility
+  setTimeout(() => {
+    const page = document.getElementById('page-' + pageId);
+    const heading = page?.querySelector('.t-display, h1, h2, .t-h1, .t-h2');
+    if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); }
+  }, 100);
+}
+
+function unlockPage(pageId) {
+  if (!state.pagesUnlocked.includes(pageId)) {
+    state.pagesUnlocked.push(pageId);
+  }
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (state.pagesUnlocked.includes(n.dataset.page)) n.classList.remove('locked');
+  });
+}
+
+function completePage(pageId) {
+  if (!state.pagesCompleted.includes(pageId)) {
+    state.pagesCompleted.push(pageId);
+  }
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (state.pagesCompleted.includes(n.dataset.page)) n.classList.add('completed');
+  });
+  saveData();
+}
+
+function updateProgress() {
+  const totalPages = 6;
+  const done = state.pagesCompleted.length;
+  const pct = Math.round((done / totalPages) * 100);
+  const bar = document.getElementById('globalProgressBar');
+  const text = document.getElementById('globalProgressText');
+  if (bar) bar.style.width = pct + '%';
+  if (text) text.textContent = pct + '% complete';
+
+  const score = calcOverallScore();
+  const scoreEl = document.getElementById('sidebarScore');
+  if (score > 0 && scoreEl) {
+    scoreEl.style.display = 'block';
+    document.getElementById('sidebarScoreValue').textContent = score.toFixed(1);
+    document.getElementById('sidebarScoreDesc').textContent = getReadinessLevel(score).level;
+  }
+}
+
+function toggleSidebar(open) {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebarOverlay');
+  if (open) { sb.classList.add('open'); ov.classList.add('show'); }
+  else { sb.classList.remove('open'); ov.classList.remove('show'); }
+}
+
+function showToast(msg) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { if (t.parentNode) t.remove(); }, 3200);
+}
+
+/* ============================================================
+   WELCOME
+   ============================================================ */
+function startJourney() {
+  completePage('welcome');
+  unlockPage('audit');
+  goToPage('audit');
+  showToast('Let\'s begin with your team audit.');
+}
+
+/* ============================================================
+   TEAM AUDIT
+   ============================================================ */
+function renderAuditRoles() {
+  const container = document.getElementById('auditRoles');
+  container.innerHTML = ROLES.map(role => {
+    const data = state.audit.roles[role.id] || {};
+    return `
+      <div class="role-card" style="margin-bottom:12px">
+        <div style="padding:var(--space-md) var(--space-lg)">
+          <div class="flex items-center justify-between mb-sm">
+            <div>
+              <div class="t-h3">${role.title}</div>
+              <div class="t-caption t-tertiary">${role.typical} &mdash; ${role.why}</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-top:var(--space-md)">
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Who owns this function?</label>
+              <input type="text" class="form-input" placeholder="Name or 'Owner' if you" value="${data.person || ''}" oninput="updateAuditRole('${role.id}','person',this.value)">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Are you personally involved?</label>
+              <select class="form-input" onchange="updateAuditRole('${role.id}','ownerInvolved',this.value)">
+                <option value="">Select...</option>
+                <option value="primary" ${data.ownerInvolved==='primary'?'selected':''}>I am the primary person</option>
+                <option value="involved" ${data.ownerInvolved==='involved'?'selected':''}>I am heavily involved</option>
+                <option value="oversight" ${data.ownerInvolved==='oversight'?'selected':''}>I provide oversight only</option>
+                <option value="none" ${data.ownerInvolved==='none'?'selected':''}>Not involved</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-top:var(--space-md)">
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Backup exists?</label>
+              <select class="form-input" onchange="updateAuditRole('${role.id}','hasBackup',this.value)">
+                <option value="">Select...</option>
+                <option value="yes" ${data.hasBackup==='yes'?'selected':''}>Yes</option>
+                <option value="partial" ${data.hasBackup==='partial'?'selected':''}>Partial</option>
+                <option value="no" ${data.hasBackup==='no'?'selected':''}>No</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Role documented?</label>
+              <select class="form-input" onchange="updateAuditRole('${role.id}','documented',this.value)">
+                <option value="">Select...</option>
+                <option value="yes" ${data.documented==='yes'?'selected':''}>Well documented</option>
+                <option value="partial" ${data.documented==='partial'?'selected':''}>Partially</option>
+                <option value="no" ${data.documented==='no'?'selected':''}>Not documented</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateAuditRole(roleId, field, value) {
+  if (!state.audit.roles[roleId]) state.audit.roles[roleId] = {};
+  state.audit.roles[roleId][field] = value;
+  saveData();
+}
+
+function renderOwnerFunctions() {
+  if (state.audit.ownerFunctions.length === 0) {
+    state.audit.ownerFunctions = [
+      { activity: '', func: '', hours: '', hasBackup: '', impact: '' },
+      { activity: '', func: '', hours: '', hasBackup: '', impact: '' },
+      { activity: '', func: '', hours: '', hasBackup: '', impact: '' }
+    ];
+  }
+  const container = document.getElementById('ownerFunctions');
+  container.innerHTML = `
+    <div style="display:grid;grid-template-columns:2fr 1fr 60px 70px 70px;gap:8px;margin-bottom:8px;padding:0 4px">
+      <div class="t-caption t-tertiary">Activity</div>
+      <div class="t-caption t-tertiary">Function</div>
+      <div class="t-caption t-tertiary">Hrs/Wk</div>
+      <div class="t-caption t-tertiary">Backup?</div>
+      <div class="t-caption t-tertiary">Impact</div>
+    </div>
+  ` + state.audit.ownerFunctions.map((f, i) => `
+    <div style="display:grid;grid-template-columns:2fr 1fr 60px 70px 70px;gap:8px;margin-bottom:6px">
+      <input class="action-input-mini" value="${f.activity}" placeholder="e.g., Close major deals" oninput="updateOwnerFunc(${i},'activity',this.value)">
+      <select class="action-input-mini" onchange="updateOwnerFunc(${i},'func',this.value)">
+        <option value="">--</option>
+        ${ROLES.map(r => `<option value="${r.id}" ${f.func===r.id?'selected':''}>${r.title}</option>`).join('')}
+      </select>
+      <input class="action-input-mini" type="number" min="0" max="60" value="${f.hours}" placeholder="0" oninput="updateOwnerFunc(${i},'hours',this.value)">
+      <select class="action-input-mini" onchange="updateOwnerFunc(${i},'hasBackup',this.value)">
+        <option value="">--</option>
+        <option value="yes" ${f.hasBackup==='yes'?'selected':''}>Yes</option>
+        <option value="no" ${f.hasBackup==='no'?'selected':''}>No</option>
+      </select>
+      <select class="action-input-mini" onchange="updateOwnerFunc(${i},'impact',this.value)">
+        <option value="">--</option>
+        <option value="1" ${f.impact==='1'?'selected':''}>1</option>
+        <option value="2" ${f.impact==='2'?'selected':''}>2</option>
+        <option value="3" ${f.impact==='3'?'selected':''}>3</option>
+        <option value="4" ${f.impact==='4'?'selected':''}>4</option>
+        <option value="5" ${f.impact==='5'?'selected':''}>5</option>
+      </select>
+    </div>
+  `).join('');
+}
+
+function updateOwnerFunc(i, field, val) {
+  state.audit.ownerFunctions[i][field] = val;
+  saveData();
+}
+
+function addOwnerFunction() {
+  state.audit.ownerFunctions.push({ activity: '', func: '', hours: '', hasBackup: '', impact: '' });
+  renderOwnerFunctions();
+  saveData();
+}
+
+function completeAudit() {
+  completePage('audit');
+  unlockPage('assess');
+  renderRoleAssessments();
+  goToPage('assess');
+  showToast('Audit saved. Now let\'s score each role.');
+}
+
+/* ============================================================
+   ROLE ASSESSMENT
+   ============================================================ */
+function renderRoleAssessments() {
+  const container = document.getElementById('roleAssessments');
+  const activeRoles = getActiveRoles();
+
+  container.innerHTML = activeRoles.map(role => {
+    const scores = state.assessment[role.id] || {};
+    const avg = calcRoleAvg(role.id);
+    const avgColor = getScoreColor(avg);
+    const expanded = Object.keys(scores).length > 0;
+
+    return `
+      <div class="role-card ${expanded ? 'expanded' : ''}" id="rc-${role.id}">
+        <div class="role-card-header" onclick="toggleRoleCard('${role.id}')">
+          <div class="role-card-title-area">
+            <div>
+              <div class="role-card-title">${role.title}</div>
+              <div class="role-card-subtitle">${state.audit.roles[role.id]?.person || role.typical}</div>
+            </div>
+          </div>
+          ${avg > 0 ? `<div class="role-card-avg" style="color:${avgColor};border-color:${avgColor}">${avg.toFixed(1)}</div>` : ''}
+          <span class="role-card-chevron">&#9662;</span>
+        </div>
+        <div class="role-card-body">
+          ${DIMENSIONS.map(dim => {
+            const val = scores[dim.id] || 0;
+            return `
+              <div class="form-group">
+                <label class="form-label">${dim.label}</label>
+                <p class="form-hint" style="margin-bottom:8px">${dim.desc}</p>
+                <div class="score-selector" role="radiogroup" aria-label="${dim.label} score for ${role.title}">
+                  ${[1,2,3,4,5].map(s => `
+                    <label class="score-option s${s} ${val===s?'selected':''}" onclick="setScore('${role.id}','${dim.id}',${s})">
+                      <input type="radio" name="${role.id}-${dim.id}" value="${s}" ${val===s?'checked':''}>
+                      <span class="score-number">${s}</span>
+                      <span class="score-label-text">${SCORE_LABELS[s]}</span>
+                    </label>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+          }).join('')}
+          <div class="form-group">
+            <label class="form-label">Notes</label>
+            <textarea class="form-input" placeholder="Key observations, risks, action items..." oninput="setAssessNote('${role.id}',this.value)">${scores.notes || ''}</textarea>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleRoleCard(roleId) {
+  document.getElementById('rc-' + roleId).classList.toggle('expanded');
+}
+
+function setScore(roleId, dimId, val) {
+  if (!state.assessment[roleId]) state.assessment[roleId] = {};
+  state.assessment[roleId][dimId] = val;
+  saveData();
+  renderRoleAssessments();
+}
+
+function setAssessNote(roleId, val) {
+  if (!state.assessment[roleId]) state.assessment[roleId] = {};
+  state.assessment[roleId].notes = val;
+  saveData();
+}
+
+function getActiveRoles() {
+  return ROLES.filter(r => {
+    const data = state.audit.roles[r.id];
+    return data && data.person && data.person.trim() !== '';
+  });
+}
+
+function calcRoleAvg(roleId) {
+  const scores = state.assessment[roleId];
+  if (!scores) return 0;
+  const vals = DIMENSIONS.map(d => scores[d.id] || 0).filter(v => v > 0);
+  return vals.length > 0 ? vals.reduce((a,b) => a+b, 0) / vals.length : 0;
+}
+
+function calcOverallScore() {
+  const roles = getActiveRoles();
+  const avgs = roles.map(r => calcRoleAvg(r.id)).filter(v => v > 0);
+  return avgs.length > 0 ? avgs.reduce((a,b) => a+b, 0) / avgs.length : 0;
+}
+
+function getScoreColor(score) {
+  if (score < 1.5) return 'var(--color-score-1)';
+  if (score < 2.5) return 'var(--color-score-2)';
+  if (score < 3.5) return 'var(--color-score-3)';
+  if (score < 4.5) return 'var(--color-score-4)';
+  return 'var(--color-score-5)';
+}
+
+function getReadinessLevel(score) {
+  if (score >= 4.0) return { level: 'Deal-Ready', desc: 'Your team is a competitive advantage. Highlight it in marketing materials.', badge: 'badge-success' };
+  if (score >= 3.0) return { level: 'Investable with Work', desc: 'Buyers will proceed but may discount or require longer transition. Fix critical gaps.', badge: 'badge-warning' };
+  if (score >= 2.0) return { level: 'Significant Risk', desc: 'Expect material valuation discount or deal structure protection (earnouts, escrows).', badge: 'badge-danger' };
+  return { level: 'Not Ready', desc: 'Do not go to market. Invest 12-24 months in team building before engaging buyers.', badge: 'badge-danger' };
+}
+
+function completeAssess() {
+  completePage('assess');
+  unlockPage('gaps');
+  goToPage('gaps');
+  showToast('Assessment saved. Let\'s analyze your gaps.');
+}
+
+/* ============================================================
+   GAP ANALYSIS
+   ============================================================ */
+function renderGapsPage() {
+  renderHeatmap('heatmapContainer');
+  renderDealKillers();
+  renderPriorityAssignments();
+  renderPriorityMatrix();
+}
+
+function renderHeatmap(containerId) {
+  const roles = getActiveRoles();
+  if (roles.length === 0) {
+    document.getElementById(containerId).innerHTML = '<p class="t-small t-tertiary">Complete the team audit and role assessment first.</p>';
+    return;
+  }
+  const cols = DIMENSIONS.length;
+  const html = `
+    <div class="heatmap" style="grid-template-columns: 120px repeat(${cols}, 1fr);">
+      <div></div>
+      ${DIMENSIONS.map(d => `<div class="heatmap-col-label">${d.short}</div>`).join('')}
+      ${roles.map(role => {
+        const scores = state.assessment[role.id] || {};
+        return `
+          <div class="heatmap-row-label">${role.title.split(' ')[0]}</div>
+          ${DIMENSIONS.map(d => {
+            const s = scores[d.id] || 0;
+            return `<div class="heatmap-cell hs${s}" title="${role.title}: ${d.label} = ${s ? s + '/5' : 'Not scored'}">${s || '-'}</div>`;
+          }).join('')}
+        `;
+      }).join('')}
+    </div>
+  `;
+  document.getElementById(containerId).innerHTML = html;
+}
+
+function renderDealKillers() {
+  const roles = getActiveRoles();
+  const gmData = state.audit.roles['gm'] || {};
+  const salesData = state.audit.roles['sales'] || {};
+  const finData = state.audit.roles['finance'] || {};
+  const gmScore = calcRoleAvg('gm');
+  const salesScore = calcRoleAvg('sales');
+  const finScore = calcRoleAvg('finance');
+
+  const gaps = [
+    {
+      title: 'Gap #1: No Credible Post-Close Operator',
+      desc: 'If the buyer cannot identify someone who can run the business after you leave, the business is functionally unsellable to most buyer types.',
+      roleId: 'gm', score: gmScore, person: gmData.person,
+      ownerHeld: gmData.ownerInvolved === 'primary' || gmData.ownerInvolved === 'involved',
+      solutions: 'Promote from within, hire a GM/COO, or plan an extended owner transition (which reduces your leverage).'
+    },
+    {
+      title: 'Gap #2: Sales Concentrated in the Owner',
+      desc: 'If you are the primary rainmaker and customer relationships live in your Rolodex, the revenue is at risk the moment you exit.',
+      roleId: 'sales', score: salesScore, person: salesData.person,
+      ownerHeld: salesData.ownerInvolved === 'primary' || salesData.ownerInvolved === 'involved',
+      solutions: 'Hire a VP Sales, transition key accounts, formalize the sales process, and build CRM discipline.'
+    },
+    {
+      title: 'Gap #3: Financial Function Below Buyer Standards',
+      desc: 'If your bookkeeper is your financial leader, buyers will not trust your numbers. PE buyers need controller-level financial management.',
+      roleId: 'finance', score: finScore, person: finData.person,
+      ownerHeld: finData.ownerInvolved === 'primary' || finData.ownerInvolved === 'involved',
+      solutions: 'A $50K-$80K controller hire can add multiples of that in enterprise value.'
+    }
+  ];
+
+  document.getElementById('dealKillerGaps').innerHTML = gaps.map(g => {
+    const isAtRisk = g.ownerHeld || g.score < 3 || g.score === 0;
+    const statusClass = isAtRisk ? 'callout-danger' : (g.score < 4 ? 'callout-warning' : 'callout-info');
+    const statusText = g.score === 0 ? 'Not yet assessed' : (isAtRisk ? 'At Risk' : (g.score < 4 ? 'Needs Work' : 'Healthy'));
+    return `
+      <div class="callout ${statusClass} mb-md">
+        <div class="flex items-center justify-between mb-sm" style="flex-wrap:wrap;gap:8px">
+          <strong>${g.title}</strong>
+          <span class="badge ${isAtRisk ? 'badge-danger' : (g.score < 4 ? 'badge-warning' : 'badge-success')}">${statusText}${g.score > 0 ? ' ('+g.score.toFixed(1)+'/5)' : ''}</span>
+        </div>
+        <p style="margin-bottom:8px">${g.desc}</p>
+        ${g.ownerHeld ? '<p style="margin-bottom:8px"><strong>Warning:</strong> You are currently the primary or heavily involved person in this function.</p>' : ''}
+        <p><strong>Solutions:</strong> ${g.solutions}</p>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderPriorityAssignments() {
+  const roles = getActiveRoles();
+  const gaps = [];
+  roles.forEach(role => {
+    const scores = state.assessment[role.id] || {};
+    DIMENSIONS.forEach(dim => {
+      const s = scores[dim.id] || 0;
+      if (s > 0 && s <= 3) {
+        gaps.push({ roleId: role.id, roleName: role.title, dimId: dim.id, dimName: dim.label, score: s });
+      }
+    });
+  });
+
+  if (gaps.length === 0) {
+    document.getElementById('priorityAssignments').innerHTML = '<p class="t-small t-secondary">No gaps scoring 3 or below were found. Your team looks strong across the board.</p>';
+    return;
+  }
+
+  document.getElementById('priorityAssignments').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 50px 120px 120px;gap:8px;margin-bottom:8px;padding:0 4px">
+      <div class="t-caption t-tertiary">Role</div>
+      <div class="t-caption t-tertiary">Dimension</div>
+      <div class="t-caption t-tertiary">Score</div>
+      <div class="t-caption t-tertiary">Deal Impact</div>
+      <div class="t-caption t-tertiary">Feasibility</div>
+    </div>
+    ${gaps.map(g => {
+      const gapData = state.gaps[g.roleId + '-' + g.dimId] || {};
+      return `
+        <div style="display:grid;grid-template-columns:1fr 1fr 50px 120px 120px;gap:8px;margin-bottom:6px;align-items:center">
+          <div class="t-small">${g.roleName}</div>
+          <div class="t-small">${g.dimName}</div>
+          <div><span class="badge ${g.score <= 1 ? 'badge-danger' : (g.score <= 2 ? 'badge-warning' : 'badge-neutral')}">${g.score}</span></div>
+          <select class="action-input-mini" onchange="setGapPriority('${g.roleId}','${g.dimId}','impact',this.value)">
+            <option value="">--</option>
+            <option value="high" ${gapData.impact==='high'?'selected':''}>High</option>
+            <option value="low" ${gapData.impact==='low'?'selected':''}>Lower</option>
+          </select>
+          <select class="action-input-mini" onchange="setGapPriority('${g.roleId}','${g.dimId}','feasibility',this.value)">
+            <option value="">--</option>
+            <option value="feasible" ${gapData.feasibility==='feasible'?'selected':''}>Feasible</option>
+            <option value="hard" ${gapData.feasibility==='hard'?'selected':''}>Harder</option>
+          </select>
+        </div>
+      `;
+    }).join('')}
+  `;
+}
+
+function setGapPriority(roleId, dimId, field, val) {
+  const key = roleId + '-' + dimId;
+  if (!state.gaps[key]) state.gaps[key] = {};
+  state.gaps[key][field] = val;
+  saveData();
+  renderPriorityMatrix();
+}
+
+function renderPriorityMatrix() {
+  const buckets = { p1: [], p2: [], p3: [], p4: [] };
+  Object.entries(state.gaps).forEach(([key, data]) => {
+    if (!data.impact || !data.feasibility) return;
+    const [roleId, dimId] = key.split('-');
+    const role = ROLES.find(r => r.id === roleId);
+    const dim = DIMENSIONS.find(d => d.id === dimId);
+    if (!role || !dim) return;
+    const label = role.title.split(' ')[0] + ': ' + dim.short;
+    if (data.impact === 'high' && data.feasibility === 'feasible') buckets.p1.push(label);
+    else if (data.impact === 'high' && data.feasibility === 'hard') buckets.p2.push(label);
+    else if (data.impact === 'low' && data.feasibility === 'feasible') buckets.p3.push(label);
+    else buckets.p4.push(label);
+  });
+
+  document.getElementById('priorityMatrixView').innerHTML = `
+    <div class="priority-matrix">
+      <div class="matrix-header"></div>
+      <div class="matrix-header">Feasible to Fix</div>
+      <div class="matrix-header">Harder to Fix</div>
+      <div class="matrix-header" style="writing-mode:vertical-rl;transform:rotate(180deg);text-align:center">High Impact</div>
+      <div class="matrix-cell p1">
+        <div class="t-caption" style="font-weight:600;color:var(--color-danger)">P1: Fix Now</div>
+        ${buckets.p1.map(l => `<div class="matrix-chip">${l}</div>`).join('')}
+        ${buckets.p1.length === 0 ? '<div class="t-caption t-tertiary">None assigned</div>' : ''}
+      </div>
+      <div class="matrix-cell p2">
+        <div class="t-caption" style="font-weight:600;color:var(--color-warning)">P2: Plan & Execute</div>
+        ${buckets.p2.map(l => `<div class="matrix-chip">${l}</div>`).join('')}
+        ${buckets.p2.length === 0 ? '<div class="t-caption t-tertiary">None assigned</div>' : ''}
+      </div>
+      <div class="matrix-header" style="writing-mode:vertical-rl;transform:rotate(180deg);text-align:center">Lower Impact</div>
+      <div class="matrix-cell p3">
+        <div class="t-caption" style="font-weight:600;color:var(--color-score-3)">P3: Improve</div>
+        ${buckets.p3.map(l => `<div class="matrix-chip">${l}</div>`).join('')}
+        ${buckets.p3.length === 0 ? '<div class="t-caption t-tertiary">None assigned</div>' : ''}
+      </div>
+      <div class="matrix-cell p4">
+        <div class="t-caption" style="font-weight:600;color:var(--color-text-tertiary)">P4: Accept</div>
+        ${buckets.p4.map(l => `<div class="matrix-chip">${l}</div>`).join('')}
+        ${buckets.p4.length === 0 ? '<div class="t-caption t-tertiary">None assigned</div>' : ''}
+      </div>
+    </div>
+  `;
+}
+
+function completeGaps() {
+  completePage('gaps');
+  unlockPage('retention');
+  goToPage('retention');
+  showToast('Gaps prioritized. Now let\'s assess retention risk.');
+}
+
+/* ============================================================
+   RETENTION
+   ============================================================ */
+function renderRetentionPage() {
+  const roles = getActiveRoles();
+  if (roles.length === 0) {
+    document.getElementById('retentionAssessments').innerHTML = '<p class="t-small t-tertiary">Complete the team audit first to identify your key people.</p>';
+    return;
+  }
+
+  document.getElementById('retentionAssessments').innerHTML = roles.map(role => {
+    const person = state.audit.roles[role.id]?.person || role.typical;
+    const retData = state.retentionData[role.id] || {};
+    const overallRisk = calcRetentionRisk(role.id);
+
+    return `
+      <div class="card mb-lg">
+        <div class="flex items-center justify-between mb-md" style="flex-wrap:wrap;gap:8px">
+          <div>
+            <div class="t-h3">${person}</div>
+            <div class="t-caption t-tertiary">${role.title}</div>
+          </div>
+          ${overallRisk ? `<span class="badge ${overallRisk === 'Low' ? 'badge-success' : (overallRisk === 'Medium' ? 'badge-warning' : 'badge-danger')}">${overallRisk} Risk</span>` : ''}
+        </div>
+        ${RETENTION_FACTORS.map(f => {
+          const val = retData[f.id] || '';
+          return `
+            <div class="form-group">
+              <label class="form-label">${f.label}</label>
+              <div class="risk-selector">
+                <div class="risk-option risk-low ${val==='low'?'selected':''}" onclick="setRetention('${role.id}','${f.id}','low')">
+                  <div style="font-size:12px;font-weight:600">Low Risk</div>
+                  <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:2px">${f.low}</div>
+                </div>
+                <div class="risk-option risk-med ${val==='med'?'selected':''}" onclick="setRetention('${role.id}','${f.id}','med')">
+                  <div style="font-size:12px;font-weight:600">Medium</div>
+                  <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:2px">${f.med}</div>
+                </div>
+                <div class="risk-option risk-high ${val==='high'?'selected':''}" onclick="setRetention('${role.id}','${f.id}','high')">
+                  <div style="font-size:12px;font-weight:600">High Risk</div>
+                  <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:2px">${f.high}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Recommended Retention Strategy</label>
+          <textarea class="form-input" placeholder="What specific retention mechanisms will you use for this person?" oninput="setRetentionNote('${role.id}',this.value)">${retData.strategy || ''}</textarea>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  renderCompensationGuide();
+}
+
+function setRetention(roleId, factorId, val) {
+  if (!state.retentionData[roleId]) state.retentionData[roleId] = {};
+  state.retentionData[roleId][factorId] = val;
+  saveData();
+  renderRetentionPage();
+}
+
+function setRetentionNote(roleId, val) {
+  if (!state.retentionData[roleId]) state.retentionData[roleId] = {};
+  state.retentionData[roleId].strategy = val;
+  saveData();
+}
+
+function calcRetentionRisk(roleId) {
+  const data = state.retentionData[roleId];
+  if (!data) return null;
+  const factors = RETENTION_FACTORS.map(f => data[f.id]).filter(Boolean);
+  if (factors.length < 3) return null;
+  const highCount = factors.filter(f => f === 'high').length;
+  const lowCount = factors.filter(f => f === 'low').length;
+  if (highCount >= 3) return 'High';
+  if (lowCount >= 4) return 'Low';
+  return 'Medium';
+}
+
+function renderCompensationGuide() {
+  const roles = getActiveRoles();
+  const guide = [];
+  roles.forEach(role => {
+    const risk = calcRetentionRisk(role.id);
+    const roleAvg = calcRoleAvg(role.id);
+    const person = state.audit.roles[role.id]?.person || role.title;
+    if (!risk) return;
+    let rec = '';
+    if (risk === 'High' && roleAvg >= 3.5) rec = 'Stay bonus + phantom equity. Maximum retention incentive with value alignment. This is a critical leader you must retain post-close.';
+    else if (risk === 'High') rec = 'Stay bonus with 12-month vest. Consider whether this person is the right fit or if replacement should be explored.';
+    else if (risk === 'Medium' && roleAvg >= 3.5) rec = 'Phantom equity with vesting. Long-term alignment that builds loyalty over time.';
+    else if (risk === 'Medium') rec = 'Stay bonus only. Sufficient incentive without the complexity of equity arrangements.';
+    else rec = 'Standard compensation review. Ensure at-market pay and consider a small transaction bonus as a goodwill gesture.';
+    guide.push({ person, role: role.title, risk, rec });
+  });
+
+  document.getElementById('compensationGuide').innerHTML = guide.length > 0 ? guide.map(g => `
+    <div style="padding:var(--space-md) 0;border-bottom:1px solid var(--color-border-light)">
+      <div class="flex items-center gap-md mb-sm">
+        <strong>${g.person}</strong>
+        <span class="badge ${g.risk === 'High' ? 'badge-danger' : (g.risk === 'Medium' ? 'badge-warning' : 'badge-success')}">${g.risk} Risk</span>
+      </div>
+      <p class="t-small t-secondary">${g.rec}</p>
+    </div>
+  `).join('') : '<p class="t-small t-tertiary">Complete retention risk assessments above to see recommendations.</p>';
+}
+
+function completeRetention() {
+  completePage('retention');
+  unlockPage('action');
+  renderActionPage();
+  goToPage('action');
+  showToast('Retention planning saved. Build your action plan.');
+}
+
+/* ============================================================
+   ACTION PLAN
+   ============================================================ */
+function renderActionPage() {
+  renderActionTable();
+  renderPresentationChecklist();
+  renderTimeline();
+  renderSuccessionDetails();
+  const sm = document.getElementById('successionModel');
+  const sn = document.getElementById('successorName');
+  const tn = document.getElementById('transitionNotes');
+  if (sm) sm.value = state.succession.model || '';
+  if (sn) sn.value = state.succession.successor || '';
+  if (tn) tn.value = state.succession.notes || '';
+}
+
+function renderSuccessionDetails() {
+  const model = document.getElementById('successionModel')?.value || state.succession.model;
+  const el = document.getElementById('successionDetails');
+  if (!el) return;
+  const details = {
+    internal: {
+      title: 'Internal Promotion',
+      pros: 'Cultural continuity, team acceptance, lower cost',
+      cons: 'May lack skills for step-up role; "prophet in their own land" challenges',
+      tip: 'Requires early identification (18-24 months) and intentional development. Pair them with an executive coach.'
+    },
+    external: {
+      title: 'External Hire',
+      pros: 'Higher ceiling, proven executive experience, impresses buyers',
+      cons: 'Cultural disruption, higher cost, integration risk',
+      tip: 'Requires a longer runway (18-24 months to hire and establish). Look for candidates who have been through ownership transitions before.'
+    },
+    buyer: {
+      title: 'Buyer-Provided Leadership',
+      pros: 'No succession hire needed, buyer manages transition',
+      cons: 'Limits buyer pool, you lose control of timing, may extend transition period',
+      tip: 'This limits your buyer universe. Ensure your supporting team is exceptionally strong so the buyer only needs to fill the top role.'
+    }
+  };
+  const d = details[model];
+  if (!d) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="callout callout-info mb-lg">
+      <strong>${d.title}</strong><br>
+      <span style="color:var(--color-success)">Pros:</span> ${d.pros}<br>
+      <span style="color:var(--color-warning)">Cons:</span> ${d.cons}<br>
+      <strong>Tip:</strong> ${d.tip}
+    </div>
+  `;
+}
+
+function renderActionTable() {
+  if (state.actionItems.length === 0) {
+    // Pre-populate with suggested actions based on assessment
+    const suggestions = generateSuggestedActions();
+    state.actionItems = suggestions.length > 0 ? suggestions : [
+      { action: '', owner: '', date: '', status: 'not-started' },
+      { action: '', owner: '', date: '', status: 'not-started' },
+      { action: '', owner: '', date: '', status: 'not-started' }
+    ];
+  }
+
+  document.getElementById('actionTableBody').innerHTML = state.actionItems.map((item, i) => `
+    <tr>
+      <td><input class="action-input-mini" value="${escHtml(item.action)}" placeholder="Specific, measurable action..." oninput="updateAction(${i},'action',this.value)" style="width:100%"></td>
+      <td><input class="action-input-mini" value="${escHtml(item.owner)}" placeholder="Who owns this?" oninput="updateAction(${i},'owner',this.value)" style="width:100%"></td>
+      <td><input class="action-input-mini" type="date" value="${item.date}" oninput="updateAction(${i},'date',this.value)" style="width:100%"></td>
+      <td>
+        <select class="action-input-mini" onchange="updateAction(${i},'status',this.value)" style="width:100%">
+          <option value="not-started" ${item.status==='not-started'?'selected':''}>Not Started</option>
+          <option value="in-progress" ${item.status==='in-progress'?'selected':''}>In Progress</option>
+          <option value="done" ${item.status==='done'?'selected':''}>Done</option>
+        </select>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function generateSuggestedActions() {
+  const actions = [];
+  const roles = getActiveRoles();
+  roles.forEach(role => {
+    const avg = calcRoleAvg(role.id);
+    const auditData = state.audit.roles[role.id] || {};
+    if (auditData.ownerInvolved === 'primary') {
+      actions.push({ action: `Begin transferring ${role.title} function from owner`, owner: '', date: '', status: 'not-started' });
+    }
+    if (avg > 0 && avg < 3) {
+      actions.push({ action: `Address critical gaps in ${role.title} role (avg score: ${avg.toFixed(1)})`, owner: '', date: '', status: 'not-started' });
+    }
+    if (auditData.hasBackup === 'no') {
+      actions.push({ action: `Identify backup for ${role.title} function`, owner: '', date: '', status: 'not-started' });
+    }
+    if (auditData.documented === 'no') {
+      actions.push({ action: `Document key processes for ${role.title}`, owner: '', date: '', status: 'not-started' });
+    }
+  });
+  return actions.slice(0, 8);
+}
+
+function updateAction(i, field, val) {
+  state.actionItems[i][field] = val;
+  saveData();
+}
+
+function addActionRow() {
+  state.actionItems.push({ action: '', owner: '', date: '', status: 'not-started' });
+  renderActionTable();
+  saveData();
+}
+
+function renderPresentationChecklist() {
+  document.getElementById('presentationChecklist').innerHTML = PRESENTATION_ITEMS.map((item, i) => {
+    const checked = state.checklist['pres-' + i] || false;
+    return `
+      <div class="check-item ${checked ? 'checked' : ''}" onclick="toggleCheck('pres-${i}')" role="checkbox" aria-checked="${checked}" tabindex="0">
+        <div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+        <div class="check-text">${item}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleCheck(id) {
+  state.checklist[id] = !state.checklist[id];
+  saveData();
+  renderPresentationChecklist();
+}
+
+function renderTimeline() {
+  document.getElementById('implementationTimeline').innerHTML = TIMELINE_DATA.map((item, i) => `
+    <div class="timeline-item ${i === 0 ? 'tl-active' : ''}">
+      <div class="timeline-dot"></div>
+      <div class="timeline-period">${item.period}</div>
+      <div class="timeline-title">${item.title}</div>
+      <div class="timeline-desc">${item.desc}</div>
+    </div>
+  `).join('');
+}
+
+function completeAction() {
+  completePage('action');
+  unlockPage('dashboard');
+  goToPage('dashboard');
+  showToast('Action plan saved. Here is your full scorecard.');
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+function renderDashboard() {
+  const score = calcOverallScore();
+  const readiness = getReadinessLevel(score);
+  const roles = getActiveRoles();
+
+  document.getElementById('dashScore').textContent = score > 0 ? score.toFixed(1) : '--';
+  document.getElementById('dashScoreDesc').textContent = score > 0 ? 'out of 5.0' : 'Complete assessment to see score';
+  document.getElementById('dashReadiness').textContent = score > 0 ? readiness.level : '--';
+  document.getElementById('dashReadinessDesc').textContent = readiness.desc || '';
+
+  const assessed = roles.filter(r => calcRoleAvg(r.id) > 0).length;
+  document.getElementById('dashRolesAssessed').textContent = assessed;
+
+  const ownerHeld = Object.values(state.audit.roles).filter(r => r.ownerInvolved === 'primary' || r.ownerInvolved === 'involved').length;
+  document.getElementById('dashOwnerFunctions').textContent = ownerHeld;
+
+  // Bar chart by role - animate bars sequentially
+  const barHtml = roles.map((role, idx) => {
+    const avg = calcRoleAvg(role.id);
+    const pct = (avg / 5) * 100;
+    const color = getScoreColor(avg);
+    return `
+      <div class="bar-row">
+        <div class="bar-label">${role.title.split('/')[0].trim()}</div>
+        <div class="bar-track">
+          <div class="bar-fill" data-width="${pct}" data-delay="${idx * 100}" style="width:0%;background:${color}">
+            <span class="bar-value">${avg > 0 ? avg.toFixed(1) : '-'}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('dashBarChart').innerHTML = barHtml || '<p class="t-small t-tertiary">No roles assessed yet.</p>';
+  // Animate bars
+  setTimeout(() => {
+    document.querySelectorAll('#dashBarChart .bar-fill').forEach(el => {
+      const w = el.dataset.width;
+      const d = parseInt(el.dataset.delay) || 0;
+      setTimeout(() => { el.style.width = w + '%'; }, d);
+    });
+  }, 100);
+
+  // Dimension averages
+  const dimAvgs = DIMENSIONS.map(dim => {
+    const vals = roles.map(r => (state.assessment[r.id] || {})[dim.id] || 0).filter(v => v > 0);
+    const avg = vals.length > 0 ? vals.reduce((a,b) => a+b,0) / vals.length : 0;
+    return { ...dim, avg };
+  });
+  document.getElementById('dashDimensionBars').innerHTML = dimAvgs.map((d, idx) => {
+    const pct = (d.avg / 5) * 100;
+    return `
+      <div class="bar-row">
+        <div class="bar-label">${d.label}</div>
+        <div class="bar-track">
+          <div class="bar-fill" data-width="${pct}" data-delay="${idx * 80}" style="width:0%;background:${getScoreColor(d.avg)}">
+            <span class="bar-value">${d.avg > 0 ? d.avg.toFixed(1) : '-'}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  setTimeout(() => {
+    document.querySelectorAll('#dashDimensionBars .bar-fill').forEach(el => {
+      const w = el.dataset.width;
+      const d = parseInt(el.dataset.delay) || 0;
+      setTimeout(() => { el.style.width = w + '%'; }, d);
+    });
+  }, 300);
+
+  renderHeatmap('dashHeatmap');
+
+  // Recommendations
+  const recs = [];
+  if (ownerHeld > 0) recs.push({ type: 'danger', text: `You are personally holding ${ownerHeld} leadership function${ownerHeld > 1 ? 's' : ''}. Each is a risk that reduces your valuation. Begin transfer planning immediately.` });
+  const weakest = dimAvgs.sort((a,b) => a.avg - b.avg)[0];
+  if (weakest && weakest.avg > 0 && weakest.avg < 3.5) recs.push({ type: 'warning', text: `Your weakest dimension is ${weakest.label} (${weakest.avg.toFixed(1)}/5). This is the area where focused investment will yield the highest return.` });
+  roles.forEach(r => {
+    const avg = calcRoleAvg(r.id);
+    if (avg > 0 && avg < 2.5) recs.push({ type: 'danger', text: `${r.title} scores ${avg.toFixed(1)}/5 -- this is a deal risk. Consider whether the current incumbent can develop or if a new hire is needed.` });
+  });
+  if (score >= 4.0) recs.push({ type: 'success', text: 'Your team scores in the Deal-Ready range. This is a competitive advantage -- highlight it prominently in your CIM and management presentations.' });
+  if (recs.length === 0) recs.push({ type: 'info', text: 'Complete all assessment phases to receive personalized recommendations.' });
+
+  const typeMap = { danger: 'callout-danger', warning: 'callout-warning', success: 'callout-info', info: 'callout-accent' };
+  document.getElementById('dashRecommendations').innerHTML = recs.map(r => `<div class="callout ${typeMap[r.type]} mb-md">${r.text}</div>`).join('');
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'bench-strength-assessment-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Data exported successfully.');
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
+function init() {
+  loadData();
+
+  // Restore navigation state
+  state.pagesUnlocked.forEach(p => unlockPage(p));
+  state.pagesCompleted.forEach(p => {
+    document.querySelectorAll('.nav-item').forEach(n => {
+      if (n.dataset.page === p) n.classList.add('completed');
+    });
+  });
+
+  // Render initial pages
+  renderAuditRoles();
+  renderOwnerFunctions();
+  renderRoleAssessments();
+  renderActionPage();
+  renderPresentationChecklist();
+
+  // Navigate to last page
+  if (state.currentPage && state.pagesUnlocked.includes(state.currentPage)) {
+    goToPage(state.currentPage);
+  }
+
+  updateProgress();
+
+  // Keyboard nav for sidebar
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.click(); }
+    });
+  });
+
+  // Keyboard nav for check items
+  document.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('check-item')) {
+      e.preventDefault(); e.target.click();
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

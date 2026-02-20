@@ -11,6 +11,8 @@ import { TaskStatusActions, type CompletionType } from './TaskStatusActions'
 import { TaskNotes } from './TaskNotes'
 import { AutomationBanner } from './AutomationBanner'
 import { formatCurrency } from '@/lib/utils/currency'
+import { PlaybookResourceSection } from '@/components/playbook/PlaybookResourceSection'
+import { getPlaybooksForTask } from '@/lib/playbook/playbook-surface-mapping'
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
@@ -103,6 +105,8 @@ interface ActiveTaskCardProps {
   onRefresh?: () => void
   onFocusTask?: (taskId: string) => void
   disabled?: boolean
+  planTier?: import('@/lib/pricing').PlanTier
+  ebitda?: number
 }
 
 /**
@@ -154,7 +158,8 @@ function deriveCompletionType(task: ActiveTask): CompletionType {
   return 'manual'
 }
 
-export function ActiveTaskCard({ task, onSubStepToggle, onSubStepUpdate, onSubStepUpload, onComplete, onStart, onBlock, onDefer, onRefresh, onFocusTask, disabled = false }: ActiveTaskCardProps) {
+export function ActiveTaskCard({ task, onSubStepToggle, onSubStepUpdate, onSubStepUpload, onComplete, onStart, onBlock, onDefer, onRefresh, onFocusTask, disabled = false, planTier = 'foundation', ebitda }: ActiveTaskCardProps) {
+  const relatedPlaybooks = getPlaybooksForTask(task.briCategory, 1)
   const metaParts: string[] = []
   metaParts.push(`~${formatCurrency(task.normalizedValue)} impact`)
   if (task.estimatedMinutes) {
@@ -264,6 +269,13 @@ export function ActiveTaskCard({ task, onSubStepToggle, onSubStepUpdate, onSubSt
       <div className="mt-4">
         <TaskNotes taskId={task.id} taskTitle={task.title} disabled={disabled} />
       </div>
+
+      {/* Related Playbooks */}
+      <PlaybookResourceSection
+        playbooks={relatedPlaybooks}
+        planTier={planTier}
+        ebitda={ebitda}
+      />
 
       {/* Collapsible details */}
       <TaskDetailsCollapsible

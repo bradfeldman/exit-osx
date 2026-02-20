@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Concentration De-Risking | Exit Planning Playbook #14</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --color-primary: #0071E3;
+  --color-primary-light: #3A7A50;
+  --color-primary-bg: rgba(45,90,61,0.07);
+  --color-accent: #FF9500;
+  --color-accent-light: #D4956A;
+  --color-accent-bg: rgba(184,115,51,0.08);
+
+  --color-bg: #FAF9F7;
+  --color-surface: #FFFFFF;
+  --color-muted: #F5F3F0;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+
+  --color-text: #1A1A18;
+  --color-text-secondary: #5C5A55;
+  --color-text-muted: #8A8780;
+
+  --color-emerald: #0D9668;
+  --color-emerald-bg: rgba(13,150,104,0.08);
+  --color-red: #DC2626;
+  --color-red-bg: rgba(220,38,38,0.06);
+  --color-amber: #D97706;
+  --color-amber-bg: rgba(217,119,6,0.08);
+  --color-blue: #2563EB;
+  --color-blue-bg: rgba(37,99,235,0.06);
+
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 32px; --space-2xl: 48px;
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-xl: 20px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06); --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --transition: 200ms ease;
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--color-bg); color: var(--color-text); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+.t-display { font-family: Georgia, 'Times New Roman', serif; font-size: 1.75rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.025em; }
+.t-h1 { font-family: Georgia, 'Times New Roman', serif; font-size: 1.375rem; font-weight: 700; line-height: 1.25; }
+.t-h2 { font-size: 1.125rem; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 1rem; font-weight: 600; line-height: 1.35; }
+.t-body { font-size: 0.938rem; line-height: 1.7; color: var(--color-text-secondary); }
+.t-small { font-size: 0.85rem; line-height: 1.6; color: var(--color-text-secondary); }
+.t-caption { font-size: 0.78rem; color: var(--color-text-muted); }
+
+.skip-link { position: absolute; left: -9999px; top: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 9999; font-size: 0.85rem; border-radius: 0 0 var(--radius-sm) 0; }
+.skip-link:focus { left: 0; }
+
+.app { display: flex; min-height: 100vh; }
+
+.sidebar { width: 260px; background: #1A1A18; color: #fff; position: fixed; top: 0; left: 0; bottom: 0; display: flex; flex-direction: column; z-index: 100; transition: transform 0.3s ease; }
+.sidebar-header { padding: var(--space-lg); border-bottom: 1px solid rgba(255,255,255,0.08); }
+.sidebar-brand { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--color-accent); font-weight: 600; margin-bottom: var(--space-xs); }
+.sidebar-title { font-size: 1rem; font-weight: 600; color: #fff; line-height: 1.3; }
+.sidebar-progress { padding: var(--space-md) var(--space-lg); border-bottom: 1px solid rgba(255,255,255,0.08); }
+.progress-label { font-size: 0.75rem; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); display: flex; justify-content: space-between; }
+.progress-bar-bg { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: var(--color-primary); border-radius: 2px; transition: width 0.5s ease; }
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 0; }
+.nav-phase-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.35); padding: var(--space-md) var(--space-lg) var(--space-xs); font-weight: 600; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px var(--space-lg); color: rgba(255,255,255,0.55); cursor: pointer; transition: all var(--transition); font-size: 0.85rem; border-left: 3px solid transparent; user-select: none; }
+.nav-item:hover:not(.locked) { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.85); }
+.nav-item.active { background: rgba(255,255,255,0.08); color: #fff; border-left-color: var(--color-primary); }
+.nav-item.completed { color: rgba(255,255,255,0.7); }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; flex-shrink: 0; }
+.nav-item.completed .nav-check { border-color: var(--color-emerald); background: rgba(13,150,104,0.2); color: var(--color-emerald); }
+.nav-item.active .nav-check { border-color: var(--color-primary-light); background: rgba(45,90,61,0.25); }
+.sidebar-footer { padding: var(--space-md) var(--space-lg); border-top: 1px solid var(--color-border); font-size: 0.75rem; color: rgba(255,255,255,0.4); display: flex; align-items: center; gap: 6px; }
+.save-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-emerald); }
+
+.main { flex: 1; margin-left: 260px; min-height: 100vh; }
+.main-content { max-width: 800px; margin: 0 auto; padding: 40px 32px 120px; }
+
+.mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 56px; background: #1A1A18; color: #fff; align-items: center; justify-content: space-between; padding: 0 var(--space-md); z-index: 150; }
+.mobile-header-title { font-size: 0.9rem; font-weight: 600; }
+.hamburger { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: none; border: none; color: #fff; cursor: pointer; font-size: 1.3rem; }
+.mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; }
+
+.page { display: none; animation: fadeIn 0.35s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.section-eyebrow { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-primary); font-weight: 600; margin-bottom: var(--space-sm); }
+.section-desc { margin-top: var(--space-sm); font-size: 0.95rem; max-width: 600px; color: var(--color-text-secondary); line-height: 1.7; }
+
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); margin-bottom: var(--space-md); transition: box-shadow var(--transition); }
+.card:hover { box-shadow: var(--shadow-sm); }
+
+.callout-info { background: var(--color-primary-bg); border-left: 3px solid var(--color-primary); padding: var(--space-md) var(--space-lg); border-radius: 0 var(--radius-md) var(--radius-md) 0; margin: var(--space-lg) 0; }
+.callout-info-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-primary); font-weight: 700; margin-bottom: 4px; }
+.callout-info p { font-size: 0.9rem; color: var(--color-text); }
+.callout-warning { background: var(--color-red-bg); border-left: 3px solid var(--color-red); padding: var(--space-md) var(--space-lg); border-radius: 0 var(--radius-md) var(--radius-md) 0; margin: var(--space-lg) 0; }
+.callout-warning-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-red); font-weight: 700; margin-bottom: 4px; }
+.callout-warning p { font-size: 0.9rem; color: var(--color-text); }
+.callout-accent { background: var(--color-accent-bg); border-left: 3px solid var(--color-accent); padding: var(--space-md) var(--space-lg); border-radius: 0 var(--radius-md) var(--radius-md) 0; margin: var(--space-lg) 0; }
+.callout-accent-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); font-weight: 700; margin-bottom: 4px; }
+.callout-accent p { font-size: 0.9rem; color: var(--color-text); }
+
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: var(--space-xs); }
+.form-hint { font-size: 0.78rem; color: var(--color-text-muted); margin-bottom: var(--space-sm); }
+.form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.938rem; font-family: inherit; color: var(--color-text); background: var(--color-surface); outline: none; transition: border-color var(--transition), box-shadow var(--transition); }
+.form-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(45,90,61,0.12); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.6; }
+select.form-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238A8780' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: all var(--transition); outline: none; }
+.btn:focus-visible { box-shadow: 0 0 0 3px rgba(45,90,61,0.25); }
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-light); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-muted); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-border-light); }
+.btn-ghost { background: transparent; color: var(--color-primary); padding: 10px 12px; }
+.btn-ghost:hover { background: var(--color-primary-bg); }
+.btn-sm { padding: 8px 16px; font-size: 0.82rem; }
+.page-nav { display: flex; gap: 12px; margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--color-border-light); justify-content: space-between; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: var(--space-lg) 0; }
+.kpi-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); text-align: center; }
+.kpi-value { font-family: Georgia, 'Times New Roman', serif; font-size: 2rem; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.kpi-label { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi-sub { font-size: 0.75rem; color: var(--color-text-secondary); margin-top: 4px; }
+
+.add-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; border: 2px dashed var(--color-border); border-radius: var(--radius-md); background: transparent; cursor: pointer; font-size: 0.88rem; color: var(--color-text-muted); font-weight: 500; transition: all var(--transition); font-family: inherit; }
+.add-btn:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-bg); }
+
+/* Customer cards */
+.customer-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); margin-bottom: 12px; overflow: hidden; transition: box-shadow var(--transition); }
+.customer-card:hover { box-shadow: var(--shadow-md); }
+.customer-header { display: flex; align-items: center; justify-content: space-between; padding: 14px var(--space-lg); cursor: pointer; }
+.customer-header-left { display: flex; align-items: center; gap: 12px; }
+.customer-rank { width: 28px; height: 28px; border-radius: 50%; background: var(--color-muted); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--color-text-secondary); flex-shrink: 0; }
+.customer-name { font-weight: 600; font-size: 0.938rem; }
+.customer-rev { font-size: 0.82rem; color: var(--color-text-muted); }
+.customer-badges { display: flex; gap: 8px; align-items: center; }
+.badge { padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+.badge-pct { background: var(--color-muted); color: var(--color-text-secondary); }
+.badge-danger { background: var(--color-red-bg); color: var(--color-red); }
+.badge-warn { background: var(--color-amber-bg); color: var(--color-amber); }
+.badge-ok { background: var(--color-emerald-bg); color: var(--color-emerald); }
+.chevron { transition: transform var(--transition); color: var(--color-text-muted); font-size: 0.75rem; }
+.customer-body { display: none; padding: 0 var(--space-lg) var(--space-lg); border-top: 1px solid var(--color-border-light); }
+.customer-card.expanded .customer-body { display: block; padding-top: var(--space-md); }
+.customer-card.expanded .chevron { transform: rotate(180deg); }
+
+/* Bar chart */
+.bar-chart { margin: var(--space-lg) 0; }
+.bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: var(--space-sm); }
+.bar-label { width: 120px; font-size: 0.82rem; font-weight: 500; color: var(--color-text-secondary); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-track { flex: 1; height: 24px; background: var(--color-muted); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-size: 0.7rem; font-weight: 700; color: #fff; min-width: 40px; }
+.bar-pct { width: 50px; font-size: 0.82rem; font-weight: 600; color: var(--color-text); text-align: right; font-variant-numeric: tabular-nums; }
+
+/* HHI gauge */
+.hhi-gauge { position: relative; width: 200px; height: 110px; margin: 0 auto 16px; overflow: hidden; }
+.hhi-gauge svg { width: 200px; height: 110px; }
+.hhi-gauge-value { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); font-family: Georgia, serif; font-size: 1.75rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.hhi-gauge-label { text-align: center; font-size: 0.82rem; color: var(--color-text-secondary); font-weight: 500; }
+
+/* Data table */
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.85rem; margin: var(--space-md) 0; }
+.data-table th { text-align: left; padding: 10px 12px; font-size: 0.7rem; letter-spacing: 0.5px; text-transform: uppercase; color: var(--color-text-muted); font-weight: 600; border-bottom: 1px solid var(--color-border); }
+.data-table td { padding: 10px 12px; border-bottom: 1px solid var(--color-border-light); color: var(--color-text-secondary); }
+.data-table tr.active-row td { background: var(--color-accent-bg); font-weight: 600; color: var(--color-text); }
+
+/* Contract grid */
+.contract-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: var(--space-md) 0; }
+.contract-card { border: 1.5px solid var(--color-border); border-radius: var(--radius-md); padding: 14px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; transition: all var(--transition); }
+.contract-card.checked { border-color: var(--color-emerald); background: var(--color-emerald-bg); }
+.contract-check { width: 20px; height: 20px; border: 2px solid var(--color-border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all var(--transition); font-size: 0.7rem; }
+.contract-card.checked .contract-check { background: var(--color-emerald); border-color: var(--color-emerald); color: #fff; }
+
+/* Timeline */
+.timeline { margin: var(--space-lg) 0; position: relative; padding-left: 32px; }
+.timeline::before { content: ''; position: absolute; left: 11px; top: 0; bottom: 0; width: 2px; background: var(--color-border); }
+.timeline-item { position: relative; margin-bottom: var(--space-lg); }
+.timeline-dot { position: absolute; left: -32px; top: 2px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--color-border); background: var(--color-surface); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; color: var(--color-text-muted); z-index: 1; cursor: pointer; }
+.timeline-item.done .timeline-dot { background: var(--color-emerald); border-color: var(--color-emerald); color: #fff; }
+.timeline-title { font-size: 0.88rem; font-weight: 600; }
+.timeline-desc { font-size: 0.82rem; color: var(--color-text-secondary); margin-top: 2px; }
+.timeline-period { font-size: 0.7rem; color: var(--color-text-muted); font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Action rows */
+.action-row { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: 12px; }
+.action-row-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 12px; align-items: center; }
+
+/* Checklist */
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--color-border-light); cursor: pointer; user-select: none; }
+.check-item:last-child { border-bottom: none; }
+.check-box { width: 22px; height: 22px; border-radius: 4px; border: 2px solid var(--color-border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all var(--transition); background: var(--color-surface); font-size: 0.7rem; margin-top: 1px; }
+.check-box:hover { border-color: var(--color-primary); }
+.check-box.checked { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.check-text { font-size: 0.88rem; color: var(--color-text-secondary); flex: 1; }
+.check-item.done .check-text { text-decoration: line-through; opacity: 0.5; }
+
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 999; }
+.toast { background: #1A1A18; color: #fff; padding: 12px 20px; border-radius: var(--radius-md); font-size: 0.85rem; box-shadow: var(--shadow-md); animation: slideUp 0.3s ease; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); width: 280px; }
+  .sidebar.open { transform: translateX(0); }
+  .mobile-header { display: flex; }
+  .mobile-overlay.open { display: block; }
+  .main { margin-left: 0; }
+  .main-content { padding: 72px 20px 100px; max-width: 100%; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .contract-grid { grid-template-columns: 1fr; }
+  .action-row-grid { grid-template-columns: 1fr; }
+  .bar-label { width: 80px; font-size: 0.75rem; }
+}
+
+@media print {
+  .sidebar, .mobile-header, .page-nav, .toast-container { display: none !important; }
+  .main { margin-left: 0; }
+  .page { display: block !important; page-break-inside: avoid; margin-bottom: 24px; }
+  .card, .customer-card { break-inside: avoid; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  html { scroll-behavior: auto; }
+}
+
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<div class="mobile-header">
+  <button class="hamburger" aria-label="Open navigation" onclick="PB.toggleSidebar()">&#9776;</button>
+  <span class="mobile-header-title">Customer Concentration</span>
+  <div style="width:44px;"></div>
+</div>
+<div class="mobile-overlay" id="mobileOverlay" onclick="PB.toggleSidebar()"></div>
+
+<div class="app">
+  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">Exit Planning Playbook #14</div>
+      <div class="sidebar-title">Customer Concentration De-Risking</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="progress-label"><span>Your Progress</span><span id="progressPct">0%</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    </div>
+    <div class="sidebar-nav" id="sidebarNav"></div>
+    <div class="sidebar-footer"><div class="save-dot"></div><span>Auto-saved locally</span></div>
+  </nav>
+
+  <main class="main" role="main">
+    <div class="main-content" id="main-content"></div>
+  </main>
+</div>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+
+var PAGES = [
+  { id:'welcome', title:'Overview', phase:'Understand' },
+  { id:'customers', title:'Customer Revenue Input', phase:'Measure' },
+  { id:'concentration', title:'Concentration Analysis', phase:'Measure' },
+  { id:'buyerview', title:'Buyer Perspective', phase:'Analyze' },
+  { id:'contracts', title:'Contract Protection', phase:'Plan' },
+  { id:'diversification', title:'Diversification Strategy', phase:'Plan' },
+  { id:'timeline', title:'Implementation Timeline', phase:'Execute' },
+  { id:'dashboard', title:'Narrative & Action Plan', phase:'Execute' }
+];
+
+var STORAGE_KEY = 'exitosx-pb14-customer-concentration';
+
+function makeDefault(){
+  return { currentPage:'welcome', completed:{}, customers:[], totalRevenue:'', contracts:{}, diversificationActions:[], timelineChecks:{}, checklistItems:{}, narrativeNotes:{}, presentationChecks:{} };
+}
+
+function loadState(){
+  try { var s = localStorage.getItem(STORAGE_KEY); if(s){ var p=JSON.parse(s); return { currentPage:p.currentPage||'welcome', completed:p.completed||{}, customers:Array.isArray(p.customers)?p.customers:[], totalRevenue:p.totalRevenue||'', contracts:p.contracts||{}, diversificationActions:Array.isArray(p.diversificationActions)?p.diversificationActions:[], timelineChecks:p.timelineChecks||{}, checklistItems:p.checklistItems||{}, narrativeNotes:p.narrativeNotes||{}, presentationChecks:p.presentationChecks||{} }; } } catch(e){}
+  return makeDefault();
+}
+
+var state = loadState();
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function pageIndex(id){ return PAGES.findIndex(function(p){ return p.id===id; }); }
+function isUnlocked(id){ var i=pageIndex(id); if(i<=0) return true; return !!state.completed[PAGES[i-1].id]; }
+function goToPage(id){ if(!isUnlocked(id)) return; state.currentPage=id; saveState(); renderNav(); renderPage(); closeSidebar(); window.scrollTo({top:0,behavior:'smooth'}); }
+function completePage(id){ if(!state.completed[id]){ state.completed[id]=true; saveState(); renderNav(); } }
+function nextPage(){ var i=pageIndex(state.currentPage); completePage(state.currentPage); if(i<PAGES.length-1) goToPage(PAGES[i+1].id); }
+function prevPage(){ var i=pageIndex(state.currentPage); if(i>0) goToPage(PAGES[i-1].id); }
+
+function renderNav(){
+  var nav=document.getElementById('sidebarNav'); var cp=''; var html='';
+  PAGES.forEach(function(p){ if(p.phase!==cp){ cp=p.phase; html+='<div class="nav-phase-label">'+cp+'</div>'; }
+    var active=p.id===state.currentPage, done=!!state.completed[p.id], locked=!isUnlocked(p.id);
+    var cls='nav-item'; if(active) cls+=' active'; if(done) cls+=' completed'; if(locked) cls+=' locked';
+    html+='<div class="'+cls+'" data-page="'+p.id+'" role="button" tabindex="'+(locked?'-1':'0')+'">'
+      +'<div class="nav-check">'+(done?'&#10003;':'')+'</div><span>'+p.title+'</span></div>';
+  });
+  nav.innerHTML=html;
+  var c=Object.keys(state.completed).length, pct=Math.round((c/PAGES.length)*100);
+  document.getElementById('progressPct').textContent=pct+'%';
+  document.getElementById('progressBar').style.width=pct+'%';
+}
+
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); document.getElementById('mobileOverlay').classList.toggle('open'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('mobileOverlay').classList.remove('open'); }
+
+function esc(s){ if(!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function parseNum(s){ if(!s) return 0; var n=parseFloat(String(s).replace(/[^0-9.-]/g,'')); return isNaN(n)?0:n; }
+function fmtCurrency(n){ if(n>=1000000) return '$'+(n/1000000).toFixed(1)+'M'; if(n>=1000) return '$'+(n/1000).toFixed(0)+'K'; return '$'+n.toLocaleString(); }
+function fmtPct(n){ return n.toFixed(1)+'%'; }
+function getTotalRev(){ return parseNum(state.totalRevenue); }
+function getSorted(){ return state.customers.slice().sort(function(a,b){ return parseNum(b.revenue)-parseNum(a.revenue); }); }
+function calcHHI(){ var t=getTotalRev(); if(t<=0) return 0; var h=0; state.customers.forEach(function(c){ var s=(parseNum(c.revenue)/t)*100; h+=s*s; }); return Math.round(h); }
+function getHHILevel(hhi){ if(hhi<500) return {level:'Low',color:'var(--color-emerald)'}; if(hhi<1000) return {level:'Moderate',color:'var(--color-blue)'}; if(hhi<1800) return {level:'Elevated',color:'var(--color-amber)'}; if(hhi<3000) return {level:'High',color:'var(--color-red)'}; return {level:'Very High',color:'var(--color-red)'}; }
+function getTopPct(n){ var t=getTotalRev(); if(t<=0) return 0; var s=getSorted(),sum=0; for(var i=0;i<Math.min(n,s.length);i++) sum+=parseNum(s[i].revenue); return (sum/t)*100; }
+function pctBadge(p){ return p>=35?'badge-danger':p>=15?'badge-warn':'badge-ok'; }
+function pageNav(showPrev, nextLabel){ return '<div class="page-nav">'+(showPrev?'<button class="btn btn-secondary" data-action="prev">&larr; Back</button>':'<div></div>')+(nextLabel!==false?'<button class="btn btn-primary" data-action="next">'+(nextLabel||'Continue')+' &rarr;</button>':'')+'</div>'; }
+function toast(msg){ var c=document.getElementById('toastContainer'),t=document.createElement('div'); t.className='toast'; t.textContent=msg; c.appendChild(t); setTimeout(function(){t.remove();},3000); }
+
+function renderPage(){
+  var el=document.getElementById('main-content');
+  var R={welcome:rWelcome,customers:rCustomers,concentration:rConcentration,buyerview:rBuyerView,contracts:rContracts,diversification:rDiversification,timeline:rTimeline,dashboard:rDashboard};
+  var fn=R[state.currentPage];
+  el.innerHTML='<div class="page active">'+(fn?fn():'')+'</div>';
+}
+
+function rWelcome(){
+  return '<div class="section-eyebrow">Getting Started</div>'
+    +'<h1 class="t-display">Customer Concentration Is a Valuation Destroyer</h1>'
+    +'<p class="section-desc">A business generating $5M in EBITDA with 40% of revenue from one customer is worth dramatically less than the same business with no customer above 10%. This tool helps you measure, understand, and reduce that risk.</p>'
+    +'<div class="callout-accent"><div class="callout-accent-label">The Core Principle</div><p>Customer concentration is not a problem you can talk your way out of. Buyers will measure it, their lenders will flag it, and the Quality of Earnings report will highlight it. The only real solution is to reduce concentration before going to market &mdash; or to build contractual protections that mitigate the risk.</p></div>'
+    +'<h3 class="t-h1" style="margin-top:var(--space-xl);">What This Tool Covers</h3>'
+    +'<div class="kpi-grid">'
+    +'<div class="kpi-card" style="border-top:3px solid var(--color-accent);"><div style="font-size:1rem;font-weight:700;">Measure</div><div class="kpi-sub">Calculate HHI, top customer %, and all concentration metrics</div></div>'
+    +'<div class="kpi-card" style="border-top:3px solid var(--color-amber);"><div style="font-size:1rem;font-weight:700;">Analyze</div><div class="kpi-sub">See how buyers will evaluate your concentration risk</div></div>'
+    +'<div class="kpi-card" style="border-top:3px solid var(--color-blue);"><div style="font-size:1rem;font-weight:700;">Plan</div><div class="kpi-sub">Design diversification strategies and contract protections</div></div>'
+    +'<div class="kpi-card" style="border-top:3px solid var(--color-emerald);"><div style="font-size:1rem;font-weight:700;">Execute</div><div class="kpi-sub">Build your timeline and buyer presentation narrative</div></div>'
+    +'</div>'
+    +'<h3 class="t-h1" style="margin-top:var(--space-xl);">How Buyers Think About Concentration</h3>'
+    +'<div class="card"><p class="t-body">Consider a business with <strong>$10M revenue</strong>, <strong>$2M EBITDA</strong>, and one customer at <strong>30%</strong> ($3M):</p>'
+    +'<ul style="margin:12px 0 0 20px;font-size:0.938rem;color:var(--color-text-secondary);">'
+    +'<li>If that customer leaves, revenue drops to $7M</li>'
+    +'<li>EBITDA drops by ~$600K to $1.4M</li>'
+    +'<li>At 5x multiple, enterprise value drops from $10M to $7M &mdash; a <strong>$3M hit</strong></li>'
+    +'<li>Even a 20% probability = $600K expected value loss</li></ul>'
+    +'<p class="t-body" style="margin:12px 0 0;">Most buyers will demand at least that much in deal protection (escrow, earnout, or price reduction).</p></div>'
+    +pageNav(false, 'Start Assessment');
+}
+
+function rCustomers(){
+  var custs=state.customers, total=getTotalRev();
+  var html='<div class="section-eyebrow">Step 1 of 7</div>'
+    +'<h1 class="t-display">Customer Revenue Data</h1>'
+    +'<p class="section-desc">Enter your total revenue and your customers with their annual revenue. Focus on any customer representing more than 3&ndash;5% of total revenue.</p>'
+    +'<div class="card" style="border-left:3px solid var(--color-accent);">'
+    +'<div class="form-group" style="margin:0;"><label class="form-label">Total Annual Revenue</label>'
+    +'<div class="form-hint">Your total revenue from all customers (e.g., $8,000,000)</div>'
+    +'<input class="form-input" type="text" data-bind="totalRevenue" value="'+esc(state.totalRevenue)+'" placeholder="$8,000,000" style="font-size:1.25rem;font-weight:700;padding:14px;"></div>';
+
+  if(total>0 && custs.length>0){
+    var acc=0; custs.forEach(function(c){ acc+=parseNum(c.revenue); });
+    var unacc=total-acc, accPct=(acc/total)*100;
+    html+='<div style="margin-top:var(--space-md);display:flex;gap:var(--space-md);">'
+      +'<div style="flex:1;"><div class="t-caption">Revenue Accounted For</div><div style="font-size:1.125rem;font-weight:700;color:var(--color-emerald);">'+fmtCurrency(acc)+' <span class="t-caption">('+fmtPct(accPct)+')</span></div></div>'
+      +'<div style="flex:1;"><div class="t-caption">Remaining / Other Customers</div><div style="font-size:1.125rem;font-weight:700;color:var(--color-text-secondary);">'+fmtCurrency(Math.max(0,unacc))+'</div></div></div>';
+  }
+  html+='</div><h3 class="t-h1" style="margin-top:var(--space-xl);">Customer Revenue Breakdown</h3>';
+
+  custs.forEach(function(cust,i){
+    var rev=parseNum(cust.revenue), pct=total>0?(rev/total)*100:0;
+    html+='<div class="customer-card'+(cust.expanded?' expanded':'')+'">'
+      +'<div class="customer-header" data-action="toggle-cust" data-idx="'+i+'">'
+      +'<div class="customer-header-left"><div class="customer-rank">'+(i+1)+'</div>'
+      +'<div><div class="customer-name">'+(cust.name||'Customer '+(i+1))+'</div>'
+      +'<div class="customer-rev">'+(rev>0?fmtCurrency(rev):'No revenue entered')+'</div></div></div>'
+      +'<div class="customer-badges">'+(pct>0?'<span class="badge '+pctBadge(pct)+'">'+fmtPct(pct)+'</span>':'')+'<span class="chevron">&#9662;</span></div></div>'
+      +'<div class="customer-body">'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">'
+      +'<div class="form-group" style="margin:0;"><label class="form-label">Customer Name</label><input class="form-input" type="text" value="'+esc(cust.name)+'" data-bind="cust-field" data-ci="'+i+'" data-cf="name" placeholder="Company name"></div>'
+      +'<div class="form-group" style="margin:0;"><label class="form-label">Annual Revenue ($)</label><input class="form-input" type="text" value="'+esc(cust.revenue)+'" data-bind="cust-field" data-ci="'+i+'" data-cf="revenue" placeholder="$2,400,000"></div></div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">'
+      +'<div class="form-group" style="margin:0;"><label class="form-label">Has Contract?</label><select class="form-input" data-bind="cust-select" data-ci="'+i+'" data-cf="hasContract"><option value="">Select...</option>'
+      +'<option value="yes"'+(cust.hasContract==='yes'?' selected':'')+'>Yes - Signed MSA</option>'
+      +'<option value="informal"'+(cust.hasContract==='informal'?' selected':'')+'>Informal / PO-based</option>'
+      +'<option value="no"'+(cust.hasContract==='no'?' selected':'')+'>No contract</option></select></div>'
+      +'<div class="form-group" style="margin:0;"><label class="form-label">Contract Expiration</label><input class="form-input" type="date" value="'+esc(cust.contractExp||'')+'" data-bind="cust-field" data-ci="'+i+'" data-cf="contractExp"></div></div>'
+      +'<div class="form-group" style="margin-top:12px;margin-bottom:0;"><label class="form-label">Relationship Length</label><select class="form-input" data-bind="cust-select" data-ci="'+i+'" data-cf="relLength"><option value="">Select...</option>'
+      +'<option value="<2"'+(cust.relLength==='<2'?' selected':'')+'>Less than 2 years</option>'
+      +'<option value="2-5"'+(cust.relLength==='2-5'?' selected':'')+'>2-5 years</option>'
+      +'<option value="5-10"'+(cust.relLength==='5-10'?' selected':'')+'>5-10 years</option>'
+      +'<option value="10+"'+(cust.relLength==='10+'?' selected':'')+'>10+ years</option></select></div>'
+      +'<div style="margin-top:12px;"><button class="btn btn-ghost btn-sm" style="color:var(--color-red);" data-action="remove-cust" data-idx="'+i+'">Remove Customer</button></div></div></div>';
+  });
+
+  html+='<button class="add-btn" data-action="add-cust">+ Add Customer</button>'+pageNav(true);
+  return html;
+}
+
+function rConcentration(){
+  var total=getTotalRev(),hhi=calcHHI(),hhiInfo=getHHILevel(hhi),sorted=getSorted(),top1=getTopPct(1),top5=getTopPct(5),top10=getTopPct(10);
+  var above5=state.customers.filter(function(c){ return total>0&&(parseNum(c.revenue)/total*100)>=5; }).length;
+  var html='<div class="section-eyebrow">Step 2 of 7</div><h1 class="t-display">Concentration Analysis</h1>'
+    +'<p class="section-desc">Your customer concentration metrics, calculated from your data. These are the exact numbers buyers will compute.</p>';
+
+  if(total<=0||state.customers.length===0){
+    html+='<div class="callout-warning"><div class="callout-warning-label">No Data</div><p>Go back to Step 1 and enter your total revenue and at least a few customers.</p></div>'+pageNav(true);
+    return html;
+  }
+
+  // HHI Gauge
+  var clamped=Math.min(hhi,5000),pct=clamped/5000,angle=pct*180,r=85,cx=100,cy=95;
+  var sa=Math.PI,ea=sa-(angle*Math.PI/180);
+  var x1=cx+r*Math.cos(sa),y1=cy+r*Math.sin(sa),x2=cx+r*Math.cos(ea),y2=cy+r*Math.sin(ea);
+  var la=angle>180?1:0;
+
+  html+='<div class="card" style="text-align:center;padding:var(--space-xl);">'
+    +'<h3 class="t-h1" style="margin:0 0 var(--space-md);">Herfindahl-Hirschman Index (HHI)</h3>'
+    +'<div class="hhi-gauge"><svg viewBox="0 0 200 110"><path d="M 15 95 A 85 85 0 0 1 185 95" fill="none" stroke="var(--color-border)" stroke-width="10" stroke-linecap="round"/>'
+    +'<path d="M '+x1+' '+y1+' A '+r+' '+r+' 0 '+la+' 0 '+x2+' '+y2+'" fill="none" stroke="'+hhiInfo.color+'" stroke-width="10" stroke-linecap="round"/></svg>'
+    +'<div class="hhi-gauge-value" style="color:'+hhiInfo.color+';">'+hhi.toLocaleString()+'</div></div>'
+    +'<div class="hhi-gauge-label">Herfindahl-Hirschman Index</div>'
+    +'<div style="display:inline-block;padding:6px 16px;border-radius:20px;font-size:0.88rem;font-weight:700;background:'+hhiInfo.color+'15;color:'+hhiInfo.color+';margin-top:var(--space-sm);">'+hhiInfo.level+' Concentration</div>'
+    +'<p class="t-caption" style="margin-top:12px;">A perfectly diversified 100-customer business = HHI of 100. A single-customer business = 10,000.</p></div>';
+
+  html+='<div class="kpi-grid">'
+    +'<div class="kpi-card"><div class="kpi-value" style="color:'+(top1>=25?'var(--color-red)':top1>=15?'var(--color-amber)':'var(--color-emerald)')+';">'+fmtPct(top1)+'</div><div class="kpi-label">Top Customer</div></div>'
+    +'<div class="kpi-card"><div class="kpi-value" style="color:'+(top5>=60?'var(--color-red)':top5>=40?'var(--color-amber)':'var(--color-emerald)')+';">'+fmtPct(top5)+'</div><div class="kpi-label">Top 5 Customers</div></div>'
+    +'<div class="kpi-card"><div class="kpi-value" style="color:'+(top10>=80?'var(--color-red)':top10>=60?'var(--color-amber)':'var(--color-emerald)')+';">'+fmtPct(top10)+'</div><div class="kpi-label">Top 10 Customers</div></div>'
+    +'<div class="kpi-card"><div class="kpi-value" style="color:var(--color-blue);">'+above5+'</div><div class="kpi-label">Customers &gt;5%</div></div></div>';
+
+  // Bar chart
+  html+='<h3 class="t-h1" style="margin-top:var(--space-xl);">Revenue Distribution</h3><div class="card"><div class="bar-chart">';
+  var maxRev=sorted.length>0?parseNum(sorted[0].revenue):0;
+  sorted.slice(0,15).forEach(function(c){ var rev=parseNum(c.revenue),p=total>0?(rev/total)*100:0,bw=maxRev>0?(rev/maxRev)*100:0;
+    var bc=p>=35?'var(--color-red)':p>=25?'#F97316':p>=15?'var(--color-amber)':p>=10?'var(--color-blue)':'var(--color-emerald)';
+    html+='<div class="bar-row"><div class="bar-label">'+(c.name||'Unnamed')+'</div><div class="bar-track"><div class="bar-fill" style="width:'+bw+'%;background:'+bc+';">'+fmtCurrency(rev)+'</div></div><div class="bar-pct">'+fmtPct(p)+'</div></div>';
+  });
+  var acc2=0; state.customers.forEach(function(c){ acc2+=parseNum(c.revenue); }); var other=total-acc2;
+  if(other>0){ var op=(other/total)*100,ob=maxRev>0?(other/maxRev)*100:0;
+    html+='<div class="bar-row"><div class="bar-label" style="color:var(--color-text-muted);font-style:italic;">All Others</div><div class="bar-track"><div class="bar-fill" style="width:'+ob+'%;background:var(--color-text-muted);">'+fmtCurrency(other)+'</div></div><div class="bar-pct">'+fmtPct(op)+'</div></div>';
+  }
+  html+='</div></div>';
+
+  // Thresholds
+  html+='<h3 class="t-h1" style="margin-top:var(--space-xl);">HHI Thresholds & Buyer Impact</h3>'
+    +'<div class="card" style="overflow-x:auto;"><table class="data-table"><thead><tr><th>HHI Range</th><th>Level</th><th>Buyer Perception</th><th>Multiple Impact</th></tr></thead><tbody>';
+  [{r:'Under 500',l:'Low',p:'Diversified; no concern',i:'No discount; possible premium',mn:0,mx:500},{r:'500 - 1,000',l:'Moderate',p:'Acceptable; some questions',i:'Minimal impact',mn:500,mx:1000},{r:'1,000 - 1,800',l:'Elevated',p:'Material risk; diligence focus',i:'-0.5x to -1.0x multiple',mn:1000,mx:1800},{r:'1,800 - 3,000',l:'High',p:'Significant concern; deal structure affected',i:'-1.0x to -2.0x multiple',mn:1800,mx:3000},{r:'Over 3,000',l:'Very High',p:'Many buyers walk away',i:'-2.0x+ or no deal',mn:3000,mx:100000}].forEach(function(t){
+    html+='<tr'+(hhi>=t.mn&&hhi<t.mx?' class="active-row"':'')+'><td>'+t.r+'</td><td>'+t.l+'</td><td>'+t.p+'</td><td>'+t.i+'</td></tr>';
+  });
+  html+='</tbody></table></div>'+pageNav(true);
+  return html;
+}
+
+function rBuyerView(){
+  var total=getTotalRev(),top1=getTopPct(1),sorted=getSorted(),topCust=sorted[0],topRev=topCust?parseNum(topCust.revenue):0;
+  var html='<div class="section-eyebrow">Step 3 of 7</div><h1 class="t-display">How Buyers Will Evaluate Your Concentration</h1>'
+    +'<p class="section-desc">Buyers think in probability-weighted downside. Here is the math they will run on your largest customer.</p>';
+  if(!topCust||total<=0){ html+='<div class="callout-warning"><div class="callout-warning-label">Insufficient Data</div><p>Enter customers in Step 1 to see the buyer analysis.</p></div>'+pageNav(true); return html; }
+
+  var em=0.2,ebitda=total*em,eloss=topRev*em,mult=5,evFull=ebitda*mult,evRed=(ebitda-eloss)*mult,evDrop=evFull-evRed;
+  html+='<div class="card" style="border-left:3px solid var(--color-accent);"><h3 class="t-h1" style="margin:0 0 var(--space-md);">The Buyer\'s Mental Math: '+esc(topCust.name||'Top Customer')+'</h3>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">'
+    +'<div class="kpi-card"><div class="kpi-label">Customer Revenue</div><div class="kpi-value" style="font-size:1.5rem;">'+fmtCurrency(topRev)+'</div><div class="kpi-sub">'+fmtPct(top1)+' of total</div></div>'
+    +'<div class="kpi-card"><div class="kpi-label">If Lost: EBITDA Impact</div><div class="kpi-value" style="font-size:1.5rem;color:var(--color-red);">-'+fmtCurrency(eloss)+'</div><div class="kpi-sub">Assuming ~20% margin</div></div>'
+    +'<div class="kpi-card"><div class="kpi-label">Enterprise Value Impact</div><div class="kpi-value" style="font-size:1.5rem;color:var(--color-red);">-'+fmtCurrency(evDrop)+'</div><div class="kpi-sub">At '+mult+'x multiple</div></div>'
+    +'<div class="kpi-card"><div class="kpi-label">Expected Value Loss (20% prob)</div><div class="kpi-value" style="font-size:1.5rem;color:var(--color-amber);">'+fmtCurrency(evDrop*0.2)+'</div><div class="kpi-sub">Minimum deal protection demanded</div></div></div></div>';
+
+  html+='<h3 class="t-h1" style="margin-top:var(--space-xl);">Concentration Threshold Impact</h3>'
+    +'<div class="card" style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Top Customer %</th><th>Buyer Behavior</th><th>Deal Structure Impact</th></tr></thead><tbody>';
+  [{r:'Under 10%',b:'No concern; standard diligence',i:'Clean deal; no special provisions',mn:0,mx:10},{r:'10-15%',b:'Noted but manageable',i:'May request customer interview',mn:10,mx:15},{r:'15-25%',b:'Material concern; deep diligence',i:'Possible escrow holdback',mn:15,mx:25},{r:'25-35%',b:'Major concern; affects valuation',i:'Earnout tied to customer retention',mn:25,mx:35},{r:'35-50%',b:'Deal-threatening; many pass',i:'Heavy earnout; significant discount',mn:35,mx:50},{r:'Over 50%',b:'Most buyers walk',i:'Majority in earnout or no deal',mn:50,mx:200}].forEach(function(t){
+    html+='<tr'+(top1>=t.mn&&top1<t.mx?' class="active-row"':'')+'><td>'+t.r+'</td><td>'+t.b+'</td><td>'+t.i+'</td></tr>';
+  });
+  html+='</tbody></table></div>';
+
+  html+='<h3 class="t-h1" style="margin-top:var(--space-xl);">What Lenders Think</h3>'
+    +'<div class="card"><ul style="margin:0 0 0 20px;font-size:0.938rem;color:var(--color-text-secondary);">'
+    +'<li><strong>SBA lenders</strong> typically flag any customer over 20% and may cap lending accordingly</li>'
+    +'<li><strong>Senior lenders</strong> will stress-test debt service assuming the largest customer is lost</li>'
+    +'<li><strong>Mezzanine lenders</strong> may decline entirely if concentration exceeds 30%</li></ul></div>'
+    +pageNav(true);
+  return html;
+}
+
+function rContracts(){
+  var contractItems=[{key:'duration',title:'3+ Year Duration',desc:'Minimum 3 years remaining at close; 5+ is ideal'},{key:'autorenewal',title:'Auto-Renewal',desc:'Auto-renewal with 12+ month notice to terminate'},{key:'escalation',title:'Price Escalation',desc:'Annual escalators (3-5%) built into the contract'},{key:'assignability',title:'Assignability',desc:'Survives change of ownership without renegotiation'},{key:'termination',title:'Termination Protection',desc:'High penalties or long notice for early termination'},{key:'nochangecontrol',title:'No Change-of-Control Out',desc:'Customer cannot exit upon sale of your business'}];
+  var html='<div class="section-eyebrow">Step 4 of 7</div><h1 class="t-display">Contract Protection Strategy</h1>'
+    +'<p class="section-desc">If you cannot reduce concentration, the next best thing is to lock in your largest customers with long-term contracts. This converts "could leave anytime" to "contractually committed."</p>'
+    +'<h3 class="t-h1" style="margin-top:var(--space-xl);">What Buyers Want to See in Contracts</h3>'
+    +'<div class="contract-grid">';
+  contractItems.forEach(function(item){ var checked=state.contracts[item.key]||false;
+    html+='<div class="contract-card'+(checked?' checked':'')+'" data-action="toggle-contract" data-key="'+item.key+'" role="checkbox" aria-checked="'+checked+'" tabindex="0">'
+      +'<div class="contract-check">'+(checked?'&#10003;':'')+'</div>'
+      +'<div><h4 class="t-h3" style="margin:0;">'+item.title+'</h4><p class="t-caption" style="margin:2px 0 0;">'+item.desc+'</p></div></div>';
+  });
+  html+='</div>';
+
+  var cc=contractItems.filter(function(i){return state.contracts[i.key];}).length;
+  var cs=Math.round((cc/contractItems.length)*100);
+  html+='<div style="text-align:center;margin:var(--space-lg) 0;">'
+    +'<div class="t-caption">Contract Readiness Score</div>'
+    +'<div style="font-family:Georgia,serif;font-size:2.25rem;font-weight:800;color:'+(cs>=80?'var(--color-emerald)':cs>=50?'var(--color-amber)':'var(--color-red)')+';">'+cs+'%</div>'
+    +'<div style="height:8px;background:var(--color-muted);border-radius:4px;max-width:300px;margin:8px auto;overflow:hidden;">'
+    +'<div style="height:100%;width:'+cs+'%;background:'+(cs>=80?'var(--color-emerald)':cs>=50?'var(--color-amber)':'var(--color-red)')+';border-radius:4px;transition:width 0.5s;"></div></div></div>';
+
+  var topCusts=getSorted().slice(0,5);
+  if(topCusts.length>0){
+    html+='<h3 class="t-h1" style="margin-top:var(--space-xl);">Top Customer Contract Status</h3>';
+    topCusts.forEach(function(c){ var t=getTotalRev(),p=t>0?(parseNum(c.revenue)/t*100):0;
+      var ci=c.hasContract==='yes'?'<span style="color:var(--color-emerald);">&#10003; Signed MSA</span>':c.hasContract==='informal'?'<span style="color:var(--color-amber);">~ Informal</span>':'<span style="color:var(--color-red);">&#10007; No contract</span>';
+      html+='<div style="display:flex;align-items:center;gap:var(--space-md);padding:12px 0;border-bottom:1px solid var(--color-border-light);">'
+        +'<div style="flex:1;"><strong>'+esc(c.name||'Unnamed')+'</strong><br><span class="t-caption">'+fmtCurrency(parseNum(c.revenue))+' ('+fmtPct(p)+')</span></div>'
+        +'<div class="t-small">'+ci+'</div><div class="t-caption">'+(c.contractExp||'No date')+'</div></div>';
+    });
+  }
+
+  html+='<div class="callout-accent" style="margin-top:var(--space-lg);"><div class="callout-accent-label">Timing Matters</div>'
+    +'<p>Negotiate long-term contracts <strong>18&ndash;24 months before</strong> going to market. A contract signed 2 years before the deal, with a history of normal performance, is far more credible than one signed last month.</p></div>'
+    +pageNav(true);
+  return html;
+}
+
+function rDiversification(){
+  var total=getTotalRev(),top1Pct=getTopPct(1);
+  var html='<div class="section-eyebrow">Step 5 of 7</div><h1 class="t-display">Diversification Strategy</h1>'
+    +'<p class="section-desc">De-concentration takes time. Most strategies require 18&ndash;36 months to show meaningful results. Choose your approach and start planning.</p>';
+
+  if(total>0&&top1Pct>20){ var topRev=total*(top1Pct/100),targetTotal=topRev/0.20,newRevNeeded=targetTotal-total;
+    html+='<div class="callout-info"><div class="callout-info-label">Your De-Risking Target</div>'
+      +'<p>Your top customer is at <strong>'+fmtPct(top1Pct)+'</strong>. To bring them below 20%, you need total revenue of <strong>'+fmtCurrency(targetTotal)+'</strong> &mdash; that means adding <strong>'+fmtCurrency(newRevNeeded)+'</strong> in new revenue from other customers.</p></div>';
+  }
+
+  html+='<h3 class="t-h1" style="margin-top:var(--space-xl);">Three Strategic Approaches</h3>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md);margin:var(--space-md) 0;">'
+    +'<div class="card" style="border-top:3px solid var(--color-emerald);"><h4 class="t-h3" style="margin:0;color:var(--color-emerald);">Grow the Denominator</h4><p class="t-caption" style="margin:4px 0 8px;">Add new customers and expand mid-tier accounts to dilute concentration naturally.</p><ul style="font-size:0.78rem;margin:0 0 0 16px;color:var(--color-text-secondary);"><li>New customer acquisition</li><li>Cross-sell and upsell existing</li><li>Enter adjacent markets</li></ul></div>'
+    +'<div class="card" style="border-top:3px solid var(--color-amber);"><h4 class="t-h3" style="margin:0;color:var(--color-amber);">Manage the Numerator</h4><p class="t-caption" style="margin:4px 0 8px;">Selectively manage growth rate with your largest customer.</p><ul style="font-size:0.78rem;margin:0 0 0 16px;color:var(--color-text-secondary);"><li>Don\'t chase incremental revenue</li><li>Implement price increases</li><li>Allocate capacity carefully</li></ul></div>'
+    +'<div class="card" style="border-top:3px solid var(--color-blue);"><h4 class="t-h3" style="margin:0;color:var(--color-blue);">Strategic Partnerships</h4><p class="t-caption" style="margin:4px 0 8px;">Build referral and channel relationships for new customer segments.</p><ul style="font-size:0.78rem;margin:0 0 0 16px;color:var(--color-text-secondary);"><li>Referral relationships</li><li>Industry associations</li><li>Channel partnerships</li></ul></div></div>';
+
+  html+='<h3 class="t-h1" style="margin-top:var(--space-xl);">Customer Acquisition Investment Guide</h3>'
+    +'<div class="card" style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Strategy</th><th>Timeline</th><th>Investment</th><th>Expected Result</th></tr></thead><tbody>'
+    +'<tr><td>Hire dedicated sales rep</td><td>6-12 months</td><td>$80K-$150K/yr</td><td>10-20 new accounts Year 1</td></tr>'
+    +'<tr><td>Digital marketing / SEO</td><td>6-18 months</td><td>$3K-$10K/month</td><td>Inbound lead pipeline</td></tr>'
+    +'<tr><td>Industry trade shows</td><td>3-12 months</td><td>$5K-$25K per show</td><td>Brand awareness; qualified leads</td></tr>'
+    +'<tr><td>Strategic partnerships</td><td>3-6 months</td><td>Minimal cash; time</td><td>5-10 warm intros per quarter</td></tr>'
+    +'<tr><td>Geographic expansion</td><td>12-24 months</td><td>Varies</td><td>New market revenue stream</td></tr>'
+    +'<tr><td>Adjacent service offering</td><td>6-12 months</td><td>$20K-$100K dev cost</td><td>Cross-sell to new segments</td></tr></tbody></table></div>';
+
+  html+='<h3 class="t-h1" style="margin-top:var(--space-xl);">Your Diversification Action Plan</h3>';
+  if(!state.diversificationActions||state.diversificationActions.length===0){ state.diversificationActions=[{strategy:'',investment:'',timeline:'',expectedRev:'',owner:'',status:'planned'}]; saveState(); }
+  state.diversificationActions.forEach(function(action,i){
+    html+='<div class="action-row"><div class="action-row-grid">'
+      +'<div class="form-group" style="margin:0;"><label class="form-label" style="font-size:0.7rem;">Strategy</label><input class="form-input" type="text" value="'+esc(action.strategy)+'" data-bind="action-field" data-ai="'+i+'" data-af="strategy" placeholder="e.g., Hire sales rep" style="font-size:0.85rem;padding:8px;"></div>'
+      +'<div class="form-group" style="margin:0;"><label class="form-label" style="font-size:0.7rem;">Investment</label><input class="form-input" type="text" value="'+esc(action.investment)+'" data-bind="action-field" data-ai="'+i+'" data-af="investment" placeholder="$120K/yr" style="font-size:0.85rem;padding:8px;"></div>'
+      +'<div class="form-group" style="margin:0;"><label class="form-label" style="font-size:0.7rem;">Timeline</label><input class="form-input" type="text" value="'+esc(action.timeline)+'" data-bind="action-field" data-ai="'+i+'" data-af="timeline" placeholder="6-12 mo" style="font-size:0.85rem;padding:8px;"></div>'
+      +'<div class="form-group" style="margin:0;"><label class="form-label" style="font-size:0.7rem;">Expected Revenue</label><input class="form-input" type="text" value="'+esc(action.expectedRev)+'" data-bind="action-field" data-ai="'+i+'" data-af="expectedRev" placeholder="$2M" style="font-size:0.85rem;padding:8px;"></div>'
+      +'<div class="form-group" style="margin:0;"><label class="form-label" style="font-size:0.7rem;">Owner</label><input class="form-input" type="text" value="'+esc(action.owner)+'" data-bind="action-field" data-ai="'+i+'" data-af="owner" placeholder="Name" style="font-size:0.85rem;padding:8px;"></div>'
+      +'</div><div style="margin-top:8px;text-align:right;"><button class="btn btn-ghost btn-sm" style="color:var(--color-red);font-size:0.75rem;" data-action="remove-action" data-idx="'+i+'">Remove</button></div></div>';
+  });
+  html+='<button class="add-btn" data-action="add-action">+ Add Strategy</button>'+pageNav(true);
+  return html;
+}
+
+function rTimeline(){
+  var phases=[{key:'t1',period:'Month 1-2',title:'Baseline Assessment',desc:'Calculate HHI and all concentration metrics. Produce baseline report.',target:'Baseline concentration report complete'},{key:'t2',period:'Month 2-3',title:'Contract Negotiations',desc:'Negotiate long-term contracts with top 3-5 customers.',target:'Signed MSAs with key customers'},{key:'t3',period:'Month 3-6',title:'Sales Investment',desc:'Hire dedicated sales resource. Launch new customer acquisition.',target:'Sales pipeline established'},{key:'t4',period:'Month 6-12',title:'Aggressive Acquisition',desc:'Pursue new accounts aggressively. Expand mid-tier customers.',target:'New revenue coming online'},{key:'t5',period:'Month 12-18',title:'Track & Adjust',desc:'Continue acquisition. Track concentration metrics monthly.',target:'Measurable concentration reduction'},{key:'t6',period:'Month 18-24',title:'Readiness Assessment',desc:'Assess if concentration is at acceptable levels for market.',target:'Go/no-go decision on market entry'},{key:'t7',period:'Month 24+',title:'Go to Market',desc:'Present improving trend and contractual protections to buyers.',target:'CIM presents credible narrative'}];
+  var html='<div class="section-eyebrow">Step 6 of 7</div><h1 class="t-display">Implementation Timeline</h1>'
+    +'<p class="section-desc">Meaningful diversification takes 18&ndash;36 months. Here is the recommended implementation cadence.</p>'
+    +'<div class="timeline">';
+  phases.forEach(function(p){ var c=state.timelineChecks[p.key]||false;
+    html+='<div class="timeline-item'+(c?' done':'')+'">'
+      +'<div class="timeline-dot" data-action="toggle-timeline" data-key="'+p.key+'" role="checkbox" aria-checked="'+c+'" tabindex="0">'+(c?'&#10003;':'')+'</div>'
+      +'<div class="timeline-period">'+p.period+'</div><div class="timeline-title">'+p.title+'</div><div class="timeline-desc">'+p.desc+'</div>'
+      +'<div style="margin-top:6px;font-size:0.75rem;color:var(--color-emerald);font-weight:500;">Target: '+p.target+'</div></div>';
+  });
+  html+='</div>';
+  var cp=phases.filter(function(p){return state.timelineChecks[p.key];}).length;
+  html+='<div style="text-align:center;margin:var(--space-lg) 0;">'
+    +'<div style="height:8px;background:var(--color-muted);border-radius:4px;max-width:400px;margin:0 auto;overflow:hidden;">'
+    +'<div style="height:100%;width:'+Math.round((cp/phases.length)*100)+'%;background:var(--color-emerald);border-radius:4px;transition:width 0.5s;"></div></div>'
+    +'<div class="t-caption" style="margin-top:8px;">'+cp+' of '+phases.length+' phases complete</div></div>'
+    +pageNav(true);
+  return html;
+}
+
+function rDashboard(){
+  var total=getTotalRev(),hhi=calcHHI(),hhiInfo=getHHILevel(hhi),top1=getTopPct(1),top5=getTopPct(5),sorted=getSorted(),topCust=sorted[0];
+  var html='<div class="section-eyebrow">Step 7 of 7</div><h1 class="t-display">Your Buyer Presentation Narrative</h1>'
+    +'<p class="section-desc">How you present concentration matters enormously. Build your narrative using these five frameworks.</p>'
+    +'<div class="kpi-grid">'
+    +'<div class="kpi-card"><div class="kpi-value" style="color:'+hhiInfo.color+';">'+hhi.toLocaleString()+'</div><div class="kpi-label">HHI Score</div><div class="kpi-sub">'+hhiInfo.level+'</div></div>'
+    +'<div class="kpi-card"><div class="kpi-value" style="color:'+(top1>=25?'var(--color-red)':'var(--color-amber)')+';">'+fmtPct(top1)+'</div><div class="kpi-label">Top Customer</div><div class="kpi-sub">'+esc(topCust?topCust.name||'Unnamed':'N/A')+'</div></div>'
+    +'<div class="kpi-card"><div class="kpi-value">'+state.customers.length+'</div><div class="kpi-label">Customers Tracked</div></div>'
+    +'<div class="kpi-card"><div class="kpi-value">'+fmtCurrency(total)+'</div><div class="kpi-label">Total Revenue</div></div></div>';
+
+  html+='<h3 class="t-h1" style="margin-top:var(--space-xl);">The Five-Part Narrative</h3>';
+  [{key:'trend',title:'1. Show Improvement',desc:'Present the trend. "Our top customer was X% three years ago and is now Y% and declining."',ph:'e.g., "Top customer was 45% in 2023, now 28% and declining..."'},{key:'depth',title:'2. Emphasize Relationship Depth',desc:'Highlight longevity, growth, payment history, and contractual protections.',ph:'e.g., "12-year relationship, consistent growth, zero payment issues, 5-year MSA..."'},{key:'switching',title:'3. Highlight Switching Costs',desc:'Explain structural advantages that keep the customer.',ph:'e.g., "We are their sole-source for X, integrated into their production line..."'},{key:'protection',title:'4. Present Contractual Protection',desc:'Show signed agreements with favorable terms.',ph:'e.g., "Signed 5-year MSA with auto-renewal and 18-month termination notice..."'},{key:'pipeline',title:'5. Offer Forward-Looking Data',desc:'Show your acquisition pipeline and projected diversification trajectory.',ph:'e.g., "Pipeline of 15 qualified prospects, projecting top customer to 18% by year-end..."'}].forEach(function(item){
+    html+='<div class="card"><h4 class="t-h3" style="margin:0;color:var(--color-accent);">'+item.title+'</h4>'
+      +'<p class="t-caption" style="margin:4px 0 12px;">'+item.desc+'</p>'
+      +'<textarea class="form-input" data-bind="narrative" data-nn="'+item.key+'" placeholder="'+item.ph+'" style="font-size:0.85rem;">'+esc(state.narrativeNotes[item.key]||'')+'</textarea></div>';
+  });
+
+  html+='<h3 class="t-h1" style="margin-top:var(--space-xl);">Proactive Deal Protection Options</h3><div class="card">';
+  [{key:'p1',text:'Offer an escrow holdback tied to concentrated customer remaining for 12 months'},{key:'p2',text:'Propose a small earnout component (10-15% of deal value) linked to revenue retention'},{key:'p3',text:'Present a customer introduction plan where you personally transition the relationship'}].forEach(function(p){
+    var c=state.presentationChecks[p.key]||false;
+    html+='<div class="check-item'+(c?' done':'')+'" data-action="toggle-pcheck" data-key="'+p.key+'">'
+      +'<div class="check-box'+(c?' checked':'')+'" role="checkbox" aria-checked="'+c+'" tabindex="0">'+(c?'&#10003;':'')+'</div>'
+      +'<div class="check-text">'+p.text+'</div></div>';
+  });
+  html+='</div>';
+
+  html+='<h3 class="t-h1" style="margin-top:var(--space-xl);">Mistakes to Avoid</h3><div class="card">';
+  [{key:'cm1',text:'We are NOT ignoring concentration and hoping buyers won\'t notice &mdash; we own the narrative.'},{key:'cm2',text:'We started diversification 18+ months before market, not 6 months.'},{key:'cm3',text:'We are NOT offering discounts to inflate customer count at the expense of margins.'},{key:'cm4',text:'We have our key customer under a long-term contract, not on purchase orders.'}].forEach(function(m){
+    var c=state.checklistItems[m.key]||false;
+    html+='<div class="check-item'+(c?' done':'')+'" data-action="toggle-check" data-key="'+m.key+'">'
+      +'<div class="check-box'+(c?' checked':'')+'" role="checkbox" aria-checked="'+c+'" tabindex="0">'+(c?'&#10003;':'')+'</div>'
+      +'<div class="check-text">'+m.text+'</div></div>';
+  });
+  html+='</div>';
+
+  html+='<div style="text-align:center;margin-top:var(--space-xl);padding:var(--space-lg);background:var(--color-accent-bg);border-radius:var(--radius-lg);">'
+    +'<div class="t-h1" style="margin-bottom:4px;">Concentration Is Not a Disclosure Item.</div>'
+    +'<p class="t-body">It is a strategic problem that demands a strategic solution.</p>'
+    +'<div style="margin-top:var(--space-md);display:flex;gap:12px;justify-content:center;">'
+    +'<button class="btn btn-ghost" data-action="export">Export Results</button>'
+    +'<button class="btn btn-ghost btn-sm" style="color:var(--color-red);" data-action="reset">Reset All Data</button></div></div>'
+    +'<div class="page-nav"><button class="btn btn-secondary" data-action="prev">&larr; Back</button><div></div></div>';
+  return html;
+}
+
+/* Export */
+function exportResults(){
+  var total=getTotalRev(),hhi=calcHHI(),hhiInfo=getHHILevel(hhi),top1=getTopPct(1);
+  var lines=['CUSTOMER CONCENTRATION DE-RISKING -- RESULTS','==============================================','Date: '+new Date().toLocaleDateString(),'',
+    'TOTAL REVENUE: '+fmtCurrency(total),'HHI: '+hhi+' ('+hhiInfo.level+')','TOP CUSTOMER: '+fmtPct(top1),'CUSTOMERS TRACKED: '+state.customers.length,''];
+  getSorted().forEach(function(c){ var p=total>0?(parseNum(c.revenue)/total*100):0; lines.push('  '+(c.name||'Unnamed')+': '+fmtCurrency(parseNum(c.revenue))+' ('+fmtPct(p)+')'); });
+  lines.push('','Generated by Exit OSx Playbook');
+  var blob=new Blob([lines.join('\n')],{type:'text/plain'}); var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='customer-concentration-results.txt'; a.click(); URL.revokeObjectURL(a.href); toast('Results exported');
+}
+
+/* Event delegation */
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-action]'); if(!t) return; var a=t.dataset.action;
+  if(a==='next'){nextPage();return;} if(a==='prev'){prevPage();return;} if(a==='export'){exportResults();return;}
+  if(a==='reset'){if(confirm('This will erase all your data in this playbook. Are you sure?')){localStorage.removeItem(STORAGE_KEY);state=makeDefault();goToPage('welcome');}return;}
+  if(a==='add-cust'){state.customers.push({name:'',revenue:'',hasContract:'',contractExp:'',relLength:'',expanded:true});saveState();renderPage();return;}
+  if(a==='remove-cust'){state.customers.splice(parseInt(t.dataset.idx),1);saveState();renderPage();return;}
+  if(a==='toggle-cust'){var ci=parseInt(t.dataset.idx);state.customers[ci].expanded=!state.customers[ci].expanded;saveState();renderPage();return;}
+  if(a==='add-action'){state.diversificationActions.push({strategy:'',investment:'',timeline:'',expectedRev:'',owner:'',status:'planned'});saveState();renderPage();return;}
+  if(a==='remove-action'){state.diversificationActions.splice(parseInt(t.dataset.idx),1);saveState();renderPage();return;}
+  if(a==='toggle-contract'){var k=t.dataset.key;state.contracts[k]=!state.contracts[k];saveState();renderPage();return;}
+  if(a==='toggle-timeline'){var tk=t.dataset.key;state.timelineChecks[tk]=!state.timelineChecks[tk];saveState();renderPage();return;}
+  if(a==='toggle-pcheck'){var pk=t.dataset.key;state.presentationChecks[pk]=!state.presentationChecks[pk];saveState();renderPage();return;}
+  if(a==='toggle-check'){var ck=t.dataset.key;state.checklistItems[ck]=!state.checklistItems[ck];saveState();renderPage();return;}
+});
+
+document.addEventListener('keydown',function(e){
+  var t=e.target.closest('[data-action]'); if(!t) return;
+  if(e.key==='Enter'||e.key===' '){ var a=t.dataset.action;
+    if(a==='toggle-contract'||a==='toggle-timeline'||a==='toggle-pcheck'||a==='toggle-check'){e.preventDefault();t.click();}
+  }
+});
+
+document.addEventListener('input',function(e){
+  var b=e.target.dataset.bind; if(!b) return;
+  if(b==='totalRevenue'){state.totalRevenue=e.target.value;saveState();return;}
+  if(b==='cust-field'){var ci=parseInt(e.target.dataset.ci);if(state.customers[ci]){state.customers[ci][e.target.dataset.cf]=e.target.value;saveState();}return;}
+  if(b==='action-field'){var ai=parseInt(e.target.dataset.ai);if(state.diversificationActions[ai]){state.diversificationActions[ai][e.target.dataset.af]=e.target.value;saveState();}return;}
+  if(b==='narrative'){state.narrativeNotes[e.target.dataset.nn]=e.target.value;saveState();return;}
+});
+
+document.addEventListener('change',function(e){
+  var b=e.target.dataset.bind; if(!b) return;
+  if(b==='cust-select'){var ci=parseInt(e.target.dataset.ci);if(state.customers[ci]){state.customers[ci][e.target.dataset.cf]=e.target.value;saveState();}return;}
+  if(b==='cust-field'){var ci2=parseInt(e.target.dataset.ci);if(state.customers[ci2]){state.customers[ci2][e.target.dataset.cf]=e.target.value;saveState();}return;}
+});
+
+document.getElementById('sidebarNav').addEventListener('click',function(e){ var item=e.target.closest('.nav-item'); if(item&&!item.classList.contains('locked')) goToPage(item.dataset.page); });
+document.getElementById('sidebarNav').addEventListener('keydown',function(e){ if(e.key==='Enter'){ var item=e.target.closest('.nav-item'); if(item&&!item.classList.contains('locked')) goToPage(item.dataset.page); } });
+
+window.PB={goToPage:goToPage,toggleSidebar:toggleSidebar};
+renderNav(); renderPage();
+})();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Margin Improvement Program | Exit Planning Playbook #28</title>
+<style>
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  color: var(--color-text); background: var(--color-bg);
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a { color: var(--color-primary); text-decoration: none; }
+
+.t-display { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 280px; min-width: 280px; background: var(--color-text);
+  color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow); overflow-y: auto;
+}
+.sidebar.collapsed { transform: translateX(-280px); }
+.main-content { flex: 1; margin-left: 280px; min-height: 100vh; transition: margin-left var(--transition-slow); }
+.sidebar.collapsed + .main-content { margin-left: 0; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-280px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: #fff; line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.6);
+  font-size: 14px; transition: all var(--transition-fast); cursor: pointer;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-lg);
+  transition: box-shadow var(--transition-normal);
+}
+.card:hover { box-shadow: var(--shadow-sm); }
+.card + .card { margin-top: var(--space-md); }
+
+.callout {
+  padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md);
+  border-left: 3px solid; font-size: 14px; line-height: 1.6;
+}
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+.callout-success { background: var(--color-success-light); border-color: var(--color-success); color: #1a5c2e; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); border-color: var(--color-text-tertiary); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); color: var(--color-text); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.form-input::placeholder { color: var(--color-text-tertiary); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center; min-width: 0;
+}
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+@media (max-width: 600px) {
+  .score-selector { gap: 4px; }
+  .score-option { padding: 10px 4px; }
+  .score-number { font-size: 18px; }
+  .score-label-text { font-size: 9px; }
+}
+
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+  border-radius: 999px; font-size: 12px; font-weight: 500;
+}
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+
+.progress-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.progress-ring-text { position: absolute; text-align: center; }
+.progress-ring-value { font-family: var(--font-display); font-weight: 700; line-height: 1; }
+.progress-ring-label { font-size: 10px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-sm); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 28px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; min-width: 30px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+@media (max-width: 600px) { .bar-label { width: 80px; font-size: 11px; } }
+
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.section-divider { height: 1px; background: var(--color-border); margin: var(--space-2xl) 0; }
+
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-hero .t-display { margin-bottom: var(--space-md); }
+.welcome-hero .t-body { margin-bottom: var(--space-2xl); }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+.welcome-phases { display: flex; flex-direction: column; gap: var(--space-md); margin: var(--space-2xl) 0; text-align: left; }
+.welcome-phase { display: flex; gap: var(--space-lg); padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-phase-num { width: 36px; height: 36px; background: var(--color-primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--color-primary); flex-shrink: 0; }
+.welcome-phase-title { font-weight: 600; margin-bottom: 2px; }
+.welcome-phase-desc { font-size: 14px; color: var(--color-text-secondary); }
+@media (max-width: 600px) {
+  .welcome-stats { grid-template-columns: 1fr; }
+  .welcome-hero { padding: var(--space-2xl) var(--space-md); }
+}
+
+.nav-footer { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+
+.impact-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.impact-table th { text-align: left; padding: 10px 12px; background: var(--color-surface-alt); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); border-bottom: 2px solid var(--color-border); }
+.impact-table td { padding: 10px 12px; border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.impact-table tr:last-child td { border-bottom: none; }
+.impact-table .total-row td { font-weight: 700; background: var(--color-primary-light); border-top: 2px solid var(--color-primary); }
+.impact-table input { border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 6px 10px; font-size: 14px; width: 100%; background: var(--color-surface); }
+.impact-table input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-light); }
+.impact-table select { border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 6px 10px; font-size: 14px; background: var(--color-surface); width: 100%; }
+
+.cost-card {
+  display: flex; gap: var(--space-md); padding: var(--space-md); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); background: var(--color-surface); transition: all var(--transition-fast);
+  margin-bottom: var(--space-sm);
+}
+.cost-card:hover { box-shadow: var(--shadow-sm); }
+.cost-card-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px; }
+
+.gauge-wrap { display: flex; align-items: center; gap: var(--space-lg); padding: var(--space-lg); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.gauge-info { flex: 1; }
+.gauge-title { font-size: 13px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+.gauge-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; line-height: 1; }
+.gauge-desc { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+
+.checklist-item { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md) 0; border-bottom: 1px solid var(--color-border-light); cursor: pointer; }
+.checklist-item:last-child { border-bottom: none; }
+.checklist-box {
+  width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+  transition: all var(--transition-fast);
+}
+.checklist-item.checked .checklist-box { background: var(--color-success); border-color: var(--color-success); }
+.checklist-box svg { width: 12px; height: 12px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; transition: opacity var(--transition-fast); }
+.checklist-item.checked .checklist-box svg { opacity: 1; }
+.checklist-text { font-size: 14px; line-height: 1.5; }
+.checklist-item.checked .checklist-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+
+.metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-md); }
+.metric-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); text-align: center; }
+.metric-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.metric-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+
+.valuation-scenario { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-lg) 0; }
+.scenario-card { background: var(--color-surface); border: 2px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); text-align: center; transition: all var(--transition-normal); }
+.scenario-card.highlight { border-color: var(--color-primary); background: var(--color-primary-light); }
+.scenario-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.scenario-ebitda { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.scenario-multiple { font-size: 14px; color: var(--color-text-secondary); margin-bottom: var(--space-sm); }
+.scenario-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; line-height: 1.2; }
+.scenario-card.highlight .scenario-value { color: var(--color-primary); }
+.scenario-delta { font-size: 13px; margin-top: var(--space-xs); }
+@media (max-width: 600px) { .valuation-scenario { grid-template-columns: 1fr; } }
+
+.stacked-bar { display: flex; height: 32px; border-radius: 6px; overflow: hidden; width: 100%; }
+.stacked-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; transition: width 0.6s cubic-bezier(0.16,1,0.3,1); min-width: 0; overflow: hidden; }
+
+.timeline-row { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md) 0; border-bottom: 1px solid var(--color-border-light); }
+.timeline-row:last-child { border-bottom: none; }
+.timeline-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+
+.toast {
+  position: fixed; bottom: var(--space-lg); right: var(--space-lg); background: var(--color-text);
+  color: #fff; padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md);
+  font-size: 14px; box-shadow: var(--shadow-lg); transform: translateY(100px); opacity: 0;
+  transition: all var(--transition-slow); z-index: 200; max-width: 360px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* Accessibility */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; }
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+
+/* Print */
+@media print { .sidebar, .mobile-header, .toast, .btn-group, .skip-link, .sidebar-overlay { display: none !important; } .main-content { margin-left: 0 !important; } .page { display: block !important; page-break-inside: avoid; } .content-area { max-width: 100%; padding: 0; } }
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<div class="app">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #28</div>
+      <div class="sidebar-brand-title">Margin Improvement Program</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <div class="sidebar-nav" id="sidebarNav"></div>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Margin Readiness</div>
+      <div class="sidebar-score-value" id="sidebarScore">0<span class="sidebar-score-max">/100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete assessments to calculate</div>
+    </div>
+  </nav>
+
+  <div class="main-content" id="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation"><span></span></button>
+      <div style="font-weight:600;font-size:15px;">Playbook #28</div>
+    </div>
+    <div class="content-area" id="contentArea"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" aria-live="polite" role="status"></div>
+
+<script>
+const STORAGE_KEY = 'exitosx-pb28-margin-improvement';
+// Migrate from old key
+(function() { try { const old = localStorage.getItem('playbook28_margin_improvement'); if (old && !localStorage.getItem('exitosx-pb28-margin-improvement')) { localStorage.setItem('exitosx-pb28-margin-improvement', old); localStorage.removeItem('playbook28_margin_improvement'); } } catch(e) {} })();
+const CHECK_SVG = '<svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"></polyline></svg>';
+
+const PAGES = [
+  { id:'welcome', title:'Welcome', icon:'&#128176;', phase:'start' },
+  { id:'why_margins', title:'Why Margins Drive Value', icon:'&#128200;', phase:'learn' },
+  { id:'framework', title:'The 5-Lever Framework', icon:'&#9878;', phase:'learn' },
+  { id:'cost_audit', title:'Cost Structure Audit', icon:'&#128269;', phase:'audit' },
+  { id:'supplier', title:'Supplier Renegotiation', icon:'&#129309;', phase:'optimize' },
+  { id:'product_prune', title:'Product Line Review', icon:'&#9986;', phase:'optimize' },
+  { id:'pricing', title:'Pricing Discipline', icon:'&#128178;', phase:'optimize' },
+  { id:'efficiency', title:'Operational Efficiency', icon:'&#9881;', phase:'optimize' },
+  { id:'flow_through', title:'Flow-Through Analysis', icon:'&#128202;', phase:'measure' },
+  { id:'mistakes', title:'Pitfall Avoidance', icon:'&#9888;', phase:'execute' },
+  { id:'timeline', title:'Implementation Timeline', icon:'&#128197;', phase:'execute' },
+  { id:'results', title:'Your Margin Plan', icon:'&#127942;', phase:'results' }
+];
+
+const PHASES = {
+  start: 'Getting Started',
+  learn: 'Understanding',
+  audit: 'Cost Audit',
+  optimize: 'Optimization',
+  measure: 'Measurement',
+  execute: 'Execution',
+  results: 'Your Results'
+};
+
+let state = loadState();
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return {
+    currentPage: 'welcome',
+    completedPages: [],
+    revenue: '',
+    currentGrossMargin: '',
+    currentEbitdaMargin: '',
+    businessMultiple: '',
+    businessType: '',
+    costAuditItems: [
+      { category:'Software/SaaS Subscriptions', spend:'', benchmark:'20-40%', action:'', flag:false },
+      { category:'Insurance', spend:'', benchmark:'10-25%', action:'', flag:false },
+      { category:'Telecom/IT', spend:'', benchmark:'15-30%', action:'', flag:false },
+      { category:'Professional Services', spend:'', benchmark:'10-30%', action:'', flag:false },
+      { category:'Occupancy', spend:'', benchmark:'5-20%', action:'', flag:false },
+      { category:'Travel & Entertainment', spend:'', benchmark:'20-40%', action:'', flag:false },
+      { category:'Staffing & Overtime', spend:'', benchmark:'5-10%', action:'', flag:false }
+    ],
+    supplierRows: [
+      { vendor:'', spend:'', expiry:'', alternatives:'', targetSavings:'', actualSavings:'', status:'not_started' },
+      { vendor:'', spend:'', expiry:'', alternatives:'', targetSavings:'', actualSavings:'', status:'not_started' },
+      { vendor:'', spend:'', expiry:'', alternatives:'', targetSavings:'', actualSavings:'', status:'not_started' },
+      { vendor:'', spend:'', expiry:'', alternatives:'', targetSavings:'', actualSavings:'', status:'not_started' },
+      { vendor:'', spend:'', expiry:'', alternatives:'', targetSavings:'', actualSavings:'', status:'not_started' }
+    ],
+    productLines: [
+      { name:'', revenue:'', grossMargin:'', loadedMargin:'', action:'keep' },
+      { name:'', revenue:'', grossMargin:'', loadedMargin:'', action:'keep' },
+      { name:'', revenue:'', grossMargin:'', loadedMargin:'', action:'keep' },
+      { name:'', revenue:'', grossMargin:'', loadedMargin:'', action:'keep' },
+      { name:'', revenue:'', grossMargin:'', loadedMargin:'', action:'keep' }
+    ],
+    pricingLeaks: {
+      discounting: 0,
+      legacy: 0,
+      scope_creep: 0,
+      free_addons: 0,
+      rounding: 0
+    },
+    pricingActions: {},
+    efficiencyScores: {},
+    flowRevStart: '',
+    flowRevEnd: '',
+    flowEbitdaStart: '',
+    flowEbitdaEnd: '',
+    pitfallChecks: {},
+    timelineChecks: {},
+    monthlyMargin: [{},{},{},{},{},{},{},{},{},{},{},{}]
+  };
+}
+function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){} }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+function navigate(pageId) {
+  state.currentPage = pageId;
+  saveState();
+  render();
+  document.getElementById('contentArea').scrollIntoView({ behavior:'smooth', block:'start' });
+  if (window.innerWidth <= 900) {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+  }
+  // Focus management
+  setTimeout(() => { const area = document.getElementById('contentArea'); if (area) { const heading = area.querySelector('h1, h2, .t-display'); if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); } } }, 100);
+}
+
+function markComplete(pageId) {
+  if (!state.completedPages.includes(pageId)) {
+    state.completedPages.push(pageId);
+    saveState();
+    showToast('Section complete. Progress saved.');
+  }
+  const idx = PAGES.findIndex(p => p.id === pageId);
+  if (idx < PAGES.length - 1) navigate(PAGES[idx + 1].id);
+  else render();
+}
+
+function calcScore() {
+  let score = 0;
+  if (state.revenue) score += 5;
+  if (state.currentGrossMargin) score += 5;
+  if (state.currentEbitdaMargin) score += 5;
+  const flaggedCosts = state.costAuditItems.filter(i => i.flag).length;
+  score += Math.min(15, flaggedCosts * 3);
+  const suppliersDone = state.supplierRows.filter(r => r.vendor && r.status !== 'not_started').length;
+  score += Math.min(15, suppliersDone * 3);
+  const productsDone = state.productLines.filter(p => p.name && p.action !== 'keep').length;
+  score += Math.min(10, productsDone * 3);
+  const pricingTotal = Object.values(state.pricingLeaks).reduce((a,b) => a + (b||0), 0);
+  if (pricingTotal > 0) score += 5;
+  const pricingActions = Object.values(state.pricingActions).filter(Boolean).length;
+  score += Math.min(10, pricingActions * 2);
+  const effScores = Object.values(state.efficiencyScores).filter(v => v > 0).length;
+  score += Math.min(10, effScores * 2);
+  if (state.flowRevStart && state.flowRevEnd) score += 5;
+  const pitfallCount = Object.values(state.pitfallChecks).filter(Boolean).length;
+  score += Math.min(10, pitfallCount * 2);
+  const timelineCount = Object.values(state.timelineChecks).filter(Boolean).length;
+  score += Math.min(5, timelineCount);
+  return Math.min(100, score);
+}
+
+function getScoreLevel(s) {
+  if (s >= 80) return { label:'Margin Optimized', color:'var(--color-success)' };
+  if (s >= 60) return { label:'Good Progress', color:'var(--color-primary)' };
+  if (s >= 40) return { label:'Developing', color:'var(--color-warning)' };
+  return { label:'Getting Started', color:'var(--color-text-tertiary)' };
+}
+
+function renderSidebar() {
+  const nav = document.getElementById('sidebarNav');
+  let html = '';
+  let lastPhase = '';
+  PAGES.forEach(p => {
+    if (p.phase !== lastPhase) {
+      html += `<div class="nav-section-label">${PHASES[p.phase]}</div>`;
+      lastPhase = p.phase;
+    }
+    const isActive = state.currentPage === p.id;
+    const isDone = state.completedPages.includes(p.id);
+    html += `<div class="nav-item${isActive?' active':''}${isDone?' completed':''}" onclick="navigate('${p.id}')" role="button" tabindex="0" aria-current="${isActive?'page':'false'}">
+      <span class="nav-icon">${p.icon}</span><span>${p.title}</span>
+      <span class="nav-check">${CHECK_SVG}</span>
+    </div>`;
+  });
+  nav.innerHTML = html;
+  const pct = Math.round((state.completedPages.length / PAGES.length) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+  const score = calcScore();
+  document.getElementById('sidebarScore').innerHTML = score + '<span class="sidebar-score-max">/100</span>';
+  const level = getScoreLevel(score);
+  document.getElementById('sidebarScoreDesc').textContent = level.label;
+  document.getElementById('sidebarScore').style.color = level.color;
+}
+
+function renderProgressRing(size, pct, color, label) {
+  const r = (size - 8) / 2;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (pct / 100) * circ;
+  return `<div class="progress-ring-wrap" style="width:${size}px;height:${size}px;">
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--color-border)" stroke-width="6"/>
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${offset}" transform="rotate(-90 ${size/2} ${size/2})" style="transition:stroke-dashoffset 0.8s cubic-bezier(0.16,1,0.3,1)"/>
+    </svg>
+    <div class="progress-ring-text">
+      <div class="progress-ring-value" style="font-size:${size/4}px;color:${color}">${Math.round(pct)}</div>
+      <div class="progress-ring-label">${label}</div>
+    </div>
+  </div>`;
+}
+
+function scoreSelector(name, labels) {
+  const current = state.efficiencyScores[name] || 0;
+  let html = '<div class="score-selector" role="radiogroup" aria-label="Score for ' + name + '">';
+  labels.forEach((lbl, i) => {
+    const val = i + 1;
+    const sel = current === val ? ' selected' : '';
+    html += `<div class="score-option s${val}${sel}" onclick="setEffScore('${name}',${val})" role="radio" tabindex="0" aria-checked="${current===val}">
+      <input type="radio" name="${name}" value="${val}" ${current===val?'checked':''}>
+      <div class="score-number">${val}</div>
+      <div class="score-label-text">${lbl}</div>
+    </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function setEffScore(name, val) { state.efficiencyScores[name] = val; saveState(); render(); }
+function setField(path, value) {
+  const parts = path.split('.');
+  let obj = state;
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (parts[i].match(/^\d+$/)) obj = obj[parseInt(parts[i])];
+    else obj = obj[parts[i]];
+  }
+  obj[parts[parts.length - 1]] = value;
+  saveState();
+}
+function toggleCheck(group, key) { state[group][key] = !state[group][key]; saveState(); render(); }
+
+function setCostAudit(idx, field, value) {
+  state.costAuditItems[idx][field] = value;
+  saveState();
+  if (field === 'flag') render();
+}
+
+function setSupplier(idx, field, value) { state.supplierRows[idx][field] = value; saveState(); if (field === 'status') render(); }
+function addSupplierRow() {
+  state.supplierRows.push({ vendor:'', spend:'', expiry:'', alternatives:'', targetSavings:'', actualSavings:'', status:'not_started' });
+  saveState(); render();
+}
+
+function setProductLine(idx, field, value) { state.productLines[idx][field] = value; saveState(); if (field === 'action') render(); }
+function addProductLine() {
+  state.productLines.push({ name:'', revenue:'', grossMargin:'', loadedMargin:'', action:'keep' });
+  saveState(); render();
+}
+
+function setPricingLeak(key, val) { state.pricingLeaks[key] = parseFloat(val) || 0; saveState(); render(); }
+
+function navFooter(prevId, nextId, nextLabel) {
+  let html = '<div class="nav-footer">';
+  if (prevId) html += `<button class="btn btn-secondary" onclick="navigate('${prevId}')">&#8592; Back</button>`;
+  else html += '<div></div>';
+  if (nextId) html += `<button class="btn btn-primary" onclick="markComplete('${state.currentPage}')">${nextLabel || 'Continue'} &#8594;</button>`;
+  html += '</div>';
+  return html;
+}
+
+function renderPage() {
+  const area = document.getElementById('contentArea');
+  const pg = state.currentPage;
+  const pages = {
+    welcome: renderWelcome, why_margins: renderWhyMargins, framework: renderFramework,
+    cost_audit: renderCostAudit, supplier: renderSupplier, product_prune: renderProductPrune,
+    pricing: renderPricing, efficiency: renderEfficiency, flow_through: renderFlowThrough,
+    mistakes: renderMistakes, timeline: renderTimeline, results: renderResults
+  };
+  area.innerHTML = (pages[pg] || renderWelcome)();
+}
+
+function renderWelcome() {
+  return `<div class="welcome-hero">
+    <div class="welcome-icon">&#128176;</div>
+    <h1 class="t-display">Margin Improvement Program</h1>
+    <p class="t-body t-secondary">Every point of EBITDA margin improvement flows directly to enterprise value. At a 5x multiple, a $100K annual cost reduction is worth $500K at exit. This is the highest-ROI work you can do before a sale.</p>
+    <div class="welcome-stats">
+      <div class="welcome-stat"><div class="welcome-stat-value">5x</div><div class="welcome-stat-label">Multiplied impact on enterprise value</div></div>
+      <div class="welcome-stat"><div class="welcome-stat-value">3-5pts</div><div class="welcome-stat-label">Typical EBITDA margin improvement</div></div>
+      <div class="welcome-stat"><div class="welcome-stat-value">5 Levers</div><div class="welcome-stat-label">Systematic optimization framework</div></div>
+    </div>
+    <div class="welcome-phases">
+      <div class="welcome-phase"><div class="welcome-phase-num">1</div><div><div class="welcome-phase-title">Understand the Math</div><div class="welcome-phase-desc">See how margins create double impact through EBITDA growth and multiple expansion.</div></div></div>
+      <div class="welcome-phase"><div class="welcome-phase-num">2</div><div><div class="welcome-phase-title">Audit Your Costs</div><div class="welcome-phase-desc">Line-item audit of where every dollar goes. Benchmark against peers.</div></div></div>
+      <div class="welcome-phase"><div class="welcome-phase-num">3</div><div><div class="welcome-phase-title">Optimize Five Levers</div><div class="welcome-phase-desc">Suppliers, products, pricing, operations, and efficiency.</div></div></div>
+      <div class="welcome-phase"><div class="welcome-phase-num">4</div><div><div class="welcome-phase-title">Measure & Execute</div><div class="welcome-phase-desc">Track flow-through, avoid pitfalls, and build your implementation timeline.</div></div></div>
+    </div>
+    <button class="btn btn-primary btn-lg" onclick="markComplete('welcome')">Begin Assessment &#8594;</button>
+  </div>`;
+}
+
+function renderWhyMargins() {
+  const rev = parseFloat(state.revenue) || 10;
+  const em = parseFloat(state.currentEbitdaMargin) || 15;
+  const mult = parseFloat(state.businessMultiple) || 5;
+  const currentEbitda = rev * (em / 100);
+  const improvedEbitda = rev * ((em + 4) / 100);
+  const currentVal = currentEbitda * mult;
+  const improvedVal = improvedEbitda * (mult + 0.5);
+  const delta = improvedVal - currentVal;
+
+  return `<div class="page-header">
+    <div class="t-label">Understanding</div>
+    <h1 class="t-display">Why Margins Drive Exit Value</h1>
+    <p class="t-body t-secondary">Margin improvement creates value through two simultaneous effects: higher EBITDA base and multiple expansion from the competitive advantage signal.</p>
+  </div>
+
+  <div class="callout callout-accent" style="margin-bottom:var(--space-2xl)">
+    <strong>The core principle:</strong> Every dollar of margin improvement has a multiplied impact on enterprise value. If your business trades at 5x EBITDA, a $100K annual cost reduction is worth $500K at exit.
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Your Business Baseline</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+      <div class="form-group"><label class="form-label">Annual Revenue ($M)</label><input type="number" class="form-input" value="${state.revenue||''}" placeholder="10" step="0.5" onchange="setField('revenue',this.value);render()"></div>
+      <div class="form-group"><label class="form-label">Current EBITDA Margin (%)</label><input type="number" class="form-input" value="${state.currentEbitdaMargin||''}" placeholder="15" step="0.5" onchange="setField('currentEbitdaMargin',this.value);render()"></div>
+      <div class="form-group"><label class="form-label">Current Gross Margin (%)</label><input type="number" class="form-input" value="${state.currentGrossMargin||''}" placeholder="45" step="0.5" onchange="setField('currentGrossMargin',this.value);render()"></div>
+      <div class="form-group"><label class="form-label">Estimated Multiple (x)</label><input type="number" class="form-input" value="${state.businessMultiple||''}" placeholder="5" step="0.25" onchange="setField('businessMultiple',this.value);render()"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Business Type</label>
+      <select class="form-input" onchange="setField('businessType',this.value);render()">
+        <option value="">Select your business type...</option>
+        <option value="services" ${state.businessType==='services'?'selected':''}>Professional Services (median 15-20% EBITDA)</option>
+        <option value="saas" ${state.businessType==='saas'?'selected':''}>SaaS / Software (median 15-25% EBITDA)</option>
+        <option value="distribution" ${state.businessType==='distribution'?'selected':''}>Distribution / Wholesale (median 5-10% EBITDA)</option>
+        <option value="manufacturing" ${state.businessType==='manufacturing'?'selected':''}>Manufacturing (median 10-15% EBITDA)</option>
+        <option value="construction" ${state.businessType==='construction'?'selected':''}>Construction / Trades (median 8-12% EBITDA)</option>
+        <option value="retail" ${state.businessType==='retail'?'selected':''}>Retail / E-Commerce (median 8-12% EBITDA)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-md)">The Double Impact of Margin Improvement</h3>
+    <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">A 4-point EBITDA margin improvement with modest multiple expansion:</p>
+    <div class="valuation-scenario">
+      <div class="scenario-card">
+        <div class="scenario-label">Current</div>
+        <div class="scenario-ebitda">$${currentEbitda.toFixed(1)}M EBITDA</div>
+        <div class="scenario-multiple">${em.toFixed(0)}% margin at ${mult.toFixed(1)}x</div>
+        <div class="scenario-value">$${currentVal.toFixed(1)}M</div>
+      </div>
+      <div class="scenario-card highlight">
+        <div class="scenario-label">+4pt Margin</div>
+        <div class="scenario-ebitda">$${improvedEbitda.toFixed(1)}M EBITDA</div>
+        <div class="scenario-multiple">${(em+4).toFixed(0)}% margin at ${(mult+0.5).toFixed(1)}x</div>
+        <div class="scenario-value">$${improvedVal.toFixed(1)}M</div>
+        <div class="scenario-delta" style="color:var(--color-success);font-weight:600">+$${delta.toFixed(1)}M value created</div>
+      </div>
+      <div class="scenario-card">
+        <div class="scenario-label">Value Uplift</div>
+        <div style="margin-top:var(--space-md)">${renderProgressRing(72, Math.min(100, (delta/currentVal)*100), 'var(--color-success)', 'uplift')}</div>
+        <div class="scenario-delta" style="margin-top:var(--space-sm);font-weight:600">${Math.round((delta/currentVal)*100)}% increase</div>
+      </div>
+    </div>
+  </div>
+
+  ${state.businessType ? `<div class="callout callout-info" style="margin-bottom:var(--space-lg)">
+    <strong>Benchmark note:</strong> ${getBenchmarkNote(state.businessType, parseFloat(state.currentEbitdaMargin)||15)}
+  </div>` : ''}
+
+  ${navFooter('welcome','framework','See the Framework')}`;
+}
+
+function getBenchmarkNote(type, margin) {
+  const benchmarks = {
+    services: { median: 17.5, top: 30, label: 'Professional Services' },
+    saas: { median: 20, top: 35, label: 'SaaS / Software' },
+    distribution: { median: 7.5, top: 15, label: 'Distribution / Wholesale' },
+    manufacturing: { median: 12.5, top: 21.5, label: 'Manufacturing' },
+    construction: { median: 10, top: 18.5, label: 'Construction / Trades' },
+    retail: { median: 10, top: 17.5, label: 'Retail / E-Commerce' }
+  };
+  const b = benchmarks[type];
+  if (!b) return '';
+  if (margin >= b.top) return `Your ${margin}% EBITDA margin is top-quartile for ${b.label} (top quartile: ${b.top}%+). This is a powerful selling point. Focus on maintaining and documenting this advantage.`;
+  if (margin >= b.median) return `Your ${margin}% EBITDA margin is above median for ${b.label} (median: ${b.median}%, top quartile: ${b.top}%+). Optimization can push you into top-quartile territory.`;
+  return `Your ${margin}% EBITDA margin is below the median for ${b.label} (median: ${b.median}%). Significant improvement is likely available. This playbook will help you find it.`;
+}
+
+function renderFramework() {
+  const levers = [
+    { icon:'&#128269;', title:'1. Cost Audit', desc:'Identify all costs; categorize; benchmark vs. peers', impact:'Identifies 5-15% of total cost as addressable', time:'1-2 months', color:'#4A90D9' },
+    { icon:'&#129309;', title:'2. Supplier Renegotiation', desc:'Renegotiate top 10-20 vendor contracts', impact:'5-15% savings on renegotiated contracts', time:'2-4 months', color:'#2D8A4E' },
+    { icon:'&#9986;', title:'3. Product/Service Pruning', desc:'Eliminate or reprice low-margin offerings', impact:'2-5 points of gross margin improvement', time:'3-6 months', color:'#B87333' },
+    { icon:'&#128178;', title:'4. Pricing Discipline', desc:'Reduce discounting; implement value-based pricing', impact:'2-5% revenue lift with no volume change', time:'3-6 months', color:'#8B5CF6' },
+    { icon:'&#9881;', title:'5. Operational Efficiency', desc:'Automate, streamline, reduce waste', impact:'1-3 points of EBITDA margin', time:'6-12 months', color:'#C67F20' }
+  ];
+
+  return `<div class="page-header">
+    <div class="t-label">Understanding</div>
+    <h1 class="t-display">The 5-Lever Framework</h1>
+    <p class="t-body t-secondary">A structured margin improvement program addresses five levers in sequence. Start with the cost audit because it informs everything else.</p>
+  </div>
+
+  <div class="callout callout-info" style="margin-bottom:var(--space-2xl)">
+    <strong>Sequencing matters.</strong> Start with the cost audit. Then pursue supplier renegotiation and pricing discipline in parallel -- these are the quickest wins. Product pruning and operational efficiency are longer-term but create sustainable improvement.
+  </div>
+
+  ${levers.map((l, i) => `<div class="card" style="margin-bottom:var(--space-md);border-left:4px solid ${l.color}">
+    <div style="display:flex;gap:var(--space-md);align-items:flex-start">
+      <div style="width:48px;height:48px;background:${l.color}12;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">${l.icon}</div>
+      <div style="flex:1">
+        <div class="t-h3" style="margin-bottom:4px">${l.title}</div>
+        <div class="t-small t-secondary" style="margin-bottom:var(--space-sm)">${l.desc}</div>
+        <div style="display:flex;gap:var(--space-md);flex-wrap:wrap">
+          <div class="badge badge-success">${l.impact}</div>
+          <div class="badge badge-neutral">${l.time}</div>
+        </div>
+      </div>
+    </div>
+  </div>`).join('')}
+
+  <div class="card" style="margin-top:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-md)">Combined Impact Visualization</h3>
+    <div class="stacked-bar" style="height:40px;margin-bottom:var(--space-md)">
+      <div class="stacked-segment" style="width:25%;background:#4A90D9">Audit</div>
+      <div class="stacked-segment" style="width:25%;background:#2D8A4E">Supplier</div>
+      <div class="stacked-segment" style="width:20%;background:#B87333">Prune</div>
+      <div class="stacked-segment" style="width:15%;background:#8B5CF6">Pricing</div>
+      <div class="stacked-segment" style="width:15%;background:#C67F20">Efficiency</div>
+    </div>
+    <div class="t-small t-secondary">Each lever compounds with the others. The cost audit reveals opportunities for all subsequent levers.</div>
+  </div>
+
+  ${navFooter('why_margins','cost_audit','Begin Cost Audit')}`;
+}
+
+function renderCostAudit() {
+  const flaggedCount = state.costAuditItems.filter(i => i.flag).length;
+  const totalSpend = state.costAuditItems.reduce((sum, i) => sum + (parseFloat(i.spend) || 0), 0);
+
+  return `<div class="page-header">
+    <div class="t-label">Cost Audit</div>
+    <h1 class="t-display">Cost Structure Audit</h1>
+    <p class="t-body t-secondary">Before you can improve margins, you need granular understanding of where every dollar goes. Most owners know top-line costs but have never done a line-item audit.</p>
+  </div>
+
+  <div class="callout callout-accent" style="margin-bottom:var(--space-lg)">
+    <strong>The audit process:</strong> Pull 24 months of P&L data. Categorize into Fixed, Variable, and Discretionary. Benchmark each against industry standards. Flag anomalies. Prioritize the top 10-15 opportunities.
+  </div>
+
+  <div style="display:flex;gap:var(--space-md);align-items:center;margin-bottom:var(--space-2xl)">
+    ${renderProgressRing(80, flaggedCount > 0 ? (flaggedCount/state.costAuditItems.length)*100 : 0, flaggedCount >= 3 ? 'var(--color-success)':'var(--color-warning)', 'flagged')}
+    <div>
+      <div class="t-h2">${flaggedCount} cost areas flagged</div>
+      <div class="t-small t-secondary">${totalSpend > 0 ? 'Total spend audited: $' + totalSpend.toLocaleString() + 'K' : 'Enter annual spend for each category below'}</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Common Cost Audit Areas</h3>
+    <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Enter your annual spend and flag items where you believe savings are possible. The benchmark column shows typical savings achievable.</p>
+    <div style="overflow-x:auto">
+      <table class="impact-table">
+        <thead><tr>
+          <th>Cost Category</th>
+          <th style="width:120px">Annual Spend ($K)</th>
+          <th style="width:100px">Typical Savings</th>
+          <th style="width:140px">Action Notes</th>
+          <th style="width:60px">Flag</th>
+        </tr></thead>
+        <tbody>
+          ${state.costAuditItems.map((item, i) => `<tr style="${item.flag ? 'background:var(--color-warning-light)' : ''}">
+            <td style="font-weight:500">${item.category}</td>
+            <td><input type="number" value="${item.spend}" placeholder="0" onchange="setCostAudit(${i},'spend',this.value)"></td>
+            <td><span class="badge badge-neutral">${item.benchmark}</span></td>
+            <td><input type="text" value="${item.action}" placeholder="Notes..." onchange="setCostAudit(${i},'action',this.value)"></td>
+            <td style="text-align:center">
+              <div style="width:28px;height:28px;border:2px solid ${item.flag?'var(--color-warning)':'var(--color-border)'};border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;background:${item.flag?'var(--color-warning)':'transparent'};margin:0 auto" onclick="setCostAudit(${i},'flag',${!item.flag})">
+                ${item.flag ? '<svg viewBox="0 0 12 12" width="14" height="14"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" fill="none"></polyline></svg>' : ''}
+              </div>
+            </td>
+          </tr>`).join('')}
+          ${totalSpend > 0 ? `<tr class="total-row"><td>Total Audited</td><td>$${totalSpend.toLocaleString()}K</td><td colspan="3">${flaggedCount} items flagged for review</td></tr>` : ''}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  ${navFooter('framework','supplier','Renegotiate Suppliers')}`;
+}
+
+function renderSupplier() {
+  const activeSups = state.supplierRows.filter(r => r.vendor).length;
+  const totalTarget = state.supplierRows.reduce((s, r) => s + (parseFloat(r.targetSavings) || 0), 0);
+  const totalActual = state.supplierRows.reduce((s, r) => s + (parseFloat(r.actualSavings) || 0), 0);
+
+  const levers = [
+    { label:'Competitive Bidding', desc:'Get 2-3 quotes; share that you are evaluating alternatives', impact:'5-15% reduction' },
+    { label:'Volume Consolidation', desc:'Consolidate purchases with fewer vendors for better pricing', impact:'5-10% reduction' },
+    { label:'Term Extension', desc:'Offer 2-3 year commitment for lower rates', impact:'5-10% reduction' },
+    { label:'Payment Terms', desc:'Offer faster payment (net 15 vs net 45) for discount', impact:'2-5% discount' },
+    { label:'Scope Reduction', desc:'Eliminate features, services, or tiers you do not use', impact:'10-20% savings' }
+  ];
+
+  return `<div class="page-header">
+    <div class="t-label">Optimization</div>
+    <h1 class="t-display">Supplier Renegotiation</h1>
+    <p class="t-body t-secondary">Most mid-market businesses have not systematically renegotiated supplier contracts in years. This is one of the highest-return, lowest-risk margin activities.</p>
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-md)">Negotiation Levers</h3>
+    ${levers.map(l => `<div class="cost-card">
+      <div style="flex:1"><div style="font-weight:600;font-size:14px">${l.label}</div><div class="t-small t-secondary">${l.desc}</div></div>
+      <div class="badge badge-success" style="flex-shrink:0;align-self:center">${l.impact}</div>
+    </div>`).join('')}
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg)">
+      <h3 class="t-h2">Vendor Renegotiation Tracker</h3>
+      <div style="display:flex;gap:var(--space-md);align-items:center">
+        ${totalTarget > 0 ? `<div class="badge badge-primary">Target: $${totalTarget.toLocaleString()}K</div>` : ''}
+        ${totalActual > 0 ? `<div class="badge badge-success">Actual: $${totalActual.toLocaleString()}K</div>` : ''}
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="impact-table">
+        <thead><tr>
+          <th>Vendor</th>
+          <th style="width:90px">Spend ($K)</th>
+          <th style="width:90px">Target ($K)</th>
+          <th style="width:90px">Actual ($K)</th>
+          <th style="width:110px">Status</th>
+        </tr></thead>
+        <tbody>
+          ${state.supplierRows.map((r, i) => `<tr>
+            <td><input type="text" value="${r.vendor}" placeholder="Vendor name" onchange="setSupplier(${i},'vendor',this.value)"></td>
+            <td><input type="number" value="${r.spend}" placeholder="0" onchange="setSupplier(${i},'spend',this.value)"></td>
+            <td><input type="number" value="${r.targetSavings}" placeholder="0" onchange="setSupplier(${i},'targetSavings',this.value)"></td>
+            <td><input type="number" value="${r.actualSavings}" placeholder="0" onchange="setSupplier(${i},'actualSavings',this.value)"></td>
+            <td><select onchange="setSupplier(${i},'status',this.value)">
+              <option value="not_started" ${r.status==='not_started'?'selected':''}>Not Started</option>
+              <option value="researching" ${r.status==='researching'?'selected':''}>Researching</option>
+              <option value="negotiating" ${r.status==='negotiating'?'selected':''}>Negotiating</option>
+              <option value="complete" ${r.status==='complete'?'selected':''}>Complete</option>
+            </select></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <button class="btn btn-secondary btn-sm" style="margin-top:var(--space-md)" onclick="addSupplierRow()">+ Add Vendor Row</button>
+  </div>
+
+  ${navFooter('cost_audit','product_prune','Review Product Lines')}`;
+}
+
+function renderProductPrune() {
+  const namedProducts = state.productLines.filter(p => p.name);
+  const pruneCount = state.productLines.filter(p => p.action === 'eliminate' || p.action === 'reprice').length;
+
+  return `<div class="page-header">
+    <div class="t-label">Optimization</div>
+    <h1 class="t-display">Underperforming Product Line Review</h1>
+    <p class="t-body t-secondary">In most businesses, 20% of products generate 80% of gross profit. The rest collectively contribute little -- and some actively destroy margin when fully loaded with overhead.</p>
+  </div>
+
+  <div class="callout callout-accent" style="margin-bottom:var(--space-lg)">
+    <strong>The 80/20 analysis:</strong> Calculate gross margin by product line. Allocate overhead proportionally for fully loaded margin. Rank from highest to lowest. For the bottom 20%, decide: reprice, restructure, or eliminate.
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-md)">Decision Framework</h3>
+    <table class="impact-table">
+      <thead><tr><th>Situation</th><th>Action</th><th>Expected Outcome</th></tr></thead>
+      <tbody>
+        <tr><td>Negative fully loaded margin; low strategic value</td><td><span class="badge badge-danger">Eliminate</span></td><td>Immediate margin improvement</td></tr>
+        <tr><td>Breakeven; has strategic value</td><td><span class="badge badge-warning">Reprice or restructure</span></td><td>Positive margin within 6 months</td></tr>
+        <tr><td>Low margin; high switching cost</td><td><span class="badge badge-primary">Phase price increases</span></td><td>Improved margin, manageable attrition</td></tr>
+        <tr><td>Low margin; required by contract</td><td><span class="badge badge-neutral">Renegotiate terms</span></td><td>Improved blended margin</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg)">
+      <h3 class="t-h2">Product Line Profitability</h3>
+      ${pruneCount > 0 ? `<div class="badge badge-warning">${pruneCount} lines to reprice or eliminate</div>` : ''}
+    </div>
+    <div style="overflow-x:auto">
+      <table class="impact-table">
+        <thead><tr>
+          <th>Product / Service</th>
+          <th style="width:90px">Revenue ($K)</th>
+          <th style="width:80px">Gross %</th>
+          <th style="width:80px">Loaded %</th>
+          <th style="width:110px">Action</th>
+        </tr></thead>
+        <tbody>
+          ${state.productLines.map((p, i) => `<tr style="${p.action==='eliminate'?'background:var(--color-danger-light)':p.action==='reprice'?'background:var(--color-warning-light)':''}">
+            <td><input type="text" value="${p.name}" placeholder="Product name" onchange="setProductLine(${i},'name',this.value)"></td>
+            <td><input type="number" value="${p.revenue}" placeholder="0" onchange="setProductLine(${i},'revenue',this.value)"></td>
+            <td><input type="number" value="${p.grossMargin}" placeholder="%" onchange="setProductLine(${i},'grossMargin',this.value)"></td>
+            <td><input type="number" value="${p.loadedMargin}" placeholder="%" onchange="setProductLine(${i},'loadedMargin',this.value)"></td>
+            <td><select onchange="setProductLine(${i},'action',this.value)">
+              <option value="keep" ${p.action==='keep'?'selected':''}>Keep</option>
+              <option value="reprice" ${p.action==='reprice'?'selected':''}>Reprice</option>
+              <option value="restructure" ${p.action==='restructure'?'selected':''}>Restructure</option>
+              <option value="eliminate" ${p.action==='eliminate'?'selected':''}>Eliminate</option>
+            </select></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <button class="btn btn-secondary btn-sm" style="margin-top:var(--space-md)" onclick="addProductLine()">+ Add Product Line</button>
+  </div>
+
+  ${navFooter('supplier','pricing','Fix Pricing Leaks')}`;
+}
+
+function renderPricing() {
+  const rev = parseFloat(state.revenue) || 10;
+  const leaks = state.pricingLeaks;
+  const totalLeakPct = (leaks.discounting||0) + (leaks.legacy||0) + (leaks.scope_creep||0) + (leaks.free_addons||0) + (leaks.rounding||0);
+  const totalLeakDollar = rev * (totalLeakPct / 100) * 1000;
+  const mult = parseFloat(state.businessMultiple) || 5;
+  const halfRecovery = totalLeakDollar / 2;
+  const valueImpact = halfRecovery * mult;
+
+  const leakItems = [
+    { key:'discounting', label:'Uncontrolled Discounting', desc:'Sales reps discount without approval or tracking', typical:'3-8%' },
+    { key:'legacy', label:'Legacy Pricing', desc:'Long-term customers on rates from 5+ years ago', typical:'5-15%' },
+    { key:'scope_creep', label:'Scope Creep', desc:'Delivering more than contracted without billing', typical:'2-5%' },
+    { key:'free_addons', label:'Free Add-ons', desc:'Giving away support, training, customization to win deals', typical:'1-3%' },
+    { key:'rounding', label:'Rounding Down', desc:'Reps quote round numbers below rate card', typical:'1-2%' }
+  ];
+
+  const controls = [
+    { key:'approval_matrix', label:'Approval Matrix', desc:'0-5% = rep, 5-10% = manager, 10%+ = VP/owner' },
+    { key:'discount_tracking', label:'Discount Tracking', desc:'Track discount % by rep, customer, and deal size. Make visible.' },
+    { key:'legacy_corrections', label:'Legacy Price Corrections', desc:'Phase increases over 6-12 months: notify, explain value, implement.' },
+    { key:'scope_docs', label:'Scope Documentation', desc:'Define precisely what is included. Anything beyond is billable.' }
+  ];
+
+  return `<div class="page-header">
+    <div class="t-label">Optimization</div>
+    <h1 class="t-display">Pricing Discipline</h1>
+    <p class="t-body t-secondary">Pricing leaks -- unauthorized discounts, legacy pricing, scope creep -- are one of the most common and most fixable margin destroyers in mid-market businesses.</p>
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Estimate Your Pricing Leaks</h3>
+    <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Estimate what percentage of revenue each leak costs you. Be honest -- most businesses underestimate these.</p>
+    ${leakItems.map(l => `<div style="display:flex;gap:var(--space-md);align-items:center;padding:var(--space-sm) 0;border-bottom:1px solid var(--color-border-light)">
+      <div style="flex:1">
+        <div style="font-weight:500;font-size:14px">${l.label}</div>
+        <div class="t-caption t-secondary">${l.desc}</div>
+      </div>
+      <div class="badge badge-neutral" style="flex-shrink:0">${l.typical} typical</div>
+      <div style="width:80px;flex-shrink:0">
+        <input type="number" class="form-input" style="text-align:center;padding:6px 8px;font-size:14px" value="${leaks[l.key]||''}" placeholder="%" step="0.5" onchange="setPricingLeak('${l.key}',this.value)">
+      </div>
+    </div>`).join('')}
+  </div>
+
+  ${totalLeakPct > 0 ? `<div class="card" style="margin-bottom:var(--space-lg);border-color:var(--color-accent)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-md)">Your Pricing Leak Impact</h3>
+    <div class="metric-grid">
+      <div class="metric-card" style="border-color:var(--color-danger)">
+        <div class="metric-value" style="color:var(--color-danger)">${totalLeakPct.toFixed(1)}%</div>
+        <div class="metric-label">Total revenue leakage</div>
+      </div>
+      <div class="metric-card" style="border-color:var(--color-warning)">
+        <div class="metric-value" style="color:var(--color-warning)">$${Math.round(totalLeakDollar).toLocaleString()}K</div>
+        <div class="metric-label">Annual dollars leaked</div>
+      </div>
+      <div class="metric-card" style="border-color:var(--color-success)">
+        <div class="metric-value" style="color:var(--color-success)">$${Math.round(halfRecovery).toLocaleString()}K</div>
+        <div class="metric-label">50% recovery target</div>
+      </div>
+      <div class="metric-card" style="border-color:var(--color-primary)">
+        <div class="metric-value">$${(valueImpact/1000).toFixed(1)}M</div>
+        <div class="metric-label">Exit value impact (at ${mult}x)</div>
+      </div>
+    </div>
+    <div class="callout callout-success" style="margin-top:var(--space-md)">
+      <strong>The math:</strong> Closing 50% of pricing leaks recovers $${Math.round(halfRecovery).toLocaleString()}K annually, worth $${(valueImpact/1000).toFixed(1)}M at a ${mult}x multiple. This costs almost nothing to implement.
+    </div>
+  </div>` : ''}
+
+  <div class="card">
+    <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Discount Control Measures</h3>
+    ${controls.map(c => {
+      const checked = state.pricingActions[c.key];
+      return `<div class="checklist-item${checked?' checked':''}" onclick="toggleCheck('pricingActions','${c.key}')">
+        <div class="checklist-box"><svg viewBox="0 0 12 12" style="${checked?'':'opacity:0'}"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2.5" fill="none"></polyline></svg></div>
+        <div><div class="checklist-text" style="font-weight:500">${c.label}</div><div class="t-small t-secondary" style="text-decoration:none !important">${c.desc}</div></div>
+      </div>`;
+    }).join('')}
+  </div>
+
+  ${navFooter('product_prune','efficiency','Improve Efficiency')}`;
+}
+
+function renderEfficiency() {
+  const levers = [
+    { id:'automation', title:'Process Automation', desc:'Automate repetitive tasks: invoicing, reporting, scheduling', impact:'1-3 FTE saved', invest:'$20-100K' },
+    { id:'workflow', title:'Workflow Optimization', desc:'Map and streamline core processes; remove bottlenecks', impact:'10-20% throughput gain', invest:'$10-30K' },
+    { id:'tech', title:'Technology Upgrades', desc:'Replace manual or outdated systems with modern tools', impact:'15-30% productivity gain', invest:'$50-200K' },
+    { id:'utilization', title:'Capacity Utilization', desc:'Improve billable utilization for service firms (target 75-85%)', impact:'5-15% revenue/head', invest:'Process change' },
+    { id:'waste', title:'Waste Reduction', desc:'Lean principles for manufacturing, delivery, fulfillment', impact:'5-15% cost reduction', invest:'$20-50K' }
+  ];
+
+  const scored = Object.values(state.efficiencyScores).filter(v => v > 0).length;
+
+  return `<div class="page-header">
+    <div class="t-label">Optimization</div>
+    <h1 class="t-display">Operational Efficiency</h1>
+    <p class="t-body t-secondary">Efficiency improvements take longer but create sustainable margin improvement that buyers value highly because it demonstrates process maturity.</p>
+  </div>
+
+  <div class="callout callout-info" style="margin-bottom:var(--space-2xl)">
+    <strong>Prioritize by payback:</strong> Under 6 months = implement immediately. 6-12 months = implement if resources allow. Over 12 months = defer unless strategically important.
+  </div>
+
+  <div style="display:flex;gap:var(--space-md);align-items:center;margin-bottom:var(--space-2xl)">
+    ${renderProgressRing(80, scored > 0 ? (scored/levers.length)*100 : 0, scored >= 3 ? 'var(--color-success)':'var(--color-warning)', 'scored')}
+    <div>
+      <div class="t-h2">${scored} of ${levers.length} levers assessed</div>
+      <div class="t-small t-secondary">Rate your current maturity on each efficiency lever.</div>
+    </div>
+  </div>
+
+  ${levers.map(l => `<div class="card" style="margin-bottom:var(--space-md)">
+    <div style="display:flex;gap:var(--space-md);align-items:flex-start;margin-bottom:var(--space-md)">
+      <div style="flex:1">
+        <div class="t-h3">${l.title}</div>
+        <div class="t-small t-secondary">${l.desc}</div>
+      </div>
+      <div style="display:flex;gap:var(--space-xs);flex-shrink:0">
+        <div class="badge badge-success">${l.impact}</div>
+        <div class="badge badge-neutral">${l.invest}</div>
+      </div>
+    </div>
+    <div class="form-label" style="margin-bottom:var(--space-sm)">Your current maturity</div>
+    ${scoreSelector(l.id, ['None','Basic','Developing','Mature','Optimized'])}
+  </div>`).join('')}
+
+  ${navFooter('pricing','flow_through','Analyze Flow-Through')}`;
+}
+
+function renderFlowThrough() {
+  const revStart = parseFloat(state.flowRevStart) || 0;
+  const revEnd = parseFloat(state.flowRevEnd) || 0;
+  const ebitdaStart = parseFloat(state.flowEbitdaStart) || 0;
+  const ebitdaEnd = parseFloat(state.flowEbitdaEnd) || 0;
+  const revChange = revEnd - revStart;
+  const ebitdaChange = ebitdaEnd - ebitdaStart;
+  const flowThrough = revChange > 0 ? (ebitdaChange / revChange) * 100 : 0;
+
+  let ftColor = 'var(--color-text-tertiary)';
+  let ftLabel = 'Enter your figures to calculate';
+  if (revChange > 0) {
+    if (flowThrough < 20) { ftColor = 'var(--color-danger)'; ftLabel = 'Below 20%: Revenue growth not efficiently converting to profit.'; }
+    else if (flowThrough < 30) { ftColor = 'var(--color-warning)'; ftLabel = '20-30%: Average. Room for improvement.'; }
+    else if (flowThrough < 50) { ftColor = 'var(--color-primary)'; ftLabel = '30-50%: Strong. Demonstrates operational leverage.'; }
+    else { ftColor = 'var(--color-success)'; ftLabel = 'Above 50%: Exceptional. Signals highly scalable model.'; }
+  }
+
+  return `<div class="page-header">
+    <div class="t-label">Measurement</div>
+    <h1 class="t-display">EBITDA Flow-Through Analysis</h1>
+    <p class="t-body t-secondary">Flow-through measures how much of each incremental dollar of revenue reaches EBITDA. High flow-through signals operational leverage and scalability -- both of which buyers reward.</p>
+  </div>
+
+  <div class="callout callout-accent" style="margin-bottom:var(--space-2xl)">
+    <strong>Formula:</strong> Flow-Through Rate = Change in EBITDA / Change in Revenue
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Calculate Your Flow-Through</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg)">
+      <div>
+        <div class="t-label" style="margin-bottom:var(--space-md)">Prior Period</div>
+        <div class="form-group"><label class="form-label">Revenue ($M)</label><input type="number" class="form-input" value="${state.flowRevStart||''}" placeholder="8.0" step="0.1" onchange="setField('flowRevStart',this.value);render()"></div>
+        <div class="form-group"><label class="form-label">EBITDA ($M)</label><input type="number" class="form-input" value="${state.flowEbitdaStart||''}" placeholder="1.2" step="0.1" onchange="setField('flowEbitdaStart',this.value);render()"></div>
+      </div>
+      <div>
+        <div class="t-label" style="margin-bottom:var(--space-md)">Current Period</div>
+        <div class="form-group"><label class="form-label">Revenue ($M)</label><input type="number" class="form-input" value="${state.flowRevEnd||''}" placeholder="10.0" step="0.1" onchange="setField('flowRevEnd',this.value);render()"></div>
+        <div class="form-group"><label class="form-label">EBITDA ($M)</label><input type="number" class="form-input" value="${state.flowEbitdaEnd||''}" placeholder="2.0" step="0.1" onchange="setField('flowEbitdaEnd',this.value);render()"></div>
+      </div>
+    </div>
+    ${revChange > 0 ? `<div class="gauge-wrap" style="margin-top:var(--space-lg)">
+      ${renderProgressRing(100, Math.min(100, flowThrough), ftColor, 'flow')}
+      <div class="gauge-info">
+        <div class="gauge-title">Your Flow-Through Rate</div>
+        <div class="gauge-value" style="color:${ftColor}">${flowThrough.toFixed(0)}%</div>
+        <div class="gauge-desc">${ftLabel}</div>
+      </div>
+    </div>
+    <div style="margin-top:var(--space-lg);display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md)">
+      <div class="metric-card"><div class="metric-value" style="font-size:22px">+$${revChange.toFixed(1)}M</div><div class="metric-label">Revenue change</div></div>
+      <div class="metric-card"><div class="metric-value" style="font-size:22px;color:${ebitdaChange>=0?'var(--color-success)':'var(--color-danger)'}">+$${ebitdaChange.toFixed(1)}M</div><div class="metric-label">EBITDA change</div></div>
+      <div class="metric-card"><div class="metric-value" style="font-size:22px;color:${ftColor}">${flowThrough.toFixed(0)}%</div><div class="metric-label">Flow-through</div></div>
+    </div>` : ''}
+  </div>
+
+  <div class="card">
+    <h3 class="t-h2" style="margin-bottom:var(--space-md)">Improving Flow-Through</h3>
+    <div style="display:grid;gap:var(--space-sm)">
+      ${[
+        { title:'Revenue per Employee', desc:'Grow revenue without proportionally growing headcount.' },
+        { title:'Fixed Cost Leverage', desc:'Hold fixed costs flat while growing revenue. Every dollar above breakeven has higher flow-through.' },
+        { title:'Margin on New Revenue', desc:'Ensure new revenue comes at equal or higher margins than existing.' },
+        { title:'Variable Cost Reduction', desc:'Reduce costs that scale with revenue: commissions, COGS, variable overhead.' }
+      ].map(item => `<div style="display:flex;gap:var(--space-md);padding:var(--space-md);background:var(--color-surface-alt);border-radius:var(--radius-md)">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--color-primary);flex-shrink:0;margin-top:7px"></div>
+        <div><div style="font-weight:600;font-size:14px">${item.title}</div><div class="t-small t-secondary">${item.desc}</div></div>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  ${navFooter('efficiency','mistakes','Avoid Pitfalls')}`;
+}
+
+function renderMistakes() {
+  const mistakes = [
+    { key:'revenue_cuts', title:'Cutting Costs That Drive Revenue', problem:'Slashing marketing, sales comp, or R&D saves money today but destroys growth trajectory. Buyers will reverse these in their model.', solution:'Distinguish between efficiency improvements and growth investment cuts. Only cut waste, not fuel.' },
+    { key:'onetime', title:'One-Time Reductions Presented as Sustainable', problem:'Buyers normalize one-time savings out of EBITDA. Firing 3 people then seeing revenue drop 6 months later -- buyers see through it.', solution:'Focus on structural improvements that persist under new ownership. Document why each is sustainable.' },
+    { key:'quality', title:'Ignoring Quality and Customer Impact', problem:'Aggressive cost-cutting that degrades quality shows up in churn metrics during due diligence.', solution:'Monitor satisfaction, retention, and NPS alongside margin metrics. If satisfaction declines, you cut too deep.' },
+    { key:'timing', title:'Not Starting Early Enough', problem:'Margin improvements need 12-18 months of documented results to be credible in a sale process.', solution:'Begin 18-24 months before target exit. Last-minute cuts look desperate.' },
+    { key:'owner_adj', title:'Confusing Owner Adjustments with Real Improvements', problem:'Buyers add back owner perks and above-market comp. These are standard adjustments, not margin improvements.', solution:'Track margin improvements separately from owner add-backs. Both matter, but they tell different stories.' }
+  ];
+
+  const checkedCount = mistakes.filter(m => state.pitfallChecks[m.key]).length;
+
+  return `<div class="page-header">
+    <div class="t-label">Execution</div>
+    <h1 class="t-display">Pitfall Avoidance</h1>
+    <p class="t-body t-secondary">The line between smart optimization and counterproductive cutting is thin. Acknowledge each pitfall to confirm you have a mitigation plan.</p>
+  </div>
+
+  <div style="display:flex;gap:var(--space-md);align-items:center;margin-bottom:var(--space-2xl)">
+    ${renderProgressRing(80, (checkedCount/mistakes.length)*100, checkedCount===mistakes.length?'var(--color-success)':'var(--color-warning)', 'mitigated')}
+    <div>
+      <div class="t-h2">${checkedCount} of ${mistakes.length} pitfalls addressed</div>
+      <div class="t-small t-secondary">${checkedCount===mistakes.length?'All pitfalls mitigated. Well done.':'Review each and confirm your plan.'}</div>
+    </div>
+  </div>
+
+  ${mistakes.map(m => {
+    const checked = state.pitfallChecks[m.key];
+    return `<div class="card" style="margin-bottom:var(--space-md);${checked?'border-color:var(--color-success);background:#fafff9':''}">
+      <div style="display:flex;gap:var(--space-md);align-items:flex-start;cursor:pointer" onclick="toggleCheck('pitfallChecks','${m.key}')">
+        <div class="checklist-box" style="${checked?'background:var(--color-success);border-color:var(--color-success)':''}; width:22px;height:22px;border:2px solid ${checked?'var(--color-success)':'var(--color-border)'};border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">
+          <svg viewBox="0 0 12 12" width="12" height="12" style="${checked?'':'opacity:0'}"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2.5" fill="none"></polyline></svg>
+        </div>
+        <div style="flex:1">
+          <div class="t-h3" style="margin-bottom:var(--space-sm)">${m.title}</div>
+          <div class="callout callout-warning" style="margin-bottom:var(--space-sm)"><strong>The mistake:</strong> ${m.problem}</div>
+          <div class="callout callout-info"><strong>The fix:</strong> ${m.solution}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('')}
+
+  ${navFooter('flow_through','timeline','Set Timeline')}`;
+}
+
+function renderTimeline() {
+  const milestones = [
+    { key:'t1', month:'Month 1-2', action:'Complete cost structure audit; benchmark against industry', deliverable:'Cost audit report with prioritized opportunities', color:'#4A90D9' },
+    { key:'t2', month:'Month 2-3', action:'Launch supplier renegotiation for top 20 vendors', deliverable:'Renegotiation tracker; first savings captured', color:'#2D8A4E' },
+    { key:'t3', month:'Month 3-4', action:'Complete 80/20 product line analysis', deliverable:'Product line profitability report', color:'#B87333' },
+    { key:'t4', month:'Month 3-6', action:'Implement pricing discipline and discount controls', deliverable:'Pricing policy and approval matrix in effect', color:'#8B5CF6' },
+    { key:'t5', month:'Month 4-8', action:'Begin legacy price corrections; phase increases', deliverable:'Price increase communications sent', color:'#8B5CF6' },
+    { key:'t6', month:'Month 6-12', action:'Launch operational efficiency projects; automate', deliverable:'Efficiency gains documented and measured', color:'#C67F20' },
+    { key:'t7', month:'Month 12-18', action:'Demonstrate 12+ months of sustained improvement', deliverable:'Monthly margin trend data for CIM', color:'var(--color-primary)' },
+    { key:'t8', month:'Month 18-24', action:'Package margin story for buyers; include in CIM', deliverable:'Market-ready margin improvement narrative', color:'var(--color-primary)' }
+  ];
+
+  const completedMilestones = Object.values(state.timelineChecks).filter(Boolean).length;
+
+  return `<div class="page-header">
+    <div class="t-label">Execution</div>
+    <h1 class="t-display">Implementation Timeline</h1>
+    <p class="t-body t-secondary">Margin improvements need 12-18 months of documented results to be credible. Plan backwards from your target exit date.</p>
+  </div>
+
+  <div class="gauge-wrap" style="margin-bottom:var(--space-2xl)">
+    ${renderProgressRing(80, (completedMilestones/milestones.length)*100, completedMilestones>=6?'var(--color-success)':'var(--color-primary)', 'done')}
+    <div class="gauge-info">
+      <div class="gauge-title">Timeline Progress</div>
+      <div class="gauge-value" style="font-size:24px">${completedMilestones} of ${milestones.length}</div>
+      <div class="gauge-desc">milestones planned or completed</div>
+    </div>
+  </div>
+
+  <div class="card">
+    ${milestones.map(m => {
+      const done = state.timelineChecks[m.key];
+      return `<div class="timeline-row" onclick="toggleCheck('timelineChecks','${m.key}')" style="cursor:pointer;${done?'opacity:0.6':''}">
+        <div class="timeline-dot" style="background:${done?'var(--color-success)':m.color}"></div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-weight:600;font-size:14px;${done?'text-decoration:line-through':''}">${m.action}</div>
+            <div class="badge badge-neutral">${m.month}</div>
+          </div>
+          <div class="t-small t-secondary" style="font-style:italic">Deliverable: ${m.deliverable}</div>
+        </div>
+        <div style="width:22px;height:22px;border:2px solid ${done?'var(--color-success)':'var(--color-border)'};border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:${done?'var(--color-success)':'transparent'}">
+          ${done ? '<svg viewBox="0 0 12 12" width="12" height="12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2.5" fill="none"></polyline></svg>' : ''}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>
+
+  ${navFooter('mistakes','results','See Your Margin Plan')}`;
+}
+
+function renderResults() {
+  const score = calcScore();
+  const level = getScoreLevel(score);
+  const rev = parseFloat(state.revenue) || 10;
+  const em = parseFloat(state.currentEbitdaMargin) || 15;
+  const gm = parseFloat(state.currentGrossMargin) || 45;
+  const mult = parseFloat(state.businessMultiple) || 5;
+  const currentEbitda = rev * (em / 100);
+  const currentVal = currentEbitda * mult;
+
+  const totalLeakPct = Object.values(state.pricingLeaks).reduce((a, b) => a + (b || 0), 0);
+  const leakRecovery = rev * (totalLeakPct / 100) * 0.5 * 1000;
+  const supplierSavings = state.supplierRows.reduce((s, r) => s + (parseFloat(r.actualSavings) || parseFloat(r.targetSavings) || 0), 0);
+  const totalSavings = leakRecovery + supplierSavings;
+  const improvedEbitda = currentEbitda + (totalSavings / 1000);
+  const improvedMargin = (improvedEbitda / rev) * 100;
+  const improvedVal = improvedEbitda * (mult + 0.5);
+  const valueDelta = improvedVal - currentVal;
+
+  const completedCount = state.completedPages.length;
+  const flaggedCosts = state.costAuditItems.filter(i => i.flag).length;
+  const activeSups = state.supplierRows.filter(r => r.vendor && r.status !== 'not_started').length;
+  const pricingActionsDone = Object.values(state.pricingActions).filter(Boolean).length;
+
+  return `<div class="page-header" style="text-align:center">
+    <div class="t-label">Your Results</div>
+    <h1 class="t-display">Your Margin Improvement Plan</h1>
+    <p class="t-body t-secondary" style="margin:0 auto">Here is your personalized margin improvement program based on your assessments throughout this playbook.</p>
+  </div>
+
+  <div style="display:flex;justify-content:center;gap:var(--space-2xl);margin-bottom:var(--space-2xl);flex-wrap:wrap">
+    <div style="text-align:center">
+      ${renderProgressRing(120, score, level.color, 'readiness')}
+      <div class="t-small" style="margin-top:var(--space-sm);font-weight:600">${level.label}</div>
+    </div>
+    <div style="text-align:center">
+      ${renderProgressRing(120, (completedCount/PAGES.length)*100, completedCount===PAGES.length?'var(--color-success)':'var(--color-primary)', 'complete')}
+      <div class="t-small" style="margin-top:var(--space-sm);font-weight:600">${completedCount}/${PAGES.length} Sections</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-lg)">Margin Impact Summary</h3>
+    <div class="valuation-scenario">
+      <div class="scenario-card">
+        <div class="scenario-label">Current</div>
+        <div class="scenario-ebitda">${em.toFixed(1)}% EBITDA margin</div>
+        <div class="scenario-multiple">$${currentEbitda.toFixed(1)}M at ${mult.toFixed(1)}x</div>
+        <div class="scenario-value">$${currentVal.toFixed(1)}M</div>
+      </div>
+      <div class="scenario-card highlight">
+        <div class="scenario-label">After Improvements</div>
+        <div class="scenario-ebitda">${improvedMargin.toFixed(1)}% EBITDA margin</div>
+        <div class="scenario-multiple">$${improvedEbitda.toFixed(1)}M at ${(mult+0.5).toFixed(1)}x</div>
+        <div class="scenario-value">$${improvedVal.toFixed(1)}M</div>
+        <div class="scenario-delta" style="color:var(--color-success);font-weight:600">+$${valueDelta.toFixed(1)}M</div>
+      </div>
+      <div class="scenario-card">
+        <div class="scenario-label">Savings Breakdown</div>
+        <div style="margin-top:var(--space-sm);text-align:left;font-size:13px">
+          ${leakRecovery > 0 ? `<div style="padding:4px 0">Pricing recovery: <strong>$${Math.round(leakRecovery).toLocaleString()}K</strong></div>` : ''}
+          ${supplierSavings > 0 ? `<div style="padding:4px 0">Supplier savings: <strong>$${Math.round(supplierSavings).toLocaleString()}K</strong></div>` : ''}
+          ${totalSavings > 0 ? `<div style="padding:4px 0;border-top:1px solid var(--color-border);font-weight:700">Total: $${Math.round(totalSavings).toLocaleString()}K/yr</div>` : '<div class="t-secondary">Complete audit sections to see projections</div>'}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-md)">Progress by Lever</h3>
+    <div class="bar-chart">
+      <div class="bar-row">
+        <div class="bar-label">Cost Audit</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${flaggedCosts>0?Math.min(100,flaggedCosts*20):5}%;background:#4A90D9"><span class="bar-value">${flaggedCosts} flagged</span></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Suppliers</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${activeSups>0?Math.min(100,activeSups*25):5}%;background:#2D8A4E"><span class="bar-value">${activeSups} active</span></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Product Lines</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${state.productLines.filter(p=>p.name).length>0?Math.min(100,state.productLines.filter(p=>p.name).length*25):5}%;background:#B87333"><span class="bar-value">${state.productLines.filter(p=>p.name).length} reviewed</span></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Pricing Controls</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pricingActionsDone>0?pricingActionsDone*25:5}%;background:#8B5CF6"><span class="bar-value">${pricingActionsDone}/4 done</span></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Efficiency</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Object.values(state.efficiencyScores).filter(v=>v>0).length>0?Object.values(state.efficiencyScores).filter(v=>v>0).length*20:5}%;background:#C67F20"><span class="bar-value">${Object.values(state.efficiencyScores).filter(v=>v>0).length} assessed</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <h3 class="t-h2" style="margin-bottom:var(--space-md)">Recommended Next Steps</h3>
+    <div style="display:flex;flex-direction:column;gap:var(--space-sm)">
+      ${[
+        score < 40 ? 'Complete all assessment sections to build your full margin readiness score.' : null,
+        flaggedCosts < 3 ? 'Flag at least 3 cost areas in your Cost Structure Audit for deeper review.' : null,
+        activeSups < 3 ? 'Enter your top 5 vendors and begin the renegotiation process.' : null,
+        totalLeakPct === 0 ? 'Estimate your pricing leaks -- most businesses undercount these.' : null,
+        pricingActionsDone < 4 ? 'Implement all 4 discount control measures. These cost nothing.' : null,
+        Object.values(state.efficiencyScores).filter(v=>v>0).length < 3 ? 'Assess your maturity on each of the 5 efficiency levers.' : null,
+        'Pull 24 months of P&L data at line-item level for the full cost audit.',
+        'Set up monthly margin tracking dashboard.',
+        'Share this plan with your CFO or controller for alignment.'
+      ].filter(Boolean).map((step, i) => `<div style="display:flex;gap:var(--space-md);align-items:flex-start;padding:var(--space-sm) 0">
+        <div style="width:24px;height:24px;background:var(--color-primary-light);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;color:var(--color-primary)">${i+1}</div>
+        <div class="t-small">${step}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  <div class="callout callout-accent" style="margin-bottom:var(--space-lg)">
+    <strong>Final thought:</strong> Margin is not just a number. It is a signal. Every point of improvement tells buyers you run a disciplined operation.
+  </div>
+
+  <div style="display:flex;gap:var(--space-md);flex-wrap:wrap">
+    <button class="btn btn-secondary" onclick="navigate('welcome')">&#8592; Start Over</button>
+    <button class="btn btn-primary" onclick="exportPlan()">Export Plan Summary</button>
+    <button class="btn btn-secondary" style="margin-left:auto" onclick="if(confirm('This will clear all your data. Continue?')){localStorage.removeItem('${STORAGE_KEY}');location.reload()}">Reset Playbook</button>
+  </div>`;
+}
+
+function exportPlan() {
+  const score = calcScore();
+  const rev = parseFloat(state.revenue) || 10;
+  const em = parseFloat(state.currentEbitdaMargin) || 15;
+  const mult = parseFloat(state.businessMultiple) || 5;
+  let text = 'MARGIN IMPROVEMENT PROGRAM - PLAN SUMMARY\n';
+  text += '='.repeat(50) + '\n\n';
+  text += 'Margin Readiness Score: ' + score + '/100\n';
+  text += 'Revenue: $' + rev + 'M | EBITDA Margin: ' + em + '% | Multiple: ' + mult + 'x\n\n';
+  text += 'COST AUDIT FINDINGS\n' + '-'.repeat(30) + '\n';
+  state.costAuditItems.filter(i => i.flag).forEach(i => {
+    text += '- ' + i.category + ': $' + (i.spend||'?') + 'K' + (i.action ? ' (' + i.action + ')' : '') + '\n';
+  });
+  text += '\nSUPPLIER RENEGOTIATIONS\n' + '-'.repeat(30) + '\n';
+  state.supplierRows.filter(r => r.vendor).forEach(r => {
+    text += '- ' + r.vendor + ': $' + (r.spend||'?') + 'K spend, target $' + (r.targetSavings||'?') + 'K savings (' + r.status + ')\n';
+  });
+  const totalLeakPct = Object.values(state.pricingLeaks).reduce((a,b)=>a+(b||0),0);
+  if (totalLeakPct > 0) {
+    text += '\nPRICING LEAKS: ' + totalLeakPct.toFixed(1) + '% of revenue\n';
+    text += 'Recovery target (50%): $' + Math.round(rev * totalLeakPct / 100 * 0.5 * 1000) + 'K/yr\n';
+  }
+  const blob = new Blob([text], { type:'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'margin-improvement-plan.txt';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Plan exported successfully.');
+}
+
+function render() {
+  renderSidebar();
+  renderPage();
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' && e.altKey) {
+    const idx = PAGES.findIndex(p => p.id === state.currentPage);
+    if (idx < PAGES.length - 1) navigate(PAGES[idx + 1].id);
+  }
+  if (e.key === 'ArrowLeft' && e.altKey) {
+    const idx = PAGES.findIndex(p => p.id === state.currentPage);
+    if (idx > 0) navigate(PAGES[idx - 1].id);
+  }
+});
+
+render();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

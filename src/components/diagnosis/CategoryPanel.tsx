@@ -8,6 +8,9 @@ import { ConfidenceDots } from './ConfidenceDots'
 import { CategoryAssessmentFlow } from './CategoryAssessmentFlow'
 import { AnimatePresence } from '@/lib/motion'
 import { formatCurrency } from '@/lib/utils/currency'
+import { PlaybookLinkInPanel } from '@/components/playbook/PlaybookLinkInPanel'
+import { getPlaybooksForCategory } from '@/lib/playbook/playbook-surface-mapping'
+import type { PlanTier } from '@/lib/pricing'
 
 const CATEGORY_DOT_COLORS: Record<string, string> = {
   FINANCIAL: 'bg-blue-500',
@@ -56,6 +59,7 @@ interface CategoryPanelProps {
     benchmark: { range: string; source: string } | null
     dollarContext: string | null
   } | null
+  planTier?: PlanTier
 }
 
 export function CategoryPanel({
@@ -74,6 +78,7 @@ export function CategoryPanel({
   onCollapse,
   nextPromptDate,
   financialContext,
+  planTier = 'foundation',
 }: CategoryPanelProps) {
   // Fully controlled mode when parent provides onExpand/onCollapse
   const isControlled = onExpand !== undefined && onCollapse !== undefined
@@ -223,6 +228,17 @@ export function CategoryPanel({
           <span>Lowest confidence — improve this first</span>
         </div>
       )}
+
+      {/* Playbook recommendations — shown when score < 70 and assessed */}
+      {isAssessed && score < 70 && !isExpanded && (() => {
+        const recs = getPlaybooksForCategory(category, 2)
+        return recs.length > 0 ? (
+          <PlaybookLinkInPanel
+            playbooks={recs.map(r => ({ playbook: r.playbook, reason: r.reason }))}
+            planTier={planTier}
+          />
+        ) : null
+      })()}
 
       {/* CTAs - hidden when expanded */}
       {!isExpanded && (

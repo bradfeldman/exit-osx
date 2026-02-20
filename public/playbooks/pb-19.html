@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corporate Housekeeping & Entity Compliance | Exit Planning Playbook #19</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body);
+  font-size: 16px; line-height: 1.6;
+  color: var(--color-text); background: var(--color-bg);
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a { color: var(--color-primary); text-decoration: none; }
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.t-display { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+.t-tertiary { color: var(--color-text-tertiary); }
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+.mb-xl { margin-bottom: var(--space-xl); }
+.mb-2xl { margin-bottom: var(--space-2xl); }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 260px; min-width: 260px; background: var(--color-text);
+  color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow); overflow-y: auto;
+}
+.sidebar.collapsed { transform: translateX(-260px); }
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; transition: margin-left var(--transition-slow); }
+.sidebar.collapsed + .main-content { margin-left: 0; }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+/* ============================================================
+   SIDEBAR COMPONENTS
+   ============================================================ */
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.6);
+  font-size: 14px; transition: all var(--transition-fast); cursor: pointer; position: relative;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-item.locked { opacity: 0.4; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--color-text-tertiary); }
+.nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+/* ============================================================
+   CARDS & SURFACES
+   ============================================================ */
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-lg);
+  transition: box-shadow var(--transition-normal);
+}
+.card:hover { box-shadow: var(--shadow-sm); }
+.callout {
+  padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md);
+  border-left: 3px solid; font-size: 14px; line-height: 1.6;
+}
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); border-color: var(--color-text-tertiary); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.btn-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+
+/* ============================================================
+   FORM ELEMENTS
+   ============================================================ */
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); color: var(--color-text); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.form-input::placeholder { color: var(--color-text-tertiary); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+/* ============================================================
+   STATUS SELECTOR
+   ============================================================ */
+.status-selector { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+.status-option {
+  flex: 1; min-width: 100px; padding: 12px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center; font-size: 14px; font-weight: 500;
+}
+.status-option:hover { border-color: var(--color-text-tertiary); }
+.status-option.selected.st-good { border-color: var(--color-success); background: var(--color-success-light); color: var(--color-success); }
+.status-option.selected.st-partial { border-color: var(--color-warning); background: var(--color-warning-light); color: var(--color-warning); }
+.status-option.selected.st-missing { border-color: var(--color-danger); background: var(--color-danger-light); color: var(--color-danger); }
+.status-option.selected.st-na { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); color: var(--color-text-secondary); }
+
+/* ============================================================
+   RISK LEVEL BADGES
+   ============================================================ */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+  border-radius: 999px; font-size: 12px; font-weight: 500;
+}
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+
+/* ============================================================
+   PROGRESS RING
+   ============================================================ */
+.progress-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.progress-ring-text { position: absolute; text-align: center; }
+.progress-ring-value { font-family: var(--font-display); font-weight: 700; line-height: 1; }
+.progress-ring-label { font-size: 10px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ============================================================
+   HORIZONTAL BAR CHART
+   ============================================================ */
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 28px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; min-width: 0; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; }
+@media (max-width: 600px) { .bar-label { width: 90px; font-size: 11px; } }
+
+/* ============================================================
+   CHECKLIST
+   ============================================================ */
+.checklist { display: flex; flex-direction: column; gap: 2px; }
+.check-item {
+  display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md);
+  border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast);
+}
+.check-item:hover { background: var(--color-surface-alt); }
+.check-box {
+  width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: 4px;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition-fast); margin-top: 1px;
+}
+.check-item.checked .check-box { background: var(--color-primary); border-color: var(--color-primary); }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2.5; fill: none; opacity: 0; }
+.check-text { font-size: 14px; line-height: 1.5; }
+.check-item.checked .check-text { color: var(--color-text-tertiary); text-decoration: line-through; }
+
+/* ============================================================
+   EXPANDABLE CARD
+   ============================================================ */
+.expand-card {
+  border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+  overflow: hidden; margin-bottom: var(--space-md); background: var(--color-surface);
+}
+.expand-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-md) var(--space-lg); cursor: pointer; gap: var(--space-md);
+}
+.expand-card-header:hover { background: var(--color-surface-alt); }
+.expand-card-title { font-weight: 600; font-size: 15px; }
+.expand-card-chevron { color: var(--color-text-tertiary); transition: transform var(--transition-fast); font-size: 18px; }
+.expand-card.expanded .expand-card-chevron { transform: rotate(180deg); }
+.expand-card-body { display: none; padding: 0 var(--space-lg) var(--space-lg); }
+.expand-card.expanded .expand-card-body { display: block; }
+
+/* ============================================================
+   ACTION TABLE
+   ============================================================ */
+.action-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.action-table th {
+  text-align: left; padding: var(--space-sm) var(--space-md); font-size: 11px;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border);
+}
+.action-table td { padding: var(--space-md); border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.action-table tr:last-child td { border-bottom: none; }
+.action-input-mini { width: 100%; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: var(--color-surface); }
+.action-input-mini:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+
+/* ============================================================
+   GAUGE
+   ============================================================ */
+.gauge-wrap { text-align: center; padding: var(--space-lg) 0; }
+.gauge-svg { max-width: 200px; margin: 0 auto; }
+.gauge-label { font-size: 14px; color: var(--color-text-secondary); margin-top: var(--space-sm); }
+
+/* ============================================================
+   COST TABLE
+   ============================================================ */
+.cost-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.cost-table th { text-align: left; padding: 10px 12px; background: var(--color-surface-alt); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); }
+.cost-table td { padding: 10px 12px; border-bottom: 1px solid var(--color-border-light); }
+.cost-table tr:last-child td { border-bottom: none; }
+.cost-total td { font-weight: 700; border-top: 2px solid var(--color-text); background: var(--color-surface-alt); }
+
+/* ============================================================
+   TIMELINE
+   ============================================================ */
+.timeline { position: relative; padding-left: 28px; }
+.timeline::before { content: ''; position: absolute; left: 9px; top: 4px; bottom: 4px; width: 2px; background: var(--color-border); }
+.timeline-item { position: relative; padding-bottom: var(--space-xl); }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-dot { position: absolute; left: -28px; top: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--color-surface); border: 2px solid var(--color-border); display: flex; align-items: center; justify-content: center; }
+.timeline-item.tl-active .timeline-dot { border-color: var(--color-primary); background: var(--color-primary-light); }
+.timeline-item.tl-done .timeline-dot { border-color: var(--color-success); background: var(--color-success); }
+.timeline-period { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-tertiary); margin-bottom: 2px; }
+.timeline-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+.timeline-desc { font-size: 14px; color: var(--color-text-secondary); line-height: 1.5; }
+
+/* ============================================================
+   PAGES & SECTIONS
+   ============================================================ */
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.section-divider { height: 1px; background: var(--color-border); margin: var(--space-2xl) 0; }
+
+/* ============================================================
+   WELCOME
+   ============================================================ */
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-hero .t-display { margin-bottom: var(--space-md); }
+.welcome-hero .t-body { margin-bottom: var(--space-2xl); }
+.welcome-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin: var(--space-2xl) 0; text-align: center; }
+.welcome-stat { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.welcome-stat-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+.welcome-phases { display: flex; flex-direction: column; gap: var(--space-md); margin: var(--space-2xl) 0; text-align: left; }
+.welcome-phase { display: flex; gap: var(--space-lg); padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.welcome-phase-num { width: 36px; height: 36px; background: var(--color-primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--color-primary); flex-shrink: 0; font-size: 15px; }
+.welcome-phase-title { font-weight: 600; margin-bottom: 2px; }
+.welcome-phase-desc { font-size: 14px; color: var(--color-text-secondary); }
+@media (max-width: 600px) { .welcome-stats { grid-template-columns: 1fr; } .welcome-hero { padding: var(--space-2xl) var(--space-md); } }
+
+/* ============================================================
+   KPI ROW
+   ============================================================ */
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-xl); }
+.kpi-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); text-align: center; }
+.kpi-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1; }
+.kpi-label { font-size: 12px; color: var(--color-text-secondary); margin-top: 6px; }
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--color-text); color: #fff; padding: 12px 20px; border-radius: var(--radius-md); font-size: 14px; box-shadow: var(--shadow-lg); transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 1000; max-width: 360px; }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* ============================================================
+   ENTITY TABLE
+   ============================================================ */
+.entity-grid { display: grid; gap: var(--space-md); }
+.entity-row { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); }
+.entity-row-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md); gap: var(--space-sm); flex-wrap: wrap; }
+.entity-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-md); }
+@media (max-width: 600px) { .entity-fields { grid-template-columns: 1fr; } }
+
+/* ============================================================
+   DOCUMENT GRID
+   ============================================================ */
+.doc-category { margin-bottom: var(--space-xl); }
+.doc-category-header { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md); padding-bottom: var(--space-sm); border-bottom: 2px solid var(--color-border); }
+.doc-category-icon { font-size: 20px; }
+.doc-category-title { font-weight: 600; font-size: 16px; }
+.doc-category-count { margin-left: auto; }
+
+/* ============================================================
+   DEFICIENCY CARDS
+   ============================================================ */
+.deficiency-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-md); border-left: 4px solid var(--color-border); }
+.deficiency-card.risk-high { border-left-color: var(--color-danger); }
+.deficiency-card.risk-medium { border-left-color: var(--color-warning); }
+.deficiency-card.risk-low { border-left-color: var(--color-success); }
+.deficiency-card.risk-critical { border-left-color: #7C5500; }
+.deficiency-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-sm); }
+.deficiency-meta { font-size: 13px; color: var(--color-text-secondary); line-height: 1.5; }
+
+/* ============================================================
+   DISPUTE LOG
+   ============================================================ */
+.dispute-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-md); }
+.dispute-fields { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+@media (max-width: 600px) { .dispute-fields { grid-template-columns: 1fr; } }
+
+/* Utility */
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-sm { gap: var(--space-sm); }
+.gap-md { gap: var(--space-md); }
+.text-right { text-align: right; }
+.hidden { display: none; }
+
+/* ACCESSIBILITY */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; }
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+
+/* REDUCED MOTION */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* PRINT */
+@media print {
+  .sidebar, .mobile-header, .toast, .btn-group, .skip-link { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; }
+  .content-area { max-width: 100%; padding: 0; }
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<div class="app">
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Playbook navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #19</div>
+      <div class="sidebar-brand-title">Corporate Housekeeping & Entity Compliance</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your Progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section-label">Assessment</div>
+      <div class="nav-item active" data-page="welcome" onclick="goToPage('welcome')" tabindex="0" role="button">
+        <div class="nav-icon">&#9733;</div> Welcome
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item" data-page="standing" onclick="goToPage('standing')" tabindex="0" role="button">
+        <div class="nav-icon">&#9878;</div> Entity Standing
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="captable" onclick="goToPage('captable')" tabindex="0" role="button">
+        <div class="nav-icon">&#9636;</div> Cap Table
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="governance" onclick="goToPage('governance')" tabindex="0" role="button">
+        <div class="nav-icon">&#9881;</div> Governance
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-section-label">Diligence</div>
+      <div class="nav-item locked" data-page="documents" onclick="goToPage('documents')" tabindex="0" role="button">
+        <div class="nav-icon">&#128196;</div> Document Checklist
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="deficiencies" onclick="goToPage('deficiencies')" tabindex="0" role="button">
+        <div class="nav-icon">&#9888;</div> Deficiency Cures
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="disputes" onclick="goToPage('disputes')" tabindex="0" role="button">
+        <div class="nav-icon">&#9878;</div> Dispute Log
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-section-label">Action Plan</div>
+      <div class="nav-item locked" data-page="action" onclick="goToPage('action')" tabindex="0" role="button">
+        <div class="nav-icon">&#10003;</div> Action Plan
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+      <div class="nav-item locked" data-page="dashboard" onclick="goToPage('dashboard')" tabindex="0" role="button">
+        <div class="nav-icon">&#9632;</div> Scorecard
+        <div class="nav-check"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      </div>
+    </div>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Readiness Score</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max">/100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete assessment to see score</div>
+    </div>
+  </nav>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobile()"></div>
+
+  <!-- MAIN -->
+  <div class="main-content" id="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" onclick="openMobile()" aria-label="Open menu"><span></span></button>
+      <div style="font-weight:600;font-size:15px">Corporate Housekeeping</div>
+    </div>
+    <div class="content-area">
+
+<!-- ======================== WELCOME ======================== -->
+<div class="page active" id="page-welcome">
+  <div class="welcome-hero">
+    <div class="welcome-icon">&#9878;</div>
+    <div class="t-display">Corporate Housekeeping & Entity Compliance</div>
+    <p class="t-body t-secondary">Buyers cannot close on what they cannot verify. Clean corporate records are the price of admission to a credible transaction. This guided assessment will help you identify and cure every corporate deficiency before entering a data room.</p>
+    <div class="welcome-stats">
+      <div class="welcome-stat">
+        <div class="welcome-stat-value">94%</div>
+        <div class="welcome-stat-label">of deals require good standing representation</div>
+      </div>
+      <div class="welcome-stat">
+        <div class="welcome-stat-value">$200K+</div>
+        <div class="welcome-stat-label">typical cost of deal friction from poor records</div>
+      </div>
+      <div class="welcome-stat">
+        <div class="welcome-stat-value">40-80 hrs</div>
+        <div class="welcome-stat-label">buyer's counsel reviewing your records</div>
+      </div>
+    </div>
+    <div class="callout callout-accent mb-2xl">
+      <strong>The Core Principle:</strong> A buyer's attorney will spend 40-80 hours reviewing your corporate records. Every gap they find becomes a question. Every question becomes a task. Every task becomes a cost -- yours. A $50,000 legal cleanup done 12 months before a sale prevents $200,000+ of deal friction.
+    </div>
+    <div class="welcome-phases">
+      <div class="welcome-phase">
+        <div class="welcome-phase-num">1</div>
+        <div><div class="welcome-phase-title">Entity Standing & Cap Table</div><div class="welcome-phase-desc">Verify good standing, reconcile ownership records, and assess governance documents.</div></div>
+      </div>
+      <div class="welcome-phase">
+        <div class="welcome-phase-num">2</div>
+        <div><div class="welcome-phase-title">Due Diligence Document Checklist</div><div class="welcome-phase-desc">Work through the comprehensive diligence checklist based on ABA Model standards.</div></div>
+      </div>
+      <div class="welcome-phase">
+        <div class="welcome-phase-num">3</div>
+        <div><div class="welcome-phase-title">Deficiency Analysis & Cure Plan</div><div class="welcome-phase-desc">Identify deficiencies, estimate remediation costs, and build your action timeline.</div></div>
+      </div>
+      <div class="welcome-phase">
+        <div class="welcome-phase-num">4</div>
+        <div><div class="welcome-phase-title">Readiness Scorecard</div><div class="welcome-phase-desc">See your overall corporate readiness score with specific recommendations.</div></div>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-lg" onclick="startAssessment()">Begin Assessment</button>
+  </div>
+</div>
+
+<!-- ======================== ENTITY STANDING ======================== -->
+<div class="page" id="page-standing">
+  <div class="page-header">
+    <div class="t-label">Phase 1 of 4</div>
+    <div class="t-display">Entity Good Standing & Annual Filings</div>
+    <p class="t-body t-secondary">Every state where your entity is registered requires current filings and paid franchise taxes. Failure to maintain good standing means your entity may technically cease to exist.</p>
+  </div>
+  <div class="callout callout-danger mb-xl">
+    <strong>Deal-Killer Statistic:</strong> 94% of acquisition agreements require a representation that the target company is duly organized, validly existing, and in good standing. Failure to deliver this representation is a walkaway right for the buyer.
+  </div>
+
+  <div class="t-h2 mb-lg">Entity Status Tracker</div>
+  <p class="t-small t-secondary mb-lg">Add every jurisdiction where your entity is formed or foreign-qualified. Verify good standing in each.</p>
+  <div id="entityGrid" class="entity-grid mb-lg"></div>
+  <button class="btn btn-secondary mb-2xl" onclick="addEntity()">+ Add Jurisdiction</button>
+
+  <div class="section-divider"></div>
+  <div class="t-h2 mb-lg">Good Standing Verification Checklist</div>
+  <div class="checklist" id="standingChecklist"></div>
+
+  <div class="section-divider"></div>
+  <div class="callout callout-info mb-xl">
+    <strong>Reinstatement:</strong> If your entity has been dissolved or suspended, most states allow reinstatement by filing back reports and paying delinquent fees plus penalties. In Delaware, a voided corporation can be revived under DGCL Section 312. However, reinstatement does not retroactively validate actions taken while the entity was dissolved -- those must be separately ratified.
+  </div>
+  <div class="btn-group">
+    <button class="btn btn-secondary" onclick="goToPage('welcome')">Back</button>
+    <button class="btn btn-primary" onclick="completeStanding()">Continue to Cap Table</button>
+  </div>
+</div>
+
+<!-- ======================== CAP TABLE ======================== -->
+<div class="page" id="page-captable">
+  <div class="page-header">
+    <div class="t-label">Phase 1 of 4</div>
+    <div class="t-display">Capitalization Table Cleanup</div>
+    <p class="t-body t-secondary">The cap table is the definitive record of who owns what. Buyers will compare it against every stock certificate, option agreement, warrant, and convertible note ever issued. Discrepancies will halt a transaction.</p>
+  </div>
+
+  <div class="t-h2 mb-lg">Common Cap Table Problems</div>
+  <p class="t-small t-secondary mb-md">Select which issues apply to your company. Be honest -- these will surface in diligence.</p>
+  <div class="checklist mb-xl" id="capIssuesChecklist"></div>
+
+  <div class="section-divider"></div>
+  <div class="t-h2 mb-lg">Cap Table Reconciliation Status</div>
+  <p class="t-small t-secondary mb-lg">Work through each reconciliation step and mark your status.</p>
+  <div id="capReconciliation"></div>
+
+  <div class="section-divider"></div>
+  <div class="callout callout-warning mb-xl">
+    <strong>For LLCs:</strong> The equivalent of a cap table is the Schedule of Members attached to the operating agreement. Ensure it reflects current ownership percentages, capital contributions, and any preferred returns or distribution waterfalls. Under RULLCA, membership interests are determined by the operating agreement -- not by what the members think they agreed to verbally.
+  </div>
+  <div class="btn-group">
+    <button class="btn btn-secondary" onclick="goToPage('standing')">Back</button>
+    <button class="btn btn-primary" onclick="completeCapTable()">Continue to Governance</button>
+  </div>
+</div>
+
+<!-- ======================== GOVERNANCE ======================== -->
+<div class="page" id="page-governance">
+  <div class="page-header">
+    <div class="t-label">Phase 1 of 4</div>
+    <div class="t-display">Board Minutes, Agreements & Governance</div>
+    <p class="t-body t-secondary">Corporate law requires material actions to be authorized by the board. A buyer's counsel will request every resolution, consent, and meeting minute from formation through the present.</p>
+  </div>
+
+  <div class="t-h2 mb-lg">Board Authorization Audit</div>
+  <p class="t-small t-secondary mb-md">For each action type, indicate whether proper authorization exists in your records.</p>
+  <div id="boardAuthChecks"></div>
+
+  <div class="section-divider"></div>
+  <div class="callout callout-info mb-xl">
+    <strong>Ratification:</strong> Under Delaware law (DGCL S.204), defective corporate acts can be ratified by the board and, if required, by stockholders. Complete ratification at least 60-90 days before entering a data room. Buyers view recently ratified actions with skepticism.
+  </div>
+
+  <div class="t-h2 mb-lg">Operating Agreement / Bylaws Review</div>
+  <p class="t-small t-secondary mb-md">Buyers scrutinize these provisions. Assess each for your company.</p>
+  <div id="governanceProvisions"></div>
+
+  <div class="section-divider"></div>
+  <div class="callout callout-danger mb-xl">
+    <strong>The "No Operating Agreement" Problem:</strong> If your LLC lacks a written operating agreement, the state's default LLC act governs -- and those defaults are rarely favorable for a sale. Under RULLCA, a transfer of membership interest only transfers economic rights, not governance rights. A buyer may not actually have voting or management rights. Retain counsel to draft and execute one immediately.
+  </div>
+
+  <div class="btn-group">
+    <button class="btn btn-secondary" onclick="goToPage('captable')">Back</button>
+    <button class="btn btn-primary" onclick="completeGovernance()">Continue to Document Checklist</button>
+  </div>
+</div>
+
+<!-- ======================== DOCUMENTS ======================== -->
+<div class="page" id="page-documents">
+  <div class="page-header">
+    <div class="t-label">Phase 2 of 4</div>
+    <div class="t-display">Due Diligence Document Checklist</div>
+    <p class="t-body t-secondary">Assemble these documents in a virtual data room at least 90 days before going to market. Based on the ABA Model Asset Purchase Agreement and standard private-company M&A practice.</p>
+  </div>
+  <div id="documentCategories"></div>
+  <div class="section-divider"></div>
+  <div class="btn-group">
+    <button class="btn btn-secondary" onclick="goToPage('governance')">Back</button>
+    <button class="btn btn-primary" onclick="completeDocuments()">Continue to Deficiency Cures</button>
+  </div>
+</div>
+
+<!-- ======================== DEFICIENCIES ======================== -->
+<div class="page" id="page-deficiencies">
+  <div class="page-header">
+    <div class="t-label">Phase 3 of 4</div>
+    <div class="t-display">Common Deficiencies & How to Cure Them</div>
+    <p class="t-body t-secondary">Review each common deficiency. Mark which apply to your company and track your remediation progress.</p>
+  </div>
+  <div class="callout callout-accent mb-xl">
+    <strong>Priority Framework:</strong> Start with the highest-risk items: good standing, cap table accuracy, and operating agreement. These are the three areas where a single deficiency can kill a deal. Budget 3-6 months for a full corporate cleanup.
+  </div>
+  <div id="deficiencyCards"></div>
+  <div class="section-divider"></div>
+  <div class="t-h2 mb-lg">Estimated Remediation Cost</div>
+  <div id="costEstimate"></div>
+  <div class="section-divider"></div>
+  <div class="btn-group">
+    <button class="btn btn-secondary" onclick="goToPage('documents')">Back</button>
+    <button class="btn btn-primary" onclick="completeDeficiencies()">Continue to Dispute Log</button>
+  </div>
+</div>
+
+<!-- ======================== DISPUTES ======================== -->
+<div class="page" id="page-disputes">
+  <div class="page-header">
+    <div class="t-label">Phase 3 of 4</div>
+    <div class="t-display">Shareholder & Member Dispute Log</div>
+    <p class="t-body t-secondary">Unresolved ownership disputes are among the most dangerous impediments to a sale. Even a 2% shareholder dispute can derail a transaction. Document and resolve all disputes early -- leverage to settle favorably decreases once a buyer is identified.</p>
+  </div>
+  <div class="callout callout-warning mb-xl">
+    <strong>Buyer Perspective:</strong> Buyers will require a representation that there are no disputes regarding ownership of the company's equity. If a dispute exists, the buyer will require it to be fully resolved before closing -- or will require a significant indemnity escrow.
+  </div>
+  <div id="disputeLog"></div>
+  <button class="btn btn-secondary mb-xl" onclick="addDispute()">+ Add Dispute</button>
+
+  <div class="section-divider"></div>
+  <div class="t-h2 mb-lg">Resolution Timeline Reference</div>
+  <div class="card mb-xl" style="overflow-x:auto">
+    <table class="cost-table">
+      <thead><tr><th>Dispute Type</th><th>Approach</th><th>Timeline</th><th>Cost Range</th></tr></thead>
+      <tbody>
+        <tr><td>Departed founder (documented)</td><td>Review agreements; confirm transfer</td><td>2-4 weeks</td><td>$5K-$15K</td></tr>
+        <tr><td>Departed founder (undocumented)</td><td>Negotiate buyout; obtain release</td><td>4-12 weeks</td><td>$15K-$100K+</td></tr>
+        <tr><td>Minority holdout</td><td>Invoke drag-along; negotiate premium</td><td>4-8 weeks</td><td>$10K-$50K</td></tr>
+        <tr><td>Divorce / community property</td><td>Obtain spousal consent or transfer order</td><td>2-8 weeks</td><td>$5K-$20K</td></tr>
+        <tr><td>Verbal equity promise</td><td>Negotiate cash settlement; obtain release</td><td>4-12 weeks</td><td>Varies widely</td></tr>
+        <tr><td>Estate / inheritance</td><td>Work with estate counsel; probate order</td><td>8-26 weeks</td><td>$10K-$50K</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="btn-group">
+    <button class="btn btn-secondary" onclick="goToPage('deficiencies')">Back</button>
+    <button class="btn btn-primary" onclick="completeDisputes()">Continue to Action Plan</button>
+  </div>
+</div>
+
+<!-- ======================== ACTION PLAN ======================== -->
+<div class="page" id="page-action">
+  <div class="page-header">
+    <div class="t-label">Phase 4 of 4</div>
+    <div class="t-display">Corporate Cleanup Action Plan</div>
+    <p class="t-body t-secondary">Build your remediation timeline. Actions are pre-populated from identified deficiencies. Add custom items, assign owners, and track progress.</p>
+  </div>
+
+  <div class="t-h2 mb-lg">Implementation Timeline</div>
+  <div class="timeline mb-2xl" id="implementationTimeline"></div>
+
+  <div class="section-divider"></div>
+  <div class="t-h2 mb-lg">Action Items</div>
+  <div class="card mb-lg" style="overflow-x:auto">
+    <table class="action-table">
+      <thead><tr><th>Action</th><th>Owner</th><th>Target Date</th><th>Status</th></tr></thead>
+      <tbody id="actionTableBody"></tbody>
+    </table>
+  </div>
+  <button class="btn btn-secondary mb-xl" onclick="addActionRow()">+ Add Action Item</button>
+
+  <div class="section-divider"></div>
+  <div class="t-h2 mb-lg">Data Room Preparation Checklist</div>
+  <div class="checklist mb-xl" id="dataRoomChecklist"></div>
+
+  <div class="btn-group">
+    <button class="btn btn-secondary" onclick="goToPage('disputes')">Back</button>
+    <button class="btn btn-primary" onclick="completeAction()">View Scorecard</button>
+  </div>
+</div>
+
+<!-- ======================== DASHBOARD ======================== -->
+<div class="page" id="page-dashboard">
+  <div class="page-header">
+    <div class="t-label">Corporate Housekeeping Scorecard</div>
+    <div class="t-display">Your Readiness Assessment</div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-value" id="dashScore" style="color:var(--color-primary)">--</div>
+      <div class="kpi-label">Readiness Score</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value" id="dashEntities">--</div>
+      <div class="kpi-label">Entities Tracked</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value" id="dashDocsReady">--</div>
+      <div class="kpi-label">Documents Ready</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value" id="dashDeficiencies" style="color:var(--color-danger)">--</div>
+      <div class="kpi-label">Open Deficiencies</div>
+    </div>
+  </div>
+
+  <div class="card mb-xl">
+    <div class="t-h2 mb-lg">Readiness by Category</div>
+    <div class="bar-chart" id="dashBarChart"></div>
+  </div>
+
+  <div class="card mb-xl">
+    <div class="t-h2 mb-lg">Estimated Remediation Cost Summary</div>
+    <div id="dashCostSummary"></div>
+  </div>
+
+  <div class="card mb-xl">
+    <div class="t-h2 mb-lg">Key Recommendations</div>
+    <div id="dashRecommendations"></div>
+  </div>
+
+  <div class="card mb-xl">
+    <div class="t-h2 mb-lg">Action Items Progress</div>
+    <div id="dashActionProgress"></div>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn btn-primary" onclick="exportReport()">Export Report</button>
+    <button class="btn btn-secondary" onclick="window.print()">Print Summary</button>
+    <button class="btn btn-ghost" onclick="goToPage('action')">Back to Action Plan</button>
+  </div>
+</div>
+
+    </div><!-- /content-area -->
+  </div><!-- /main-content -->
+</div><!-- /app -->
+<div class="toast" id="toast" aria-live="polite" role="status"></div>
+
+<script>
+/* ============================================================
+   DATA CONSTANTS
+   ============================================================ */
+const STANDING_CHECKS = [
+  'Obtain certificate of good standing from state of formation (within 30 days of closing)',
+  'Obtain certificates from every state where foreign-qualified',
+  'Verify all annual reports are filed and current',
+  'Confirm franchise taxes are paid through current year',
+  'Verify registered agent is current in all jurisdictions',
+  'Check for any pending administrative actions or notices',
+  'Confirm entity name is consistent across all filings'
+];
+
+const CAP_ISSUES = [
+  { id: 'phantom', label: 'Phantom shares: Stock certificates issued but stock ledger not updated' },
+  { id: 'undoc_options', label: 'Undocumented options: Options promised verbally but never formally documented' },
+  { id: 'founder_dispute', label: 'Founder equity disputes: Co-founder contributions under oral agreements' },
+  { id: 'unconverted', label: 'Convertible notes not converted: Notes still outstanding past conversion trigger' },
+  { id: 'auth_mismatch', label: 'Authorized vs. issued mismatch: Charter does not support shares shown as issued' }
+];
+
+const CAP_STEPS = [
+  { id: 'step1', label: 'Pull articles/charter to confirm authorized shares', doc: 'Certificate of incorporation or articles of organization' },
+  { id: 'step2', label: 'Compile stock ledger from inception', doc: 'Stock transfer ledger; stock certificates (front and back)' },
+  { id: 'step3', label: 'List every issuance, transfer, cancellation, and repurchase', doc: 'Board resolutions; stock purchase agreements' },
+  { id: 'step4', label: 'Reconcile options/warrants against equity incentive plan', doc: 'Option agreements; plan documents' },
+  { id: 'step5', label: 'Identify and resolve discrepancies', doc: 'Ratification resolutions; amended charter if needed' },
+  { id: 'step6', label: 'Produce clean cap table with fully diluted ownership', doc: 'Final cap table spreadsheet signed by all holders' }
+];
+
+const BOARD_ACTIONS = [
+  { id: 'stock_issue', label: 'Issuance of stock or membership interests', basis: 'DGCL S.157; MBCA S.6.21' },
+  { id: 'dividends', label: 'Declaration of dividends or distributions', basis: 'DGCL S.170; LLC operating agreement' },
+  { id: 'officers', label: 'Officer appointments and compensation', basis: 'DGCL S.142; bylaws' },
+  { id: 'contracts', label: 'Material contracts (above threshold)', basis: 'Fiduciary duty / business judgment rule' },
+  { id: 'bank', label: 'Bank account changes', basis: 'Bank requirements; UCC Article 4' },
+  { id: 'related_party', label: 'Related-party transactions', basis: 'DGCL S.144; entire fairness doctrine' },
+  { id: 'charter_amend', label: 'Amendment of charter or bylaws', basis: 'DGCL S.242; MBCA S.10.03' },
+  { id: 'ma_approval', label: 'Approval of M&A transaction', basis: 'DGCL S.251; RULLCA S.483' }
+];
+
+const GOV_PROVISIONS = [
+  { id: 'transfer', label: 'Transfer restrictions / ROFR', why: 'May require consent or trigger rights of first refusal', want: 'Clean waiver or amendment before signing' },
+  { id: 'drag', label: 'Drag-along rights', why: 'Allows majority to force minority to sell', want: 'Enforceable drag-along covering 100% of interests' },
+  { id: 'tag', label: 'Tag-along rights', why: 'Allows minority to participate in a sale', want: 'Clear terms; no ambiguity on pricing mechanics' },
+  { id: 'approval', label: 'Approval thresholds for sale', why: 'May require supermajority or unanimous consent', want: 'Threshold achievable given current ownership' },
+  { id: 'waterfall', label: 'Distribution waterfall', why: 'Determines who gets paid first and how much', want: 'Simple pro-rata or clearly documented priority' },
+  { id: 'noncompete', label: 'Non-compete provisions for members', why: 'May restrict members post-sale', want: 'Reasonable scope; no conflict with buyer plans' },
+  { id: 'capital_call', label: 'Capital call provisions', why: 'Could create obligations for buyer post-close', want: 'No outstanding unfunded obligations' },
+  { id: 'indemnification', label: 'Indemnification provisions', why: 'Scope for managers/members', want: 'Standard protections; no unusual carve-outs' }
+];
+
+const DOC_CATEGORIES = [
+  { id: 'formation', title: 'Formation & Governance Documents', icon: '&#128220;', items: [
+    'Certificate/Articles of Incorporation or Organization (as amended)',
+    'Bylaws or Operating Agreement (as amended)',
+    'All amendments, restatements, and certificates of designation',
+    'Certificate of Good Standing from state of formation (within 30 days)',
+    'Certificates of Good Standing from all foreign-qualified jurisdictions',
+    'List of all jurisdictions where entity is qualified to do business',
+    'Registered agent confirmations for all jurisdictions'
+  ]},
+  { id: 'ownership', title: 'Ownership & Capitalization Documents', icon: '&#128200;', items: [
+    'Capitalization table (fully diluted, showing all classes of equity)',
+    'Stock ledger / membership interest ledger',
+    'All stock certificates issued (copies of front and back)',
+    'Stock purchase agreements and subscription agreements',
+    'Stock option plans and all individual option agreements',
+    'Warrant agreements',
+    'Convertible note / SAFE agreements',
+    'Shareholder agreements / investor rights agreements',
+    'Voting agreements and proxies',
+    'Right of first refusal and co-sale agreements',
+    'Section 83(b) election filings (for restricted stock)',
+    'Stock repurchase agreements'
+  ]},
+  { id: 'board', title: 'Board & Governance Records', icon: '&#128221;', items: [
+    'All board of directors minutes (from formation to present)',
+    'All written consents of the board',
+    'All shareholder/member meeting minutes',
+    'All written consents of shareholders/members',
+    'Board committee minutes (compensation, audit, etc.)',
+    'Officer and director appointment records',
+    'Indemnification agreements with officers and directors',
+    'D&O insurance policies (current and historical)',
+    'Conflict of interest disclosures and waivers'
+  ]},
+  { id: 'subsidiary', title: 'Subsidiary & Affiliate Documents', icon: '&#127970;', items: [
+    'Organizational chart showing all subsidiaries and affiliates',
+    'Formation documents for each subsidiary',
+    'Intercompany agreements (management fees, loans, services)',
+    'Transfer pricing documentation',
+    'Joint venture and partnership agreements'
+  ]},
+  { id: 'compliance', title: 'Annual Filings & Compliance', icon: '&#128203;', items: [
+    'Annual reports filed with Secretary of State (all years)',
+    'Franchise tax filings and payment confirmations',
+    'Business license and permit renewals',
+    'Regulatory filings specific to industry',
+    'UCC financing statements (as secured party and debtor)',
+    'Lien search results (state and county)'
+  ]}
+];
+
+const DEFICIENCIES = [
+  { id: 'not_standing', label: 'Entity not in good standing', risk: 'High', cure: 'File back reports; pay delinquent fees and penalties', cost: '$500-$5,000', time: '1-4 weeks' },
+  { id: 'no_minutes', label: 'Missing board minutes', risk: 'Medium-High', cure: 'Prepare omnibus ratification resolution (DGCL S.204)', cost: '$2,000-$10,000', time: '2-4 weeks' },
+  { id: 'no_oa', label: 'No written operating agreement', risk: 'High', cure: 'Draft and execute comprehensive operating agreement', cost: '$5,000-$15,000', time: '3-6 weeks' },
+  { id: 'cap_discrep', label: 'Cap table discrepancies', risk: 'High', cure: 'Reconcile; issue correction certificates; amend charter if needed', cost: '$3,000-$25,000', time: '4-8 weeks' },
+  { id: 'no_certs', label: 'Missing stock certificates', risk: 'Medium', cure: 'Issue replacement certificates; obtain lost certificate affidavits', cost: '$1,000-$3,000', time: '1-2 weeks' },
+  { id: 'unauth_equity', label: 'Unauthorized equity grants', risk: 'Critical', cure: 'Ratify grants; amend plan; obtain shareholder approval', cost: '$5,000-$20,000', time: '4-8 weeks' },
+  { id: 'lapsed_fq', label: 'Lapsed foreign qualifications', risk: 'Medium', cure: 'Reinstate in each jurisdiction; pay back fees', cost: '$500-$2,000/state', time: '2-4 weeks' },
+  { id: 'expired_ra', label: 'Expired registered agent', risk: 'Low-Medium', cure: 'Appoint new registered agent; file change of agent', cost: '$200-$500/state', time: '1 week' },
+  { id: 'no_consents', label: 'Missing shareholder consents', risk: 'Medium-High', cure: 'Prepare and circulate ratification consents', cost: '$2,000-$5,000', time: '2-3 weeks' },
+  { id: 'related_party', label: 'Related-party transactions not approved', risk: 'High', cure: 'Obtain disinterested board ratification; document fair terms', cost: '$3,000-$10,000', time: '2-4 weeks' }
+];
+
+const DATA_ROOM_ITEMS = [
+  'Select virtual data room provider (Intralinks, Firmex, Box, etc.)',
+  'Create folder structure mirroring diligence categories',
+  'Upload all formation and governance documents',
+  'Upload ownership and capitalization documents',
+  'Upload board minutes and written consents',
+  'Upload subsidiary and affiliate documents',
+  'Upload compliance and annual filing records',
+  'Conduct quality check -- verify all documents are readable and current',
+  'Set up access permissions and watermarking',
+  'Create index of all uploaded documents with dates'
+];
+
+const TIMELINE_DATA = [
+  { period: 'Month 1-2', title: 'Assessment & Triage', desc: 'Complete this assessment. Identify all deficiencies. Engage corporate counsel for critical items (good standing, cap table, operating agreement).' },
+  { period: 'Month 2-3', title: 'Critical Cures', desc: 'Reinstate entity good standing. Reconcile cap table. Draft missing operating agreement. Prepare omnibus ratification resolution.' },
+  { period: 'Month 3-4', title: 'Document Assembly', desc: 'Assemble all diligence documents. Complete stock certificate replacements. Resolve minor deficiencies (registered agents, foreign qualifications).' },
+  { period: 'Month 4-5', title: 'Dispute Resolution', desc: 'Settle any outstanding ownership disputes. Obtain all necessary waivers and consents. Complete ratification of past actions.' },
+  { period: 'Month 5-6', title: 'Data Room & Final Review', desc: 'Set up virtual data room. Upload all documents. Conduct final audit with counsel. Obtain fresh good standing certificates.' }
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const STORAGE_KEY = 'exitosx-pb19-corporate-housekeeping';
+// Migrate from old key
+(function() { const old = localStorage.getItem('playbook19-corporate-housekeeping'); if (old && !localStorage.getItem(STORAGE_KEY)) { localStorage.setItem(STORAGE_KEY, old); localStorage.removeItem('playbook19-corporate-housekeeping'); } })();
+let state = {
+  currentPage: 'welcome',
+  pagesUnlocked: ['welcome', 'standing'],
+  pagesCompleted: [],
+  entities: [{ jurisdiction: '', entityType: '', filingStatus: '', goodStanding: '', nextFiling: '', actionNeeded: '' }],
+  standingChecks: {},
+  capIssues: {},
+  capSteps: {},
+  boardAuth: {},
+  govProvisions: {},
+  documents: {},
+  deficiencies: {},
+  disputes: [{ claimant: '', nature: '', equity: '', status: '', plan: '', cost: '' }],
+  actionItems: [],
+  dataRoomChecks: {},
+  notes: {}
+};
+
+function saveData() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {} }
+const saveState = saveData;
+function loadData() {
+  try {
+    const d = localStorage.getItem(STORAGE_KEY);
+    if (d) { const parsed = JSON.parse(d); Object.assign(state, parsed); }
+  } catch(e) {}
+}
+const loadState = loadData;
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function goToPage(pageId) {
+  const navItem = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+  if (navItem && navItem.classList.contains('locked')) return;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const page = document.getElementById('page-' + pageId);
+  if (page) page.classList.add('active');
+  if (navItem) navItem.classList.add('active');
+  state.currentPage = pageId;
+  saveData();
+  window.scrollTo(0, 0);
+  setTimeout(() => {
+    const pg = document.getElementById('page-' + pageId);
+    if (pg) {
+      const heading = pg.querySelector('.t-display, .t-h1, h1, h2');
+      if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); }
+    }
+  }, 100);
+  closeMobile();
+  renderPage(pageId);
+}
+
+function unlockPage(pageId) {
+  if (!state.pagesUnlocked.includes(pageId)) state.pagesUnlocked.push(pageId);
+  const nav = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+  if (nav) nav.classList.remove('locked');
+  saveData();
+}
+
+function completePage(pageId) {
+  if (!state.pagesCompleted.includes(pageId)) state.pagesCompleted.push(pageId);
+  const nav = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+  if (nav) nav.classList.add('completed');
+  saveData();
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = 9;
+  const done = state.pagesCompleted.length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '% complete';
+  const score = calcOverallScore();
+  document.getElementById('sidebarScore').innerHTML = score > 0 ? score + '<span class="sidebar-score-max">/100</span>' : '--<span class="sidebar-score-max">/100</span>';
+  document.getElementById('sidebarScoreDesc').textContent = score > 0 ? getReadinessLabel(score) : 'Complete assessment to see score';
+}
+
+function renderPage(pageId) {
+  switch(pageId) {
+    case 'standing': renderStanding(); break;
+    case 'captable': renderCapTable(); break;
+    case 'governance': renderGovernance(); break;
+    case 'documents': renderDocuments(); break;
+    case 'deficiencies': renderDeficiencies(); break;
+    case 'disputes': renderDisputeLog(); break;
+    case 'action': renderActionPage(); break;
+    case 'dashboard': renderDashboard(); break;
+  }
+}
+
+function openMobile() { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarOverlay').classList.add('show'); }
+function closeMobile() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('show'); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function startAssessment() {
+  completePage('welcome');
+  unlockPage('standing');
+  goToPage('standing');
+  showToast('Let\'s verify your entity standing first.');
+}
+
+/* ============================================================
+   ENTITY STANDING
+   ============================================================ */
+function renderStanding() {
+  renderEntityGrid();
+  renderStandingChecklist();
+}
+
+function renderEntityGrid() {
+  document.getElementById('entityGrid').innerHTML = state.entities.map((e, i) => `
+    <div class="entity-row">
+      <div class="entity-row-header">
+        <div class="t-h3">Jurisdiction ${i + 1}</div>
+        ${state.entities.length > 1 ? `<button class="btn btn-ghost btn-sm" onclick="removeEntity(${i})" style="color:var(--color-danger)">Remove</button>` : ''}
+      </div>
+      <div class="entity-fields">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Jurisdiction / State</label>
+          <input class="form-input" placeholder="e.g. Delaware, California" value="${esc(e.jurisdiction)}" oninput="updateEntity(${i},'jurisdiction',this.value)">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Entity Type</label>
+          <select class="form-input" onchange="updateEntity(${i},'entityType',this.value)">
+            <option value="">Select...</option>
+            <option value="corp" ${e.entityType==='corp'?'selected':''}>Corporation</option>
+            <option value="llc" ${e.entityType==='llc'?'selected':''}>LLC</option>
+            <option value="lp" ${e.entityType==='lp'?'selected':''}>Limited Partnership</option>
+            <option value="other" ${e.entityType==='other'?'selected':''}>Other</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Filing Status</label>
+          <select class="form-input" onchange="updateEntity(${i},'filingStatus',this.value)">
+            <option value="">Select...</option>
+            <option value="current" ${e.filingStatus==='current'?'selected':''}>Current</option>
+            <option value="overdue" ${e.filingStatus==='overdue'?'selected':''}>Overdue</option>
+            <option value="unknown" ${e.filingStatus==='unknown'?'selected':''}>Unknown</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Good Standing?</label>
+          <select class="form-input" onchange="updateEntity(${i},'goodStanding',this.value)">
+            <option value="">Select...</option>
+            <option value="yes" ${e.goodStanding==='yes'?'selected':''}>Yes</option>
+            <option value="no" ${e.goodStanding==='no'?'selected':''}>No</option>
+            <option value="unknown" ${e.goodStanding==='unknown'?'selected':''}>Not Verified</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Next Filing Due</label>
+          <input class="form-input" type="date" value="${e.nextFiling||''}" oninput="updateEntity(${i},'nextFiling',this.value)">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Action Needed</label>
+          <input class="form-input" placeholder="e.g. File annual report" value="${esc(e.actionNeeded)}" oninput="updateEntity(${i},'actionNeeded',this.value)">
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateEntity(i, field, val) { state.entities[i][field] = val; saveData(); }
+function addEntity() { state.entities.push({ jurisdiction: '', entityType: '', filingStatus: '', goodStanding: '', nextFiling: '', actionNeeded: '' }); saveData(); renderEntityGrid(); }
+function removeEntity(i) { state.entities.splice(i, 1); saveData(); renderEntityGrid(); }
+
+function renderStandingChecklist() {
+  document.getElementById('standingChecklist').innerHTML = STANDING_CHECKS.map((item, i) => {
+    const checked = state.standingChecks[i] || false;
+    return `<div class="check-item ${checked ? 'checked' : ''}" onclick="toggleStandingCheck(${i})" role="checkbox" aria-checked="${checked}" tabindex="0">
+      <div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      <div class="check-text">${item}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleStandingCheck(i) { state.standingChecks[i] = !state.standingChecks[i]; saveData(); renderStandingChecklist(); }
+
+function completeStanding() {
+  completePage('standing');
+  unlockPage('captable');
+  goToPage('captable');
+  showToast('Entity standing recorded. Now let\'s review your cap table.');
+}
+
+/* ============================================================
+   CAP TABLE
+   ============================================================ */
+function renderCapTable() {
+  renderCapIssues();
+  renderCapReconciliation();
+}
+
+function renderCapIssues() {
+  document.getElementById('capIssuesChecklist').innerHTML = CAP_ISSUES.map(item => {
+    const checked = state.capIssues[item.id] || false;
+    return `<div class="check-item ${checked ? 'checked' : ''}" onclick="toggleCapIssue('${item.id}')" role="checkbox" aria-checked="${checked}" tabindex="0">
+      <div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      <div class="check-text">${item.label}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCapIssue(id) { state.capIssues[id] = !state.capIssues[id]; saveData(); renderCapIssues(); }
+
+function renderCapReconciliation() {
+  document.getElementById('capReconciliation').innerHTML = CAP_STEPS.map(step => {
+    const val = state.capSteps[step.id] || '';
+    return `<div class="card mb-md">
+      <div class="flex items-center justify-between gap-md mb-sm" style="flex-wrap:wrap">
+        <div class="t-h3">${step.label}</div>
+        <div>
+          <select class="form-input" style="width:auto;min-width:150px;font-size:13px;padding:6px 32px 6px 10px" onchange="setCapStep('${step.id}',this.value)">
+            <option value="">Not started</option>
+            <option value="in-progress" ${val==='in-progress'?'selected':''}>In Progress</option>
+            <option value="complete" ${val==='complete'?'selected':''}>Complete</option>
+            <option value="na" ${val==='na'?'selected':''}>N/A</option>
+          </select>
+        </div>
+      </div>
+      <div class="t-small t-secondary">Required documentation: ${step.doc}</div>
+    </div>`;
+  }).join('');
+}
+
+function setCapStep(id, val) { state.capSteps[id] = val; saveData(); }
+
+function completeCapTable() {
+  completePage('captable');
+  unlockPage('governance');
+  goToPage('governance');
+  showToast('Cap table review saved. Now review governance documents.');
+}
+
+/* ============================================================
+   GOVERNANCE
+   ============================================================ */
+function renderGovernance() {
+  renderBoardAuth();
+  renderGovProvisions();
+}
+
+function renderBoardAuth() {
+  document.getElementById('boardAuthChecks').innerHTML = BOARD_ACTIONS.map(action => {
+    const val = state.boardAuth[action.id] || '';
+    return `<div class="card mb-md">
+      <div class="flex items-center justify-between gap-md mb-sm" style="flex-wrap:wrap">
+        <div>
+          <div class="t-h3">${action.label}</div>
+          <div class="t-caption t-tertiary">${action.basis}</div>
+        </div>
+      </div>
+      <div class="status-selector">
+        <div class="status-option st-good ${val==='authorized'?'selected':''}" onclick="setBoardAuth('${action.id}','authorized')">Properly Authorized</div>
+        <div class="status-option st-partial ${val==='partial'?'selected':''}" onclick="setBoardAuth('${action.id}','partial')">Partially Documented</div>
+        <div class="status-option st-missing ${val==='missing'?'selected':''}" onclick="setBoardAuth('${action.id}','missing')">Missing / Never Done</div>
+        <div class="status-option st-na ${val==='na'?'selected':''}" onclick="setBoardAuth('${action.id}','na')">N/A</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setBoardAuth(id, val) { state.boardAuth[id] = val; saveData(); renderBoardAuth(); }
+
+function renderGovProvisions() {
+  document.getElementById('governanceProvisions').innerHTML = GOV_PROVISIONS.map(prov => {
+    const val = state.govProvisions[prov.id] || '';
+    return `<div class="expand-card ${val ? 'expanded' : ''}" id="gov-${prov.id}">
+      <div class="expand-card-header" onclick="toggleExpand('gov-${prov.id}')">
+        <div>
+          <div class="expand-card-title">${prov.label}</div>
+          <div class="t-caption t-tertiary">${prov.why}</div>
+        </div>
+        ${val ? `<span class="badge ${val==='adequate'?'badge-success':val==='needs-work'?'badge-warning':'badge-danger'}">${val==='adequate'?'Adequate':val==='needs-work'?'Needs Work':'Missing'}</span>` : ''}
+        <span class="expand-card-chevron">&#9660;</span>
+      </div>
+      <div class="expand-card-body">
+        <div class="callout callout-info mb-md"><strong>Buyers want to see:</strong> ${prov.want}</div>
+        <div class="status-selector mb-md">
+          <div class="status-option st-good ${val==='adequate'?'selected':''}" onclick="setGovProv('${prov.id}','adequate')">Adequate</div>
+          <div class="status-option st-partial ${val==='needs-work'?'selected':''}" onclick="setGovProv('${prov.id}','needs-work')">Needs Work</div>
+          <div class="status-option st-missing ${val==='missing'?'selected':''}" onclick="setGovProv('${prov.id}','missing')">Missing</div>
+          <div class="status-option st-na ${val==='na'?'selected':''}" onclick="setGovProv('${prov.id}','na')">N/A</div>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Notes</label>
+          <textarea class="form-input" rows="2" placeholder="Specific observations or action items..." oninput="setGovNote('${prov.id}',this.value)">${esc(state.notes['gov-'+prov.id]||'')}</textarea>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setGovProv(id, val) { state.govProvisions[id] = val; saveData(); renderGovProvisions(); }
+function setGovNote(id, val) { state.notes['gov-'+id] = val; saveData(); }
+function toggleExpand(id) { document.getElementById(id).classList.toggle('expanded'); }
+
+function completeGovernance() {
+  completePage('governance');
+  unlockPage('documents');
+  goToPage('documents');
+  showToast('Governance review saved. Now work through the document checklist.');
+}
+
+/* ============================================================
+   DOCUMENTS
+   ============================================================ */
+function renderDocuments() {
+  document.getElementById('documentCategories').innerHTML = DOC_CATEGORIES.map(cat => {
+    const total = cat.items.length;
+    const done = cat.items.filter((_, i) => state.documents[cat.id + '-' + i]).length;
+    return `<div class="doc-category">
+      <div class="doc-category-header">
+        <span class="doc-category-icon">${cat.icon}</span>
+        <span class="doc-category-title">${cat.title}</span>
+        <span class="doc-category-count badge ${done===total?'badge-success':done>0?'badge-warning':'badge-neutral'}">${done}/${total}</span>
+      </div>
+      <div class="checklist">
+        ${cat.items.map((item, i) => {
+          const checked = state.documents[cat.id + '-' + i] || false;
+          return `<div class="check-item ${checked ? 'checked' : ''}" onclick="toggleDoc('${cat.id}',${i})" role="checkbox" aria-checked="${checked}" tabindex="0">
+            <div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+            <div class="check-text">${item}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleDoc(catId, i) { const key = catId + '-' + i; state.documents[key] = !state.documents[key]; saveData(); renderDocuments(); }
+
+function completeDocuments() {
+  completePage('documents');
+  unlockPage('deficiencies');
+  goToPage('deficiencies');
+  showToast('Document checklist saved. Now review common deficiencies.');
+}
+
+/* ============================================================
+   DEFICIENCIES
+   ============================================================ */
+function renderDeficiencies() {
+  document.getElementById('deficiencyCards').innerHTML = DEFICIENCIES.map(def => {
+    const d = state.deficiencies[def.id] || {};
+    const riskClass = def.risk === 'Critical' ? 'risk-critical' : def.risk === 'High' ? 'risk-high' : def.risk.includes('Medium') ? 'risk-medium' : 'risk-low';
+    const badgeClass = def.risk === 'Critical' ? 'badge-danger' : def.risk === 'High' ? 'badge-danger' : def.risk.includes('Medium') ? 'badge-warning' : 'badge-success';
+    return `<div class="deficiency-card ${riskClass}">
+      <div class="deficiency-header">
+        <div class="t-h3">${def.label}</div>
+        <span class="badge ${badgeClass}">${def.risk} Risk</span>
+      </div>
+      <div class="deficiency-meta mb-md">
+        <strong>Standard cure:</strong> ${def.cure}<br>
+        <strong>Typical cost:</strong> ${def.cost} &nbsp;|&nbsp; <strong>Timeline:</strong> ${def.time}
+      </div>
+      <div class="flex gap-md items-center" style="flex-wrap:wrap">
+        <label class="t-small" style="font-weight:500">Applies to you?</label>
+        <select class="form-input" style="width:auto;min-width:140px;font-size:13px;padding:6px 32px 6px 10px" onchange="setDeficiency('${def.id}','applies',this.value)">
+          <option value="">Select...</option>
+          <option value="yes" ${d.applies==='yes'?'selected':''}>Yes</option>
+          <option value="no" ${d.applies==='no'?'selected':''}>No</option>
+          <option value="unsure" ${d.applies==='unsure'?'selected':''}>Not Sure</option>
+        </select>
+        ${d.applies === 'yes' ? `
+        <label class="t-small" style="font-weight:500">Remediation status:</label>
+        <select class="form-input" style="width:auto;min-width:140px;font-size:13px;padding:6px 32px 6px 10px" onchange="setDeficiency('${def.id}','status',this.value)">
+          <option value="">Not started</option>
+          <option value="in-progress" ${d.status==='in-progress'?'selected':''}>In Progress</option>
+          <option value="resolved" ${d.status==='resolved'?'selected':''}>Resolved</option>
+        </select>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  renderCostEstimate();
+}
+
+function setDeficiency(id, field, val) {
+  if (!state.deficiencies[id]) state.deficiencies[id] = {};
+  state.deficiencies[id][field] = val;
+  saveData();
+  renderDeficiencies();
+}
+
+function renderCostEstimate() {
+  const applicable = DEFICIENCIES.filter(d => (state.deficiencies[d.id] || {}).applies === 'yes');
+  if (applicable.length === 0) {
+    document.getElementById('costEstimate').innerHTML = '<p class="t-small t-tertiary">Mark applicable deficiencies above to see cost estimates.</p>';
+    return;
+  }
+  let totalLow = 0, totalHigh = 0;
+  const rows = applicable.map(d => {
+    const costs = d.cost.replace(/\$/g, '').replace(/,/g, '');
+    const match = costs.match(/([\d.]+).*?([\d.]+)/);
+    const low = match ? parseFloat(match[1]) * 1000 : 0;
+    const high = match ? parseFloat(match[2]) * 1000 : 0;
+    totalLow += low; totalHigh += high;
+    const status = (state.deficiencies[d.id] || {}).status || 'not-started';
+    return `<tr><td>${d.label}</td><td>${d.cost}</td><td>${d.time}</td><td><span class="badge ${status==='resolved'?'badge-success':status==='in-progress'?'badge-warning':'badge-neutral'}">${status==='resolved'?'Resolved':status==='in-progress'?'In Progress':'Not Started'}</span></td></tr>`;
+  });
+  document.getElementById('costEstimate').innerHTML = `
+    <div class="card" style="overflow-x:auto">
+      <table class="cost-table">
+        <thead><tr><th>Deficiency</th><th>Cost Range</th><th>Timeline</th><th>Status</th></tr></thead>
+        <tbody>${rows.join('')}
+          <tr class="cost-total"><td>Estimated Total</td><td>$${formatK(totalLow)}-$${formatK(totalHigh)}</td><td colspan="2"></td></tr>
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function completeDeficiencies() {
+  completePage('deficiencies');
+  unlockPage('disputes');
+  goToPage('disputes');
+  showToast('Deficiency review saved. Now log any ownership disputes.');
+}
+
+/* ============================================================
+   DISPUTES
+   ============================================================ */
+function renderDisputeLog() {
+  document.getElementById('disputeLog').innerHTML = state.disputes.map((d, i) => `
+    <div class="dispute-card">
+      <div class="flex items-center justify-between mb-md">
+        <div class="t-h3">Dispute ${i + 1}</div>
+        ${state.disputes.length > 1 ? `<button class="btn btn-ghost btn-sm" onclick="removeDispute(${i})" style="color:var(--color-danger)">Remove</button>` : ''}
+      </div>
+      <div class="dispute-fields">
+        <div class="form-group"><label class="form-label">Claimant</label><input class="form-input" placeholder="Name of party" value="${esc(d.claimant)}" oninput="updateDispute(${i},'claimant',this.value)"></div>
+        <div class="form-group"><label class="form-label">Nature of Claim</label>
+          <select class="form-input" onchange="updateDispute(${i},'nature',this.value)">
+            <option value="">Select type...</option>
+            <option value="departed-founder" ${d.nature==='departed-founder'?'selected':''}>Departed Founder Claim</option>
+            <option value="minority-holdout" ${d.nature==='minority-holdout'?'selected':''}>Minority Holdout</option>
+            <option value="divorce" ${d.nature==='divorce'?'selected':''}>Divorce / Community Property</option>
+            <option value="verbal-promise" ${d.nature==='verbal-promise'?'selected':''}>Verbal Equity Promise</option>
+            <option value="estate" ${d.nature==='estate'?'selected':''}>Estate / Inheritance</option>
+            <option value="other" ${d.nature==='other'?'selected':''}>Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Equity at Issue</label><input class="form-input" placeholder="e.g. 5% membership interest" value="${esc(d.equity)}" oninput="updateDispute(${i},'equity',this.value)"></div>
+        <div class="form-group"><label class="form-label">Status</label>
+          <select class="form-input" onchange="updateDispute(${i},'status',this.value)">
+            <option value="">Select...</option>
+            <option value="open" ${d.status==='open'?'selected':''}>Open</option>
+            <option value="in-negotiation" ${d.status==='in-negotiation'?'selected':''}>In Negotiation</option>
+            <option value="resolved" ${d.status==='resolved'?'selected':''}>Resolved</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Resolution Plan</label><textarea class="form-input" rows="2" placeholder="Describe the resolution approach..." oninput="updateDispute(${i},'plan',this.value)">${esc(d.plan)}</textarea></div>
+      <div class="form-group" style="margin-bottom:0"><label class="form-label">Estimated Cost</label><input class="form-input" placeholder="e.g. $25,000" value="${esc(d.cost)}" oninput="updateDispute(${i},'cost',this.value)"></div>
+    </div>
+  `).join('');
+}
+
+function updateDispute(i, field, val) { state.disputes[i][field] = val; saveData(); }
+function addDispute() { state.disputes.push({ claimant: '', nature: '', equity: '', status: '', plan: '', cost: '' }); saveData(); renderDisputeLog(); }
+function removeDispute(i) { state.disputes.splice(i, 1); saveData(); renderDisputeLog(); }
+
+function completeDisputes() {
+  completePage('disputes');
+  unlockPage('action');
+  goToPage('action');
+  showToast('Dispute log saved. Build your action plan.');
+}
+
+/* ============================================================
+   ACTION PLAN
+   ============================================================ */
+function renderActionPage() {
+  renderTimeline();
+  renderActionTable();
+  renderDataRoomChecklist();
+}
+
+function renderTimeline() {
+  document.getElementById('implementationTimeline').innerHTML = TIMELINE_DATA.map((item, i) => `
+    <div class="timeline-item ${i === 0 ? 'tl-active' : ''}">
+      <div class="timeline-dot"></div>
+      <div class="timeline-period">${item.period}</div>
+      <div class="timeline-title">${item.title}</div>
+      <div class="timeline-desc">${item.desc}</div>
+    </div>
+  `).join('');
+}
+
+function renderActionTable() {
+  if (state.actionItems.length === 0) {
+    state.actionItems = generateActions();
+    if (state.actionItems.length === 0) {
+      state.actionItems = [
+        { action: '', owner: '', date: '', status: 'not-started' },
+        { action: '', owner: '', date: '', status: 'not-started' },
+        { action: '', owner: '', date: '', status: 'not-started' }
+      ];
+    }
+  }
+  document.getElementById('actionTableBody').innerHTML = state.actionItems.map((item, i) => `
+    <tr>
+      <td><input class="action-input-mini" value="${esc(item.action)}" placeholder="Specific action..." oninput="updateAction(${i},'action',this.value)" style="width:100%"></td>
+      <td><input class="action-input-mini" value="${esc(item.owner)}" placeholder="Owner" oninput="updateAction(${i},'owner',this.value)" style="width:100%"></td>
+      <td><input class="action-input-mini" type="date" value="${item.date}" oninput="updateAction(${i},'date',this.value)" style="width:100%"></td>
+      <td><select class="action-input-mini" onchange="updateAction(${i},'status',this.value)" style="width:100%">
+        <option value="not-started" ${item.status==='not-started'?'selected':''}>Not Started</option>
+        <option value="in-progress" ${item.status==='in-progress'?'selected':''}>In Progress</option>
+        <option value="done" ${item.status==='done'?'selected':''}>Done</option>
+      </select></td>
+    </tr>
+  `).join('');
+}
+
+function generateActions() {
+  const actions = [];
+  const notGood = state.entities.filter(e => e.goodStanding === 'no');
+  if (notGood.length > 0) actions.push({ action: `Reinstate entity in ${notGood.map(e=>e.jurisdiction||'[jurisdiction]').join(', ')}`, owner: '', date: '', status: 'not-started' });
+  const capIssueCount = Object.values(state.capIssues).filter(Boolean).length;
+  if (capIssueCount > 0) actions.push({ action: 'Reconcile cap table and resolve all discrepancies', owner: '', date: '', status: 'not-started' });
+  const missingAuth = Object.entries(state.boardAuth).filter(([,v]) => v === 'missing').length;
+  if (missingAuth > 0) actions.push({ action: 'Prepare omnibus ratification resolution for unauthorized actions', owner: '', date: '', status: 'not-started' });
+  const missingGov = Object.entries(state.govProvisions).filter(([,v]) => v === 'missing').length;
+  if (missingGov > 0) actions.push({ action: 'Draft missing governance provisions (operating agreement / bylaws)', owner: '', date: '', status: 'not-started' });
+  DEFICIENCIES.forEach(d => {
+    if ((state.deficiencies[d.id] || {}).applies === 'yes' && (state.deficiencies[d.id] || {}).status !== 'resolved') {
+      actions.push({ action: `Cure: ${d.label}`, owner: '', date: '', status: 'not-started' });
+    }
+  });
+  const openDisputes = state.disputes.filter(d => d.claimant && d.status !== 'resolved');
+  openDisputes.forEach(d => {
+    actions.push({ action: `Resolve dispute with ${d.claimant}`, owner: '', date: '', status: 'not-started' });
+  });
+  return actions.slice(0, 12);
+}
+
+function updateAction(i, field, val) { state.actionItems[i][field] = val; saveData(); }
+function addActionRow() { state.actionItems.push({ action: '', owner: '', date: '', status: 'not-started' }); saveData(); renderActionTable(); }
+
+function renderDataRoomChecklist() {
+  document.getElementById('dataRoomChecklist').innerHTML = DATA_ROOM_ITEMS.map((item, i) => {
+    const checked = state.dataRoomChecks[i] || false;
+    return `<div class="check-item ${checked ? 'checked' : ''}" onclick="toggleDataRoom(${i})" role="checkbox" aria-checked="${checked}" tabindex="0">
+      <div class="check-box"><svg viewBox="0 0 14 14"><polyline points="3 7 6 10 11 4"/></svg></div>
+      <div class="check-text">${item}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleDataRoom(i) { state.dataRoomChecks[i] = !state.dataRoomChecks[i]; saveData(); renderDataRoomChecklist(); }
+
+function completeAction() {
+  completePage('action');
+  unlockPage('dashboard');
+  goToPage('dashboard');
+  showToast('Action plan saved. Here is your scorecard.');
+}
+
+/* ============================================================
+   SCORING
+   ============================================================ */
+function calcOverallScore() {
+  let score = 0; let max = 0;
+
+  // Entity standing (25 pts)
+  const standingDone = Object.values(state.standingChecks).filter(Boolean).length;
+  score += Math.round((standingDone / STANDING_CHECKS.length) * 10);
+  const goodEntities = state.entities.filter(e => e.goodStanding === 'yes').length;
+  const totalEntities = state.entities.filter(e => e.jurisdiction).length;
+  if (totalEntities > 0) score += Math.round((goodEntities / totalEntities) * 15);
+  else score += 0;
+  max += 25;
+
+  // Cap table (20 pts)
+  const capDone = Object.values(state.capSteps).filter(v => v === 'complete').length;
+  score += Math.round((capDone / CAP_STEPS.length) * 15);
+  const issueCount = Object.values(state.capIssues).filter(Boolean).length;
+  score += issueCount === 0 ? 5 : Math.max(0, 5 - issueCount);
+  max += 20;
+
+  // Governance (20 pts)
+  const authOk = Object.values(state.boardAuth).filter(v => v === 'authorized' || v === 'na').length;
+  score += Math.round((authOk / BOARD_ACTIONS.length) * 10);
+  const govOk = Object.values(state.govProvisions).filter(v => v === 'adequate' || v === 'na').length;
+  score += Math.round((govOk / GOV_PROVISIONS.length) * 10);
+  max += 20;
+
+  // Documents (20 pts)
+  const totalDocs = DOC_CATEGORIES.reduce((s, c) => s + c.items.length, 0);
+  const doneDocs = Object.values(state.documents).filter(Boolean).length;
+  score += Math.round((doneDocs / totalDocs) * 20);
+  max += 20;
+
+  // Deficiencies & disputes (15 pts)
+  const applicable = DEFICIENCIES.filter(d => (state.deficiencies[d.id] || {}).applies === 'yes');
+  const resolved = applicable.filter(d => (state.deficiencies[d.id] || {}).status === 'resolved').length;
+  if (applicable.length > 0) score += Math.round((resolved / applicable.length) * 10);
+  else score += 10;
+  const openDisputes = state.disputes.filter(d => d.claimant && d.status !== 'resolved').length;
+  score += openDisputes === 0 ? 5 : Math.max(0, 5 - openDisputes * 2);
+  max += 15;
+
+  return Math.min(100, Math.max(0, score));
+}
+
+function getReadinessLabel(score) {
+  if (score >= 85) return 'Deal-Ready';
+  if (score >= 65) return 'Approaching Ready';
+  if (score >= 40) return 'Work Needed';
+  return 'Critical Gaps';
+}
+
+function getScoreColor(score) {
+  if (score >= 85) return 'var(--color-success)';
+  if (score >= 65) return 'var(--color-score-4)';
+  if (score >= 40) return 'var(--color-warning)';
+  return 'var(--color-danger)';
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+function renderDashboard() {
+  const score = calcOverallScore();
+  const label = getReadinessLabel(score);
+
+  document.getElementById('dashScore').textContent = score;
+  document.getElementById('dashScore').style.color = getScoreColor(score);
+  document.getElementById('dashEntities').textContent = state.entities.filter(e => e.jurisdiction).length;
+  const totalDocs = DOC_CATEGORIES.reduce((s, c) => s + c.items.length, 0);
+  const doneDocs = Object.values(state.documents).filter(Boolean).length;
+  document.getElementById('dashDocsReady').textContent = doneDocs + '/' + totalDocs;
+  const openDef = DEFICIENCIES.filter(d => (state.deficiencies[d.id] || {}).applies === 'yes' && (state.deficiencies[d.id] || {}).status !== 'resolved').length;
+  document.getElementById('dashDeficiencies').textContent = openDef;
+
+  // Bar chart
+  const categories = [
+    { label: 'Entity Standing', pct: calcStandingPct() },
+    { label: 'Cap Table', pct: calcCapPct() },
+    { label: 'Governance', pct: calcGovPct() },
+    { label: 'Documents', pct: Math.round((doneDocs / totalDocs) * 100) },
+    { label: 'Deficiency Cures', pct: calcDefPct() }
+  ];
+  document.getElementById('dashBarChart').innerHTML = categories.map((cat, idx) => `
+    <div class="bar-row">
+      <div class="bar-label">${cat.label}</div>
+      <div class="bar-track">
+        <div class="bar-fill" data-width="${cat.pct}" data-delay="${idx * 100}" style="width:0%;background:${cat.pct>=80?'var(--color-success)':cat.pct>=50?'var(--color-warning)':'var(--color-danger)'}">
+          <span class="bar-value">${cat.pct}%</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  setTimeout(() => {
+    document.querySelectorAll('#dashBarChart .bar-fill').forEach(el => {
+      const w = el.dataset.width;
+      const d = parseInt(el.dataset.delay) || 0;
+      setTimeout(() => { el.style.width = w + '%'; }, d);
+    });
+  }, 100);
+
+  // Cost summary
+  const applicable = DEFICIENCIES.filter(d => (state.deficiencies[d.id] || {}).applies === 'yes');
+  if (applicable.length > 0) {
+    let totalLow = 0, totalHigh = 0;
+    applicable.forEach(d => {
+      const costs = d.cost.replace(/\$/g, '').replace(/,/g, '');
+      const match = costs.match(/([\d.]+).*?([\d.]+)/);
+      if (match) { totalLow += parseFloat(match[1]) * 1000; totalHigh += parseFloat(match[2]) * 1000; }
+    });
+    document.getElementById('dashCostSummary').innerHTML = `
+      <div class="kpi-row" style="margin-bottom:0">
+        <div class="kpi-card"><div class="kpi-value" style="color:var(--color-warning);font-size:24px">$${formatK(totalLow)}-$${formatK(totalHigh)}</div><div class="kpi-label">Estimated remediation range</div></div>
+        <div class="kpi-card"><div class="kpi-value" style="font-size:24px">${applicable.length}</div><div class="kpi-label">Applicable deficiencies</div></div>
+        <div class="kpi-card"><div class="kpi-value" style="color:var(--color-success);font-size:24px">${applicable.filter(d=>(state.deficiencies[d.id]||{}).status==='resolved').length}</div><div class="kpi-label">Resolved</div></div>
+      </div>`;
+  } else {
+    document.getElementById('dashCostSummary').innerHTML = '<p class="t-small t-tertiary">No applicable deficiencies identified.</p>';
+  }
+
+  // Recommendations
+  const recs = [];
+  if (state.entities.some(e => e.goodStanding === 'no')) recs.push({ type: 'danger', text: 'One or more entities are not in good standing. This is a deal-killer. Reinstate immediately -- every day of delay is risk.' });
+  if (Object.values(state.capIssues).filter(Boolean).length > 0 && !Object.values(state.capSteps).some(v => v === 'complete')) recs.push({ type: 'danger', text: 'You have identified cap table issues but have not begun reconciliation. Engage corporate counsel to start the cap table cleanup.' });
+  if (Object.values(state.boardAuth).some(v => v === 'missing')) recs.push({ type: 'warning', text: 'Missing board authorizations detected. Prepare an omnibus ratification resolution under DGCL S.204 at least 60-90 days before entering a data room.' });
+  if (Object.values(state.govProvisions).some(v => v === 'missing')) recs.push({ type: 'warning', text: 'Critical governance provisions are missing. If you lack a written operating agreement, retain counsel to draft one immediately.' });
+  if (doneDocs < totalDocs * 0.5) recs.push({ type: 'warning', text: `Only ${doneDocs} of ${totalDocs} due diligence documents are ready. Begin assembling documents in a virtual data room at least 90 days before going to market.` });
+  if (openDef > 0) recs.push({ type: 'danger', text: `${openDef} deficienc${openDef > 1 ? 'ies' : 'y'} still unresolved. Budget 3-6 months for a full corporate cleanup.` });
+  const openDisp = state.disputes.filter(d => d.claimant && d.status !== 'resolved').length;
+  if (openDisp > 0) recs.push({ type: 'danger', text: `${openDisp} unresolved ownership dispute${openDisp > 1 ? 's' : ''}. Resolve early -- leverage to settle favorably decreases once a buyer is identified.` });
+  if (score >= 85) recs.push({ type: 'success', text: 'Your corporate records are in strong shape. This will make due diligence smoother and give buyers confidence in the transaction.' });
+  if (recs.length === 0) recs.push({ type: 'info', text: 'Complete all assessment phases to receive personalized recommendations.' });
+
+  const typeMap = { danger: 'callout-danger', warning: 'callout-warning', success: 'callout-info', info: 'callout-accent' };
+  document.getElementById('dashRecommendations').innerHTML = recs.map(r => `<div class="callout ${typeMap[r.type]} mb-md">${r.text}</div>`).join('');
+
+  // Action progress
+  const total = state.actionItems.length;
+  const done = state.actionItems.filter(a => a.status === 'done').length;
+  const inProg = state.actionItems.filter(a => a.status === 'in-progress').length;
+  document.getElementById('dashActionProgress').innerHTML = total > 0 ? `
+    <div class="flex gap-md items-center mb-md" style="flex-wrap:wrap">
+      <span class="badge badge-success">${done} Done</span>
+      <span class="badge badge-warning">${inProg} In Progress</span>
+      <span class="badge badge-neutral">${total - done - inProg} Not Started</span>
+    </div>
+    <div class="bar-track" style="height:12px;margin-bottom:var(--space-sm)">
+      <div style="height:100%;border-radius:4px;background:var(--color-success);width:${total>0?Math.round(done/total*100):0}%;transition:width 0.8s ease"></div>
+    </div>
+    <div class="t-small t-secondary">${total > 0 ? Math.round(done/total*100) : 0}% of action items complete</div>
+  ` : '<p class="t-small t-tertiary">No action items created yet.</p>';
+}
+
+function calcStandingPct() {
+  const checks = Object.values(state.standingChecks).filter(Boolean).length;
+  const entities = state.entities.filter(e => e.jurisdiction);
+  const good = entities.filter(e => e.goodStanding === 'yes').length;
+  if (entities.length === 0) return Math.round((checks / STANDING_CHECKS.length) * 100);
+  return Math.round(((checks / STANDING_CHECKS.length) * 0.4 + (good / entities.length) * 0.6) * 100);
+}
+
+function calcCapPct() {
+  const done = Object.values(state.capSteps).filter(v => v === 'complete').length;
+  return Math.round((done / CAP_STEPS.length) * 100);
+}
+
+function calcGovPct() {
+  const authOk = Object.values(state.boardAuth).filter(v => v === 'authorized' || v === 'na').length;
+  const govOk = Object.values(state.govProvisions).filter(v => v === 'adequate' || v === 'na').length;
+  const total = BOARD_ACTIONS.length + GOV_PROVISIONS.length;
+  return Math.round(((authOk + govOk) / total) * 100);
+}
+
+function calcDefPct() {
+  const applicable = DEFICIENCIES.filter(d => (state.deficiencies[d.id] || {}).applies === 'yes');
+  if (applicable.length === 0) return 100;
+  const resolved = applicable.filter(d => (state.deficiencies[d.id] || {}).status === 'resolved').length;
+  return Math.round((resolved / applicable.length) * 100);
+}
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+function esc(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatK(num) {
+  if (num >= 1000) return Math.round(num / 1000) + 'K';
+  return num.toString();
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'corporate-housekeeping-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Data exported successfully.');
+}
+
+function exportReport() {
+  const score = calcOverallScore();
+  const entities = state.entities.filter(e => e.jurisdiction);
+  const totalDocs = DOC_CATEGORIES.reduce((s, c) => s + c.items.length, 0);
+  const doneDocs = Object.values(state.documents).filter(Boolean).length;
+  const openDef = DEFICIENCIES.filter(d => (state.deficiencies[d.id] || {}).applies === 'yes' && (state.deficiencies[d.id] || {}).status !== 'resolved').length;
+
+  let text = 'CORPORATE HOUSEKEEPING & ENTITY COMPLIANCE - Summary Report\n';
+  text += '='.repeat(60) + '\n';
+  text += 'Generated: ' + new Date().toLocaleDateString() + '\n\n';
+  text += 'OVERALL SCORE: ' + score + '/100 (' + getReadinessLabel(score) + ')\n';
+  text += 'Entities: ' + entities.length + '\n';
+  text += 'Documents Ready: ' + doneDocs + '/' + totalDocs + '\n';
+  text += 'Open Deficiencies: ' + openDef + '\n\n';
+
+  text += 'ENTITIES\n' + '-'.repeat(30) + '\n';
+  entities.forEach(e => {
+    text += '- ' + (e.name || 'Unnamed') + ' | ' + (e.jurisdiction || '-') + ' | ' + (e.entityType || '-') + ' | Good Standing: ' + (e.goodStanding || '-') + '\n';
+  });
+
+  text += '\nCATEGORY SCORES\n' + '-'.repeat(30) + '\n';
+  text += 'Entity Standing: ' + calcStandingPct() + '%\n';
+  text += 'Cap Table: ' + calcCapPct() + '%\n';
+  text += 'Governance: ' + calcGovPct() + '%\n';
+  text += 'Documents: ' + Math.round((doneDocs / totalDocs) * 100) + '%\n';
+  text += 'Deficiency Cures: ' + calcDefPct() + '%\n\n';
+
+  text += 'DOCUMENTS\n' + '-'.repeat(30) + '\n';
+  DOC_CATEGORIES.forEach(cat => {
+    text += cat.title + ':\n';
+    cat.items.forEach(item => {
+      text += (state.documents[cat.id + '_' + item] ? '  [X] ' : '  [ ] ') + item + '\n';
+    });
+  });
+
+  text += '\nDEFICIENCIES\n' + '-'.repeat(30) + '\n';
+  DEFICIENCIES.forEach(d => {
+    const dd = state.deficiencies[d.id] || {};
+    if (dd.applies === 'yes') {
+      text += '- ' + d.title + ' | Status: ' + (dd.status || 'not started') + ' | Cost: ' + d.cost + '\n';
+    }
+  });
+
+  text += '\nACTION ITEMS (' + state.actionItems.length + ')\n' + '-'.repeat(30) + '\n';
+  state.actionItems.forEach(a => {
+    text += '- [' + (a.status || 'not started') + '] ' + (a.description || 'No description') + '\n';
+  });
+
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'corporate-housekeeping-report.txt';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Report exported.');
+}
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
+function init() {
+  loadData();
+  state.pagesUnlocked.forEach(p => unlockPage(p));
+  state.pagesCompleted.forEach(p => {
+    const nav = document.querySelector(`.nav-item[data-page="${p}"]`);
+    if (nav) nav.classList.add('completed');
+  });
+
+  if (state.currentPage && state.pagesUnlocked.includes(state.currentPage)) {
+    goToPage(state.currentPage);
+  }
+  updateProgress();
+
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.click(); }
+    });
+  });
+  document.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('check-item')) {
+      e.preventDefault(); e.target.click();
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

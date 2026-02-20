@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Facility & Lease Review | Exit Planning Playbook #18</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F2F2F7;
+  --color-border: #E5E7EB;
+  --color-border-light: #F2F2F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #8E8E93;
+  --color-primary: #0071E3;
+  --color-primary-light: #EBF5FF;
+  --color-primary-hover: #0051B3;
+  --color-accent: #FF9500;
+  --color-accent-light: #FFF6E8;
+  --color-danger: #FF3B30;
+  --color-danger-light: #FFEBEA;
+  --color-warning: #C67F20;
+  --color-warning-light: #FFF8EB;
+  --color-success: #34C759;
+  --color-success-light: #E8F8ED;
+  --color-score-1: #FF3B30;
+  --color-score-2: #FF9500;
+  --color-score-3: #FFCC00;
+  --color-score-4: #34C759;
+  --color-score-5: #30D158;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  color: var(--color-text); background: var(--color-bg);
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a { color: var(--color-primary); text-decoration: none; }
+
+/* TYPOGRAPHY */
+.t-display { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.t-h1 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+.t-h2 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+.t-h3 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-body { font-size: 16px; line-height: 1.6; }
+.t-small { font-size: 14px; line-height: 1.5; }
+.t-caption { font-size: 12px; line-height: 1.4; letter-spacing: 0.02em; }
+.t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.t-secondary { color: var(--color-text-secondary); }
+
+/* LAYOUT */
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 260px; min-width: 260px; background: var(--color-text);
+  color: var(--color-text); padding: var(--space-lg); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform var(--transition-slow); overflow-y: auto;
+}
+.main-content { flex: 1; margin-left: 260px; min-height: 100vh; transition: margin-left var(--transition-slow); }
+.content-area { max-width: 800px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+
+.mobile-header {
+  display: none; position: sticky; top: 0; z-index: 90;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg); align-items: center; gap: var(--space-md);
+}
+.hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
+.hamburger:hover { background: var(--color-surface-alt); }
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--color-text); position: relative; }
+.hamburger span::before, .hamburger span::after { content: ''; position: absolute; width: 18px; height: 2px; background: var(--color-text); left: 0; }
+.hamburger span::before { top: -6px; }
+.hamburger span::after { top: 6px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0 !important; }
+  .mobile-header { display: flex; }
+  .content-area { padding: var(--space-lg) var(--space-md); }
+}
+
+/* SIDEBAR */
+.sidebar-brand { margin-bottom: var(--space-xl); }
+.sidebar-brand-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-xs); }
+.sidebar-brand-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.sidebar-progress { margin-bottom: var(--space-xl); padding: var(--space-md); background: var(--color-surface-alt); border-radius: var(--radius-md); }
+.sidebar-progress-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.sidebar-progress-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width var(--transition-slow); }
+.sidebar-progress-text { font-size: 12px; color: var(--color-text-tertiary); margin-top: var(--space-sm); text-align: right; }
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); padding: var(--space-md) var(--space-sm) var(--space-xs); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md); padding: 10px 12px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.6);
+  font-size: 14px; transition: all var(--transition-fast); cursor: pointer;
+}
+.nav-item:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; border-left: 3px solid var(--color-primary); }
+.nav-item.completed .nav-check { display: flex; }
+.nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.nav-check { display: none; width: 16px; height: 16px; background: var(--color-success); border-radius: 50%; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.nav-check svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+.sidebar-score { margin-top: auto; padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.sidebar-score-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: var(--space-sm); }
+.sidebar-score-value { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #fff; line-height: 1; }
+.sidebar-score-max { font-size: 18px; color: var(--color-text-tertiary); font-weight: 400; }
+.sidebar-score-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+/* CARDS */
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-lg);
+  transition: box-shadow var(--transition-normal);
+}
+.card:hover { box-shadow: var(--shadow-sm); }
+.card + .card { margin-top: var(--space-md); }
+
+.callout {
+  padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md);
+  border-left: 3px solid; font-size: 14px; line-height: 1.6;
+}
+.callout-info { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); color: #7C5500; }
+.callout-danger { background: var(--color-danger-light); border-color: var(--color-danger); color: var(--color-danger); }
+.callout-accent { background: var(--color-accent-light); border-color: var(--color-accent); color: #7C5500; }
+
+/* BUTTONS */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  transition: all var(--transition-fast); white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-alt); border-color: var(--color-text-tertiary); }
+.btn-ghost { color: var(--color-text-secondary); padding: 8px 12px; }
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: #E68600; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: var(--radius-md); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.btn-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+
+/* FORMS */
+.form-group { margin-bottom: var(--space-lg); }
+.form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: var(--space-sm); color: var(--color-text); }
+.form-hint { font-size: 13px; color: var(--color-text-tertiary); margin-top: var(--space-xs); }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 15px; background: var(--color-surface);
+  transition: all var(--transition-fast); color: var(--color-text);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.form-input::placeholder { color: var(--color-text-tertiary); }
+textarea.form-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236E6E73' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+/* SCORE SELECTOR */
+.score-selector { display: flex; gap: var(--space-sm); }
+.score-option {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer; transition: all var(--transition-fast); text-align: center; min-width: 0;
+}
+.score-option:hover { border-color: var(--color-text-tertiary); background: var(--color-surface-alt); }
+.score-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.score-number { font-size: 22px; font-weight: 700; line-height: 1; }
+.score-label-text { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); line-height: 1.2; }
+.score-option.s1 .score-number { color: var(--color-score-1); }
+.score-option.s2 .score-number { color: var(--color-score-2); }
+.score-option.s3 .score-number { color: var(--color-score-3); }
+.score-option.s4 .score-number { color: var(--color-score-4); }
+.score-option.s5 .score-number { color: var(--color-score-5); }
+.score-option.selected.s1 { border-color: var(--color-score-1); background: #FFF5F5; }
+.score-option.selected.s2 { border-color: var(--color-score-2); background: #FFFBEB; }
+.score-option.selected.s3 { border-color: var(--color-score-3); background: #FFF8EB; }
+.score-option.selected.s4 { border-color: var(--color-score-4); background: #E8F8EE; }
+.score-option.selected.s5 { border-color: var(--color-score-5); background: #E0F5E8; }
+@media (max-width: 600px) { .score-selector { gap: 4px; } .score-option { padding: 10px 4px; } .score-number { font-size: 18px; } .score-label-text { font-size: 9px; } }
+
+/* BADGES */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+  border-radius: 999px; font-size: 12px; font-weight: 500;
+}
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-neutral { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+.badge-primary { background: var(--color-primary-light); color: var(--color-primary); }
+
+/* BAR CHART */
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-md); }
+.bar-row { display: flex; align-items: center; gap: var(--space-md); }
+.bar-label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.bar-track { flex: 1; height: 28px; background: var(--color-surface-alt); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; min-width: 0; }
+.bar-fill.animated { min-width: 30px; }
+.bar-value { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; }
+@media (max-width: 600px) { .bar-label { width: 90px; font-size: 11px; } }
+
+/* PAGES */
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { margin-bottom: var(--space-2xl); }
+.page-header .t-label { margin-bottom: var(--space-sm); }
+.page-header .t-display { margin-bottom: var(--space-md); }
+.page-header .t-body { color: var(--color-text-secondary); max-width: 600px; }
+.section-divider { height: 1px; background: var(--color-border); margin: var(--space-2xl) 0; }
+
+/* WELCOME */
+.welcome-hero { text-align: center; padding: var(--space-3xl) var(--space-lg); max-width: 640px; margin: 0 auto; }
+.welcome-icon { width: 72px; height: 72px; background: var(--color-primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); font-size: 32px; }
+.welcome-subtitle { color: var(--color-text-secondary); margin: var(--space-md) 0 var(--space-xl); font-size: 17px; line-height: 1.6; }
+.welcome-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md); margin: var(--space-xl) 0; text-align: left; }
+.welcome-feature { padding: var(--space-lg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); transition: box-shadow var(--transition-normal); }
+.welcome-feature:hover { box-shadow: var(--shadow-sm); }
+.welcome-feature-icon { font-size: 24px; margin-bottom: var(--space-sm); }
+.welcome-feature h3 { font-size: 15px; font-weight: 600; margin-bottom: var(--space-xs); }
+.welcome-feature p { font-size: 13px; color: var(--color-text-secondary); line-height: 1.5; }
+
+/* DYNAMIC TABLE */
+.dynamic-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.dynamic-table th { text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); border-bottom: 2px solid var(--color-border); background: var(--color-surface-alt); }
+.dynamic-table td { padding: 10px 12px; border-bottom: 1px solid var(--color-border-light); vertical-align: top; }
+.dynamic-table tr:last-child td { border-bottom: none; }
+.dynamic-table .form-input { font-size: 13px; padding: 6px 10px; }
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 calc(-1 * var(--space-lg)); padding: 0 var(--space-lg); }
+
+/* STATS */
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-md); margin: var(--space-lg) 0; }
+.stat-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg); text-align: center; }
+.stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; line-height: 1.2; }
+.stat-label { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+.stat-card.stat-danger .stat-value { color: var(--color-danger); }
+.stat-card.stat-warning .stat-value { color: var(--color-warning); }
+.stat-card.stat-success .stat-value { color: var(--color-success); }
+.stat-card.stat-primary .stat-value { color: var(--color-primary); }
+
+/* CHECKLIST */
+.checklist { display: flex; flex-direction: column; gap: var(--space-sm); }
+.checklist-item {
+  display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md);
+  border: 1px solid var(--color-border-light); border-radius: var(--radius-md);
+  transition: all var(--transition-fast); cursor: pointer;
+}
+.checklist-item:hover { background: var(--color-surface-alt); }
+.checklist-item.checked { background: var(--color-success-light); border-color: var(--color-success); }
+.checklist-item.checked .checklist-text { text-decoration: line-through; color: var(--color-text-tertiary); }
+.checklist-box {
+  width: 22px; height: 22px; border: 2px solid var(--color-border); border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+  transition: all var(--transition-fast);
+}
+.checklist-item.checked .checklist-box { background: var(--color-success); border-color: var(--color-success); }
+.checklist-text { font-size: 14px; line-height: 1.5; }
+
+/* PAGE NAV */
+.page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2xl); padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.page-nav-info { font-size: 13px; color: var(--color-text-tertiary); }
+
+/* FACILITY CARD */
+.facility-card {
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+  padding: var(--space-lg); margin-bottom: var(--space-md); transition: all var(--transition-normal);
+}
+.facility-card:hover { box-shadow: var(--shadow-sm); }
+.facility-card-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-md); }
+.facility-card-title { font-weight: 600; font-size: 16px; }
+.facility-card-meta { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; }
+.facility-card-delete { color: var(--color-text-tertiary); padding: 4px; border-radius: var(--radius-sm); transition: all var(--transition-fast); }
+.facility-card-delete:hover { color: var(--color-danger); background: var(--color-danger-light); }
+
+/* SUMMARY */
+.summary-section { margin-bottom: var(--space-2xl); }
+.summary-section-title { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-secondary); margin-bottom: var(--space-md); padding-bottom: var(--space-sm); border-bottom: 1px solid var(--color-border); }
+
+/* VALUATION IMPACT */
+.impact-card { background: linear-gradient(135deg, #fef3c7 0%, #fff7ed 100%); border: 1px solid #f59e0b; border-radius: var(--radius-lg); padding: var(--space-lg); margin: var(--space-lg) 0; }
+.impact-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; color: var(--color-danger); }
+.impact-label { font-size: 14px; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+/* EXPORT */
+.export-actions { display: flex; gap: var(--space-md); margin-top: var(--space-lg); flex-wrap: wrap; }
+
+/* PRINT */
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; background: var(--color-text);
+  color: #fff; padding: 12px 20px; border-radius: var(--radius-md);
+  font-size: 14px; z-index: 1000; opacity: 0; transform: translateY(10px);
+  transition: all var(--transition-normal); max-width: 360px;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* ACCESSIBILITY */
+.skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary); color: #fff; padding: 8px 16px; z-index: 200; font-size: 14px; }
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+*:focus:not(:focus-visible) { outline: none; }
+
+/* REDUCED MOTION */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* PRINT */
+@media print {
+  .sidebar, .mobile-header, .toast, .btn-group, .skip-link, .page-nav, .export-actions { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .page { display: block !important; page-break-inside: avoid; }
+  .content-area { max-width: 100%; padding: 0; }
+  .card { break-inside: avoid; box-shadow: none !important; border: 1px solid #ddd; }
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<div class="app">
+  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Playbook sections">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Exit Planning Playbook #18</div>
+      <div class="sidebar-brand-title">Facility & Lease Review</div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label">Your progress</div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text" id="progressText">0% complete</div>
+    </div>
+    <div class="sidebar-nav" id="sidebarNav"></div>
+    <div class="sidebar-score">
+      <div class="sidebar-score-label">Readiness Score</div>
+      <div class="sidebar-score-value" id="sidebarScore">--<span class="sidebar-score-max"> / 100</span></div>
+      <div class="sidebar-score-desc" id="sidebarScoreDesc">Complete assessments to see your score</div>
+    </div>
+  </nav>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <div class="main-content" id="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" id="menuToggle" aria-label="Toggle navigation"><span></span></button>
+      <div style="font-weight:600;font-size:15px;">Playbook #18</div>
+    </div>
+    <div class="content-area" id="contentArea"></div>
+  </div>
+</div>
+<div class="toast" id="toast" aria-live="polite" role="status"></div>
+
+<script>
+const STORAGE_KEY = 'exitosx-pb18-facility-lease-review';
+// Migrate from old key
+(function() { const old = localStorage.getItem('pb18_facility_lease_v1'); if (old && !localStorage.getItem(STORAGE_KEY)) { localStorage.setItem(STORAGE_KEY, old); localStorage.removeItem('pb18_facility_lease_v1'); } })();
+const PAGES = [
+  { id: 'welcome', title: 'Welcome', icon: '\uD83C\uDFE2', group: 'start' },
+  { id: 'inventory', title: 'Facility Inventory', icon: '\uD83D\uDCCB', group: 'audit' },
+  { id: 'leases', title: 'Lease Terms', icon: '\uD83D\uDCDD', group: 'audit' },
+  { id: 'ownership', title: 'Owned vs. Leased', icon: '\uD83C\uDFE0', group: 'audit' },
+  { id: 'equipment', title: 'Equipment Leases', icon: '\u2699\uFE0F', group: 'audit' },
+  { id: 'condition', title: 'Facility Condition', icon: '\uD83D\uDD27', group: 'assess' },
+  { id: 'environmental', title: 'Environmental', icon: '\uD83C\uDF3F', group: 'assess' },
+  { id: 'zoning', title: 'Zoning & Permits', icon: '\uD83D\uDCDC', group: 'assess' },
+  { id: 'presentation', title: 'Buyer Presentation', icon: '\uD83C\uDFAF', group: 'prepare' },
+  { id: 'mistakes', title: 'Common Mistakes', icon: '\u26D4', group: 'prepare' },
+  { id: 'summary', title: 'Summary & Export', icon: '\uD83C\uDFC1', group: 'prepare' },
+];
+const GROUP_LABELS = { start: 'Start', audit: 'Audit', assess: 'Assess', prepare: 'Prepare' };
+
+let state = loadState();
+
+function defaultState() {
+  return {
+    currentPage: 'welcome',
+    completedPages: [],
+    facilities: [],
+    leaseTerms: [],
+    ownershipType: '',
+    ownershipOption: '',
+    marketRent: '',
+    currentRent: '',
+    sqFootage: '',
+    equipmentLeases: [],
+    condition: { roof: 0, hvac: 0, electrical: 0, plumbing: 0, structure: 0, parking: 0, lifeSafety: 0, cosmetic: 0, notes: '' },
+    environmental: { needed: '', phaseI: '', phaseII: '', issues: '', notes: '' },
+    zoning: { compliance: 0, operatingPermits: 0, buildingPermits: 0, regulatoryCompliance: 0, notes: '' },
+    dataRoomChecklist: [false,false,false,false,false,false,false,false,false,false],
+    mistakeChecklist: [false,false,false,false],
+  };
+}
+
+function loadState() {
+  try { const s = localStorage.getItem(STORAGE_KEY); if (s) return {...defaultState(), ...JSON.parse(s)}; } catch(e) {}
+  return defaultState();
+}
+function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {} }
+
+/* NAV */
+function buildNav() {
+  const nav = document.getElementById('sidebarNav');
+  let html = '', lastGroup = '';
+  PAGES.forEach(p => {
+    if (p.group !== lastGroup) { html += `<div class="nav-section-label">${GROUP_LABELS[p.group]}</div>`; lastGroup = p.group; }
+    const active = state.currentPage === p.id ? 'active' : '';
+    const completed = state.completedPages.includes(p.id) ? 'completed' : '';
+    html += `<div class="nav-item ${active} ${completed}" data-page="${p.id}" role="button" tabindex="0">
+      <span class="nav-icon">${p.icon}</span><span>${p.title}</span>
+      <span class="nav-check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>
+    </div>`;
+  });
+  nav.innerHTML = html;
+  nav.querySelectorAll('.nav-item').forEach(el => {
+    el.addEventListener('click', () => goToPage(el.dataset.page));
+    el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();goToPage(el.dataset.page);}});
+  });
+}
+
+function goToPage(id) {
+  state.currentPage = id; saveState(); render(); buildNav(); updateProgress(); closeMobileMenu();
+  window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(() => {
+    const heading = document.querySelector('#contentArea .t-display, #contentArea .t-h1, #contentArea h1, #contentArea h2');
+    if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); }
+  }, 100);
+}
+function markComplete(id) { if(!state.completedPages.includes(id)){state.completedPages.push(id);saveState();buildNav();updateProgress();} }
+function updateProgress() {
+  const total = PAGES.length - 1, done = state.completedPages.filter(p=>p!=='welcome').length;
+  const pct = Math.round((done/total)*100);
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('progressText').textContent = pct+'% complete';
+  updateScore();
+}
+function updateScore() {
+  const score = calcScore();
+  document.getElementById('sidebarScore').innerHTML = score+'<span class="sidebar-score-max"> / 100</span>';
+  let d = 'Critical gaps remain';
+  if(score>=80) d='Strong readiness'; else if(score>=60) d='Moderate readiness'; else if(score>=40) d='Needs improvement';
+  document.getElementById('sidebarScoreDesc').textContent = d;
+}
+
+function calcScore() {
+  let s = 0;
+  // Facilities documented (15)
+  if(state.facilities.length>0) s += Math.min(15, state.facilities.length * 5);
+  // Lease terms (15)
+  if(state.leaseTerms.length>0){
+    const good = state.leaseTerms.filter(l=>l.assignable==='yes'||l.assignable==='consent').length;
+    s += Math.round((good/state.leaseTerms.length)*15);
+  }
+  // Ownership clarity (10)
+  if(state.ownershipType) s += 5;
+  if(state.ownershipOption) s += 5;
+  // Equipment (10)
+  if(state.equipmentLeases.length>0){
+    const assign = state.equipmentLeases.filter(e=>e.assignable==='yes').length;
+    s += Math.round((assign/state.equipmentLeases.length)*10);
+  } else if(state.completedPages.includes('equipment')) s += 10;
+  // Condition (20)
+  const c = state.condition;
+  const cond = (c.roof+c.hvac+c.electrical+c.plumbing+c.structure+c.parking+c.lifeSafety+c.cosmetic)/8;
+  s += Math.round(cond * 4);
+  // Environmental (10)
+  if(state.environmental.needed==='no') s += 10;
+  else if(state.environmental.phaseI==='clean') s += 10;
+  else if(state.environmental.phaseI==='done') s += 5;
+  // Zoning (10)
+  const z = state.zoning;
+  s += Math.round(((z.compliance+z.operatingPermits+z.buildingPermits+z.regulatoryCompliance)/4)*2);
+  // Data room (10)
+  const drDone = state.dataRoomChecklist.filter(Boolean).length;
+  s += Math.round((drDone/10)*10);
+  return Math.min(100,s);
+}
+
+/* MOBILE */
+document.getElementById('menuToggle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+});
+document.getElementById('sidebarOverlay').addEventListener('click', closeMobileMenu);
+function closeMobileMenu() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+/* RENDER */
+function render() {
+  const area = document.getElementById('contentArea');
+  const r = renderers[state.currentPage];
+  if(r) { area.innerHTML = `<div class="page active">${r()}</div>`; const init = inits[state.currentPage]; if(init) init(); }
+}
+
+function navBtns(prev, next) {
+  const p = prev ? `<button class="btn btn-secondary" onclick="goToPage('${prev}')">\u2190 Back</button>` : '<div></div>';
+  const nl = next === 'summary' ? 'View Summary \u2192' : 'Continue \u2192';
+  const n = next ? `<button class="btn btn-primary" onclick="markComplete('${state.currentPage}');goToPage('${next}')">${nl}</button>` : `<button class="btn btn-accent" onclick="markComplete('${state.currentPage}');updateProgress();">Mark Complete</button>`;
+  const idx = PAGES.findIndex(pg=>pg.id===state.currentPage);
+  return `<div class="page-nav"><div>${p}</div><div class="page-nav-info">Step ${idx+1} of ${PAGES.length}</div><div>${n}</div></div>`;
+}
+
+function scoreSelector(name, value, labels) {
+  return `<div class="score-selector" role="radiogroup" aria-label="${name}">${labels.map((l,i)=>{
+    const v=i+1, sel=value===v?'selected':'';
+    return `<label class="score-option s${v} ${sel}" tabindex="0" role="radio" aria-checked="${value===v}"><input type="radio" name="${name}" value="${v}" ${value===v?'checked':''}><span class="score-number">${v}</span><span class="score-label-text">${l}</span></label>`;
+  }).join('')}</div>`;
+}
+
+function bindScores(prefix, keys, stateObj) {
+  keys.forEach(key=>{
+    document.querySelectorAll(`[name="${prefix}_${key}"]`).forEach(r=>{
+      r.addEventListener('change',()=>{ stateObj[key]=parseInt(r.value); saveState(); updateScore(); render(); });
+    });
+  });
+  document.querySelectorAll('.score-option').forEach(el=>{
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.querySelector('input').click();}});
+  });
+}
+
+const renderers = {};
+const inits = {};
+
+/* WELCOME */
+renderers.welcome = () => `
+<div class="welcome-hero">
+  <div class="welcome-icon">\uD83C\uDFE2</div>
+  <div class="t-display">Facility & Lease Review</div>
+  <p class="welcome-subtitle">Your real estate is part of the deal -- whether you sell it, lease it, or transfer it. An unassignable lease can force a business relocation that destroys value. Get the terms right before the LOI.</p>
+  <div class="welcome-features">
+    <div class="welcome-feature"><div class="welcome-feature-icon">\uD83D\uDCCB</div><h3>Real Estate Audit</h3><p>Inventory every physical location and its status</p></div>
+    <div class="welcome-feature"><div class="welcome-feature-icon">\uD83D\uDCDD</div><h3>Lease Analysis</h3><p>Assignment clauses, terms, and landlord strategy</p></div>
+    <div class="welcome-feature"><div class="welcome-feature-icon">\uD83D\uDD27</div><h3>Condition Assessment</h3><p>Systems review and deferred maintenance planning</p></div>
+    <div class="welcome-feature"><div class="welcome-feature-icon">\uD83C\uDF3F</div><h3>Environmental & Zoning</h3><p>Compliance verification and risk identification</p></div>
+  </div>
+  <button class="btn btn-primary btn-lg" onclick="markComplete('welcome');goToPage('inventory');">Begin Assessment \u2192</button>
+  ${state.completedPages.length>1?'<div style="margin-top:var(--space-md)"><button class="btn btn-ghost" onclick="goToPage(\'summary\')">Jump to Summary</button></div>':''}
+</div>`;
+
+/* FACILITY INVENTORY */
+renderers.inventory = () => {
+  const cards = state.facilities.map((f,i) => `
+  <div class="facility-card">
+    <div class="facility-card-header">
+      <div>
+        <div class="facility-card-title">${f.name||'Facility '+(i+1)}</div>
+        <div class="facility-card-meta">${f.address||'No address'} \u2022 ${f.sqft?Number(f.sqft).toLocaleString()+' SF':''} \u2022 ${f.use||''}</div>
+      </div>
+      <button class="facility-card-delete" onclick="removeFacility(${i})">\u2715</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Ownership</label>
+        <select class="form-input" data-fld="ownership" data-fi="${i}">
+          <option value="">Select...</option>
+          <option value="leased" ${f.ownership==='leased'?'selected':''}>Leased</option>
+          <option value="owned" ${f.ownership==='owned'?'selected':''}>Owned by Seller</option>
+          <option value="related" ${f.ownership==='related'?'selected':''}>Related Party Owned</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Monthly Cost</label>
+        <input type="number" class="form-input" data-fld="cost" data-fi="${i}" value="${f.cost||''}" placeholder="$">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Employees at Location</label>
+        <input type="number" class="form-input" data-fld="employees" data-fi="${i}" value="${f.employees||''}" placeholder="Headcount">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Condition</label>
+        <select class="form-input" data-fld="condition" data-fi="${i}">
+          <option value="">Select...</option>
+          <option value="excellent" ${f.condition==='excellent'?'selected':''}>Excellent</option>
+          <option value="good" ${f.condition==='good'?'selected':''}>Good</option>
+          <option value="fair" ${f.condition==='fair'?'selected':''}>Fair</option>
+          <option value="poor" ${f.condition==='poor'?'selected':''}>Poor</option>
+        </select>
+      </div>
+    </div>
+  </div>`).join('');
+
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 1 of 10</div>
+    <div class="t-display">Facility Inventory</div>
+    <p class="t-body">Inventory every physical location associated with the business -- headquarters, manufacturing, warehouse, sales offices, storage.</p>
+  </div>
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <div class="t-h3" style="margin-bottom:var(--space-md)">Add a Facility</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm);margin-bottom:var(--space-sm)">
+      <input type="text" class="form-input" id="facName" placeholder="Facility name (e.g. HQ, Warehouse)">
+      <input type="text" class="form-input" id="facAddress" placeholder="Address">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-sm)">
+      <input type="number" class="form-input" id="facSqft" placeholder="Square footage">
+      <select class="form-input" id="facUse">
+        <option value="">Use / function...</option>
+        <option value="Headquarters">Headquarters</option>
+        <option value="Manufacturing">Manufacturing</option>
+        <option value="Warehouse">Warehouse</option>
+        <option value="Sales Office">Sales Office</option>
+        <option value="Retail">Retail</option>
+        <option value="Storage">Storage</option>
+        <option value="Other">Other</option>
+      </select>
+      <button class="btn btn-primary" onclick="addFacility()">Add Facility</button>
+    </div>
+  </div>
+  ${cards}
+  ${state.facilities.length>0?`<div class="stats-row"><div class="stat-card stat-primary"><div class="stat-value">${state.facilities.length}</div><div class="stat-label">Locations</div></div><div class="stat-card"><div class="stat-value">${state.facilities.reduce((a,f)=>a+(parseInt(f.sqft)||0),0).toLocaleString()}</div><div class="stat-label">Total SF</div></div><div class="stat-card"><div class="stat-value">$${state.facilities.reduce((a,f)=>a+(parseInt(f.cost)||0),0).toLocaleString()}</div><div class="stat-label">Monthly Cost</div></div></div>`:''}
+  ${navBtns('welcome','leases')}`;
+};
+
+inits.inventory = () => {
+  document.querySelectorAll('[data-fld][data-fi]').forEach(el=>{
+    const handler = ()=>{ state.facilities[parseInt(el.dataset.fi)][el.dataset.fld]=el.value; saveState(); updateScore(); };
+    el.addEventListener('change',handler); el.addEventListener('input',handler);
+  });
+  document.getElementById('facName')?.addEventListener('keydown',e=>{if(e.key==='Enter')addFacility();});
+};
+
+function addFacility() {
+  const name = document.getElementById('facName').value.trim();
+  if(!name) return;
+  state.facilities.push({
+    name, address: document.getElementById('facAddress').value,
+    sqft: document.getElementById('facSqft').value,
+    use: document.getElementById('facUse').value,
+    ownership:'', cost:'', employees:'', condition:''
+  });
+  state.leaseTerms.push({ landlord:'', remaining:'', renewal:'', assignable:'', guarantee:'', escalation:'', notes:'' });
+  saveState(); render();
+}
+function removeFacility(i) { state.facilities.splice(i,1); state.leaseTerms.splice(i,1); saveState(); render(); }
+
+/* LEASE TERMS */
+renderers.leases = () => {
+  if(state.facilities.length===0) return `<div class="page-header"><div class="t-label">Step 2 of 10</div><div class="t-display">Lease Terms & Assignability</div></div><div class="callout callout-warning">Add facilities first. <button class="btn btn-sm btn-secondary" style="margin-left:var(--space-sm)" onclick="goToPage('inventory')">Go Back</button></div>${navBtns('inventory','ownership')}`;
+
+  while(state.leaseTerms.length<state.facilities.length) state.leaseTerms.push({landlord:'',remaining:'',renewal:'',assignable:'',guarantee:'',escalation:'',notes:''});
+
+  const cards = state.facilities.map((f,i) => {
+    const l = state.leaseTerms[i];
+    const assignBadge = l.assignable==='yes'?'badge-success':l.assignable==='consent'?'badge-warning':l.assignable==='no'?'badge-danger':'badge-neutral';
+    const assignLabel = l.assignable==='yes'?'Freely Assignable':l.assignable==='consent'?'Consent Required':l.assignable==='no'?'Not Assignable':'Unknown';
+    return `
+    <div class="card" style="margin-bottom:var(--space-md)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-md)">
+        <div class="t-h3">${f.name} ${f.ownership==='owned'||f.ownership==='related'?'(Owned)':''}</div>
+        <span class="badge ${assignBadge}">${assignLabel}</span>
+      </div>
+      ${f.ownership==='owned'||f.ownership==='related'?'<div class="callout callout-accent" style="margin-bottom:var(--space-md)">This facility is owner/related-party owned. Review the Owned vs. Leased section for specific guidance.</div>':''}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Landlord</label>
+          <input type="text" class="form-input" data-lf="landlord" data-li="${i}" value="${l.landlord||''}" placeholder="Landlord name">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Remaining Term</label>
+          <select class="form-input" data-lf="remaining" data-li="${i}">
+            <option value="">Select...</option>
+            <option value="expired" ${l.remaining==='expired'?'selected':''}>Expired</option>
+            <option value="lt12" ${l.remaining==='lt12'?'selected':''}>Less than 12 months</option>
+            <option value="12-36" ${l.remaining==='12-36'?'selected':''}>12-36 months</option>
+            <option value="36-60" ${l.remaining==='36-60'?'selected':''}>3-5 years</option>
+            <option value="gt60" ${l.remaining==='gt60'?'selected':''}>5+ years</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Renewal Options</label>
+          <select class="form-input" data-lf="renewal" data-li="${i}">
+            <option value="">Select...</option>
+            <option value="none" ${l.renewal==='none'?'selected':''}>None</option>
+            <option value="one" ${l.renewal==='one'?'selected':''}>1 renewal option</option>
+            <option value="multiple" ${l.renewal==='multiple'?'selected':''}>Multiple renewals</option>
+            <option value="market" ${l.renewal==='market'?'selected':''}>Renewal at market rate</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Assignment Clause</label>
+          <select class="form-input" data-lf="assignable" data-li="${i}">
+            <option value="">Select...</option>
+            <option value="yes" ${l.assignable==='yes'?'selected':''}>Freely assignable</option>
+            <option value="consent" ${l.assignable==='consent'?'selected':''}>Consent not unreasonably withheld</option>
+            <option value="no" ${l.assignable==='no'?'selected':''}>Not assignable / restrictive</option>
+            <option value="unknown" ${l.assignable==='unknown'?'selected':''}>Unknown / not reviewed</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Personal Guarantee?</label>
+          <select class="form-input" data-lf="guarantee" data-li="${i}">
+            <option value="">Select...</option>
+            <option value="yes" ${l.guarantee==='yes'?'selected':''}>Yes</option>
+            <option value="no" ${l.guarantee==='no'?'selected':''}>No</option>
+            <option value="unknown" ${l.guarantee==='unknown'?'selected':''}>Unknown</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Rent Escalation</label>
+          <select class="form-input" data-lf="escalation" data-li="${i}">
+            <option value="">Select...</option>
+            <option value="fixed" ${l.escalation==='fixed'?'selected':''}>Fixed % annual</option>
+            <option value="cpi" ${l.escalation==='cpi'?'selected':''}>CPI-based</option>
+            <option value="market" ${l.escalation==='market'?'selected':''}>Market reset</option>
+            <option value="none" ${l.escalation==='none'?'selected':''}>No escalation</option>
+          </select>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 2 of 10</div>
+    <div class="t-display">Lease Terms & Assignability</div>
+    <p class="t-body">The lease assignment clause is the single most important real estate issue in a business sale. If your lease cannot be transferred, the entire deal structure may need to change.</p>
+  </div>
+  <div class="callout callout-danger" style="margin-bottom:var(--space-xl)">
+    <strong>Warning:</strong> Do NOT tell your landlord you are selling the business until the deal requires it. Approach for a "long-term renewal" rather than disclosing sale plans.
+  </div>
+  ${cards}
+  ${navBtns('inventory','ownership')}`;
+};
+
+inits.leases = () => {
+  document.querySelectorAll('[data-lf][data-li]').forEach(el=>{
+    const handler=()=>{ state.leaseTerms[parseInt(el.dataset.li)][el.dataset.lf]=el.value; saveState(); updateScore(); };
+    el.addEventListener('change',handler); el.addEventListener('input',handler);
+  });
+};
+
+/* OWNED VS LEASED */
+renderers.ownership = () => {
+  const opts = [
+    { id:'include', label:'Include in Sale', pros:'Clean transaction; no ongoing relationship', cons:'Higher total price may reduce buyer pool' },
+    { id:'separate', label:'Separate Sale', pros:'Potentially higher combined value', cons:'Complexity; two transactions; timing risk' },
+    { id:'leaseback', label:'Lease to Buyer', pros:'Ongoing income stream; lower buyer capital requirement', cons:'Ongoing landlord obligation; must be at market rate' },
+    { id:'saleleaseback', label:'Sale-Leaseback', pros:'Monetize real estate before sale; simplify business transaction', cons:'Lease expense reduces EBITDA; leaseback terms may be aggressive' },
+  ];
+
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 3 of 10</div>
+    <div class="t-display">Owned vs. Leased Property</div>
+    <p class="t-body">If the owner or a related entity owns the real estate and leases it to the business, this creates a related-party transaction requiring careful handling.</p>
+  </div>
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <div class="form-group">
+      <label class="form-label">Does the owner (or related entity) own the real estate?</label>
+      <div class="score-selector" style="max-width:400px">
+        <label class="score-option ${state.ownershipType==='yes'?'selected':''}" style="flex:1">
+          <input type="radio" name="ownType" value="yes" ${state.ownershipType==='yes'?'checked':''}>
+          <span class="score-number" style="font-size:16px">Yes</span>
+        </label>
+        <label class="score-option ${state.ownershipType==='no'?'selected':''}" style="flex:1">
+          <input type="radio" name="ownType" value="no" ${state.ownershipType==='no'?'checked':''}>
+          <span class="score-number" style="font-size:16px">No</span>
+        </label>
+        <label class="score-option ${state.ownershipType==='partial'?'selected':''}" style="flex:1">
+          <input type="radio" name="ownType" value="partial" ${state.ownershipType==='partial'?'checked':''}>
+          <span class="score-number" style="font-size:16px">Some</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  ${state.ownershipType==='yes'||state.ownershipType==='partial'?`
+  <div class="t-h2" style="margin-bottom:var(--space-md)">Real Estate Options</div>
+  <p class="t-small t-secondary" style="margin-bottom:var(--space-lg)">Select the option you are considering for your owned real estate:</p>
+  ${opts.map(o=>`
+  <div class="card" style="margin-bottom:var(--space-md);cursor:pointer;border:2px solid ${state.ownershipOption===o.id?'var(--color-primary)':'var(--color-border)'};${state.ownershipOption===o.id?'background:var(--color-primary-light)':''}" onclick="state.ownershipOption='${o.id}';saveState();updateScore();render();">
+    <div class="t-h3" style="margin-bottom:var(--space-xs)">${o.label}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-top:var(--space-sm)">
+      <div><span class="badge badge-success">Pros</span><div class="t-small" style="margin-top:var(--space-xs)">${o.pros}</div></div>
+      <div><span class="badge badge-warning">Cons</span><div class="t-small" style="margin-top:var(--space-xs)">${o.cons}</div></div>
+    </div>
+  </div>`).join('')}
+
+  <div class="section-divider"></div>
+  <div class="t-h2" style="margin-bottom:var(--space-md)">Market Rent Normalization</div>
+  <div class="callout callout-warning" style="margin-bottom:var(--space-lg)">If the business pays above- or below-market rent to a related party, the buyer will normalize EBITDA to market rate. This directly affects your valuation.</div>
+  <div class="card">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md)">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Current Rent ($/SF/yr)</label>
+        <input type="number" class="form-input" id="currentRent" value="${state.currentRent}" placeholder="e.g. 8">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Market Rent ($/SF/yr)</label>
+        <input type="number" class="form-input" id="marketRent" value="${state.marketRent}" placeholder="e.g. 15">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Total Square Footage</label>
+        <input type="number" class="form-input" id="sqFootage" value="${state.sqFootage}" placeholder="e.g. 10000">
+      </div>
+    </div>
+    <div id="rentImpact" style="margin-top:var(--space-lg)"></div>
+  </div>
+  `:'<div class="callout callout-info">If all facilities are leased from third-party landlords, focus on ensuring lease assignability in the previous step.</div>'}
+
+  ${navBtns('leases','equipment')}`;
+};
+
+inits.ownership = () => {
+  document.querySelectorAll('[name="ownType"]').forEach(r=>{
+    r.addEventListener('change',()=>{ state.ownershipType=r.value; saveState(); updateScore(); render(); });
+  });
+  document.querySelectorAll('.score-option').forEach(el=>{
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.querySelector('input').click();}});
+  });
+  ['currentRent','marketRent','sqFootage'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('input',()=>{ state[id]=el.value; saveState(); calcRentImpact(); });
+  });
+  calcRentImpact();
+};
+
+function calcRentImpact() {
+  const el = document.getElementById('rentImpact');
+  if(!el) return;
+  const curr=parseFloat(state.currentRent)||0, mkt=parseFloat(state.marketRent)||0, sf=parseFloat(state.sqFootage)||0;
+  if(!curr||!mkt||!sf){el.innerHTML='';return;}
+  const diff = (mkt - curr) * sf;
+  const evLow = diff * 4, evHigh = diff * 8;
+  const isBelow = diff > 0;
+  el.innerHTML = `
+  <div class="impact-card">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg)">
+      <div>
+        <div class="t-small t-secondary">Annual Rent Difference</div>
+        <div class="impact-value" style="color:${isBelow?'var(--color-danger)':'var(--color-success)'}">$${Math.abs(diff).toLocaleString()}/yr</div>
+        <div class="impact-label">${isBelow?'Below market -- buyer will add to expenses':'Above market -- potential EBITDA add-back'}</div>
+      </div>
+      <div>
+        <div class="t-small t-secondary">Estimated Valuation Impact</div>
+        <div class="impact-value" style="color:${isBelow?'var(--color-danger)':'var(--color-success)'}">$${Math.abs(evLow).toLocaleString()} - $${Math.abs(evHigh).toLocaleString()}</div>
+        <div class="impact-label">${isBelow?'Reduction in enterprise value (4-8x multiple)':'Potential value recovery'}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* EQUIPMENT */
+renderers.equipment = () => {
+  const cards = state.equipmentLeases.map((e,i)=>`
+  <div class="card" style="margin-bottom:var(--space-md)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-md)">
+      <div class="t-h3">${e.name||'Equipment '+(i+1)}</div>
+      <button class="facility-card-delete" onclick="removeEquipment(${i})">\u2715</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md)">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Lessor</label>
+        <input type="text" class="form-input" data-ef="lessor" data-ei="${i}" value="${e.lessor||''}" placeholder="Leasing company">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Monthly Payment</label>
+        <input type="number" class="form-input" data-ef="payment" data-ei="${i}" value="${e.payment||''}" placeholder="$">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Term Remaining</label>
+        <select class="form-input" data-ef="term" data-ei="${i}">
+          <option value="">Select...</option>
+          <option value="lt6" ${e.term==='lt6'?'selected':''}>< 6 months</option>
+          <option value="6-12" ${e.term==='6-12'?'selected':''}>6-12 months</option>
+          <option value="12-24" ${e.term==='12-24'?'selected':''}>1-2 years</option>
+          <option value="gt24" ${e.term==='gt24'?'selected':''}>2+ years</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Buyout Option</label>
+        <select class="form-input" data-ef="buyout" data-ei="${i}">
+          <option value="">Select...</option>
+          <option value="fmv" ${e.buyout==='fmv'?'selected':''}>Fair Market Value</option>
+          <option value="dollar" ${e.buyout==='dollar'?'selected':''}>$1 buyout</option>
+          <option value="fixed" ${e.buyout==='fixed'?'selected':''}>Fixed price</option>
+          <option value="none" ${e.buyout==='none'?'selected':''}>No buyout</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Assignable?</label>
+        <select class="form-input" data-ef="assignable" data-ei="${i}">
+          <option value="">Select...</option>
+          <option value="yes" ${e.assignable==='yes'?'selected':''}>Yes</option>
+          <option value="consent" ${e.assignable==='consent'?'selected':''}>With consent</option>
+          <option value="no" ${e.assignable==='no'?'selected':''}>No</option>
+        </select>
+      </div>
+    </div>
+  </div>`).join('');
+
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 4 of 10</div>
+    <div class="t-display">Equipment Leases & Capital Equipment</div>
+    <p class="t-body">Equipment leases and major capital equipment require separate review. Like real estate leases, they may or may not be assignable.</p>
+  </div>
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <div class="t-h3" style="margin-bottom:var(--space-md)">Add Equipment Lease</div>
+    <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap">
+      <input type="text" class="form-input" id="eqName" placeholder="Equipment description" style="flex:1;min-width:200px">
+      <button class="btn btn-primary" onclick="addEquipment()">Add Equipment</button>
+    </div>
+  </div>
+  ${cards}
+  ${state.equipmentLeases.length>0?`<div class="stats-row"><div class="stat-card stat-primary"><div class="stat-value">${state.equipmentLeases.length}</div><div class="stat-label">Equipment Leases</div></div><div class="stat-card"><div class="stat-value">$${state.equipmentLeases.reduce((a,e)=>a+(parseInt(e.payment)||0),0).toLocaleString()}</div><div class="stat-label">Monthly Payments</div></div></div>`:''}
+  ${navBtns('ownership','condition')}`;
+};
+
+inits.equipment = () => {
+  document.querySelectorAll('[data-ef][data-ei]').forEach(el=>{
+    const h=()=>{ state.equipmentLeases[parseInt(el.dataset.ei)][el.dataset.ef]=el.value; saveState(); updateScore(); };
+    el.addEventListener('change',h); el.addEventListener('input',h);
+  });
+  document.getElementById('eqName')?.addEventListener('keydown',e=>{if(e.key==='Enter')addEquipment();});
+};
+
+function addEquipment() {
+  const name=document.getElementById('eqName').value.trim();
+  if(!name)return;
+  state.equipmentLeases.push({name,lessor:'',payment:'',term:'',buyout:'',assignable:''});
+  saveState(); render();
+}
+function removeEquipment(i) { state.equipmentLeases.splice(i,1); saveState(); render(); }
+
+/* CONDITION */
+renderers.condition = () => {
+  const c = state.condition;
+  const systems = [
+    { key:'roof', label:'Roof', desc:'Leaks, age, remaining life, warranty status (typical life: 20-30 years)' },
+    { key:'hvac', label:'HVAC', desc:'Age, condition, energy efficiency, maintenance records (typical life: 15-20 years)' },
+    { key:'electrical', label:'Electrical', desc:'Panel capacity, code compliance, recent upgrades (typical life: 25-40 years)' },
+    { key:'plumbing', label:'Plumbing', desc:'Condition, code compliance, backflow prevention (typical life: 20-50 years)' },
+    { key:'structure', label:'Structure', desc:'Foundation, load-bearing walls, structural integrity (typical life: 50+ years)' },
+    { key:'parking', label:'Parking & Exterior', desc:'Paving condition, drainage, ADA compliance (repave every 15-20 years)' },
+    { key:'lifeSafety', label:'Life Safety', desc:'Fire suppression, alarms, emergency exits, ADA (ongoing compliance)' },
+    { key:'cosmetic', label:'Cosmetic', desc:'Paint, flooring, fixtures, general appearance (refresh every 5-10 years)' },
+  ];
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 5 of 10</div>
+    <div class="t-display">Facility Condition Assessment</div>
+    <p class="t-body">Buyers (especially PE-backed) may commission a facility condition assessment. It is better to know what they will find before they find it.</p>
+  </div>
+  <div class="callout callout-accent" style="margin-bottom:var(--space-xl)">
+    Address deferred maintenance in priority order: (1) Safety & compliance, (2) Operational impact, (3) Cosmetic.
+  </div>
+  ${systems.map(sys=>`
+  <div class="card" style="margin-bottom:var(--space-md)">
+    <div class="form-group" style="margin-bottom:0">
+      <label class="form-label">${sys.label}</label>
+      <p class="form-hint" style="margin-bottom:var(--space-sm)">${sys.desc}</p>
+      ${scoreSelector('cond_'+sys.key, c[sys.key]||0, ['Poor', 'Fair', 'Adequate', 'Good', 'Excellent'])}
+    </div>
+  </div>`).join('')}
+  <div class="card">
+    <div class="form-group" style="margin-bottom:0">
+      <label class="form-label">Deferred Maintenance Notes</label>
+      <textarea class="form-input" id="condNotes" placeholder="Known issues, planned repairs, cost estimates...">${c.notes||''}</textarea>
+    </div>
+  </div>
+  ${navBtns('equipment','environmental')}`;
+};
+
+inits.condition = () => {
+  bindScores('cond',['roof','hvac','electrical','plumbing','structure','parking','lifeSafety','cosmetic'],state.condition);
+  const n=document.getElementById('condNotes');
+  if(n) n.addEventListener('input',()=>{state.condition.notes=n.value;saveState();});
+};
+
+/* ENVIRONMENTAL */
+renderers.environmental = () => {
+  const e = state.environmental;
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 6 of 10</div>
+    <div class="t-display">Environmental Concerns</div>
+    <p class="t-body">Environmental liability is potentially unlimited and can exceed the entire value of the business. Buyers take this extremely seriously.</p>
+  </div>
+  <div class="callout callout-danger" style="margin-bottom:var(--space-xl)">
+    If you own the real estate or have a long operating history, commission a Phase I ESA before going to market. A clean Phase I is a powerful asset. An unpleasant surprise during buyer diligence can terminate the deal.
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-md)">
+    <div class="form-group">
+      <label class="form-label">Does your business trigger environmental assessment needs?</label>
+      <p class="form-hint" style="margin-bottom:var(--space-sm)">Manufacturing, automotive, dry cleaning, chemical use, pre-1980 buildings, underground storage tanks, proximity to waterways</p>
+      <div class="score-selector" style="max-width:400px">
+        <label class="score-option ${e.needed==='yes'?'selected':''}" style="flex:1"><input type="radio" name="envNeeded" value="yes" ${e.needed==='yes'?'checked':''}><span class="score-number" style="font-size:16px">Yes</span></label>
+        <label class="score-option ${e.needed==='no'?'selected':''}" style="flex:1"><input type="radio" name="envNeeded" value="no" ${e.needed==='no'?'checked':''}><span class="score-number" style="font-size:16px">No</span></label>
+        <label class="score-option ${e.needed==='unsure'?'selected':''}" style="flex:1"><input type="radio" name="envNeeded" value="unsure" ${e.needed==='unsure'?'checked':''}><span class="score-number" style="font-size:16px">Unsure</span></label>
+      </div>
+    </div>
+  </div>
+
+  ${e.needed==='yes'||e.needed==='unsure'?`
+  <div class="card" style="margin-bottom:var(--space-md)">
+    <div class="t-h3" style="margin-bottom:var(--space-md)">Assessment Status</div>
+    <div class="form-group">
+      <label class="form-label">Phase I ESA</label>
+      <div class="form-hint" style="margin-bottom:var(--space-sm)">Records review, site inspection, interviews -- no sampling. Cost: $2,000-$5,000</div>
+      <select class="form-input" id="phaseI" style="max-width:300px">
+        <option value="">Select status...</option>
+        <option value="not_done" ${e.phaseI==='not_done'?'selected':''}>Not done</option>
+        <option value="scheduled" ${e.phaseI==='scheduled'?'selected':''}>Scheduled</option>
+        <option value="done" ${e.phaseI==='done'?'selected':''}>Complete -- findings identified</option>
+        <option value="clean" ${e.phaseI==='clean'?'selected':''}>Complete -- clean</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Phase II ESA (if applicable)</label>
+      <div class="form-hint" style="margin-bottom:var(--space-sm)">Soil and groundwater sampling. Cost: $5,000-$25,000</div>
+      <select class="form-input" id="phaseII" style="max-width:300px">
+        <option value="">Select status...</option>
+        <option value="not_needed" ${e.phaseII==='not_needed'?'selected':''}>Not needed</option>
+        <option value="not_done" ${e.phaseII==='not_done'?'selected':''}>Needed but not done</option>
+        <option value="scheduled" ${e.phaseII==='scheduled'?'selected':''}>Scheduled</option>
+        <option value="clean" ${e.phaseII==='clean'?'selected':''}>Complete -- within limits</option>
+        <option value="contamination" ${e.phaseII==='contamination'?'selected':''}>Complete -- contamination found</option>
+      </select>
+    </div>
+    ${e.phaseII==='contamination'?'<div class="callout callout-danger" style="margin-bottom:var(--space-md)">Remediation costs range from $10,000 to $1,000,000+. This issue must be addressed before going to market. Consult an environmental attorney immediately.</div>':''}
+  </div>
+  `:''}
+
+  <div class="card">
+    <div class="form-group" style="margin-bottom:0">
+      <label class="form-label">Environmental Notes</label>
+      <textarea class="form-input" id="envNotes" placeholder="Known issues, remediation status, attorney consultations...">${e.notes||''}</textarea>
+    </div>
+  </div>
+  ${navBtns('condition','zoning')}`;
+};
+
+inits.environmental = () => {
+  document.querySelectorAll('[name="envNeeded"]').forEach(r=>{
+    r.addEventListener('change',()=>{state.environmental.needed=r.value;saveState();updateScore();render();});
+  });
+  document.querySelectorAll('.score-option').forEach(el=>{
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.querySelector('input').click();}});
+  });
+  ['phaseI','phaseII'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('change',()=>{state.environmental[id]=el.value;saveState();updateScore();render();});
+  });
+  const n=document.getElementById('envNotes');
+  if(n) n.addEventListener('input',()=>{state.environmental.notes=n.value;saveState();});
+};
+
+/* ZONING */
+renderers.zoning = () => {
+  const z = state.zoning;
+  const items = [
+    { key:'compliance', label:'Zoning Compliance', desc:'Operations are a permitted use under current zoning. Grandfathered status understood and documented.' },
+    { key:'operatingPermits', label:'Operating Permits', desc:'Business license, certificate of occupancy, health permits, fire permits -- all current.' },
+    { key:'buildingPermits', label:'Building Permits', desc:'All renovations and improvements done with proper permits and inspections.' },
+    { key:'regulatoryCompliance', label:'Regulatory Compliance', desc:'ADA, OSHA, EPA, state and local regulatory compliance documented and current.' },
+  ];
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 7 of 10</div>
+    <div class="t-display">Zoning, Permits & Compliance</div>
+    <p class="t-body">Verify that your operations comply with all local zoning, permitting, and regulatory requirements. A change of ownership can eliminate grandfathered status.</p>
+  </div>
+  <div class="callout callout-warning" style="margin-bottom:var(--space-xl)">
+    If you are operating as a legal non-conforming use (grandfathered), understand what triggers loss of that status. In many jurisdictions, a change of ownership or use modification can eliminate it.
+  </div>
+  ${items.map(item=>`
+  <div class="card" style="margin-bottom:var(--space-md)">
+    <div class="form-group" style="margin-bottom:0">
+      <label class="form-label">${item.label}</label>
+      <p class="form-hint" style="margin-bottom:var(--space-sm)">${item.desc}</p>
+      ${scoreSelector('zone_'+item.key, z[item.key]||0, ['Unknown', 'Issues', 'Partial', 'Good', 'Verified'])}
+    </div>
+  </div>`).join('')}
+  <div class="card">
+    <div class="form-group" style="margin-bottom:0">
+      <label class="form-label">Compliance Notes</label>
+      <textarea class="form-input" id="zoneNotes" placeholder="Non-conforming uses, pending permit issues, ADA concerns...">${z.notes||''}</textarea>
+    </div>
+  </div>
+  ${navBtns('environmental','presentation')}`;
+};
+
+inits.zoning = () => {
+  bindScores('zone',['compliance','operatingPermits','buildingPermits','regulatoryCompliance'],state.zoning);
+  const n=document.getElementById('zoneNotes');
+  if(n) n.addEventListener('input',()=>{state.zoning.notes=n.value;saveState();});
+};
+
+/* PRESENTATION / DATA ROOM */
+renderers.presentation = () => {
+  const items = [
+    'Current lease agreements (all locations)',
+    'Lease assignment provisions highlighted',
+    'Market rent opinion (if owner-occupied)',
+    'Phase I ESA (if applicable)',
+    'Facility condition report or photos',
+    'Equipment lease schedule',
+    'Certificate of occupancy',
+    'Zoning confirmation letter',
+    'Property tax records (3 years)',
+    'Insurance certificates',
+  ];
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 8 of 10</div>
+    <div class="t-display">Buyer Presentation & Data Room</div>
+    <p class="t-body">Prepare the real estate package that will be presented during buyer diligence. Having these documents ready demonstrates preparedness and reduces disputes.</p>
+  </div>
+  <div class="callout callout-info" style="margin-bottom:var(--space-xl)">
+    <strong>Key action:</strong> Get a commercial real estate broker to provide a written market rent opinion for your property. This independent valuation will be requested during diligence.
+  </div>
+  <div class="card">
+    <div class="t-h3" style="margin-bottom:var(--space-md)">Data Room Checklist</div>
+    <div class="checklist">
+      ${items.map((item,i)=>{
+        const checked = state.dataRoomChecklist[i];
+        return `
+        <div class="checklist-item ${checked?'checked':''}" data-dr="${i}">
+          <div class="checklist-box">${checked?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" fill="none"/></svg>':''}</div>
+          <div class="checklist-text">${item}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+  <div id="drStats" class="stats-row" style="margin-top:var(--space-lg)"></div>
+  ${navBtns('zoning','mistakes')}`;
+};
+
+inits.presentation = () => {
+  document.querySelectorAll('[data-dr]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const i=parseInt(el.dataset.dr);
+      state.dataRoomChecklist[i]=!state.dataRoomChecklist[i];
+      saveState(); updateScore(); render();
+    });
+  });
+  const el=document.getElementById('drStats');
+  if(el){
+    const done=state.dataRoomChecklist.filter(Boolean).length;
+    const cls=done>=8?'stat-success':done>=5?'stat-warning':'stat-danger';
+    el.innerHTML=`<div class="stat-card ${cls}"><div class="stat-value">${done}/10</div><div class="stat-label">Documents Ready</div></div>`;
+  }
+};
+
+/* MISTAKES */
+renderers.mistakes = () => {
+  const mistakes = [
+    { title:'Not Reading Your Own Lease', desc:'Many owners have not read their lease in years and do not know the assignment clause, expiration date, or renewal options.', fix:'Read every lease cover to cover. Summarize key terms. Identify issues 18+ months before going to market.' },
+    { title:'Below-Market Related-Party Rent', desc:'Owner charges $5/SF when market is $15/SF. This inflates EBITDA and the buyer will normalize, wiping out value.', fix:'Adjust to market rate 12-24 months before the sale so normalized EBITDA reflects reality.' },
+    { title:'Ignoring Deferred Maintenance', desc:'A failing roof, duct-taped HVAC, or potholed parking lot will be found and deducted with a risk premium.', fix:'Invest in necessary maintenance. $50K in deferred maintenance becomes $75K-$100K in buyer price reduction.' },
+    { title:'Not Planning the Landlord Conversation', desc:'Approaching mid-deal gives the landlord leverage to demand rent increases, modifications, or assignment fees.', fix:'Secure a new long-term lease or confirm assignability before the deal process begins.' },
+  ];
+  return `
+  <div class="page-header">
+    <div class="t-label">Step 9 of 10</div>
+    <div class="t-display">Common Mistakes</div>
+    <p class="t-body">Review these frequent pitfalls and confirm you have addressed each one.</p>
+  </div>
+  <div class="checklist">
+    ${mistakes.map((m,i)=>{
+      const checked=state.mistakeChecklist[i];
+      return `
+      <div class="checklist-item ${checked?'checked':''}" data-mk="${i}">
+        <div class="checklist-box">${checked?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" fill="none"/></svg>':''}</div>
+        <div>
+          <div class="checklist-text"><strong>${m.title}</strong></div>
+          <div class="form-hint" style="margin:var(--space-xs) 0">${m.desc}</div>
+          <div class="callout callout-info" style="margin-top:var(--space-sm);padding:var(--space-sm) var(--space-md)">${m.fix}</div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>
+  ${navBtns('presentation','summary')}`;
+};
+
+inits.mistakes = () => {
+  document.querySelectorAll('[data-mk]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      state.mistakeChecklist[parseInt(el.dataset.mk)]=!state.mistakeChecklist[parseInt(el.dataset.mk)];
+      saveState(); render();
+    });
+  });
+};
+
+/* SUMMARY */
+renderers.summary = () => {
+  const score = calcScore();
+  const scoreColor = score>=80?'var(--color-success)':score>=60?'var(--color-warning)':score>=40?'#D97706':'var(--color-danger)';
+  const scoreLabel = score>=80?'Strong Readiness':score>=60?'Moderate -- Needs Work':score>=40?'Significant Gaps':'Critical Issues';
+
+  const totalSF = state.facilities.reduce((a,f)=>a+(parseInt(f.sqft)||0),0);
+  const totalCost = state.facilities.reduce((a,f)=>a+(parseInt(f.cost)||0),0);
+  const assignable = state.leaseTerms.filter(l=>l.assignable==='yes'||l.assignable==='consent').length;
+  const drDone = state.dataRoomChecklist.filter(Boolean).length;
+
+  const barData = [
+    { label:'Facilities', value:state.facilities.length>0?Math.min(100,state.facilities.length*33):0, color:'var(--color-primary)' },
+    { label:'Lease Terms', value:state.facilities.length>0?Math.round((assignable/state.facilities.length)*100):0, color:'var(--color-accent)' },
+    { label:'Condition', value:Math.round(((state.condition.roof+state.condition.hvac+state.condition.electrical+state.condition.plumbing+state.condition.structure+state.condition.parking+state.condition.lifeSafety+state.condition.cosmetic)/40)*100), color:'#6366f1' },
+    { label:'Environmental', value:state.environmental.needed==='no'?100:state.environmental.phaseI==='clean'?100:state.environmental.phaseI==='done'?50:0, color:'#059669' },
+    { label:'Zoning', value:Math.round(((state.zoning.compliance+state.zoning.operatingPermits+state.zoning.buildingPermits+state.zoning.regulatoryCompliance)/20)*100), color:'#0891b2' },
+    { label:'Data Room', value:Math.round((drDone/10)*100), color:'#c026d3' },
+  ];
+
+  return `
+  <div class="page-header">
+    <div class="t-label">Summary Dashboard</div>
+    <div class="t-display">Facility & Lease Readiness Report</div>
+  </div>
+
+  <div style="text-align:center;margin-bottom:var(--space-2xl)">
+    <svg width="200" height="120" viewBox="0 0 200 120">
+      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="var(--color-border)" stroke-width="16" stroke-linecap="round"/>
+      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="${scoreColor}" stroke-width="16" stroke-linecap="round"
+        stroke-dasharray="${score*2.51} 251" style="transition:stroke-dasharray 1s ease;"/>
+      <text x="100" y="85" text-anchor="middle" font-family="Georgia" font-size="36" font-weight="700" fill="${scoreColor}">${score}</text>
+      <text x="100" y="110" text-anchor="middle" font-size="12" fill="var(--color-text-secondary)">${scoreLabel}</text>
+    </svg>
+  </div>
+
+  <div class="stats-row" style="margin-bottom:var(--space-2xl)">
+    <div class="stat-card stat-primary"><div class="stat-value">${state.facilities.length}</div><div class="stat-label">Locations</div></div>
+    <div class="stat-card"><div class="stat-value">${totalSF.toLocaleString()}</div><div class="stat-label">Total SF</div></div>
+    <div class="stat-card ${assignable<state.facilities.length?'stat-warning':'stat-success'}"><div class="stat-value">${assignable}/${state.facilities.length}</div><div class="stat-label">Assignable Leases</div></div>
+    <div class="stat-card ${drDone<7?'stat-warning':'stat-success'}"><div class="stat-value">${drDone}/10</div><div class="stat-label">Data Room Docs</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:var(--space-lg)">
+    <div class="t-h2" style="margin-bottom:var(--space-lg)">Category Scores</div>
+    <div class="bar-chart">
+      ${barData.map(b=>`
+      <div class="bar-row">
+        <div class="bar-label">${b.label}</div>
+        <div class="bar-track"><div class="bar-fill animated" style="width:${b.value}%;background:${b.color}"><span class="bar-value">${b.value}%</span></div></div>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  ${state.facilities.length>0?`
+  <div class="summary-section">
+    <div class="summary-section-title">Facility Inventory</div>
+    <div class="table-scroll">
+      <table class="dynamic-table">
+        <thead><tr><th>Facility</th><th>SF</th><th>Ownership</th><th>Monthly Cost</th><th>Condition</th><th>Assignable</th></tr></thead>
+        <tbody>
+        ${state.facilities.map((f,i)=>{
+          const l=state.leaseTerms[i]||{};
+          const condBadge = f.condition==='excellent'||f.condition==='good'?'badge-success':f.condition==='fair'?'badge-warning':f.condition==='poor'?'badge-danger':'badge-neutral';
+          const assignBadge = l.assignable==='yes'?'badge-success':l.assignable==='consent'?'badge-warning':l.assignable==='no'?'badge-danger':'badge-neutral';
+          return `<tr>
+            <td><strong>${f.name}</strong><div style="font-size:12px;color:var(--color-text-tertiary)">${f.use||''}</div></td>
+            <td>${f.sqft?Number(f.sqft).toLocaleString():'-'}</td>
+            <td>${f.ownership||'-'}</td>
+            <td>${f.cost?'$'+Number(f.cost).toLocaleString():'-'}</td>
+            <td><span class="badge ${condBadge}">${f.condition||'Unknown'}</span></td>
+            <td><span class="badge ${assignBadge}">${l.assignable||'Unknown'}</span></td>
+          </tr>`;
+        }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`:''}
+
+  ${state.equipmentLeases.length>0?`
+  <div class="summary-section">
+    <div class="summary-section-title">Equipment Leases</div>
+    ${state.equipmentLeases.map(e=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-sm) 0;border-bottom:1px solid var(--color-border-light)">
+      <div><strong>${e.name}</strong><span style="font-size:12px;color:var(--color-text-tertiary);margin-left:var(--space-sm)">${e.lessor||''}</span></div>
+      <div style="display:flex;gap:var(--space-sm);align-items:center">
+        <span style="font-size:14px">${e.payment?'$'+Number(e.payment).toLocaleString()+'/mo':''}</span>
+        <span class="badge ${e.assignable==='yes'?'badge-success':e.assignable==='no'?'badge-danger':'badge-neutral'}">${e.assignable==='yes'?'Assignable':e.assignable==='no'?'Not Assignable':'Unknown'}</span>
+      </div>
+    </div>`).join('')}
+  </div>`:''}
+
+  ${(state.currentRent&&state.marketRent&&state.sqFootage)?`
+  <div class="summary-section">
+    <div class="summary-section-title">Rent Normalization Impact</div>
+    <div id="summaryRentImpact"></div>
+  </div>`:''}
+
+  <div class="callout callout-accent" style="margin:var(--space-xl) 0">
+    <strong>Final Thought:</strong> Real estate is the physical foundation of your business. Make sure it is as transferable as the enterprise itself.
+  </div>
+
+  <div class="export-actions">
+    <button class="btn btn-primary" onclick="exportReport()">Export as Text</button>
+    <button class="btn btn-secondary" onclick="window.print()">Print Summary</button>
+    <button class="btn btn-ghost" onclick="if(confirm('This will clear all your data. Are you sure?')){localStorage.removeItem('${STORAGE_KEY}');state=defaultState();saveState();goToPage('welcome');}">Reset All Data</button>
+  </div>
+  ${navBtns('mistakes',null)}`;
+};
+
+inits.summary = () => {
+  if(state.currentRent&&state.marketRent&&state.sqFootage){
+    const el=document.getElementById('summaryRentImpact');
+    if(el){
+      const curr=parseFloat(state.currentRent)||0,mkt=parseFloat(state.marketRent)||0,sf=parseFloat(state.sqFootage)||0;
+      const diff=(mkt-curr)*sf,evLow=diff*4,evHigh=diff*8,isBelow=diff>0;
+      el.innerHTML=`<div class="impact-card"><div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg)"><div><div class="t-small t-secondary">Annual Rent Difference</div><div class="impact-value" style="color:${isBelow?'var(--color-danger)':'var(--color-success)'}">$${Math.abs(diff).toLocaleString()}/yr</div></div><div><div class="t-small t-secondary">Estimated Valuation Impact</div><div class="impact-value" style="color:${isBelow?'var(--color-danger)':'var(--color-success)'}">$${Math.abs(evLow).toLocaleString()} - $${Math.abs(evHigh).toLocaleString()}</div></div></div></div>`;
+    }
+  }
+};
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function exportReport() {
+  const score=calcScore();
+  let t=`FACILITY & LEASE READINESS REPORT\n${'='.repeat(40)}\nReadiness Score: ${score}/100\nDate: ${new Date().toLocaleDateString()}\n\n`;
+  t+=`FACILITIES (${state.facilities.length})\n`;
+  state.facilities.forEach((f,i)=>{
+    const l=state.leaseTerms[i]||{};
+    t+=`- ${f.name} | ${f.sqft||'?'} SF | ${f.ownership||'?'} | $${f.cost||'?'}/mo | Assignable: ${l.assignable||'?'}\n`;
+  });
+  t+=`\nEQUIPMENT LEASES (${state.equipmentLeases.length})\n`;
+  state.equipmentLeases.forEach(e=>{t+=`- ${e.name} | ${e.lessor||'?'} | $${e.payment||'?'}/mo | Assignable: ${e.assignable||'?'}\n`;});
+  t+=`\nCONDITION: Roof:${state.condition.roof} HVAC:${state.condition.hvac} Electrical:${state.condition.electrical} Plumbing:${state.condition.plumbing} Structure:${state.condition.structure} Parking:${state.condition.parking} Safety:${state.condition.lifeSafety} Cosmetic:${state.condition.cosmetic}\n`;
+  t+=`\nENVIRONMENTAL: Needed:${state.environmental.needed||'-'} Phase I:${state.environmental.phaseI||'-'} Phase II:${state.environmental.phaseII||'-'}\n`;
+  t+=`\nDATA ROOM: ${state.dataRoomChecklist.filter(Boolean).length}/10 documents ready\n`;
+  const blob=new Blob([t],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='facility-lease-readiness-report.txt';a.click();URL.revokeObjectURL(url);
+}
+
+/* INIT */
+buildNav(); render(); updateProgress();
+</script>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('embedded') === 'true') {
+    // Hide playbook's own chrome
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileHeader = document.querySelector('.mobile-header');
+    var mainContent = document.querySelector('.main-content');
+    if (sidebar) sidebar.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    if (mobileHeader) mobileHeader.style.display = 'none';
+    if (mainContent) {
+      mainContent.style.marginLeft = '0';
+      mainContent.style.minHeight = 'auto';
+    }
+
+    // Navigate to specific section if requested
+    var section = params.get('section');
+    if (section !== null) {
+      var sectionIndex = parseInt(section, 10);
+      if (typeof navigateToSection === 'function') {
+        setTimeout(function() { navigateToSection(sectionIndex); }, 100);
+      }
+    }
+
+    // Forward score updates to parent
+    var origDispatch = window.dispatchEvent.bind(window);
+    window.addEventListener('playbook:score-update', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:score-update',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Forward section changes to parent
+    window.addEventListener('playbook:section-change', function(e) {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'playbook:section-change',
+          detail: e.detail
+        }, '*');
+      }
+    });
+
+    // Listen for commands from parent
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate-section') {
+        if (typeof navigateToSection === 'function') {
+          navigateToSection(e.data.sectionIndex);
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -695,7 +695,7 @@ function StepContent({
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
         >
-          <ResultsReveal results={results} basics={basics} profile={profile!} scan={scan!} />
+          <ResultsReveal results={results} basics={basics} profile={profile!} scan={scan!} industryName={classification?.primaryIndustry?.name} />
         </motion.div>
       )}
     </AnimatePresence>
