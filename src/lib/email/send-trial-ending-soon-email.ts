@@ -108,7 +108,7 @@ export async function sendTrialEndingSoonEmail(params: TrialEndingSoonEmailParam
               </p>
 
               <p style="margin: 0 0 32px 0; font-size: 14px; color: #888888; text-align: center;">
-                Keep full access for <strong>$149/month</strong>.
+                Keep full access for <strong>$99/month</strong>.
               </p>
 
               <!-- CTA Button -->

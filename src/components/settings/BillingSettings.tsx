@@ -39,12 +39,20 @@ export function BillingSettings() {
     if (checkoutSessionId) {
       setCheckoutSuccess(true)
       refetch()
+
+      analytics.track('plan_upgrade_completed', {
+        previousPlan: 'foundation',
+        newPlan: planTier,
+        wasTrialing: isTrialing,
+        isNowTrialing: true,
+      })
+
       // Clean URL without reloading
       const url = new URL(window.location.href)
       url.searchParams.delete('session_id')
       window.history.replaceState({}, '', url.toString())
     }
-  }, [checkoutSessionId, refetch])
+  }, [checkoutSessionId, refetch, planTier, isTrialing])
 
   // Track billing page view
   useEffect(() => {

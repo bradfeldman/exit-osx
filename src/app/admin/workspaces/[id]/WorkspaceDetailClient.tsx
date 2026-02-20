@@ -192,8 +192,8 @@ export function WorkspaceDetailClient({ workspace }: WorkspaceDetailClientProps)
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="FOUNDATION">Foundation (Free)</SelectItem>
-                      <SelectItem value="GROWTH">Growth ($149/mo)</SelectItem>
-                      <SelectItem value="DEAL_ROOM">Deal Room ($379/mo)</SelectItem>
+                      <SelectItem value="GROWTH">Growth ($99/mo)</SelectItem>
+                      <SelectItem value="DEAL_ROOM">Deal Room ($208/mo)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

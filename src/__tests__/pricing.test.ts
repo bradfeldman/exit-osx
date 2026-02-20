@@ -27,14 +27,14 @@ describe('Pricing Plans', () => {
 
     it('growth plan should have correct pricing', () => {
       const growth = PRICING_PLANS.find(p => p.id === 'growth')
-      expect(growth?.monthlyPrice).toBe(179)
-      expect(growth?.annualPrice).toBe(149)
+      expect(growth?.monthlyPrice).toBe(129)
+      expect(growth?.annualPrice).toBe(99)
     })
 
     it('deal-room plan should have correct pricing', () => {
       const dealRoom = PRICING_PLANS.find(p => p.id === 'deal-room')
-      expect(dealRoom?.monthlyPrice).toBe(449)
-      expect(dealRoom?.annualPrice).toBe(379)
+      expect(dealRoom?.monthlyPrice).toBe(249)
+      expect(dealRoom?.annualPrice).toBe(208)
     })
 
     it('annual pricing should be less than monthly for paid plans', () => {

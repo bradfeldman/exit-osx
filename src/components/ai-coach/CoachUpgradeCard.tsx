@@ -37,7 +37,7 @@ export function CoachUpgradeCard({ variant, attemptNumber }: CoachUpgradeCardPro
         <Button onClick={handleUpgrade} className="w-full">
           Upgrade to Growth
         </Button>
-        <p className="text-xs text-muted-foreground text-center mt-2">Starting at $149/mo</p>
+        <p className="text-xs text-muted-foreground text-center mt-2">Starting at $99/mo</p>
       </div>
     )
   }
@@ -54,7 +54,7 @@ export function CoachUpgradeCard({ variant, attemptNumber }: CoachUpgradeCardPro
         <Button onClick={handleUpgrade} className="w-full">
           Upgrade to Growth
         </Button>
-        <p className="text-xs text-muted-foreground text-center mt-2">Starting at $149/mo</p>
+        <p className="text-xs text-muted-foreground text-center mt-2">Starting at $99/mo</p>
       </div>
     )
   }
@@ -90,7 +90,7 @@ export function CoachUpgradeCard({ variant, attemptNumber }: CoachUpgradeCardPro
       <Button onClick={handleUpgrade} className="w-full">
         Upgrade to Growth
       </Button>
-      <p className="text-xs text-muted-foreground text-center mt-2">Starting at $149/mo</p>
+      <p className="text-xs text-muted-foreground text-center mt-2">Starting at $99/mo</p>
     </div>
   )
 }

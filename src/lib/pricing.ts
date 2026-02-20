@@ -48,8 +48,8 @@ export const PRICING_PLANS: PricingPlan[] = [
     id: 'growth',
     name: 'Growth',
     description: 'Comprehensive tools to actively increase your business value',
-    monthlyPrice: 179,
-    annualPrice: 149,
+    monthlyPrice: 129,
+    annualPrice: 99,
     cta: 'Start 7-Day Free Trial',
     highlighted: true,
     features: [
@@ -76,8 +76,8 @@ export const PRICING_PLANS: PricingPlan[] = [
     id: 'deal-room',
     name: 'Deal Room',
     description: 'Full suite for M&A-ready businesses preparing to exit',
-    monthlyPrice: 449,
-    annualPrice: 379,
+    monthlyPrice: 249,
+    annualPrice: 208,
     cta: 'Start 7-Day Free Trial',
     features: [
       { name: 'Exit Readiness Assessment', included: true },

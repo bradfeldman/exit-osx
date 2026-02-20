@@ -45,7 +45,7 @@ export function FreemiumGateCard({ lockedTaskCount, lockedValueTotal, onUpgrade 
               onClick={onUpgrade}
               className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg bg-[var(--burnt-orange)] text-white hover:bg-[var(--burnt-orange)]/90 transition-colors"
             >
-              Upgrade to Growth &mdash; $179/mo
+              Upgrade to Growth &mdash; $129/mo
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>

@@ -107,7 +107,7 @@ export async function sendTrialLastDayEmail(params: TrialLastDayEmailParams) {
               </table>
 
               <p style="margin: 24px 0 0 0; font-size: 14px; color: #888888; text-align: center;">
-                $149/month &mdash; cancel anytime. Your data and progress are preserved.
+                $99/month &mdash; cancel anytime. Your data and progress are preserved.
               </p>
             </td>
           </tr>
