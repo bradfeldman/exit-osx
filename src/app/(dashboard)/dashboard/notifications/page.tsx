@@ -214,7 +214,7 @@ export default function NotificationsPage() {
 
   return (
     <>
-      <TrackPageView pageName="notifications" />
+      <TrackPageView page="notifications" />
 
       {/* Top Bar */}
       <div className={styles.topBar}>
